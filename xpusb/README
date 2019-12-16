@@ -1,0 +1,141 @@
+2017/01/13 Reto Stockli
+
+ABSTRACT
+
+This is a short introduction to the USBIOCARDS code. I've created this code because there wasn't any programs available 
+for LINUX and OSX X-Plane users who build home-grown cockpit hardware. There is a "open source" hardware project 
+called OpenCockpits (http://www.opencockpits.com) which provides pretty cool I/O hardware, so called IOCARDS. 
+However, their software is only intended for Microsoft Windows users. The aim of USBIOCARDS is to use the 
+OpenCockpits hardware together with X-Plane on Unix systems. Below you will find a short description to the 
+USBIOCARDS functionality.
+
+GENERAL
+
+USBIOCARDS is a set of C codes which facilitates programmers and developers to write applications. 
+This is different to the Windows applications that are provided by OpenCockpits:
+
+The advantage of USBIOCARDS is: it can be made very specific to your home cockpit requirements. 
+The code is very flexible for dealing with the highly specialized flight controls or electrical/mechanical 
+interactions that are neeeded in modern airplane simulations.
+
+The disadvantage of USBIOCARDS is: users need to master some basic C programming.
+
+The current code allows to use a small set of the OpenCockpits hardware:
+- master card(s) connected through the USB expansion card including analog axes
+- USB Servos including analog axes
+- USB Keys
+- USB DC Motors including analog axes
+- Leo Bodnar's BU0836X joystick and inputs
+
+USBIOCARDS communicates with X-Plane by subscribing to specific datarefs through the XPSERVER plugin.
+This subscription is pretty simple to handle since the client (USBIOCARDS) decides which datarefs it wants
+and which datarefs it does not want any more. More information can be found on the XPSERVER README file
+and examples are visible in the individual source codes found in USBIOCARDS.
+
+SPECIFIC
+
+The OpenCockpits USB devices are of the HID class. We however deal with them like regular USB devices when we use the libusb library,
+and we directly access them through the operating system HID driver when we make use of the HIDAPI library.
+The USB Expansion card has two interrupt endpoints: one for reading and one for writing. 
+They transfer data in 8 byte chunks and have a 10 ms polling interval. The main difficulties with the USBIOCARDS 
+was to get non-blocking asynchronous reads and writes, especially as a non-C programmer (long live Fortran 90/95!), 
+and to reverse engineer the Mastercard I/O protocol.
+
+*********
+NOTE: On OSX 10.6.6 and beyond this option has been disabled by APPLE. So all OSX users simply use the HIDAPI interface
+please
+
+On OSX all the IOCARDS devices are immediately captured by the kernel as a HID device. This has to be circumvented by 
+loading a dummy kernel extension before the device is connected. The kernel extension simulates a user-space USB driver 
+for that specific device so that is not captured by the kernel HID driver. This kernel extension has to be loaded before 
+the USBIOCARDS code is started, and before the device is connected. It can be part of the System library containing 
+kernel extensions. I have prepared such a "codeless" kernel extension which works with the USB extension card. 
+OSX users can find a codeless kernel extension in the subdirectory osx/ and follow its installation instructions before 
+they can run the USBIOCARDS code.
+**********
+
+For Linux and OSX the newly developed HIDAPI code came in handy. It includes asynchronous read and write to HID devices. 
+The HIDAPI code is included in this source code distribution. (the libusb-1.0 library previously had to be installed
+separately).
+
+HOW TO OPERATE
+--------------
+
+./configure
+make
+cd src
+./usbiocards test
+
+This will run usbiocards with the inidata/test.ini settings file operating a single mastercard on a USB expansion card
+
+Please look at the following files for how to change to different settings:
+- other settings files in inidata/
+- other sample hardware codes visible from src/usbiocards.c
+
+
+
+
+
+
+
+CODE STRUCTURE
+
+usbiocards.c
+------------
+
+The main application code is: usbiocards.c. Take a look at it. It has two phases: initialization and runloop. During the initialization data structures are set up, the TCP/IP client is started and the USB expansion card is detected and initialized. If any of those things fail, the code exits. The USB expansion card has to be connected before the code is started. X-Plane does however not need to be running with a TCP/IP server yet. Unplugging the USB expansion card while the program is running will produce an exit condition, too. Plug'n'play will be implemented in a later stage. The runloop cycles through the following steps: 
+
+- USB read from the USB expansion card and other cards
+- checking for a new TCP/IP connection (has X-Plane been started yet?)
+- TCP/IP receive from X-Plane
+- the user-space application (mcp_737) which deals with switches, displays and outputs
+- USB send to the USB expansion card
+- TCP/IP send to X-Plane
+- saving copies of the data structures
+
+usbiocards.c can be stopped with 'ctrl-c'. It calls a signal handler which then tries to gracefully terminate the TCP/IP connection, and stop the USB read and write threads before exiting.
+
+handle_server.c
+---------------
+
+handle_server.c deals with the TCP/IP connection to X-Plane. Data is transferred over TCP/IP in the format described in the documentation of the XPCONNECT server application (separate package).
+
+libiocards.c
+------------
+
+libiocards.c contains all the functions needed to read from the digital inputs or send a display value etc. 
+It also handles the initialization and exit procedure of the USB connected cards. 
+Its functions include the reverse engineered iocards protocol.  
+
+libusb_interface.c
+------------------
+
+libusb_interface.c deals with the USB initialization, read and write calls via libusb-1.0:
+- threaded asynchronous interrupt read
+- regular asynchronous bulk write
+
+hidapi_interface.c
+------------------
+hidapi_interface.c deals with direct HID access to the USB devices
+The following changes were made to hid_open() in hid_linux.c and hid_darwin.c:
+
+	if (cur_dev->vendor_id == vendor_id &&
+	cur_dev->product_id == product_id &&
+ADDED:
+	strlen(cur_dev->path) != 0) {
+Since the Mastercard Expansion USB card has VID=0,PID=0, and it has a USB access path, while
+Other (software components) may show up with VID=0,PID=0 without a path.
+
+
+iniparser.c
+-----------
++ dictionary.c
+
+iniparser.c reads the initial file 'usbiocards.ini'
+
+iocard_test.c
+-------------
+
+Sample code operating an input and an output and a display on a single master card connected to the
+USB expansion card
+

@@ -1,0 +1,150 @@
+2018/04/20 Reto Stockli and Hans Jansen
+
+This file documents changes since USBIOCARDS Version 0.1
+
+Version 0.51
+------------
+- corrected bug in unlink_dataref (dataref name would not be removed from dataref structure)
+- added for x737 plugin recheck if not available at startup
+
+Version 0.50
+------------
+- adapted test script
+- adapted README
+- tested package
+
+Version 0.48
+------------
+- added new A320 modules
+- added "general:Name" parameter to .ini file and code - clientname for xpserver plugin
+- added functionality to address device by its absolute path
+  works with the HIDAPI interface (use path = ...) in the ini file
+  instead of address / bus identifiers (libusb)
+- added hidls command in src to list all HID devices in the system
+  with their path etc.
+- updated to a new version of HIDAPI
+
+Version 0.47
+------------
+- corrected bug with partial TCP/IP sends/receives
+
+Version 0.46
+------------
+- corrected bug with encoder type 2 false signals
+
+Version 0.45
+------------
+- type specific wrapper functions for link_dataref
+- axes and servos and motors are 0-based (e.g. first axis is axis #0)
+- included support for DCMotors PLUS card
+- included support for BU836X card
+- usbiocards now requires one argument specifying the type of ini file to read. 
+  Arguments need to correspond to a file argument.ini in the directory inidata/ if run from src/ or in the directory share/ if run from bin/
+
+Version 0.44
+------------
+- added transfer of client's PACKAGE_NAME (taken from config.h) with each
+  dataref that is initialized
+
+Version 0.43
+------------
+- corrected bug in TCP/IP initializing (would result in failed client socket after many retries)
+- added support for IOCardS-Keys keycard connected by USB
+- added support for IOCard-USBServos connected by USB
+- renamed axis reading from mastercard_axis to axis_input since both the USB Expansion and the USBServos card can have analog axes (read by the same command)
+- corrected a few logical and/or in libiocards from & to && and from | to ||
+- introduced handling of X-Plane commands (hans)
+- corrected protocol error in network communication (hans)
+- updated src/Makefile.am with new A320 code structure (Reto)
+- synchronized changes in libiocards.c (handling of missing values and Keys, Servos)
+- updated changes in pedestal_737.c
+
+Version 0.42
+------------
+- added option to link several arrays of same dataref with different array elements
+- modified verbosity
+
+Version 0.41
+------------
+- corrected bug in handling data precision
+- adapted type casting of X-Plane data pointers to standard C handling
+
+Version 0.40
+------------
+- new protocol allowing for transfer of all X-Plane data types (float, int, double, arrays etc.)
+- datarefs are defined in usbiocards user modules, and not any more by an ascii file in xpconnect
+- corrected bug in initializing inputs 
+  requires new microcontroller code / microcontroller (06/2013) for
+  the USB Expansion card:
+- correctly read inputs distributed over many 8-byte packets
+- correctly read axes distributed over many 8-byte packets
+- analog inputs can be scaled to output range
+- all digital inputs now return pointers to (int)
+- all digital outputs and displays now require pointers to (int)
+- many other changes
+
+Version 0.39
+------------
+- corrected bug in addressing digital outputs:
+  increased maximum number of digital outputs per mastercard from 40 to 45
+- tested mastercard Relais card with 7 relais (outputs 49-55)
+- corrected bug in addressing axes
+
+Version 0.38
+------------
+- corrected bug in libiocards.c mastercard_axis() that prevented addressing analog axes 2-4.
+- corrected bug in libiocards.c initialize_mastercard() that resulted in endless loop during initialization with analog axes connected
+- tested all analog inputs on single usb expansion card and included example in iocard_test.c
+- tested with gcc 4.6.3 (OSX) but not Linux
+
+Version 0.37
+------------
+- updated hidapi
+- updated configure script
+- updated xpconnect namespace (X-Plane plugin changed from xpiocards to xpconnect)
+
+Version 0.36
+------------
+- added support for analog axes connected to the mastercard
+- removed linking issue with src/hid_linux.c on Ubuntu 10.10
+- updated configure.ac to link with libudev
+
+Version 0.35
+------------
+- corrected error in encoder type 2 decoding (2 bit gray type encoder like CTS288)
+- added support for HIDAPI (now default on OSX), LIBUSB-1.0 will still be used on Linux
+
+Version 0.34
+------------
+- added the option to detach a kernel driver from interfaces (will work on linux only, untested)
+
+Version 0.33
+------------
+- added gnu autotools (automake, autoconf etc.) configuration on OSX and Linux
+- tested on OSX (fully) and Linux (compilation only)
+
+Version 0.32
+------------
+- corrected some type definitions u_int32_t to uint32_t
+- added a sample code iocard_test.c providing a starting point to connect stuff to the mastercard
+
+Version 0.3
+-----------
+- added support for libusb-1.0.8
+- almost completely rewritten the usb_interface.c routine so that it uses
+  the libusb-1.0 asynchronous callback functions for reading and writing
+  by use of a separate unix thread.
+- rewritten device detection so that we "could" in theory support multiple
+  IOCARD devices. Currently, the interface initialization and read/write
+  however only works for a mastercard connected through the USB expansion card
+- added new offsets to accomodate changes in the x737 plugin from Benedikt Stratmann
+- several more changes ...
+
+Version 0.2
+-----------
+- added support for libusb-1.0.2 for both Linux and OSX. The OSX-specific USB driver was removed.
+- removed bugs in the initialization of inputs and encoders for the MASTERCARD. Every switch which is on
+  when the MASTERCARD is initialized, will be shown as ON (input value = 1) after the first read event
+- better handling of signals. Propoer stopping of threads and closing of USB devices
+- removing write thread. Only for input endpoints a thread is running for read operations. For write operations a regular usb interrupt write is used
+- better diagnostic output
