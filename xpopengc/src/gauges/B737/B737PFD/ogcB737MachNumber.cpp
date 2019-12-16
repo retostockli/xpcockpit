@@ -107,7 +107,7 @@ void B737MachNumber::Render()
 
   //  int *altimeter_pressure_unit = link_dataref_int("x737/systems/units/baroPressUnit");   
   int *altimeter_pressure_unit;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
   } else {
     altimeter_pressure_unit = link_dataref_int("xpserver/barometer_unit");

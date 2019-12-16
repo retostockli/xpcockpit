@@ -2,7 +2,7 @@
 bin_PROGRAMS = xpopengc
 
 # Source file names
-OpenGC_SOURCES = \
+xpopengc_SOURCES = \
 dictionary.c \
 iniparser.c \
 ogcAppObject.cpp \
@@ -13,4 +13,4 @@ dictionary.h \
 iniparser.h \
 ogcAppObject.h
 
-OpenGC_LDADD = ../gauges/libOpenGCGauges.a ../datasources/libOpenGCDataSources.a ../navigation/libOpenGCNav.a ../base/libOpenGCBase.a
+xpopengc_LDADD = ../gauges/libOpenGCGauges.a ../datasources/libOpenGCDataSources.a ../navigation/libOpenGCNav.a ../base/libOpenGCBase.a

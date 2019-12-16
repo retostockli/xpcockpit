@@ -89,7 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = usbiocards$(EXEEXT) hidls$(EXEEXT)
+bin_PROGRAMS = xpusb$(EXEEXT) hidls$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -109,14 +109,14 @@ am__hidls_SOURCES_DIST = hid_darwin.c hid_linux.c hidls.c
 am_hidls_OBJECTS = $(am__objects_1) hidls.$(OBJEXT)
 hidls_OBJECTS = $(am_hidls_OBJECTS)
 hidls_LDADD = $(LDADD)
-am__usbiocards_SOURCES_DIST = hid_darwin.c hid_linux.c usbiocards.c \
-	libiocards.c serverdata.c handleserver.c libusb_interface.c \
+am__xpusb_SOURCES_DIST = hid_darwin.c hid_linux.c xpusb.c libiocards.c \
+	serverdata.c handleserver.c libusb_interface.c \
 	hidapi_interface.c dictionary.c iniparser.c mcp_737.c \
 	pedestal_737.c throttle_737.c efis_737.c yokerudder_737.c \
 	check_x737.c check_zibo.c iocard_test.c usbkeys_test.c \
 	usbservos_test.c dcmotorsplus_test.c bu0836_test.c \
 	a320_overhead.c a320_mcdu_keys.c a320_pedestal_mip.c
-am_usbiocards_OBJECTS = $(am__objects_1) usbiocards.$(OBJEXT) \
+am_xpusb_OBJECTS = $(am__objects_1) xpusb.$(OBJEXT) \
 	libiocards.$(OBJEXT) serverdata.$(OBJEXT) \
 	handleserver.$(OBJEXT) libusb_interface.$(OBJEXT) \
 	hidapi_interface.$(OBJEXT) dictionary.$(OBJEXT) \
@@ -128,8 +128,8 @@ am_usbiocards_OBJECTS = $(am__objects_1) usbiocards.$(OBJEXT) \
 	dcmotorsplus_test.$(OBJEXT) bu0836_test.$(OBJEXT) \
 	a320_overhead.$(OBJEXT) a320_mcdu_keys.$(OBJEXT) \
 	a320_pedestal_mip.$(OBJEXT)
-usbiocards_OBJECTS = $(am_usbiocards_OBJECTS)
-usbiocards_LDADD = $(LDADD)
+xpusb_OBJECTS = $(am_xpusb_OBJECTS)
+xpusb_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -158,9 +158,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(hidls_SOURCES) $(usbiocards_SOURCES)
-DIST_SOURCES = $(am__hidls_SOURCES_DIST) \
-	$(am__usbiocards_SOURCES_DIST)
+SOURCES = $(hidls_SOURCES) $(xpusb_SOURCES)
+DIST_SOURCES = $(am__hidls_SOURCES_DIST) $(am__xpusb_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -288,8 +287,8 @@ top_srcdir = @top_srcdir@
 @OS_LINUX_TRUE@OS_SRC = hid_linux.c
 
 # The Sources needed to build the programs
-usbiocards_SOURCES = $(OS_SRC) \
-usbiocards.c \
+xpusb_SOURCES = $(OS_SRC) \
+xpusb.c \
 libiocards.c \
 serverdata.c \
 handleserver.c \
@@ -321,7 +320,7 @@ common.h \
 hidapi.h \
 dictionary.h \
 iniparser.h \
-usbiocards.h \
+xpusb.h \
 libiocards.h \
 serverdata.h \
 libusb_interface.h \
@@ -423,9 +422,9 @@ hidls$(EXEEXT): $(hidls_OBJECTS) $(hidls_DEPENDENCIES) $(EXTRA_hidls_DEPENDENCIE
 	@rm -f hidls$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(hidls_OBJECTS) $(hidls_LDADD) $(LIBS)
 
-usbiocards$(EXEEXT): $(usbiocards_OBJECTS) $(usbiocards_DEPENDENCIES) $(EXTRA_usbiocards_DEPENDENCIES) 
-	@rm -f usbiocards$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(usbiocards_OBJECTS) $(usbiocards_LDADD) $(LIBS)
+xpusb$(EXEEXT): $(xpusb_OBJECTS) $(xpusb_DEPENDENCIES) $(EXTRA_xpusb_DEPENDENCIES) 
+	@rm -f xpusb$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(xpusb_OBJECTS) $(xpusb_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -455,9 +454,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pedestal_737.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/serverdata.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/throttle_737.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usbiocards.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usbkeys_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usbservos_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xpusb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yokerudder_737.Po@am__quote@
 
 .c.o:

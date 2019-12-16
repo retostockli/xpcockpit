@@ -17,7 +17,9 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
  /usr/lib/gcc/x86_64-linux-gnu/7/include/stdarg.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/sys_errlist.h \
- /usr/include/c++/7/math.h /usr/include/c++/7/cmath \
+ /usr/include/x86_64-linux-gnu/bits/stdio.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio2.h /usr/include/c++/7/math.h \
+ /usr/include/c++/7/cmath \
  /usr/include/x86_64-linux-gnu/c++/7/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/7/bits/os_defines.h \
  /usr/include/x86_64-linux-gnu/c++/7/bits/cpu_defines.h \
@@ -33,6 +35,7 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+ /usr/include/x86_64-linux-gnu/bits/mathinline.h \
  /usr/include/c++/7/bits/std_abs.h /usr/include/stdlib.h \
  /usr/include/x86_64-linux-gnu/bits/waitflags.h \
  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
@@ -54,14 +57,18 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
  /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
+ /usr/include/x86_64-linux-gnu/bits/select2.h \
  /usr/include/x86_64-linux-gnu/sys/sysmacros.h \
  /usr/include/x86_64-linux-gnu/bits/sysmacros.h \
  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
  /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
- /usr/include/alloca.h /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
- /home/stockli/737/opengc/src/base/ogcGaugeComponent.h \
- /home/stockli/737/opengc/src/base/ogcFontManager.h \
+ /usr/include/alloca.h \
+ /usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h \
+ /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+ /usr/include/x86_64-linux-gnu/bits/stdlib.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcGaugeComponent.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcFontManager.h \
  /usr/include/c++/7/vector /usr/include/c++/7/bits/stl_algobase.h \
  /usr/include/c++/7/bits/functexcept.h \
  /usr/include/c++/7/bits/exception_defines.h \
@@ -92,9 +99,9 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
  /usr/include/c++/7/bits/functional_hash.h \
  /usr/include/c++/7/bits/range_access.h \
  /usr/include/c++/7/bits/vector.tcc \
- /home/stockli/737/opengc/src/base/ogcFont.h \
- /home/stockli/737/opengc/src/base/ogcOrderedPair.h \
- /home/stockli/737/opengc/src/base/ogcOrderedPair.cpp \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcFont.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcOrderedPair.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcOrderedPair.cpp \
  /usr/include/FTGL/ftgl.h /usr/include/freetype2/ft2build.h \
  /usr/include/freetype2/freetype/config/ftheader.h \
  /usr/include/freetype2/freetype/freetype.h \
@@ -109,9 +116,12 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
  /usr/include/x86_64-linux-gnu/bits/uio_lim.h /usr/include/string.h \
- /usr/include/strings.h /usr/include/c++/7/stdlib.h \
- /usr/include/c++/7/cstdlib /usr/include/setjmp.h \
- /usr/include/x86_64-linux-gnu/bits/setjmp.h \
+ /usr/include/strings.h \
+ /usr/include/x86_64-linux-gnu/bits/strings_fortified.h \
+ /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
+ /usr/include/c++/7/stdlib.h /usr/include/c++/7/cstdlib \
+ /usr/include/setjmp.h /usr/include/x86_64-linux-gnu/bits/setjmp.h \
+ /usr/include/x86_64-linux-gnu/bits/setjmp2.h \
  /usr/include/freetype2/freetype/fttypes.h \
  /usr/include/freetype2/freetype/ftsystem.h \
  /usr/include/freetype2/freetype/ftimage.h \
@@ -130,14 +140,14 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
  /usr/include/FTGL/FTGLOutlineFont.h /usr/include/FTGL/FTGLPixmapFont.h \
  /usr/include/FTGL/FTGLPolygonFont.h /usr/include/FTGL/FTGLTextureFont.h \
  /usr/include/FTGL/FTLayout.h /usr/include/FTGL/FTSimpleLayout.h \
- /home/stockli/737/opengc/src/datasources/ogcDataSource.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/datasources/ogcDataSource.h \
  /usr/include/c++/7/string /usr/include/c++/7/bits/stringfwd.h \
  /usr/include/c++/7/bits/char_traits.h /usr/include/c++/7/bits/postypes.h \
  /usr/include/c++/7/cwchar /usr/include/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
- /usr/include/c++/7/cstdint \
+ /usr/include/x86_64-linux-gnu/bits/wchar2.h /usr/include/c++/7/cstdint \
  /usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
  /usr/include/c++/7/bits/localefwd.h \
@@ -167,26 +177,27 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
  /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/c++/7/bits/basic_string.tcc \
- /home/stockli/737/opengc/src/datasources/serverdata.h \
- /home/stockli/737/opengc/src/datasources/udpdata.h \
- /home/stockli/737/opengc/src/base/ogcRenderObject.h \
- /home/stockli/737/opengc/src/base/ogcObject.h /usr/include/c++/7/list \
- /usr/include/c++/7/bits/stl_list.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/datasources/serverdata.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/datasources/udpdata.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcRenderObject.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcObject.h \
+ /usr/include/c++/7/list /usr/include/c++/7/bits/stl_list.h \
  /usr/include/c++/7/bits/allocated_ptr.h \
  /usr/include/c++/7/ext/aligned_buffer.h /usr/include/c++/7/bits/list.tcc \
- /home/stockli/737/opengc/src/base/ogcMessages.h \
- /home/stockli/737/opengc/src/navigation/ogcNavDatabase.h \
- /home/stockli/737/opengc/src/navigation/ogcNavaidList.h \
- /home/stockli/737/opengc/src/navigation/ogcGeographicObjectList.h \
- /home/stockli/737/opengc/src/navigation/ogcGeographicObject.h \
- /home/stockli/737/opengc/src/navigation/ogcAirportList.h \
- /home/stockli/737/opengc/src/navigation/ogcFixList.h \
- /home/stockli/737/opengc/src/navigation/ogcGeographicHash.h \
- /home/stockli/737/opengc/src/base/ogcGLHeaders.h /usr/include/GL/gl.h \
- /usr/include/GL/glext.h /usr/include/KHR/khrplatform.h \
- /usr/include/inttypes.h /usr/include/GL/glu.h BasicClock/ogcBasicClock.h \
- /home/stockli/737/opengc/src/base/ogcGauge.h \
- /home/stockli/737/opengc/src/base/ogcGaugeComponent.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcMessages.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcNavDatabase.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcNavaidList.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcGeographicObjectList.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcGeographicObject.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcAirportList.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcFixList.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcGeographicHash.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcGLHeaders.h \
+ /usr/include/GL/gl.h /usr/include/GL/glext.h \
+ /usr/include/KHR/khrplatform.h /usr/include/inttypes.h \
+ /usr/include/GL/glu.h BasicClock/ogcBasicClock.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcGauge.h \
+ /home/stockli/737/xpcockpit/xpopengc/src/base/ogcGaugeComponent.h \
  BasicClock/ogcBasicClockComponent.h
 
 /usr/include/stdc-predef.h:
@@ -229,6 +240,10 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/sys_errlist.h:
 
+/usr/include/x86_64-linux-gnu/bits/stdio.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:
+
 /usr/include/c++/7/math.h:
 
 /usr/include/c++/7/cmath:
@@ -264,6 +279,8 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 
 /usr/include/x86_64-linux-gnu/bits/iscanonical.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathinline.h:
 
 /usr/include/c++/7/bits/std_abs.h:
 
@@ -311,6 +328,8 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
 
+/usr/include/x86_64-linux-gnu/bits/select2.h:
+
 /usr/include/x86_64-linux-gnu/sys/sysmacros.h:
 
 /usr/include/x86_64-linux-gnu/bits/sysmacros.h:
@@ -323,11 +342,15 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 /usr/include/alloca.h:
 
+/usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h:
+
 /usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
 
-/home/stockli/737/opengc/src/base/ogcGaugeComponent.h:
+/usr/include/x86_64-linux-gnu/bits/stdlib.h:
 
-/home/stockli/737/opengc/src/base/ogcFontManager.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcGaugeComponent.h:
+
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcFontManager.h:
 
 /usr/include/c++/7/vector:
 
@@ -405,11 +428,11 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 /usr/include/c++/7/bits/vector.tcc:
 
-/home/stockli/737/opengc/src/base/ogcFont.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcFont.h:
 
-/home/stockli/737/opengc/src/base/ogcOrderedPair.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcOrderedPair.h:
 
-/home/stockli/737/opengc/src/base/ogcOrderedPair.cpp:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcOrderedPair.cpp:
 
 /usr/include/FTGL/ftgl.h:
 
@@ -447,6 +470,10 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 /usr/include/strings.h:
 
+/usr/include/x86_64-linux-gnu/bits/strings_fortified.h:
+
+/usr/include/x86_64-linux-gnu/bits/string_fortified.h:
+
 /usr/include/c++/7/stdlib.h:
 
 /usr/include/c++/7/cstdlib:
@@ -454,6 +481,8 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 /usr/include/setjmp.h:
 
 /usr/include/x86_64-linux-gnu/bits/setjmp.h:
+
+/usr/include/x86_64-linux-gnu/bits/setjmp2.h:
 
 /usr/include/freetype2/freetype/fttypes.h:
 
@@ -513,7 +542,7 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 /usr/include/FTGL/FTSimpleLayout.h:
 
-/home/stockli/737/opengc/src/datasources/ogcDataSource.h:
+/home/stockli/737/xpcockpit/xpopengc/src/datasources/ogcDataSource.h:
 
 /usr/include/c++/7/string:
 
@@ -532,6 +561,8 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 /usr/include/x86_64-linux-gnu/bits/types/wint_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/wchar2.h:
 
 /usr/include/c++/7/cstdint:
 
@@ -613,13 +644,13 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 /usr/include/c++/7/bits/basic_string.tcc:
 
-/home/stockli/737/opengc/src/datasources/serverdata.h:
+/home/stockli/737/xpcockpit/xpopengc/src/datasources/serverdata.h:
 
-/home/stockli/737/opengc/src/datasources/udpdata.h:
+/home/stockli/737/xpcockpit/xpopengc/src/datasources/udpdata.h:
 
-/home/stockli/737/opengc/src/base/ogcRenderObject.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcRenderObject.h:
 
-/home/stockli/737/opengc/src/base/ogcObject.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcObject.h:
 
 /usr/include/c++/7/list:
 
@@ -631,23 +662,23 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 /usr/include/c++/7/bits/list.tcc:
 
-/home/stockli/737/opengc/src/base/ogcMessages.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcMessages.h:
 
-/home/stockli/737/opengc/src/navigation/ogcNavDatabase.h:
+/home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcNavDatabase.h:
 
-/home/stockli/737/opengc/src/navigation/ogcNavaidList.h:
+/home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcNavaidList.h:
 
-/home/stockli/737/opengc/src/navigation/ogcGeographicObjectList.h:
+/home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcGeographicObjectList.h:
 
-/home/stockli/737/opengc/src/navigation/ogcGeographicObject.h:
+/home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcGeographicObject.h:
 
-/home/stockli/737/opengc/src/navigation/ogcAirportList.h:
+/home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcAirportList.h:
 
-/home/stockli/737/opengc/src/navigation/ogcFixList.h:
+/home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcFixList.h:
 
-/home/stockli/737/opengc/src/navigation/ogcGeographicHash.h:
+/home/stockli/737/xpcockpit/xpopengc/src/navigation/ogcGeographicHash.h:
 
-/home/stockli/737/opengc/src/base/ogcGLHeaders.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcGLHeaders.h:
 
 /usr/include/GL/gl.h:
 
@@ -661,8 +692,8 @@ BasicClock/ogcBasicClock.o: BasicClock/ogcBasicClock.cpp \
 
 BasicClock/ogcBasicClock.h:
 
-/home/stockli/737/opengc/src/base/ogcGauge.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcGauge.h:
 
-/home/stockli/737/opengc/src/base/ogcGaugeComponent.h:
+/home/stockli/737/xpcockpit/xpopengc/src/base/ogcGaugeComponent.h:
 
 BasicClock/ogcBasicClockComponent.h:

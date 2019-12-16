@@ -71,10 +71,10 @@ am__make_running_with_option = \
   test $$has_opt = yes
 am__make_dryrun = (target_option=n; $(am__make_running_with_option))
 am__make_keepgoing = (target_option=k; $(am__make_running_with_option))
-pkgdatadir = $(datadir)/usbiocards
-pkgincludedir = $(includedir)/usbiocards
-pkglibdir = $(libdir)/usbiocards
-pkglibexecdir = $(libexecdir)/usbiocards
+pkgdatadir = $(datadir)/xpusb
+pkgincludedir = $(includedir)/xpusb
+pkglibdir = $(libdir)/xpusb
+pkglibexecdir = $(libexecdir)/xpusb
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -89,7 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-pc-linux-gnu
 host_triplet = x86_64-pc-linux-gnu
-bin_PROGRAMS = usbiocards$(EXEEXT) hidls$(EXEEXT)
+bin_PROGRAMS = xpusb$(EXEEXT) hidls$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -109,14 +109,14 @@ am__objects_1 = hid_linux.$(OBJEXT)
 am_hidls_OBJECTS = $(am__objects_1) hidls.$(OBJEXT)
 hidls_OBJECTS = $(am_hidls_OBJECTS)
 hidls_LDADD = $(LDADD)
-am__usbiocards_SOURCES_DIST = hid_darwin.c hid_linux.c usbiocards.c \
-	libiocards.c serverdata.c handleserver.c libusb_interface.c \
+am__xpusb_SOURCES_DIST = hid_darwin.c hid_linux.c xpusb.c libiocards.c \
+	serverdata.c handleserver.c libusb_interface.c \
 	hidapi_interface.c dictionary.c iniparser.c mcp_737.c \
 	pedestal_737.c throttle_737.c efis_737.c yokerudder_737.c \
 	check_x737.c check_zibo.c iocard_test.c usbkeys_test.c \
 	usbservos_test.c dcmotorsplus_test.c bu0836_test.c \
 	a320_overhead.c a320_mcdu_keys.c a320_pedestal_mip.c
-am_usbiocards_OBJECTS = $(am__objects_1) usbiocards.$(OBJEXT) \
+am_xpusb_OBJECTS = $(am__objects_1) xpusb.$(OBJEXT) \
 	libiocards.$(OBJEXT) serverdata.$(OBJEXT) \
 	handleserver.$(OBJEXT) libusb_interface.$(OBJEXT) \
 	hidapi_interface.$(OBJEXT) dictionary.$(OBJEXT) \
@@ -128,8 +128,8 @@ am_usbiocards_OBJECTS = $(am__objects_1) usbiocards.$(OBJEXT) \
 	dcmotorsplus_test.$(OBJEXT) bu0836_test.$(OBJEXT) \
 	a320_overhead.$(OBJEXT) a320_mcdu_keys.$(OBJEXT) \
 	a320_pedestal_mip.$(OBJEXT)
-usbiocards_OBJECTS = $(am_usbiocards_OBJECTS)
-usbiocards_LDADD = $(LDADD)
+xpusb_OBJECTS = $(am_xpusb_OBJECTS)
+xpusb_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -158,9 +158,8 @@ AM_V_CCLD = $(am__v_CCLD_$(V))
 am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(hidls_SOURCES) $(usbiocards_SOURCES)
-DIST_SOURCES = $(am__hidls_SOURCES_DIST) \
-	$(am__usbiocards_SOURCES_DIST)
+SOURCES = $(hidls_SOURCES) $(xpusb_SOURCES)
+DIST_SOURCES = $(am__hidls_SOURCES_DIST) $(am__xpusb_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -188,12 +187,12 @@ ETAGS = etags
 CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/stockli/737/usbiocards/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/stockli/737/xpcockpit/xpusb/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/stockli/737/usbiocards/missing autoconf
-AUTOHEADER = ${SHELL} /home/stockli/737/usbiocards/missing autoheader
-AUTOMAKE = ${SHELL} /home/stockli/737/usbiocards/missing automake-1.15
+AUTOCONF = ${SHELL} /home/stockli/737/xpcockpit/xpusb/missing autoconf
+AUTOHEADER = ${SHELL} /home/stockli/737/xpcockpit/xpusb/missing autoheader
+AUTOMAKE = ${SHELL} /home/stockli/737/xpcockpit/xpusb/missing automake-1.15
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -218,25 +217,25 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = -lm -lrt -ludev 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/stockli/737/usbiocards/missing makeinfo
+MAKEINFO = ${SHELL} /home/stockli/737/xpcockpit/xpusb/missing makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
-PACKAGE = usbiocards
-PACKAGE_BUGREPORT = stockli@users.sourceforge.net
-PACKAGE_NAME = usbiocards
-PACKAGE_STRING = usbiocards 0.51
-PACKAGE_TARNAME = usbiocards
+PACKAGE = xpusb
+PACKAGE_BUGREPORT = Reto Stockli
+PACKAGE_NAME = xpusb
+PACKAGE_STRING = xpusb 0.60
+PACKAGE_TARNAME = xpusb
 PACKAGE_URL = 
-PACKAGE_VERSION = 0.51
+PACKAGE_VERSION = 0.60
 PATH_SEPARATOR = :
 SET_MAKE = 
 SHELL = /bin/bash
 STRIP = 
-VERSION = 0.51
-abs_builddir = /home/stockli/737/usbiocards/src
-abs_srcdir = /home/stockli/737/usbiocards/src
-abs_top_builddir = /home/stockli/737/usbiocards
-abs_top_srcdir = /home/stockli/737/usbiocards
+VERSION = 0.60
+abs_builddir = /home/stockli/737/xpcockpit/xpusb/src
+abs_srcdir = /home/stockli/737/xpcockpit/xpusb/src
+abs_top_builddir = /home/stockli/737/xpcockpit/xpusb
+abs_top_srcdir = /home/stockli/737/xpcockpit/xpusb
 ac_ct_CC = gcc
 am__include = include
 am__leading_dot = .
@@ -263,7 +262,7 @@ host_vendor = pc
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/stockli/737/usbiocards/install-sh
+install_sh = ${SHELL} /home/stockli/737/xpcockpit/xpusb/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -272,7 +271,7 @@ mandir = ${datarootdir}/man
 mkdir_p = $(MKDIR_P)
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /home/stockli/737/usbiocards
+prefix = /home/stockli/737/xpcockpit/xpusb
 program_transform_name = s,x,x,
 psdir = ${docdir}
 runstatedir = ${localstatedir}/run
@@ -288,8 +287,8 @@ top_srcdir = ..
 OS_SRC = hid_linux.c
 
 # The Sources needed to build the programs
-usbiocards_SOURCES = $(OS_SRC) \
-usbiocards.c \
+xpusb_SOURCES = $(OS_SRC) \
+xpusb.c \
 libiocards.c \
 serverdata.c \
 handleserver.c \
@@ -321,7 +320,7 @@ common.h \
 hidapi.h \
 dictionary.h \
 iniparser.h \
-usbiocards.h \
+xpusb.h \
 libiocards.h \
 serverdata.h \
 libusb_interface.h \
@@ -423,9 +422,9 @@ hidls$(EXEEXT): $(hidls_OBJECTS) $(hidls_DEPENDENCIES) $(EXTRA_hidls_DEPENDENCIE
 	@rm -f hidls$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(hidls_OBJECTS) $(hidls_LDADD) $(LIBS)
 
-usbiocards$(EXEEXT): $(usbiocards_OBJECTS) $(usbiocards_DEPENDENCIES) $(EXTRA_usbiocards_DEPENDENCIES) 
-	@rm -f usbiocards$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(usbiocards_OBJECTS) $(usbiocards_LDADD) $(LIBS)
+xpusb$(EXEEXT): $(xpusb_OBJECTS) $(xpusb_DEPENDENCIES) $(EXTRA_xpusb_DEPENDENCIES) 
+	@rm -f xpusb$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(xpusb_OBJECTS) $(xpusb_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -455,9 +454,9 @@ include ./$(DEPDIR)/mcp_737.Po
 include ./$(DEPDIR)/pedestal_737.Po
 include ./$(DEPDIR)/serverdata.Po
 include ./$(DEPDIR)/throttle_737.Po
-include ./$(DEPDIR)/usbiocards.Po
 include ./$(DEPDIR)/usbkeys_test.Po
 include ./$(DEPDIR)/usbservos_test.Po
+include ./$(DEPDIR)/xpusb.Po
 include ./$(DEPDIR)/yokerudder_737.Po
 
 .c.o:
