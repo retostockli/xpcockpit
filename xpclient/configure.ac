@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpclient], [0.11], [stockli@users.sourceforge.net])
+AC_INIT([xpclient], [0.20], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/xpclient.c])
 
 # produce makefiles (turn on warnings on automake!)

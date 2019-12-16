@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpserver], [0.50], [stockli@users.sourceforge.net])
+AC_INIT([xpserver], [0.60], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/xpserver.c])
 
 # produce makefiles (turn on warnings on automake!)
