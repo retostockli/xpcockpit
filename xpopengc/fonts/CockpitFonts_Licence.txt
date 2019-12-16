@@ -1,0 +1,15 @@
+The Cockpit*.ttf font files, by Christoph Paulus
+================================================
+
+The Airbus instruments in this project make use of one or more of 
+Christoph Paulus' font files, as present in this directory.
+
+Christoph has kindly given us permission to use and distribute the 
+files, for which we are truly grateful!
+
+The fonts remain the intellectual property of Christoph. Please 
+do not redistribute them without his consent. You can contact him 
+through his web site www.dalpi.de. They are NOT for commercial use!
+
+================================================
+

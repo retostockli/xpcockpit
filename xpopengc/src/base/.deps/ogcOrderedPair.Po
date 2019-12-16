@@ -1,0 +1,8 @@
+ogcOrderedPair.o: ogcOrderedPair.cpp /usr/include/stdc-predef.h \
+ ogcOrderedPair.h ogcOrderedPair.cpp
+
+/usr/include/stdc-predef.h:
+
+ogcOrderedPair.h:
+
+ogcOrderedPair.cpp:

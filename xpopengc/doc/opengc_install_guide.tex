@@ -1,0 +1,268 @@
+\documentclass[11pt]{article}\begin{document}\title{OpenGC - Installation and Getting Started}\author{Damion Shelton}\date{June 2003}\maketitle
+
+\section{Licensing}
+\subsection{Software}
+OpenGC is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but \emph{without any warranty}; without even the implied warranty of \emph{merchantability} or \emph{fitness for a particular purpose}. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  
+OpenGC is intended for entertainment purposes only. The user accepts all liability that may arise from installation or use of this software.
+
+\subsection{User's guide}
+This document is \emph{not} distributed under the GPL. It is \copyright 2003 by Damion Shelton. You are free to redistribute the unmodified PDF form of this guide in electronic form, but may not make modifications without permission. Like OpenGC, this guide is a work in progress\dots so please understand that there may be omissions. For extra assistance, send email to \texttt{opengc-devel@lists.sourceforge.net}
+
+\subsection{Fonts}
+OpenGC includes a copy the excellent freeware font Vera.ttf from Bitstream. Vera.ttf is \copyright 2003 by Bitstream, Inc. All Rights Reserved. Bitstream Vera is a trademark of Bitstream, Inc.
+
+\subsection{Navigation data}
+Navigation data is provided courtesy of Robin Peel, who maintains the official nav databases for both X-Plane and Flightgear. This data is distributed under the GPL. In addition, portions of this data derive from NIMA DAFIF sources and are governed by certain warranty restrictions. Please see the notes included with the nav data for more information.
+
+\section{Hardware and Installation}
+
+OpenGC has been tested on the following platforms:
+\begin{itemize}
+\item Windows 98/ME/2000/XP
+\item MacOS 10.2
+\item Linux
+\end{itemize}
+\noindent In addition to the OS's listed above, it's likely that OpenGC can be compiled on other Unix-based platforms such as SGI and Sun, although this has not been tried.
+
+As a general note for all platforms, a video card that provides OpenGL hardware acceleration is far more important than processor speed. OpenGC is far more demanding graphically, because of the way in which fonts are rendered, than it is on the processor.
+
+\subsection{Installation Process for All Platforms}
+
+OpenGC uses the X-Plane navigation database for its nav displays, but in the interests of keeping download sizes as small as possible and staying current with Robin's work, you will need to download a copy separately from \texttt{http://www.x-plane.org/users/robinp}. Be sure to get the version of the nav database formatted for X-Plane 7+.
+
+After decompressing the nav data and OpenGC executable, you should edit the file \texttt{opengc.ini} as described in the next section section in order to properly configure OpenGC for your system.
+
+\subsection{Windows 98/ME/2000/XP}
+
+\subsubsection{System Requirements}
+\begin{itemize}
+\item P2-300 or faster processor
+\item 128 MB of memory
+\item Hardware accelerated OpenGL graphics card (I suggest a minimum of a GeForce/Radeon)
+\end{itemize}
+
+\subsubsection{Notes}
+
+If OpenGC complains that you are missing several DLL files, or if you have problems that you have been unable to fix by editing the OpenGC.ini file, you probably need to download the Windows DLL package from our web site as well. Place the DLL's included in this package into the OpenGC exe directory.
+
+\subsection{Mac OS 10.2}
+
+\subsubsection{System Requirements}
+
+I am unsure of minimum hardware requirements, however hardware OpenGL acceleration and OS 10.2 are a must. OpenGC performs quite well on a 1 GHz Powerbook with a Radeon graphics card; it's possible that older systems may perform fine as well, subject to the OpenGL acceleration requirement.
+
+\subsubsection{Notes}
+
+No notes at this time.
+
+\subsection{Linux}
+
+\subsubsection{System Requirements}
+
+\begin{itemize}
+\item P2-300 or faster processor
+\item 128 MB of memory
+\item Hardware accelerated OpenGL graphics card - I suggest a minimum of a GeForce/Radeon, and I am pleased with NVidia's commitment to providing OpenGL drivers for their GeForce line under Linux
+\end{itemize}
+
+\subsubsection{Notes}
+
+OpenGC requires X-Windows to run: you should verify that drivers capable of providing OpenGL acceleration under X-Windows are available for your graphics card. Non-accelerated OpenGL performance will be quite poor. Properly configuring OpenGL accelerated drivers under X can be non-trivial, however a full discussion of setting up a Linux distribution for running OpenGC is beyond the scope of this guide.
+
+\section{Configuration of OpenGC using \texttt{opengc.ini}}
+
+To get OpenGC running, edit opengc.ini so that it matches your system configuration and desired gauge layout. \emph{Please note} that directory names follow the Unix syntax of / (rather than Windows' \verb+\+) and end with a trailing \texttt{/}. Comment lines are indicated by \texttt{\#} symbols - OpenGC will ignore all lines that begin with a \texttt{\#}.
+
+\subsection{Paths}
+
+The first portion of \texttt{opengc.ini} establishes the location of your font and nav data directories. Both declarations are formatted in the same way, as follows:
+
+\begin{verbatim}
+NAV DATABASE PATH
+/Users/beowulf/opengc/xplanenav/
+
+FONT PATH
+/Users/beowulf/opengc/opengc/Fonts/
+\end{verbatim}
+
+\noindent To reiterate, all paths \emph{must} end with a trailing '/', without exception! Note that the nav database path should point directly to the \texttt{*.dat} distributed with the X-Plane nav data. Feel free to change the default directory structure of the X-Plane nav database, you only need the data files. You should also verify that you have \texttt{vera.ttf} in your font path.
+
+\subsection{Data source selection}
+
+You should verify that the correct data source is selected for the type of sim that you have. There are restrictions as to which data source will work with which operating systems, some of which arise from the sims themselves and some of which are limitations of OpenGC that may be removed in the future. Please see \emph{Data source / sim configuration} for more details.
+
+\begin{itemize}
+
+\item All sims supported by Pete Dowson's FSUIPC program
+
+\begin{verbatim}
+DATA SOURCE
+FSUIPC
+\end{verbatim}
+
+\item X-Plane version 6.30+
+
+\begin{verbatim}
+DATA SOURCE
+X-Plane
+\end{verbatim}
+
+\item FlightGear 0.80
+
+\begin{verbatim}
+DATA SOURCE
+FlightGear
+\end{verbatim}
+
+\item The EGyro device from PCFlightSystems. The line after \texttt{EGyro} is the COM port ID. On UNIX machines, this will be something like /dev/tty\dots, and on Windows, use COM1, COM2, etc.
+
+\begin{verbatim}
+DATA SOURCE
+EGyro
+COM1
+\end{verbatim}
+
+\end{itemize}
+
+\subsection{Render window}
+
+The parameters of the render window are \texttt{xPosition yPosition xSize ySize frameTest}, with the first four being expressed in integer pixels and the last as 0=false, 1=true. Note that the size and position represent \textit{initial} window placement and size; you can change this quite easily once OpenGC is running. The frame rate test runs through a brief demo once OpenGC loads if set to true (i.e. 1) - this unfortunately does not work on Windows at the moment because of FLTK issues.
+\begin{verbatim}
+RENDER WINDOW
+0 0 1024 700 1
+\end{verbatim}
+
+\subsection{Gauges}
+
+Gauges are defined by\dots
+
+\begin{verbatim}
+NEWGAUGE
+GaugeName
+xPosition yPosition xScale yScale
+ENDGAUGE
+\end{verbatim}
+
+Positions are measured in approximate millimeters (more full-featured calibration tools will be included in version 1.0 of OpenGC). Scales are measured in \% / 100. Therefore 1.0 is full scale, 0.5 is half, and 2.0 is double. As provided, OpenGC should work well on a 1024x768 17 inch monitor without modifying the scale and position of the default gauges.
+
+\section{Data source / sim configuration}
+
+Although it's possible to run OpenGC on the same machine as the sim, this is \emph{not} the way to get good performance. I strongly suggest creating a small LAN and running separate sim and glass cockpit machines.
+
+You do not need high-power machines to do this; I run and develop OpenGC on a PentiumII-350 with a GeForce2 MX video card. Performance is very good, with my main sim machine being a relatively modest P3-1000.
+
+\subsection{FSUIPC configuration}
+
+OpenGC works with FSUIPC based sims, including FS98, 2000, and 2002. You will need the latest version of FSUIPC installed \footnote{see \texttt{(http://www.schiratti.com/dowson.html)}} as well as WideFS if you are running OpenGC on a separate networked computer (which is \emph{strongly} suggested).
+
+Based on informal testing, WideFS in IPX mode (the default) is far superior to TCP/IP mode. A full discussion of FSUIPC/WideFS is outside the scope of this guide. Excellent documentation is distributed with both programs. \footnote{If you can get the Project Magenta demo running on your network, there's a 99.9\% chance that OpenGC will work correctly as well.}
+
+To minimize the chance of an OpenGC crash, it's recommended that you follow the following order of operations:
+
+\begin{enumerate}
+\item WideClient.exe on the OpenGC machine
+\item FS2002 (or 2000/98) on the sim machine
+\item After starting your flight, WideClient should indicate a connection. If not, twiddle your configuration. Rinse, repeat.
+\item WideClient is connected? Start OpenGC.
+\item Fly around.
+\item Close OpenGC.
+\item Close sim.
+\end{enumerate}
+
+The reason for this order is a degree of instability in OpenGC when establishing/losing a connection with the sim.
+
+\subsubsection{Caveats}
+
+The FSUIPC data source currently only works on Windows platforms, because of its reliance on the FSUIPC library. It may be possible to use the TCP/IP connection option in WideFS to add support to non-Windows machines, but this is hypothetical at the moment.
+
+\subsection{X-Plane configuration}
+
+OpenGC can read X-Plane packets sent via UDP over port 49000. For these instructions, it assumed that you are running both X-Plane and OpenGC on a private network, 192.168.1.x, as is common with Cable/DSL routers. More complicated network configuration is beyond the scope of this document.
+
+\begin{enumerate}
+
+\item In \texttt{opengc.ini}, make sure X-Plane is selected as your data source. The remainder of these instructions refer to X-Plane itself.
+
+\item Click the circle next to \texttt{IP address of data receiver} in the \texttt{Set Internet Connections} dialog. Fill in \texttt{192.168.1.255} as the address, and 49000 as the port number. Note that \texttt{192.168.1.255} is the broadcast address for the network, meaning that all machines with IP's of \texttt{192.168.1.x} will receive data from X-Plane. This allows you to easily add extra machines to display different OpenGC gauges without reconfiguring X-Plane.
+
+\item Close the internet connections page. Open \texttt{Set Data Output} and check the first of four circles next to the following variables: 2, 7, 24, 25, 37, 38, 39, and 40. If you fail to highlight a variable, it will not be sent to OpenGC. Selecting incorrect variables will not crash OpenGC, but it may result in a particular gauge not working as expected
+
+\item Start flying. It does not matter whether OpenGC or X-Plane is started first.
+
+\end{enumerate}
+
+X-Plane version 6.30 does not fully support the range of variables that OpenGC can display, most noticeably in regards to engines. For example, EGT is output as a scale factor (0 to 1.0) rather than an absolute temperature.
+
+\subsubsection{Caveats}
+
+Warning! You must currently use a homogenous network with OpenGC and X-Plane. I.e., don't mix Mac's and PC's. X-Plane outputs a different floating point number format depending on whether the sim is running on a Mac or PC, and this will most certainly crash OpenGC if the format is incorrect.
+
+\subsection{FlightGear configuration}
+
+OpenGC is configured to receive flightgear data at any legal IP address on port 5800. You should start fgfs with the FG command option for sockets as follows:
+
+\begin{center} \texttt{--opengc=socket,out,24,xxx.xxx.xxx.xxx,5800,udp} \end{center}
+
+\noindent where \texttt{xxx.xxx.xxx.xxx} is the LAN address of the computer running OpenGC. If you intend to run OpenGC on more than one machine then use the broadcast address of \texttt{xxx.xxx.xxx.255}
+
+You may start and shutdown either program without affecting the other, although it's suggested that you start FlightGear first and shut it down last, so that OpenGC always has some data to render.
+
+\subsubsection{Caveats}
+
+Warning! You must currently use a homogenous network with OpenGC and Flightgear (i.e. all Macs, all Windows machines, or all Linux machines). This is because of several issues we've run into regarding the length of data packets being sent from various operating systems.
+
+\subsection{EGyro configuration}
+
+The EGyro connects to your machine via a 9-pin serial cable (RS232). More modern machines, particularly laptops, may not have one of these connectors. If you lack one, a USB to serial converter should do the trick\footnote{I've had good luck with http://www.keyspan.com/products/usb/USA19W/ on my Mac Powerbook, and this adapter is also supported under Linux and Windows.}.
+
+\subsubsection{Caveats}
+
+Users are reminded that OpenGC is distributed without a warranty of any kind under the GNU General Public License, and is not certificated for aircraft use (and may therefore not be used as a primary flight instrument).
+
+\section{Getting Help}
+
+Stuck? Check the following:
+
+\begin{itemize}
+\item Are the paths in \texttt{opengc.ini} specified correctly?
+\item Are you positive the paths are correct? Perhaps you forgot the trailing '/'?
+\item Is your sim outputing data correctly? If there are other programs that interface with the sim, do they work?
+\end{itemize}
+
+In general, if OpenGC appears to be lacking functionality, this is not a \emph{bug}, rather a lack of \emph{features}. We are happy to receive feedback regarding these issues, but it is not an indication of a problem with your machine. If, on the other hand, an existing piece of OpenGC malfunctions - for example, the PFD disappears - please let us know immediately! In order to successfully diagnose your problem we will need to know:
+
+\begin{itemize}
+\item The version of OpenGC you're running (check to make sure you have the most recent available).
+\item Your operating system version - note that we do not have access to platforms other than those listed in \emph{Hardware and Installation}.
+\item What sim/data source you're using.
+\end{itemize}
+
+\noindent Please send a complete problem description to \texttt{opengc-devel@lists.sourceforge.net} - \emph{you will need to join} this mailing list in order to post to it.
+
+\section{Credits}
+OpenGC was founded by Damion Shelton in August of 2001. Other major contributors to OpenGC (in alphabetical order) include\dots
+
+\begin{itemize}
+\item Michael DeFeyter: 737 Gauges
+\item Jurgen Roeland: 737 Gauges
+\item Lance White: Modifications to 777 PFD
+\item John Wojnaroski: FlightGear data source, nav code, 777 EICAS
+\end{itemize}
+
+\noindent If you were inadvertently omitted from this list please email \texttt{damion@opengc.org}.
+
+We would also like to thank the following open source projects and their authors for making OpenGC possible:
+
+\begin{itemize}
+\item FLTK - Cross-platform widgets and window management
+\item Freetype - TrueType font handling
+\item FTGL - OpenGL font rendering
+\item Plib - Cross-platform network classes
+\item Simgear - Flight simulation tools
+\end{itemize}
+\end{document}

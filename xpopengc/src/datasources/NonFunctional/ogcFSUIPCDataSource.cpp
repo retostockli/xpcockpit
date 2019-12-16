@@ -1,0 +1,635 @@
+/*=========================================================================
+
+  OpenGC - The Open Source Glass Cockpit Project
+  Please see our web site at http://www.opengc.org
+  
+  Module:  $RCSfile: ogcFSUIPCDataSource.cpp,v $
+
+  Copyright (C) 2001-2 by:
+    Original author:
+      Damion Shelton
+    Contributors (in alphabetical order):
+
+  Last modification:
+    Date:      $Date: 2004/10/14 19:27:59 $
+    Version:   $Revision: 1.1.1.1 $
+    Author:    $Author: damion $
+  
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 2 of the
+  License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=========================================================================*/
+
+// First the code for the "real" version on Win32
+#ifdef _WIN32
+
+#include <stdio.h>
+#include <math.h>
+#include "FSUIPC_User.h"
+
+#include "ogcDataSource.h"
+#include "ogcFSUIPCDataSource.h"
+
+namespace OpenGC
+{
+
+FSUIPCDataSource::FSUIPCDataSource()
+{
+  printf("oFSUIPCDataSource constructed\n");
+
+  // Initialize the data
+  this->InitializeData();
+
+  char *pszErrors[] =
+  {  "Okay",
+    "Attempt to Open when already Open",
+    "Cannot link to FSUIPC or WideClient",
+    "Failed to Register common message with Windows",
+    "Failed to create Atom for mapping filename",
+    "Failed to create a file mapping object",
+    "Failed to open a view to the file map",
+    "Incorrect version of FSUIPC, or not FSUIPC",
+    "Sim is not version requested",
+    "Call cannot execute, link not Open",
+    "Call cannot execute: no requests accumulated",
+    "IPC timed out all retries",
+    "IPC sendmessage failed all retries",
+    "IPC request contains bad data",
+    "Maybe running on WideClient, but FS not running on Server, or wrong FSUIPC",
+    "Read or Write request cannot be added, memory for Process is full",
+  };
+
+  DWORD dwResult;
+
+  // Try to open the FSUIPC connection
+  if (FSUIPC_Open(SIM_ANY, &dwResult))
+  {
+    m_ValidConnection = true;
+  }
+  else
+  {
+    m_ValidConnection = false;
+  }
+
+  // Create memory block for transferring FS data
+  m_pData = new unsigned char[0x3BA0];
+}
+
+FSUIPCDataSource::~FSUIPCDataSource()
+{
+  // Close out the FSUIPC connection
+  FSUIPC_Close();
+
+  // Clean up memory allocation
+  delete[] m_pData;
+}
+
+void FSUIPCDataSource::OnIdle()
+{
+  DWORD dwResult;
+
+  // Modified to always try & open the connection if it's down.
+  // This means you can start OpenGC before FS.
+  if(!m_ValidConnection)
+  {
+  // Try to open the FSUIPC connection
+    if (FSUIPC_Open(SIM_ANY, &dwResult))
+    {
+      m_ValidConnection = true;
+    }
+    else
+      return;
+  }
+
+  //---------------------Basic State Variables-------------------
+
+  long _LatitudeAircraftLow;
+  FSUIPC_Read(0x0560, 4, &_LatitudeAircraftLow, &dwResult);
+
+  long _LatitudeAircraftHigh;
+  FSUIPC_Read(0x0564, 4, &_LatitudeAircraftHigh, &dwResult);
+
+  long _LongitudeAircraftLow;
+  FSUIPC_Read(0x0568, 4, &_LongitudeAircraftLow, &dwResult);
+  
+  long _LongitudeAircraftHigh;
+  FSUIPC_Read(0x056C, 4, &_LongitudeAircraftHigh, &dwResult);
+
+  long _bank;
+  FSUIPC_Read(0x57c, 4, &_bank, &dwResult);
+
+  long _pitch;
+  FSUIPC_Read(0x578, 4, &_pitch, &dwResult);
+
+  long _tHeading;
+  FSUIPC_Read(0x580, 4, &_tHeading, &dwResult);
+
+  short _MagneticVariation;
+  FSUIPC_Read(0x2A0, 2, &_MagneticVariation, &dwResult);
+  
+  long _tas;
+  FSUIPC_Read(0x2b8, 4, &_tas, &dwResult);
+  
+  long _ias;
+  FSUIPC_Read(0x2bc, 4, &_ias, &dwResult);
+
+  long _Ground_Speed_K;
+  FSUIPC_Read(0x2b4, 4, &_Ground_Speed_K, &dwResult);
+
+  long _fracMeters;
+  FSUIPC_Read(0x570, 4, &_fracMeters, &dwResult);
+  
+  long _unitMeters;
+  FSUIPC_Read(0x574, 4, &_unitMeters, &dwResult);
+
+  long _Vertical_Speed_MS;
+  FSUIPC_Read(0x2c8, 4, &_Vertical_Speed_MS, &dwResult);
+
+  long _Flaps_Deflection_Radians;
+  FSUIPC_Read(0x0bdc, 4, &_Flaps_Deflection_Radians, &dwResult);
+
+  long _Flaps_TrueDeflection_Radians;
+  FSUIPC_Read(0x0BE0, 4, &_Flaps_TrueDeflection_Radians, &dwResult);
+
+  long _Nose_Gear;
+  FSUIPC_Read(0x0bec, 4, &_Nose_Gear, &dwResult);
+
+  long _Right_Gear;
+  FSUIPC_Read(0x0bf0, 4, &_Right_Gear, &dwResult);
+
+  long _Left_Gear;
+  FSUIPC_Read(0x0bf4, 4, &_Left_Gear, &dwResult);
+
+
+  unsigned short _Altimeter_Pressure;
+  FSUIPC_Read(0x0F48, 2, &_Altimeter_Pressure, &dwResult);
+
+  unsigned short _Mach_Speed;
+  FSUIPC_Read(0x11C6, 2, &_Mach_Speed, &dwResult);
+
+  short _TAT;
+  FSUIPC_Read(0x11D0, 2, &_TAT, &dwResult);
+
+
+  //------------------------Nav Radio--------------------------
+
+  unsigned short _Nav1_Freq;
+  FSUIPC_Read(0x0350, 2, &_Nav1_Freq, &dwResult);
+
+  short _Nav1_Radial;
+  FSUIPC_Read(0x0c50, 2, &_Nav1_Radial, &dwResult);
+
+  char _Nav1LocalizerNeedle;
+  FSUIPC_Read(0xc48, 1, &_Nav1LocalizerNeedle, &dwResult);
+
+  short _Nav1_OBS;
+  FSUIPC_Read(0x0c4e, 2, &_Nav1_OBS, &dwResult);
+
+  bool _Nav1GlideslopeAlive;
+  FSUIPC_Read(0xc4c, 1, &_Nav1GlideslopeAlive, &dwResult);
+
+  char _Nav1GlideslopeNeedle;
+  FSUIPC_Read(0xc49, 1, &_Nav1GlideslopeNeedle, &dwResult);
+
+  unsigned short _Nav2_Freq;
+  FSUIPC_Read(0x0352, 2, &_Nav2_Freq, &dwResult);
+
+  short _Nav2_Radial;
+  FSUIPC_Read(0x0c60, 2, &_Nav2_Radial, &dwResult);
+
+  char _Nav2LocalizerNeedle;
+  FSUIPC_Read(0xc59, 1, &_Nav2LocalizerNeedle, &dwResult);
+
+  short _Nav2_OBS;
+  FSUIPC_Read(0x0c4e, 2, &_Nav2_OBS, &dwResult);
+
+  short _ADF_Heading;
+  FSUIPC_Read(0x0c5e, 2, &_ADF_Heading, &dwResult);
+
+  //long _Nav1_Valid;
+  //FSUIPC_Read(0x07A0, 4, &_Nav1_Valid, &dwResult);
+  short Rstatus;
+  FSUIPC_Read(0x3300, 2, &Rstatus, &dwResult);
+
+  //---------------------------ILS--------------------------------
+
+  short _ILSInverseRunwayHeading;
+  FSUIPC_Read(0x0870, 2, &_ILSInverseRunwayHeading, &dwResult);
+  
+  short _ILSGlideslopeInclination;
+  FSUIPC_Read(0x0872, 2, &_ILSGlideslopeInclination, &dwResult);
+
+  //------------------------Fuel----------------------------------
+
+  long _Fuel_Centre_Level;
+  FSUIPC_Read(0x0B74, 4, &_Fuel_Centre_Level, &dwResult);
+
+  long _Fuel_Left_Level;
+  FSUIPC_Read(0x0B7C, 4, &_Fuel_Left_Level, &dwResult);
+
+  long _Fuel_Right_Level;
+  FSUIPC_Read(0x0B94, 4, &_Fuel_Right_Level, &dwResult);
+
+  long _Fuel_Centre_Capacity;
+  FSUIPC_Read(0x0B78, 4, &_Fuel_Centre_Capacity, &dwResult);
+
+  long _Fuel_Left_Capacity;
+  FSUIPC_Read(0x0B80, 4, &_Fuel_Left_Capacity, &dwResult);
+
+  long _Fuel_Right_Capacity;
+  FSUIPC_Read(0x0B98, 4, &_Fuel_Right_Capacity, &dwResult);
+
+  //------------------------Autopilot-----------------------------
+
+  short _dirActive;
+  FSUIPC_Read(0x2ee0, 2, &_dirActive, &dwResult);
+
+  double _dirPitch;
+  FSUIPC_Read(0x2ee8, 8, &_dirPitch, &dwResult);
+
+  double _dirBank;
+  FSUIPC_Read(0x2ef0, 8, &_dirBank, &dwResult);
+
+  short _Ref_Airspeed_Knots;
+  FSUIPC_Read(0x07E2, 4, &_Ref_Airspeed_Knots, &dwResult);
+
+
+  //-------------------------------------------------------------
+  short _Total_Air_Temperature;
+  FSUIPC_Read(0x11D0, 2, &_Total_Air_Temperature, &dwResult);
+
+  //---------------------- Fuel Tanks----------------------------
+  long _Fuel_Tank_Capacity_Center;
+  FSUIPC_Read(0x0B78, 4, &_Fuel_Tank_Capacity_Center, &dwResult);
+
+  long _Fuel_Tank_Capacity_Left;
+  FSUIPC_Read(0x0B80, 4, &_Fuel_Tank_Capacity_Left, &dwResult);
+
+  long _Fuel_Tank_Capacity_Right;
+  FSUIPC_Read(0x0B98, 4, &_Fuel_Tank_Capacity_Right, &dwResult);
+
+
+  long _Fuel_Tank_Level_Center;
+  FSUIPC_Read(0x0B74, 4, &_Fuel_Tank_Level_Center, &dwResult);
+
+  long _Fuel_Tank_Level_Left;
+  FSUIPC_Read(0x0B7C, 4, &_Fuel_Tank_Level_Left, &dwResult);
+
+  long _Fuel_Tank_Level_Right;
+  FSUIPC_Read(0x0B94, 4, &_Fuel_Tank_Level_Right, &dwResult);
+
+  //-------------------------Engines-----------------------------
+
+  //-------------------------Engine 1----------------------------
+  double _Engine1_N1;
+  FSUIPC_Read(0x2010, 8, &_Engine1_N1, &dwResult);
+
+  double _Engine1_N2;
+  FSUIPC_Read(0x2018, 8, &_Engine1_N2, &dwResult);
+
+  double _Engine1_FF_PPH;
+  FSUIPC_Read(0x2020, 8, &_Engine1_FF_PPH, &dwResult);
+
+  double _Engine1_EPR;
+  FSUIPC_Read(0x2030, 8, &_Engine1_EPR, &dwResult);
+
+  short _Engine1_EGT;
+  FSUIPC_Read(0x8be, 2, &_Engine1_EGT, &dwResult);
+
+  // mdf
+  char pp1[2];
+  FSUIPC_Read(0x08BA, 2, pp1, &dwResult);
+
+  char pp2[2];
+  FSUIPC_Read(0x08B8, 2, pp2, &dwResult);
+  //
+
+  short _Engine1_Oil_Pressure;
+  FSUIPC_Read(0x08BA, 2, &_Engine1_Oil_Pressure, &dwResult);
+
+  short _Engine1_Oil_Temp;
+  FSUIPC_Read(0x08B8, 2, &_Engine1_Oil_Temp, &dwResult);
+
+  short _Engine1_Oil_Quantity;
+  FSUIPC_Read(0x08D0, 2, &_Engine1_Oil_Quantity, &dwResult);
+
+  long _Engine1_Vibration;
+  FSUIPC_Read(0x08D4, 4, &_Engine1_Vibration, &dwResult);
+
+  long _Engine1_Hydraulic_Pressure;
+  FSUIPC_Read(0x08D8, 4, &_Engine1_Hydraulic_Pressure, &dwResult);
+
+  long _Engine1_Hydraulic_Quantity;
+  FSUIPC_Read(0x08DC, 4, &_Engine1_Hydraulic_Quantity, &dwResult);
+
+  //-------------------------Engine 2----------------------------
+  double _Engine2_N1;
+  FSUIPC_Read(0x2110, 8, &_Engine2_N1, &dwResult);
+  
+  double _Engine2_N2;
+  FSUIPC_Read(0x2118, 8, &_Engine2_N2, &dwResult);
+
+  double _Engine2_FF_PPH;
+  FSUIPC_Read(0x2120, 8, &_Engine2_FF_PPH, &dwResult);
+
+  double _Engine2_EPR;
+  FSUIPC_Read(0x2130, 8, &_Engine2_EPR, &dwResult);
+
+  short _Engine2_EGT;
+  FSUIPC_Read(0x8be, 2, &_Engine2_EGT, &dwResult);
+
+
+  // mdf
+  char pp3[2];
+  FSUIPC_Read(0x0952, 2, pp3, &dwResult);
+
+  char pp4[2];
+  FSUIPC_Read(0x0950, 2, pp4, &dwResult);
+  //
+
+
+  short _Engine2_Oil_Pressure;
+  FSUIPC_Read(0x0952, 2, &_Engine2_Oil_Pressure, &dwResult);
+
+  short _Engine2_Oil_Temp;
+  FSUIPC_Read(0x0950, 2, &_Engine2_Oil_Temp, &dwResult);
+
+  short _Engine2_Oil_Quantity;
+  FSUIPC_Read(0x0968, 2, &_Engine2_Oil_Quantity, &dwResult);
+
+  long _Engine2_Vibration;
+  FSUIPC_Read(0x096C, 4, &_Engine2_Vibration, &dwResult);
+
+  long _Engine2_Hydraulic_Pressure;
+  FSUIPC_Read(0x0970, 4, &_Engine2_Hydraulic_Pressure, &dwResult);
+
+  long _Engine2_Hydraulic_Quantity;
+  FSUIPC_Read(0x0974, 4, &_Engine2_Hydraulic_Quantity, &dwResult);
+
+  short autoPilotHeading;
+  FSUIPC_Read(0x7CC, 2, &autoPilotHeading, &dwResult);
+
+  short adf1Heading;
+  FSUIPC_Read(0x0C6A, 2, &adf1Heading, &dwResult);
+
+  FSUIPC_Read(0x3044, 25, Adf1_Name, &dwResult);
+  //--------------------------------------------------------------
+   
+  // Grab the requested data from FSUIPC
+  FSUIPC_Process(&dwResult);
+
+  //----------------Convert the data to a meaningful form------------------
+  double _fLatitudeAircraft = _LatitudeAircraftHigh*90./10001750.;
+  _fLatitudeAircraft += (_LatitudeAircraftLow*90./10001750)/(65536.*65536.);
+  //Latitude = degreesToRadians(_fLatitudeAircraft);
+  Latitude = _fLatitudeAircraft;
+
+  double _fLongitudeAircraft = _LongitudeAircraftHigh*360./(65536.*65536.);
+  _fLongitudeAircraft += (_LongitudeAircraftLow*360/(65536.*65536.))/(65536.*65536.);//./(65536.*65536.)
+  //Longitude = degreesToRadians(_fLongitudeAircraft);
+  Longitude = _fLongitudeAircraft;
+  
+  //Normalise autopilot heading
+  Autopilot_Course_Heading= (int)autoPilotHeading * 360.0F / 65536.0F;
+  if (Autopilot_Course_Heading> 360) {
+  	while (Autopilot_Course_Heading> 360)
+		Autopilot_Course_Heading-= 360.0F;
+  }
+  if (Autopilot_Course_Heading< 0) {
+	while (Autopilot_Course_Heading< 0)
+			Autopilot_Course_Heading+= 360.0F;
+  }
+  //ADF
+	Adf1_Heading= (int)adf1Heading * 360.0F / 65536.0F;
+	if (Adf1_Heading> 360) {
+		while (Adf1_Heading> 360)
+			Adf1_Heading-= 360.0F;
+	}
+	if (Adf1_Heading< 0) {
+		while (Adf1_Heading< 0)
+			Adf1_Heading+= 360.0F;
+	}
+
+  Bank = -360.0*( (double) _bank )/(65536.0*65536.0);
+  Pitch = -360.0*( (double) _pitch )/(65536.0*65536.0);
+  
+  True_Heading = 360.0*((double)_tHeading)/(65536.0*65536.0);
+  if (True_Heading < 0)
+    True_Heading += 360;
+  
+  Mag_Variation = 360.0/65536.0*(double)_MagneticVariation;
+  
+  Mag_Heading = True_Heading - Mag_Variation;
+  Mag_Heading = WrapHeading(Mag_Heading);
+  
+  Fuel_Tank_Level_Center = _Fuel_Centre_Level / 128.0 / 65536.0;
+  Fuel_Tank_Level_Left = _Fuel_Left_Level / 128.0 / 65536.0;
+  Fuel_Tank_Level_Right = _Fuel_Right_Level / 128.0 / 65536.0;
+
+  Fuel_Tank_Capacity_Center = _Fuel_Centre_Capacity * 6.699219;
+  Fuel_Tank_Capacity_Left = _Fuel_Left_Capacity * 6.699219;
+  Fuel_Tank_Capacity_Right = _Fuel_Right_Capacity * 6.699219;
+
+  Total_Air_Temperature = _TAT / 256.0;
+
+  TAS = (double)_tas/128;
+  IAS = (double)_ias/128;
+  Ground_Speed_K = (double) _Ground_Speed_K / 65536 * 1.943844;
+  Mach = _Mach_Speed / 20480.0;
+
+  // Compute altitude
+  // Note that we use the meters and fractional meters data, rather than
+  // the barometric altitude in feet as computed by FSUIPC (which seems
+  // to update rather slowly)
+  //unsigned long fractionalMeters = *(unsigned long*)(&m_pData[0x0570]);
+  unsigned long fractionalMeters = (unsigned long)_fracMeters;
+  long unitMeters = _unitMeters;
+
+  // 4294967296 is 2^32, because the fractional unit is scaled to maximum
+  // possible magnitude of an unsigned long int
+  Barometric_Alt_Metres = (double) unitMeters + (double) fractionalMeters / 4294967296;
+  Barometric_Alt_Feet = Barometric_Alt_Metres * 3.28084;
+
+  Altimeter_Pressure = _Altimeter_Pressure / 16.0;
+
+  Vertical_Speed_MS = (double) _Vertical_Speed_MS / 256;
+  Vertical_Speed_FPM = (double) _Vertical_Speed_MS * 60 * 3.28084 / 256;
+
+  Flaps_Deflection = (double) _Flaps_Deflection_Radians / 16383;
+  Flaps_TrueDeflection = (double)  _Flaps_TrueDeflection_Radians / 16383;
+
+  Nose_Gear = (double) _Nose_Gear / 16383;
+  Right_Gear = (double) _Right_Gear / 16383;
+  Left_Gear = (double) _Left_Gear / 16383;
+
+  // Convert Nav1 frequency
+  unsigned short nav1DigitA = _Nav1_Freq;
+  unsigned short nav1DigitB = _Nav1_Freq;
+  unsigned short nav1DigitC = _Nav1_Freq;
+  unsigned short nav1DigitD = _Nav1_Freq;
+
+  nav1DigitA = (nav1DigitA & 0xF000) >> 12;
+  nav1DigitB = (nav1DigitB & 0x0F00) >> 8;
+  nav1DigitC = (nav1DigitC & 0x00F0) >> 4;
+  nav1DigitD = (nav1DigitD & 0x000F);
+
+  Nav1_Freq = 100 + (float)nav1DigitA * 10 + (float)nav1DigitB * 1
+    + (float)nav1DigitC * 0.1 + (float)nav1DigitD * 0.01;
+
+  // Convert Nav2 frequency
+  unsigned short nav2DigitA = _Nav2_Freq;
+  unsigned short nav2DigitB = _Nav2_Freq;
+  unsigned short nav2DigitC = _Nav2_Freq;
+  unsigned short nav2DigitD = _Nav2_Freq;
+
+  nav2DigitA = (nav2DigitA & 0xF000) >> 12;
+  nav2DigitB = (nav2DigitB & 0x0F00) >> 8;
+  nav2DigitC = (nav2DigitC & 0x00F0) >> 4;
+  nav2DigitD = (nav2DigitD & 0x000F);
+
+  Nav2_Freq = 100 + (float)nav2DigitA * 10 + (float)nav2DigitB * 1
+    + (float)nav2DigitC * 0.1 + (float)nav2DigitD * 0.01;
+
+  // Now compute the nav headings
+  Nav1_Radial = (double) _Nav1_Radial * 360 / 65536;
+  if (Nav1_Radial < 0)
+    Nav1_Radial += 360.0;
+  Nav1_OBS = (double) _Nav1_OBS;
+  Nav1_Bearing = WrapHeading(WrapHeading(Nav1_Radial + 180.0) - Mag_Heading + 360.0);
+  Nav1_Glideslope_Needle = (double) _Nav1GlideslopeNeedle / -128;
+  Nav1_Localizer_Needle = (double) _Nav1LocalizerNeedle / 128;
+
+  Nav2_Radial = (double) _Nav2_Radial * 360 / 65536;
+  if (Nav2_Radial < 0)
+    Nav2_Radial += 360.0;
+  Nav2_OBS = (double) _Nav2_OBS;
+  Nav2_Bearing = WrapHeading(WrapHeading(Nav2_Radial + 180.0) - Mag_Heading + 360.0);
+  Nav2_Localizer_Needle = (double) _Nav2LocalizerNeedle / 128;
+
+  ILS_Runway_Heading = (double) _ILSInverseRunwayHeading * 360 / 65536;
+  ILS_Glideslope_Inclination = (double) _ILSGlideslopeInclination * 360 / 65536;
+  ILS_Glideslope_Alive = _Nav1GlideslopeAlive;
+  
+  Director_Engaged = (bool) _dirActive;
+  Director_Bank = -1*( (double) _dirBank );
+  Director_Pitch = -1*( (double) _dirPitch );
+
+  // statuses
+  Nav1_Valid = (Rstatus / 2) % 2;
+  Nav2_Valid = (Rstatus / 4) % 2;
+  Adf1_Valid = (Rstatus / 8) % 2;
+  Nav1_Has_DME = (Rstatus / 16) % 2;
+  Nav2_Has_DME = (Rstatus / 32) % 2;
+  //AP_Nav1_Radial_Aquired = (Rstatus / 64) % 2;
+  //AP_ILS_Loc_Aquired = (Rstatus / 128) % 2;
+  //AP_ILS_GS_Aquired = (Rstatus / 256) % 2;
+
+  // autopilot 01110110
+  Ref_Airspeed_Knots = (double)_Ref_Airspeed_Knots;
+
+  // engine stuff
+  N1[0] = _Engine1_N1;
+  N2[0] = _Engine1_N2;
+  EPR[0] = _Engine1_EPR;
+  EGT[0] = 860 * (double)_Engine1_EGT/16384 * 9/5 + 32;
+  Fuel_Flow_PPH[0] = _Engine1_FF_PPH;
+
+  N1[1] = _Engine2_N1;
+  N2[1] = _Engine2_N2;;
+  EPR[1] = _Engine2_EPR;
+  EGT[1] = 860 * (double)_Engine2_EGT/16384 * 9/5 + 32;
+  Fuel_Flow_PPH[1] = _Engine2_FF_PPH;
+
+  // mdf
+  float _Engine1_OilPressure = ((BYTE)pp1[1] << 8) + (BYTE)pp1[0];
+  float _Engine1_OilTemp = ((BYTE)pp2[1] << 8) + (BYTE)pp2[0];
+  float _Engine2_OilPressure = ((BYTE)pp3[1] << 8) + (BYTE)pp3[0];
+  float _Engine2_OilTemp = ((BYTE)pp4[1] << 8) + (BYTE)pp4[0];
+
+  Oil_Pressure[0] = _Engine1_OilPressure / 16384 * 55;
+  Oil_Pressure[1] = _Engine2_OilPressure / 16384 * 55;
+
+  Oil_Temp_C[0] = _Engine1_OilTemp / 16384 * 140;
+  Oil_Temp_C[1] = _Engine2_OilTemp / 16384 * 140;
+
+  Oil_Pressure[0] = (double)_Engine1_Oil_Pressure / 16384 * 55;
+  Oil_Pressure[1] = (double)_Engine2_Oil_Pressure / 16384 * 55;
+
+  Oil_Temp_C[0] = (double)_Engine1_Oil_Temp / 16384 * 140;
+  Oil_Temp_C[1] = (double)_Engine2_Oil_Temp / 16384 * 140;
+
+  Oil_Quantity[0] = (double)_Engine1_Oil_Quantity / 16384 * 100;
+  Oil_Quantity[1] = (double)_Engine2_Oil_Quantity / 16384 * 100;
+
+  Engine_Vibration[0] = (double)_Engine1_Vibration / 16384 * 5;
+  Engine_Vibration[1] = (double)_Engine2_Vibration / 16384 * 5;
+
+  Engine_Hydraulic_Pressure[0] = (double)_Engine1_Hydraulic_Pressure / 16384 * 4;
+  Engine_Hydraulic_Pressure[1] = (double)_Engine2_Hydraulic_Pressure / 16384 * 4;
+
+  Engine_Hydraulic_Quantity[0] = (double)_Engine1_Hydraulic_Quantity / 16384 * 100;
+  Engine_Hydraulic_Quantity[1] = (double)_Engine2_Hydraulic_Quantity / 16384 * 100;
+
+
+  // fuel tank stuff
+  Fuel_Tank_Capacity_Center = (double)_Fuel_Tank_Capacity_Center;
+  Fuel_Tank_Capacity_Left = (double)_Fuel_Tank_Capacity_Left;
+  Fuel_Tank_Capacity_Right = (double)_Fuel_Tank_Capacity_Right;
+
+  Fuel_Tank_Level_Center = (double)_Fuel_Tank_Level_Center / 128 / 65536;
+  Fuel_Tank_Level_Left = (double)_Fuel_Tank_Level_Left / 128 / 65536;
+  Fuel_Tank_Level_Right = (double)_Fuel_Tank_Level_Right / 128 / 65536;
+
+  // TAT
+  Total_Air_Temperature = (int)_Total_Air_Temperature / 256;
+}
+
+double FSUIPCDataSource::WrapHeading(double rawHead)
+{
+  if(rawHead < 0)
+    return 360 - rawHead;
+
+  if(rawHead >= 360)
+    return rawHead - 360;
+
+  return rawHead;
+}
+
+} // end namespace OpenGC
+
+#else // We're not on a Win32 platform
+
+// In this case none of the functions do anything
+#include "ogcFSUIPCDataSource.h"
+
+namespace OpenGC
+{
+
+FSUIPCDataSource::FSUIPCDataSource()
+{
+}
+
+FSUIPCDataSource::~FSUIPCDataSource()
+{
+}
+
+void FSUIPCDataSource::OnIdle()
+{
+}
+
+} // end namespace OpenGC
+
+#endif
+
+

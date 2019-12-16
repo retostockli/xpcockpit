@@ -1,0 +1,50 @@
+2017/01/13 Reto Stockli
+
+This is OpenGC adapted for X-Plane by use of a new TCP/IP data plugin between X-Plane
+and OpenGC called XPSERVER. The plugin allows to transfer X-Plane internal and plane
+specific data (like the B737 datarefs from B. Stratmann's famous 737 plane). The code
+has been tested on OSX 10.6 and on Debian Linux 8.6
+
+The OpenGC code is based on OpenGC Version 0.55 and 0.57 by D. Shelton (http://opengc.sourceforge.net)
+and is distributed under the GPL framework with limitations as described in Copyright.txt
+
+I have removed the cmake dependency and implemented a standard gnu configure/autoconf/automake toolset.
+Also, several of the codes were cleaned from warnings and the xplane datasource was completely remodeled,
+plus all other data sources were turned off. They can be turned on with some modifications to their code,
+so that they are in line again with the current state of the OpenGC framework. Windows compilation support
+was removed (who cares about windows anyway ...).
+
+Installation Dependencies
+- gcc/g++ compiler
+- FTGL library (=2.1.2 stable release, 2.1.3 and above does not work yet)
+- FLTK library (>=1.1.7)
+- Freetype library (>=2.1.9)
+- X11R6 Framework
+- OpenGL library (GL and GLU)
+
+Installation How-to
+- start a X terminal (xterm etc.)
+- resolve above depencies
+
+./configure 
+make
+
+This should build the application OpenGC in src/main.
+
+Since either of the FTGL, FLTK, Plib, Freetype libraries might be located in a custom location, type ./configure --help
+to see the options to customize the paths to those libraries during configuration.
+
+Run How-to:
+
+edit the file inidata/defaultogc.ini and change the following items according to your OpenGC/X-Plane configuration:
+
+cd src/main
+./OpenGC default
+
+It should start a X window with a default gauge and tell you on the command line that it expects a X-Plane connection
+
+Start X-Plane with the xpconnect.xpl plugin. You should see OpenGC display content changing according
+To your flight data. The current code is in development, any updates welcome.
+
+Good flight,
+Reto Stockli 

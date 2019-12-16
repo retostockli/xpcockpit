@@ -1,0 +1,5 @@
+udpdata.o: udpdata.c /usr/include/stdc-predef.h udpdata.h
+
+/usr/include/stdc-predef.h:
+
+udpdata.h:
