@@ -1,0 +1,115 @@
+2014/09/13 Reto Stockli
+
+This is a short overview of the xpclient code. 
+
+xpclient is a sample client application building on the idea of an 
+open source and flexible data exchange framework which communicates 
+flight data to/from the X-Plane flight simulator, discussed here by 
+the creators of XHSI:
+
+http://forums.x-plane.org/index.php?showtopic=65563
+
+This code here and the related X-Plane plugin (xpserver) is laregly 
+based on the server/client data exchange xpserver/xpiocards found on:
+
+http://xpiocards.sourceforge.net
+
+The client can subscribe to specific X-Plane datarefs and also create own datarefs,
+which can be exchanged via the xpserver X-Plane plugin to other clients. 
+
+The client has the following boundary conditions: 
+- All communication occurs via TCP/IP
+- a local copy of the dataref memory is maintained by the client. If either 
+  the X-plane server disconnects or if X-Plane is not yet connected, the data 
+  is fully accessible.
+- unless either the client or X-Plane fills the dataref memory, it contains 
+  missing values (defined in serverdata.h)
+- missing values are not transferred to or from X-Plane
+- datarefs are subscribed by link_dataref_datatype() and unsubscribed by unlink_dataref()
+- upon exit all linked datarefs are unsubscribed automatically
+- the first client which subscribes to a custom dataref, creates the dataref 
+  memory in X-Plane, all other clients can then regularly subscribe to this 
+  custom dataref, which is writable by default.
+- custom datarefs have to start with "xpserver/", else the server reports a unknown
+  dataref error.
+- subscription to arrays can happen by accessing the whole array (argument index
+  in link_dataref() set to -1, or single individual elements (argument 
+  index in link_dataref() set to 0..nelements-1).
+- only data is transferred which has changed since the last transfer on either
+  X-Plane's or the client's side.
+- with link_dataref() a precision requirement can be set in steps of 10^precision,
+  this allows to restrict transfer of data only when it changes by 10^precision.
+  So, setting precision to -1 for EGT means that EGT data is only transferred again
+  if it changes by 0.1 Degrees C. This makes sense since small changes in many
+  datarefs occur which are irrelevant to client applications and would just 
+  increase the data tranfer amount by a large factor.
+- the data exchange protocol is given in the xpserver plugin README file
+
+INSTALLATION
+============
+
+The installation only works on Mac OSX and Linux. 
+Windows is not supported. You need a working C compiler and GNU make.
+
+Type:
+./configure
+make
+
+Optionally type:
+make install
+
+RUNNING
+=======
+
+cd src/
+./xpclient
+
+You should see (there are three X-Plane datarefs (Latitude and EGT for Engine
+1 and 2, plus a custom dataref CUSTOM. Latitude and EGT's are only displayed
+once X-Plane sends data, CUSTOM simply increases and is transferred to X-Plane
+and eventually to another client):
+
+HANDLESERVER: Client Socket ready
+Created dataref sim/flightmodel/position/latitude 
+Created dataref sim/flightmodel/engine/ENGN_EGT_c 
+Created dataref sim/flightmodel/engine/ENGN_EGT_c 
+Created dataref xpserver/custom 
+CUSTOM: 1 
+CUSTOM: 2 
+CUSTOM: 3 
+CUSTOM: 4 
+CUSTOM: 5 
+CUSTOM: 6 
+CUSTOM: 7 
+CUSTOM: 8 
+CUSTOM: 9 
+HANDLESERVER: Connected to X-Plane. 
+X-Plane Server Plugin Address:Port is 127.0.0.1:8091 
+CUSTOM: 10 
+HANDLESERVER: X-Plane linked offset 0 dataref sim/flightmodel/position/latitude 
+HANDLESERVER: X-Plane linked offset 1 dataref sim/flightmodel/engine/ENGN_EGT_c 
+HANDLESERVER: X-Plane linked offset 2 dataref sim/flightmodel/engine/ENGN_EGT_c 
+HANDLESERVER: X-Plane linked offset 3 dataref xpserver/custom 
+Latitude: -15.507529
+EGT Engine 1: 417.679779
+EGT Engine 2: 417.679779
+CUSTOM: 11 
+Latitude: -15.507529
+EGT Engine 1: 417.679779
+EGT Engine 2: 417.679779
+CUSTOM: 12 
+Latitude: -15.507529
+EGT Engine 1: 417.679779
+EGT Engine 2: 417.679779
+CUSTOM: 13 
+Latitude: -15.507529
+EGT Engine 1: 417.679779
+EGT Engine 2: 417.679779
+CUSTOM: 14 
+Latitude: -15.507529
+EGT Engine 1: 417.679779
+EGT Engine 2: 417.679779
+CUSTOM: 15 
+^CHANDLESERVER: Client Socket closed
+serverdata structure deallocated
+Exiting with status 2 

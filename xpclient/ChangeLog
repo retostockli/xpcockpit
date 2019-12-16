@@ -1,0 +1,9 @@
+Created on 2015/02/15 by Reto Stockli
+
+Version 0.11
+------------
+- corrected bug with partial TCP/IP sends/receives
+
+Version 0.1
+-----------
+- extracted sample xpclients code from usbiocards
