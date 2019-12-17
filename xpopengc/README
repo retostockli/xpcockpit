@@ -1,9 +1,8 @@
-2017/01/13 Reto Stockli
+2019/12/17 Reto Stockli
 
 This is OpenGC adapted for X-Plane by use of a new TCP/IP data plugin between X-Plane
 and OpenGC called XPSERVER. The plugin allows to transfer X-Plane internal and plane
-specific data (like the B737 datarefs from B. Stratmann's famous 737 plane). The code
-has been tested on OSX 10.6 and on Debian Linux 8.6
+specific data. The code has been tested on OSX 10.6 and on Ubuntu 18.04
 
 The OpenGC code is based on OpenGC Version 0.55 and 0.57 by D. Shelton (http://opengc.sourceforge.net)
 and is distributed under the GPL framework with limitations as described in Copyright.txt
@@ -23,28 +22,36 @@ Installation Dependencies
 - OpenGL library (GL and GLU)
 
 Installation How-to
-- start a X terminal (xterm etc.)
 - resolve above depencies
 
+In case you cloned from git, please first run these in order to complete automake/autoconf file structure:
+autoreconf
+automake --add-missing
+autoreconf
+
+Then type:
 ./configure 
 make
 
-This should build the application OpenGC in src/main.
+This should build the application xpopengc in src/main.
 
 Since either of the FTGL, FLTK, Plib, Freetype libraries might be located in a custom location, type ./configure --help
-to see the options to customize the paths to those libraries during configuration.
+to see the options to customize the paths to those libraries during configuration. The freetype library somehow requires
+to specify its prefix on Ubuntu/Debian: so try:
+
+./configure --with-freetype=/usr
 
 Run How-to:
-
-edit the file inidata/defaultogc.ini and change the following items according to your OpenGC/X-Plane configuration:
+-----------
+edit the file inidata/default.ini and change the following items according to your OpenGC/X-Plane configuration:
 
 cd src/main
-./OpenGC default
+./xpopengc default
 
 It should start a X window with a default gauge and tell you on the command line that it expects a X-Plane connection
 
-Start X-Plane with the xpconnect.xpl plugin. You should see OpenGC display content changing according
+Start X-Plane with the xpserver plugin. You should see OpenGC display content changing according
 To your flight data. The current code is in development, any updates welcome.
 
 Good flight,
-Reto Stockli 
+Reto Stockli

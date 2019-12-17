@@ -1,9 +1,9 @@
-2017/01/13 Reto Stockli
+2019/12/17 Reto Stockli
 
 GENERAL OVERVIEW
 ================
 
-xpserver uses the X-Plane SDK Version 2.11. It is a X-Plane's plugin and 
+xpserver uses the X-Plane SDK Version 2.1.1. It is a X-Plane's plugin and 
 interacts with the X-Plane internal data structures. 
 They are called 'datarefs'. Datarefs are pointers to X-Plane internal 
 flight data. Clients can subscribe to these datarefs by use of
@@ -31,6 +31,27 @@ On each callback the following operations take place:
 4. Check if a client has disconnected
 
 5. Schedule a new callback
+
+INSTALLATION
+============
+
+If downloaded via git first do:
+autoreconf
+automake --add-missing
+autoreconf
+in order to set up all automake/autoconf files. Then do:
+
+./configure
+make
+make install
+
+This will generate a directory dist/xpserver.
+Copy the xpserver subdirectory to your X-Plane directory under Resources/plugins/
+
+You're all set. Once launching X-Plane you should have the xpserver plugin 
+showing up under plugins. In the xpserver directory you will find an ini file
+which can be used to change the TCP/IP port number or change verbosity level.
+xpserver will dump data to xpserver.log in your X-Plane main directory.
 
 
 SPECIFIC PROTOCOL
@@ -161,11 +182,6 @@ WHERE TO FIND DARAREFS
 
 General X-Plane Dararefs are documented on this website:
 http://www.xsquawkbox.net/xpsdk/docs/DataRefs.html
-
-Benedikt Stratmann's x737 Datarefs (newer plugin versions 2.8 or above) are dumped into two files 
-located in the BOEING 737 aircraft directory:
-dataref.html
-dataref.txt
 
 There are numerous other plugins useful to display and manage Datarefs:
 http://wiki.x-plane.com/DataRefEditor

@@ -1,18 +1,13 @@
-2014/09/13 Reto Stockli
+2019/12/17 Reto Stockli
 
 This is a short overview of the xpclient code. 
 
 xpclient is a sample client application building on the idea of an 
 open source and flexible data exchange framework which communicates 
-flight data to/from the X-Plane flight simulator, discussed here by 
-the creators of XHSI:
+flight data to/from the X-Plane flight simulator.
 
-http://forums.x-plane.org/index.php?showtopic=65563
-
-This code here and the related X-Plane plugin (xpserver) is laregly 
-based on the server/client data exchange xpserver/xpiocards found on:
-
-http://xpiocards.sourceforge.net
+This code here and the related X-Plane plugin xpserver can be found on:
+https://github.com/retostockli/xpcockpit
 
 The client can subscribe to specific X-Plane datarefs and also create own datarefs,
 which can be exchanged via the xpserver X-Plane plugin to other clients. 
@@ -51,7 +46,13 @@ INSTALLATION
 The installation only works on Mac OSX and Linux. 
 Windows is not supported. You need a working C compiler and GNU make.
 
-Type:
+If you have a fresh git clone, then please first do these in order
+to set up all automake/autoconf files
+autoreconf
+automake --add-missing
+autoreconf
+
+Then type:
 ./configure
 make
 
