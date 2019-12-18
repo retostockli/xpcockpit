@@ -41,7 +41,7 @@
    from either side, or because both sides issued an orderly
    disconnect. */
 #define status_Disconnected 4
-/* An unknown error has happened; the socket is hosed. */
+/* An unknown error has happened; the socket is doomed. */
 #define status_Error 5
 
 /* TCP/IP CLIENT PARAMETERS */

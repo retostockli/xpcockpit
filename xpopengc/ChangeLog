@@ -1,6 +1,14 @@
-2017/01/13 Reto Stockli / Hans Jansen
+2019/12/18 Reto Stockli / Hans Jansen
 
 This file documents changes since Version 0.60
+
+Version 0.80
+------------
+- corrected handling of abrupt X-Plane disconnect. Upon X-Plane restart all datarefs are subscribed again now
+- moved to github
+- added experimental WXR data reception in B737 NAV display
+- added support for ZIBO MOD 737 in addition to x737
+- bug fixes for space shuttle re-entry with very large elevation numbers in PFD
 
 Version 0.77
 ------------

@@ -1,4 +1,9 @@
-Created on 2015/02/15 by Reto Stockli
+Created on 2019/12/18 by Reto Stockli
+
+Version 0.12
+------------
+- corrected handling of abrupt X-Plane disconnect. Upon X-Plane restart all datarefs are subscribed again now
+- moved to github
 
 Version 0.11
 ------------

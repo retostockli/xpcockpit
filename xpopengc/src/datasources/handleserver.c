@@ -79,7 +79,7 @@ int initialize_tcpip(void)
     
     tcptimeout.tv_sec = 0;		//no timeout!
     tcptimeout.tv_usec = 0;		//no timeout!
-    
+
     /* Construct the server address structure */
     memset(&ServAddr, 0, sizeof(ServAddr));            /* Zero out structure */
     ServAddr.sin_family      = AF_INET;                /* Internet address family */
@@ -207,7 +207,9 @@ int receive_server(void) {
   float *datavf;
   int *datavi;
   unsigned char *datab;
+  int disconnected;
 
+  disconnected = 0;
   datai = 0;
   recvMsgSize = 0;
   recvBuffer[recvMsgSize] = 0;
@@ -219,8 +221,9 @@ int receive_server(void) {
     recv_left = recv(clntSock, message_ptr, TCPBUFSIZE, 0);
     
     if (recv_left == 0) { // disconnection
-      if (verbose > 0) printf("HANDLESERVER: Client Socket disconnected from X-Plane. \n");
+      if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected without notice from client socket. \n");
       socketStatus = status_Disconnected;
+      disconnected = 1;
       recvMsgSize = 0;
       break;
     }
@@ -233,12 +236,13 @@ int receive_server(void) {
 	    (errno == ECONNRESET)   || (errno == EHOSTUNREACH) ||
 	    (errno == ENETDOWN)     || (errno == ENETRESET)    ||
 	    (errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
-	  if (verbose > 0) printf("HANDLESERVER: Client Socket disconnected from X-Plane. Status: %i \n", errno);
+	  if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected with error from client socket. Error: %i \n", errno);
 	  socketStatus = status_Disconnected;
+	  disconnected = 1;
 	  recv_left = 0;
 	  recvMsgSize = 0;
 	  break;
-        } else { // here a real error
+        } else { // here we have a real error
 	  if (verbose > 0) printf("HANDLESERVER: Client Socket Error %i \n",errno);
 	  socketStatus = status_Error;
 	  recv_left = errno; 
@@ -253,6 +257,7 @@ int receive_server(void) {
       /* augment receive pointer and total size */
       recvMsgSize += recv_left;
       message_ptr += recv_left;
+
       
       /* check last transmitted value: is it end of transmission? */
       memcpy(&datai,&recvBuffer[recvMsgSize-sizeof(int)],sizeof(int));
@@ -264,14 +269,14 @@ int receive_server(void) {
 	/* only partial message received */
 	if (verbose > 1) printf("HANDLESERVER: Received Partial %i bytes \n",recv_left);
       }
-
+      
     }
     
-  } /* while (socketStatus) */
+  } /* while connected and data coming in (else break the loop) */
   
-    /*  received a complete transmission */
+  /*  received a complete transmission */
   if (recvMsgSize > 0)  {
-
+    
     recv_left = recvMsgSize;
 
     while (recv_left > 0) {
@@ -552,30 +557,32 @@ int receive_server(void) {
 	if (verbose > 0) printf("HANDLESERVER: Received Disconnect Marker \n");
 	    
 	socketStatus = status_Disconnected;
+	disconnected = 1;
       }
 	  
     } /* elements present in receive buffer */
-
-    /* disconnect happened during receive call */
-    if (socketStatus == status_Disconnected) {
-
-      /* reset x-plane data status to allocated */
-      for (i=0;i<numalloc;i++) {
-	if (strcmp("",serverdata[i].datarefname)) {
-	  serverdata[i].status = XPSTATUS_ALLOC;
-	}
-      }
-      /* valid dataref, check status */
-
-      close(clntSock);
-      if (initialize_tcpip() < 0) {
-	if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
-	recvMsgSize = -123;
-      }
-
-    } 
- 	
+	
   } /* if client connected to server */
+
+
+  /* disconnect happened during receive call */
+  if (disconnected == 1) {
+    
+    /* reset x-plane data status to allocated */
+    for (i=0;i<numalloc;i++) {
+     if (strcmp("",serverdata[i].datarefname)) {
+	serverdata[i].status = XPSTATUS_ALLOC;
+      }
+    }
+    /* valid dataref, check status */
+    
+    close(clntSock);
+    if (initialize_tcpip() < 0) {
+      if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+      recvMsgSize = -123;
+    }
+    
+  } 
 
   return recvMsgSize;
 }
@@ -612,7 +619,7 @@ int send_server(void) {
 
 	  case XPSTATUS_ALLOC: 
 	    /* serverdata for dataref allocated: send dataref link command to X-Plane */
-	    if ((send_left+6*sizeof(int)+sizeof(serverdata[i].datarefname)+sizeof(packageName)) <= TCPBUFSIZE) {
+	    if ((send_left+6*sizeof(int)+sizeof(serverdata[i].datarefname)+sizeof(clientname)) <= TCPBUFSIZE) {
 	      if (verbose > 1) printf("HANDLESERVER: sending definition for offset %i dataref %s \n",i, serverdata[i].datarefname);
 
 	      first = MARK_LINK + i;
@@ -634,8 +641,8 @@ int send_server(void) {
 	      memcpy(&sendBuffer[send_left],&serverdata[i].datarefname,sizeof(serverdata[i].datarefname));
 	      send_left += sizeof(serverdata[i].datarefname);
 	      
-	      memcpy(&sendBuffer[send_left],&packageName,sizeof(packageName));
-	      send_left += sizeof(packageName);
+	      memcpy(&sendBuffer[send_left],&clientname,sizeof(clientname));
+	      send_left += sizeof(clientname);
 
 	      serverdata[i].status = XPSTATUS_LINK;
 	    } else {

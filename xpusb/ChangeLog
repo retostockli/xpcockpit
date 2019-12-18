@@ -1,6 +1,11 @@
-2018/04/20 Reto Stockli and Hans Jansen
+2019/12/18 Reto Stockli and Hans Jansen
 
 This file documents changes since USBIOCARDS Version 0.1
+
+Version 0.60
+------------
+- corrected handling of abrupt X-Plane disconnect. Upon X-Plane restart all datarefs are subscribed again now
+- moved to github
 
 Version 0.51
 ------------

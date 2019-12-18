@@ -367,8 +367,6 @@ int unlink_dataref(const char datarefname[]) {
 	serverdata[i].index = INT_MISS;
 	serverdata[i].precision = INT_MISS;
 	serverdata[i].status = XPSTATUS_DEALLOC;
-
-	strcpy(serverdata[i].datarefname,"");
 	
 	printf("Unlink: Deallocated dataref: %s \n",datarefname);
       }

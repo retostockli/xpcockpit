@@ -207,7 +207,9 @@ int receive_server(void) {
   float *datavf;
   int *datavi;
   unsigned char *datab;
+  int disconnected;
 
+  disconnected = 0;
   datai = 0;
   recvMsgSize = 0;
   recvBuffer[recvMsgSize] = 0;
@@ -219,26 +221,28 @@ int receive_server(void) {
     recv_left = recv(clntSock, message_ptr, TCPBUFSIZE, 0);
     
     if (recv_left == 0) { // disconnection
-      if (verbose > 0) printf("HANDLESERVER: Client Socket disconnected from X-Plane. \n");
+      if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected without notice from client socket. \n");
       socketStatus = status_Disconnected;
+      disconnected = 1;
       recvMsgSize = 0;
       break;
     }
     if (recv_left == -1) { // nothing received: error?
       if (errno == EAGAIN) { // just no data yet ...
-	if (verbose > 4) printf("HANDLESERVER: Client Socket no data yet. \n");
+	if (verbose > 2) printf("HANDLESERVER: Client Socketé no data yet. \n");
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
       } else {
 	if ((errno == ECONNABORTED) || (errno == ECONNREFUSED) ||
 	    (errno == ECONNRESET)   || (errno == EHOSTUNREACH) ||
 	    (errno == ENETDOWN)     || (errno == ENETRESET)    ||
 	    (errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
-	  if (verbose > 0) printf("HANDLESERVER: Client Socket disconnected from X-Plane. Status: %i \n", errno);
+	  if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected with error from client socket. Error: %i \n", errno);
 	  socketStatus = status_Disconnected;
+	  disconnected = 1;
 	  recv_left = 0;
 	  recvMsgSize = 0;
 	  break;
-        } else { // here a real error
+        } else { // here we have a real error
 	  if (verbose > 0) printf("HANDLESERVER: Client Socket Error %i \n",errno);
 	  socketStatus = status_Error;
 	  recv_left = errno; 
@@ -253,25 +257,26 @@ int receive_server(void) {
       /* augment receive pointer and total size */
       recvMsgSize += recv_left;
       message_ptr += recv_left;
+
       
       /* check last transmitted value: is it end of transmission? */
       memcpy(&datai,&recvBuffer[recvMsgSize-sizeof(int)],sizeof(int));
       if ((datai == MARK_EOT) || (datai == MARK_DISCONNECT)) {	
 	/* received full message with EOT or DISCONNECT marker at the end */
-	if (verbose > 1) printf("HANDLESERVER: Total %i bytes received in message \n",recvMsgSize);
+	if (verbose > 1) printf("HANDLESERVER: Received Total %i bytes \n",recvMsgSize);
 	break;
       } else {
 	/* only partial message received */
-	if (verbose > 1) printf("HANDLESERVER: Received %i bytes \n",recv_left);
+	if (verbose > 1) printf("HANDLESERVER: Received Partial %i bytes \n",recv_left);
       }
-
+      
     }
     
-  } /* while (socketStatus) */
+  } /* while connected and data coming in (else break the loop) */
   
-    /*  received a complete transmission */
+  /*  received a complete transmission */
   if (recvMsgSize > 0)  {
-
+    
     recv_left = recvMsgSize;
 
     while (recv_left > 0) {
@@ -552,30 +557,32 @@ int receive_server(void) {
 	if (verbose > 0) printf("HANDLESERVER: Received Disconnect Marker \n");
 	    
 	socketStatus = status_Disconnected;
+	disconnected = 1;
       }
 	  
     } /* elements present in receive buffer */
-
-    /* disconnect happened during receive call */
-    if (socketStatus == status_Disconnected) {
-
-      /* reset x-plane data status to allocated */
-      for (i=0;i<numalloc;i++) {
-	if (strcmp("",serverdata[i].datarefname)) {
-	  serverdata[i].status = XPSTATUS_ALLOC;
-	}
-      }
-      /* valid dataref, check status */
-
-      close(clntSock);
-      if (initialize_tcpip() < 0) {
-	if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
-	recvMsgSize = -123;
-      }
-
-    } 
- 	
+	
   } /* if client connected to server */
+
+
+  /* disconnect happened during receive call */
+  if (disconnected == 1) {
+    
+    /* reset x-plane data status to allocated */
+    for (i=0;i<numalloc;i++) {
+     if (strcmp("",serverdata[i].datarefname)) {
+	serverdata[i].status = XPSTATUS_ALLOC;
+      }
+    }
+    /* valid dataref, check status */
+    
+    close(clntSock);
+    if (initialize_tcpip() < 0) {
+      if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+      recvMsgSize = -123;
+    }
+    
+  } 
 
   return recvMsgSize;
 }
@@ -868,10 +875,6 @@ int send_server(void) {
 		  
 		  memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
 		  memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(int));
-		  if (serverdata[i].type == XPTYPE_CMD_ONCE) {
-		    /* clear command after sending */
-		    //		    *(int *) serverdata[i].data = 0;
-		  }
 		  send_left += sizeof(int);
 		  
 		} else {
@@ -902,7 +905,7 @@ int send_server(void) {
 	memcpy(&sendBuffer[send_left],&datai,sizeof(int));
 	send_left += sizeof(int);
 
-	if (verbose > 1) printf("HANDLESERVER: %i bytes total to send \n",send_left);
+	if (verbose > 1) printf("HANDLESERVER: TOTAL sending %i bytes \n",send_left);
 	
 	message_ptr = sendBuffer;
 	while ((send_left > 0) && (socketStatus == status_Connected)) {
@@ -917,7 +920,7 @@ int send_server(void) {
 	      socketStatus = status_Error;	/* signal a transmission error */
 	    }
 	  } else {
-	    if (verbose > 1) printf("HANDLESERVER: Sending %i bytes \n",sendMsgSize);
+	    if (verbose > 1) printf("HANDLESERVER: Partial sending %i bytes \n",sendMsgSize);
 	    send_left -= sendMsgSize;
 	    message_ptr += sendMsgSize;
 	  }

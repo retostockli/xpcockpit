@@ -33,12 +33,6 @@
 #include "serverdata.h"
 #include "common.h"
 
-serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data structure */
-
-int numalloc; /* number of serverdata elements allocated */
-int numlink; /* number of serverdata elements linked */
-char packageName[100]; /* name of x-plane client package */
-
 /* initialize local dataref structure */
 int initialize_dataref() {
 
@@ -46,7 +40,8 @@ int initialize_dataref() {
   numalloc = 0;
   numlink = 0;
 
-printf("serverdata:initialize_dataref: Client/Package name: %s\n", packageName); // ???
+  strncpy(clientname,PACKAGE_NAME,sizeof(clientname));
+
   return 0;
 }
 
@@ -74,6 +69,7 @@ void clear_dataref() {
       serverdata = NULL;
       numalloc = 0;
       numlink = 0;
+      strncpy(clientname,"",sizeof(clientname));
 
       printf("serverdata structure deallocated\n");
     }
@@ -371,8 +367,6 @@ int unlink_dataref(const char datarefname[]) {
 	serverdata[i].index = INT_MISS;
 	serverdata[i].precision = INT_MISS;
 	serverdata[i].status = XPSTATUS_DEALLOC;
-
-	strcpy(serverdata[i].datarefname,"");
 	
 	printf("Unlink: Deallocated dataref: %s \n",datarefname);
       }
