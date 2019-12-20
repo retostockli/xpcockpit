@@ -242,7 +242,7 @@ bool AppObject::DoFileInitialization(char* iniFile)
   int default_server_port = 8091;
   char default_data_source[] = "X-Plane";
   char default_xplane_path[] = "NONE";
-  char default_package_name[] = "OpenGC";
+  char default_package_name[] = "xpopengc";
   int default_maxradar = 0; // do not query RADAR from X-Plane
 
   printf("AppObject - Starting initialization with %s\n", iniFile);

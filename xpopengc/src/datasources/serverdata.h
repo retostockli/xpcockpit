@@ -73,11 +73,11 @@ typedef struct {
   void *initval;          /* initial value */
 } serverdata_struct;
 
-serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data structure */
+extern serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data structure */
 
-int numalloc; /* number of serverdata elements allocated */
-int numlink; /* number of serverdata elements linked */
-char clientname[100]; /* name of x-plane client application */
+extern int numalloc; /* number of serverdata elements allocated */
+extern int numlink; /* number of serverdata elements linked */
+extern char packageName[100]; /* name of x-plane client package */
 
 /* Prototype functions for x-plane data handling */
 int initialize_dataref();
@@ -121,3 +121,4 @@ int *link_dataref_cmd_hold(const char datarefname[]);
 
 /* remove a dataref from the subscription */
 int unlink_dataref(const char datarefname[]);
+

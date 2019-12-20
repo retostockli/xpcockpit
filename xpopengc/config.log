@@ -559,7 +559,7 @@ configure:5886: gcc -o conftest   -I/usr/include/freetype2  conftest.c -lz -lftg
 conftest.c:68:6: warning: conflicting types for built-in function 'floor' [-Wbuiltin-declaration-mismatch]
  char floor ();
       ^~~~~
-/tmp/ccGGSBad.o: In function `main':
+/tmp/ccRNRVK7.o: In function `main':
 conftest.c:(.text+0xa): undefined reference to `floor'
 collect2: error: ld returned 1 exit status
 configure:5886: $? = 1
@@ -663,7 +663,7 @@ configure:5886: gcc -o conftest   -I/usr/include/freetype2  conftest.c -lz -lftg
 conftest.c:70:6: warning: conflicting types for built-in function 'sqrt' [-Wbuiltin-declaration-mismatch]
  char sqrt ();
       ^~~~
-/tmp/ccG2xJSK.o: In function `main':
+/tmp/ccFpHVIB.o: In function `main':
 conftest.c:(.text+0xa): undefined reference to `sqrt'
 collect2: error: ld returned 1 exit status
 configure:5886: $? = 1
@@ -787,6 +787,7 @@ config.status:909: creating src/gauges/Makefile
 config.status:909: creating src/main/Makefile
 config.status:909: creating src/navigation/Makefile
 config.status:909: creating config.h
+config.status:1090: config.h is unchanged
 config.status:1138: executing depfiles commands
 
 ## ---------------- ##

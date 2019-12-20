@@ -619,7 +619,7 @@ int send_server(void) {
 
 	  case XPSTATUS_ALLOC: 
 	    /* serverdata for dataref allocated: send dataref link command to X-Plane */
-	    if ((send_left+6*sizeof(int)+sizeof(serverdata[i].datarefname)+sizeof(clientname)) <= TCPBUFSIZE) {
+	    if ((send_left+6*sizeof(int)+sizeof(serverdata[i].datarefname)+sizeof(packageName)) <= TCPBUFSIZE) {
 	      if (verbose > 1) printf("HANDLESERVER: sending definition for offset %i dataref %s \n",i, serverdata[i].datarefname);
 
 	      first = MARK_LINK + i;
@@ -641,8 +641,8 @@ int send_server(void) {
 	      memcpy(&sendBuffer[send_left],&serverdata[i].datarefname,sizeof(serverdata[i].datarefname));
 	      send_left += sizeof(serverdata[i].datarefname);
 	      
-	      memcpy(&sendBuffer[send_left],&clientname,sizeof(clientname));
-	      send_left += sizeof(clientname);
+	      memcpy(&sendBuffer[send_left],&packageName,sizeof(packageName));
+	      send_left += sizeof(packageName);
 
 	      serverdata[i].status = XPSTATUS_LINK;
 	    } else {
