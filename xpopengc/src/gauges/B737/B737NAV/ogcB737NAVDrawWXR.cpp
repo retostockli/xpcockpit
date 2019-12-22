@@ -130,7 +130,8 @@ namespace OpenGC
         
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if ((*heading_true != FLT_MISS) && (*nav_shows_wxr == 1)) {
+    if ((*heading_true != FLT_MISS) && (*nav_shows_wxr == 1) &&
+	(udpRecvBuffer != NULL)) {
 
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);

@@ -105,7 +105,6 @@ B737NAV::B737NAV()
   pMapExp->SetNAVGauge(this);
   this->AddGaugeComponent(pMapExp);
 
-  /*
   B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
   pDrawStat->SetParentRenderObject(this);
   pDrawStat->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -126,7 +125,6 @@ B737NAV::B737NAV()
   pDrawTCAS->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pDrawTCAS->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawTCAS);
-  */
 }
 
 B737NAV::~B737NAV()

@@ -193,7 +193,7 @@ AM_DEFAULT_VERBOSITY = 1
 AUTOCONF = ${SHELL} /home/stockli/737/xpcockpit/xpusb/missing autoconf
 AUTOHEADER = ${SHELL} /home/stockli/737/xpcockpit/xpusb/missing autoheader
 AUTOMAKE = ${SHELL} /home/stockli/737/xpcockpit/xpusb/missing automake-1.15
-AWK = gawk
+AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS =  -pthread -O2

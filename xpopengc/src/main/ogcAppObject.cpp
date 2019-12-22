@@ -137,8 +137,8 @@ int AppObject::Go(char* iniFileName)
     sprintf (iniFile, "../../inidata/%s.ini", iniFileName);
     sprintf (m_FontPath, "../../fonts/");
   } else {
-    sprintf (iniFile, "../share/opengc/%s.ini", iniFileName);
-    sprintf (m_FontPath, "../share/opengc/");
+    sprintf (iniFile, "../share/xpopengc/%s.ini", iniFileName);
+    sprintf (m_FontPath, "../share/xpopengc/");
   }
 
   // Process the initialization file, if this fails, abort!
