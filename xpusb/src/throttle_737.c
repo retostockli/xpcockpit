@@ -653,7 +653,7 @@ void throttle_737(void)
   if (parkbrake_mode == 0) {
     /* disable Park Brake servo */
     value = -1.0;
-    ret = servos_output(device_dcmotor,2,&value,minval,maxval);
+    ret = servos_output(device_dcmotor,2,&value,minval,maxval,0,1023);
   }
   if (parkbrake_mode == 1) {
     /* Manual Park Brake */
@@ -663,14 +663,14 @@ void throttle_737(void)
     
     /* disable Park Brake servo */
     value = -1.0;
-    ret = servos_output(device_dcmotor,2,&value,minval,maxval);
+    ret = servos_output(device_dcmotor,2,&value,minval,maxval,0,1023);
   }
   if (parkbrake_mode == 2) {
     /* Auto Park Brake */
     //    printf("A: %f \n",*parkbrake_xplane);
     if (*parkbrake_xplane != FLT_MISS) {
       value = (1.0-(*parkbrake_xplane))*(0.6-0.10)+0.10;
-      ret = servos_output(device_dcmotor,2,&value,minval,maxval);
+      ret = servos_output(device_dcmotor,2,&value,minval,maxval,0,1023);
     }
   }
 
@@ -684,13 +684,14 @@ void throttle_737(void)
   /* show stabilizer trim with servo-driven indicators */
   if (*stabilizer_xplane != FLT_MISS) {
     /* left */
-    value = (1.0 - (*stabilizer_xplane - minstabilizer)/(maxstabilizer - minstabilizer))*(0.431-0.165)+0.165;
+    value = (1.0 - (*stabilizer_xplane - minstabilizer)/(maxstabilizer - minstabilizer));
     //    printf("%f %f %f %f \n",*stabilizer_xplane,minstabilizer,maxstabilizer,value);
-    ret = servos_output(device_dcmotor,0,&value,minval,maxval);
+    ret = servos_output(device_dcmotor,0,&value,minval,maxval,305,560);
     
     /* right */
-    value = ((*stabilizer_xplane) - minstabilizer)/(maxstabilizer - minstabilizer)*(0.385-0.135)+0.135;
-    ret = servos_output(device_dcmotor,1,&value,minval,maxval);
+    value = ((*stabilizer_xplane) - minstabilizer)/(maxstabilizer - minstabilizer);
+    //    printf("%f %f %f %f \n",*stabilizer_xplane,minstabilizer,maxstabilizer,value);
+    ret = servos_output(device_dcmotor,1,&value,minval,maxval,305,560);
 
   }
 
