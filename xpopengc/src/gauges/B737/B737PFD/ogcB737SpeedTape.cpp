@@ -164,7 +164,7 @@ namespace OpenGC
 
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
 
-      char buffer[1];
+      char buffer[2];
       char buffer2[5];
 
       int nextHighestIAS = (ias_int/10)*10;

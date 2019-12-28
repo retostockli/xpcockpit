@@ -111,7 +111,7 @@ namespace OpenGC
 
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
 
-      char buffer[1];
+      char buffer[2];
 
       int nextHighestAlt = (alt/100)*100;
 

@@ -149,7 +149,7 @@ Gauge
   m_PixelSize.x = (int) (m_PhysicalSize.x / m_UnitsPerPixel)*m_Scale.x;
   m_PixelSize.y = (int) (m_PhysicalSize.y / m_UnitsPerPixel)*m_Scale.y;
 
-  if (verbosity > 1)
+  if (verbosity > 3)
   {
     printf("Gauge - Physical position: x %f, y %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
     printf("Gauge - Pixel position:    x %i, y %i\n", m_PixelPosition.x, m_PixelPosition.y);

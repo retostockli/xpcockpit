@@ -223,7 +223,6 @@ void B737GradientADI::Render()
   m_pFontManager->Print(-27.5,-42.0,"20",m_Font);
   m_pFontManager->Print(21.0,-42.0,"20",m_Font);
 
-  /*
   //-----The background behind the bank angle markings-------
   // Reset the modelview matrix
   glPopMatrix();
@@ -512,7 +511,6 @@ void B737GradientADI::Render()
 
   //----------------Flight Director----------------
   
-  /*
   if ((m_pDataSource->GetAirframe()->GetDirector_A_Engaged()==1) || (m_pDataSource->GetAirframe()->GetDirector_B_Engaged()==1))
   {
     // Move to the center of the window
