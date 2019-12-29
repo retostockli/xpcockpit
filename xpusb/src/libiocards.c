@@ -102,7 +102,7 @@ int read_ini(char ininame[])
   if (pch == NULL) {
     sprintf(filename,"../inidata/%s.ini",ininame);
   } else {
-    sprintf(filename,"../share/%s.ini",ininame);
+    sprintf(filename,"../share/xpusb/%s.ini",ininame);
   }
 
   ini = iniparser_load(filename);

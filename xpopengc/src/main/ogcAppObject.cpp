@@ -72,6 +72,7 @@
 #include "A320/A320Stby/A320StbyAlt/ogcA320StbyAlt.h"
 #include "A320/A320Stby/A320StbyASI/ogcA320StbyASI.h"
 #include "A320/A320Stby/A320StbyAtt/ogcA320StbyAtt.h"
+#include "A320/A320Stby/A320StbyISIS/ogcA320StbyISIS.h"
 #include "A320/A320Stby/A320StbyRMI/ogcA320StbyRMI.h"
 #include "B737/B737PFD/ogcB737PFD.h"
 #include "B737/B737PFDSA/ogcB737PFDSA.h"
@@ -406,13 +407,11 @@ bool AppObject::DoFileInitialization(char* iniFile)
   else if (strcmp(name, "A320MCDU")==0) pGauge = new A320MCDU();
   else if (strcmp(name, "A320Clock")==0) pGauge = new A320Clock();
   else if (strcmp(name, "A320BrkTripleInd")==0) pGauge = new A320BrkTripleInd();
-/*
   else if (strcmp(name, "A320StbyAlt")==0) pGauge = new A320StbyAlt();
   else if (strcmp(name, "A320StbyASI")==0) pGauge = new A320StbyASI();
-  else if (strcmp(name, "A320StbyAtt")==0) pGauge = new A320SStbyAtt();
+  else if (strcmp(name, "A320StbyAtt")==0) pGauge = new A320StbyAtt();
   else if (strcmp(name, "A320StbyISIS")==0) pGauge = new A320StbyISIS();
   else if (strcmp(name, "A320StbyRMI")==0) pGauge = new A320StbyRMI();
-*/
   else {
     printf("Gauge %s not defined in CreateGauge. Aborting\n",name);
     exit(-1);

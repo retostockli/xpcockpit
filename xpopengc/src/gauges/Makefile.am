@@ -45,10 +45,15 @@ A320/A320Misc/A320BrkTripleInd/ogcA320BrkTripleIndDial.cpp \
 A320/A320MCDU/ogcA320MCDU.cpp \
 A320/A320MCDU/ogcA320MCDUWidget.cpp \
 A320/A320Stby/A320StbyAlt/ogcA320StbyAlt.cpp \
+A320/A320Stby/A320StbyAlt/ogcA320StbyAltComponent.cpp \
 A320/A320Stby/A320StbyASI/ogcA320StbyASI.cpp \
+A320/A320Stby/A320StbyASI/ogcA320StbyASIComponent.cpp \
 A320/A320Stby/A320StbyAtt/ogcA320StbyAtt.cpp \
+A320/A320Stby/A320StbyAtt/ogcA320StbyAttComponent.cpp \
 A320/A320Stby/A320StbyISIS/ogcA320StbyISIS.cpp \
+A320/A320Stby/A320StbyISIS/ogcA320StbyISISComponent.cpp \
 A320/A320Stby/A320StbyRMI/ogcA320StbyRMI.cpp \
+A320/A320Stby/A320StbyRMI/ogcA320StbyRMIComponent.cpp \
 B737/B737EICAS/ogcB737EICAS.cpp \
 B737/B737EICAS/ogcB737EICASBackground.cpp \
 B737/B737EICAS/ogcB737EICASEGT.cpp \
