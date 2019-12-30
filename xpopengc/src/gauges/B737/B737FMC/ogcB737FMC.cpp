@@ -897,7 +897,7 @@ void B737FMC::Render()
       
       if (*message == 1) {
 	glColor3ub(255, 100, 0 );
-	char buffer[1];
+	char buffer[2];
 	float fontSize = 0.035 * m_PhysicalSize.x;
 	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
 	sprintf( buffer, "M");

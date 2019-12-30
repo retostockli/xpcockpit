@@ -1252,6 +1252,6 @@ void pedestal_737(void)
 
   /* steer servo for rudder position indicator */
   
-  ret = servos_output(device,0,rudder_trim,-2.3,3.0);
+  ret = servos_output(device,0,rudder_trim,-1.0,1.0,425,750);
   
 }

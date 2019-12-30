@@ -14,6 +14,7 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#define verbose 1
+// #define verbose 1
+int verbose;
 
 #define INTERVAL 500  /* poll interval in milliseconds: set between 1-1000 or so ... */

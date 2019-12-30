@@ -45,7 +45,7 @@ void usbservos_test(void)
   if (ret == 1) {
     printf("Analog Input #0 has value: %f \n",value);
     /* steer servo according with potentiometer value */
-    ret = servos_output(device,servo,&value,minval,maxval);
+    ret = servos_output(device,servo,&value,minval,maxval,0,1023);
   }
 
 }

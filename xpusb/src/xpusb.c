@@ -72,14 +72,14 @@ int main (int argc, char **argv)
     exit_xpusb(-1);
   }
 
+  /* initialize local dataref structure */
+  if (initialize_dataref()<0) exit_xpusb(-4);
+
   /* parse the xpusb.ini file */
   if (read_ini(*argv)<0) exit_xpusb(-2);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (initialize_signal_handler()<0) exit_xpusb(-3);
-
-  /* initialize local dataref structure */
-  if (initialize_dataref()<0) exit_xpusb(-4);
 
   /* initialize IOCards I/O data */
   if (initialize_iocardsdata()<0) exit_xpusb(-5);
@@ -128,12 +128,23 @@ int main (int argc, char **argv)
 	mcp_737();
 	throttle_737();
 	yokerudder_737();
-	//	check_x737();
+	check_zibo();
+      }
+      if (strcmp("boeing737yokerudder",*argv) == 0) {
+	yokerudder_737();
+	check_zibo();
+      }
+      if (strcmp("boeing737throttle",*argv) == 0) {
+	throttle_737();
+	check_zibo();
+      }
+      if (strcmp("boeing737pedestal",*argv) == 0) {
+	pedestal_737();
 	check_zibo();
       }
       if (strcmp("boeing737mcp",*argv) == 0) {
-	//	mcp_737();
-	//	efis_737();
+	mcp_737();
+	efis_737();
 	check_zibo();
       }
       if (strcmp("boeing737yoke",*argv) == 0) {

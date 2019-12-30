@@ -871,10 +871,14 @@ int keys_input(int device, int key)
 }
 
 /* output value to control servo motor */
-/* Value can go from SERVOMIN to SERVOMAX. If below SERVOMIN, the servo is parked. */
+/* Define a minimum and a maximum output value (minval, maxval) */
+/* with corresponding servo minimum and maximum value (servominval, servomaxval)
+/* Servo minimum and maximum values can go from SERVOMIN to SERVOMAX. 
+/* If below SERVOMIN or above SERVOMAX, the servo is parked. */
 /* In parking position the servo is not active and the servo wheel can be freely  */
 /* turned even when the power is connected */
-int servos_output(int device, int servo, float *value, float minval, float maxval)
+int servos_output(int device, int servo, float *value, float minval, float maxval,
+		  int servominval, int servomaxval)
 {
   char device_name1[] = "IOCard-USBServos";
   char device_name2[] = "DCMotors PLUS";
@@ -891,7 +895,8 @@ int servos_output(int device, int servo, float *value, float minval, float maxva
 	if (*value != FLT_MISS) {
 	  
 	  /* scale input data to servo data range */
-	  data = (int) ((*value - minval)/(maxval - minval)*((float) (SERVOMAX - SERVOMIN)) + (float) SERVOMIN);
+	  data = (int) ((*value - minval)/(maxval - minval)*
+			((float) (servomaxval - servominval)) + (float) servominval);
 	  if (data < SERVOMIN) data = SERVOPARK;
 	  if (data > SERVOMAX) data = SERVOPARK;
 	  

@@ -54,6 +54,7 @@
 extern "C" {
 #include "handleserver.h"
 #include "handleudp.h"
+#include "common.h"
 }
 
 extern int verbosity;
@@ -126,6 +127,8 @@ XPlaneDataSource::XPlaneDataSource()
 
   // No UDP request sent yet
   m_sent = false;
+
+  verbose = verbosity;
   
 }
 

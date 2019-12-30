@@ -117,7 +117,8 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
 int mastercard_display(int device, int card, int pos, int n, int *value, int hasnegative);
 int axis_input(int device, int input, float *value, float minval, float maxval);
 int keys_input(int device, int key);
-int servos_output(int device, int servo, float *value, float minval, float maxval);
+int servos_output(int device, int servo, float *value, float minval, float maxval,
+		  int servominval, int servomaxval);
 int motors_output(int device, int motor, float *value, float range);
 
 /* Prototype functions for Iocards communication */
