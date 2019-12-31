@@ -1,13 +1,13 @@
 /*=============================================================================
 
-  This is the ogcA320StbyISIS.h header to ogcA320StbyISIS.c
+  This is the ogcA320StbyISISComponent.h header to ogcA320StbyISISComponent.c
 
   Created:
-    Date:   2019-05-03
+    Date:   2018-05-03
     Author: Hans Jansen
     (see ogcSkeletonGauge.c for more details)
 
-  Copyright (C) 2019      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -28,28 +28,32 @@
  * Airbus A320 style Integrated Standby Instrument System
  */
 
-#ifndef ogcA320StbyISIS_h
-#define ogcA320StbyISIS_h
+#ifndef ogcA320StbyISISComponent_h
+#define ogcA320StbyISISComponent_h
 
-#include "ogcGauge.h"
+#include "ogcGaugeComponent.h"
+#include "../../ogcAirbusColors.h"
 
 extern int verbosity;
 
 namespace OpenGC {
 
-  class A320StbyISIS : public Gauge {
+  class A320StbyISISComponent : public GaugeComponent {
   
   public:
 
-    A320StbyISIS ();
-    virtual ~A320StbyISIS ();
+    A320StbyISISComponent ();
+    virtual ~A320StbyISISComponent ();
 
     void Render ();
 
   protected:
 
+    /** Font from the font manager */
+    int m_Font;
+    
   };
-  
+
 } // end namespace OpenGC
 
 #endif
