@@ -261,7 +261,7 @@ namespace OpenGC
     
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
     
-      sprintf(buffer, "%5.3f", mach);
+      snprintf(buffer, sizeof(buffer), "%5.3f", mach);
       m_pFontManager->Print(10,25+0, &buffer[0], m_Font);
     }
 
@@ -274,10 +274,10 @@ namespace OpenGC
 
     if (*ap_speed != FLT_MISS) {
       if (*ap_speed_is_mach == 1) {
-	sprintf(buffer, "%3.2f", *ap_speed);
+	snprintf(buffer, sizeof(buffer), "%3.2f", *ap_speed);
 	m_pFontManager->Print(12,170+0, &buffer[0], m_Font);
       } else {
-	sprintf(buffer, "%4.0f", *ap_speed);
+	snprintf(buffer, sizeof(buffer), "%4.0f", *ap_speed);
 	m_pFontManager->Print(10,170+0, &buffer[0], m_Font);
       }
     }
@@ -293,10 +293,10 @@ namespace OpenGC
 	m_pFontManager->Print(153,25+0, &buffer[0], m_Font);
       } else {
 	if (*altimeter_pressure_unit == 1) {
-	  sprintf(buffer, "%5.1f hPa", *altimeter_pressure/0.029530);
+	  snprintf(buffer, sizeof(buffer), "%5.1f hPa", *altimeter_pressure/0.029530);
 	  m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
 	} else {
-	  sprintf(buffer, "%4.2f In", *altimeter_pressure);
+	  snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure);
 	  m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
 	}
       }
@@ -308,7 +308,7 @@ namespace OpenGC
     glLineWidth(2.0);
 
     if (*ap_altitude != FLT_MISS) {
-      sprintf(buffer, "%5.0f", *ap_altitude);
+      snprintf(buffer, sizeof(buffer), "%5.0f", *ap_altitude);
       m_pFontManager->Print(150,170+0, &buffer[0], m_Font);
     }
 
@@ -754,7 +754,7 @@ namespace OpenGC
       glColor3ub( 0, 255,  0 );
       strcpy(buffer, "RADIO");
       m_pFontManager->Print(117,35, &buffer[0], m_Font);
-      sprintf(buffer, "%4.0f", *altimeter_minimum);
+      snprintf(buffer, sizeof(buffer), "%4.0f", *altimeter_minimum);
       m_pFontManager->Print(124,28, &buffer[0], m_Font);
     }
   

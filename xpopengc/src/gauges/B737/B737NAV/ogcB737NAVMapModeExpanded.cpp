@@ -273,9 +273,9 @@ namespace OpenGC
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       if (mapRange > 5.0) {
-	sprintf(buffer, "%i", (int) (mapRange / 2.0));
+	snprintf(buffer, sizeof(buffer), "%i", (int) (mapRange / 2.0));
       } else {
-	sprintf(buffer, "%2.1f", mapRange / 2.0);
+	snprintf(buffer, sizeof(buffer), "%2.1f", mapRange / 2.0);
       }
       if ((mapRange / 2.0) < 100) {
 	if (mapRange > 5.0) {
@@ -347,7 +347,7 @@ namespace OpenGC
 	  m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 
 	  int deg10 = i*5/10;
-	  sprintf(buffer, "%i", deg10);
+	  snprintf(buffer, sizeof(buffer), "%i", deg10);
 	  if (deg10 < 10) {
 	    m_pFontManager->Print( -0.4*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
 	  } else {

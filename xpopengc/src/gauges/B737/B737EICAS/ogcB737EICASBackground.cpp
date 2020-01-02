@@ -130,7 +130,7 @@ namespace OpenGC
     char buf[50];
 
     if (*tat != FLT_MISS) {
-      sprintf(buf, "%.01f c", *tat);
+      snprintf(buf, sizeof(buf), "%.01f c", *tat);
       m_pFontManager->Print(95, 190, buf, m_Font);
     }
 

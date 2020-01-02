@@ -124,14 +124,14 @@ namespace OpenGC
       // if vertical +- 200 fpm display digital readout
       if ( (*vertical_speed < -199.0) && (*vertical_speed > -9999.0) )
 	{
-	  sprintf(buffer, "%04d", (int) *vertical_speed);
+	  snprintf(buffer, sizeof(buffer), "%04d", (int) *vertical_speed);
 	  m_pFontManager->Print( 1.0, 3.5 , &buffer[0], m_Font);
 	}
       else
 	{
 	  if ( (*vertical_speed > 199.0) && (*vertical_speed < 9999.0) )
 	    {
-	      sprintf(buffer, "%04d", (int) *vertical_speed);
+	      snprintf(buffer, sizeof(buffer), "%04d", (int) *vertical_speed);
 	      m_pFontManager->Print( 1.0, 103.5 , &buffer[0], m_Font);
 	    }
 	}

@@ -44,7 +44,8 @@ AC_MSG_RESULT([$debugit])
 
 if test "x$debugit" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized -O0"
+    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address -O0"
+#    CXXFLAGS="$CXXFLAGS -g -Wall --Wno-uninitialized -O0"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CXXFLAGS="$CXXFLAGS -O3"

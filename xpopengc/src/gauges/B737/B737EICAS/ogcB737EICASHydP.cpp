@@ -232,7 +232,7 @@ namespace OpenGC
 	  glColor3ub(255, 255, 255);
 	  xcircle = (R-5) * sin(radians);
 	  ycircle = (R-5) * cos(radians);
-	  sprintf(buf, "%d", i);
+	  snprintf(buf, sizeof(buf), "%d", i);
 	  glTranslatef(-2, -2, 0);
 	  m_pFontManager->Print(xcircle , ycircle, buf, m_Font);			
 	  glTranslatef(2, 2, 0);

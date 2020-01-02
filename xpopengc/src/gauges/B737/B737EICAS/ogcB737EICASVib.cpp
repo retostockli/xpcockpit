@@ -154,7 +154,7 @@ namespace OpenGC
 	  glEnd();
 	  xcircle = (R-5) * sin(radians);
 	  ycircle = (R-5) * cos(radians);
-	  sprintf(buf, "%.0f",xs);
+	  snprintf(buf, sizeof(buf), "%.0f",xs);
 	  glTranslatef(-2, -2, 0);
 	  m_pFontManager->Print(xcircle , ycircle, buf, m_Font);			
 	  glTranslatef(2, 2, 0);
@@ -166,7 +166,7 @@ namespace OpenGC
     } else {
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
-      sprintf(buf, "INOP");
+      snprintf(buf, sizeof(buf), "INOP");
       glTranslatef(10, 18, 0);
       glColor3ub(255, 165, 0);
       m_pFontManager->SetSize(m_Font, 4, 4);

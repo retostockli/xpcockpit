@@ -228,7 +228,7 @@ namespace OpenGC
 	  // text in unitmarkers
 	  if ((xs > 0) && ((int)(xs/10) % 2 == 0)) {
 	    glTranslatef(-2, -1, 0);
-	    sprintf(buf, "%.0f", xs/10);
+	    snprintf(buf, sizeof(buf), "%.0f", xs/10);
 	    glColor3ub(255, 255, 255);
 	    xcircle = (R - 4.5) * sin(radians);
 	    ycircle = (R - 4.5) * cos(radians);
@@ -252,16 +252,16 @@ namespace OpenGC
       // n1: text
       m_pFontManager->SetSize(m_Font, 5, 5);
       glColor3ub(255, 255, 255);
-      sprintf(buf, "%.01f", value);
+      snprintf(buf, sizeof(buf), "%.01f", value);
       m_pFontManager->Print( 21.9, 22.7, buf, m_Font);
 
       // n1-limit or reverser: text
       m_pFontManager->SetSize(m_Font, 5, 5);
       glColor3ub(0, 255, 0);
       if (rev == 1) {
-	sprintf(buf, "REV");
+	snprintf(buf, sizeof(buf), "REV");
       } else {
-	sprintf(buf, "%.01f", max_green);
+	snprintf(buf, sizeof(buf), "%.01f", max_green);
       }
       m_pFontManager->Print( 21.9, 32.0, buf, m_Font);
 

@@ -211,13 +211,13 @@ namespace OpenGC
 		  {
 		    // 100's
 		    //_itoa( charSpd / 100, buffer, 10);
-		    sprintf( buffer, "%i", charSpd/100);
+		    snprintf( buffer, sizeof(buffer), "%i", charSpd/100);
 		    m_pFontManager->Print(fontIndent, texty, &buffer[0], m_Font);
 		    charSpd = charSpd-100*(int)(charSpd/100);
 	    
 		    // draw second digit if tickSpeed is multiplier of 100
 		    if (charSpd == 0) {
-		      sprintf( buffer, "%i", charSpd/10);
+		      snprintf( buffer, sizeof(buffer), "%i", charSpd/10);
 		      m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
 		    }
 		  }
@@ -226,12 +226,12 @@ namespace OpenGC
 		  {
 		    // 10's
 		    //_itoa( charSpd / 10, buffer, 10);
-		    sprintf( buffer, "%i", charSpd/10);
+		    snprintf(buffer, sizeof(buffer), "%i", charSpd/10);
 		    m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
 		    charSpd = charSpd-10*(int)(charSpd/10);
 		  }
 	
-		sprintf( buffer, "%i", 0);
+		snprintf(buffer, sizeof(buffer), "%i", 0);
 		m_pFontManager->Print(fontIndent + fontWidth*2, texty, &buffer[0], m_Font);
 	      }
     
@@ -264,13 +264,13 @@ namespace OpenGC
 		    {
 		      // 100's
 		      //_itoa( charSpd / 100, buffer, 10);
-		      sprintf( buffer, "%i", charSpd/100);
+		      snprintf( buffer, sizeof(buffer), "%i", charSpd/100);
 		      m_pFontManager->Print(fontIndent, texty, &buffer[0], m_Font);
 		      charSpd = charSpd-100*(int)(charSpd/100);
 
 		      // draw second digit if tickSpeed is multiplier of 100
 		      if (charSpd == 0) {
-			sprintf( buffer, "%i", charSpd/10);
+			snprintf( buffer, sizeof(buffer), "%i", charSpd/10);
 			m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
 		      }
 		    }
@@ -279,12 +279,12 @@ namespace OpenGC
 		    {
 		      // 10's
 		      //_itoa( charSpd / 10, buffer, 10);
-		      sprintf( buffer, "%i", charSpd/10);
+		      snprintf( buffer, sizeof(buffer), "%i", charSpd/10);
 		      m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
 		      charSpd = charSpd-10*(int)(charSpd/10);
 		    }
 
-		  sprintf( buffer, "%i", 0);
+		  snprintf( buffer, sizeof(buffer), "%i", 0);
 		  m_pFontManager->Print(fontIndent + fontWidth*2, texty, &buffer[0], m_Font);
 		}
 	    }

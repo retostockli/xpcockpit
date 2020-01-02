@@ -140,7 +140,7 @@ namespace OpenGC
       glVertex2f(3.0f,radius+5.0);
       glEnd();
 
-      sprintf( buffer, "%d", (int) *heading_mag );
+      snprintf( buffer, sizeof(buffer), "%d", (int) *heading_mag );
 
       if((int) *heading_mag>=100)
 	fontx = -bigFontSize*1.5;
@@ -176,7 +176,7 @@ namespace OpenGC
 	      tickLength = 3;
 
 	      // Convert the display heading to a string
-	      sprintf( buffer, "%d", displayHeading/10 );
+	      snprintf( buffer, sizeof(buffer), "%d", displayHeading/10 );
 	      if(displayHeading%30==0)
 		{
 		  if(displayHeading>=100)
@@ -241,7 +241,7 @@ namespace OpenGC
 
 	glPushMatrix();
 
-	sprintf( buffer, "%d", (int) *heading_mag_ap );
+	snprintf( buffer, sizeof(buffer), "%d", (int) *heading_mag_ap );
   
 	m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
 	m_pFontManager->Print(30, 1 ,&buffer[0], m_Font ); 

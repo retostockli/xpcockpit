@@ -219,54 +219,54 @@ namespace OpenGC
 	    }
 
 	  } else {
-	    if (*fmc_cur != INT_MISS) {
-	      wpt_current = *fmc_cur-1;
-	    }
-	    wpt_miss1 = *fmc_miss1;
-	    wpt_miss2 = *fmc_miss2;
-	    // printf("%s\n",fmc_name);
-	    //	  printf("%f\n",fmc_lon[0]);
-	    //	  printf("%f\n",fmc_lat[0]);
 	    nwpt=0;
-	    while (((fmc_lon[nwpt]!=0.0) || (fmc_lat[nwpt]!=0.0)) && (nwpt<128)) {
-	      nwpt += 1;
-	    }
-	    //	  printf("%i \n",nwpt);
-
-	    if (nwpt > 0) {
-	      if (wpt != NULL) {
-		delete [] wpt;
+	    if ((*fmc_cur != INT_MISS) && (fmc_lon[0] != FLT_MISS)
+		&& (fmc_lat[0] != FLT_MISS)) {
+	      wpt_current = *fmc_cur-1;
+	      wpt_miss1 = *fmc_miss1;
+	      wpt_miss2 = *fmc_miss2;
+	      // printf("%s\n",fmc_name);
+	      //	  printf("%f\n",fmc_lon[0]);
+	      //	  printf("%f\n",fmc_lat[0]);
+	      while (((fmc_lon[nwpt]!=0.0) || (fmc_lat[nwpt]!=0.0)) && (nwpt<128)) {
+		nwpt += 1;
 	      }
-	      wpt = new wptstruct[nwpt];
-	      char str[255];
-	      memcpy(str,fmc_name,sizeof(str));
-	      char *pch;
-	      pch = strtok(str," ");
-	      if (pch == NULL) {
-		/* no names for any wpts: reset */
-		nwpt = 0;
-	      }
-	      for (int i=0;i<nwpt;i++) {
-		memset(wpt[i].name,0,sizeof(wpt[i].name));
-		if (pch != NULL) {
-		  //		printf("%s \n",pch);
-		  //		  if ((int) pch[0] != 40) {
+	      // printf("%i \n",nwpt);
+	      
+	      if (nwpt > 0) {
+		if (wpt != NULL) {
+		  delete [] wpt;
+		}
+		wpt = new wptstruct[nwpt];
+		char str[255];
+		memcpy(str,fmc_name,sizeof(str));
+		char *pch;
+		pch = strtok(str," ");
+		if (pch == NULL) {
+		  /* no names for any wpts: reset */
+		  nwpt = 0;
+		}
+		for (int i=0;i<nwpt;i++) {
+		  memset(wpt[i].name,0,sizeof(wpt[i].name));
+		  if (pch != NULL) {
+		    //		printf("%s \n",pch);
+		    //		  if ((int) pch[0] != 40) {
 		    /* do only name waypoints which are not in () brackets */
 		    memcpy(&wpt[i].name,pch,sizeof(wpt[i].name));
 		    //		  }
 		    
-		  pch = strtok(NULL," ");
+		    pch = strtok(NULL," ");
+		  }
+		  wpt[i].lon = fmc_lon[i];
+		  wpt[i].lat = fmc_lat[i];
+		  wpt[i].rad_ctr_lon = fmc_rad_ctr_lon[i];
+		  wpt[i].rad_ctr_lat = fmc_rad_ctr_lat[i];
+		  wpt[i].rad_lon2 = fmc_rad_lon2[i];
+		  wpt[i].rad_lat2 = fmc_rad_lat2[i];
+		  //		printf("%s %i %i %f %f %f \n",wpt[i].name,fmc_type[i],fmc_turn[i],fmc_lon[i],fmc_rad_lon[i],fmc_radius[i]);
 		}
-		wpt[i].lon = fmc_lon[i];
-		wpt[i].lat = fmc_lat[i];
-		wpt[i].rad_ctr_lon = fmc_rad_ctr_lon[i];
-		wpt[i].rad_ctr_lat = fmc_rad_ctr_lat[i];
-		wpt[i].rad_lon2 = fmc_rad_lon2[i];
-		wpt[i].rad_lat2 = fmc_rad_lat2[i];
-		//		printf("%s %i %i %f %f %f \n",wpt[i].name,fmc_type[i],fmc_turn[i],fmc_lon[i],fmc_rad_lon[i],fmc_radius[i]);
-	      }
-	    } 
-	  
+	      } 
+	    }
 	  }
 
 	  if (nwpt == 0) {
@@ -285,8 +285,10 @@ namespace OpenGC
 	    
 
 	  if (nwpt > 0) {
-	    for (int i=wpt_current;i<=nwpt;i++) {
-	  
+	    for (int i=wpt_current;i<nwpt;i++) {
+
+	      // printf("%i %i %f %f \n",i,nwpt,wpt[i].lon,wpt[i].lat);
+	      
 	      // convert to azimuthal equidistant coordinates with acf in center
 	      if ((wpt[max(i-1,0)].lon != FLT_MISS) && (wpt[max(i-1,0)].lat != FLT_MISS) &&
 		  (wpt[i].lon != FLT_MISS) && (wpt[i].lat != FLT_MISS) &&
@@ -308,14 +310,16 @@ namespace OpenGC
 		lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
 		/*} */
 
+		/*
 		if (i == nwpt) {
 		  northing2 = northing;
 		  easting2 = easting;
 		} else {
+		*/
 		  lon = (double) wpt[i].lon;
 		  lat = (double) wpt[i].lat;
 		  lonlat2gnomonic(&lon, &lat, &easting2, &northing2, aircraftLon, aircraftLat);
-		}
+		  /*}*/
 	      
 		// Compute physical position relative to acf center on screen
 		yPos = -northing / 1852.0 / mapRange * map_size; 

@@ -109,7 +109,7 @@ printf("frame rate: %i\n", (int) (100.0/diffTime));
 /*
 // Note: can't find m_pFontManager!
     theApp->m_pFontManager->SetSize(m_Font, 10, 12);
-    sprintf( buffer, "%i", (int) (100.0/diffTime));
+    snprintf( buffer, sizeof(buffer), "%i", (int) (100.0/diffTime));
     theApp->m_pFontManager->Print(0, -12, &buffer[0], m_Font);
 */
   }

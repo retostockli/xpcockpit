@@ -157,7 +157,7 @@ namespace OpenGC
       // text gauge
       m_pFontManager->SetSize(m_Font, 5, 5);
       glColor3ub(255, 255, 255);
-      sprintf(buf, "%.0f", value);
+      snprintf(buf, sizeof(buf), "%.0f", value);
       if (value  < 100)
 	m_pFontManager->Print(14, 11, buf, m_Font);
       else if (value  < 1000)
@@ -172,12 +172,12 @@ namespace OpenGC
       m_pFontManager->SetSize(m_Font, 4, 4);
       glColor3ub(0, 189, 231);
       if (currentTank > 0) {
-	sprintf(buf, "%d", currentTank);
+	snprintf(buf, sizeof(buf), "%d", currentTank);
 	m_pFontManager->Print(16, 20, buf, m_Font);
       }
 
       else {
-	sprintf(buf, "CTR");
+	snprintf(buf, sizeof(buf), "CTR");
 	m_pFontManager->Print(12, 19, buf, m_Font);
       }
 

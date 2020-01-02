@@ -186,7 +186,7 @@ namespace OpenGC
       }
     }
     
-    sprintf( buffer, "%s", m_AnnName );
+    snprintf( buffer, sizeof(buffer), "%s", m_AnnName );
 
     int nctot = strlen(buffer);
     if (nctot > 10) {
@@ -209,7 +209,7 @@ namespace OpenGC
 
     m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     
-    sprintf( buffer, "%s", m_AnnName );
+    snprintf( buffer, sizeof(buffer), "%s", m_AnnName );
     token = strtok(buffer," ");    
     while (token != NULL) {
       int nc = strlen(token);

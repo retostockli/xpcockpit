@@ -182,11 +182,11 @@ namespace OpenGC
 	    if (fabs(altitudemeters*3.28084/100) < 100) {
 	      if (altitudemeters > 0) {
 		m_pFontManager->SetSize( m_Font, 0.6*fontSize, 0.6*fontSize );
-		sprintf(buffer, "+%i", (int) (fabs(altitudemeters)*3.28084/100));
+		snprintf(buffer, sizeof(buffer), "+%i", (int) (fabs(altitudemeters)*3.28084/100));
 		m_pFontManager->Print(-0.9*fontSize,ss2+0.05*fontSize, &buffer[0], m_Font);	      
 	      } else {
 		m_pFontManager->SetSize( m_Font, 0.6*fontSize, 0.6*fontSize );
-		sprintf(buffer, "-%i", (int) (fabs(altitudemeters)*3.28084/100));
+		snprintf(buffer, sizeof(buffer), "-%i", (int) (fabs(altitudemeters)*3.28084/100));
 		m_pFontManager->Print(-0.9*fontSize,-ss2-0.65*fontSize, &buffer[0], m_Font);
 	      }
 	    }

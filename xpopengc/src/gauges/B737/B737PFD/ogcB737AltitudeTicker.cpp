@@ -115,7 +115,7 @@ namespace OpenGC
 	{
 	  //_itoa( alt / 10000, buffer, 10);
 	  /*
-	  sprintf(buffer, "%i", abs(alt)/10000);
+	  snprintf(buffer, sizeof(buffer), "%i", abs(alt)/10000);
 	  m_pFontManager->Print(5.0, texty, buffer, m_Font);
 	  */
 	  alt = alt-100000*(int)(alt/100000);
@@ -124,7 +124,7 @@ namespace OpenGC
       if(abs(alt) >= 10000)
 	{
 	  //_itoa( alt / 10000, buffer, 10);
-	  sprintf(buffer, "%i", abs(alt)/10000);
+	  snprintf(buffer, sizeof(buffer), "%i", abs(alt)/10000);
 	  m_pFontManager->Print(5.0, texty, buffer, m_Font);
 	  alt = alt-10000*(int)(alt/10000);
 	}
@@ -143,7 +143,7 @@ namespace OpenGC
   
       // 1000's
       //_itoa( alt / 1000, buffer, 10);
-      sprintf(buffer, "%i", abs(alt)/1000);
+      snprintf(buffer, sizeof(buffer), "%i", abs(alt)/1000);
       m_pFontManager->Print(9.5, texty, &buffer[0], m_Font);
       alt = alt-1000*(int)(alt/1000);
 
@@ -153,7 +153,7 @@ namespace OpenGC
   
       // 100's
       //_itoa( alt / 100, buffer, 10);
-      sprintf(buffer, "%i", abs(alt)/100);
+      snprintf(buffer, sizeof(buffer), "%i", abs(alt)/100);
       m_pFontManager->Print(15.0, texty, &buffer[0], m_Font);
       alt = alt-100*(int)(alt/100);
 
@@ -205,17 +205,17 @@ namespace OpenGC
   
       // Display all of the digits
       //_itoa( top_ten, buffer, 10);
-      sprintf(buffer, "%i", top_ten);
+      snprintf(buffer, sizeof(buffer), "%i", top_ten);
       m_pFontManager->Print(19.0, texty + littleFontHeight + littleFontHeight/10, &buffer[0], m_Font);
       m_pFontManager->Print(23.0, texty + littleFontHeight + littleFontHeight/10, "0", m_Font);
 
       //_itoa( middle_ten, buffer, 10);
-      sprintf(buffer, "%i", middle_ten);
+      snprintf(buffer, sizeof(buffer), "%i", middle_ten);
       m_pFontManager->Print(19.0, texty, &buffer[0], m_Font);
       m_pFontManager->Print(23.0, texty, "0", m_Font);
 
       //_itoa( bottom_ten, buffer, 10);
-      sprintf(buffer, "%i", bottom_ten);
+      snprintf(buffer, sizeof(buffer), "%i", bottom_ten);
       m_pFontManager->Print(19.0, texty + -1*littleFontHeight - littleFontHeight/10, &buffer[0], m_Font);
       m_pFontManager->Print(23.0, texty + -1*littleFontHeight - littleFontHeight/10, "0", m_Font);
 

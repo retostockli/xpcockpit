@@ -155,7 +155,7 @@ namespace OpenGC
 	      // 100000's
 	      if(abs(charAlt) >= 100000)
 		{
-		  sprintf( buffer, "%i", abs(charAlt)/100000);
+		  snprintf( buffer, sizeof(buffer), "%i", abs(charAlt)/100000);
 		  m_pFontManager->Print(fontIndent - fontWidth, texty, buffer, m_Font);
 		  charAlt = charAlt-100000*(int)(charAlt/100000);
 		  
@@ -166,7 +166,7 @@ namespace OpenGC
 	      // 10000's
 	      if(abs(charAlt) >= 10000)
 		{
-		  sprintf( buffer, "%i", abs(charAlt)/10000);
+		  snprintf( buffer, sizeof(buffer), "%i", abs(charAlt)/10000);
 		  m_pFontManager->Print(fontIndent, texty, buffer, m_Font);
 		  charAlt = charAlt-10000*(int)(charAlt/10000);
 		  
@@ -182,7 +182,7 @@ namespace OpenGC
 	      // 1000's
 	      if(abs(charAlt) >= 1000)
 		{
-		  sprintf( buffer, "%i", abs(charAlt)/1000);
+		  snprintf( buffer, sizeof(buffer), "%i", abs(charAlt)/1000);
 		  m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
 		  charAlt = charAlt-1000*(int)(charAlt/1000);
 
@@ -198,7 +198,7 @@ namespace OpenGC
 	      // 100's
 	      if(abs(charAlt) >= 100)
 		{
-		  sprintf( buffer, "%i", abs(charAlt)/100);
+		  snprintf( buffer, sizeof(buffer), "%i", abs(charAlt)/100);
 		  m_pFontManager->Print(fontIndent + fontWidth*2, texty, &buffer[0], m_Font);
 		  charAlt = charAlt-100*(int)(charAlt/100);
 		  zero = false;
@@ -244,7 +244,7 @@ namespace OpenGC
 	      if(abs(charAlt) >= 10000)
 		{
 		  //_itoa( charAlt / 10000, buffer, 10);
-		  sprintf(buffer, "%i", abs(charAlt)/100000);
+		  snprintf(buffer, sizeof(buffer), "%i", abs(charAlt)/100000);
 		  m_pFontManager->Print(fontIndent - fontWidth, texty, buffer, m_Font);
 		  charAlt = charAlt-100000*(int)(charAlt/100000);
 
@@ -256,7 +256,7 @@ namespace OpenGC
 	      if(abs(charAlt) >= 10000)
 		{
 		  //_itoa( charAlt / 10000, buffer, 10);
-		  sprintf(buffer, "%i", abs(charAlt)/10000);
+		  snprintf(buffer, sizeof(buffer), "%i", abs(charAlt)/10000);
 		  m_pFontManager->Print(fontIndent, texty, buffer, m_Font);
 		  charAlt = charAlt-10000*(int)(charAlt/10000);
 
@@ -272,7 +272,7 @@ namespace OpenGC
 	      // 1000's
 	      if(abs(charAlt) >= 1000)
 		{
-		  sprintf(buffer, "%i", abs(charAlt)/1000);
+		  snprintf(buffer, sizeof(buffer), "%i", abs(charAlt)/1000);
 		  m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
 		  charAlt = charAlt-1000*(int)(charAlt/1000);
 
@@ -288,7 +288,7 @@ namespace OpenGC
 	      // 100's
 	      if(abs(charAlt) >= 100)
 		{
-		  sprintf(buffer, "%i", abs(charAlt)/100);
+		  snprintf(buffer, sizeof(buffer), "%i", abs(charAlt)/100);
 		  m_pFontManager->Print(fontIndent + fontWidth*2, texty, &buffer[0], m_Font);
 		  charAlt = charAlt-100*(int)(charAlt/100);
 		  zero = false;

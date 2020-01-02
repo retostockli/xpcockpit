@@ -135,11 +135,11 @@ int AppObject::Go(char* iniFileName)
   if (getcwd(cwd, sizeof(cwd)) == NULL) return -2;
   pch = strstr (cwd,"/bin");
   if (pch == NULL) {
-    sprintf (iniFile, "../../inidata/%s.ini", iniFileName);
-    sprintf (m_FontPath, "../../fonts/");
+    snprintf (iniFile, sizeof(iniFile), "../../inidata/%s.ini", iniFileName);
+    snprintf (m_FontPath, sizeof(m_FontPath), "../../fonts/");
   } else {
-    sprintf (iniFile, "../share/xpopengc/%s.ini", iniFileName);
-    sprintf (m_FontPath, "../share/xpopengc/");
+    snprintf (iniFile, sizeof(iniFile), "../share/xpopengc/%s.ini", iniFileName);
+    snprintf (m_FontPath, sizeof(m_FontPath), "../share/xpopengc/");
   }
 
   // Process the initialization file, if this fails, abort!
@@ -341,23 +341,23 @@ bool AppObject::DoFileInitialization(char* iniFile)
       int gaugeArg;
     
       while (0==0) {
-        sprintf (gaugeKey, "Gauge:%i:Name",i);
+        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:Name",i);
         gaugeName = iniparser_getstring (ini, gaugeKey, (char *) "");
         if (strcmp (gaugeName, "") == 0) break;
         if (verbosity > 0) printf ("Gauge %i: Name, value: %s\n", i, gaugeName);
-        sprintf (gaugeKey, "Gauge:%i:xPos", i);
+        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:xPos", i);
         xpos = iniparser_getdouble (ini, gaugeKey, 0);
         if (verbosity > 0) printf ("Gauge %i: xpos, value: %f\n", i, xpos);
-        sprintf (gaugeKey, "Gauge:%i:yPos", i);
+        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:yPos", i);
         ypos = iniparser_getdouble (ini, gaugeKey, 0);
         if (verbosity > 0) printf ("Gauge %i: ypos, value: %f\n", i, ypos);
-        sprintf (gaugeKey, "Gauge:%i:xscale", i);
+        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:xscale", i);
         xscale = iniparser_getdouble (ini, gaugeKey, 0);
         if (verbosity > 0) printf ("Gauge %i: xscale, value: %f\n", i, xscale);
-        sprintf (gaugeKey, "Gauge:%i:yscale", i);
+        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:yscale", i);
         yscale = iniparser_getdouble (ini, gaugeKey, 0);
         if (verbosity > 0) printf ("Gauge %i: yscale, value: %f\n", i, yscale);
-        sprintf (gaugeKey, "Gauge:%i:arg", i);
+        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:arg", i);
         gaugeArg = iniparser_getint (ini, gaugeKey, 0);
         if (verbosity > 0) printf ("Gauge %i: arg, value: %i\n", i, gaugeArg);
         gaugeDefined = 1;

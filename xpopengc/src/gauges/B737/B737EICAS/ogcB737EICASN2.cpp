@@ -165,7 +165,7 @@ namespace OpenGC
       // text
       m_pFontManager->SetSize(m_Font, 5, 5);
       glColor3ub(255, 255, 255);
-      sprintf(buf, "%.01f", value);
+      snprintf(buf, sizeof(buf), "%.01f", value);
       m_pFontManager->Print( 21.9, 22.7, buf, m_Font);
 
       glPopMatrix();

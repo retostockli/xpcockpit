@@ -203,7 +203,7 @@ void B737PFDSpeedIndicator::Render()
 				tY = -1.5;
 			}
 			glTranslatef(tX, tY, 0);
-			sprintf(buf, "%.0f", xs);
+			snprintf(buf,  sizeof(buf), "%.0f", xs);
 			xcircle = (R - 9) * sin(radians);
 			ycircle = (R - 9) * cos(radians);
 			m_pFontManager->Print(xcircle, ycircle, buf, m_Font);
@@ -242,7 +242,7 @@ void B737PFDSpeedIndicator::Render()
 			tX = -2.5;
 			tY = -1.5;
 			glTranslatef(tX, tY, 0);
-			sprintf(buf, "%.0f", xs);
+			snprintf(buf,  sizeof(buf), "%.0f", xs);
 			xcircle = (R - 9) * sin(radians);
 			ycircle = (R - 9) * cos(radians);
 			m_pFontManager->Print(xcircle, ycircle, buf, m_Font);
@@ -284,7 +284,7 @@ void B737PFDSpeedIndicator::Render()
 			tX = -2.5;
 			tY = -1.5;
 			glTranslatef(tX, tY, 0);
-			sprintf(buf, "%.0f", xs);
+			snprintf(buf, sizeof(buf), "%.0f", xs);
 			xcircle = (R - 9) * sin(radians);
 			ycircle = (R - 9) * cos(radians);
 			m_pFontManager->Print(xcircle, ycircle, buf, m_Font);
@@ -341,7 +341,7 @@ void B737PFDSpeedIndicator::Render()
 	// text
 	m_pFontManager->SetSize(m_Font, 7, 8);
 	glColor3ub(255, 255, 255);
-	sprintf(buf, "%.0f", value);
+	snprintf(buf, sizeof(buf), "%.0f", value);
 	float textX;
 	if (value < 10)
 		textX = 3;

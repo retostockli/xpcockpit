@@ -900,11 +900,11 @@ void B737FMC::Render()
 	char buffer[2];
 	float fontSize = 0.035 * m_PhysicalSize.x;
 	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-	sprintf( buffer, "M");
+	snprintf( buffer, sizeof(buffer), "M");
 	m_pFontManager->Print( m_PhysicalSize.x-10, m_PhysicalSize.y/2-40, buffer, m_Font);
-	sprintf( buffer, "S");
+	snprintf( buffer, sizeof(buffer), "S");
 	m_pFontManager->Print( m_PhysicalSize.x-10, m_PhysicalSize.y/2-45, buffer, m_Font);
-	sprintf( buffer, "G");
+	snprintf( buffer, sizeof(buffer), "G");
 	m_pFontManager->Print( m_PhysicalSize.x-10, m_PhysicalSize.y/2-50, buffer, m_Font);
 	
       }

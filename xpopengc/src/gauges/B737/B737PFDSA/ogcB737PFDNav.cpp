@@ -204,7 +204,7 @@ void B737PFDNav::Render()
 
 		if (i % 30 == 0) {
 			glPushMatrix();
-			sprintf(buf, "%d", -i/10);
+			snprintf(buf, sizeof(buf), "%d", -i/10);
 			glRotated(i, 0, 0, 1);
 			if (i < -90)
 				m_pFontManager->Print(-3.6, 29.6, buf, m_Font);

@@ -151,7 +151,7 @@ namespace OpenGC
 	  // text in unitmarkers
 	  if ((xs > 0) && ((int)(xs) % 4 == 0)) {
 	    glTranslatef(-2, -2, 0);
-	    sprintf(buf, "%.0f", xs);
+	    snprintf(buf, sizeof(buf), "%.0f", xs);
 	    glColor3ub(255, 255, 255);
 	    xcircle = (R - 5) * sin(radians);
 	    ycircle = (R - 5) * cos(radians);
@@ -175,7 +175,7 @@ namespace OpenGC
 
       // text
       glColor3ub(255, 255, 255);
-      sprintf(buf, "%.02f", value);
+      snprintf(buf, sizeof(buf), "%.02f", value);
       m_pFontManager->Print( 21.9, 22.7, buf, m_Font);
 
       glPopMatrix();

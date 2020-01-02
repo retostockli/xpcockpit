@@ -120,7 +120,7 @@ namespace OpenGC
 
       // text
       m_pFontManager->SetSize(m_Font, 5, 5);
-      sprintf(buf, "%.0f", value);
+      snprintf(buf, sizeof(buf), "%.0f", value);
       m_pFontManager->Print(4, 2, buf, m_Font);
 
       glPopMatrix();

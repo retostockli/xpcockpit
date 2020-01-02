@@ -151,7 +151,7 @@ void B737PFDCompas::Render()
 		glEnd();
 
 		if (i % 30 == 0) {
-			sprintf(buf, "%d", -i/10);
+			snprintf(buf, sizeof(buf), "%d", -i/10);
 			if (i < -90)
 				m_pFontManager->Print(-3, R-13, buf, m_Font);
 			else
