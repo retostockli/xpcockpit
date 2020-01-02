@@ -1,13 +1,13 @@
 /*=============================================================================
 
-  This is the ogcA320StbyASI.h header to ogcA320StbyASI.cpp
+  This is the ogcA320StbyASI.h header to ogcA320StbyASI.c
 
   Created:
-    Date:   2011-11-14
+    Date:   2018-05-03
     Author: Hans Jansen
-    (see ogcSkeletonGauge.cpp for more details)
+    (see ogcSkeletonGauge.c for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -25,28 +25,31 @@
 =============================================================================*/
 
 /**
- * Airbus A320 style Standby Airspeed Indicator
+ * Airbus A320 style Standby AirSpeed Indicator
  */
 
-#ifndef OGCA320StbyASI_H
-#define OGCA320StbyASI_H
+#ifndef ogcA320StbyASI_h
+#define ogcA320StbyASI_h
 
 #include "ogcGauge.h"
 
-namespace OpenGC
-{
+extern int verbosity;
 
-class A320StbyASI : public Gauge  
-{
-public:
+namespace OpenGC {
 
-  A320StbyASI();
-  virtual ~A320StbyASI();
+  class A320StbyASI : public Gauge {
+  
+  public:
 
-  void Render();
+    A320StbyASI ();
+    virtual ~A320StbyASI ();
 
-};
+    void Render ();
 
+  protected:
+
+  };
+  
 } // end namespace OpenGC
 
 #endif

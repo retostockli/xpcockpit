@@ -1,15 +1,15 @@
 /*=============================================================================
 
-  This is the ogcA320StbyASI.cpp file, part of the OpenGC subproject
+  This is the ogcA320StbyASI.c file, part of the OpenGC subproject
   of the XpIoCards project (https://sourceforge.net/projects/xpiocards/)
 
-  === Airbus A320 style Standby Airspeed Indicator ===
+  === Airbus A320 style Standby AirSpeed Indicator ===
 
   Created:
-    Date:   2011-11-14
+    Date:   2018-05-03
     Author: Hans Jansen
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -24,7 +24,7 @@
   You should have received a copy of the GNU General Public License along with
   this program. If not, see <http://www.gnu.org/licenses/>. 
 
-===============================================================================
+=============================================================================
 
   The OpenGC subproject has been derived from:
     OpenGC - The Open Source Glass Cockpit Project
@@ -32,24 +32,51 @@
 
 =============================================================================*/
 
+#include <stdio.h>
+#include <math.h>
+
 #include "ogcA320StbyASI.h"
+#include "ogcA320StbyASIComponent.h"
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-A320StbyASI::A320StbyASI()
-{
-  printf("A320StbyASI constructed\n");
-}
+  /** The Subwindows */
+  A320StbyASIComponent* asiComp;
 
-A320StbyASI::~A320StbyASI()
-{
-  // Destruction handled by base class
-}
+  A320StbyASI::A320StbyASI () {
+  
+    if (verbosity > 0) printf ("A320StbyASI - constructing\n");
 
-void A320StbyASI::Render()
-{
-	// Rendering the dummy class does nothing
-}
+    // Specify our physical size
+    m_PhysicalSize.x = 170;
+    m_PhysicalSize.y = 170;
+
+    // We want to draw an outline
+    this->SetGaugeOutline (true);
+
+    // A Component of the Gauge
+    asiComp = new A320StbyASIComponent ();
+    asiComp->SetParentRenderObject (this);
+    asiComp->SetPosition (0, 0);
+    asiComp->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
+    this->AddGaugeComponent (asiComp);
+
+    if (verbosity > 1) printf ("A320StbyASI - constructed\n");
+  }
+
+  A320StbyASI::~A320StbyASI () {}
+
+  void A320StbyASI::Render () {
+  
+    Gauge::Render ();
+
+    if (verbosity > 1)
+    {
+      printf ("A320StbyASI - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
+      printf ("A320StbyASI -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
+      printf ("A320StbyASI -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
+      printf ("A320StbyASI -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
+    }    
+  }
 
 } // end namespace OpenGC

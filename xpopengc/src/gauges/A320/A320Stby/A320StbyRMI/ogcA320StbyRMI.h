@@ -1,13 +1,13 @@
 /*=============================================================================
 
-  This is the ogcA320StbyRMI.h header to ogcA320StbyRMI.cpp
+  This is the ogcA320StbyRMI.h header to ogcA320StbyRMI.c
 
   Created:
-    Date:   2011-11-14
+    Date:   2018-05-03
     Author: Hans Jansen
-    (see ogcSkeletonGauge.cpp for more details)
+    (see ogcSkeletonGauge.c for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -28,25 +28,28 @@
  * Airbus A320 style Standby Radio Magnetic Indicator
  */
 
-#ifndef OGCA320StbyRMI_H
-#define OGCA320StbyRMI_H
+#ifndef ogcA320StbyRMI_h
+#define ogcA320StbyRMI_h
 
 #include "ogcGauge.h"
 
-namespace OpenGC
-{
+extern int verbosity;
 
-class A320StbyRMI : public Gauge  
-{
-public:
+namespace OpenGC {
 
-  A320StbyRMI();
-  virtual ~A320StbyRMI();
+  class A320StbyRMI : public Gauge {
+  
+  public:
 
-  void Render();
+    A320StbyRMI ();
+    virtual ~A320StbyRMI ();
 
-};
+    void Render ();
 
+  protected:
+
+  };
+  
 } // end namespace OpenGC
 
 #endif

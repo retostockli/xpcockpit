@@ -1,15 +1,15 @@
 /*=============================================================================
 
-  This is the ogcA320StbyATT.cpp file, part of the OpenGC subproject
+  This is the ogcA320StbyAtt.c file, part of the OpenGC subproject
   of the XpIoCards project (https://sourceforge.net/projects/xpiocards/)
 
   === Airbus A320 style Standby Attitude Indicator ===
 
   Created:
-    Date:   2011-11-14
+    Date:   2018-05-03
     Author: Hans Jansen
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -24,7 +24,7 @@
   You should have received a copy of the GNU General Public License along with
   this program. If not, see <http://www.gnu.org/licenses/>. 
 
-===============================================================================
+=============================================================================
 
   The OpenGC subproject has been derived from:
     OpenGC - The Open Source Glass Cockpit Project
@@ -32,24 +32,51 @@
 
 =============================================================================*/
 
+#include <stdio.h>
+#include <math.h>
+
 #include "ogcA320StbyAtt.h"
+#include "ogcA320StbyAttComponent.h"
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-A320StbyAtt::A320StbyAtt()
-{
-  printf("A320StbyAtt constructed\n");
-}
+  /** The Subwindows */
+  A320StbyAttComponent* attComp;
 
-A320StbyAtt::~A320StbyAtt()
-{
-  // Destruction handled by base class
-}
+  A320StbyAtt::A320StbyAtt () {
+  
+    if (verbosity > 0) printf ("A320StbyAtt - constructing\n");
 
-void A320StbyAtt::Render()
-{
-	// Rendering the dummy class does nothing
-}
+    // Specify our physical size
+    m_PhysicalSize.x = 220;
+    m_PhysicalSize.y = 220;
+
+    // We want to draw an outline
+    this->SetGaugeOutline (true);
+
+    // A Component of the Gauge
+    attComp = new A320StbyAttComponent ();
+    attComp->SetParentRenderObject (this);
+    attComp->SetPosition (0, 0);
+    attComp->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
+    this->AddGaugeComponent (attComp);
+
+    if (verbosity > 1) printf ("A320StbyAtt - constructed\n");
+  }
+
+  A320StbyAtt::~A320StbyAtt () {}
+
+  void A320StbyAtt::Render () {
+  
+    Gauge::Render ();
+
+    if (verbosity > 1)
+    {
+      printf ("A320StbyAtt - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
+      printf ("A320StbyAtt -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
+      printf ("A320StbyAtt -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
+      printf ("A320StbyAtt -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
+    }
+  }
 
 } // end namespace OpenGC

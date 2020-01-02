@@ -1,15 +1,15 @@
 /*=============================================================================
 
-  This is the ogcA320StbyISIS.cpp file, part of the OpenGC subproject
+  This is the ogcA320StbyISIS.c file, part of the OpenGC subproject
   of the XpIoCards project (https://sourceforge.net/projects/xpiocards/)
 
-  === Airbus A320 style Standby Integrated Standby Instrument System Display ===
+  === Airbus A320 style Integrated Standby Instrument System ===
 
   Created:
-    Date:   2011-11-14
+    Date:   2018-05-03
     Author: Hans Jansen
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -24,7 +24,7 @@
   You should have received a copy of the GNU General Public License along with
   this program. If not, see <http://www.gnu.org/licenses/>. 
 
-===============================================================================
+=============================================================================
 
   The OpenGC subproject has been derived from:
     OpenGC - The Open Source Glass Cockpit Project
@@ -32,24 +32,51 @@
 
 =============================================================================*/
 
+#include <stdio.h>
+#include <math.h>
+
 #include "ogcA320StbyISIS.h"
+#include "ogcA320StbyISISComponent.h"
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-A320StbyISIS::A320StbyISIS()
-{
-  printf("A320StbyISIS constructed\n");
-}
+  /** The Subwindows */
+  A320StbyISISComponent* isisComp;
 
-A320StbyISIS::~A320StbyISIS()
-{
-  // Destruction handled by base class
-}
+  A320StbyISIS::A320StbyISIS () {
+  
+    if (verbosity > 0) printf ("A320StbyISIS - constructing\n");
 
-void A320StbyISIS::Render()
-{
-	// Rendering the dummy class does nothing
-}
+    // Specify our physical size
+    m_PhysicalSize.x = 220;
+    m_PhysicalSize.y = 220;
+
+    // We want to draw an outline
+    this->SetGaugeOutline (true);
+
+    // A Component of the Gauge
+    isisComp = new A320StbyISISComponent ();
+    isisComp->SetParentRenderObject (this);
+    isisComp->SetPosition (0, 0);
+    isisComp->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
+    this->AddGaugeComponent (isisComp);
+
+    if (verbosity > 1) printf ("A320StbyISIS - constructed\n");
+  }
+
+  A320StbyISIS::~A320StbyISIS (){}
+
+  void A320StbyISIS::Render () {
+  
+    Gauge::Render  ();
+
+    if (verbosity > 1)
+    {
+      printf ("A320StbyISIS - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
+      printf ("A320StbyISIS -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
+      printf ("A320StbyISIS -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
+      printf ("A320StbyISIS -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
+    }
+  }
 
 } // end namespace OpenGC

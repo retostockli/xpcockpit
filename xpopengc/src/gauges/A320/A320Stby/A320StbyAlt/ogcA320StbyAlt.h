@@ -1,13 +1,13 @@
 /*=============================================================================
 
-  This is the ogcA320StbyAlt.h header to ogcA320StbyAlt.cpp
+  This is the ogcA320StbyAlt.h header to ogcA320StbyAlt.c
 
   Created:
-    Date:   2011-11-14
+    Date:   2018-05-03
     Author: Hans Jansen
-    (see ogcSkeletonGauge.cpp for more details)
+    (see ogcSkeletonGauge.c for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -28,24 +28,27 @@
  * Airbus A320 style Standby Altitude Indicator
  */
 
-#ifndef OGCA320StbyAlt_H
-#define OGCA320StbyAlt_H
+#ifndef ogcA320StbyAlt_h
+#define ogcA320StbyAlt_h
 
 #include "ogcGauge.h"
 
-namespace OpenGC
-{
+extern int verbosity;
 
-class A320StbyAlt : public Gauge  
-{
-public:
+namespace OpenGC {
 
-  A320StbyAlt();
-  virtual ~A320StbyAlt();
+  class A320StbyAlt : public Gauge {
+  
+  public:
 
-  void Render();
+    A320StbyAlt ();
+    virtual ~A320StbyAlt ();
 
-};
+    void Render ();
+
+  protected:
+
+  };
 
 } // end namespace OpenGC
 
