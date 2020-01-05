@@ -173,7 +173,7 @@ int read_ini(char ininame[])
 	printf("Device %i: \n",device);
 	printf("Name %s \n",iocard[device].name);
 	printf("Vendor ID %i Product ID %i \n",iocard[device].vendor,iocard[device].product);
-	printf("USB Bus %i USB Address %i \n",iocard[device].bus,iocard[device].address);
+	//	printf("USB Bus %i USB Address %i \n",iocard[device].bus,iocard[device].address);
 	printf("USB Path %s \n",iocard[device].path);
 	printf("Cards %i Axes %i \n",iocard[device].ncards,iocard[device].naxes);	
 	printf("\n");
@@ -870,13 +870,13 @@ int keys_input(int device, int key)
   return (retval);
 }
 
-/* output value to control servo motor */
-/* Define a minimum and a maximum output value (minval, maxval) */
-/* with corresponding servo minimum and maximum value (servominval, servomaxval)
-/* Servo minimum and maximum values can go from SERVOMIN to SERVOMAX. 
-/* If below SERVOMIN or above SERVOMAX, the servo is parked. */
-/* In parking position the servo is not active and the servo wheel can be freely  */
-/* turned even when the power is connected */
+/* output value to control servo motor 
+   Define a minimum and a maximum output value (minval, maxval) 
+   with corresponding servo minimum and maximum value (servominval, servomaxval)
+   Servo minimum and maximum values can go from SERVOMIN to SERVOMAX.
+   If below SERVOMIN or above SERVOMAX, the servo is parked.
+   In parking position the servo is not active and the servo wheel can be freely
+   turned even when the power is connected */
 int servos_output(int device, int servo, float *value, float minval, float maxval,
 		  int servominval, int servomaxval)
 {

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpusb], [0.60], [Reto Stockli])
+AC_INIT([xpusb], [0.61], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/dictionary.c])
 
 # produce makefiles (turn on warnings on automake!)
@@ -90,7 +90,7 @@ AC_MSG_RESULT([$HAVE_DEBUG])
 
 if test "x$HAVE_DEBUG" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -O0"
+    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address -O0"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CFLAGS="$CFLAGS -O2"
@@ -106,8 +106,8 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
 # Checks for library functions.
-AC_FUNC_MALLOC
-AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol])
+# AC_FUNC_MALLOC
+AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol malloc])
 
 
 # set installation prefix to current directory if none was given

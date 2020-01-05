@@ -32,7 +32,7 @@ void *poll_thread_main(void *arg)
       if (device[*number].inBuffer != NULL) {
 
 	/* read call goes here */
-	ret = hid_read(device[*number].handle, device[*number].inBuffer, device[*number].inBufferSize);
+	ret = hid_read(device[*number].handle, &device[*number].inBuffer[0], device[*number].inBufferSize);
 
 	if (ret < 0) {
 	  device[*number].poll_thread_exit_code = 1;
@@ -45,9 +45,10 @@ void *poll_thread_main(void *arg)
 		<= device[*number].readBufferSize) ) {
 	    
 	    pthread_mutex_lock(&exit_cond_lock);
-	    memcpy(device[*number].readBuffer,device[*number].inBuffer,device[*number].inBufferSize);
+	    
+	    memcpy(&device[*number].readBuffer[device[*number].readLeft],
+		   &device[*number].inBuffer[0],device[*number].inBufferSize);
 	    device[*number].readLeft += device[*number].inBufferSize;
-	    device[*number].readBuffer += device[*number].inBufferSize;
 	    pthread_mutex_unlock(&exit_cond_lock);
 	    
 	    if (HID_DEBUG > 2) printf("HIDAPI_INTERFACE: device %i read buffer position: %i \n",
@@ -101,19 +102,18 @@ int read_usb (int number, unsigned char *bytes, int size)
 
       if (USE_THREADS == 1) {
 	/* empty read buffer instead of directly accessing the device */
-
+	
 	if (device[number].readLeft > 0) {
 	  /* read from start of read buffer */
-	  memcpy(bytes,device[number].readBuffer-device[number].readLeft,device[number].inBufferSize);
+	  memcpy(bytes,&device[number].readBuffer[0],device[number].inBufferSize);
 	  /* shift remaining read buffer to the left */
-	  if (device[number].readLeft-device[number].inBufferSize > 0) {
-	    memmove(device[number].readBuffer-device[number].readLeft,
-		    device[number].readBuffer-device[number].readLeft+device[number].inBufferSize,
+	  if ((device[number].readLeft-device[number].inBufferSize) > 0) {
+	    memmove(&device[number].readBuffer[0],
+		    &device[number].readBuffer[device[number].inBufferSize],
 		    device[number].readLeft-device[number].inBufferSize);
 	  }
 	  /* decrease read buffer position and counter */
 	  device[number].readLeft -= device[number].inBufferSize;
-	  device[number].readBuffer -= device[number].inBufferSize;
       
 	  if (HID_DEBUG > 1) {
 	    printf("HIDAPI_INTERFACE: read buffer %02x %02x %02x %02x %02x %02x %02x %02x \n",
@@ -127,12 +127,12 @@ int read_usb (int number, unsigned char *bytes, int size)
       } else {
 	/* directly read from the device */
           
-	result = hid_read(device[number].handle, device[number].inBuffer, device[number].inBufferSize);
+	result = hid_read(device[number].handle, &device[number].inBuffer[0], device[number].inBufferSize);
     
 	if (result > 0) {
       
 	  if (result == device[number].inBufferSize) {
-	    memcpy(bytes,device[number].inBuffer,size);   
+	    memcpy(bytes,&device[number].inBuffer[0],size);   
 	
 	    if (HID_DEBUG > 1) {
 	      printf("HIDAPI_INTERFACE: read buffer %02x %02x %02x %02x %02x %02x %02x %02x \n",
@@ -260,14 +260,16 @@ int check_usb (int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8
   wchar_t wstr[MAX_STR];
 
   // Open the device using the VID, PID,
-  // and optionally the Serial number (INOP)
-  // and optionally the Device Path
+  // and optionally, if available by the Device Path
+  // The latter is recommended if you have many cards
+  // of the same type running and want to be sure you
+  // address the correct one
 
-  //  if (strcmp(path,"") == 0) {
-    handle = hid_open(vendor,product, L"",path);
-    //  } else {
-    //    handle = hid_open_path(path);
-    //  }
+   if (strcmp(path,"") == 0) {
+     handle = hid_open(vendor,product, NULL);
+   } else {
+     handle = hid_open_path(path);
+   }
   
   if (handle) {
     
@@ -286,13 +288,11 @@ int check_usb (int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8
     ret = hid_get_product_string(handle, wstr, MAX_STR);
     printf("Product String: %ls\n", wstr);
 
-    // Read the Serial Number String
-    wstr[0] = 0x0000;
-    ret = hid_get_serial_number_string(handle, wstr, MAX_STR);
-    printf("Serial Number String: %ls\n", wstr);
-
     device[number].readBuffer = malloc(device[number].readBufferSize);
     device[number].writeBuffer = malloc(device[number].writeBufferSize);
+
+    /* printf("ALLOC: %i %p %p \n",number,&device[number].readBuffer[0],
+       &device[number].readBuffer[device[number].readBufferSize-1]); */
 
     if (USE_THREADS == 1) {
 
@@ -390,19 +390,16 @@ void exit_usb ()
 	free(device[i].outBuffer);
 	device[i].outBuffer = NULL;
       }
-
-      /* this free does not work. Why? */
-
-      /*
-	if (device[i].readBuffer != NULL) {
+      
+      if (device[i].readBuffer != NULL) {
 	free(device[i].readBuffer);
 	device[i].readBuffer = NULL;
-	}
-	if (device[i].writeBuffer != NULL) {
+      }
+      if (device[i].writeBuffer != NULL) {
 	free(device[i].writeBuffer);
 	device[i].writeBuffer = NULL;
-	}
-      */
+      }
+	
     }
   }
 }

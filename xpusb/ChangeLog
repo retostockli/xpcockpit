@@ -1,6 +1,12 @@
-2019/12/18 Reto Stockli and Hans Jansen
+2020/01/07 Reto Stockli and Hans Jansen
 
 This file documents changes since USBIOCARDS Version 0.1
+
+Version 0.61
+------------
+- corrected out of bounds problem with USB read through hidapi
+- updated to newest hidapi code from libusb/hidapi fork since signal11
+  does not maintain the main code any more
 
 Version 0.60
 ------------

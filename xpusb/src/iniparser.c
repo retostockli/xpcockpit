@@ -580,13 +580,16 @@ dictionary * iniparser_load(const char * ininame)
             len-- ;
         }
         /* Detect multi-line */
-        if (line[len]=='\\') {
+	if (len>=0) {
+	  if (line[len]=='\\') {
             /* Multi-line value */
             last=len ;
             continue ;
-        } else {
+	  } else {
             last=0 ;
-        }
+	  }
+	}
+	
         switch (iniparser_line(line, section, key, val)) {
             case LINE_EMPTY:
             case LINE_COMMENT:

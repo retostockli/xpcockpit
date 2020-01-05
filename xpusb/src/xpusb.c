@@ -155,7 +155,7 @@ int main (int argc, char **argv)
 	iocard_test();
       }
       if (strcmp(*argv,"test") == 0) {
-	iocard_test();
+	//iocard_test();
 	// usbkeys_test();
 	// usbservos_test();
 	// dcmotorsplus_test();

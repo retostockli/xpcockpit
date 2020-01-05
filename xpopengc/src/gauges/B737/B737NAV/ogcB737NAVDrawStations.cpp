@@ -277,7 +277,7 @@ namespace OpenGC
 		    glEnd();
 		    // printf("%s %i %f %f \n",(*fixIt)->GetIdentification().c_str(),taken,(*fixIt)->GetDegreeLon(),(*fixIt)->GetDegreeLat());
 		    m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
-		    m_pFontManager->Print(1.25*ss2,-1.75*ss2, (*fixIt)->GetIdentification().c_str(), m_Font);
+		    m_pFontManager->Print(1.25*ss2,-2.75*ss2, (*fixIt)->GetIdentification().c_str(), m_Font);
 		  
 		    glPopMatrix();
 

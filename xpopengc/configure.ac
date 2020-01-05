@@ -214,7 +214,7 @@ AC_HEADER_STDBOOL
 AC_TYPE_UINT32_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([bzero floor memset socket sqrt strcspn])
+AC_CHECK_FUNCS([bzero floor memset socket sqrt strcspn malloc])
 
 # Add local OpenGC source code directories to include directives
 CPPFLAGS="$CPPFLAGS -I$PWD/src/base -I$PWD/src/datasources -I$PWD/src/navigation -I$PWD/src/gauges -I$PWD/src/main"
