@@ -82,13 +82,29 @@ B737FMC::B737FMC()
   line_1->setLineDataRef2((char*) "laminar/B738/fmc1/Line00_L");
   this->AddGaugeComponent(line_1);
   
+  B737FMCLine* line_1_small = new B737FMCLine();
+  line_1_small->SetParentRenderObject(this);
+  line_1_small->SetPosition(linex0, m_PhysicalSize.y - 4 - delta);
+  line_1_small->setCurrentLine(1);
+  line_1_small->setLineSizeY(0.6);
+  line_1_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line00_S");
+  this->AddGaugeComponent(line_1_small);
+  
+  B737FMCLine* line_1_magenta = new B737FMCLine();
+  line_1_magenta->SetParentRenderObject(this);
+  line_1_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - delta);
+  line_1_magenta->setCurrentLine(1);
+  line_1_magenta->setLineColor(255,0,255);
+  line_1_magenta->setLineDataRef2((char*) "laminar/B738/fmc1/Line00_M");
+  this->AddGaugeComponent(line_1_magenta);
+  
   B737FMCLine* line_2 = new B737FMCLine();
   line_2->SetParentRenderObject(this);
   line_2->SetPosition(linex0, m_PhysicalSize.y - 4 - 2*delta);
   line_2->setCurrentLine(2);
+  line_2->setLineSizeY(0.6);
   line_2->setLineDataRef1((char*) "FJCC/UFMC/LINE_2");
   line_2->setLineDataRef2((char*) "laminar/B738/fmc1/Line01_X");
-  line_2->setLineSizeY(0.5);
   this->AddGaugeComponent(line_2);
 
   B737FMCLine* line_3 = new B737FMCLine();
@@ -99,13 +115,29 @@ B737FMC::B737FMC()
   line_3->setLineDataRef2((char*) "laminar/B738/fmc1/Line01_L");
   this->AddGaugeComponent(line_3);
 
+  B737FMCLine* line_3_small = new B737FMCLine();
+  line_3_small->SetParentRenderObject(this);
+  line_3_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 3*delta);
+  line_3_small->setCurrentLine(3);
+  line_3_small->setLineSizeY(0.6);
+  line_3_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line01_S");
+  this->AddGaugeComponent(line_3_small);
+
+  B737FMCLine* line_3_magenta = new B737FMCLine();
+  line_3_magenta->SetParentRenderObject(this);
+  line_3_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 3*delta);
+  line_3_magenta->setCurrentLine(3);
+  line_3_magenta->setLineColor(255,0,255);
+  line_3_magenta->setLineDataRef2((char*) "laminar/B738/fmc1/Line01_M");
+  this->AddGaugeComponent(line_3_magenta);
+
   B737FMCLine* line_4 = new B737FMCLine();
   line_4->SetParentRenderObject(this);
   line_4->SetPosition(linex0, m_PhysicalSize.y - 4 - 4*delta);
   line_4->setCurrentLine(4);
+  line_4->setLineSizeY(0.6);
   line_4->setLineDataRef1((char*) "FJCC/UFMC/LINE_4");
   line_4->setLineDataRef2((char*) "laminar/B738/fmc1/Line02_X");
-  line_4->setLineSizeY(0.5);
   this->AddGaugeComponent(line_4);
 
   B737FMCLine* line_5 = new B737FMCLine();
@@ -116,13 +148,29 @@ B737FMC::B737FMC()
   line_5->setLineDataRef2((char*) "laminar/B738/fmc1/Line02_L");
   this->AddGaugeComponent(line_5);
 
+  B737FMCLine* line_5_small = new B737FMCLine();
+  line_5_small->SetParentRenderObject(this);
+  line_5_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 5*delta);
+  line_5_small->setCurrentLine(5);
+  line_5_small->setLineSizeY(0.6);
+  line_5_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line02_S");
+  this->AddGaugeComponent(line_5_small);
+
+  B737FMCLine* line_5_magenta = new B737FMCLine();
+  line_5_magenta->SetParentRenderObject(this);
+  line_5_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 5*delta);
+  line_5_magenta->setCurrentLine(5);
+  line_5_magenta->setLineColor(255,0,255);
+  line_5_magenta->setLineDataRef2((char*) "laminar/B738/fmc1/Line02_M");
+  this->AddGaugeComponent(line_5_magenta);
+
   B737FMCLine* line_6 = new B737FMCLine();
   line_6->SetParentRenderObject(this);
   line_6->SetPosition(linex0, m_PhysicalSize.y - 4 - 6*delta);
   line_6->setCurrentLine(6);
+  line_6->setLineSizeY(0.6);
   line_6->setLineDataRef1((char*) "FJCC/UFMC/LINE_6");
   line_6->setLineDataRef2((char*) "laminar/B738/fmc1/Line03_X");
-  line_6->setLineSizeY(0.5);
   this->AddGaugeComponent(line_6);
 
   B737FMCLine* line_7 = new B737FMCLine();
@@ -133,13 +181,29 @@ B737FMC::B737FMC()
   line_7->setLineDataRef2((char*) "laminar/B738/fmc1/Line03_L");
   this->AddGaugeComponent(line_7);
 
+  B737FMCLine* line_7_small = new B737FMCLine();
+  line_7_small->SetParentRenderObject(this);
+  line_7_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 7*delta);
+  line_7_small->setCurrentLine(7);
+  line_7_small->setLineSizeY(0.6);
+  line_7_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line03_S");
+  this->AddGaugeComponent(line_7_small);
+
+  B737FMCLine* line_7_magenta = new B737FMCLine();
+  line_7_magenta->SetParentRenderObject(this);
+  line_7_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 7*delta);
+  line_7_magenta->setCurrentLine(7);
+  line_7_magenta->setLineColor(255,0,255);
+  line_7_magenta->setLineDataRef2((char*) "laminar/B738/fmc1/Line03_M");
+  this->AddGaugeComponent(line_7_magenta);
+
   B737FMCLine* line_8 = new B737FMCLine();
   line_8->SetParentRenderObject(this);
   line_8->SetPosition(linex0, m_PhysicalSize.y - 4 - 8*delta);
   line_8->setCurrentLine(8);
+  line_8->setLineSizeY(0.6);
   line_8->setLineDataRef1((char*) "FJCC/UFMC/LINE_8");
   line_8->setLineDataRef2((char*) "laminar/B738/fmc1/Line04_X");
-  line_8->setLineSizeY(0.5);
   this->AddGaugeComponent(line_8);
 
   B737FMCLine* line_9 = new B737FMCLine();
@@ -150,13 +214,29 @@ B737FMC::B737FMC()
   line_9->setLineDataRef2((char*) "laminar/B738/fmc1/Line04_L");
   this->AddGaugeComponent(line_9);
 
+  B737FMCLine* line_9_small = new B737FMCLine();
+  line_9_small->SetParentRenderObject(this);
+  line_9_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 9*delta);
+  line_9_small->setCurrentLine(9);
+  line_9_small->setLineSizeY(0.6);
+  line_9_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line04_S");
+  this->AddGaugeComponent(line_9_small);
+
+  B737FMCLine* line_9_magenta = new B737FMCLine();
+  line_9_magenta->SetParentRenderObject(this);
+  line_9_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 9*delta);
+  line_9_magenta->setCurrentLine(9);
+  line_9_magenta->setLineColor(255,0,255);
+  line_9_magenta->setLineDataRef2((char*) "laminar/B738/fmc1/Line04_M");
+  this->AddGaugeComponent(line_9_magenta);
+
   B737FMCLine* line_10 = new B737FMCLine();
   line_10->SetParentRenderObject(this);
   line_10->SetPosition(linex0, m_PhysicalSize.y - 4 - 10*delta);
   line_10->setCurrentLine(10);
+  line_10->setLineSizeY(0.6);
   line_10->setLineDataRef1((char*) "FJCC/UFMC/LINE_10");
   line_10->setLineDataRef2((char*) "laminar/B738/fmc1/Line05_X");
-  line_10->setLineSizeY(0.5);
   this->AddGaugeComponent(line_10);
 
   B737FMCLine* line_11 = new B737FMCLine();
@@ -167,13 +247,29 @@ B737FMC::B737FMC()
   line_11->setLineDataRef2((char*) "laminar/B738/fmc1/Line05_L");
   this->AddGaugeComponent(line_11);
 
+  B737FMCLine* line_11_small = new B737FMCLine();
+  line_11_small->SetParentRenderObject(this);
+  line_11_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 11*delta);
+  line_11_small->setCurrentLine(11);
+  line_11_small->setLineSizeY(0.6);
+  line_11_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line05_S");
+  this->AddGaugeComponent(line_11_small);
+
+  B737FMCLine* line_11_magenta = new B737FMCLine();
+  line_11_magenta->SetParentRenderObject(this);
+  line_11_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 11*delta);
+  line_11_magenta->setCurrentLine(11);
+  line_11_magenta->setLineColor(255,0,255);
+  line_11_magenta->setLineDataRef2((char*) "laminar/B738/fmc1/Line05_M");
+  this->AddGaugeComponent(line_11_magenta);
+
   B737FMCLine* line_12 = new B737FMCLine();
   line_12->SetParentRenderObject(this);
   line_12->SetPosition(linex0, m_PhysicalSize.y - 4 - 12*delta);
   line_12->setCurrentLine(12);
+  line_12->setLineSizeY(0.6);
   line_12->setLineDataRef1((char*) "FJCC/UFMC/LINE_12");
   line_12->setLineDataRef2((char*) "laminar/B738/fmc1/Line06_X");
-  line_12->setLineSizeY(0.5);
   this->AddGaugeComponent(line_12);
 
   B737FMCLine* line_13 = new B737FMCLine();
@@ -183,6 +279,22 @@ B737FMC::B737FMC()
   line_13->setLineDataRef1((char*) "FJCC/UFMC/LINE_13");
   line_13->setLineDataRef2((char*) "laminar/B738/fmc1/Line06_L");
   this->AddGaugeComponent(line_13);
+
+  B737FMCLine* line_13_small = new B737FMCLine();
+  line_13_small->SetParentRenderObject(this);
+  line_13_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 13*delta);
+  line_13_small->setCurrentLine(13);
+  line_13_small->setLineSizeY(0.6);
+  line_13_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line06_S");
+  this->AddGaugeComponent(line_13_small);
+
+  B737FMCLine* line_13_magenta = new B737FMCLine();
+  line_13_magenta->SetParentRenderObject(this);
+  line_13_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 13*delta);
+  line_13_magenta->setCurrentLine(13);
+  line_13_magenta->setLineColor(255,0,255);
+  line_13_magenta->setLineDataRef2((char*) "laminar/B738/fmc1/Line06_M");
+  this->AddGaugeComponent(line_13_magenta);
 
   B737FMCLine* line_14 = new B737FMCLine();
   line_14->SetParentRenderObject(this);

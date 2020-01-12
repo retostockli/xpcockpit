@@ -69,6 +69,9 @@ namespace OpenGC
     strcpy(m_LineDataRef2,"\0");
     m_LineSizeX = 0.9;
     m_LineSizeY = 0.85;
+    m_LineColor[0]= 255;
+    m_LineColor[1]= 255;
+    m_LineColor[2]= 255;
   }
 
   B737FMCLine::~B737FMCLine()
@@ -104,7 +107,7 @@ namespace OpenGC
     float xFontSize = m_LineSizeX * fontSize;
     float yFontSize = m_LineSizeY * fontSize;
     
-    glColor3ub( 255, 255, 255 );
+    glColor3ub( m_LineColor[0], m_LineColor[1], m_LineColor[2] );
    
     if (line) {
 

@@ -48,6 +48,7 @@ public:
 	void setLineDataRef2(char* lineDataRef) {strcpy(m_LineDataRef2,lineDataRef);}
 	void setLineSizeX(float lineSizeX) {m_LineSizeX = lineSizeX;}
 	void setLineSizeY(float lineSizeY) {m_LineSizeY = lineSizeY;}
+	void setLineColor(int R, int G, int B) {m_LineColor[0]=R; m_LineColor[1]=G; m_LineColor[2]=B;}
 
 protected:
 	int m_Font;
@@ -56,6 +57,7 @@ protected:
 	char m_LineDataRef2[50];
 	float m_LineSizeX;
 	float m_LineSizeY;
+	int m_LineColor[3];
 };
 
 } // end namespace OpenGC
