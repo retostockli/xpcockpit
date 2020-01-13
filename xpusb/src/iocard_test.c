@@ -42,10 +42,10 @@ void iocard_test(void)
   int device = 0;
 
   // test integer array data
-  // int *digitalinput = link_dataref_int("sim/cockpit/electrical/landing_lights_on");   
+  int *digitalinput = link_dataref_int("sim/cockpit/electrical/landing_lights_on");   
 
   // unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum",  40, -1);  
-  int *digitalinput = link_dataref_int("xpserver/custominput");
+  // int *digitalinput = link_dataref_int("xpserver/custominput");
   int *encoder = link_dataref_int("xpserver/customencoder");
   // double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
   //float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, 0);

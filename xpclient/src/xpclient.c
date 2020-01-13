@@ -39,7 +39,7 @@ int main (int argc,char **argv)
   /* server settings */
   memset(server_ip,0,sizeof(server_ip));
   strcpy(server_ip,"127.0.0.1");
-//  strcpy(server_ip,"192.168.0.14");
+  // strcpy(server_ip,"192.168.0.100");
   server_port = 8091;
 
   /* initialize handler for command-line interrupts (ctrl-c) */

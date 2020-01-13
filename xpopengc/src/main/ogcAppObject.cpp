@@ -250,13 +250,10 @@ bool AppObject::DoFileInitialization(char* iniFile)
 
   // parse the *ogc.ini file
   ini = iniparser_load(iniFile);
-  if (ini == NULL)
-  {
+  if (ini == NULL) {
     printf("AppObject - Error opening initialization file %s\n", iniFile);
     return false;
-  }
-  else
-  {
+  } else {
     // verbosity: 0: no debug, 1: some debug, 2: lots of debug
     verbosity = iniparser_getint(ini,"General:Verbosity", default_verbosity); 
 
@@ -332,49 +329,46 @@ bool AppObject::DoFileInitialization(char* iniFile)
     Fl::flush();
 
     // Ready with the window; now set up the gauge(s)
-    {
-      int gaugeDefined = 0;
-      int i = 1;
-      char gaugeKey[50];
-      char *gaugeName;
-      float xpos, ypos, xscale, yscale;
-      int gaugeArg;
+    int gaugeDefined = 0;
+    int i = 1;
+    char gaugeKey[50];
+    char *gaugeName;
+    float xpos, ypos, xscale, yscale;
+    int gaugeArg;
     
-      while (0==0) {
-        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:Name",i);
-        gaugeName = iniparser_getstring (ini, gaugeKey, (char *) "");
-        if (strcmp (gaugeName, "") == 0) break;
-        if (verbosity > 0) printf ("Gauge %i: Name, value: %s\n", i, gaugeName);
-        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:xPos", i);
-        xpos = iniparser_getdouble (ini, gaugeKey, 0);
-        if (verbosity > 0) printf ("Gauge %i: xpos, value: %f\n", i, xpos);
-        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:yPos", i);
-        ypos = iniparser_getdouble (ini, gaugeKey, 0);
-        if (verbosity > 0) printf ("Gauge %i: ypos, value: %f\n", i, ypos);
-        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:xscale", i);
-        xscale = iniparser_getdouble (ini, gaugeKey, 0);
-        if (verbosity > 0) printf ("Gauge %i: xscale, value: %f\n", i, xscale);
-        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:yscale", i);
-        yscale = iniparser_getdouble (ini, gaugeKey, 0);
-        if (verbosity > 0) printf ("Gauge %i: yscale, value: %f\n", i, yscale);
-        snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:arg", i);
-        gaugeArg = iniparser_getint (ini, gaugeKey, 0);
-        if (verbosity > 0) printf ("Gauge %i: arg, value: %i\n", i, gaugeArg);
-        gaugeDefined = 1;
-        i++;
-        CreateGauge (gaugeName, xpos, ypos, xscale, yscale, gaugeArg);
-      }
-      if (! gaugeDefined) {
-        printf ("No gauges defined!\n");
-        return false;
-      }
-      if (verbosity > 0) printf ("%i gauges defined\n", i - 1);
-      return true;
+    while (0==0) {
+      snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:Name",i);
+      gaugeName = iniparser_getstring (ini, gaugeKey, (char *) "");
+      if (strcmp (gaugeName, "") == 0) break;
+      if (verbosity > 0) printf ("Gauge %i: Name, value: %s\n", i, gaugeName);
+      snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:xPos", i);
+      xpos = iniparser_getdouble (ini, gaugeKey, 0);
+      if (verbosity > 0) printf ("Gauge %i: xpos, value: %f\n", i, xpos);
+      snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:yPos", i);
+      ypos = iniparser_getdouble (ini, gaugeKey, 0);
+      if (verbosity > 0) printf ("Gauge %i: ypos, value: %f\n", i, ypos);
+      snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:xscale", i);
+      xscale = iniparser_getdouble (ini, gaugeKey, 0);
+      if (verbosity > 0) printf ("Gauge %i: xscale, value: %f\n", i, xscale);
+      snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:yscale", i);
+      yscale = iniparser_getdouble (ini, gaugeKey, 0);
+      if (verbosity > 0) printf ("Gauge %i: yscale, value: %f\n", i, yscale);
+      snprintf (gaugeKey, sizeof(gaugeKey), "Gauge:%i:arg", i);
+      gaugeArg = iniparser_getint (ini, gaugeKey, 0);
+      if (verbosity > 0) printf ("Gauge %i: arg, value: %i\n", i, gaugeArg);
+      gaugeDefined = 1;
+      i++;
+      CreateGauge (gaugeName, xpos, ypos, xscale, yscale, gaugeArg);
     }
+    if (! gaugeDefined) {
+      printf ("No gauges defined!\n");
+      iniparser_freedict(ini);
+      return false;
+    }
+    if (verbosity > 0) printf ("%i gauges defined\n", i - 1);
+    iniparser_freedict(ini);
+    return true;
   }
-  
-  // All done
-  iniparser_freedict(ini);
 
   return true;
 }

@@ -47,12 +47,14 @@ Font
 Font
 ::~Font()
 {
+  //printf("BLABLA1\n");
   if(m_PolygonFont != 0)
   {
     delete m_PolygonFont;
   }
   m_PolygonFont = 0;
 
+  //printf("BLABLA2\n");
   if(m_OutlineFont != 0)
   {
     delete m_OutlineFont;
@@ -95,8 +97,9 @@ Font
     glTranslated(x,y,0);
     glScaled(0.0135*m_Size.x, 0.0135*m_Size.y, 1);
 
-    glLineWidth(1.0);
+    glLineWidth(0.3);
     m_OutlineFont->Render(string);
+    glLineWidth(1.0);
 
     glPopMatrix();
   }
@@ -118,7 +121,7 @@ Font
   // will work correctly later on
   m_PolygonFont->FaceSize(100);
   m_OutlineFont->FaceSize(100);
-
+ 
   // We succeeded at opening the fonts
   return true;
 }
