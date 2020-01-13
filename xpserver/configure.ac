@@ -45,10 +45,10 @@ AC_MSG_RESULT([$debugit])
 
 if test x"$debugit" = x"yes"; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-    AM_CPPFLAGS="$AM_CPPFLAGS -g -Wall -Wno-uninitialized -O0"
+    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -O0"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
-    AM_CPPFLAGS="$AM_CPPFLAGS -O3"
+    CFLAGS="$CFLAGS -O3"
 fi
 
 # Check for X-Plane root directory
@@ -81,7 +81,6 @@ AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 # none needed
 
 # Substitution
-#AC_SUBST([xplanedir])
 AC_SUBST([AM_CPPFLAGS])
 AC_SUBST([AM_LDFLAGS])
 AC_SUBST([OS])
@@ -94,8 +93,7 @@ AC_CHECK_HEADERS([arpa/inet.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/soc
 #AC_TYPE_UINT32_T
 
 # Checks for library functions.
-AC_FUNC_MALLOC
-AC_CHECK_FUNCS([inet_ntoa memset pow select socket strchr strtol])
+AC_CHECK_FUNCS([inet_ntoa memset pow select socket strchr strtol malloc])
 AC_CHECK_LIB([m],[roundf])
 
 #AC_CONFIG_FILES([Makefile src/32/Makefile src/64/Makefile])
