@@ -166,6 +166,8 @@ namespace OpenGC
 
       char buffer[2];
       char buffer2[5];
+      memset(buffer,0,sizeof(buffer));
+      memset(buffer2,0,sizeof(buffer));
 
       int nextHighestIAS = (ias_int/10)*10;
 
@@ -196,6 +198,7 @@ namespace OpenGC
 	  // do not draw negative tick speeds
 	  if (tickSpeed >= 0) {
     
+	    glLineWidth(2.0);
 	    glBegin(GL_LINES);
 	    glVertex2f(indent_x - tickWidth, tickLocation);
 	    glVertex2f(indent_x, tickLocation);
@@ -249,6 +252,7 @@ namespace OpenGC
 	    {
 	      tickLocation = (m_PhysicalSize.y/2) - ( (i-1) * tickSpacing) - (10 - vertOffset);
 
+	      glLineWidth(2.0);
 	      glBegin(GL_LINES);
 	      glVertex2f(indent_x - tickWidth, tickLocation);
 	      glVertex2f(indent_x, tickLocation);

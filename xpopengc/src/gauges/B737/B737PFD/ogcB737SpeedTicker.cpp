@@ -79,7 +79,7 @@ namespace OpenGC
 
     // White border around background
     glColor3ub(255,255,255);
-    glLineWidth(2.0);
+    glLineWidth(2.5);
     glBegin(GL_LINE_LOOP);
     glVertex2f(0.0,0.0);
     glVertex2f(0.0,18.0);
@@ -96,6 +96,7 @@ namespace OpenGC
     if (*speed_knots != FLT_MISS) {
 
       char buffer[4];
+      memset(buffer,0,sizeof(buffer));
 
       // Speed for integer calculations
       int ias_int = (int) *speed_knots;

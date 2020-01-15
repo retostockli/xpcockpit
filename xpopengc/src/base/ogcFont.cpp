@@ -47,14 +47,15 @@ Font
 Font
 ::~Font()
 {
-  //printf("BLABLA1\n");
+ 
+  printf("BLABLA1\n");
   if(m_PolygonFont != 0)
   {
     delete m_PolygonFont;
   }
   m_PolygonFont = 0;
 
-  //printf("BLABLA2\n");
+  printf("BLABLA2\n");
   if(m_OutlineFont != 0)
   {
     delete m_OutlineFont;
