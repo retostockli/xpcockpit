@@ -112,8 +112,10 @@ namespace OpenGC
     } else {
       altimeter_pressure_unit = link_dataref_int("xpserver/barometer_unit");
     }
-					       
-					      
+
+    // angle of attack (degrees)
+    float *aoa = link_dataref_flt("sim/flightmodel/position/alpha",-1);
+    
 
     int *ap_athr_armed_rec;   
     int *ap_athr_armed;   
@@ -319,10 +321,10 @@ namespace OpenGC
 
     // Draw the background rectangle
     glBegin(GL_POLYGON);
-    glVertex2f(40, 190+0);
-    glVertex2f(40, 170+0);
-    glVertex2f(140, 170+0);
-    glVertex2f(140, 190+0);
+    glVertex2f(40, 190+8);
+    glVertex2f(40, 170+8);
+    glVertex2f(140, 170+8);
+    glVertex2f(140, 190+8);
     glEnd();  
 
     // Draw in black
@@ -330,16 +332,16 @@ namespace OpenGC
     glLineWidth(3.0);
 
     glBegin(GL_LINES);
-    glVertex2f(40,180+0);
-    glVertex2f(140,180+0);
+    glVertex2f(40,180+8);
+    glVertex2f(140,180+8);
     glEnd();
     glBegin(GL_LINES);
-    glVertex2f(73,170+0);
-    glVertex2f(73,190+0);
+    glVertex2f(73,170+8);
+    glVertex2f(73,190+8);
     glEnd();
     glBegin(GL_LINES);
-    glVertex2f(106,170+0);
-    glVertex2f(106,190+0);
+    glVertex2f(106,170+8);
+    glVertex2f(106,190+8);
     glEnd();
 
     // Draw Autopilot states 
@@ -358,10 +360,10 @@ namespace OpenGC
 	  glColor3ub(0,179,0);
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(40,181+0);
-	  glVertex2f(72,181+0);
-	  glVertex2f(72,190+0);
-	  glVertex2f(40,190+0);
+	  glVertex2f(40,181+8);
+	  glVertex2f(72,181+8);
+	  glVertex2f(72,190+8);
+	  glVertex2f(40,190+8);
 	  glEnd();
 	}
     
@@ -369,23 +371,23 @@ namespace OpenGC
 	if (*ap_spd_mode == 1) {
 	  glColor3ub(255,255,255);
 	  strcpy(buffer, "ARM");
-	  m_pFontManager->Print(49,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(49,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 2) {
 	  glColor3ub(0,179,0);
 	  strcpy(buffer, "N1");
-	  m_pFontManager->Print(50,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(50,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 3) {
 	  glColor3ub(0,179,0);
 	  strcpy(buffer, "MCP SPD");
-	  m_pFontManager->Print(44,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 4) {
 	  glColor3ub(0,179,0);
 	  strcpy(buffer, "FMC SPD");
-	  m_pFontManager->Print(44,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 7) {
 	  glColor3ub(0,179,0);
 	  strcpy(buffer, "RETARD");
-	  m_pFontManager->Print(46,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(46,183+8, &buffer[0], m_Font);
 	}
       }
 
@@ -398,23 +400,23 @@ namespace OpenGC
 	  // Green border around background
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(74,181+0);
-	  glVertex2f(105,181+0);
-	  glVertex2f(105,190+0);
-	  glVertex2f(74,190+0);
+	  glVertex2f(74,181+8);
+	  glVertex2f(105,181+8);
+	  glVertex2f(105,190+8);
+	  glVertex2f(74,190+8);
 	  glEnd();
 	}
 
 	// Green Text on Gray
 	if (*ap_hdg_mode == 1) {
 	  strcpy(buffer, "HDG SEL");
-	  m_pFontManager->Print(77,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(77,183+8, &buffer[0], m_Font);
 	} else if (*ap_hdg_mode == 2) {
 	  strcpy(buffer, "VOR LOC");
-	  m_pFontManager->Print(77,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(77,183+8, &buffer[0], m_Font);
 	} else if (*ap_hdg_mode == 3) {
 	  strcpy(buffer, "LNAV");
-	  m_pFontManager->Print(81,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(81,183+8, &buffer[0], m_Font);
 	}
       }
  
@@ -427,31 +429,31 @@ namespace OpenGC
 	if (*ap_alt_mode_rec == 1) {
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(107,181+0);
-	  glVertex2f(140,181+0);
-	  glVertex2f(140,190+0);
-	  glVertex2f(107,190+0);
+	  glVertex2f(107,181+8);
+	  glVertex2f(140,181+8);
+	  glVertex2f(140,190+8);
+	  glVertex2f(107,190+8);
 	  glEnd();
 	}
 	
 	if (*ap_alt_mode == 5) {
 	  strcpy(buffer, "G/S");
-	  m_pFontManager->Print(119,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(119,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 3) {
 	  strcpy(buffer, "ALT ACQ");
-	  m_pFontManager->Print(111,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 4) {
 	  strcpy(buffer, "ALT HOLD");
-	  m_pFontManager->Print(110,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 6) {
 	  strcpy(buffer, "FLARE");
-	  m_pFontManager->Print(114,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(114,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 9) {
 	  strcpy(buffer, "VNAV PTH");
-	  m_pFontManager->Print(111,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 10) {
 	  strcpy(buffer, "VNAV ALT");
-	  m_pFontManager->Print(110,183+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
 	}
       }
 
@@ -466,7 +468,7 @@ namespace OpenGC
 
 	// White Text on Gray
 	strcpy(buffer, "ROLLOUT");
-	m_pFontManager->Print(76,172+0, &buffer[0], m_Font);
+	m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
       }
 
       if (*ap_lnav_armed >= 1) {
@@ -477,16 +479,16 @@ namespace OpenGC
 	if (*ap_lnav_armed == 2) {
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(74,170+0);
-	  glVertex2f(105,170+0);
-	  glVertex2f(105,179+0);
-	  glVertex2f(74,179+0);
+	  glVertex2f(74,170+8);
+	  glVertex2f(105,170+8);
+	  glVertex2f(105,179+8);
+	  glVertex2f(74,179+8);
 	  glEnd();
 	}
     
 	// White Text on Gray
 	strcpy(buffer, "LNAV ARM");
-	m_pFontManager->Print(76,172+0, &buffer[0], m_Font);
+	m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
       }
 
   
@@ -502,16 +504,16 @@ namespace OpenGC
 	if ((*ap_vorloc_armed == 2) || (*ap_vorloc_mode == 2)) {
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(74,170+0);
-	  glVertex2f(105,170+0);
-	  glVertex2f(105,179+0);
-	  glVertex2f(74,179+0);
+	  glVertex2f(74,170+8);
+	  glVertex2f(105,170+8);
+	  glVertex2f(105,179+8);
+	  glVertex2f(74,179+8);
 	  glEnd();
 	}
     
 	// White Text on Gray
 	strcpy(buffer, "VOR LOC");
-	m_pFontManager->Print(77,172+0, &buffer[0], m_Font);
+	m_pFontManager->Print(77,172+8, &buffer[0], m_Font);
       }
 
       // bottom right
@@ -523,16 +525,16 @@ namespace OpenGC
 	if (*ap_vvi_mode == 2)  {
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(107,170+0);
-	  glVertex2f(140,170+0);
-	  glVertex2f(140,179+0);
-	  glVertex2f(107,179+0);
+	  glVertex2f(107,170+8);
+	  glVertex2f(140,170+8);
+	  glVertex2f(140,179+8);
+	  glVertex2f(107,179+8);
 	  glEnd();
 	}
 
 	// White Text on Gray
 	strcpy(buffer, "VERT SPD");
-	m_pFontManager->Print(110,172+0, &buffer[0], m_Font);
+	m_pFontManager->Print(110,172+8, &buffer[0], m_Font);
       }
 
       if (*ap_flare_mode == 1) {
@@ -541,7 +543,7 @@ namespace OpenGC
 
 	// White Text on Gray
 	strcpy(buffer, "FLARE");
-	m_pFontManager->Print(114,172+0, &buffer[0], m_Font);
+	m_pFontManager->Print(114,172+8, &buffer[0], m_Font);
       }
 
     }
@@ -757,7 +759,55 @@ namespace OpenGC
       snprintf(buffer, sizeof(buffer), "%4.0f", *altimeter_minimum);
       m_pFontManager->Print(124,28, &buffer[0], m_Font);
     }
-  
+
+    if (*aoa != FLT_MISS) {
+      float minDegrees = -45.0;
+      float maxDegrees = 180.0;
+      float R = 11.0;
+      float xcircle = 130;
+      float ycircle = 164;
+      CircleEvaluator bCircle;
+      bCircle.SetRadius(R);
+      bCircle.SetArcStartEnd(minDegrees,maxDegrees);
+      bCircle.SetDegreesPerPoint(10);
+      
+      m_pFontManager->SetSize(m_Font, 3.5, 3.5);
+      glLineWidth(2.0);
+      glColor3ub( 255, 255,  255 );
+      
+      bCircle.SetOrigin(xcircle,ycircle);
+      glBegin(GL_LINE_STRIP);
+      bCircle.Evaluate();
+      glEnd();
+
+      float radians;
+      for (float degrees = minDegrees; degrees <= maxDegrees; degrees += 45.0) {
+	radians = degrees * atan2(0.0, -1.0) / 180.;
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(xcircle + R * sin(radians),
+		   ycircle + R * cos(radians));
+	glVertex2f(xcircle + (R - 2) * sin(radians),
+		   ycircle + (R - 2) * cos(radians));
+	glEnd();
+      }
+      if ((*aoa < 20.0) && (*aoa > -5.0)) {
+	radians = ((20.0-*aoa)*9.0 - 45.0) * atan2(0.0, -1.0) / 180.;
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(xcircle,
+		   ycircle);
+	glVertex2f(xcircle + R * sin(radians),
+		   ycircle + R * cos(radians));
+	glEnd();
+      
+	snprintf(buffer, sizeof(buffer), "%2.1f", *aoa);
+	m_pFontManager->Print(xcircle-11.0,ycircle-5.5, &buffer[0], m_Font);
+      } else {
+	snprintf(buffer, sizeof(buffer), "0.0");
+	m_pFontManager->Print(xcircle-11.0,ycircle-5.5, &buffer[0], m_Font);
+      }
+
+    }
+    
     glPopMatrix();
   }
 

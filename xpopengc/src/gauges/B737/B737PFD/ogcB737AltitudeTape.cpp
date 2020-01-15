@@ -72,6 +72,9 @@ namespace OpenGC
     // Get the barometric altitude (feet)
     float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
 
+    // Altitude above ground level (meters)
+    float *altitude_agl = link_dataref_flt("sim/flightmodel/position/y_agl",0);
+    
     // Autopilot altitude (feet)
     float *ap_altitude;
     if (acf_type == 1) {
@@ -309,9 +312,27 @@ namespace OpenGC
 	    }
 	}
 
+      if ((*altitude_agl != FLT_MISS) && (*altitude_agl > 5.0)) {
+	float aglaltLocation = (-1.0 * *altitude_agl * 3.28084) *
+	  tickSpacing / 100.0 + m_PhysicalSize.y/2;
+	glColor3ub( 200, 200,  0 );
+	glLineWidth(3.0);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(0.0, aglaltLocation);
+	glVertex2f(m_PhysicalSize.x, aglaltLocation);
+	glEnd();
+	for (int i=-2;i<10;i++) {
+	  glBegin(GL_LINE_LOOP);
+	  glVertex2f(i*m_PhysicalSize.x/10.0, aglaltLocation);
+	  glVertex2f((i+1)*m_PhysicalSize.x/10.0, aglaltLocation-tickSpacing*0.4);
+	  glEnd();
+	}
+      }
+      
       // draw MCP dialed altitude if within the altitude tape range
       if (*ap_altitude != FLT_MISS) {
-	float mcpaltLocation = (*ap_altitude - *pressure_altitude) * tickSpacing / 100.0 + m_PhysicalSize.y/2;
+	float mcpaltLocation = (*ap_altitude - *pressure_altitude) *
+	  tickSpacing / 100.0 + m_PhysicalSize.y/2;
 	
 	// draw a magenta MCP altitude indicator
 	glColor3ub( 210, 5,  210 );
