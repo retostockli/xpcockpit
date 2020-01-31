@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
   argv++;
   argc--;
   if (argc != 1) {
-    printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names \"*ogc.ini\" found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
+    printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names \"*.ini\" found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
     exit (-1);
   }
 
