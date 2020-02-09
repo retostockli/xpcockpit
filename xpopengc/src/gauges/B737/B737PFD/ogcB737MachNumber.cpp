@@ -260,8 +260,20 @@ namespace OpenGC
     int *gpws = link_dataref_int("sim/cockpit2/annunciators/GPWS");
     int *windshear = link_dataref_int("sim/operation/failures/rel_wind_shear");
 
-    float *altimeter_minimum = link_dataref_flt("sim/cockpit/misc/radio_altimeter_minimum",0);
-  
+    float *altimeter_minimum;
+    int *minimum_mode;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if (is_captain) {
+	altimeter_minimum = link_dataref_flt("laminar/B738/pfd/dh_pilot",0);
+	minimum_mode = link_dataref_int("laminar/B738/EFIS_control/cpt/minimums");
+      } else {
+	altimeter_minimum = link_dataref_flt("laminar/B738/pfd/dh_copilot",0);
+	minimum_mode = link_dataref_int("laminar/B738/EFIS_control/fo/minimums");
+      }
+    } else {
+      altimeter_minimum = link_dataref_flt("sim/cockpit/misc/radio_altimeter_minimum",0);
+    }
+      
     if (*ias != FLT_MISS) {
       // 1. Plot Mach number below the speed tape
       // transform air speed (knots) to Mach number
@@ -786,7 +798,13 @@ namespace OpenGC
     if (*altimeter_minimum != FLT_MISS) {
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
       glColor3ub( 0, 255,  0 );
-      strcpy(buffer, "RADIO");
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if (*minimum_mode == 0) {
+	  strcpy(buffer, "RADIO");
+	} else {
+	  strcpy(buffer, "BARO");
+	}
+      }
       m_pFontManager->Print(117,35, &buffer[0], m_Font);
       snprintf(buffer, sizeof(buffer), "%4.0f", *altimeter_minimum);
       m_pFontManager->Print(124,28, &buffer[0], m_Font);

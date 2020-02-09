@@ -36,7 +36,7 @@ void efis_737(void)
   int zero = 0;
   int temp = 0;
   int temp2 = 0;
-  float ftemp = 0.0;
+  //float ftemp = 0.0;
 
   int device = 5;
   int card = 0;
@@ -87,23 +87,20 @@ void efis_737(void)
   
   int *minimum_mode;
   float *altimeter_minimum;
-  int *minimum_dn;
-  int *minimum_up;
-  int *minimum_mode_dn;
-  int *minimum_mode_up;
+  //  int *minimum_mode_dn;
+  //  int *minimum_mode_up;
   if ((*status_x737 == 2) || (*status_x737 == 3)) {
     minimum_mode = link_dataref_int("laminar/B738/EFIS_control/cpt/minimums");
-    altimeter_minimum = link_dataref_flt("sim/cockpit/misc/radio_altimeter_minimum",0);
-    minimum_dn = link_dataref_cmd_once("laminar/B738/pfd/dh_pilot_dn");
-    minimum_up = link_dataref_cmd_once("laminar/B738/pfd/dh_pilot_up");
-    *minimum_dn = 0;
-    *minimum_up = 0;
+    //minimum_mode = link_dataref_int("laminar/B738/EFIS_control/fo/minimums");
+    altimeter_minimum = link_dataref_flt("laminar/B738/pfd/dh_pilot",0);
+    // altimeter_minimum = link_dataref_flt("laminar/B738/pfd/dh_copilot",0);
+    /*
     minimum_mode_dn = link_dataref_cmd_once("laminar/B738/EFIS_control/cpt/minimums_dn");
     minimum_mode_up = link_dataref_cmd_once("laminar/B738/EFIS_control/cpt/minimums_up");
     *minimum_mode_dn = 0;
     *minimum_mode_up = 0;
+    */
   } else {
-    minimum_mode = link_dataref_int("xpserver/minimum_mode");
     altimeter_minimum = link_dataref_flt("sim/cockpit/misc/radio_altimeter_minimum",0);
   }
   
@@ -281,41 +278,32 @@ void efis_737(void)
     } else {
       *altimeter_pressure_unit = temp;
     }
+    
+  }
 
-    ret = digital_input(device,card,71,&temp,0);
-    if ((*status_x737 == 2) || (*status_x737 == 3)) {
-      if ((*minimum_mode == 1) && (temp == 0)) {
-	*minimum_mode_up = 1;
+  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+    if (*minimum_mode != INT_MISS) {
+      ret = digital_input(device,card,71,minimum_mode,0);
+      if (ret == 1) {
+	if (*minimum_mode == 0) printf("Minimums Mode: Radio \n");
+	if (*minimum_mode == 1) printf("Minimums Mode: Baro \n");
       }
-      if ((*minimum_mode == 0) && (temp == 1)) {
-	*minimum_mode_dn = 1;
-      }
-    } else {
-      *minimum_mode = temp;
-    }
-    if (ret == 1) {
-      if (*minimum_mode == 0) printf("Minimums Mode: Radio \n");
-      if (*minimum_mode == 1) printf("Minimums Mode: Baro \n");
     }
     
+    /*
+      if ((*minimum_mode == 1) && (temp == 0)) {
+      *minimum_mode_up = 1;
+      }
+      if ((*minimum_mode == 0) && (temp == 1)) {
+      *minimum_mode_dn = 1;
+      }
+    */
   }
 
 
   if (*altimeter_minimum != FLT_MISS) {
 
-    if ((*status_x737 == 2) || (*status_x737 == 3)) {
-      ftemp = 0.0;
-      ret = mastercard_encoder(device, card, 68, &ftemp, -1.0, 1.0,2);
-      if (ret == 1) {
-	if (ftemp > 0) {
-	  *minimum_up = 1;
-	} else {
-	  *minimum_dn = 1;
-	}
-      }
-    } else {
-      ret = mastercard_encoder(device, card, 68, altimeter_minimum, -10.0, 1.0,2);
-    }
+    ret = mastercard_encoder(device, card, 68, altimeter_minimum, -10.0, 1.0,2);
     if (ret == 1) {
       printf("Radio Altimeter Minimum: %f \n",*altimeter_minimum);
     }
