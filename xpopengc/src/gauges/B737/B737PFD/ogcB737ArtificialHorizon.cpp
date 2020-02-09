@@ -74,33 +74,36 @@ namespace OpenGC
     glMatrixMode(GL_MODELVIEW);
 
     bool is_captain = (this->GetArg() == 1);
-    bool is_copilot = (this->GetArg() == 2);
     
     int acf_type = m_pDataSource->GetAcfType();
     
     float *pitch = link_dataref_flt("sim/flightmodel/position/theta",-1);
     float *roll = link_dataref_flt("sim/flightmodel/position/phi",-1);
 
-    int *fd_a_status;
-    int *fd_b_status;
-    float *fd_a_pitch;
-    float *fd_b_pitch;
-    float *fd_a_roll;
-    float *fd_b_roll;
-    if (acf_type == 1) {
-      fd_a_status = link_dataref_int("x737/systems/afds/fdA_status");   
-      fd_b_status = link_dataref_int("x737/systems/afds/fdB_status");
-      fd_a_pitch = link_dataref_flt("x737/systems/afds/AP_A_pitch",0);
-      fd_b_pitch = link_dataref_flt("x737/systems/afds/AP_B_pitch",0);
-      fd_a_roll = link_dataref_flt("x737/systems/afds/AP_A_roll",-1);
-      fd_b_roll = link_dataref_flt("x737/systems/afds/AP_B_roll",-1);
+    int *fd_roll_status;
+    int *fd_pitch_status;
+    float *fd_pitch;
+    float *fd_roll;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if (is_captain) {
+	fd_pitch_status = link_dataref_int("laminar/B738/autopilot/fd_pitch_pilot_show");
+	fd_roll_status = link_dataref_int("laminar/B738/autopilot/fd_roll_pilot_show");
+      } else {
+	fd_pitch_status = link_dataref_int("laminar/B738/autopilot/fd_pitch_copilot_show");
+	fd_roll_status = link_dataref_int("laminar/B738/autopilot/fd_roll_copilot_show");
+      }
+      fd_pitch = link_dataref_flt("sim/cockpit/autopilot/flight_director_pitch",0);
+      fd_roll = link_dataref_flt("sim/cockpit/autopilot/flight_director_roll",0);
+    } else if (acf_type == 1) {
+      fd_pitch_status = link_dataref_int("x737/systems/afds/fdA_status");
+      fd_roll_status = link_dataref_int("x737/systems/afds/fdA_status");   
+      fd_pitch = link_dataref_flt("x737/systems/afds/AP_A_pitch",0);
+      fd_roll = link_dataref_flt("x737/systems/afds/AP_A_roll",-1);
     } else {
-      fd_a_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");   
-      fd_b_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");
-      fd_a_pitch = link_dataref_flt("sim/cockpit/autopilot/flight_director_pitch",0);
-      fd_b_pitch = link_dataref_flt("sim/cockpit/autopilot/flight_director_pitch",0);
-      fd_a_roll = link_dataref_flt("sim/cockpit/autopilot/flight_director_roll",0);
-      fd_b_roll = link_dataref_flt("sim/cockpit/autopilot/flight_director_roll",0);
+      fd_pitch_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");
+      fd_roll_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");   
+      fd_pitch = link_dataref_flt("sim/cockpit/autopilot/flight_director_pitch",0);
+      fd_roll = link_dataref_flt("sim/cockpit/autopilot/flight_director_roll",0);
     }
 
     int *nav1_has_glideslope = link_dataref_int("sim/cockpit2/radios/indicators/nav1_flag_glideslope");
@@ -542,44 +545,43 @@ namespace OpenGC
 
     //----------------Flight Director----------------
     
-    if ((((*fd_a_status == 1) || (*fd_a_status == 2)) && (is_captain) &&
-	 (*fd_a_roll != FLT_MISS) && (*fd_a_pitch != FLT_MISS)) ||
-	(((*fd_b_status == 1) || (*fd_b_status == 2)) && (is_copilot) &&
-	 (*fd_b_roll != FLT_MISS) && (*fd_b_pitch != FLT_MISS))) 
+    if ((*fd_pitch_status == 1) && (*fd_pitch != FLT_MISS))
       {
+	glPushMatrix();
+	
 	// Move to the center of the window
 	glTranslatef(47,49,0);
 	glColor3ub( 210, 5,  210 );
 	glLineWidth(3.0);
     
-	glPushMatrix();
-	if (((*fd_a_status == 1) || (*fd_a_status == 2)) && (is_captain)) {
-	  glTranslatef(0,*fd_a_pitch*2.0,0);
-	}
-	if (((*fd_b_status == 1) || (*fd_b_status == 2)) && (is_copilot)) {
-	  glTranslatef(0,*fd_b_pitch*2.0,0);
-	}
+	glTranslatef(0,*fd_pitch*2.0,0);
 	glBegin(GL_LINES);
 	glVertex2f(-20,0);
 	glVertex2f(20,0);
 	glEnd();
 
 	glPopMatrix();
-    
+      }
+	
+    if ((*fd_roll_status == 1) && (*fd_roll != FLT_MISS))
+      {
 	glPushMatrix();
-	if (((*fd_a_status == 1) || (*fd_a_status == 2)) && (is_captain)) {
-	  glTranslatef(*fd_a_roll,0,0);
-	}
-	if (((*fd_b_status == 1) || (*fd_b_status == 2)) && (is_copilot)) {
-	  glTranslatef(*fd_b_roll,0,0);
-	}
+	
+	// Move to the center of the window
+	glTranslatef(47,49,0);
+	glColor3ub( 210, 5,  210 );
+	glLineWidth(3.0);
+
+	glTranslatef(*fd_roll,0,0);
 	glBegin(GL_LINES);
 	glVertex2f(0,-20);
 	glVertex2f(0,20);
 	glEnd();
+	
 	glPopMatrix();
-      } else {
+      } 
 
+    if (false) {
       // Draw the glideslope needles only if the flight director
       // isn't activated and the glideslope is alive
       // extend for nav2 and gps?

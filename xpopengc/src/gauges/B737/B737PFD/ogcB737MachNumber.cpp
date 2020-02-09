@@ -448,6 +448,9 @@ namespace OpenGC
 	if (*ap_alt_mode == 5) {
 	  strcpy(buffer, "G/S");
 	  m_pFontManager->Print(119,183+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode == 1) {
+	  strcpy(buffer, "V/S");
+	  m_pFontManager->Print(119,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 3) {
 	  strcpy(buffer, "ALT ACQ");
 	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
@@ -606,6 +609,8 @@ namespace OpenGC
     }
 
     // Draw the glideslope and localizer displays to the right and bottom of the ADI
+
+    // Draw glide slope to the right of the ADI
     if ( ((*nav1_vertical == 1) && (*nav1_CDI == 1)) || 
 	 ((*nav2_vertical == 1) && (*nav2_CDI == 1)) ) 
       {
