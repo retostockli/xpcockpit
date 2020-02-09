@@ -218,13 +218,16 @@ void pedestal_737(void)
   int *stab_trim_mode = link_dataref_int("xpserver/stab_trim_mode");
   int *flt_dk_door = link_dataref_int("xpserver/flt_dk_door");
 
-  float *radio_volume;
-  if (*status_x737 == 1) {
-    radio_volume = link_dataref_flt("x737/cockpit/ACP/ACP1/volumeControl01",-2);
+  float *radio_volume1;
+  float *radio_volume2;
+  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+    radio_volume1 = link_dataref_flt("laminar/B738/comm/audio_vol_com1",-1);
+    radio_volume2 = link_dataref_flt("laminar/B738/comm/audio_vol_com2",-1);
   } else {
-    radio_volume = link_dataref_flt("sim/operation/sound/radio_volume_ratio",-2);
+    radio_volume1 = link_dataref_flt("sim/cockpit2/radios/actuators/audio_volume_com1",-1);
+    radio_volume2 = link_dataref_flt("sim/cockpit2/radios/actuators/audio_volume_com1",-1);
   }
-  float *master_volume = link_dataref_flt("sim/operation/sound/master_volume_ratio",-2);
+  float *master_volume = link_dataref_flt("sim/operation/sound/master_volume_ratio",-1);
 
   // test for lights
   int *beacon_lights_737;
@@ -1241,9 +1244,10 @@ void pedestal_737(void)
     //    printf("panel brightness: %f \n",panel_brightness);
   }
 
-  ret = axis_input(device,2,radio_volume,0.0,1.0);
+  ret = axis_input(device,2,radio_volume1,0.0,1.0);
+  ret = axis_input(device,2,radio_volume2,0.0,1.0);
   if (ret == 1) {
-    //    printf("radio volume: %f \n",*radio_volume);
+    // printf("radio volume: %f \n",*radio_volume1);
   }
   ret = axis_input(device,3,master_volume,0.0,1.0);
   if (ret == 1) {

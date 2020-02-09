@@ -127,7 +127,7 @@ namespace OpenGC
     } else {
       nav_shows_wxr = link_dataref_int("sim/cockpit2/EFIS/EFIS_weather_on");
     }
-        
+
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((*heading_true != FLT_MISS) && (*nav_shows_wxr == 1) &&
@@ -136,13 +136,6 @@ namespace OpenGC
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
-    
-      // plot map options
-      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-      glColor3ub(0, 150, 200);
-      if (*nav_shows_wxr == 1) {
-	m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 , "WXR", m_Font );
-      }
 
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
       glRotatef(*heading_true, 0, 0, 1);
@@ -156,7 +149,6 @@ namespace OpenGC
 	double dlat;
 	int x;
 	int y;
-  
 	
 	/* check if we have new Radar data */
 	if (strncmp(udpRecvBuffer,"RADR5",5)==0) {
@@ -262,7 +254,14 @@ namespace OpenGC
 		
       } // valid acf coordinates
 
-      /* end of down-shifted coordinate system */
+      /* end of down-shifted and rotated coordinate system */
+      glPopMatrix();
+    
+      // plot map options
+      glPushMatrix();
+      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+      glColor3ub(0, 150, 200);
+      m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"WXR",m_Font);
       glPopMatrix();
 
     }
