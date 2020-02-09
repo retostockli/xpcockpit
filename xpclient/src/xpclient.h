@@ -19,9 +19,6 @@
 
 #include <signal.h>
 
-/* signal handler, handles ctrl-c interrupts */
-sig_t sig_handler;
-
 /* Prototype functions */
 int initialize_signal_handler(void);
 void exit_client(int ret);

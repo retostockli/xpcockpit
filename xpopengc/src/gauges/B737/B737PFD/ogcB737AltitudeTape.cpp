@@ -115,16 +115,18 @@ namespace OpenGC
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
 
       char buffer[2];
+      memset(buffer,0,sizeof(buffer));
 
       int nextHighestAlt = (alt/100)*100;
-
+      
       if (nextHighestAlt < alt)
 	nextHighestAlt += 100;
 
       // The vertical offset is how high in physical units the next highest 100's
       // altitude is above the arrow
-      float vertOffset = ( (float)nextHighestAlt - (float)alt)/100*tickSpacing;
-  
+      float vertOffset = ( (float)nextHighestAlt - (float)alt)/100.0*tickSpacing;
+
+      
       // Vertical location of the tick mark
       float tickLocation = 0;
 
@@ -138,10 +140,11 @@ namespace OpenGC
       // Draw ticks up from the center
       for (i = 0; i <= ((m_PhysicalSize.y/2) / tickSpacing) + 1; i += 1.0)
 	{
-	  tickAlt = nextHighestAlt +(int)(i*100.0);
-	  tickLocation = (m_PhysicalSize.y/2) + i*tickSpacing+vertOffset;
+	  tickAlt = nextHighestAlt + (int)(i*100.0);
+	  tickLocation = (m_PhysicalSize.y/2) + i*tickSpacing + vertOffset;
 	  float texty = tickLocation - fontHeight / 2;
-    
+	  
+	  glLineWidth(2.0);
 	  glBegin(GL_LINES);
 	  glVertex2f(0, tickLocation);
 	  glVertex2f(tickWidth, tickLocation);
@@ -187,6 +190,10 @@ namespace OpenGC
 		{
 		  snprintf( buffer, sizeof(buffer), "%i", abs(charAlt)/1000);
 		  m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
+		  if (charAlt < 0) {
+		    buffer[0] = '-';
+		    m_pFontManager->Print(fontIndent, texty, &buffer[0], m_Font);
+		  }
 		  charAlt = charAlt-1000*(int)(charAlt/1000);
 
 		  onek = true;
@@ -203,6 +210,10 @@ namespace OpenGC
 		{
 		  snprintf( buffer, sizeof(buffer), "%i", abs(charAlt)/100);
 		  m_pFontManager->Print(fontIndent + fontWidth*2, texty, &buffer[0], m_Font);
+		  if ((charAlt < 0) && (!onek)) {
+		    buffer[0] = '-';
+		    m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
+		  }
 		  charAlt = charAlt-100*(int)(charAlt/100);
 		  zero = false;
 		}
@@ -230,6 +241,7 @@ namespace OpenGC
 	  tickLocation = (m_PhysicalSize.y/2) - ( (i-1) * tickSpacing) - (tickSpacing - vertOffset);
 	  float texty = tickLocation - fontHeight / 2;
 
+	  glLineWidth(2.0);
 	  glBegin(GL_LINES);
 	  glVertex2f(0, tickLocation);
 	  glVertex2f(tickWidth, tickLocation);
@@ -277,6 +289,10 @@ namespace OpenGC
 		{
 		  snprintf(buffer, sizeof(buffer), "%i", abs(charAlt)/1000);
 		  m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
+		  if (charAlt < 0) {
+		    buffer[0] = '-';
+		    m_pFontManager->Print(fontIndent, texty, &buffer[0], m_Font);
+		  }
 		  charAlt = charAlt-1000*(int)(charAlt/1000);
 
 		  onek = true;
@@ -293,6 +309,10 @@ namespace OpenGC
 		{
 		  snprintf(buffer, sizeof(buffer), "%i", abs(charAlt)/100);
 		  m_pFontManager->Print(fontIndent + fontWidth*2, texty, &buffer[0], m_Font);
+		  if ((charAlt < 0) && (!onek)) {
+		    buffer[0] = '-';
+		    m_pFontManager->Print(fontIndent + fontWidth, texty, &buffer[0], m_Font);
+		  }
 		  charAlt = charAlt-100*(int)(charAlt/100);
 		  zero = false;
 		}
@@ -338,12 +358,12 @@ namespace OpenGC
 	glColor3ub( 210, 5,  210 );
 	glLineWidth(3.0);
 	glBegin(GL_LINE_LOOP);
-	glVertex2f(0.5, mcpaltLocation+tickSpacing*0.25);
-	glVertex2f(0.5, mcpaltLocation+tickSpacing*0.75);
-	glVertex2f(m_PhysicalSize.x/2, mcpaltLocation+tickSpacing*0.75);
-	glVertex2f(m_PhysicalSize.x/2, mcpaltLocation-tickSpacing*0.75);
-	glVertex2f(0.5, mcpaltLocation-tickSpacing*0.75);
-	glVertex2f(0.5, mcpaltLocation-tickSpacing*0.25);
+	glVertex2f(0.5, mcpaltLocation+tickSpacing*0.2);
+	glVertex2f(0.5, mcpaltLocation+tickSpacing*0.6);
+	glVertex2f(m_PhysicalSize.x/2, mcpaltLocation+tickSpacing*0.6);
+	glVertex2f(m_PhysicalSize.x/2, mcpaltLocation-tickSpacing*0.6);
+	glVertex2f(0.5, mcpaltLocation-tickSpacing*0.6);
+	glVertex2f(0.5, mcpaltLocation-tickSpacing*0.2);
 	glVertex2f(m_PhysicalSize.x/6, mcpaltLocation-tickSpacing*0.05);
 	glVertex2f(m_PhysicalSize.x/6, mcpaltLocation+tickSpacing*0.05);
 	glEnd();

@@ -21,18 +21,25 @@
 #endif
 
 #include <stdio.h>   
-#include <stdlib.h>  
-#include <sys/socket.h> 
-#include <sys/ioctl.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <stdbool.h>
 #include <unistd.h>   
 #include <string.h>
-#include <errno.h>
-#include <math.h>
+
+#ifdef WIN
+# include <winsock2.h>
+#else
+#include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#endif
+#include <errno.h>
+#include <math.h>
 
 #include "handleserver.h"
 #include "serverdata.h"
@@ -172,7 +179,12 @@ int check_server(void)
 	socketStatus = status_Connected;
 
 	unsigned long nSetSocketType = NON_BLOCKING;
-	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)	//set to non-blocking
+	//set to non-blocking
+#ifdef WIN
+	if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
+#else
+	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
+#endif
 	  {
 	    if (verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
 	    socketStatus = status_Error;

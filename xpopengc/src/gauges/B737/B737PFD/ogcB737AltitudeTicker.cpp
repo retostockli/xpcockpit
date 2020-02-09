@@ -66,7 +66,6 @@ namespace OpenGC
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
 
-    glLineWidth(2.0);
 
     // Draw black background
     glColor3ub(0,0,0);
@@ -80,6 +79,7 @@ namespace OpenGC
     glEnd();
 
     // White border around background
+    glLineWidth(2.5);
     glColor3ub(255,255,255);
     glBegin(GL_LINE_LOOP);
     glVertex2f(0.0,9.0);
@@ -97,6 +97,7 @@ namespace OpenGC
     if (*pressure_altitude != FLT_MISS) {
   
       char buffer[4];
+      memset(buffer,0,sizeof(buffer));
 
       int alt = (int) *pressure_altitude;
 

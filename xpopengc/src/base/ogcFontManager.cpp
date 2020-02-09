@@ -59,9 +59,9 @@ FontManager
   // Does not seem to work (FTPolygonFont and FTOutlineFont are not deleted). Delete however
   // works inside the constructor function. What is going wrong?
   for(int i = 0; i < m_NumFonts; i++) {
-    //delete m_FontList[i];
-    //printf("BLABLA3\n");
+    delete m_FontList[i];
   }
+  printf("BLABLA3\n");
   m_FontList.clear();
 
 }

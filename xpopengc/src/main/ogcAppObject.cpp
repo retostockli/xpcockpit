@@ -166,6 +166,7 @@ void
 AppObject
 ::IdleFunction()
 {
+    
   // Every time we loop we grab some new data and re-render the window
   m_pDataSource->OnIdle();
   m_pRenderWindow->redraw();
@@ -270,13 +271,13 @@ bool AppObject::DoFileInitialization(char* iniFile)
 
     // Set up font manager
     m_pFontManager = new FontManager();
-    
+
     // Specify smoothed fonts
     m_pFontManager->SetSmooth(true);
     
     if (verbosity > 0) printf("AppObject - Font path %s\n", m_FontPath);
     m_pFontManager->SetFontPath(m_FontPath);
-
+    
     // Set up the network data
     strcpy(m_ip_address,iniparser_getstring(ini,"network:ServerIP", default_server_ip));
     m_port = iniparser_getint(ini,"network:ServerPort", default_server_port);

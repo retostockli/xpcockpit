@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "common.h"
 #include "xpclient.h"
@@ -215,8 +216,7 @@ int initialize_signal_handler(void)
 {
   int ret = 0;
 
-  sig_handler = signal(SIGINT, exit_client);
-  if (sig_handler == SIG_ERR) {
+  if (signal(SIGINT, exit_client) == SIG_ERR) {
     printf("Could not establish new signal handler.\n");
     ret = -1;
   }

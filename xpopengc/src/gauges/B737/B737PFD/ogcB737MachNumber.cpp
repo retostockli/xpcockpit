@@ -65,6 +65,7 @@ namespace OpenGC
   void B737MachNumber::Render()
   {
     char buffer[10]; // temporary buffer for text
+    memset(buffer,0,sizeof(buffer));
     float fontHeight = 5;
     float fontWidth = 5;
     float rawGlideslope;
@@ -107,8 +108,10 @@ namespace OpenGC
 
     //  int *altimeter_pressure_unit = link_dataref_int("x737/systems/units/baroPressUnit");   
     int *altimeter_pressure_unit;
+    int *no_vspeed;
     if ((acf_type == 2) || (acf_type == 3)) {
       altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
+      no_vspeed = link_dataref_int("laminar/B738/pfd/no_vspd");
     } else {
       altimeter_pressure_unit = link_dataref_int("xpserver/barometer_unit");
     }
@@ -160,7 +163,7 @@ namespace OpenGC
       ap_flare_mode = link_dataref_int("laminar/B738/autopilot/flare_status");   
       ap_rollout_mode = link_dataref_int("laminar/B738/autopilot/rollout_status");   
 
-      ap_retard_mode = link_dataref_int("laminar/B738/autopilot/retard_mode");   
+      ap_retard_mode = link_dataref_int("laminar/B738/autopilot/retard_status");   
       ap_thrhld_mode = link_dataref_int("laminar/B738/autopilot/thr_hld_pfd");   
       ap_lnav_armed = link_dataref_int("laminar/B738/autopilot/lnav_status");   
       ap_vorloc_armed = link_dataref_int("laminar/B738/autopilot/vorloc_status");   
@@ -220,11 +223,17 @@ namespace OpenGC
     int *fd_b_status;
     int *cmd_a_status;
     int *cmd_b_status;
+    int *cmd_rec;
     if ((acf_type == 2) || (acf_type == 3)) {
       fd_a_status = link_dataref_int("laminar/B738/autopilot/master_capt_status");   
       fd_b_status = link_dataref_int("laminar/B738/autopilot/master_fo_status");
       cmd_a_status = link_dataref_int("laminar/B738/autopilot/cmd_a_status");
       cmd_b_status = link_dataref_int("laminar/B738/autopilot/cmd_b_status");
+      if (is_captain) {
+	cmd_rec = link_dataref_int("laminar/B738/autopilot/rec_cmd_modes");
+      } else {
+	cmd_rec = link_dataref_int("laminar/B738/autopilot/rec_cmd_modes_fo");
+      }
     } else if (acf_type == 1) {
       fd_a_status = link_dataref_int("x737/systems/afds/fdA_status");   
       fd_b_status = link_dataref_int("x737/systems/afds/fdB_status");   
@@ -550,7 +559,7 @@ namespace OpenGC
   
     // Print FD status
     if (((*fd_a_status >= 1) && is_captain) || ((*fd_b_status >= 1) && is_copilot)) {
-      m_pFontManager->SetSize(m_Font, 5, 5);
+      m_pFontManager->SetSize(m_Font, fontHeight*1.2, fontWidth*1.2);
       glColor3ub(0,179,0);
 
     
@@ -562,18 +571,36 @@ namespace OpenGC
 	if ((((*cmd_a_status == 1) || (*cmd_b_status == 1)) && (acf_type >= 1)) ||
 	    (((*fd_a_status == 2) || (*fd_b_status == 2)) && (acf_type == 0))) {
 	  strcpy(buffer, "CMD");
-	  m_pFontManager->Print(83,155+0, &buffer[0], m_Font);
+	  m_pFontManager->Print(82,155+0, &buffer[0], m_Font);
+
+	  if ((acf_type == 2) || (acf_type == 3)) {
+	    if (*cmd_rec == 1) {
+	      glLineWidth(2.0);
+	      glBegin(GL_LINE_LOOP);
+	      glVertex2f(79,152);
+	      glVertex2f(100,152);
+	      glVertex2f(100,163);
+	      glVertex2f(79,163);
+	      glEnd();
+	    }
+	  }
+	  
 	} else {
 	  strcpy(buffer, "FD");
-	  m_pFontManager->Print(85,155+0, &buffer[0], m_Font);
-	
-	  glLineWidth(2.0);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(83,153+0);
-	  glVertex2f(97,153+0);
-	  glVertex2f(97,162+0);
-	  glVertex2f(83,162+0);
-	  glEnd();
+	  m_pFontManager->Print(84,155+0, &buffer[0], m_Font);
+	  
+	  if ((acf_type == 2) || (acf_type == 3)) {
+	    if (*cmd_rec == 1) {
+	      glLineWidth(2.0);
+	      glBegin(GL_LINE_LOOP);
+	      glVertex2f(81,152);
+	      glVertex2f(98,152);
+	      glVertex2f(98,163);
+	      glVertex2f(81,163);
+	      glEnd();
+	    }
+	  }
+	  
 	}
       }
     }
@@ -771,7 +798,7 @@ namespace OpenGC
       bCircle.SetArcStartEnd(minDegrees,maxDegrees);
       bCircle.SetDegreesPerPoint(10);
       
-      m_pFontManager->SetSize(m_Font, 3.5, 3.5);
+      m_pFontManager->SetSize(m_Font, 3.8, 3.8);
       glLineWidth(2.0);
       glColor3ub( 255, 255,  255 );
       
@@ -807,6 +834,25 @@ namespace OpenGC
       }
 
     }
+
+    if ((acf_type == 2) || (acf_type == 3)) {
+      // No Reference Speed indicator
+      if (*no_vspeed == 1) {
+	m_pFontManager->SetSize(m_Font, 4.5, 5.5);
+	glColor3ub( 200, 175,  30 );
+	strcpy(buffer, "NO");
+	m_pFontManager->Print(32,130, &buffer[0], m_Font); 
+	strcpy(buffer, "V");
+	m_pFontManager->Print(34,123, &buffer[0], m_Font); 
+	strcpy(buffer, "S");
+	m_pFontManager->Print(34,116, &buffer[0], m_Font); 
+	strcpy(buffer, "P");
+	m_pFontManager->Print(34,109, &buffer[0], m_Font); 
+	strcpy(buffer, "D");
+	m_pFontManager->Print(34,101, &buffer[0], m_Font); 
+       }
+    }
+
     
     glPopMatrix();
   }
