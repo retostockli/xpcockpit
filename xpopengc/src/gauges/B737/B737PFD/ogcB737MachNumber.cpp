@@ -495,6 +495,7 @@ namespace OpenGC
 	m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
       }
 
+      /*
       if (*ap_lnav_armed >= 1) {
 
 	glColor3ub(255,255,255);
@@ -514,7 +515,7 @@ namespace OpenGC
 	strcpy(buffer, "LNAV ARM");
 	m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
       }
-
+      */
   
       if (((*ap_vorloc_armed >= 1) || (*ap_vorloc_mode >= 1)) && (*ap_lnav_armed == 0)) {
 
