@@ -88,22 +88,24 @@ namespace OpenGC
       if (is_captain) {
 	fd_pitch_status = link_dataref_int("laminar/B738/autopilot/fd_pitch_pilot_show");
 	fd_roll_status = link_dataref_int("laminar/B738/autopilot/fd_roll_pilot_show");
+	fd_pitch = link_dataref_flt("laminar/B738/pfd/flight_director_pitch_pilot",-1);
+	fd_roll = link_dataref_flt("laminar/B738/pfd/flight_director_roll_pilot",-1);
       } else {
 	fd_pitch_status = link_dataref_int("laminar/B738/autopilot/fd_pitch_copilot_show");
 	fd_roll_status = link_dataref_int("laminar/B738/autopilot/fd_roll_copilot_show");
+	fd_pitch = link_dataref_flt("laminar/B738/pfd/flight_director_pitch_copilot",-1);
+	fd_roll = link_dataref_flt("laminar/B738/pfd/flight_director_roll_copilot",-1);
       }
-      fd_pitch = link_dataref_flt("sim/cockpit/autopilot/flight_director_pitch",0);
-      fd_roll = link_dataref_flt("sim/cockpit/autopilot/flight_director_roll",0);
     } else if (acf_type == 1) {
       fd_pitch_status = link_dataref_int("x737/systems/afds/fdA_status");
       fd_roll_status = link_dataref_int("x737/systems/afds/fdA_status");   
-      fd_pitch = link_dataref_flt("x737/systems/afds/AP_A_pitch",0);
+      fd_pitch = link_dataref_flt("x737/systems/afds/AP_A_pitch",-1);
       fd_roll = link_dataref_flt("x737/systems/afds/AP_A_roll",-1);
     } else {
       fd_pitch_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");
       fd_roll_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");   
-      fd_pitch = link_dataref_flt("sim/cockpit/autopilot/flight_director_pitch",0);
-      fd_roll = link_dataref_flt("sim/cockpit/autopilot/flight_director_roll",0);
+      fd_pitch = link_dataref_flt("sim/cockpit/autopilot/flight_director_pitch",-1);
+      fd_roll = link_dataref_flt("sim/cockpit/autopilot/flight_director_roll",-1);
     }
 
     int *nav1_has_glideslope = link_dataref_int("sim/cockpit2/radios/indicators/nav1_flag_glideslope");

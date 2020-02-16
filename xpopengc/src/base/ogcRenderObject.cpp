@@ -130,7 +130,7 @@ RenderObject
 {
   // The default version of this doesn't do anything
   // Overload to provide specific functionality
-  cout << "RenderObject mouse down called\n";
+  // cout << "RenderObject mouse down called\n";
 }
 
 // Called when a mouse "up" event occurs

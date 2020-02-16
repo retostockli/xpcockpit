@@ -87,19 +87,19 @@ void efis_737(void)
   
   int *minimum_mode;
   float *altimeter_minimum;
-  //  int *minimum_mode_dn;
-  //  int *minimum_mode_up;
+  int *minimum_mode_dn;
+  int *minimum_mode_up;
   if ((*status_x737 == 2) || (*status_x737 == 3)) {
     minimum_mode = link_dataref_int("laminar/B738/EFIS_control/cpt/minimums");
     //minimum_mode = link_dataref_int("laminar/B738/EFIS_control/fo/minimums");
     altimeter_minimum = link_dataref_flt("laminar/B738/pfd/dh_pilot",0);
     // altimeter_minimum = link_dataref_flt("laminar/B738/pfd/dh_copilot",0);
-    /*
     minimum_mode_dn = link_dataref_cmd_once("laminar/B738/EFIS_control/cpt/minimums_dn");
     minimum_mode_up = link_dataref_cmd_once("laminar/B738/EFIS_control/cpt/minimums_up");
+    //minimum_mode_dn = link_dataref_cmd_once("laminar/B738/EFIS_control/fo/minimums_dn");
+    //minimum_mode_up = link_dataref_cmd_once("laminar/B738/EFIS_control/fo/minimums_up");
     *minimum_mode_dn = 0;
     *minimum_mode_up = 0;
-    */
   } else {
     altimeter_minimum = link_dataref_flt("sim/cockpit/misc/radio_altimeter_minimum",0);
   }
@@ -283,21 +283,18 @@ void efis_737(void)
 
   if ((*status_x737 == 2) || (*status_x737 == 3)) {
     if (*minimum_mode != INT_MISS) {
-      ret = digital_input(device,card,71,minimum_mode,0);
+      ret = digital_input(device,card,71,&temp,0);
       if (ret == 1) {
-	if (*minimum_mode == 0) printf("Minimums Mode: Radio \n");
-	if (*minimum_mode == 1) printf("Minimums Mode: Baro \n");
-      }
-    }
-    
-    /*
+	if (temp == 0) printf("Minimums Mode: Radio \n");
+	if (temp == 1) printf("Minimums Mode: Baro \n");
+      }    
       if ((*minimum_mode == 1) && (temp == 0)) {
-      *minimum_mode_up = 1;
+	*minimum_mode_up = 1;
       }
       if ((*minimum_mode == 0) && (temp == 1)) {
-      *minimum_mode_dn = 1;
+	*minimum_mode_dn = 1;
       }
-    */
+    }
   }
 
 

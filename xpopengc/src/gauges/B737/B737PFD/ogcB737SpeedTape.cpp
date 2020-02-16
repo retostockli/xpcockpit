@@ -89,19 +89,40 @@ namespace OpenGC
       ap_speed_is_mach = link_dataref_int("sim/cockpit/autopilot/airspeed_is_mach");
     }
 
-    // maximum speeds
-    //    float *vs = link_dataref_flt("sim/aircraft/view/acf_Vs",0);
-    float *vfe = link_dataref_flt("sim/aircraft/view/acf_Vfe",0);
-    float *vle = link_dataref_flt("sim/aircraft/overflow/acf_Vle",0);
-    //    float *vno = link_dataref_flt("sim/aircraft/view/acf_Vno",0);
-    float *vne = link_dataref_flt("sim/aircraft/view/acf_Vne",0);
-
+    // minimum and maximum speeds
+    float *vfe;
+    float *vle;
+    float *vne;
+    float *min_speed;
+    float *max_speed;
+    float *min_maneuver_speed;
+    float *max_maneuver_speed;
+    if ((acf_type == 2) || (acf_type ==3)) {
+      min_speed = link_dataref_flt("laminar/B738/pfd/min_speed",0);
+      max_speed = link_dataref_flt("laminar/B738/pfd/max_speed",0);
+      min_maneuver_speed = link_dataref_flt("laminar/B738/pfd/min_maneuver_speed",0);
+      max_maneuver_speed = link_dataref_flt("laminar/B738/pfd/max_maneuver_speed",0);
+    } else {
+      //    float *vs = link_dataref_flt("sim/aircraft/view/acf_Vs",0);
+      vfe = link_dataref_flt("sim/aircraft/view/acf_Vfe",0);
+      vle = link_dataref_flt("sim/aircraft/overflow/acf_Vle",0);
+      //    float *vno = link_dataref_flt("sim/aircraft/view/acf_Vno",0);
+      vne = link_dataref_flt("sim/aircraft/view/acf_Vne",0);
+    }
+    
     // other speeds (only currently for x737)
     float *v1;
     float *v2;
+    float *v2_15;
     float *vr;
     float *vref;
-    if (acf_type == 1) {
+    if ((acf_type == 2) || (acf_type ==3)) {
+      v1 = link_dataref_flt("laminar/B738/FMS/v1",0);
+      v2 = link_dataref_flt("laminar/B738/FMS/v2",0);
+      v2_15 = link_dataref_flt("laminar/B738/FMS/v2_15",0);
+      vr = link_dataref_flt("laminar/B738/FMS/vr",0);
+      vref = link_dataref_flt("laminar/B738/FMS/vref",0);
+    } else if (acf_type == 1) {
       v1 = link_dataref_flt("x737/systems/FMC/SPDREF_v1",0);
       v2 = link_dataref_flt("x737/systems/FMC/SPDREF_v2",0);
       vr = link_dataref_flt("x737/systems/FMC/SPDREF_vr",0);
@@ -116,14 +137,14 @@ namespace OpenGC
     int *gear_handle = link_dataref_int("sim/cockpit2/controls/gear_handle_down");
     float *flap_ratio = link_dataref_flt("sim/flightmodel/controls/flaprat",-2);
     
-    //    printf("%f %f %f %f %f \n",*vs,*vfe,*vle,*vno,*vne);
+    //printf("%f %f %f %f \n",*v1,*v2,*vr,*vref);
     
     if (*speed_knots != FLT_MISS) {
 
       // Speed for integer calculations
       int ias_int = (int) *speed_knots;
       float ias_flt = *speed_knots;
-      
+     
       // The speed tape doesn't display speeds < 30 or > 999
       /* if(ias_flt < 10.0)
 	 {
@@ -295,109 +316,155 @@ namespace OpenGC
 	}
       
  	
-      // draw red maximum speed rectangles
-      if (*vne != FLT_MISS) {
-	float maxspeed = *vne;
+      // draw red minimum and maximum speed rectangles
 
-	if ((*vle != FLT_MISS) && (*gear_handle != INT_MISS)) {
-	  if (*gear_handle == 1) {
-	    maxspeed = *vle;
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if (*min_speed != FLT_MISS) {
+	  float minspdLocation = float(*min_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 255, 0,  0 );
+	  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	  for (i=0;i<5;i++) {
+	    glBegin(GL_POLYGON);
+	    glVertex2f(indent_x+tickSpacing*0.35, minspdLocation-tickSpacing*0.30*i*2);
+	    glVertex2f(indent_x+tickSpacing*0.35, minspdLocation-tickSpacing*0.30*(i*2+1));
+	    glVertex2f(indent_x,                  minspdLocation-tickSpacing*0.30*(i*2+1));
+	    glVertex2f(indent_x,                  minspdLocation-tickSpacing*0.30*i*2);
+	    glEnd();
+	  }
+
+	  if (*min_maneuver_speed != FLT_MISS) {
+	    float minmaneuverspdLocation = float(*min_maneuver_speed - ias_flt) *
+	      tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	    glColor3ub( 255, 140,  0 );
+	    glLineWidth(2.0);
+	    glBegin(GL_LINE_STRIP);
+	    glVertex2f(indent_x+tickSpacing*0.175, minspdLocation);
+	    glVertex2f(indent_x+tickSpacing*0.175, minmaneuverspdLocation);
+	    glVertex2f(indent_x, minmaneuverspdLocation);
+	    glEnd();	
 	  }
 	}
-	
-	if ((*vfe != FLT_MISS) && (*flap_ratio != FLT_MISS)) {
-
-	  if (*flap_ratio > 0.01) {
-	    maxspeed = ((1.0 - *flap_ratio) + *flap_ratio * 0.652) * *vfe;
+      }
+      
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if (*max_speed != FLT_MISS) {
+	  float maxspdLocation = float(*max_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 255, 0,  0 );
+	  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	  for (i=0;i<5;i++) {
+	    glBegin(GL_POLYGON);
+	    glVertex2f(indent_x+tickSpacing*0.35, maxspdLocation+tickSpacing*0.30*i*2);
+	    glVertex2f(indent_x+tickSpacing*0.35, maxspdLocation+tickSpacing*0.30*(i*2+1));
+	    glVertex2f(indent_x,                  maxspdLocation+tickSpacing*0.30*(i*2+1));
+	    glVertex2f(indent_x,                  maxspdLocation+tickSpacing*0.30*i*2);
+	    glEnd();
+	  }
+	  
+	  if (*max_maneuver_speed != FLT_MISS) {
+	    float maxmaneuverspdLocation = float(*max_maneuver_speed - ias_flt) *
+	      tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	    glColor3ub( 255, 140,  0 );
+	    glLineWidth(2.0);
+	    glBegin(GL_LINE_STRIP);
+	    glVertex2f(indent_x+tickSpacing*0.175, maxspdLocation);
+	    glVertex2f(indent_x+tickSpacing*0.175, maxmaneuverspdLocation);
+	    glVertex2f(indent_x, maxmaneuverspdLocation);
+	    glEnd();	
 	  }
 	}
-
-	float maxspdLocation = float(maxspeed - *speed_knots) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
-	
-	glColor3ub( 255, 0,  0 );
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	for (i=0;i<5;i++) {
-	  glBegin(GL_POLYGON);
-	  glVertex2f(indent_x+tickSpacing*0.35, maxspdLocation+tickSpacing*0.30*i*2);
-	  glVertex2f(indent_x+tickSpacing*0.35, maxspdLocation+tickSpacing*0.30*(i*2+1));
-	  glVertex2f(indent_x,                  maxspdLocation+tickSpacing*0.30*(i*2+1));
-	  glVertex2f(indent_x,                  maxspdLocation+tickSpacing*0.30*i*2);
-	  glEnd();
-	}
-
       }
 
       if (*ap_speed != FLT_MISS) {
 	// draw MCP dialed speed if within the speed tape range (PLEASE ADAPT FOR AP MACH SPEEED)
-	float mcpspdLocation = float(*ap_speed - *speed_knots) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	float mcpspdLocation = float(*ap_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
 	// draw a magenta MCP altitude indicator
 	glLineWidth(3.0);
 	glColor3ub( 210, 5,  210 );
 	glBegin(GL_LINE_LOOP);
-	glVertex2f(m_PhysicalSize.x/3, mcpspdLocation);
-	glVertex2f(indent_x-5.0, mcpspdLocation+tickSpacing*0.5);
-	glVertex2f(m_PhysicalSize.x-2.0, mcpspdLocation+tickSpacing*0.5);
-	glVertex2f(m_PhysicalSize.x-2.0, mcpspdLocation-tickSpacing*0.5);
-	glVertex2f(indent_x-5.0, mcpspdLocation-tickSpacing*0.5);
+	glVertex2f(indent_x-5.0, mcpspdLocation);
+	glVertex2f(indent_x, mcpspdLocation+tickSpacing*0.3);
+	glVertex2f(m_PhysicalSize.x-2.0, mcpspdLocation+tickSpacing*0.3);
+	glVertex2f(m_PhysicalSize.x-2.0, mcpspdLocation-tickSpacing*0.3);
+	glVertex2f(indent_x, mcpspdLocation-tickSpacing*0.3);
 	glEnd();
     
       }
 
       // draw reference speeds
       if ((*vref != FLT_MISS) && (*vref != 0.0)) {
-	float vLocation = float(*vref - *speed_knots) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	float vLocation = float(*vref - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
 	glColor3ub( 0, 179, 0);
 	strcpy(buffer2, "REF");
 	m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
-	m_pFontManager->Print(indent_x+0.5, vLocation, &buffer2[0], m_Font);
+	m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
 
 	glBegin(GL_LINES);
-	glVertex2f(indent_x - tickWidth, vLocation);
-	glVertex2f(indent_x, vLocation);
+	glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	glVertex2f(indent_x + 1.0, vLocation);
 	glEnd();    
       }
       if ((*v1 != FLT_MISS) && (*v1 != 0.0)) {
-	float vLocation = float(*v1 - *speed_knots) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	float vLocation = float(*v1 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
 	glColor3ub( 0, 179, 0);
 	strcpy(buffer2, "V1");
 	m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
-	m_pFontManager->Print(indent_x+0.5, vLocation, &buffer2[0], m_Font);
+	m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
 
 	glBegin(GL_LINES);
-	glVertex2f(indent_x - tickWidth, vLocation);
-	glVertex2f(indent_x, vLocation);
+	glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	glVertex2f(indent_x + 1.0, vLocation);
 	glEnd();
     
       }
       if ((*v2 != FLT_MISS) && (*v2 != 0.0)) {
-	float vLocation = float(*v2 - *speed_knots) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	float vLocation = float(*v2 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
 	glColor3ub( 0, 179, 0);
 	strcpy(buffer2, "V2");
 	m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
-	m_pFontManager->Print(indent_x+0.5, vLocation, &buffer2[0], m_Font);
+	m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
 
 	glBegin(GL_LINES);
-	glVertex2f(indent_x - tickWidth, vLocation);
-	glVertex2f(indent_x, vLocation);
+	glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	glVertex2f(indent_x + 1.0, vLocation);
 	glEnd();
     
       }
       if ((*vr != FLT_MISS) && (*vr != 0.0)) {
-	float vLocation = float(*vr - *speed_knots) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	float vLocation = float(*vr - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
 	glColor3ub( 0, 179, 0);
 	strcpy(buffer2, "VR");
 	m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
-	m_pFontManager->Print(indent_x+0.5, vLocation, &buffer2[0], m_Font);
+	m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
 
 	glBegin(GL_LINES);
-	glVertex2f(indent_x - tickWidth, vLocation);
-	glVertex2f(indent_x, vLocation);
+	glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	glVertex2f(indent_x + 1.0, vLocation);
 	glEnd();
+      }
+      /* Speeds only specific to ZIBO */
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if ((*v2_15 != FLT_MISS) && (*v2_15 != 0.0)) {
+	  float vLocation = float(*v2_15 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 255, 255, 255);
+	  glLineWidth(1.0);
+
+	  glBegin(GL_LINE_LOOP);
+	  glVertex2f(indent_x-3.0, vLocation);
+	  glVertex2f(indent_x, vLocation+tickSpacing*0.15);
+	  glVertex2f(m_PhysicalSize.x-6.0, vLocation+tickSpacing*0.15);
+	  glVertex2f(m_PhysicalSize.x-6.0, vLocation-tickSpacing*0.15);
+	  glVertex2f(indent_x, vLocation-tickSpacing*0.15);
+	  glEnd();
+ 	  
+	}
       }
 
       if ((*speed_acceleration != FLT_MISS) && (fabs(*speed_acceleration) > 0.1)) {
