@@ -61,6 +61,7 @@ protected:
     float rad_ctr_lat;
     float rad_lon2;
     float rad_lat2;
+    float brg;
   };
 
   wptstruct *wpt;
