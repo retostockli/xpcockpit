@@ -41,6 +41,16 @@ void iocard_test(void)
   int card = 0;
   int device = 0;
 
+  int intensitycommand;
+  int intensity;
+  int value;
+
+  count++;
+  /*
+  if ((count < 0) || (count > 2)) {
+    count = 0;
+    }*/
+  
   // test integer array data
   int *digitalinput = link_dataref_int("sim/cockpit/electrical/landing_lights_on");   
 
@@ -101,8 +111,31 @@ void iocard_test(void)
   }
 
   // mastercard 1, display II card (max 64 displays)
-
+  
   /* update 1 displays with display value */
-  ret = mastercard_display(device,card,0,1,digitalinput,0);
+  if (*digitalinput == 1) {
+    value = 2;
+  } else {
+    value = 0;
+  }
 
+  value = 1;
+  intensitycommand = 15;
+  intensity = 24;
+  if (count == 0) ret = mastercard_display(device,card,32,1,&value,0);
+  value = 2;
+  if (count == 0) ret = mastercard_display(device,card,33,1,&value,0);
+  //if (count == 1) ret = mastercard_display(device,card,33,1,&intensitycommand,1);
+  //if (count == 2) ret = mastercard_display(device,card,33,1,&intensity,1);
+ 
+
+  /*
+  value = 12345;
+  intensitycommand = 15;
+  intensity = 20;
+  if (count == 0) ret = mastercard_display(device,card,0,5,&value,0);
+  if (count == 1) ret = mastercard_display(device,card,1,1,&intensitycommand,1);
+  if (count == 2) ret = mastercard_display(device,card,1,1,&intensity,1);
+  */
+  
 }

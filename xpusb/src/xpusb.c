@@ -53,11 +53,14 @@
 #include "check_x737.h"
 #include "check_zibo.h"
 
+
 /* Main program for data exchange between X-Plane and the OpenCockpits IOCARDS */
 /* All input/output/motor/server addresses are zero-based (e.g. range from 0..ninputs-1) */
 int main (int argc, char **argv)
 {
 
+  count = -1;
+  
   /* print License terms */
   print_license();
 

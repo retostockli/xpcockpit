@@ -729,9 +729,30 @@ int mastercard_display(int device, int card, int pos, int n, int *value, int has
 	    nt = n;
 	    
 	    /* handle special codes */
-	    if ((hasspecial) && (tempval > 9)) {
+	    if (hasspecial) {
 	      for (count=nt-1;count>=0;count--) {
-		iocard[device].displays[count+pos][card] = tempval;
+		if (tempval == 10) {
+		  // blank digit
+		  iocard[device].displays[count+pos][card] = 0xf7;
+		} else if (tempval == 11) {
+		  // - sign
+		  iocard[device].displays[count+pos][card] = 0xf8;
+		} else if (tempval == 12) {
+		  // b
+		  iocard[device].displays[count+pos][card] = 0xf9;
+		} else if (tempval == 13) {
+		  // t
+		  iocard[device].displays[count+pos][card] = 0xfa;
+		} else if (tempval == 14) {
+		  // d
+		  iocard[device].displays[count+pos][card] = 0xfb;
+		} else if (tempval == 15) {
+		  // change intensity
+		  iocard[device].displays[count+pos][card] = 0xfc;
+		} else if ((tempval >= 20) && (tempval <= 50)) {
+		  // intensity value: 0-15 (use special value 20-35
+		  iocard[device].displays[count+pos][card] = tempval-20;
+		}
 	      }
 	    } else {
 	      /* normal processing */
@@ -741,7 +762,6 @@ int mastercard_display(int device, int card, int pos, int n, int *value, int has
 	      if (tempval < 0) {
 		tempval = -tempval;
 		negative = 1;
-		nt = n - 1;
 	      }
       
 	      /*cut high values */
@@ -759,11 +779,15 @@ int mastercard_display(int device, int card, int pos, int n, int *value, int has
 		//printf("count: %i, power: %i, tempval: %i, digit: %i\n", count, power, tempval, single);
 	      }
 
-	      if (negative == 1) {
-		/* put minus sign in the frontmost display */
-		iocard[device].displays[pos+nt][card] = 0xf8;
-	      } else {	  
-		iocard[device].displays[pos+nt][card] = 0x0a;
+	      if (iocard[device].displays[pos+nt-1][card] == 0) {
+		/* deal with negative sign if the leftmost display is a 0 */
+		if (negative == 1) {
+		  /* put minus sign in the leftmost display */
+		  iocard[device].displays[pos+nt-1][card] = 0xf8;
+		} else {
+		  /* turn blank */
+		  iocard[device].displays[pos+nt-1][card] = 0xf7;
+		}
 	      }
 
 	    } // end "normal processing"
@@ -1069,7 +1093,7 @@ int send_mastercard(void)
 	      break;
 	    }
 
-	    if (verbose > 2) {
+	    if (verbose > 0) {
 	      printf("LIBIOCARDS: send display to MASTERCARD device=%i card=%i display=%i value=%i \n",
 		     device, card, count, iocard[device].displays[count][card]);
 	    }
