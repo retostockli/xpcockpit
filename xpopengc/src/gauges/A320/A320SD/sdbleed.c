@@ -9,10 +9,11 @@
   (included in the A320SDWidget's Render() function)
 
   Created:
-    Date:   2015-11-15
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    Last change: 2020-02-02
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -37,7 +38,7 @@
 
 /* inlined code: SD BLEED Page */
 
-	m_pFontManager->SetSize(m_Font, 14, 14);
+	m_pFontManager->SetSize (m_Font, 14, 14);
 	m_pFontManager->Print (178, 440, "BLEED", m_Font);
 	glLineWidth (3);
 	glColor3ub (COLOR_WHITE);
@@ -68,13 +69,13 @@
 	aCircle.SetRadius (42);
 	aCircle.SetDegreesPerPoint (5);
 	aCircle.SetArcStartEnd (295, 65);
-	  glBegin(GL_POLYGON);
+	  glBegin (GL_POLYGON);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 	aCircle.SetOrigin (365, 285);
-	  glBegin(GL_POLYGON);
+	  glBegin (GL_POLYGON);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 
 	glLineWidth (2);
 	// Straight Lines
@@ -109,7 +110,7 @@
 	glEnd ();
 
 	// Variable lines
-bleedIntercon = 3;	// 4 pos (image BleedIntercon)
+bleedIntercon = 3; // 4 pos (image BleedIntercon) (??)
 	glColor3ub (COLOR_GREEN);
 	glLineWidth (3);
 	switch (bleedIntercon) {
@@ -149,27 +150,27 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	aCircle.SetDegreesPerPoint (5);
 	aCircle.SetArcStartEnd (295, 65);
 	  glLineWidth (3);
-	  glBegin(GL_LINE_STRIP);
+	  glBegin (GL_LINE_STRIP);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 	aCircle.SetOrigin ( 95, 345);
 	  glLineWidth (3);
-	  glBegin(GL_LINE_STRIP);
+	  glBegin (GL_LINE_STRIP);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 	aCircle.SetOrigin (365, 285);
 	  glLineWidth (3);
-	  glBegin(GL_LINE_STRIP);
+	  glBegin (GL_LINE_STRIP);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 	aCircle.SetOrigin (365, 345);
 	  glLineWidth (3);
-	  glBegin(GL_LINE_STRIP);
+	  glBegin (GL_LINE_STRIP);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 
 	// Texts
-	m_pFontManager->SetSize(m_Font, 12, 12);
+	m_pFontManager->SetSize (m_Font, 12, 12);
 	glColor3ub (COLOR_WHITE);
 	m_pFontManager->Print ( 45, 350, "C", m_Font);
 	m_pFontManager->Print (130, 350, "H", m_Font);
@@ -208,9 +209,9 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	    aCircle.SetArcStartEnd (0, 360);
 	    glLineWidth (3);
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glColor3ub (COLOR_GREEN);
 	    glLineWidth (3);
 	    glBegin (GL_LINES);
@@ -225,9 +226,9 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	    aCircle.SetArcStartEnd (0, 360);
 	    glLineWidth (3);
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glColor3ub (COLOR_GREEN);
 	    glLineWidth (3);
 	    glBegin (GL_LINES);
@@ -242,9 +243,9 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	    aCircle.SetArcStartEnd (0, 360);
 	    glLineWidth (3);
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glColor3ub (COLOR_AMBER);
 	    glLineWidth (3);
 	    glBegin (GL_LINES);
@@ -260,9 +261,9 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	    aCircle.SetArcStartEnd (0, 360);
 	    glLineWidth (3);
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glColor3ub (COLOR_AMBER);
 	    glLineWidth (3);
 	    glBegin (GL_LINES);
@@ -282,36 +283,36 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	switch (eng1BldVlv) {
 	  case 0:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 83, 146); glVertex2d (107, 146);
 	    glEnd ();
 	  break;
 	  case 1:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 95, 124); glVertex2d ( 95, 158);
 	    glEnd ();
 	  break;
 	  case 2:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 83, 146); glVertex2d (107, 146);
 	    glEnd ();
 	  break;
 	  case 3:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 95, 124); glVertex2d ( 95, 158);
 	    glEnd ();
@@ -328,36 +329,36 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	switch (eng2BldVlv) {
 	  case 0:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (353, 146); glVertex2d (377, 146);
 	    glEnd ();
 	  break;
 	  case 1:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (365, 134); glVertex2d (365, 158);
 	    glEnd ();
 	  break;
 	  case 2:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (353, 146); glVertex2d (377, 146);
 	    glEnd ();
 	  break;
 	  case 3:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (365, 134); glVertex2d (365, 158);
 	    glEnd ();
@@ -374,18 +375,18 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	switch (eng1HPBleed) {
 	  case 0:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (123, 102); glVertex2d (123, 126);
 	    glEnd ();
 	  break;
 	  case 1:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 95, 114); glVertex2d (110, 114);
 	      glVertex2d (111, 114); glVertex2d (135, 114);
@@ -393,9 +394,9 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	  break;
 	  case 2:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 95, 114); glVertex2d (110, 114);
 	      glVertex2d (123, 102); glVertex2d (123, 126);
@@ -413,18 +414,18 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	switch (eng2HPBleed) {
 	  case 0:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (337, 102); glVertex2d (337, 126);
 	    glEnd ();
 	  break;
 	  case 1:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (325, 114); glVertex2d (349, 114);
 	      glVertex2d (350, 114); glVertex2d (365, 114);
@@ -432,9 +433,9 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	  break;
 	  case 2:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (337, 102); glVertex2d (337, 126);
 	      glVertex2d (350, 114); glVertex2d (365, 114);
@@ -452,36 +453,36 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	switch (pack1FCV) {
 	  case 0:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 83, 285); glVertex2d (107, 285);
 	    glEnd ();
 	  break;
 	  case 1:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 95, 273); glVertex2d ( 95, 297);
 	    glEnd ();
 	  break;
 	  case 2:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 83, 285); glVertex2d (107, 285);
 	    glEnd ();
 	  break;
 	  case 3:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d ( 95, 273); glVertex2d ( 95, 297);
 	    glEnd ();
@@ -498,36 +499,36 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	switch (pack2FCV) {
 	  case 0:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (353, 285); glVertex2d (377, 285);
 	    glEnd ();
 	  break;
 	  case 1:
 	    glColor3ub (COLOR_GREEN);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (365, 273); glVertex2d (365, 297);
 	    glEnd ();
 	  break;
 	  case 2:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (353, 285); glVertex2d (377, 285);
 	    glEnd ();
 	  break;
 	  case 3:
 	    glColor3ub (COLOR_AMBER);
-	    glBegin(GL_LINE_STRIP);
+	    glBegin (GL_LINE_STRIP);
 	      aCircle.Evaluate ();
-	    glEnd();
+	    glEnd ();
 	    glBegin (GL_LINES);
 	      glVertex2d (365, 273); glVertex2d (365, 297);
 	    glEnd ();
@@ -543,25 +544,25 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	aCircle.SetOrigin (230, 384);
 	if (ramAirValve < 0.1) { // closed
 	  glColor3ub (COLOR_GREEN);
-	  glBegin(GL_LINE_STRIP);
+	  glBegin (GL_LINE_STRIP);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 	  glBegin (GL_LINES);
 	    glVertex2d (218, 384); glVertex2d (242, 384);
 	  glEnd ();
 	} else if (ramAirValve > 0.9) { // open
 	  glColor3ub (COLOR_AMBER);
-	  glBegin(GL_LINE_STRIP);
+	  glBegin (GL_LINE_STRIP);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 	  glBegin (GL_LINES);
 	    glVertex2d (230, 372); glVertex2d (230, 396);
 	  glEnd ();
 	} else { // in transit
 	  glColor3ub (COLOR_AMBER);
-	  glBegin(GL_LINE_STRIP);
+	  glBegin (GL_LINE_STRIP);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 	  glBegin (GL_LINES);
 	    glVertex2d (221, 375); glVertex2d (239, 393);
 	  glEnd ();
@@ -575,44 +576,44 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	  aCircle.SetDegreesPerPoint (5);
 	  aCircle.SetArcStartEnd (0, 360);
 	  glLineWidth (3);
-	  glBegin(GL_LINE_STRIP);
+	  glBegin (GL_LINE_STRIP);
 	    aCircle.Evaluate ();
-	  glEnd();
+	  glEnd ();
 	  switch (xBldVlv) {
 	    case 0:
 	      glColor3ub (COLOR_GREEN);
-	      glBegin(GL_LINE_STRIP);
-		aCircle.Evaluate ();
-	      glEnd();
+	      glBegin (GL_LINE_STRIP);
+                  aCircle.Evaluate ();
+	      glEnd ();
 	      glBegin (GL_LINES);
-		glVertex2d (270, 232); glVertex2d (270, 256);
+                  glVertex2d (270, 232); glVertex2d (270, 256);
 	      glEnd ();
 	    break;
 	    case 1:
 	      glColor3ub (COLOR_GREEN);
-	      glBegin(GL_LINE_STRIP);
-		aCircle.Evaluate ();
-	      glEnd();
+	      glBegin (GL_LINE_STRIP);
+                  aCircle.Evaluate ();
+	      glEnd ();
 	      glBegin (GL_LINES);
-		glVertex2d (258, 244); glVertex2d (282, 244);
+                  glVertex2d (258, 244); glVertex2d (282, 244);
 	      glEnd ();
 	    break;
 	    case 2:
 	      glColor3ub (COLOR_AMBER);
-	      glBegin(GL_LINE_STRIP);
-		aCircle.Evaluate ();
-	      glEnd();
+	      glBegin (GL_LINE_STRIP);
+                  aCircle.Evaluate ();
+	      glEnd ();
 	      glBegin (GL_LINES);
-		glVertex2d (270, 232); glVertex2d (270, 256);
+                  glVertex2d (270, 232); glVertex2d (270, 256);
 	      glEnd ();
 	    break;
 	    case 3:
 	      glColor3ub (COLOR_AMBER);
-	      glBegin(GL_LINE_STRIP);
-		aCircle.Evaluate ();
-	      glEnd();
+	      glBegin (GL_LINE_STRIP);
+                  aCircle.Evaluate ();
+	      glEnd ();
 	      glBegin (GL_LINES);
-		glVertex2d (258, 244); glVertex2d (282, 244);
+                  glVertex2d (258, 244); glVertex2d (282, 244);
 	      glEnd ();
 	    break;
 	  }
@@ -621,7 +622,7 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	// The needles
 
 //pack1FlowInd = 0.6;
-	glPushMatrix();
+	glPushMatrix ();
 	  glLineWidth (3);
 	  glColor3ub (COLOR_GREEN);
 	  glTranslated ( 95, 285, 0);
@@ -630,10 +631,10 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	    glVertex2d (  0, 14);
 	    glVertex2d (  0, 30);
 	  glEnd ();
-	glPopMatrix();
+	glPopMatrix ();
 
 //pack2FlowInd = 0.0;
-	glPushMatrix();
+	glPushMatrix ();
 	  glLineWidth (3);
 	  glColor3ub (COLOR_GREEN);
 	  glTranslated (365, 285, 0);
@@ -642,10 +643,10 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	    glVertex2d (  0, 14);
 	    glVertex2d (  0, 30);
 	  glEnd ();
-	glPopMatrix();
+	glPopMatrix ();
 
 //pack1Temp = 0.5;
-	glPushMatrix();
+	glPushMatrix ();
 	  glLineWidth (3);
 	  glColor3ub (COLOR_GREEN);
 	  glTranslated ( 95, 345, 0);
@@ -654,10 +655,10 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	    glVertex2d (  0, 14);
 	    glVertex2d (  0, 30);
 	  glEnd ();
-	glPopMatrix();
+	glPopMatrix ();
 
 //pack2Temp = 1.0;
-	glPushMatrix();
+	glPushMatrix ();
 	  glLineWidth (3);
 	  glColor3ub (COLOR_GREEN);
 	  glTranslated (365, 345, 0);
@@ -666,7 +667,7 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	    glVertex2d (  0, 14);
 	    glVertex2d (  0, 30);
 	  glEnd ();
-	glPopMatrix();
+	glPopMatrix ();
 
 	// The numeric value displays
 
@@ -674,33 +675,33 @@ bleedIntercon = 3;	// 4 pos (image BleedIntercon)
 	// Pack outlet temperature (normally green, amber if temp > 90 dC) // Note: does not seem to work as specified...
 	if ((pack1Temp * 32.63) < 90.0) glColor3ub (COLOR_GREEN); // 32.63: funny correction value for pack temp ??
 	else glColor3ub (COLOR_AMBER);
-	sprintf(buffer, "%4.0f", (pack1Temp * 32.63));
+	sprintf (buffer, "%4.0f", (pack1Temp * 32.63));
 	m_pFontManager->Print ( 65, 383, buffer, m_Font);
 	if ((pack2Temp * 32.63) < 90.0) glColor3ub (COLOR_GREEN);
 	else glColor3ub (COLOR_AMBER);
-	sprintf(buffer, "%4.0f", (pack2Temp * 32.63));
+	sprintf (buffer, "%4.0f", (pack2Temp * 32.63));
 	m_pFontManager->Print (335, 383, buffer, m_Font);
 
 // Note: these variables are not yet defined as dataref...
 	// Pack compressor outlet temperature (normally green, amber if temp > 230 dC)
-//	sprintf(buffer, "%4.0f", pack1CmpTemp);
+//	sprintf (buffer, "%4.0f", pack1CmpTemp);
 //	m_pFontManager->Print (xxx, 330, buffer, m_Font);
 	m_pFontManager->Print ( 65, 330, " 170", m_Font);
-//	sprintf(buffer, "%4.0f", pack2CmpTemp);
+//	sprintf (buffer, "%4.0f", pack2CmpTemp);
 //	m_pFontManager->Print (xxx, 330, buffer, m_Font);
 	m_pFontManager->Print (335, 330, " 170", m_Font);
 	// Precooler inlet pressure (normally green; amber if press < 4 or press > 57 psi)
-//	sprintf(buffer, "%3.0f", pack1PrciPress);
+//	sprintf (buffer, "%3.0f", pack1PrciPress);
 //	m_pFontManager->Print (xxx, 200, buffer, m_Font);
 	m_pFontManager->Print ( 66, 200, " +1", m_Font);
-//	sprintf(buffer, "%3.0f", pack2PrciPress);
+//	sprintf (buffer, "%3.0f", pack2PrciPress);
 //	m_pFontManager->Print (xxx, 200, buffer, m_Font);
 	m_pFontManager->Print (363, 200, "+1", m_Font);
 	// Precooler outlet temperature (normally green, amber if temp < 150 or temp > 250, 70, 290 dC)
-//	sprintf(buffer, "%4.0f", pack1prcoTemp);
+//	sprintf (buffer, "%4.0f", pack1prcoTemp);
 //	m_pFontManager->Print (xxx, 183, buffer, m_Font);
 	m_pFontManager->Print ( 66, 183, " 147", m_Font);
-//	sprintf(buffer, "%4.0f", pack2prcoTemp);
+//	sprintf (buffer, "%4.0f", pack2prcoTemp);
 //	m_pFontManager->Print (xxx, 183, buffer, m_Font);
 	m_pFontManager->Print (353, 183, "147", m_Font);
 

@@ -6,10 +6,11 @@
   === Airbus A320 style System Display ===
 
   Created:
-    Date:   2011-11-14
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    Last change: 2020-02-02
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -52,11 +53,13 @@
 namespace OpenGC
 {
 
-  /** The Subwindow */
-  A320SDWidget* pSDWidget;
+  bool CdStateSd = true;
+  bool coldDarkSd () { return CdStateSd; }
 
-  A320SD::A320SD()
-  {
+  /** The Subwindow */
+  A320SDWidget* SDWidget;
+
+  A320SD::A320SD () {
     if (verbosity > 1) printf ("A320SD constructing\n");
 
     // Specify our physical size and rotation
@@ -67,27 +70,22 @@ namespace OpenGC
     this->SetGaugeOutline (false);
 
     // Create the widget
-    pSDWidget = new A320SDWidget ();
-    pSDWidget->SetParentRenderObject (this);
-    pSDWidget->SetPosition (0, 0);
-    pSDWidget->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
-    this->AddGaugeComponent (pSDWidget);
+    SDWidget = new A320SDWidget ();
+    SDWidget->SetParentRenderObject (this);
+    SDWidget->SetPosition (0, 0);
+    SDWidget->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
+    this->AddGaugeComponent (SDWidget);
 
     if (verbosity > 0) printf("A320SD - constructed\n");
   }
 
-  A320SD::~A320SD ()
-  {
-    // Destruction handled by base class
+  A320SD::~A320SD () {}
+
+  void A320SD::SetRotation (int rot) {
+    SDWidget->SetRotation (rot);
   }
 
-  void A320SD::SetRotation (int rot)
-  {
-    pSDWidget->SetRotation (rot);
-  }
-
-  void A320SD::Render ()
-  {
+  void A320SD::Render () {
     Gauge::Render ();
 
     if (verbosity > 2)
@@ -97,6 +95,7 @@ namespace OpenGC
       printf ("A320SD - Physical size:     x %f, y %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
       printf ("A320SD - Pixel size:        x %i, y %i\n", m_PixelSize.x, m_PixelSize.y);
     }
-  }
+
+  } // end Render()
 
 } // end namespace OpenGC

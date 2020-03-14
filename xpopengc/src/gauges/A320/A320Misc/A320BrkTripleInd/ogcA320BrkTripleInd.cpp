@@ -8,8 +8,9 @@
   Created:
     Date:   2015-06-14
     Author: Hans Jansen
+    Last change: 2020-01-22
 
-  Copyright (C) 2011-2017 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -41,6 +42,9 @@
 
 namespace OpenGC {
 
+  /** The Subwindow */
+  A320BrkTripleIndDial* brkTrIndComp;
+
   A320BrkTripleInd::A320BrkTripleInd () {
     if (verbosity > 0) printf ("A320BrkTripleInd - constructing\n");
 
@@ -52,30 +56,28 @@ namespace OpenGC {
     this->SetGaugeOutline (true);
 
     // The dials of the Brake Indicators
-    A320BrkTripleIndDial* pComp = new A320BrkTripleIndDial ();
-    pComp->SetParentRenderObject (this);
-    pComp->SetPosition (0, 0);
-    pComp->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
-    this->AddGaugeComponent (pComp);
+    brkTrIndComp = new A320BrkTripleIndDial ();
+    brkTrIndComp->SetParentRenderObject (this);
+    brkTrIndComp->SetPosition (0, 0);
+    brkTrIndComp->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
+    this->AddGaugeComponent (brkTrIndComp);
 
     if (verbosity > 1) printf ("A320BrkTripleInd - constructed\n");
   }
 
-  A320BrkTripleInd::~A320BrkTripleInd () {
-  }
+  A320BrkTripleInd::~A320BrkTripleInd () {}
 
   void A320BrkTripleInd::Render () {
     Gauge::Render();
 
-    if (verbosity > 1)
-    {
+    if (verbosity > 1) {
       printf ("A320BrkTripleInd - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
       printf ("A320BrkTripleInd -    pixel position: %i %i\n", m_PixelPosition.x,    m_PixelPosition.y);
       printf ("A320BrkTripleInd -     physical size: %f %f\n", m_PhysicalSize.x,     m_PhysicalSize.y);
       printf ("A320BrkTripleInd -        pixel size: %i %i\n", m_PixelSize.x,        m_PixelSize.y);
     }
 
-  }
+  } // end Render()
 
 } // end namespace OpenGC
 

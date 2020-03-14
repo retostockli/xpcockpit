@@ -3,11 +3,14 @@
   This is the ogcA320StbyASIComponent.c file, part of the OpenGC subproject
   of the XpIoCards project (https://sourceforge.net/projects/xpiocards/)
 
+  === Airbus A320 style Standby AirSpeed Indicator ===
+
   Created:
     Date:   2018-05-03
     Author: Hans Jansen
+    last change: 2020-01-23
 
-  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -41,7 +44,6 @@
 namespace OpenGC {
 
   A320StbyASIComponent::A320StbyASIComponent () {
-  
     if (verbosity > 0) printf ("A320StbyASIComponent - constructing\n");
 
     m_Font = m_pFontManager->LoadDefaultFont ();
@@ -80,41 +82,40 @@ namespace OpenGC {
     return angle;
   }
 
-  // Handle the cold&dark state for the display
-  int coldDarkStAsi = 2;
-
   void A320StbyASIComponent::Render () {
+
+    bool coldAndDark = true;
   
     // Call base class to setup for size and position
     GaugeComponent::Render ();
 
     // For drawing circles
     CircleEvaluator aCircle;
-
     float fontSize = 8;
 
-    // Request the datarefs we want to use
-    
-    // Note: this dataref is maintained by the a320_overhead.c module
-    int *cold_dark_st_asi = link_dataref_int ("xpserver/cold_and_dark");
-    if (*cold_dark_st_asi == INT_MISS) coldDarkStAsi = 2; else coldDarkStAsi = *cold_dark_st_asi;
-    if (coldDarkStAsi == 0) {
+      // Request the datarefs we want to use
 
-      // Current airspeed
-      float iasCapt;
-      float *ias_capt = link_dataref_flt ("AirbusFBW/IASCapt", -1);
-      if (*ias_capt != FLT_MISS) iasCapt = *ias_capt; else iasCapt = 0.0;
-      float iasAngle = convertAirspeed (iasCapt);
+    // Note: this dataref is created and maintained by the a320_overhead.c module
+    int *cold_and_dark = link_dataref_int ("xpserver/cold_and_dark");
+    if (*cold_and_dark == INT_MISS) coldAndDark = true; else coldAndDark = (*cold_and_dark != 0) ? true : false;
 
-      if (verbosity > 1) {
-        printf ("A320StbyASIComponent - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
-        printf ("A320StbyASIComponent -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
-        printf ("A320StbyASIComponent -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
-        printf ("A320StbyASIComponent -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
-      }
+    // Current airspeed
+    float iasCapt;
+    float *ias_capt = link_dataref_flt ("AirbusFBW/IASCapt", -1);
+    if (*ias_capt != FLT_MISS) iasCapt = *ias_capt; else iasCapt = 0.0;
+    float iasAngle = convertAirspeed (iasCapt);
+
+    if (verbosity > 1) {
+      printf ("A320StbyASIComponent - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
+      printf ("A320StbyASIComponent -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
+      printf ("A320StbyASIComponent -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
+      printf ("A320StbyASIComponent -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
+    }
+
+    if (!coldAndDark) {
 
       double partSize = m_PhysicalSize.x;	// defines total component size (just for name simplification) (square gauge!)
-      double partCenter = partSize / 2;	// defines component center
+      double partCenter = partSize / 2;		// defines component center
 
       m_pFontManager->SetSize (m_Font, fontSize, fontSize);
 
@@ -265,7 +266,7 @@ namespace OpenGC {
     
       glPopMatrix ();
 
-    } // end if (! coldDarkStAsi)
+    } // end if (! coldAndDark)
 
   } // end Render ()
 

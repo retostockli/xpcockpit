@@ -9,8 +9,10 @@
   Created:
     Date:   2011-11-14
     Author: Hans Jansen
+    last change: 2020-02-01
+    (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -48,18 +50,9 @@
 #include "ogcA320NDPlan.h"
 #include "ogcA320NDVor.h"
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-  // Note: this is already handled in the A320PFD mdule - can we use that?
-//  bool ColdAndDarkState = true;
-//  bool ColdAndDark () { return ColdAndDarkState; }
-
-  /** The Subwindow */
+  /** The Subwindows */
   A320NDArc* NDArcWidget;
   A320NDIls* NDIlsWidget;
   A320NDNav* NDNavWidget;
@@ -67,8 +60,7 @@ namespace OpenGC
   A320NDVor* NDVorWidget;
   A320NDWidget* NDWidget;
 
-  A320ND::A320ND()
-  {
+  A320ND::A320ND () {
     if (verbosity > 1) printf ("A320ND constructing\n");
 
     // Specify our physical size
@@ -118,12 +110,7 @@ namespace OpenGC
     if (verbosity > 0) printf("A320ND - constructed\n");
   }
 
-  A320ND::~A320ND ()
-  {
-    // Destruction handled by base class
-  }
-
-//===========================The Render function===============================
+  A320ND::~A320ND () {}
 
   void A320ND::Render ()
   {
@@ -137,8 +124,6 @@ namespace OpenGC
       printf ("A320ND - Physical size:     x %f, y %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
       printf ("A320ND - Pixel size:        x %i, y %i\n", m_PixelSize.x, m_PixelSize.y);
     }
-    
-    // (Nothing is ever rendered from here... (?))
 
   } // end Render()
   

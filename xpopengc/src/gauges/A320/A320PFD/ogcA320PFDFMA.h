@@ -3,11 +3,12 @@
   This is the ogcA320PFDFMA.h header to ogcA320PFDFMA.cpp
 
   Created:
-    Date:   2011-12-07
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-04
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,20 +37,20 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-class A320PFDFMA : public GaugeComponent  
-  {
-  public:
-    A320PFDFMA();
-    virtual ~A320PFDFMA();
+  class A320PFDFMA : public GaugeComponent   {
 
-    void Render();
+    public:
+      A320PFDFMA ();
+      virtual ~A320PFDFMA ();
+      void Render ();
 
-  protected:
-    int m_Font;
+    protected:
+      int m_Font;
+
   };
 
-}
+} // end namespace OpenGC
+
 #endif

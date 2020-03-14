@@ -3,11 +3,12 @@
   This is the ogcA320EWDSlatsFlaps.h header to ogcA320EWDSlatsFlaps.cpp
 
   Created:
-    Date:   2016-03-02
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-06
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -28,28 +29,29 @@
  * Airbus A320 style Engine/Warning Display: the Slats/Flaps Indicator
  */
 
-#if !defined(A320EWDSlatsFlaps_H)
+#ifndef A320EWDSlatsFlaps_H
 #define A320EWDSlatsFlaps_H
 
 #include "ogcGaugeComponent.h"
 #include "../ogcAirbusColors.h"
 
-namespace OpenGC
-{
+extern int verbosity;
 
-class A320EWDSlatsFlaps : public GaugeComponent  
-{
-public:
-	A320EWDSlatsFlaps();
-	virtual ~A320EWDSlatsFlaps();
-	void Render();
+namespace OpenGC {
 
-	void setCurrentEngine(int engine);
+  class A320EWDSlatsFlaps : public GaugeComponent {
 
-protected:
-	int m_Font;
-	int currentEngine;
-};
+  public:
+      A320EWDSlatsFlaps ();
+      virtual ~A320EWDSlatsFlaps ();
+      void Render ();
+      void setCurrentEngine (int engine);
+
+  protected:
+      int m_Font;
+      int currentEngine;
+
+  };
 
 } // end namespace OpenGC
 

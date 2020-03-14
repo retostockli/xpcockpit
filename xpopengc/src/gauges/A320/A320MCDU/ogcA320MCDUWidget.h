@@ -3,11 +3,11 @@
   This is the ogcA320MCDUWidget.h header to ogcA320MCDUWidget.cpp
 
   Created:
-    Date:   2011-11-28
-    Author: Hans Jansen
-    (see ogcSkeletonGauge.cpp for more details)
+    Date:        2015-06-14
+    Author:      Hans Jansen
+    Last change: 2020-02-06
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,21 +36,21 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
-  class A320MCDUWidget : public GaugeComponent  
-  {
-  public:
-    A320MCDUWidget();
-    virtual ~A320MCDUWidget();
+namespace OpenGC {
 
-    void Render();
+  class A320MCDUWidget : public GaugeComponent {
 
-  protected:
-    int m_Font;
-    void drawSpec (int fontWidth, int fontHeight, int xPos, int ypos, char* line);
+    public:
+      A320MCDUWidget();
+      virtual ~A320MCDUWidget();
+      void Render();
+
+    protected:
+      int m_Font;
+      void drawSpec (int fontWidth, int fontHeight, int xPos, int ypos, char* line);
 
   };
 
-}
+} // end namespace OpenGC
+
 #endif

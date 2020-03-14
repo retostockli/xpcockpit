@@ -6,10 +6,12 @@
   === Airbus A320 style Primary Flight Display: the Localizer Scale ===
 
   Created:
-    Date:   2015-05-18
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-04
+    (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -47,11 +49,10 @@ v	AirbusFBW/NPAValid	int
 #include "ogcA320PFDLocalizerScale.h"
 #include "ogcCircleEvaluator.h"
 
-namespace OpenGC
-{
-  A320PFDLocalizerScale::A320PFDLocalizerScale()
-  {
-    if (verbosity > 0) printf("A320PFDLocalizerScale - constructing\n");
+namespace OpenGC {
+
+  A320PFDLocalizerScale::A320PFDLocalizerScale () {
+    if (verbosity > 0) printf ("A320PFDLocalizerScale - constructing\n");
 
     m_PhysicalPosition.x = 0;
     m_PhysicalPosition.y = 0;
@@ -62,171 +63,163 @@ namespace OpenGC
     m_Scale.x = 1.0;
     m_Scale.y = 1.0;
 
-    if (verbosity > 1) printf("A320PFDLocalizerScale - constructed\n");
+    if (verbosity > 1) printf ("A320PFDLocalizerScale - constructed\n");
   }
 
-  A320PFDLocalizerScale::~A320PFDLocalizerScale()
-  {
-  }
+  A320PFDLocalizerScale::~A320PFDLocalizerScale () {}
 
-  void A320PFDLocalizerScale::Render()
-  {
-    // For drawing circles
+  void A320PFDLocalizerScale::Render () {
+
+    bool ColdAndDark = true;
     CircleEvaluator aCircle;
 
-    // Call base class to setup viewport and projection
-    GaugeComponent::Render();
+    GaugeComponent::Render ();
 
-	if (!ColdAndDark()) {
+    // Note: this dataref is created and maintained by the a320_overhead.c module
+    int *cold_and_dark = link_dataref_int ("xpserver/cold_and_dark");
+    if (*cold_and_dark == INT_MISS) ColdAndDark = true; else ColdAndDark = (*cold_and_dark != 0) ? true : false;
 
     // LS Scales visible?
-    int* lsValid = link_dataref_int("AirbusFBW/ILSonCapt");
+    int* lsValid = link_dataref_int ("AirbusFBW/ILSonCapt");
 
     // NPA valid?
-    int* npaValid = link_dataref_int("AirbusFBW/NPAValid");
+    int* npaValid = link_dataref_int ("AirbusFBW/NPAValid");
 
     // LOC valid?
-    int* locValid = link_dataref_int("AirbusFBW/LOConCapt");
+    int* locValid = link_dataref_int ("AirbusFBW/LOConCapt");
 
     // LOC value
     int locValue;
-    float* loc_value = link_dataref_flt("AirbusFBW/LOCvalCapt", 0);
+    float* loc_value = link_dataref_flt ("AirbusFBW/LOCvalCapt", 0);
     if (*loc_value != FLT_MISS) locValue = (int) (*loc_value * 40); else locValue = 0;
 
-    if (verbosity > 2)
-    {
+    if (verbosity > 2) {
       printf ("A320PFDLocalizerScale - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
       printf ("A320PFDLocalizerScale -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
       printf ("A320PFDLocalizerScale -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
       printf ("A320PFDLocalizerScale -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
     }
 
-    double partWidth = m_PhysicalSize.x;
-    double partHeight = m_PhysicalSize.y;
-    double refPosH = partWidth/2;
-    double refPosV = partHeight/2;
+    if (!ColdAndDark) {
 
-    if (*lsValid == 1)
-    {
-      // draw a background
+      double partWidth = m_PhysicalSize.x;
+      double partHeight = m_PhysicalSize.y;
+      double refPosH = partWidth / 2;
+      double refPosV = partHeight / 2;
 
-      // Draw the reference line
-      glColor3ub(COLOR_YELLOW);
-      glLineWidth(3.0);
-      glBegin(GL_LINE_STRIP);
-        glVertex2f(refPosH, partHeight-5);
-        glVertex2f(refPosH, 5);
-      glEnd();
+      if (*lsValid == 1) {
+        // draw a background
 
-      // Tick marks are spaced every 10 degrees horizontally
-      // The tick spacing represents how far apart they are in physical units
-      double tickSpacing = m_PhysicalSize.x / 6;
-      double tickHeight = 16;
+        // Draw the reference line
+        glColor3ub (COLOR_YELLOW);
+        glLineWidth (3.0);
+        glBegin (GL_LINE_STRIP);
+          glVertex2f (refPosH, partHeight - 5);
+          glVertex2f (refPosH, 5);
+        glEnd ();
 
-      if (*npaValid == 1)
-      {
-        // draw the LDEV background marks
-        glColor3ub(COLOR_WHITE);
+        // Tick marks are spaced every 10 degrees horizontally
+        // The tick spacing represents how far apart they are in physical units
+        double tickSpacing = m_PhysicalSize.x / 6;
+        double tickHeight = 16;
 
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(refPosH+tickSpacing, partHeight-10);
-          glVertex2f(refPosH+tickSpacing, 10);
-        glEnd();
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(refPosH+tickSpacing*2, partHeight-10);
-          glVertex2f(refPosH+tickSpacing*2, 10);
-        glEnd();
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(refPosH-tickSpacing, partHeight-10);
-          glVertex2f(refPosH-tickSpacing, 10);
-        glEnd();
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(refPosH-tickSpacing*2, partHeight-10);
-          glVertex2f(refPosH-tickSpacing*2, 10);
-        glEnd();
-      } // if (*npaValid == 1)
-      else
-      {
-        // draw the LOC background marks
-        glColor3ub(COLOR_WHITE);
+        if (*npaValid == 1) {
+          // draw the LDEV background marks
+          glColor3ub (COLOR_WHITE);
 
-        aCircle.SetOrigin(refPosH+tickSpacing, refPosV);
-        aCircle.SetRadius(3);
-        aCircle.SetDegreesPerPoint(15);
-        aCircle.SetArcStartEnd(0.0,360.0);
-        glBegin(GL_TRIANGLE_FAN);
-          glVertex2f(refPosH+tickSpacing, refPosV);
-          aCircle.Evaluate();
-          glVertex2f(refPosH+tickSpacing, refPosV);
-        glEnd();
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (refPosH+tickSpacing, partHeight - 10);
+            glVertex2f (refPosH+tickSpacing, 10);
+          glEnd ();
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (refPosH+tickSpacing * 2, partHeight - 10);
+            glVertex2f (refPosH+tickSpacing * 2, 10);
+          glEnd ();
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (refPosH-tickSpacing, partHeight - 10);
+            glVertex2f (refPosH-tickSpacing, 10);
+          glEnd ();
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (refPosH-tickSpacing * 2, partHeight - 10);
+            glVertex2f (refPosH-tickSpacing * 2, 10);
+          glEnd ();
+        } else {
+          // draw the LOC background marks
+          glColor3ub (COLOR_WHITE);
 
-        aCircle.SetOrigin(refPosH+tickSpacing*2, refPosV);
-        aCircle.SetRadius(3);
-        aCircle.SetDegreesPerPoint(15);
-        aCircle.SetArcStartEnd(0.0,360.0);
-        glBegin(GL_TRIANGLE_FAN);
-          glVertex2f(refPosH+tickSpacing*2, refPosV);
-          aCircle.Evaluate();
-          glVertex2f(refPosH+tickSpacing*2, refPosV);
-        glEnd();
+          aCircle.SetOrigin (refPosH + tickSpacing, refPosV);
+          aCircle.SetRadius (3);
+          aCircle.SetDegreesPerPoint (15);
+          aCircle.SetArcStartEnd (0.0, 360.0);
+          glBegin (GL_TRIANGLE_FAN);
+            glVertex2f (refPosH + tickSpacing, refPosV);
+            aCircle.Evaluate ();
+            glVertex2f (refPosH + tickSpacing, refPosV);
+          glEnd ();
 
-        aCircle.SetOrigin(refPosH-tickSpacing, refPosV);
-        aCircle.SetRadius(3);
-        aCircle.SetDegreesPerPoint(15);
-        aCircle.SetArcStartEnd(0.0,360.0);
-        glBegin(GL_TRIANGLE_FAN);
-          glVertex2f(refPosH-tickSpacing, refPosV);
-          aCircle.Evaluate();
-          glVertex2f(refPosH-tickSpacing, refPosV);
-        glEnd();
+          aCircle.SetOrigin (refPosH + tickSpacing * 2, refPosV);
+          aCircle.SetRadius (3);
+          aCircle.SetDegreesPerPoint (15);
+          aCircle.SetArcStartEnd (0.0, 360.0);
+          glBegin (GL_TRIANGLE_FAN);
+            glVertex2f (refPosH + tickSpacing * 2, refPosV);
+            aCircle.Evaluate ();
+            glVertex2f (refPosH + tickSpacing * 2, refPosV);
+          glEnd ();
 
-        aCircle.SetOrigin(refPosH-tickSpacing*2, refPosV);
-        aCircle.SetRadius(3);
-        aCircle.SetDegreesPerPoint(15);
-        aCircle.SetArcStartEnd(0.0,360.0);
-        glBegin(GL_TRIANGLE_FAN);
-          glVertex2f(refPosH-tickSpacing*2, refPosV);
-          aCircle.Evaluate();
-          glVertex2f(refPosH-tickSpacing*2, refPosV);
-        glEnd();
-      } // (else) if (*npaValid == 1)
-    } // if (*lsValid == 1)
+          aCircle.SetOrigin (refPosH - tickSpacing, refPosV);
+          aCircle.SetRadius (3);
+          aCircle.SetDegreesPerPoint (15);
+          aCircle.SetArcStartEnd (0.0, 360.0);
+          glBegin (GL_TRIANGLE_FAN);
+            glVertex2f (refPosH - tickSpacing, refPosV);
+            aCircle.Evaluate ();
+            glVertex2f (refPosH - tickSpacing, refPosV);
+          glEnd ();
 
-    if (*locValid == 1)
-    {
-      // draw the LOC indicator
-      if (*npaValid == 1)
-      {
-        // draw the NPA bug
-        glColor3ub(COLOR_MAGENTA);
-        glLineWidth(2.0);
-        glBegin(GL_LINE_LOOP);
-          glVertex2f(locValue+refPosH-2, refPosV-12);
-          glVertex2f(locValue+refPosH-4, refPosV-10);
-          glVertex2f(locValue+refPosH-4, refPosV+10);
-          glVertex2f(locValue+refPosH-2, refPosV+12);
-          glVertex2f(locValue+refPosH+2, refPosV+12);
-          glVertex2f(locValue+refPosH+4, refPosV+10);
-          glVertex2f(locValue+refPosH+4, refPosV-10);
-          glVertex2f(locValue+refPosH+2, refPosV-12);
-        glEnd();
-      }
-      else
-      {
-        // draw the ILS bug
-        glColor3ub(COLOR_MAGENTA);
-        glLineWidth(2.0);
-        glBegin(GL_LINE_LOOP);
-          glVertex2f(locValue+refPosH, refPosV-12);
-          glVertex2f(locValue+refPosH-6, refPosV);
-          glVertex2f(locValue+refPosH, refPosV+12);
-          glVertex2f(locValue+refPosH+6, refPosV);
-        glEnd();
-     }
+          aCircle.SetOrigin (refPosH - tickSpacing * 2, refPosV);
+          aCircle.SetRadius (3);
+          aCircle.SetDegreesPerPoint (15);
+          aCircle.SetArcStartEnd (0.0, 360.0);
+          glBegin (GL_TRIANGLE_FAN);
+            glVertex2f (refPosH - tickSpacing * 2, refPosV);
+            aCircle.Evaluate ();
+            glVertex2f (refPosH - tickSpacing * 2, refPosV);
+          glEnd ();
+        } // (else) if (*npaValid == 1)
+      } // if (*lsValid == 1)
 
-    } // if (*locValid == 1)
+      if (*locValid == 1) {
+        // draw the LOC indicator
+        if (*npaValid == 1) {
+          // draw the NPA bug
+          glColor3ub (COLOR_MAGENTA);
+          glLineWidth (2.0);
+          glBegin (GL_LINE_LOOP);
+            glVertex2f (locValue + refPosH - 2, refPosV-12);
+            glVertex2f (locValue + refPosH - 4, refPosV-10);
+            glVertex2f (locValue + refPosH - 4, refPosV+10);
+            glVertex2f (locValue + refPosH - 2, refPosV+12);
+            glVertex2f (locValue + refPosH + 2, refPosV+12);
+            glVertex2f (locValue + refPosH + 4, refPosV+10);
+            glVertex2f (locValue + refPosH + 4, refPosV-10);
+            glVertex2f (locValue + refPosH + 2, refPosV-12);
+          glEnd ();
+        } else {
+          // draw the ILS bug
+          glColor3ub (COLOR_MAGENTA);
+          glLineWidth (2.0);
+          glBegin (GL_LINE_LOOP);
+            glVertex2f (locValue + refPosH, refPosV - 12);
+            glVertex2f (locValue + refPosH - 6, refPosV);
+            glVertex2f (locValue + refPosH, refPosV + 12);
+            glVertex2f (locValue + refPosH + 6, refPosV);
+          glEnd ();
+        }
 
-	} // end if ((!ColdAndDark())
+      } // if (*locValid == 1)
+
+    } // end if (!ColdAndDark)
 
   } // end Render()
 

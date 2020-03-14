@@ -8,8 +8,9 @@
   Created:
     Date:   2018-05-03
     Author: Hans Jansen
+    Last change: 2020-01-24
 
-  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -44,8 +45,7 @@ namespace OpenGC {
   A320StbyISISComponent* isisComp;
 
   A320StbyISIS::A320StbyISIS () {
-  
-    if (verbosity > 0) printf ("A320StbyISIS - constructing\n");
+      if (verbosity > 0) printf ("A320StbyISIS - constructing\n");
 
     // Specify our physical size
     m_PhysicalSize.x = 220;
@@ -67,16 +67,15 @@ namespace OpenGC {
   A320StbyISIS::~A320StbyISIS (){}
 
   void A320StbyISIS::Render () {
-  
-    Gauge::Render  ();
+    Gauge::Render ();
 
-    if (verbosity > 1)
-    {
+    if (verbosity > 1) {
       printf ("A320StbyISIS - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
       printf ("A320StbyISIS -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
       printf ("A320StbyISIS -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
       printf ("A320StbyISIS -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
     }
+
   }
 
 } // end namespace OpenGC

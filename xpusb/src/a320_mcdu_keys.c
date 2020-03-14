@@ -1,6 +1,7 @@
 /* This is the a320_mcdu_keys.c code which contains code for how to communicate with my Airbus
    A320 MCDU hardware (pushbuttons & LEDs only) connected to the OpenCockpits IOCARDS USB device.
-   To be used with QPAC V2.0 Basic A320 Airbus!
+
+   To be used with the QPAC Basic A320 Airbus V2.04.
 
    Note that the display module is part of the OpenGC subproject.
 

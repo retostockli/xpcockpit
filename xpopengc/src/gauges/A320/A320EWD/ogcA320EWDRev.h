@@ -3,11 +3,12 @@
   This is the ogcA320EWDRev.h header to ogcA320EWDRev.cpp
 
   Created:
-    Date:   2016-03-02
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-06
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -34,22 +35,23 @@
 #include "ogcGaugeComponent.h"
 #include "../ogcAirbusColors.h"
 
-namespace OpenGC
-{
+extern int verbosity;
 
-class A320EWDRev : public GaugeComponent  
-{
-public:
-	A320EWDRev();
-	virtual ~A320EWDRev();
-	void Render();
+namespace OpenGC {
 
-	void setEngine(int engine);
+  class A320EWDRev : public GaugeComponent {
 
-protected:
-	int m_Font;
-	int m_Engine;
-};
+    public:
+      A320EWDRev ();
+      virtual ~A320EWDRev ();
+      void Render ();
+      void setEngine (int engine);
+
+    protected:
+      int m_Font;
+      int m_Engine;
+
+  };
 
 } // end namespace OpenGC
 

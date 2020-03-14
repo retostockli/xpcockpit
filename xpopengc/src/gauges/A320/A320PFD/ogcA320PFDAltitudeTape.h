@@ -3,11 +3,12 @@
   This is the ogcA320PFDAltitudeTape.h header to ogcA320PFDAltitudeTape.cpp
 
   Created:
-    Date:   2011-12-08
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-04
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,23 +37,18 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-  class A320PFDAltitudeTape : public GaugeComponent  
-  {
-  public:
+  class A320PFDAltitudeTape : public GaugeComponent {
 
-    A320PFDAltitudeTape();
-    virtual ~A320PFDAltitudeTape();
+    public:
+      A320PFDAltitudeTape ();
+      virtual ~A320PFDAltitudeTape ();
+      void Render ();
 
-    /** Overloaded render function */
-    void Render();
+    protected:
+      int m_Font;
 
-  protected:
-
-    /** The font number provided to us by the font manager */
-    int m_Font;
   };
 
 } // end namespace OpenGC

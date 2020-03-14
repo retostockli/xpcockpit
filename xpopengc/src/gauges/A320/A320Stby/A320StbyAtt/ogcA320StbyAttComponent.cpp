@@ -3,11 +3,14 @@
   This is the ogcA320StbyAttComponent.c file, part of the OpenGC subproject
   of the XpIoCards project (https://sourceforge.net/projects/xpiocards/)
 
+  === Airbus A320 style Main-Panel Clock ===
+
   Created:
     Date:   2018-05-03
     Author: Hans Jansen
+    last change: 2020-01-24
 
-  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -22,13 +25,7 @@
   You should have received a copy of the GNU General Public License along with
   this program. If not, see <http://www.gnu.org/licenses/>. 
 
-=============================================================================
-
-  The OpenGC subproject has been derived from:
-    OpenGC - The Open Source Glass Cockpit Project
-    Copyright (c) 2001-2003 Damion Shelton
-
-=============================================================================*/
+===========================================================================*/
 
 #include <stdio.h>
 #include <math.h>
@@ -41,8 +38,7 @@
 namespace OpenGC {
 
   A320StbyAttComponent::A320StbyAttComponent () {
-  
-    if (verbosity > 0) printf ("A320StbyAttComponent - constructing\n");
+      if (verbosity > 0) printf ("A320StbyAttComponent - constructing\n");
 
     m_Font = m_pFontManager->LoadDefaultFont ();
 
@@ -60,29 +56,26 @@ namespace OpenGC {
 
   A320StbyAttComponent::~A320StbyAttComponent () {}
 
-  // Handle the cold&dark state for the display
-  int coldDarkStAtt = 2;
-
   void A320StbyAttComponent::Render () {
-  
+
+    bool coldAndDark = true;
+    CircleEvaluator aCircle;
+    float fontSize = 12;
+
     // Call base class to setup for size and position
     GaugeComponent::Render ();
 
-    // For drawing circles
-    CircleEvaluator aCircle;
+      // Request the datarefs we want to use
 
-    float fontSize = 12;
+    // Note: this dataref is created and maintained by the a320_overhead.c module
+    int *cold_and_dark = link_dataref_int ("xpserver/cold_and_dark");
+    if (*cold_and_dark == INT_MISS) coldAndDark = true; else coldAndDark = (*cold_and_dark != 0) ? true : false;
 
-    // Request the datarefs we want to use
-    
-    // Note: this dataref is maintained by the a320_overhead.c module
-    int *cold_dark_st_att = link_dataref_int ("xpserver/cold_and_dark");
-    if (*cold_dark_st_att == INT_MISS) coldDarkStAtt = 2; else coldDarkStAtt = *cold_dark_st_att;
-    if (coldDarkStAtt == 0) {
+    int *zuluHours   = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_hours");
+    int *zuluMinutes = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_minutes");
+    int *zuluSeconds = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_seconds");
 
-      int *zuluHours   = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_hours");
-      int *zuluMinutes = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_minutes");
-      int *zuluSeconds = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_seconds");
+    if (!coldAndDark) {
 
       if (verbosity > 1) {
         printf ("A320StbyAttComponent - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
@@ -104,14 +97,12 @@ namespace OpenGC {
       m_pFontManager->SetSize (m_Font, fontSize, fontSize);
 
       glPushMatrix ();
-
         // do any rendering here
         glColor3ub(COLOR_MAGENTA);
-        m_pFontManager->Print (partCenter - 2 * d_w, partCenter, "ATT", m_Font);
-
+        m_pFontManager->Print (partCenter - 1.0 * d_w, partCenter, "ATT", m_Font);
       glPopMatrix ();
 
-    } // end if (! coldDarkStAtt)
+    } // end if (! coldAndDark)
 
   } // end Render ()
 

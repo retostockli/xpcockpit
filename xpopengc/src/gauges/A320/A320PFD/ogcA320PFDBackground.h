@@ -3,11 +3,12 @@
   This is the ogcA320PFDBackground.h header to ogcA320PFDBackground.cpp
 
   Created:
-    Date:   2011-11-28
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-04
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,18 +37,20 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
-  class A320PFDBackground : public GaugeComponent  
-  {
-  public:
-    A320PFDBackground();
-    virtual ~A320PFDBackground();
+namespace OpenGC {
 
-    void Render();
+  class A320PFDBackground : public GaugeComponent {
 
-  protected:
-    int m_Font;
+    public:
+      A320PFDBackground ();
+      virtual ~A320PFDBackground ();
+      void Render();
+
+    protected:
+      int m_Font;
+
   };
-}
+
+} // end namespace OpenGC
+
 #endif

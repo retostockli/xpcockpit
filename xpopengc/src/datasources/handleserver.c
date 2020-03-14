@@ -229,7 +229,7 @@ int receive_server(void) {
     }
     if (recv_left == -1) { // nothing received: error?
       if (errno == EAGAIN) { // just no data yet ...
-	if (verbose > 2) printf("HANDLESERVER: Client Socketé no data yet. \n");
+	if (verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
       } else {
 	if ((errno == ECONNABORTED) || (errno == ECONNREFUSED) ||

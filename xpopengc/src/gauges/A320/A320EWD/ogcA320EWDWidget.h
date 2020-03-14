@@ -3,11 +3,12 @@
   This is the ogcA320EWDWidget.h header to ogcA320EWDWidget.cpp
 
   Created:
-    Date:   2011-11-28
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-06
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2015 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,19 +37,21 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
-  class A320EWDWidget : public GaugeComponent  
-  {
-  public:
-    A320EWDWidget();
-    virtual ~A320EWDWidget();
+namespace OpenGC {
 
-    void Render();
+  class A320EWDWidget : public GaugeComponent {
 
-  protected:
-    int m_Font;
+    public:
+      A320EWDWidget();
+      virtual ~A320EWDWidget();
+      void Render();
+
+    protected:
+      /** Font from the font manager */
+      int m_Font;
+
   };
 
-}
+} // end namespace OpenGC
+
 #endif

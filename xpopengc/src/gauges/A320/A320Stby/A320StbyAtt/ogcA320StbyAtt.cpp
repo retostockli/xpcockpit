@@ -8,8 +8,9 @@
   Created:
     Date:   2018-05-03
     Author: Hans Jansen
+    last change: 2020-01-24
 
-  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -70,13 +71,13 @@ namespace OpenGC {
   
     Gauge::Render ();
 
-    if (verbosity > 1)
-    {
+    if (verbosity > 1) {
       printf ("A320StbyAtt - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
       printf ("A320StbyAtt -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
       printf ("A320StbyAtt -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
       printf ("A320StbyAtt -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
     }
-  }
+
+  } // end Render()
 
 } // end namespace OpenGC

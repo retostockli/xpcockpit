@@ -42,14 +42,17 @@ void iocard_test(void)
   int device = 0;
 
   // test integer array data
-  int *digitalinput = link_dataref_int("sim/cockpit/electrical/landing_lights_on");   
+  // int *digitalinput = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
   // unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum",  40, -1);  
   // int *digitalinput = link_dataref_int("xpserver/custominput");
-  int *encoder = link_dataref_int("xpserver/customencoder");
+  // int *encoder = link_dataref_int("xpserver/customencoder");
   // double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
   //float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, 0);
   //float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 1, 0);
+
+  int *digitalinput = link_dataref_int("AirbusFBW/ENG2MasterSwitch"); // hans
+  int *digitaloutput = link_dataref_int("AirbusFBW/ENG1MasterSwitch"); // hans
 
   // mastercard 1, input board # 1 (0-35)
   // mastercard 1, input board # 2 (36-71)
@@ -79,7 +82,8 @@ void iocard_test(void)
   */
 
   /* read digital input #0 on mastercard 1 */
-  ret = digital_input(device,card,0,digitalinput,0);
+  // ret = digital_input(device,card,2,digitalinput,0); // reto
+  ret = digital_input(device,card,9,digitalinput,0); // hans
   if (ret == 1) {
     printf("Digital Input #0 has value: %i \n",*digitalinput);
   }
@@ -87,8 +91,11 @@ void iocard_test(void)
   // mastercard 1, output board (11-55)
 
   /* update output value (connect a LED to output #11) */
-  ret = digital_output(device,card,11,digitalinput);
+    if (*digitaloutput != INT_MISS) // hans
+      printf("Digital Output #11 has value: %i \n",*digitaloutput); // hans
+  ret = digital_output(device,card,11,digitaloutput);
 
+/*
   float updn = 0.;
   ret = mastercard_encoder(device,card,1,&updn,1.0,2,3);
   if (*encoder != INT_MISS) {
@@ -99,10 +106,11 @@ void iocard_test(void)
   } else {
     *encoder = 0;
   }
+*/
 
   // mastercard 1, display II card (max 64 displays)
 
   /* update 1 displays with display value */
-  ret = mastercard_display(device,card,0,1,digitalinput,0);
+  // ret = mastercard_display(device,card,0,1,digitalinput,0);
 
 }

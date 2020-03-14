@@ -3,11 +3,12 @@
   This is the ogcA320PFDMiscInfo.h header to ogcA320PFDMiscInfo.cpp
 
   Created:
-    Date:   2015-05-15
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-04
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,19 +37,19 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
-  class A320PFDMiscInfo : public GaugeComponent  
-  {
-  public:
-    A320PFDMiscInfo();
-    virtual ~A320PFDMiscInfo();
+namespace OpenGC {
 
-    void Render();
+  class A320PFDMiscInfo : public GaugeComponent {
 
-  protected:
-    int m_Font;
+    public:
+      A320PFDMiscInfo ();
+      virtual ~A320PFDMiscInfo ();
+      void Render();
+
+    protected:
+      int m_Font;
   };
-}
-#endif
 
+} // end namespace OpenGC
+
+#endif

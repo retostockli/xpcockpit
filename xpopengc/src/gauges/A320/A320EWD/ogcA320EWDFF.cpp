@@ -6,10 +6,12 @@
   === Airbus A320 style Engine/Warning Display - Fuel Flow Indicator ===
 
   Created:
-    Date:   2016-03-02
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-06
+    (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -37,15 +39,9 @@
 #include "ogcA320EWD.h"
 #include "ogcA320EWDFF.h"
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-/*=============================================================================
- * Construction/Destruction
- *===========================================================================*/
-
-  A320EWDFF::A320EWDFF()
-  {
+  A320EWDFF::A320EWDFF ()   {
     printf("A320EWDFF constructed\n");
 
     m_Font = m_pFontManager->LoadFont((char*) "CockpitScreens.ttf");
@@ -62,39 +58,37 @@ namespace OpenGC
     m_Engine = 1;
   }
 
-  A320EWDFF::~A320EWDFF()
-  {
-  }
+  A320EWDFF::~A320EWDFF () {}
 
-  void A320EWDFF::setEngine(int engine)
-  {
+  void A320EWDFF::setEngine (int engine)   {
     m_Engine = engine;
   }
 
-/*=============================================================================
- * The Render function
- *===========================================================================*/
+  void A320EWDFF::Render () {
 
-  void A320EWDFF::Render()
-  {
+    bool coldAndDark = true;
     char buffer[32];
 
-    GaugeComponent::Render();
+    GaugeComponent::Render ();
 
-	if (!ColdAndDarkEwd()) {
+    // Note: this dataref is created and maintained by the a320_overhead.c module
+    int *cold_and_dark = link_dataref_int ("xpserver/cold_and_dark");
+    if (*cold_and_dark == INT_MISS) coldAndDark = true; else coldAndDark = (*cold_and_dark != 0) ? true : false;
 
     // The datarefs we want to use on this instrument
     float engFF = 0;
-    float *eng_ff = link_dataref_flt_arr("sim/cockpit2/engine/indicators/fuel_flow_kg_sec",8,-1,-4);
-    if (*eng_ff != FLT_MISS) engFF = eng_ff[m_Engine-1] * 3600;
-;
-    // The instrument display
-    glColor3ub (COLOR_GREEN);
-    m_pFontManager->SetSize(m_Font, 14, 14);
-    sprintf(buffer, "%4i", ((int) ((engFF + 9) / 10) * 10));
-    m_pFontManager->Print (0, 3, buffer, m_Font); // Eng 1 FF
+    float *eng_ff = link_dataref_flt_arr ("sim/cockpit2/engine/indicators/fuel_flow_kg_sec",8,-1,-4);
+      if (*eng_ff != FLT_MISS) engFF = eng_ff[m_Engine-1] * 3600;
 
-	} // End if (!ColdAndDarkEwd())
+    if (!coldAndDark) {
+
+      // The instrument display
+      glColor3ub (COLOR_GREEN);
+      m_pFontManager->SetSize (m_Font, 14, 14);
+      sprintf(buffer, "%4i", ((int) ((engFF + 9) / 10) * 10));
+      m_pFontManager->Print (0, 3, buffer, m_Font); // Eng 1 FF
+
+    } // End if (!coldAndDark)
 
   } // End Render()
 

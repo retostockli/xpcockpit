@@ -3,11 +3,12 @@
   This is the ogcA320NDPlan.h header to ogcA320NDPlan.cpp
 
   Created:
-    Date:   2018-02-06
+    Date:   2011-11-14
     Author: Hans Jansen
+    last change: 2020-02-01
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,21 +37,18 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
-  class A320NDPlan : public GaugeComponent  
-  {
-  public:
+namespace OpenGC {
 
-    A320NDPlan();
-    virtual ~A320NDPlan();
+  class A320NDPlan : public GaugeComponent {
 
-    void Render();
+    public:
+      A320NDPlan ();
+      virtual ~A320NDPlan ();
+      void Render ();
 
-  protected:
+    protected:
+      int m_Font;
 
-    /** Font from the font manager */
-    int m_Font;
   };
 
 } // end namespace OpenGC

@@ -3,11 +3,14 @@
   This is the ogcA320StbyRMIComponent.c file, part of the OpenGC subproject
   of the XpIoCards project (https://sourceforge.net/projects/xpiocards/)
 
+  === Airbus A320 style Standby Radio magnetic Indicator ===
+
   Created:
     Date:   2018-05-03
     Author: Hans Jansen
+    Last change: 2020-01-24
 
-  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -40,8 +43,7 @@
 
 namespace OpenGC {
 
-  A320StbyRMIComponent::A320StbyRMIComponent () {
-  
+  A320StbyRMIComponent::A320StbyRMIComponent () {  
     if (verbosity > 0) printf ("A320StbyRMIComponent - constructing\n");
 
     m_Font = m_pFontManager->LoadDefaultFont();
@@ -60,33 +62,31 @@ namespace OpenGC {
 
   A320StbyRMIComponent::~A320StbyRMIComponent () {}
 
-  // Handle the cold&dark state for the display
-  int coldDarkStRmi = 2;
-
   void A320StbyRMIComponent::Render () {
+
+    CircleEvaluator aCircle;
+    float fontSize = 12;
   
     // Call base class to setup for size and position
     GaugeComponent::Render ();
 
-    // For drawing circles
-    CircleEvaluator aCircle;
-
-    float fontSize = 12;
+    bool coldAndDark = true;
 
     // Request the datarefs we want to use
-    
-    // Note: this dataref is maintained by the a320_overhead.c module
-    int *cold_dark_st_rmi = link_dataref_int ("xpserver/cold_and_dark");
-    if (*cold_dark_st_rmi == INT_MISS) coldDarkStRmi = 2; else coldDarkStRmi = *cold_dark_st_rmi;
-    if (coldDarkStRmi == 0) {
 
-      if (verbosity > 1) {
-        printf ("A320StbyRMIComponent - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
-        printf ("A320StbyRMIComponent -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
-        printf ("A320StbyRMIComponent -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
-        printf ("A320StbyRMIComponent -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
-      }
+    // Note: this dataref is created and maintained by the a320_overhead.c module
+    int *cold_and_dark = link_dataref_int ("xpserver/cold_and_dark");
+    if (*cold_and_dark == INT_MISS) coldAndDark = true; else coldAndDark = (*cold_and_dark != 0) ? true : false;
 
+    if (verbosity > 1) {
+
+      printf ("A320StbyRMIComponent - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
+      printf ("A320StbyRMIComponent -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
+      printf ("A320StbyRMIComponent -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
+      printf ("A320StbyRMIComponent -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
+    }
+
+    if (!coldAndDark) {
       double partSize = m_PhysicalSize.x;	// defines total component size (just for name simplification) (square gauge!)
       double partCenter = partSize / 2;	// defines component center
     
@@ -100,14 +100,12 @@ namespace OpenGC {
       m_pFontManager->SetSize (m_Font, fontSize, fontSize);
 
       glPushMatrix ();
-
         // do any rendering here
         glColor3ub(COLOR_MAGENTA);
-        m_pFontManager->Print (partCenter - 2 * d_w, partCenter, "RMI", m_Font);
-
+        m_pFontManager->Print (partCenter - 1.0 * d_w, partCenter, "RMI", m_Font);
       glPopMatrix ();
 
-    } // end if (! coldDarkStRmi)
+    } // end if (! coldAndDark)
 
   } // end Render ()
 
