@@ -119,7 +119,10 @@ int read_usb (int number, unsigned char *bytes, int size)
 	    printf("HIDAPI_INTERFACE: read buffer %02x %02x %02x %02x %02x %02x %02x %02x \n",
 		   bytes[0],bytes[1],bytes[2],bytes[3],bytes[4],bytes[5],bytes[6],bytes[7]);
 	  }
-      
+
+	  /* check if we get buffer overflow due to too many incoming messages */
+	  //printf("%i of %i %i \n",device[number].readLeft,device[number].inBufferSize,device[number].readBufferSize);
+	  
 	  result = device[number].inBufferSize;
 
 	}

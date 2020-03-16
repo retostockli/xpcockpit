@@ -852,7 +852,7 @@ int axis_input(int device, int input, float *value, float minval, float maxval)
 	}
       } else {
 	retval = -1;
-	if (verbose > 0) printf("LIBIOCARDS: Invalid input number detected: %i \n",input);
+	if (verbose > 0) printf("LIBIOCARDS: Invalid axis number %i on device %i detected \n",input,device);
       }
     } else {
       retval = -1;
@@ -927,7 +927,7 @@ int servos_output(int device, int servo, float *value, float minval, float maxva
 	  /* update servo internal data array for sending */
 	  if (data != iocard[device].servos[servo]) {	  
 	    iocard[device].servos[servo] = data;
-	    if (verbose > 1) printf("LIBIOCARDS: Device %i Servo %i has value %i \n",
+	    if (verbose > 0) printf("LIBIOCARDS: Device %i Servo %i has value %i \n",
 				    device, servo, data);	  
 	  }
 	}
@@ -1093,7 +1093,7 @@ int send_mastercard(void)
 	      break;
 	    }
 
-	    if (verbose > 0) {
+	    if (verbose > 2) {
 	      printf("LIBIOCARDS: send display to MASTERCARD device=%i card=%i display=%i value=%i \n",
 		     device, card, count, iocard[device].displays[count][card]);
 	    }
@@ -1125,7 +1125,6 @@ int receive_mastercard(void)
   int card;	   /* mastercard counter: maximum 4 MAXMASTERCARDS per USB expansion card */
   int slot;        /* slot counter (each mastercard has 8 slots with 9 inputs) */
   int axis;	   /* number of active A/D converter */
-  int axisval;	   /* value of active A/D converter */
 
   int found;       /* found the next slot to be read */
   int readleft;    /* yet to be read slot data for first 8 bits */
@@ -1189,9 +1188,12 @@ int receive_mastercard(void)
 	axis = (recv_data[0] >> 4) & 7;	/* extract the A/D number from bits 6-4 */
 
 	if (axis > 0) {
-	  axisval = recv_data[1];
-	  if (verbose > 3) printf("LIBIOCARDS: Axis %i reports %i \n", axis, axisval);
-	  iocard[device].axes[axis-1] = axisval;
+	  if (verbose > 3) printf("LIBIOCARDS: Axis %i reports %i \n", axis, recv_data[1]);
+	  /* suppress noise +/-1 in axis input to avoid high frequency flipping of input */
+	  if ((abs(recv_data[1] - iocard[device].axes_old[axis-1]) > 1) ||
+	      (recv_data[1] == 0) || (recv_data[1] == 255)) {
+	    iocard[device].axes[axis-1] = recv_data[1];
+	  }
 	}
 
 	if (axis == 0) {
@@ -1271,7 +1273,7 @@ int receive_mastercard(void)
 		    for (bit=0;bit<8;bit++) {
 		      index = 9*slot + bit;
 		      iocard[device].inputs[index][card] = input[byte][bit];
-		      if (verbose > 2) printf("LIBIOCARDS: device=%i card=%i byte=%i slot=%i input=%i value=%i \n",
+		      if (verbose > 3) printf("LIBIOCARDS: device=%i card=%i byte=%i slot=%i input=%i value=%i \n",
 					      device, card, byte, slot, index, input[byte][bit]);
 		    }
 		  } else {
@@ -1298,7 +1300,7 @@ int receive_mastercard(void)
 		      bit = (sumnine + readnine) % 8; /* present slots fill up subsequent bytes with their 9th bit data */
 		      index = 9*slot + 8;
 		      iocard[device].inputs[index][card] = input[byte][bit];
-		      if (verbose > 2) printf("LIBIOCARDS: device=%i card=%i byte=%i slot=%i input=%i value=%i \n",
+		      if (verbose > 3) printf("LIBIOCARDS: device=%i card=%i byte=%i slot=%i input=%i value=%i \n",
 					      device, card, byte, slot, index, input[byte][bit]);
 		    }
 		  }
@@ -1606,7 +1608,12 @@ int receive_axes(void)
 
 	for (byte=0;byte<4;byte++) {
 	  if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i value %i \n",device,byte,recv_data1[byte]);
-	  iocard[device].axes[byte] = recv_data1[byte];
+	  /* suppress noise +/-1 in axis input to avoid high frequency flipping of input */
+	  if ((abs(recv_data1[byte] - iocard[device].axes_old[byte]) > 5) ||
+	      (recv_data1[byte] == 0) || (recv_data1[byte] == 255)) {
+	    // printf("%i %i %i %i \n",byte,recv_data1[byte],recv_data1[byte+4],recv_status);
+	    iocard[device].axes[byte] = recv_data1[byte];
+	  }
 	}
       }
     }
@@ -1623,7 +1630,12 @@ int receive_axes(void)
 
 	for (byte=0;byte<8;byte++) {
 	  if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i value %i \n",device,byte,recv_data2[byte]);
-	  iocard[device].axes[byte] = recv_data2[byte];
+	  /* suppress noise +/-1 in axis input to avoid high frequency flipping of input */
+	  if ((abs(recv_data2[byte] - iocard[device].axes_old[byte]) > 5) ||
+	      (recv_data2[byte] == 0) || (recv_data2[byte] == 255)) {
+	    //if (byte == 0) printf("%i %i \n",iocard[device].axes[byte],recv_data2[byte]);
+	    iocard[device].axes[byte] = recv_data2[byte];
+	  }
 	}
       }
     }

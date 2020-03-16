@@ -35,15 +35,15 @@ void usbservos_test(void)
   int device = 1;
   int servo = 0;
   int axis = 0;
-  float value = 100.0;
+  float value;
   float minval = 0.0;
-  float maxval = 360.0;
+  float maxval = 1023.0;
 
   /* read potentiometer from analog input #1 on USBServos card, scale it to the range 0-360 degrees */
   ret = axis_input(device,axis,&value,minval,maxval);
 
   if (ret == 1) {
-    printf("Analog Input #0 has value: %f \n",value);
+    printf("Analog Input #%i has value: %f \n",axis,value);
     /* steer servo according with potentiometer value */
     ret = servos_output(device,servo,&value,minval,maxval,0,1023);
   }

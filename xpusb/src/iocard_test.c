@@ -44,13 +44,8 @@ void iocard_test(void)
   int intensitycommand;
   int intensity;
   int value;
-
-  count++;
-  /*
-  if ((count < 0) || (count > 2)) {
-    count = 0;
-    }*/
-  
+  float axisval;
+ 
   // test integer array data
   int *digitalinput = link_dataref_int("sim/cockpit/electrical/landing_lights_on");   
 
@@ -89,16 +84,26 @@ void iocard_test(void)
   */
 
   /* read digital input #0 on mastercard 1 */
-  ret = digital_input(device,card,0,digitalinput,0);
+  //ret = digital_input(device,card,0,digitalinput,0);
+  ret = digital_input(device,0,0,digitalinput,0);
   if (ret == 1) {
     printf("Digital Input #0 has value: %i \n",*digitalinput);
   }
+
+  /* read axis on usb expansion card */
+  /*
+  ret = axis_input(device,0,&axisval,0.0,100.0);
+  if (ret == 1) {
+    printf("%f \n",axisval);
+    } */ 
 
   // mastercard 1, output board (11-55)
 
   /* update output value (connect a LED to output #11) */
   ret = digital_output(device,card,11,digitalinput);
-
+  /* set relay 7 on output 55 on relay card through d-sub con */
+  ret = digital_output(device,card,55,digitalinput);
+  
   float updn = 0.;
   ret = mastercard_encoder(device,card,1,&updn,1.0,2,3);
   if (*encoder != INT_MISS) {
@@ -122,20 +127,24 @@ void iocard_test(void)
   value = 1;
   intensitycommand = 15;
   intensity = 24;
-  if (count == 0) ret = mastercard_display(device,card,32,1,&value,0);
-  value = 2;
-  if (count == 0) ret = mastercard_display(device,card,33,1,&value,0);
+   ret = mastercard_display(device,card,32,1,&value,0);
+  value = 1;
+   ret = mastercard_display(device,card,33,1,&value,0);
   //if (count == 1) ret = mastercard_display(device,card,33,1,&intensitycommand,1);
   //if (count == 2) ret = mastercard_display(device,card,33,1,&intensity,1);
  
 
-  /*
+  for (int i=32;i<=63;i++) {
+    ret = mastercard_display(device,card,i,1,&value,0);
+  }
+
+ 
   value = 12345;
   intensitycommand = 15;
   intensity = 20;
-  if (count == 0) ret = mastercard_display(device,card,0,5,&value,0);
-  if (count == 1) ret = mastercard_display(device,card,1,1,&intensitycommand,1);
-  if (count == 2) ret = mastercard_display(device,card,1,1,&intensity,1);
-  */
+  ret = mastercard_display(device,1,11,5,&value,0);
+  //if (count == 1) ret = mastercard_display(device,card,1,1,&intensitycommand,1);
+  //if (count == 2) ret = mastercard_display(device,card,1,1,&intensity,1);
+ 
   
 }
