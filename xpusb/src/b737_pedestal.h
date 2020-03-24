@@ -2,4 +2,4 @@
 
 
 /* Prototype Functions */
-void pedestal_737(void);
+void b737_pedestal(void);

@@ -1,0 +1,31 @@
+device,card,I/O/D/A/S,No.,Function,Dataref,Comment
+Power PANEL,,,,,,
+6,0,O,49,Backlight Relay,laminar/b738/electric/battery_pos,
+,,I,0,STBY PWR,,
+,,I,1,BAT BUS,laminar/B738/knob/dc_power_up,
+,,I,2,BAT,laminar/B738/knob/dc_power_dn,
+,,,3,AUX BAT,laminar/B738/knob/dc_power,
+,,I,4,TR1,,
+,,I,5,TR2,,
+,,I,6,TR3,,
+,,I,7,TEST,,
+,,I,8,BAT ON,"laminar/B738/push_button/batt_full_off
+laminar/B738/switch/battery_dn
+laminar/B738/electric/battery_pos",
+,,I,9,STBY PWR,,
+,,I,10,GRD PWR,laminar/B738/knob/ac_power_up,
+,,I,11,GEN1,laminar/B738/knob/ac_power_dn,
+,,I,12,APU GEN,laminar/B738/knob/ac_power_pos,
+,,I,13,GEN2,,
+,,I,14,INV,,
+,,I,15,TEST,,
+,,I,16,GALLEY ON,Not in ZIBO,
+,,I,17,MAINT,laminar/B738/push_button/ac_dc_maint,
+,,O,11,BAT DISCHARGE,laminar/B738/annunciator/bat_discharge,
+,,O,12,TR UNIT,laminar/B738/annunciator/tr_unit,
+,,O,13,ELEC,laminar/B738/annunciator/elec,
+,1,D,0,POWER DISPLAYS,"laminar/B738/dc_volt_value
+laminar/B738/dc_amp_value
+laminar/B738/ac_volt_value
+laminar/B738/ac_amp_value
+laminar/B738/ac_freq_value",

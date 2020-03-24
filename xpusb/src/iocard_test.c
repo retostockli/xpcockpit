@@ -101,8 +101,9 @@ void iocard_test(void)
 
   /* update output value (connect a LED to output #11) */
   ret = digital_output(device,card,11,digitalinput);
-  /* set relay 7 on output 55 on relay card through d-sub con */
-  ret = digital_output(device,card,55,digitalinput);
+  /* set relay 7 on output 49 on relay card through d-sub con */
+  value = 1;
+  ret = digital_output(device,card,49,&value);
   
   float updn = 0.;
   ret = mastercard_encoder(device,card,1,&updn,1.0,2,3);
@@ -145,6 +146,6 @@ void iocard_test(void)
   ret = mastercard_display(device,1,11,5,&value,0);
   //if (count == 1) ret = mastercard_display(device,card,1,1,&intensitycommand,1);
   //if (count == 2) ret = mastercard_display(device,card,1,1,&intensity,1);
- 
+  
   
 }

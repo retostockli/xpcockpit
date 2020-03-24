@@ -1,4 +1,4 @@
-/* This is the efis_737.c code which contains a sample set-up for how to communicate with the 
+/* This is the b737_efis.c code which contains a sample set-up for how to communicate with the 
    BOEING 737 EFIS panel (switches, LED's, displays) connected to the OpenCockpits IOCARDS USB device.
 
    Copyright (C) 2016  Reto Stockli
@@ -27,9 +27,9 @@
 #include "common.h"
 #include "libiocards.h"
 #include "serverdata.h"
-#include "efis_737.h"
+#include "b737_efis.h"
 
-void efis_737(void)
+void b737_efis(void)
 {
   
   int ret = 0;
@@ -41,11 +41,8 @@ void efis_737(void)
   int device = 5;
   int card = 0;
 
-  //  int *status_x737 = link_dataref_int("x737/systems/afds/plugin_status");
-  int *status_x737 = link_dataref_int("xpserver/status_737");
-
   float *altimeter_pressure;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     altimeter_pressure = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_pilot",-2);
   } else {
     altimeter_pressure = link_dataref_flt("sim/cockpit/misc/barometer_setting",-2);
@@ -54,14 +51,14 @@ void efis_737(void)
   int *altimeter_pressure_unit;
   int *altimeter_pressure_unit_dn;
   int *altimeter_pressure_unit_up;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     /* read only. 0=in, 1=hpa */
     altimeter_pressure_unit_dn = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/baro_in_hpa_dn");
     altimeter_pressure_unit_up = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/baro_in_hpa_up");
     altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
     *altimeter_pressure_unit_dn = 0;
     *altimeter_pressure_unit_up = 0;
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     altimeter_pressure_unit = link_dataref_int("x737/systems/units/baroPressUnit");
   } else {
     altimeter_pressure_unit = link_dataref_int("xpserver/barometer_unit");   
@@ -69,7 +66,7 @@ void efis_737(void)
   
   //  float *navrangesel_x737 = link_dataref_flt("x737/cockpit/EFISCTRL_0/ND_RANGE_ENUM",0);
   int *navrangesel;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     navrangesel = link_dataref_int("laminar/B738/EFIS/capt/map_range");
     //navrangesel = link_dataref_int("laminar/B738/EFIS/fo/map_range");
   } else {
@@ -78,7 +75,7 @@ void efis_737(void)
 
   // Get Map Mode (APP/VOR/MAP/PLN)
   int *map_mode;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     map_mode = link_dataref_int("laminar/B738/EFIS_control/capt/map_mode_pos");
     // map_mode = link_dataref_int("laminar/B738/EFIS_control/fo/map_mode_pos");
   } else {
@@ -89,7 +86,7 @@ void efis_737(void)
   float *altimeter_minimum;
   int *minimum_mode_dn;
   int *minimum_mode_up;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     minimum_mode = link_dataref_int("laminar/B738/EFIS_control/cpt/minimums");
     //minimum_mode = link_dataref_int("laminar/B738/EFIS_control/fo/minimums");
     altimeter_minimum = link_dataref_flt("laminar/B738/pfd/dh_pilot",0);
@@ -107,7 +104,7 @@ void efis_737(void)
   int *efis1_sel_capt;
   int *efis1_sel_capt_up;
   int *efis1_sel_capt_dn;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     efis1_sel_capt = link_dataref_int("laminar/B738/EFIS_control/capt/vor1_off_pos");
     efis1_sel_capt_up = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/vor1_off_up");
     efis1_sel_capt_dn = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/vor1_off_dn");
@@ -120,7 +117,7 @@ void efis_737(void)
   int *efis2_sel_capt;
   int *efis2_sel_capt_up;
   int *efis2_sel_capt_dn;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     efis2_sel_capt = link_dataref_int("laminar/B738/EFIS_control/capt/vor2_off_pos");
     efis2_sel_capt_up = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/vor2_off_up");
     efis2_sel_capt_dn = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/vor2_off_dn");
@@ -144,7 +141,7 @@ void efis_737(void)
   int *efis_data_led;
   int *efis_pos_led;
   int *efis_terr_led;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     efis_wxr = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/wxr_press");
     efis_sta = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/sta_press");
     efis_wpt = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/wpt_press");
@@ -166,7 +163,7 @@ void efis_737(void)
     efis_data_led = link_dataref_int("xpserver/EFIS_data");
     efis_pos_led = link_dataref_int("xpserver/EFIS_pos");
     efis_terr_led = link_dataref_int("xpserver/EFIS_terr");
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     efis_wxr = link_dataref_int("x737/cockpit/EFISCTRL_0/WXR_on");
     efis_sta = link_dataref_int("x737/cockpit/EFISCTRL_0/STA_on");
     efis_wpt = link_dataref_int("x737/cockpit/EFISCTRL_0/WPT_on");
@@ -208,7 +205,7 @@ void efis_737(void)
   ret = digital_input(device,card,67,&temp,0);
   ret = digital_input(device,card,66,&temp2,0);
   /* EFIS VOR1/OFF/ADF1 selector */
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     if (*efis1_sel_capt != INT_MISS) {
       if (*efis1_sel_capt < (temp + (1-temp2) - 1)) {
 	*efis1_sel_capt_up = 1;
@@ -224,7 +221,7 @@ void efis_737(void)
   ret = digital_input(device,card,55,&temp,0);
   ret = digital_input(device,card,54,&temp2,0);
   /* EFIS VOR2/OFF/ADF2 selector */
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     if (*efis2_sel_capt != INT_MISS) {
       if (*efis2_sel_capt < (temp + (1-temp2) - 1)) {
 	*efis2_sel_capt_up = 1;
@@ -268,7 +265,7 @@ void efis_737(void)
       if (temp == 0) printf("Altimeter Pressure Unit: mm Hg \n");
       if (temp == 1) printf("Altimeter Pressure Unit: hPa \n");
     }
-    if ((*status_x737 == 2) || (*status_x737 == 3)) {
+    if ((acf_type == 2) || (acf_type == 3)) {
       if ((*altimeter_pressure_unit == 1) && (temp == 0)) {
 	*altimeter_pressure_unit_dn = 1;
       }
@@ -281,7 +278,7 @@ void efis_737(void)
     
   }
 
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     if (*minimum_mode != INT_MISS) {
       ret = digital_input(device,card,71,&temp,0);
       if (ret == 1) {
@@ -384,7 +381,7 @@ void efis_737(void)
     
   // mastercard 2, output board (11-55)
   if (*avionics_on == 1) {
-    if ((*status_x737 == 2) || (*status_x737 == 3)) {
+    if ((acf_type == 2) || (acf_type == 3)) {
       ret = digital_output(device,card,29,efis_wxr_led);
       ret = digital_output(device,card,30,efis_sta_led);
       ret = digital_output(device,card,31,efis_wpt_led);

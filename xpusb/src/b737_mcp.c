@@ -1,4 +1,4 @@
-/* This is the mcp_737.c code which contains a sample set-up for how to communicate with the 
+/* This is the b737_mcp.c code which contains a sample set-up for how to communicate with the 
    BOEING 737 mode control panel (switches, LED's, displays) connected to the OpenCockpits IOCARDS USB device.
 
    Copyright (C) 2009 - 2013  Reto Stockli
@@ -26,62 +26,59 @@
 #include "common.h"
 #include "libiocards.h"
 #include "serverdata.h"
-#include "mcp_737.h"
+#include "b737_mcp.h"
 
-void mcp_737(void)
+void b737_mcp(void)
 {
   
   int ret = 0;
   int device = 5;
   int card = 0;
 
-  //  int *status_x737 = link_dataref_int("x737/systems/afds/plugin_status");
-  int *status_x737 = link_dataref_int("xpserver/status_737");
-
   float *ap_altitude;  // autopilot altitude
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ap_altitude = link_dataref_flt("laminar/B738/autopilot/mcp_alt_dial",0); 
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     ap_altitude = link_dataref_flt("x737/systems/afds/ALTHLD_baroalt",0);
   } else {
     ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0);
   }
   float *ap_heading; // autopilot heading
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ap_heading = link_dataref_flt("laminar/B738/autopilot/mcp_hdg_dial",0);      
-  } else if (*status_x737 == 1) {  
+  } else if (acf_type == 1) {  
     ap_heading = link_dataref_flt("x737/systems/afds/HDG_magnhdg",0);      
   } else {
     ap_heading = link_dataref_flt("sim/cockpit/autopilot/heading_mag",0);
   }
   float *ap_ias; // IAS autopilot
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ap_ias = link_dataref_flt("laminar/B738/autopilot/mcp_speed_dial_kts_mach",0);      
     //ap_ias = link_dataref_flt("sim/cockpit2/autopilot/airspeed_dial_kts_mach",0);      
-  } else if (*status_x737 == 1) {  
+  } else if (acf_type == 1) {  
     ap_ias = link_dataref_flt("x737/systems/athr/MCPSPD_spd",0);           
   } else {
     ap_ias = link_dataref_flt("sim/cockpit/autopilot/airspeed",0);
   }
 
   float *ap_vspeed; // autopilot vertical speed
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ap_vspeed = link_dataref_flt("sim/cockpit2/autopilot/vvi_dial_fpm",0);             
-  } else if (*status_x737 == 1) {  
+  } else if (acf_type == 1) {  
     ap_vspeed = link_dataref_flt("x737/systems/afds/VS_vvi",0);             
   } else {
     ap_vspeed = link_dataref_flt("sim/cockpit/autopilot/vertical_velocity",0);
   }
   
   int *ap_banklimit;  // bank limit
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ap_banklimit = link_dataref_int("laminar/B738/rotary/autopilot/bank_angle");      
   } else {
     ap_banklimit = link_dataref_int("sim/cockpit/autopilot/heading_roll_mode");     
   }
     
   int *ap_spd_ismach; 
-  if (*status_x737 == 1) {
+  if (acf_type == 1) {
     ap_spd_ismach = link_dataref_int("x737/systems/athr/MCPSPD_ismach"); // MCP speed in mach 
   } else {
     ap_spd_ismach = link_dataref_int("sim/cockpit2/autopilot/airspeed_is_mach"); // MCP speed in mach 
@@ -123,7 +120,7 @@ void mcp_737(void)
   int *ap_at_arm_status;
   int *ap_mcpspd;
   int *ap_mcpspd_led;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ap_cmd_a = link_dataref_cmd_once("laminar/B738/autopilot/cmd_a_press");     // MCP CMD A mode
     ap_cmd_a_led = link_dataref_int("laminar/B738/autopilot/cmd_a_status");
     ap_cmd_b = link_dataref_cmd_once("laminar/B738/autopilot/cmd_b_press");     // MCP CMD B mode
@@ -160,7 +157,7 @@ void mcp_737(void)
     ap_at_arm_status = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
     ap_mcpspd = link_dataref_cmd_once("laminar/B738/autopilot/speed_press");     // AP mcpspd select switch
     ap_mcpspd_led = link_dataref_int("laminar/B738/autopilot/speed_status1");
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     ap_cmd_a = link_dataref_cmd_once("x737/mcp/CMDA_TOGGLE");     // MCP CMD A mode
     ap_cmd_a_led = link_dataref_int("x737/systems/MCP/LED_CMDA_on");
     ap_cmd_b = link_dataref_cmd_once("x737/mcp/CMDB_TOGGLE");     // MCP CMD B mode
@@ -232,14 +229,14 @@ void mcp_737(void)
     ap_mcpspd_led = link_dataref_int("xpserver/LED_MCPSPD_on");
   }
   float *ap_course1; // NAV autopilot course1
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ap_course1 = link_dataref_flt("laminar/B738/autopilot/course_pilot",0);
     //ap_course1 = link_dataref_flt("sim/cockpit2/radios/actuators/nav1_obs_deg_mag_pilot",0);
   } else {
     ap_course1 = link_dataref_flt("sim/cockpit/radios/nav1_obs_degm",0);
   }
   float *ap_course2; // NAV autopilot course2    
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ap_course2 = link_dataref_flt("laminar/B738/autopilot/course_copilot",0);
     //ap_course2 = link_dataref_flt("sim/cockpit2/radios/actuators/nav1_obs_deg_mag_copilot",0);
   } else {
@@ -272,7 +269,7 @@ void mcp_737(void)
   int *sixpack_eng;
   int *sixpack_overhead;
   int *sixpack_air_cond;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     master_caution_cp = link_dataref_cmd_hold("laminar/B738/push_button/master_caution1");
     master_caution_fo = link_dataref_cmd_hold("laminar/B738/push_button/master_caution2");
     fire_warn_cp = link_dataref_cmd_hold("laminar/B738/push_button/fire_bell_light1");
@@ -296,7 +293,7 @@ void mcp_737(void)
     sixpack_overhead = link_dataref_int("laminar/B738/annunciator/six_pack_overhead");
     sixpack_air_cond = link_dataref_int("laminar/B738/annunciator/six_pack_air_cond");
     
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     master_cautionf_cp = link_dataref_flt("x737/cockpit/warningSys/MASTER_CAUTION_capt",0);
     master_cautionf_fo = link_dataref_flt("x737/cockpit/warningSys/MASTER_CAUTION_fo",0);
     fire_warnf_cp = link_dataref_flt("x737/cockpit/warningSys/FIRE_WARN_capt",0);
@@ -326,10 +323,10 @@ void mcp_737(void)
   // gear handle (hooked up on MCP inputs temporarily)
   int *gear_handle_down;
   float *gear_handle_position;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     gear_handle_down = link_dataref_int("xpserver/gear_handle");
     gear_handle_position = link_dataref_flt("laminar/B738/controls/gear_handle_down",-1);
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     gear_handle_down = link_dataref_int("xpserver/gear_handle");
     gear_handle_position = link_dataref_flt("x737/systems/landinggear/landingGearLever",-1);
   } else {
@@ -349,24 +346,24 @@ void mcp_737(void)
   
   /* read inputs */
 
-  if ((*status_x737 == 1 ) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1 ) || (acf_type == 2) || (acf_type == 3)) {
     ret = digital_input(device,card,39,&temp,0);
     if ((ret==1) && (temp==1)) printf("MASTER CAUTION (FO) \n");
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *master_cautionf_fo = (float) temp;
     } else {
       *master_caution_fo = temp;
     }
     ret = digital_input(device,card,40,&temp,0);
     if ((ret==1) && (temp==0)) printf("FIRE WARN CP \n");
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *fire_warnf_cp = (float) 1-temp;
     } else {
       *fire_warn_cp = 1-temp;
     }
     ret = digital_input(device,card,41,&temp,0);
     if ((ret == 1) && (temp == 0)) printf("MASTER CAUTION CP \n");
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *master_cautionf_cp = (float) 1-temp;
     } else {
       *master_caution_cp = 1-temp;
@@ -374,7 +371,7 @@ void mcp_737(void)
 
     ret = digital_input(device,card,42,&temp,0);
     if ((ret==1) && (temp==1)) printf("FIRE WARN FO \n");
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *fire_warnf_fo = (float) temp;
     } else {
       *fire_warn_fo = temp;
@@ -420,7 +417,7 @@ void mcp_737(void)
   }
 
  
-  if ((*status_x737 == 1) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     ret = digital_input(device,card,20,ap_cmd_a,0);
     if (ret == 1) {
       printf("CMD A pressed\n");
@@ -452,7 +449,7 @@ void mcp_737(void)
 
   /* only change ap_engage if switch has changed */
   /* safe algorithm for solenoid relais in pedestal code */
-   if ((*status_x737 == 2) || (*status_x737 == 3)) {
+   if ((acf_type == 2) || (acf_type == 3)) {
     /* with ZIBO we can only toggle the switch, so check status as well */
      *ap_engage = 0;
     ret = digital_input(device,card,25,&temp,0);
@@ -464,7 +461,7 @@ void mcp_737(void)
 	*ap_engage = 1;
       }
      }
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     ret = digital_input(device,card,25,&temp,0);
     if (ret == 1) {
       *ap_engage = temp;
@@ -489,7 +486,7 @@ void mcp_737(void)
 
   ret = digital_input(device,card,28,ap_vor_loc,0);
 
-  if (*status_x737 == 1) {
+  if (acf_type == 1) {
     ret = digital_input(device,card,29,ap_vs_arm,1);
     if (ret == 1) {
       if (*ap_vs_arm == 1) {
@@ -529,7 +526,7 @@ void mcp_737(void)
   /* safe algorithm for solenoid relais in pedestal code */
   ret = digital_input(device,card,36,&temp,0);
   if (ret==1) {
-    if ((*status_x737 == 2) || (*status_x737 == 3)) {
+    if ((acf_type == 2) || (acf_type == 3)) {
       *ap_at_arm = 0;
       if ((*ap_at_arm_status == 0) && (temp == 1)) {
 	*ap_at_arm = 1;
@@ -545,7 +542,7 @@ void mcp_737(void)
   }
   
   ret = digital_input(device,card,37,ap_fdir_a,0);
-  if (*status_x737 == 1) {
+  if (acf_type == 1) {
     ret = digital_input(device,card,37,&temp,0);
     if (ret==1) {
       *ap_fdir_a = temp;
@@ -575,7 +572,7 @@ void mcp_737(void)
   ret = digital_input(device,card,38,ap_spd_ismach,1);
  
   /* Bank limit - 0 = auto, 1-6 = 5-30 degrees of bank */
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
       *ap_banklimit = bank15 + bank20*2 + bank25*3 + bank30*4;
       // printf("banklimit: %i \n",*ap_banklimit);
   } else {
@@ -636,7 +633,7 @@ void mcp_737(void)
   // mastercard 1, output board (11-55)
 
   /* update outputs */
-  if ((*status_x737 == 1) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     ret = digital_output(device,card,11,ap_cmd_a_led);
   } else {
     temp = *ap_cmd_a_led == 2; // CMD A is only lighted with AP engaged (=2)
@@ -658,7 +655,7 @@ void mcp_737(void)
   ret = digital_output(device,card,24,ap_mcpspd_led);
   
   ret = digital_output(device,card,25,ap_n1_led);
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ret = digital_output(device,card,26,ap_at_arm_status);
   } else {
     ret = digital_output(device,card,26,ap_at_arm);
@@ -670,7 +667,7 @@ void mcp_737(void)
   ret = digital_output(device,card,49,avionics_on);
 
   /* MASTER CAUTION Annunciator: relais #2 */
-  if ((*status_x737 == 1) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     if ((*master_caution_cp_light == 1) || (*master_caution_fo_light == 1)) {
       ret = digital_output(device,card,50,&one);
     } else {
@@ -688,14 +685,14 @@ void mcp_737(void)
   /* relais 4 UNUSED */
   
   /* MCP autothrottle solenoid: relais #5 */
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     ret = digital_output(device,card,53,ap_at_arm_status);
   } else {
     ret = digital_output(device,card,53,ap_at_arm);
   }
   
   /* MCP autopilot engaged solenoid: relais #6 */
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     temp = 1 - *ap_disengage_status;
     ret = digital_output(device,card,54,&temp);
   } else {
@@ -706,7 +703,7 @@ void mcp_737(void)
   ret = digital_output(device,card,55,avionics_on);
   
   /* SIX PACK CP side */
-  if ((*status_x737 == 1) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     ret = digital_output(device,card,37,sixpack_eng); // FO ENG
     ret = digital_output(device,card,38,sixpack_overhead); // FO OVERHEAD
     ret = digital_output(device,card,39,sixpack_air_cond); // FO AIR COND

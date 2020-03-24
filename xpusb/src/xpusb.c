@@ -41,17 +41,18 @@
 #include "dcmotorsplus_test.h"
 #include "bu0836_test.h"
 
+#include "check_aircraft.h"
+
 #include "a320_pedestal_mip.h"	
 #include "a320_overhead.h"	
 #include "a320_mcdu_keys.h"	
 
-#include "mcp_737.h"
-#include "efis_737.h"
-#include "pedestal_737.h"
-#include "throttle_737.h"
-#include "yokerudder_737.h"
-#include "check_x737.h"
-#include "check_zibo.h"
+#include "b737_mcp.h"
+#include "b737_efis.h"
+#include "b737_pedestal.h"
+#include "b737_throttle.h"
+#include "b737_yokerudder.h"
+#include "b737_overhead_fwd.h"
 
 
 /* Main program for data exchange between X-Plane and the OpenCockpits IOCARDS */
@@ -61,9 +62,6 @@ int main (int argc, char **argv)
  
   /* print License terms */
   print_license();
-
-  /* initialize time for x737 dataref checking */
-  gettimeofday(&x737_time1,NULL);
 
   /* evaluate command line arguments */
   argv++; 
@@ -116,6 +114,8 @@ int main (int argc, char **argv)
       
       /* receive data from X-Plane via TCP/IP */
       if (receive_server()<0) exit_xpusb(-14);
+
+      check_aircraft();
       
       /*** user-space modules begin here ***/
       if (strcmp(*argv,"airbus320") == 0) {
@@ -124,33 +124,28 @@ int main (int argc, char **argv)
 	a320_mcdu_keys();
       }
       if (strcmp("boeing737",*argv) == 0) {
-	pedestal_737();
-	efis_737();
-	mcp_737();
-	throttle_737();
-	yokerudder_737();
-	check_zibo();
+	b737_pedestal();
+	b737_efis();
+	b737_mcp();
+	b737_throttle();
+	b737_yokerudder();
+	//b737_overhead_fwd();
       }
       if (strcmp("boeing737yokerudder",*argv) == 0) {
-	yokerudder_737();
-	check_zibo();
-      }
-      if (strcmp("boeing737throttle",*argv) == 0) {
-	throttle_737();
-	check_zibo();
+	b737_yokerudder();
       }
       if (strcmp("boeing737pedestal",*argv) == 0) {
-	pedestal_737();
-	check_zibo();
+	b737_pedestal();
       }
       if (strcmp("boeing737mcp",*argv) == 0) {
-	mcp_737();
-	efis_737();
-	check_zibo();
+	b737_mcp();
+	b737_efis();
       }
       if (strcmp("boeing737yoke",*argv) == 0) {
-	yokerudder_737();
-	check_zibo();
+	b737_yokerudder();
+      }
+      if (strcmp("boeing737ovhfwd",*argv) == 0) {
+	b737_overhead_fwd();
       }
       if (strcmp(*argv,"default") == 0) {
 	iocard_test();

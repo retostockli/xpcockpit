@@ -1,4 +1,4 @@
 /* INCLUDES */
 
 /* Prototype Functions */
-void check_zibo(void);
+void check_aircraft(void);

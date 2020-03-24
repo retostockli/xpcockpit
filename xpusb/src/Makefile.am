@@ -19,18 +19,18 @@ libusb_interface.c \
 hidapi_interface.c \
 dictionary.c \
 iniparser.c \
-mcp_737.c \
-pedestal_737.c \
-throttle_737.c \
-efis_737.c \
-yokerudder_737.c \
-check_x737.c \
-check_zibo.c \
 iocard_test.c \
 usbkeys_test.c \
 usbservos_test.c \
 dcmotorsplus_test.c \
 bu0836_test.c \
+check_aircraft.c \
+b737_mcp.c \
+b737_pedestal.c \
+b737_throttle.c \
+b737_efis.c \
+b737_yokerudder.c \
+b737_overhead_fwd.c \
 a320_overhead.c \
 a320_mcdu_keys.c \
 a320_pedestal_mip.c
@@ -54,13 +54,13 @@ usbkeys_test.h \
 usbservos_test.h \
 dcmotorsplus_test.h \
 bu0836_test.h \
-mcp_737.h \
-pedestal_737.h \
-throttle_737.h \
-efis_737.h \
-yokerudder_737.h \
-check_x737.h \
-check_zibo.h \
+check_aircraft.h \
+b737_mcp.h \
+b737_pedestal.h \
+b737_throttle.h \
+b737_efis.h \
+b737_yokerudder.h \
+b737_overhead_fwd.h \
 a320_overhead.h \
 a320_mcdu_keys.h \
 a320_pedestal_mip.h

@@ -25,14 +25,14 @@
 #include "common.h"
 #include "libiocards.h"
 #include "serverdata.h"
-#include "yokerudder_737.h"
+#include "b737_yokerudder.h"
 
 #define max(A,B) ((A)>(B) ? (A) : (B)) 
 #define min(A,B) ((A)<(B) ? (A) : (B))
 
 
 
-void yokerudder_737(void)
+void b737_yokerudder(void)
 {
 
   int ret = 0;
@@ -50,12 +50,9 @@ void yokerudder_737(void)
   float value1,value2;
   int ret1,ret2;
 
-  //  int *status_x737 = link_dataref_int("x737/systems/afds/plugin_status");
-  int *status_x737 = link_dataref_int("xpserver/status_737");
-
   float* left_brake;
   float* right_brake;
-  if (*status_x737 <= 1) {
+  if (acf_type <= 1) {
     brakescale = 1.0;
     left_brake = link_dataref_flt("sim/cockpit2/controls/left_brake_ratio",-3);
     right_brake = link_dataref_flt("sim/cockpit2/controls/right_brake_ratio",-3);
@@ -85,11 +82,11 @@ void yokerudder_737(void)
   int *stab_trim_up;
   int *stab_trim_down;
   int *ap_disconnect;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     stab_trim_up = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_up");
     stab_trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down");
     ap_disconnect = link_dataref_cmd_once("laminar/B738/autopilot/capt_disco_press");
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     stab_trim_up = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_UP_ALL");
     stab_trim_down = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_DOWN_ALL");
     ap_disconnect = link_dataref_cmd_once("x737/yoke/capt_AP_DISENG_BTN");
@@ -144,7 +141,7 @@ void yokerudder_737(void)
   }
 
   /* AP disconnect button */
-  if ((*status_x737 == 1) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     ret = digital_input(device,card,4,ap_disconnect,0);
   } else {
     if (*ap_engage == 2) {

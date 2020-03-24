@@ -1,4 +1,4 @@
 /* INCLUDES */
 
 /* Prototype Functions */
-void yokerudder_737(void);
+void b737_yokerudder(void);

@@ -2,4 +2,4 @@
 
 
 /* Prototype Functions */
-void efis_737(void);
+void b737_efis(void);

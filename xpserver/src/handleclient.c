@@ -832,8 +832,34 @@ void send_client(int clntSock) {
 	      free(datab);
 	      break;
 	    case XPTYPE_CMD_ONCE:
+	      /* we need to report back that the command was executed
+		 and reset the command from 1 to 0. But in order to allow for
+		 state changes in other plugins we first set it to 2 and only to 0
+		 after the next callback so that our external plugins know
+		 that they can only execute another command after the command is 0 again */
+	      datai = *(int *) clientdata[i].data;
+	      if ((datai == 1) || (datai == 2)) changed = 1;
+	      if (changed == 1) {
+		if (datai == 2) datai = 0; // second cycle: reset to 0
+		if (datai == 1) datai = 2; // first cycle: report 2
+		memcpy(clientdata[i].data,&datai,sizeof(int));
+		if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+		  
+		  memcpy(&sendBuffer[send_left],&datai,sizeof(int));
+		  memcpy(clientdata[i].data,&datai,sizeof(int));
+		  send_left += sizeof(int);
+		  
+		  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i commandref %s: %i \n", clntSock, i, clientdata[i].datarefname, datai);
+		} else {
+		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i commandref %s \n",clntSock, i, clientdata[i].datarefname);
+		}
+	      }
+	      break;
 	    case XPTYPE_CMD_HOLD:
-	      // nothing to be done here
+	      // nothing to be done here since the user releases the button at some point
 	      break;
 	    default:
 	      break;

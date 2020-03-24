@@ -1,4 +1,4 @@
-/* This is the throttle_737.c code which uses a DCMotors PLUS and the BU0836X card
+/* This is the b737_throttle.c code which uses a DCMotors PLUS and the BU0836X card
    to communicate to the Throttle Quadrant by cockpitforyou.com
 
    Copyright (C) 2009 - 2014  Reto Stockli
@@ -27,12 +27,12 @@
 #include "common.h"
 #include "libiocards.h"
 #include "serverdata.h"
-#include "throttle_737.h"
+#include "b737_throttle.h"
 
 #define max(A,B) ((A)>(B) ? (A) : (B)) 
 #define min(A,B) ((A)<(B) ? (A) : (B)) 
 
-void throttle_737(void)
+void b737_throttle(void)
 {
 
   /* DCMotors PLUS Card DEVICE 2 */
@@ -118,15 +118,12 @@ void throttle_737(void)
   int one = 1;
   int zero = 0;
 
-  //  int *status_x737 = link_dataref_int("x737/systems/afds/plugin_status");
-  int *status_x737 = link_dataref_int("xpserver/status_737");
-
   int *num_engines = link_dataref_int("sim/aircraft/engine/acf_num_engines");
   float *throttle = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_thro", 8, -1, -2);
   //  float *throttle_beta = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_beta_rev_ratio",8,-1,-2);
 
   float *flap_ratio;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     flap_ratio = link_dataref_flt("laminar/B738/flt_ctrls/flap_lever", -4);
   } else {
     flap_ratio = link_dataref_flt("sim/flightmodel/controls/flaprqst", -4);
@@ -137,27 +134,27 @@ void throttle_737(void)
   
 
   float *speedbrake_xplane;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     speedbrake_xplane = link_dataref_flt("laminar/B738/flt_ctrls/speedbrake_lever",-2);
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     speedbrake_xplane = link_dataref_flt("x737/systems/speedbrake/spdbrkLeverPos",-2);
   } else {
     speedbrake_xplane = link_dataref_flt("sim/cockpit2/controls/speedbrake_ratio",-2);
   }
     
   float *stabilizer_xplane;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     stabilizer_xplane = link_dataref_flt("sim/cockpit2/controls/elevator_trim",-3);
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     stabilizer_xplane = link_dataref_flt("x737/systems/stabtrim/manualTrimSetting",-3);
   } else {
     stabilizer_xplane = link_dataref_flt("sim/cockpit2/controls/elevator_trim",-3);
   }
 
   int *toga_button;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     toga_button = link_dataref_cmd_once("laminar/B738/autopilot/left_toga_press");
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     toga_button = link_dataref_int("x737/systems/athr/toggle_TOGA");
   } else {
     //    toga_button = link_dataref_cmd_once("sim/engines/TOGA_power");
@@ -165,19 +162,19 @@ void throttle_737(void)
   }
   
   int *at_disconnect_button;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     at_disconnect_button = link_dataref_cmd_once("laminar/B738/autopilot/left_at_dis_press");
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     at_disconnect_button = link_dataref_cmd_once("x737/mcp/ATHR_ARM_OFF");
   } else {
     at_disconnect_button = link_dataref_cmd_once("sim/autopilot/autothrottle_off");
   }
   
   int *autothrottle_on;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     //    autothrottle_on = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
     autothrottle_on = link_dataref_int("laminar/B738/autopilot/speed_mode");
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     autothrottle_on = link_dataref_int("x737/systems/athr/athr_active");
   } else {
     autothrottle_on = link_dataref_int("sim/cockpit2/autopilot/autothrottle_on");
@@ -186,10 +183,10 @@ void throttle_737(void)
   float *fuel_mixture_left;
   float *fuel_mixture_right;
   float *fuel_mixture;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) { 
+  if ((acf_type == 2) || (acf_type == 3)) { 
     fuel_mixture_left = link_dataref_flt("laminar/B738/engine/mixture_ratio1",-2);
     fuel_mixture_right = link_dataref_flt("laminar/B738/engine/mixture_ratio2",-2);
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     fuel_mixture_left = link_dataref_flt("x737/cockpit/tq/leftCutoffLeverPos",-2);
     fuel_mixture_right = link_dataref_flt("x737/cockpit/tq/rightCutoffLeverPos",-2);
   } else {
@@ -200,7 +197,7 @@ void throttle_737(void)
   int *stab_trim_me = link_dataref_int("xpserver/stab_trim_me");
 
   int *horn_cutoff;
-  if (*status_x737 == 1) {
+  if (acf_type == 1) {
     horn_cutoff = link_dataref_cmd_once("x737/TQ/HORN_CUTOFF");
   } else {
     horn_cutoff = link_dataref_int("xpserver/HORN_CUTOFF");
@@ -212,7 +209,7 @@ void throttle_737(void)
   */
 
   /* fetch stabilizer setting from x737 dataref if available */
-  if (*status_x737 == 1) {
+  if (acf_type == 1) {
     minstabilizer = minstabilizer_x737;
     maxstabilizer = maxstabilizer_x737;
   } else {
@@ -220,10 +217,10 @@ void throttle_737(void)
     maxstabilizer = maxstabilizer_xplane;
   }
 
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     minspeedbrake = minspeedbrake_zibo;
     maxspeedbrake = maxspeedbrake_zibo;
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     minspeedbrake = minspeedbrake_x737;
     maxspeedbrake = maxspeedbrake_x737;
   } else {
@@ -367,7 +364,7 @@ void throttle_737(void)
     parkbrake_mode = 0;
   }
   
-  if ((*status_x737 == 1) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     if (*fuel_mixture_left != FLT_MISS) {
       input = 1;
       ret = digital_input(device_bu0836,0,input,&ivalue,0);

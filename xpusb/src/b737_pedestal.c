@@ -1,4 +1,4 @@
-/* This is the pedestal_737.c code which contains a sample set-up for how to communicate with the 
+/* This is the b737_pedestal.c code which contains a sample set-up for how to communicate with the 
    BOEING 737 pedestal (switches, LED's, displays) connected to the OpenCockpits IOCARDS USB device.
 
    Copyright (C) 2009 - 2013  Reto Stockli
@@ -27,19 +27,16 @@
 #include "common.h"
 #include "libiocards.h"
 #include "serverdata.h"
-#include "pedestal_737.h"
+#include "b737_pedestal.h"
 
 #define max(A,B) ((A)>(B) ? (A) : (B)) 
 #define min(A,B) ((A)<(B) ? (A) : (B)) 
 
-void pedestal_737(void)
+void b737_pedestal(void)
 {
 
   int device;
   int card;
-
-  //  int *status_x737 = link_dataref_int("x737/systems/afds/plugin_status");
-  int *status_x737 = link_dataref_int("xpserver/status_737");
 
   /* x-plane data */
   int *nav1_freq_active = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
@@ -64,7 +61,7 @@ void pedestal_737(void)
 
   int *transponder_mode_up;
   int *transponder_mode_dn;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     transponder_mode_up = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_up");
     transponder_mode_dn = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_dn");
     *transponder_mode_up = 0;
@@ -115,7 +112,7 @@ void pedestal_737(void)
   float *fire_apu_rotate_status; 
   float *fire_eng2_pulled_status;
   float *fire_eng2_rotate_status;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     fire_test = link_dataref_int("laminar/B738/toggle_switch/fire_test"); // -1: fault, 0: off, 1: ovht
     fire_test_fault = link_dataref_cmd_hold("laminar/B738/toggle_switch/fire_test_lft"); 
     fire_test_ovht = link_dataref_cmd_hold("laminar/B738/toggle_switch/fire_test_rgt"); 
@@ -169,7 +166,7 @@ void pedestal_737(void)
     fire_eng1_ovht_det = link_dataref_int("");
     fire_eng2_ovht_det = link_dataref_int("");
     */
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     fire_test = link_dataref_int("x737/cockpit/fireSupPanel/fireWarnTestSw_state"); // 0: fault, 1: off, 2: ovht
     fire_eng1_ovht_det = link_dataref_int("x737/cockpit/fireSupPanel/Eng1OvhtDetSw_state"); // 0: A, 1: NORMAL, 2: B
     fire_eng2_ovht_det = link_dataref_int("x737/cockpit/fireSupPanel/Eng2OvhtDetSw_state"); // 0: A, 1: NORMAL, 2: B
@@ -220,7 +217,7 @@ void pedestal_737(void)
 
   float *radio_volume1;
   float *radio_volume2;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     radio_volume1 = link_dataref_flt("laminar/B738/comm/audio_vol_com1",-1);
     radio_volume2 = link_dataref_flt("laminar/B738/comm/audio_vol_com2",-1);
   } else {
@@ -254,7 +251,7 @@ void pedestal_737(void)
   int *nav_lights;
   int *strobe_lights;
   int *taxi_lights;
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     //    landing_lights_lf_737 = link_dataref_flt_arr("sim/cockpit2/switches/landing_lights_switch",16,0,-1);
     //    landing_lights_rf_737 = link_dataref_flt_arr("sim/cockpit2/switches/landing_lights_switch",16,3,-1);
     landing_lights_lf_737 = link_dataref_flt("laminar/B738/switch/land_lights_left_pos",-1);
@@ -278,7 +275,7 @@ void pedestal_737(void)
     taxi_lights = link_dataref_cmd_once("laminar/B738/toggle_switch/taxi_light_brigh_toggle");
     *taxi_lights = 0;
     taxi_lights_pos = link_dataref_flt("laminar/B738/toggle_switch/taxi_light_brightness_pos",-1);
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     beacon_lights_737 = link_dataref_int("x737/systems/exteriorLights/beaconLightSwitch");
     landing_lights_lf_737 = link_dataref_flt("x737/systems/exteriorLights/leftFixedLanLtSwitch",-2);
     landing_lights_rf_737 = link_dataref_flt("x737/systems/exteriorLights/rightFixedLanLtSwitch",-2);
@@ -423,7 +420,7 @@ void pedestal_737(void)
   }
 
   // assign vhf/hf buttons to light switches
-  if ((*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
     *landing_lights_lf_737 = (float) *vhf1;
     *landing_lights_rf_737 = (float) *vhf1;
     *rwy_turn_lights_l_737 = (float) *vhf2;
@@ -444,7 +441,7 @@ void pedestal_737(void)
     *wing_lights_737 = (float) *hf2;
     *wheelwell_lights_flt = (float) *vhf3;
     
-  } else if (*status_x737 == 1) {
+  } else if (acf_type == 1) {
     *beacon_lights_737 = *hf1;
     *landing_lights_lf_737 = (float) *vhf1;
     *landing_lights_rf_737 = (float) *vhf1;
@@ -529,7 +526,7 @@ void pedestal_737(void)
 
   ret = digital_input(device,card,67,&test,0);
   if (ret == 1) {
-    if ((*status_x737 == 2) || (*status_x737 == 3)) {
+    if ((acf_type == 2) || (acf_type == 3)) {
       if (*transponder_mode > test) {
 	*transponder_mode_dn = 1;
       } else if (*transponder_mode < test) {
@@ -543,7 +540,7 @@ void pedestal_737(void)
 
   ret = digital_input(device,card,68,&test,0);
   if (ret == 1) {
-    if ((*status_x737 == 2) || (*status_x737 == 3)) {
+    if ((acf_type == 2) || (acf_type == 3)) {
       if (*transponder_mode > test*2) {
 	*transponder_mode_dn = 1;
       } else if (*transponder_mode < test*2) {
@@ -783,11 +780,11 @@ void pedestal_737(void)
   card = 1;
 
   /* read inputs */
-  if ((*status_x737 == 1) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     ret = digital_input(device,card,63,&test,0);
     if (ret == 1) {
       printf("Fire TEST OVHT Switch: %i \n",test);
-      if (*status_x737 == 1) {
+      if (acf_type == 1) {
 	*fire_test = 1+test;
       } else {
 	*fire_test_ovht = test;
@@ -797,7 +794,7 @@ void pedestal_737(void)
     ret = digital_input(device,card,64,&test,0);
     if (ret == 1) {
       printf("Fire TEST FAULT Switch: %i \n",test);
-      if (*status_x737 == 1) {
+      if (acf_type == 1) {
 	*fire_test = 1-test;
       } else {
 	*fire_test_fault = test;
@@ -807,7 +804,7 @@ void pedestal_737(void)
     ret = digital_input(device,card,71,&test,0);
     if (ret == 1) {
       printf("Fire Engine 1 Ext Test: %i \n",test);
-      if (*status_x737 == 1) {
+      if (acf_type == 1) {
 	*fire_eng_ext_test = 1-test;
       } else {
 	*fire_eng_ext_test_left = test;
@@ -817,7 +814,7 @@ void pedestal_737(void)
     ret = digital_input(device,card,69,&test,0);
     if (ret == 1) {
       printf("Fire Engine 2 Ext Test: %i \n",test);
-      if (*status_x737 == 1) {
+      if (acf_type == 1) {
 	*fire_eng_ext_test = 1+test;
       } else {
 	*fire_eng_ext_test_right = test;
@@ -827,7 +824,7 @@ void pedestal_737(void)
     /* fire pull and rotate switches for Engines 1, 2 and APU */
     ret = digital_input(device,card,55,&test,0);
     if (ret == 1) printf("Fire Engine 1 DISCH Pulled: %i \n",1-test);
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *fire_eng1_pulled = 1-test;
     } else {
       if (((1-test) == 1) && (*fire_eng1_pulled_status < 0.01)) {
@@ -840,7 +837,7 @@ void pedestal_737(void)
 
     ret = digital_input(device,card,58,&test,0);
     if (ret == 1) printf("Fire APU DISCH Pulled: %i \n",1-test);
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *fire_apu_pulled = 1-test;
     } else {
       if (((1-test) == 1) && (*fire_apu_pulled_status < 0.01)) {
@@ -853,7 +850,7 @@ void pedestal_737(void)
   
     ret = digital_input(device,card,61,&test,0);
     if (ret == 1) printf("Fire Engine 2 DISCH Pulled: %i \n",1-test);
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *fire_eng2_pulled = 1-test;
     } else {
       if (((1-test) == 1) && (*fire_eng2_pulled_status < 0.01)) {
@@ -869,7 +866,7 @@ void pedestal_737(void)
     ret = digital_input(device,card,56,&test2,0);
     if (ret == 1) printf("Fire Engine 1 DISCH R: %i \n",test2);
 
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *fire_eng1_rotate = -test1;
       *fire_eng1_rotate = test2;
     } else {
@@ -888,7 +885,7 @@ void pedestal_737(void)
     ret = digital_input(device,card,59,&test2,0);
     if (ret == 1) printf("Fire APU 1 DISCH R: %i \n",test2);
 
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *fire_apu_rotate = -test1;
       *fire_apu_rotate = test2;
     } else {
@@ -907,7 +904,7 @@ void pedestal_737(void)
     ret = digital_input(device,card,62,&test2,0);
     if (ret == 1) printf("Fire Engine 2 DISCH R: %i \n",test2);
 
-    if (*status_x737 == 1) {
+    if (acf_type == 1) {
       *fire_eng2_rotate = -test1;
       *fire_eng2_rotate = test2;
     } else {
@@ -923,7 +920,7 @@ void pedestal_737(void)
     
   }
 
-  if (*status_x737 == 1) {
+  if (acf_type == 1) {
 
     ret = digital_input(device,card,65,&test,0);
     if (ret == 1) {
@@ -1099,7 +1096,7 @@ void pedestal_737(void)
   /* update outputs */
 
   /* Fire Panel LED's */
-  if ((*status_x737 == 1) || (*status_x737 == 2) || (*status_x737 == 3)) {
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     if (*fire_eng1_ovht_ann > 0.5) {
       ret = digital_output(device,card,26,&one); // ENG1 OVHT Ann
     } else {

@@ -19,3 +19,10 @@
 
 /* verbosity of usbiocards (0-4) */
 int verbose;
+
+int acf_type; /* aircraft type: 
+		 0: any X-Plane aircraft
+		 1: x737 by Benedikt Stratmann
+		 2: Laminar B737-800
+		 3: ZIBO MOD of Laminar B737-800
+	      */

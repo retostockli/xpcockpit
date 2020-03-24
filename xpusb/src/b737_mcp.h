@@ -2,4 +2,4 @@
 
 
 /* Prototype Functions */
-void mcp_737(void);
+void b737_mcp(void);
