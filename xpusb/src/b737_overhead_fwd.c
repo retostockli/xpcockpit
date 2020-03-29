@@ -425,6 +425,86 @@ void b737_overhead_fwd(void)
     ret = servos_output(device,0,outflow_valve,0.0,1.0,310,640);
 
     
+    /* ---------------- */
+    /* PNEUMATICS Panel */
+    /* ---------------- */
+    
+    device = 6;
+    card = 0;
+    /* R Recirculation Fan Switch */
+    int *r_recirc_fan = link_dataref_int("laminar/B738/air/r_recirc_fan_pos");
+    ret = digital_input(device,card,57,r_recirc_fan,0);
+    /* L Recirculation Fan Switch */
+    int *l_recirc_fan = link_dataref_int("laminar/B738/air/l_recirc_fan_pos");
+    ret = digital_input(device,card,58,l_recirc_fan,0);
+    
+    /* R Pack Switch */
+    int *r_pack = link_dataref_int("laminar/B738/air/r_pack_pos");
+    ret = digital_input(device,card,59,&ival,0);
+    ret = digital_input(device,card,60,&ival2,0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) {
+      *r_pack = (1-ival2) + ival;
+    }
+    /* L Pack Switch */
+    int *l_pack = link_dataref_int("laminar/B738/air/l_pack_pos");
+    ret = digital_input(device,card,61,&ival,0);
+    ret = digital_input(device,card,62,&ival2,0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) {
+      *l_pack = (1-ival2) + ival;
+    }
+    /* Isolation Valve Switch */
+    int *isolation_valve = link_dataref_int("laminar/B738/air/isolation_valve_pos");
+    ret = digital_input(device,card,63,&ival,0);
+    ret = digital_input(device,card,64,&ival2,0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) {
+      *isolation_valve = (1-ival2) + ival;
+    }
+    
+    /* R Bleed Air Switch */
+    int *r_bleed_air = link_dataref_int("laminar/B738/toggle_switch/bleed_air_2_pos");
+    ret = digital_input(device,card,65,r_bleed_air,0);
+    /* APU Bleed Air Switch */
+    int *apu_bleed_air = link_dataref_int("laminar/B738/toggle_switch/bleed_air_apu_pos");
+    ret = digital_input(device,card,66,apu_bleed_air,0);
+    /* L Bleed Air Switch */
+    int *l_bleed_air = link_dataref_int("laminar/B738/toggle_switch/bleed_air_1_pos");
+    ret = digital_input(device,card,67,l_bleed_air,0);
+    
+    /* Trip Reset */
+    int *trip_reset = link_dataref_cmd_hold("laminar/B738/push_button/bleed_trip_reset");
+    ret = digital_input(device,card,68,trip_reset,0);
+
+    /* Blue Annunciators */
+    int *l_ram_door = link_dataref_int("laminar/B738/annunciator/ram_door_open1");
+    ret = mastercard_display(device,card,32,1,l_ram_door,0);
+    int *r_ram_door = link_dataref_int("laminar/B738/annunciator/ram_door_open2");
+    ret = mastercard_display(device,card,33,1,r_ram_door,0);
+    /* Yellow / Green Annunciators */
+    int *dual_bleed = link_dataref_int("laminar/B738/annunciator/dual_bleed");
+    ret = digital_output(device,card,14,dual_bleed);
+    int *pack_left = link_dataref_int("laminar/B738/annunciator/pack_left");
+    ret = digital_output(device,card,15,pack_left);
+    int *wing_ovht_left = link_dataref_int("laminar/B738/annunciator/wing_body_ovht_left");
+    ret = digital_output(device,card,16,wing_ovht_left);
+    int *bleed_trip_left = link_dataref_int("laminar/B738/annunciator/bleed_trip_1");
+    ret = digital_output(device,card,17,bleed_trip_left);
+    int *pack_right = link_dataref_int("laminar/B738/annunciator/pack_right");
+    ret = digital_output(device,card,18,pack_right);
+    int *wing_ovht_right = link_dataref_int("laminar/B738/annunciator/wing_body_ovht_right");
+    ret = digital_output(device,card,19,wing_ovht_right);
+    int *bleed_trip_right = link_dataref_int("laminar/B738/annunciator/bleed_trip_2");
+    ret = digital_output(device,card,20,bleed_trip_right);
+    int *auto_fail = link_dataref_int("laminar/B738/annunciator/autofail");
+    ret = digital_output(device,card,21,auto_fail);
+    int *off_sched_descent = link_dataref_int("laminar/B738/annunciator/off_sched_descent");
+    ret = digital_output(device,card,22,off_sched_descent);
+    int *altn_press = link_dataref_int("laminar/B738/annunciator/altn_press");
+    ret = digital_output(device,card,23,altn_press);
+    int *manual_press = link_dataref_int("laminar/B738/annunciator/manual_press");
+    ret = digital_output(device,card,24,manual_press);
+
+
+    
   }
     
 }
