@@ -134,7 +134,6 @@ void iocard_test(void)
   //if (count == 1) ret = mastercard_display(device,card,33,1,&intensitycommand,1);
   //if (count == 2) ret = mastercard_display(device,card,33,1,&intensity,1);
  
-
   for (int i=32;i<=63;i++) {
     ret = mastercard_display(device,card,i,1,&value,0);
   }

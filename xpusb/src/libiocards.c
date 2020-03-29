@@ -251,6 +251,7 @@ int initialize_iocardsdata(void)
 	iocard[device].inputs[count][card]=-1;
 	iocard[device].inputs_old[count][card]=-1;
 	iocard[device].time_enc[count][card] = time_new;
+	iocard[device].inputs_read[count][card] = 0;
       }
       for (count=0;count<MAXAXES;count++) {
 	iocard[device].axes[count]=-1;
@@ -288,7 +289,18 @@ int copy_iocardsdata(void)
   int card;
  
   for (device=0;device<MAXDEVICES;device++) {
-    memcpy(iocard[device].inputs_old,iocard[device].inputs,sizeof(iocard[device].inputs));
+
+    /* only copy new to old input data if the input data was read at least once */
+    /* else keep the new input data */
+    for (card=0;card<MAXMASTERCARDS;card++) {
+	for (count=0;count<MAXINPUTS;count++) {
+	  if (iocard[device].inputs_read[count][card] == 1) {
+	    iocard[device].inputs_old[count][card] = iocard[device].inputs[count][card];
+	    iocard[device].inputs_read[count][card] = 0;
+	  }
+	}
+    }
+    //memcpy(iocard[device].inputs_old,iocard[device].inputs,sizeof(iocard[device].inputs));
     memcpy(iocard[device].axes_old,iocard[device].axes,sizeof(iocard[device].axes));
     memcpy(iocard[device].outputs_old,iocard[device].outputs,sizeof(iocard[device].outputs));
     memcpy(iocard[device].displays_old,iocard[device].displays,sizeof(iocard[device].displays));
@@ -305,12 +317,14 @@ int copy_iocardsdata(void)
     initial = 0;
 
     /* set all MASTERCARD inputs to 0 which have not been explicitly 
-       set to 1 by the first read of MASTERCARD initial values */   
+       set to 0 or 1 by the first read of MASTERCARD initial values */   
     for (device=0;device<MAXDEVICES;device++) {
       for (card=0;card<MAXMASTERCARDS;card++) {
 	for (count=0;count<MAXINPUTS;count++) {
+	  /*
 	  if (iocard[device].inputs[count][card] == -1) iocard[device].inputs[count][card] = 0 ;
 	  if (iocard[device].inputs_old[count][card] == -1) iocard[device].inputs_old[count][card] = 0 ;
+	  */
 	}
       }
     }
@@ -397,6 +411,7 @@ int digital_input(int device, int card, int input, int *value, int type)
 
       if ((card >=0) && (card<MAXMASTERCARDS)) {
 	if ((input >=0) && (input<MAXINPUTS)) {
+	  iocard[device].inputs_read[input][card] = 1;
 	  if (type == 0) {
 	    /* simple pushbutton / switch */
 	    if (iocard[device].inputs_old[input][card] != iocard[device].inputs[input][card]) {
@@ -481,7 +496,11 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
 
 	  if (((input >=0) && (input<(MAXINPUTS-2)) && (type==0)) || 
 	      ((input >=0) && (input<(MAXINPUTS-1)) && (type>0))) {
-      
+
+	    iocard[device].inputs_read[input][card] = 1;
+	    iocard[device].inputs_read[input+1][card] = 1;
+	    if (type == 0) iocard[device].inputs_read[input+2][card] = 1;
+	    
 	    if (type == 0) { 
 	      /* simulated encoder out of a 1x12 rotary switch */
 	
@@ -733,7 +752,8 @@ int mastercard_display(int device, int card, int pos, int n, int *value, int has
 	      for (count=nt-1;count>=0;count--) {
 		if (tempval == 10) {
 		  // blank digit
-		  iocard[device].displays[count+pos][card] = 0xf7;
+		  //iocard[device].displays[count+pos][card] = 0xf7;
+		  iocard[device].displays[count+pos][card] = 0x0a;
 		} else if (tempval == 11) {
 		  // - sign
 		  iocard[device].displays[count+pos][card] = 0xf8;
@@ -771,22 +791,28 @@ int mastercard_display(int device, int card, int pos, int n, int *value, int has
 	      }
 		  
 	      /* read individual digits from integer */
+	      /* blank leftmost 0 displays except the first one */ 
+	      int firstpos = -1;
 	      for (count=nt-1;count>=0;count--) {
 		power = roundf(pow(10,count));
 		single = tempval / power;
 		tempval = tempval - single * power;
-		iocard[device].displays[count+pos][card] = single;
-		//printf("count: %i, power: %i, tempval: %i, digit: %i\n", count, power, tempval, single);
+		if ((firstpos < 0) && (single == 0) && (count != 0)) {
+		  /* blank display #count */
+		  iocard[device].displays[count+pos][card] = 0x0a;
+		} else {
+		  /* print display #count */
+		  if (firstpos < 0) firstpos = count;
+		  iocard[device].displays[count+pos][card] = single;
+		}
+		// printf("count: %i, power: %i, tempval: %i, digit: %i\n", count, power, tempval, single);
 	      }
-
-	      if (iocard[device].displays[pos+nt-1][card] == 0) {
-		/* deal with negative sign if the leftmost display is a 0 */
+	   
+	      if (firstpos != (nt-1)) {
+		/* deal with negative sign if it is not left to the leftmost display */
 		if (negative == 1) {
 		  /* put minus sign in the leftmost display */
-		  iocard[device].displays[pos+nt-1][card] = 0xf8;
-		} else {
-		  /* turn blank */
-		  iocard[device].displays[pos+nt-1][card] = 0xf7;
+		  iocard[device].displays[pos+firstpos+1][card] = 0xf8;
 		}
 	      }
 
@@ -927,7 +953,7 @@ int servos_output(int device, int servo, float *value, float minval, float maxva
 	  /* update servo internal data array for sending */
 	  if (data != iocard[device].servos[servo]) {	  
 	    iocard[device].servos[servo] = data;
-	    if (verbose > 0) printf("LIBIOCARDS: Device %i Servo %i has value %i \n",
+	    if (verbose > 1) printf("LIBIOCARDS: Device %i Servo %i has value %i \n",
 				    device, servo, data);	  
 	  }
 	}

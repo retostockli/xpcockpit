@@ -35,6 +35,7 @@ int dc_power_pos;
 int ac_power_pos;
 int l_eng_start_pos;
 int r_eng_start_pos;
+int air_valve_ctrl_pos;
 
 int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
 {
@@ -80,7 +81,6 @@ void b737_overhead_fwd(void)
 
     device = 6;
     card = 0;
-  
 
     /* --------------------- */
     /* Power & Battery Panel */
@@ -95,7 +95,7 @@ void b737_overhead_fwd(void)
     if (ival != INT_MISS) ival = 1 - ival;
     ret = set_state_updn(&ival,battery,battery_dn,battery_up);
     if (ret != 0) {
-      printf("battery %i %i %i %i %i\n",ret,ival,*battery,*battery_dn,*battery_up);
+      printf("Battery Switch %i \n",ival);
     }
 
     /* DC Power Knob */
@@ -180,17 +180,25 @@ void b737_overhead_fwd(void)
     card = 1;
 
     int *dc_volt = link_dataref_int("laminar/B738/dc_volt_value");
-    ret = mastercard_display(device,card,6,2,dc_volt,0);
     int *dc_amps = link_dataref_int("laminar/B738/dc_amp_value");
-    ret = mastercard_display(device,card,11,2,dc_amps,0);
     int *ac_volt = link_dataref_int("laminar/B738/ac_volt_value");
-    ret = mastercard_display(device,card,1,3,ac_volt,0);
     int *ac_amps = link_dataref_int("laminar/B738/ac_amp_value");
-    ret = mastercard_display(device,card,4,2,ac_amps,0);
     int *ac_freq = link_dataref_int("laminar/B738/ac_freq_value");
-    ret = mastercard_display(device,card,8,3,ac_freq,0);
-
-
+    if (*battery == 1) {
+      ret = mastercard_display(device,card,11,2,dc_amps,0);
+      ret = mastercard_display(device,card,6,2,dc_volt,0);
+      ret = mastercard_display(device,card,1,3,ac_volt,0);
+      ret = mastercard_display(device,card,4,2,ac_amps,0);
+      ret = mastercard_display(device,card,8,3,ac_freq,0);
+    } else {
+      ival = 10;
+      ret = mastercard_display(device,card,11,2,&ival,1);
+      ret = mastercard_display(device,card,6,2,&ival,1);
+      ret = mastercard_display(device,card,1,3,&ival,1);
+      ret = mastercard_display(device,card,4,2,&ival,1);
+      ret = mastercard_display(device,card,8,3,&ival,1);
+    }
+    
     /* ------------------ */
     /* Engine Start Panel */
     /* ------------------ */
@@ -275,20 +283,21 @@ void b737_overhead_fwd(void)
     if ((ival2 != INT_MISS) && (ival != INT_MISS)) ival += ival2;
     ret = set_state_updn(&ival,position,position_up,position_dn);
     /* Anti Collision: ZIBO INOP? */
-    ret = digital_input(device,card,32,&ival,0);
+    int *beacon = link_dataref_int("sim/cockpit/electrical/beacon_lights_on");
+    ret = digital_input(device,card,32,beacon,0);
     /* Wing: ZIBO need state dataref */
     int *wing_off = link_dataref_cmd_once("laminar/B738/switch/wing_light_off");
     int *wing_on = link_dataref_cmd_once("laminar/B738/switch/wing_light_on");
     ret = digital_input(device,card,33,&ival,0);
     if ((ret == 1) && (ival == 1)) *wing_on = 1;
-    if ((ret == 1) && (ival == 0)) *wing_off = 1;        
+    if ((ret == 1) && (ival == 0)) *wing_off = 1;
+
     /* Wheel Well */
     int *wheel_off = link_dataref_cmd_once("laminar/B738/switch/wheel_light_off");
     int *wheel_on = link_dataref_cmd_once("laminar/B738/switch/wheel_light_on");
     ret = digital_input(device,card,34,&ival,0);
     if ((ret == 1) && (ival == 1)) *wheel_on = 1;
     if ((ret == 1) && (ival == 0)) *wheel_off = 1;        
-
     
     /* ---------------- */
     /* LHS Lights Panel */
@@ -299,41 +308,41 @@ void b737_overhead_fwd(void)
     /* Left Retractable Landing Light */
     int *l_land_retractable_up = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_left_up");
     int *l_land_retractable_dn = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_left_dn");
-    int *l_land_retractable_pos = link_dataref_int("laminar/B738/switch/land_lights_ret_left_pos");
+    int *l_land_retractable = link_dataref_int("laminar/B738/switch/land_lights_ret_left_pos");
     ret = digital_input(device,card,36,&ival,0);
     ret = digital_input(device,card,37,&ival2,0);
     if ((ival2 != INT_MISS) && (ival != INT_MISS)) ival += ival2;
-    ret = set_state_updn(&ival,l_land_retractable_pos,l_land_retractable_dn,l_land_retractable_up);
+    ret = set_state_updn(&ival,l_land_retractable,l_land_retractable_dn,l_land_retractable_up);
 
     /* Right Retractable Landing Light */
     int *r_land_retractable_up = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_right_up");
     int *r_land_retractable_dn = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_right_dn");
-    int *r_land_retractable_pos = link_dataref_int("laminar/B738/switch/land_lights_ret_right_pos");
+    int *r_land_retractable = link_dataref_int("laminar/B738/switch/land_lights_ret_right_pos");
     ret = digital_input(device,card,38,&ival,0);
     ret = digital_input(device,card,39,&ival2,0);
     if ((ival2 != INT_MISS) && (ival != INT_MISS)) ival += ival2;
-    ret = set_state_updn(&ival,r_land_retractable_pos,r_land_retractable_dn,r_land_retractable_up);
+    ret = set_state_updn(&ival,r_land_retractable,r_land_retractable_dn,r_land_retractable_up);
 
     /* Left Landing Light */
     int *l_land_off = link_dataref_cmd_once("laminar/B738/switch/land_lights_left_off");
     int *l_land_on = link_dataref_cmd_once("laminar/B738/switch/land_lights_left_on");
-    int *l_land_pos = link_dataref_int("laminar/B738/switch/land_lights_left_pos");
+    int *l_land = link_dataref_int("laminar/B738/switch/land_lights_left_pos");
     ret = digital_input(device,card,40,&ival,0);
-    ret = set_state_updn(&ival,l_land_pos,l_land_on,l_land_off);
+    ret = set_state_updn(&ival,l_land,l_land_on,l_land_off);
 
     /* Right Landing Light */
     int *r_land_off = link_dataref_cmd_once("laminar/B738/switch/land_lights_right_off");
     int *r_land_on = link_dataref_cmd_once("laminar/B738/switch/land_lights_right_on");
-    int *r_land_pos = link_dataref_int("laminar/B738/switch/land_lights_right_pos");
+    int *r_land = link_dataref_int("laminar/B738/switch/land_lights_right_pos");
     ret = digital_input(device,card,41,&ival,0);
-    ret = set_state_updn(&ival,r_land_pos,r_land_on,r_land_off);
+    ret = set_state_updn(&ival,r_land,r_land_on,r_land_off);
 
     /* Left Runway Turnoff Light */
     int *l_rwy_off = link_dataref_cmd_once("laminar/B738/switch/rwy_light_left_off");
     int *l_rwy_on = link_dataref_cmd_once("laminar/B738/switch/rwy_light_left_on");
-    int *l_rwy_pos = link_dataref_int("laminar/B738/toggle_switch/rwy_light_left");
+    int *l_rwy = link_dataref_int("laminar/B738/toggle_switch/rwy_light_left");
     ret = digital_input(device,card,42,&ival,0);
-    ret = set_state_updn(&ival,l_rwy_pos,l_rwy_on,l_rwy_off);
+    ret = set_state_updn(&ival,l_rwy,l_rwy_on,l_rwy_off);
 
     /* Right Runway Turnoff Light */
     int *r_rwy_off = link_dataref_cmd_once("laminar/B738/switch/rwy_light_right_off");
@@ -345,22 +354,77 @@ void b737_overhead_fwd(void)
     /* Taxi Light */
     int *taxi_off = link_dataref_cmd_once("laminar/B738/toggle_switch/taxi_light_brightness_off");
     int *taxi_on = link_dataref_cmd_once("laminar/B738/toggle_switch/taxi_light_brightness_on");
-    int *taxi_pos = link_dataref_int("laminar/B738/toggle_switch/taxi_light_brightness_pos");
+    int *taxi = link_dataref_int("laminar/B738/toggle_switch/taxi_light_brightness_pos");
     ret = digital_input(device,card,44,&ival,0);
     if (ival == 1) ival = 2;
-    ret = set_state_updn(&ival,taxi_pos,taxi_on,taxi_off);
+    ret = set_state_updn(&ival,taxi,taxi_on,taxi_off);
 
     /* APU Switch */
     int *apu_dn = link_dataref_cmd_once("laminar/B738/spring_toggle_switch/APU_start_pos_dn");
     int *apu_up = link_dataref_cmd_once("laminar/B738/spring_toggle_switch/APU_start_pos_up");
-    int *apu_pos = link_dataref_int("laminar/B738/spring_toggle_switch/APU_start_pos");
+    int *apu = link_dataref_int("laminar/B738/spring_toggle_switch/APU_start_pos");
     ret = digital_input(device,card,45,&ival,0);
     if (ival != INT_MISS) ival = 1 - ival;
     ret = digital_input(device,card,46,&ival2,0);
     /* only set APU switch to 2 (start) if pressed since the original switch is spring loaded */
     if ((ret == 1) && (ival != INT_MISS)) ival += ival2; 
-    ret = set_state_updn(&ival,apu_pos,apu_dn,apu_up);
+    ret = set_state_updn(&ival,apu,apu_dn,apu_up);
+    
+    /* -------------- */
+    /* ALTITUDE Panel */
+    /* -------------- */
+    device = 6;
+    card = 0;
+    float *flt_alt = link_dataref_flt("sim/cockpit2/pressurization/actuators/max_allowable_altitude_ft",0);
+    float *land_alt = link_dataref_flt("laminar/B738/pressurization/knobs/landing_alt",0);
 
+    ret = mastercard_encoder(device,card,47,land_alt,50.0,2,2);
+    if (*land_alt != FLT_MISS) {
+      if (*land_alt < -1000.0) *land_alt = -1000.0;
+      if (*land_alt > 42000.0) *land_alt = 42000.0;
+    }
+    if (ret == 1) printf("Landing Altitude Selector: %f \n",*land_alt);
+    ret = mastercard_encoder(device,card,49,flt_alt,500.0,2,2);
+    if (*flt_alt != FLT_MISS) {
+      if (*flt_alt < -1000.0) *flt_alt = -1000.0;
+      if (*flt_alt > 42000.0) *flt_alt = 42000.0;
+    }
+    if (ret == 1) printf("Flight Altitude Selctor: %f \n",*flt_alt);
+    
+    if (*battery == 1) {
+      int land_alt2 = INT_MISS;
+      if (*land_alt != FLT_MISS) land_alt2 = (int) *land_alt;
+      int flt_alt2 = INT_MISS;
+      if (*flt_alt != FLT_MISS)	flt_alt2 = (int) *flt_alt;
+      ret = mastercard_display(device,card,0,5,&land_alt2,0);
+      ret = mastercard_display(device,card,6,5,&flt_alt2,0);
+    } else {
+      ival = 10;
+      ret = mastercard_display(device,card,0,5,&ival,1);
+      ret = mastercard_display(device,card,6,5,&ival,1);
+    }
+
+    int *air_valve_manual_left = link_dataref_cmd_hold("laminar/B738/toggle_switch/air_valve_manual_left");
+    ret = digital_input(device,card,52,air_valve_manual_left,0);
+    int *air_valve_manual_right = link_dataref_cmd_hold("laminar/B738/toggle_switch/air_valve_manual_right");
+    ret = digital_input(device,card,51,air_valve_manual_right,0);
+
+    int *air_valve_ctrl_left = link_dataref_cmd_once("laminar/B738/toggle_switch/air_valve_ctrl_left");
+    int *air_valve_ctrl_right = link_dataref_cmd_once("laminar/B738/toggle_switch/air_valve_ctrl_right");
+    int *air_valve_ctrl = link_dataref_int("laminar/B738/toggle_switch/air_valve_ctrl");
+    ret = digital_input(device,card,54,&ival,0);
+    if ((ret == 1) && (ival == 1)) air_valve_ctrl_pos = 0;
+    ret = digital_input(device,card,55,&ival,0);
+    if ((ret == 1) && (ival == 1)) air_valve_ctrl_pos = 1;
+    ret = digital_input(device,card,56,&ival,0);
+    if ((ret == 1) && (ival == 1)) air_valve_ctrl_pos = 2;
+    ret = set_state_updn(&air_valve_ctrl_pos,air_valve_ctrl,air_valve_ctrl_right,air_valve_ctrl_left);
+
+    device = 8;
+    float *outflow_valve = link_dataref_flt("laminar/B738/outflow_valve",-2);
+    ret = servos_output(device,0,outflow_valve,0.0,1.0,310,640);
+
+    
   }
     
 }

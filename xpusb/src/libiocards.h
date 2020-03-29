@@ -82,6 +82,9 @@ typedef struct {
 
   int inputs[MAXINPUTS][MAXMASTERCARDS];
   int inputs_old[MAXINPUTS][MAXMASTERCARDS];
+  int inputs_read[MAXINPUTS][MAXMASTERCARDS];
+  /* --> only copy new inputs to old ones if they were read at least once */
+  /* --> allow sending initial hardware states with commands that have no state */
   
   int axes[MAXAXES];
   int axes_old[MAXAXES];
