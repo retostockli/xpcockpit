@@ -503,7 +503,73 @@ void b737_overhead_fwd(void)
     int *manual_press = link_dataref_int("laminar/B738/annunciator/manual_press");
     ret = digital_output(device,card,24,manual_press);
 
+    device = 8;
+    float *duct_press_left = link_dataref_flt("laminar/B738/indicators/duct_press_L",0);
+    ret = servos_output(device,1,duct_press_left,0.0,80.0,140,950);
+    float *duct_press_right = link_dataref_flt("laminar/B738/indicators/duct_press_R",0);
+    ret = servos_output(device,2,duct_press_right,0.0,80.0,130,950);
 
+    /* ----------------- */
+    /* TEMPERATURE Panel */
+    /* ----------------- */
+    device = 6;
+    card = 0;
+
+    /* Trim Air Switch */
+    int *trim_air = link_dataref_int("laminar/B738/air/trim_air_pos");
+    ret = digital_input(device,card,26,trim_air,0);
+
+    /* Air Temperature Source Selector Knob */
+    device = 6;
+    card = 1;
+    int *air_temp_source = link_dataref_int("laminar/B738/toggle_switch/air_temp_source");
+    ret = digital_input(device,card,0,&ival,0);
+    if (ival == 1) *air_temp_source = 0; // DUCT SUPPLY CONT CAB
+    ret = digital_input(device,card,1,&ival,0);
+    if (ival == 1) *air_temp_source = 1; // DUCT SUPPLY FWD
+    ret = digital_input(device,card,2,&ival,0);
+    if (ival == 1) *air_temp_source = 2; // DUCT SUPPLY AFT
+    ret = digital_input(device,card,3,&ival,0);
+    if (ival == 1) *air_temp_source = 3; // PASS CAB FWD
+    ret = digital_input(device,card,4,&ival,0);
+    if (ival == 1) *air_temp_source = 4; // PASS CAB AFT
+    ret = digital_input(device,card,5,&ival,0);
+    if (ival == 1) *air_temp_source = 5; // PACK R
+    ret = digital_input(device,card,6,&ival,0);
+    if (ival == 1) *air_temp_source = 6; // PACK L
+
+    /* Zone Temp Gauge */
+    device = 8;
+    float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",-1);
+    ret = servos_output(device,3,zone_temp,0.0,97.0,160,1023);
+
+    /* Yellow Annunciators */
+    device = 6;
+    card = 0;
+    ival = 1;
+    /* CONT CAB ZONE TEMP ANNUNCIATOR */
+    ret = digital_output(device,card,25,&ival);
+    /* FWD CAB ZONE TEMP ANNUNCIATOR */
+    ret = digital_output(device,card,26,&ival);
+    /* AFT CAB ZONE TEMP ANNUNCIATOR */
+    ret = digital_output(device,card,27,&ival);
+
+    /* Zone Temp Potentiometers */
+    float *cont_cab_rheostat = link_dataref_flt("laminar/B738/air/cont_cab_temp/rheostat",-2);
+    ret = axis_input(device,0,cont_cab_rheostat,0.0,1.0);
+    if (ret == 1) {
+      printf("CONT CAB TEMP RHEO: %f \n",*cont_cab_rheostat);
+    } 
+    float *fwd_cab_rheostat = link_dataref_flt("laminar/B738/air/fwd_cab_temp/rheostat",-2);
+    ret = axis_input(device,1,fwd_cab_rheostat,0.0,1.0);
+    if (ret == 1) {
+      printf("FWD CAB TEMP RHEO: %f \n",*fwd_cab_rheostat);
+    } 
+    float *aft_cab_rheostat = link_dataref_flt("laminar/B738/air/aft_cab_temp/rheostat",-2);
+    ret = axis_input(device,2,aft_cab_rheostat,0.0,1.0);
+    if (ret == 1) {
+      printf("AFT CAB TEMP RHEO: %f \n",*aft_cab_rheostat);
+    } 
     
   }
     
