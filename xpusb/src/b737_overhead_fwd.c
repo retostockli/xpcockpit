@@ -570,6 +570,172 @@ void b737_overhead_fwd(void)
     if (ret == 1) {
       printf("AFT CAB TEMP RHEO: %f \n",*aft_cab_rheostat);
     } 
+
+    /* -------------------- */
+    /* ALTITUDE GAUGE Panel */
+    /* -------------------- */
+    device = 6;
+    card = 0;
+
+    /* Altitude Warning Horn Cutout */
+    int *alt_horn_cutout = link_dataref_cmd_hold("laminar/B738/alert/alt_horn_cutout");
+    ret = digital_input(device,card,35,alt_horn_cutout,0);
+
+    device = 7;
+    float *cabin_altitude = link_dataref_flt("laminar/B738/cabin_alt",2);
+    ret = servos_output(device,0,cabin_altitude,0.0,27000.0,200,1023);
+    float *cabin_pressure_diff = link_dataref_flt("laminar/B738/cabin_pressure_diff",-1);
+    ret = servos_output(device,1,cabin_pressure_diff,0.0,7.0,225,1023);
+    float *cabin_climb = link_dataref_flt("laminar/B738/cabin_vvi",0);
+    ret = servos_output(device,2,cabin_climb,-2.0,2.5,200,950);
+    
+    
+    /* ---------------------- */
+    /* Cockpit Recorder Panel */
+    /* ---------------------- */
+    device = 6;
+    card = 0;
+
+    /* Cockpit Voice Recorder Status */
+    ret = digital_input(device,card,69,&ival,0);
+    if (ret == 1) {
+      printf("Cockpit Voice Recorder Status: %i \n",ival);
+    }
+    /* Cockpit Voice Recorder Erase */
+    ret = digital_input(device,card,70,&ival,0);
+    if (ret == 1) {
+      printf("Cockpit Voice Recorder Erase: %i \n",ival);
+    }
+    /* Cockpit Voice Recorder Test */
+    ret = digital_input(device,card,71,&ival,0);
+    if (ret == 1) {
+      printf("Cockpit Voice Recorder Test: %i \n",ival);
+    }
+
+    /* --------------------- */
+    /* DOOR Open/Close Panel */
+    /* --------------------- */
+    device = 6;
+    card = 0;
+
+    int *aft_entry_door = link_dataref_int("laminar/B738/annunciator/aft_entry");
+    ret = digital_output(device,card,28,aft_entry_door);
+    int *aft_service_door = link_dataref_int("laminar/B738/annunciator/aft_service");
+    ret = digital_output(device,card,29,aft_service_door);
+    int *equip_door = link_dataref_int("laminar/B738/annunciator/equip_door");
+    ret = digital_output(device,card,30,equip_door);
+    int *left_aft_overwing_door = link_dataref_int("laminar/B738/annunciator/left_aft_overwing");
+    ret = digital_output(device,card,31,left_aft_overwing_door);
+    int *right_aft_overwing_door = link_dataref_int("laminar/B738/annunciator/right_aft_overwing");
+    ret = digital_output(device,card,32,right_aft_overwing_door);
+    int *aft_cargo_door = link_dataref_int("laminar/B738/annunciator/aft_cargo");
+    ret = digital_output(device,card,33,aft_cargo_door);
+    int *left_fwd_overwing_door = link_dataref_int("laminar/B738/annunciator/left_fwd_overwing");
+    ret = digital_output(device,card,34,left_fwd_overwing_door);
+    int *right_fwd_overwing_door = link_dataref_int("laminar/B738/annunciator/right_fwd_overwing");
+    ret = digital_output(device,card,35,right_fwd_overwing_door);
+    int *fwd_cargo_door = link_dataref_int("laminar/B738/annunciator/fwd_cargo");
+    ret = digital_output(device,card,36,fwd_cargo_door);
+    int *fwd_entry_door = link_dataref_int("laminar/B738/annunciator/fwd_entry");
+    ret = digital_output(device,card,37,fwd_entry_door);
+    int *fwd_service_door = link_dataref_int("laminar/B738/annunciator/fwd_service");
+    ret = digital_output(device,card,38,fwd_service_door);
+
+    
+    /* ---------------------- */
+    /*  Hydraulic Pumps Panel */
+    /* ---------------------- */
+    device = 6;
+    card = 1;
+
+    int *hydro_pumps1 = link_dataref_int("laminar/B738/toggle_switch/hydro_pumps1_pos");
+    ret = digital_input(device,card,9,hydro_pumps1,0);
+    if (ret == 1) {
+      printf("Hydraulic Pumps 1: %i \n",*hydro_pumps1);
+    }
+    int *elec_hydro_pumps1 = link_dataref_int("laminar/B738/toggle_switch/electric_hydro_pumps1_pos");
+    ret = digital_input(device,card,10,elec_hydro_pumps1,0);
+    if (ret == 1) {
+      printf("Electric Hydraulic Pumps 1: %i \n",*elec_hydro_pumps1);
+    }
+    int *elec_hydro_pumps2 = link_dataref_int("laminar/B738/toggle_switch/electric_hydro_pumps2_pos");
+    ret = digital_input(device,card,11,elec_hydro_pumps2,0);
+    if (ret == 1) {
+      printf("Electric Hydraulic Pumps 2: %i \n",*elec_hydro_pumps2);
+    }
+    int *hydro_pumps2 = link_dataref_int("laminar/B738/toggle_switch/hydro_pumps2_pos");
+    ret = digital_input(device,card,12,hydro_pumps2,0);
+    if (ret == 1) {
+      printf("Hydraulic Pumps 2: %i \n",*hydro_pumps2);
+    }
+
+    device = 6;
+    card = 0;
+    
+    int *elec_hydro_ovht1 = link_dataref_int("laminar/B738/annunciator/el_hyd_ovht_1");
+    ret = digital_output(device,card,39,elec_hydro_ovht1);
+    int *elec_hydro_ovht2 = link_dataref_int("laminar/B738/annunciator/el_hyd_ovht_2");
+    ret = digital_output(device,card,40,elec_hydro_ovht2);
+    int *hydro_press1 = link_dataref_int("laminar/B738/annunciator/hyd_press_a");
+    ret = digital_output(device,card,41,hydro_press1);
+    int *elec_hydro_press1 = link_dataref_int("laminar/B738/annunciator/hyd_el_press_a");
+    ret = digital_output(device,card,42,elec_hydro_press1);
+    int *elec_hydro_press2 = link_dataref_int("laminar/B738/annunciator/hyd_el_press_b");
+    ret = digital_output(device,card,43,elec_hydro_press2);
+    int *hydro_press2 = link_dataref_int("laminar/B738/annunciator/hyd_press_b");
+    ret = digital_output(device,card,44,hydro_press2);
+    
+    /* --------------- */
+    /*  Anti Ice Panel */
+    /* --------------- */
+    device = 6;
+    card = 1;
+
+    int *wing_anti_ice = link_dataref_int("laminar/B738/ice/wing_heat_pos");
+    ret = digital_input(device,card,13,wing_anti_ice,0);
+    if (ret == 1) {
+      printf("Wing Anti Ice: %i \n",*wing_anti_ice);
+    }
+    int *eng1_anti_ice = link_dataref_int("laminar/B738/ice/eng1_heat_pos");
+    ret = digital_input(device,card,14,eng1_anti_ice,0);
+    if (ret == 1) {
+      printf("Engine 1 Anti Ice: %i \n",*eng1_anti_ice);
+    }
+    int *eng2_anti_ice = link_dataref_int("laminar/B738/ice/eng2_heat_pos");
+    ret = digital_input(device,card,15,eng2_anti_ice,0);
+    if (ret == 1) {
+      printf("Engine 2 Anti Ice: %i \n",*eng2_anti_ice);
+    }
+
+    device = 6;
+    card = 0;
+    
+    int *cowl_anti_ice1 = link_dataref_int("laminar/B738/annunciator/cowl_ice_0");
+    ret = digital_output(device,card,45,cowl_anti_ice1);
+    int *cowl_anti_ice2 = link_dataref_int("laminar/B738/annunciator/cowl_ice_1");
+    ret = digital_output(device,card,46,cowl_anti_ice2);
+
+    /* Blue Annunciators */
+    float *wing_anti_ice1 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_L",-1);
+    ival = 0;
+    if (*wing_anti_ice1 == 0.5) ival = 2;
+    if (*wing_anti_ice1 > 0.5) ival = 1;
+    ret = mastercard_display(device,card,34,1,&ival,0);
+    float *wing_anti_ice2 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_R",-1);
+    ival = 0;
+    if (*wing_anti_ice2 == 0.5) ival = 2;
+    if (*wing_anti_ice2 > 0.5) ival = 1;
+    ret = mastercard_display(device,card,35,1,&ival,0);
+    float *cowl_valve_open1 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_0",-1);
+    ival = 0;
+    if (*cowl_valve_open1 == 0.5) ival = 2;
+    if (*cowl_valve_open1 > 0.5) ival = 1;
+    ret = mastercard_display(device,card,36,1,&ival,0);
+    float *cowl_valve_open2 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_1",-1);
+    ival = 0;
+    if (*cowl_valve_open2 == 0.5) ival = 2;
+    if (*cowl_valve_open2 > 0.5) ival = 1;
+    ret = mastercard_display(device,card,37,1,&ival,0);
     
   }
     
