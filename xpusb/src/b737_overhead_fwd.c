@@ -36,6 +36,8 @@ int ac_power_pos;
 int l_eng_start_pos;
 int r_eng_start_pos;
 int air_valve_ctrl_pos;
+int l_wiper_pos;
+int r_wiper_pos;
 
 int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
 {
@@ -68,6 +70,35 @@ int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
   
 }
 
+int set_state_toggle(int *new_state, int *old_state, int *toggle)
+{
+
+  int ret = 0;
+  
+  if ((new_state) && (old_state) && (toggle)) {
+    if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
+
+      if ((*toggle == 1) || (*toggle == 2)) {
+	/* we just upped or downed, so wait for a cycle */
+      } else {
+	if (*new_state > *old_state) {
+	  *toggle = 1;
+	  ret = 1;
+	} else if (*new_state < *old_state) {
+	  *toggle = 1;
+	  ret =-1;
+	} else {
+	  /* nothing to do */
+	}
+      }
+
+    }
+  }
+
+  return ret;
+  
+}
+
 void b737_overhead_fwd(void)
 {
   int ret;
@@ -79,6 +110,22 @@ void b737_overhead_fwd(void)
 
   if ((acf_type == 2) || (acf_type == 3)) {
 
+    /* Open SWITCH COVERS (Guards) in the airplane so that we can freely move HW switches */
+    float *switch_cover = link_dataref_flt_arr("laminar/B738/button_switch/cover_position",11,-1,-3);
+    int *battery_cover_toggle = link_dataref_cmd_once("laminar/B738/button_switch_cover02");
+    ival = 1;
+    if (switch_cover[2] != FLT_MISS) {
+      ival2 = (switch_cover[2] > 0.0); // Switches are animated
+    } else {
+      ival2 = INT_MISS;
+    }
+    ret = set_state_toggle(&ival,&ival2,battery_cover_toggle);
+    if (ret != 0) {
+      printf("Battery Switch Cover %i \n",ival);
+    }
+    
+
+    
     device = 6;
     card = 0;
 
@@ -736,7 +783,168 @@ void b737_overhead_fwd(void)
     if (*cowl_valve_open2 == 0.5) ival = 2;
     if (*cowl_valve_open2 > 0.5) ival = 1;
     ret = mastercard_display(device,card,37,1,&ival,0);
+
     
-  }
+    /* ----------- */
+    /*  HEAT Panel */
+    /* ----------- */
+    device = 6;
+    card = 1;
+
+    int *tat_test = link_dataref_cmd_hold("laminar/B738/push_button/tat_test");
+    ret = digital_input(device,card,18,tat_test,0);
+    if (ret == 1) {
+      printf("TAT Test: %i \n",*tat_test);
+    }
+    int *probe_heat_capt = link_dataref_int("laminar/B738/toggle_switch/capt_probes_pos");
+    ret = digital_input(device,card,19,probe_heat_capt,0);
+    if (ret == 1) {
+      printf("Probe Heat Captain: %i \n",*probe_heat_capt);
+    }
+    int *probe_heat_fo = link_dataref_int("laminar/B738/toggle_switch/fo_probes_pos");
+    ret = digital_input(device,card,20,probe_heat_fo,0);
+    if (ret == 1) {
+      printf("Probe Heat First Officer: %i \n",*probe_heat_fo);
+    }
+    int *window_heat_l_side = link_dataref_int("laminar/B738/ice/window_heat_l_side_pos");
+    ret = digital_input(device,card,21,window_heat_l_side,0);
+    if (ret == 1) {
+      printf("Window Heat Left Side: %i \n",*window_heat_l_side);
+    }
+    int *window_heat_l_fwd = link_dataref_int("laminar/B738/ice/window_heat_l_fwd_pos");
+    ret = digital_input(device,card,22,window_heat_l_fwd,0);
+    if (ret == 1) {
+      printf("Window Heat Left forward: %i \n",*window_heat_l_fwd);
+    }
+    int *window_overheat_test = link_dataref_int("laminar/B738/toggle_switch/window_ovht_test");
+    ret = digital_input(device,card,23,&ival,0);
+    ret = digital_input(device,card,24,&ival2,0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *window_overheat_test = ival - ival2;
+
+    int *window_heat_r_fwd = link_dataref_int("laminar/B738/ice/window_heat_r_fwd_pos");
+    ret = digital_input(device,card,25,window_heat_r_fwd,0);
+    if (ret == 1) {
+      printf("Window Heat Right forward: %i \n",*window_heat_r_fwd);
+    }
+    int *window_heat_r_side = link_dataref_int("laminar/B738/ice/window_heat_r_side_pos");
+    ret = digital_input(device,card,26,window_heat_r_side,0);
+    if (ret == 1) {
+      printf("Window Heat Right Side: %i \n",*window_heat_r_side);
+    }
+
+    int *capt_pitot = link_dataref_int("laminar/B738/annunciator/capt_pitot_off");
+    ret = digital_output(device,card,11,capt_pitot);
+    ret = digital_output(device,card,12,capt_pitot);
+    int *capt_aoa = link_dataref_int("laminar/B738/annunciator/capt_aoa_off");
+    ret = digital_output(device,card,13,capt_aoa);
+    ret = digital_output(device,card,14,capt_pitot);
+   
+    int *fo_pitot = link_dataref_int("laminar/B738/annunciator/fo_pitot_off");
+    ret = digital_output(device,card,15,fo_pitot);
+    ret = digital_output(device,card,16,fo_pitot);
+    int *fo_aoa = link_dataref_int("laminar/B738/annunciator/fo_aoa_off");
+    ret = digital_output(device,card,17,fo_aoa);
+    ret = digital_output(device,card,18,fo_pitot);
+
+    int *window_ovht_l_side_ann = link_dataref_int("laminar/B738/annunciator/window_heat_ovht_ls");
+    ret = digital_output(device,card,19,window_ovht_l_side_ann);
+    int *window_ovht_l_fwd_ann = link_dataref_int("laminar/B738/annunciator/window_heat_ovht_lf");
+    ret = digital_output(device,card,20,window_ovht_l_fwd_ann);
+    int *window_ovht_r_fwd_ann = link_dataref_int("laminar/B738/annunciator/window_heat_ovht_rf");
+    ret = digital_output(device,card,21,window_ovht_r_fwd_ann);
+    int *window_ovht_r_side_ann = link_dataref_int("laminar/B738/annunciator/window_heat_ovht_rs");
+    ret = digital_output(device,card,22,window_ovht_r_side_ann);
+
+    int *window_heat_l_side_ann = link_dataref_int("laminar/B738/annunciator/window_heat_l_side");
+    ret = digital_output(device,card,23,window_heat_l_side_ann);
+    int *window_heat_l_fwd_ann = link_dataref_int("laminar/B738/annunciator/window_heat_l_fwd");
+    ret = digital_output(device,card,24,window_heat_l_fwd_ann);
+    int *window_heat_r_fwd_ann = link_dataref_int("laminar/B738/annunciator/window_heat_r_fwd");
+    ret = digital_output(device,card,25,window_heat_r_fwd_ann);
+    int *window_heat_r_side_ann = link_dataref_int("laminar/B738/annunciator/window_heat_r_side");
+    ret = digital_output(device,card,26,window_heat_r_side_ann);
+
+    /* ------------- */
+    /*  CENTER Panel */
+    /* ------------- */
+    device = 6;
+    card = 0;
+
+    int *attend = link_dataref_cmd_hold("laminar/B738/push_button/attend");
+    ret = digital_input(device,card,53,attend,0);
+    if (ret == 1) {
+      printf("ATTEND: %i \n",*attend);
+    }
+
+    device = 6;
+    card = 1;
+    /* Chimes Only / No Smoking */
+    ret = digital_input(device,card,7,&ival,0);
+    if (ret == 1) {
+      printf("Chimes On: %i \n",ival);
+    }
+    ret = digital_input(device,card,8,&ival2,0);
+    if (ret == 1) {
+      printf("Chimes Off: %i \n",ival2);
+    }
+
+    /* Fasten Seat Belts */
+    int *belts_up = link_dataref_cmd_once("laminar/B738/toggle_switch/seatbelt_sign_up");
+    int *belts_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/seatbelt_sign_dn");
+    int *belts = link_dataref_int("laminar/B738/toggle_switch/seatbelt_sign_pos");
+    ret = digital_input(device,card,16,&ival,0);
+    if (ret == 1) {
+      printf("Fasten Belts On: %i \n",ival);
+    }
+    ret = digital_input(device,card,17,&ival2,0);
+    if (ret == 1) {
+      printf("Fasten Belts Off: %i \n",ival2);
+    }
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) ival = ival*2 + (1-ival2);
+    ret = set_state_updn(&ival,belts,belts_dn,belts_up);
+
+    int *eq_cool_supply = link_dataref_int("laminar/B738/toggle_switch/eq_cool_supply");
+    ret = digital_input(device,card,27,eq_cool_supply,0);
+    int *eq_cool_exhaust = link_dataref_int("laminar/B738/toggle_switch/eq_cool_exhaust");
+    ret = digital_input(device,card,28,eq_cool_exhaust,0);
+
+    int *exit_lights_up = link_dataref_cmd_once("laminar/B738/toggle_switch/emer_exit_lights_up");
+    int *exit_lights_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/emer_exit_lights_dn");
+    int *exit_lights = link_dataref_int("laminar/B738/toggle_switch/emer_exit_lights");
+    ret = digital_input(device,card,29,&ival,0);
+    if (ret == 1) {
+      printf("EMERGENCY Exit Lights ON: %i \n",ival);
+    }
+    ret = digital_input(device,card,30,&ival2,0);
+    if (ret == 1) {
+      printf("EMERGENCY Exit Lights OFF: %i \n",ival2);
+    }
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) ival = ival*2 + (1-ival2);
+    ret = set_state_updn(&ival,exit_lights,exit_lights_dn,exit_lights_up);
+
+    int *grd_call = link_dataref_cmd_hold("laminar/B738/push_button/grd_call");
+    ret = digital_input(device,card,31,grd_call,0);
+    if (ret == 1) {
+      printf("GRD CALL: %i \n",*grd_call);
+    }
+    
+    int *r_wiper_up = link_dataref_cmd_once("laminar/B738/knob/right_wiper_up");
+    int *r_wiper_dn = link_dataref_cmd_once("laminar/B738/knob/right_wiper_dn");
+    int *r_wiper = link_dataref_int("laminar/B738/switches/right_wiper_pos");
+    
+    ret = digital_input(device,card,32,&ival,0);
+    if (ival == 1) r_wiper_pos = 0; // PARK
+    ret = digital_input(device,card,33,&ival,0);
+    if (ival == 1) r_wiper_pos = 1; // INT
+    ret = digital_input(device,card,34,&ival,0);
+    if (ival == 1) r_wiper_pos = 2; // LOW
+    ret = digital_input(device,card,35,&ival,0);
+    if (ival == 1) r_wiper_pos = 3; // HIGHT
+
+    ret = set_state_updn(&r_wiper_pos,r_wiper,r_wiper_up,r_wiper_dn);
+    if (ret != 0) {
+      printf("Right Wiper %i \n",r_wiper_pos);
+    }
+   }
     
 }
