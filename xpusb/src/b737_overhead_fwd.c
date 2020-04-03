@@ -109,6 +109,8 @@ void b737_overhead_fwd(void)
   int card = 0;
 
   if ((acf_type == 2) || (acf_type == 3)) {
+    
+    int *lights_test = link_dataref_int("laminar/B738/annunciator/test");
 
     /* Open SWITCH COVERS (Guards) in the airplane so that we can freely move HW switches */
     float *switch_cover = link_dataref_flt_arr("laminar/B738/button_switch/cover_position",11,-1,-3);
@@ -552,7 +554,7 @@ void b737_overhead_fwd(void)
 
     device = 8;
     float *duct_press_left = link_dataref_flt("laminar/B738/indicators/duct_press_L",0);
-    ret = servos_output(device,1,duct_press_left,0.0,80.0,140,950);
+    //    ret = servos_output(device,1,duct_press_left,0.0,80.0,140,950);
     float *duct_press_right = link_dataref_flt("laminar/B738/indicators/duct_press_R",0);
     ret = servos_output(device,2,duct_press_right,0.0,80.0,130,950);
 
@@ -945,6 +947,41 @@ void b737_overhead_fwd(void)
     if (ret != 0) {
       printf("Right Wiper %i \n",r_wiper_pos);
     }
+
+    /* Emergency Exit Lights NOT ARMED */
+    ival = 0;
+    if ((*exit_lights == 0) || (*exit_lights == 2)) ival = 1;
+    if (*lights_test == 1) ival = 1;
+    ret = digital_output(device,card,27,&ival);
+
+    /* EQUIP COOLING SUPPLY OFF */
+    ival = 0;
+    if (*lights_test == 1) ival = 1;
+    ret = digital_output(device,card,28,&ival);
+    
+    /* EQUIP COOLING EXHAUST OFF */
+    ival = 0;
+    if (*lights_test == 1) ival = 1;
+    ret = digital_output(device,card,29,&ival);
+    
+    /* Lavatory Smoke */
+    int *smoke = link_dataref_int("laminar/B738/annunciator/smoke");
+    ret = digital_output(device,card,30,smoke);
+
+    /* Blue CALL Annunciator */
+    device = 6;
+    card = 0;
+    ret = mastercard_display(device,card,38,1,lights_test,0);
+
+    /* Circuit Breaker Light Potentiometer */
+    /* Panel Potentiometer is directly wired to the Overhead Backlighting */
+    ret = axis_input(device,3,&fval,0.0,80.0);
+    if (ret == 1) {
+      printf("Circuit Breaker Light: %f \n",fval);
+    }
+    device = 8;
+    ret = servos_output(device,1,&fval,0.0,80.0,140,950);
+    
    }
     
 }

@@ -1443,7 +1443,13 @@ int send_servos(void)
 	  
 	  /* servo data is SERVOMAX - servo value. This is to guarantee that the parking value of
 	     0 at the same end as the minimum servo value. This is also consistent with OpenCockpits IOCP */
-	  data = SERVOMAX - iocard[device].servos[servo];
+	  if (iocard[device].servos[servo] != iocard[device].servos_old[servo]) {
+	    data = SERVOMAX - iocard[device].servos[servo];
+	    //	    printf("%i %i \n",servo,data);
+	  } else {
+	    data = SERVOMAX - SERVOPARK;
+	    //	    printf("%i PARK \n",servo);
+	  }
 	  
 	  /* transfer first 255 values */
 	  send_data[servo] = data & 0xff;
