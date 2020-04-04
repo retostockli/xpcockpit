@@ -269,6 +269,7 @@ int initialize_iocardsdata(void)
     for (count=0;count<MAXSERVOS;count++) {
       iocard[device].servos[count]=SERVOPARK;
       iocard[device].servos_old[count]=-1;
+      iocard[device].time_servos[count] = FLT_MISS;
     }
     for (count=0;count<MAXMOTORS;count++) {
       iocard[device].motors[count]=MOTORPARK;
@@ -956,6 +957,7 @@ int servos_output(int device, int servo, float *value, float minval, float maxva
 	    if (verbose > 1) printf("LIBIOCARDS: Device %i Servo %i has value %i \n",
 				    device, servo, data);	  
 	  }
+	    
 	}
       } else {
 	retval = -1;
@@ -1413,6 +1415,12 @@ int send_servos(void)
   int servo;
   int data;
   int changed;
+  struct timeval time;
+  double dt;
+  double dtmax = 1.0; /* Seconds to allow Servos to turn 
+			 into position until they are parked */
+
+  gettimeofday(&time,NULL);
 
   for (device=0;device<MAXDEVICES;device++) {
 
@@ -1422,20 +1430,33 @@ int send_servos(void)
       changed = 0;
 
       for (servo=0;servo<MAXSERVOS;servo++) {
-
-	if (iocard[device].servos[servo] != iocard[device].servos_old[servo]) {
 	  
-	  changed = 1;
-	
-	  if (verbose > 2) {
-	    printf("LIBIOCARDS: send servo data device=%i servo=%i value=%i \n",
-		   device, servo+1, iocard[device].servos[servo]);
-	  }
+	if (iocard[device].servos[servo] != iocard[device].servos_old[servo]) {
+
+	  /* something changed, reset timer of that servo */
+	  iocard[device].time_servos[servo] = time.tv_sec + time.tv_usec/1000000.0;
+	  
+	  changed = 1;	
 	}
 
+	if (iocard[device].time_servos[servo] != FLT_MISS) {
+	  dt = time.tv_sec + time.tv_usec/1000000.0 - iocard[device].time_servos[servo];
+	  if (dt > dtmax) {
+	    changed = 1;
+	  }
+	} else {
+	  dt = FLT_MISS;
+	}
+
+	if ((changed == 1) && (verbose > 2)) {
+	  printf("LIBIOCARDS: send servo data device=%i servo=%i value=%i dt=%f \n",
+		 device, servo+1, iocard[device].servos[servo],dt);
+	}
       }
 
       if (changed) {
+	/* ERASE SEND DATA FOR EACH DEVICE SINCE WE'RE ADDING BITS BELOW */
+	memset(send_data,0,sizeof(send_data));
 
 	for (servo=0;servo<MAXSERVOS;servo++) {
 	  /* Servo value is 2nd byte (minor) + first byte (major) of 2-byte couple by servo + 
@@ -1443,18 +1464,28 @@ int send_servos(void)
 	  
 	  /* servo data is SERVOMAX - servo value. This is to guarantee that the parking value of
 	     0 at the same end as the minimum servo value. This is also consistent with OpenCockpits IOCP */
-	  if (iocard[device].servos[servo] != iocard[device].servos_old[servo]) {
-	    data = SERVOMAX - iocard[device].servos[servo];
-	    //	    printf("%i %i \n",servo,data);
+	  //if (iocard[device].servos[servo] != iocard[device].servos_old[servo]) {
+	  if (iocard[device].time_servos[servo] != FLT_MISS) {
+	    dt = time.tv_sec + time.tv_usec/1000000.0 - iocard[device].time_servos[servo];
+	    if (dt > dtmax) {
+	      /* PARK to Servo after adjustment time */
+	      data = SERVOMAX - SERVOPARK;
+	      /* Set timer to missing (do not send PARK any more until servo is updated */
+	      iocard[device].time_servos[servo] = FLT_MISS;
+	    } else {
+	      /* Within Servo adjustment time: send servo value */
+	      data = SERVOMAX - iocard[device].servos[servo];
+	    } 
 	  } else {
+	    /* PARK Servo */
 	    data = SERVOMAX - SERVOPARK;
-	    //	    printf("%i PARK \n",servo);
 	  }
-	  
+	  //printf("%i %i %04x \n",device,servo,data);
+
 	  /* transfer first 255 values */
 	  send_data[servo] = data & 0xff;
 
-	  /* transfer the remaining two bits into bytes 7 and 8 */
+	  /* transfer the remaining two bits into bytes 7 and 8 */	  
 	  if (servo == 0) {
 	    send_data[6] = send_data[6] + (((data >> 8) & 0x03) << 6);
 	  } else if (servo == 1) {
@@ -1468,7 +1499,7 @@ int send_servos(void)
 	  } else if (servo == 5) {
 	    send_data[7] = send_data[7] + (((data >> 8) & 0x03) << 4);
 	  }
-	  
+	  	  
 	}
 
 	/* send data to USB */
@@ -1481,7 +1512,7 @@ int send_servos(void)
 	  printf("Servo HEX values: %02x %02x %02x %02x %02x %02x %02x %02x \n",
 		 send_data[0],send_data[1],send_data[2],send_data[3],
 		 send_data[4],send_data[5],send_data[6],send_data[7]);
-	  printf("Bytes sent: %i \n",send_status);
+	  printf("Bytes sent (Device %i): %i \n",device,send_status);
 	}
 
       } /* at least one servo value changed for this device */

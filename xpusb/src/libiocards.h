@@ -97,6 +97,7 @@ typedef struct {
 
   int servos[MAXSERVOS];
   int servos_old[MAXSERVOS];
+  double time_servos[MAXSERVOS];
 
   int motors[MAXMOTORS];
   int motors_old[MAXMOTORS];
