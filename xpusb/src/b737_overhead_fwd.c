@@ -1194,6 +1194,103 @@ void b737_overhead_fwd(void)
       ret = servos_output(device,3,apu_temp,0.0,100.0,200,990);
     }
 
+    
+    /* --------------- */
+    /* FUEL PUMP Panel */
+    /* --------------- */
+
+    device = 6;
+    card = 1;
+
+    int *cross_feed = link_dataref_int("laminar/B738/knobs/cross_feed_pos");
+    ret = digital_input(device,card,54,cross_feed,0);
+
+    int *fuel_pump_aft_1_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_lft1");
+    ret = digital_input(device,card,55,fuel_pump_aft_1_on,0);
+    int *fuel_pump_fwd_1_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_lft2");
+    ret = digital_input(device,card,56,fuel_pump_fwd_1_on,0);
+    int *fuel_pump_fwd_2_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_rgt2");
+    ret = digital_input(device,card,57,fuel_pump_fwd_2_on,0);
+    int *fuel_pump_aft_2_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_rgt1");
+    ret = digital_input(device,card,58,fuel_pump_aft_2_on,0);
+
+    /* use analog inputs of servo card for ctr fuel pump switches */
+    /*
+    device = 8;    
+    int *fuel_pump_ctr_1_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_ctr1");
+    ret = axis_input(device,2,&fval,0.0,1.0);
+    if (fval > 0.5) {
+     *fuel_pump_ctr_1_on = 1;
+    } else {
+     *fuel_pump_ctr_1_on = 0;
+    }
+    int *fuel_pump_ctr_2_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_ctr2");
+    ret = axis_input(device,3,&fval,0.0,1.0);
+    if (fval > 0.5) {
+     *fuel_pump_ctr_2_on = 1;
+    } else {
+     *fuel_pump_ctr_2_on = 0;
+    }
+    */
+
+    device = 6;
+    card = 0;
+
+    float *eng_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/eng1_valve_closed",-1);
+    ival = 0;
+    if (*eng_valve_closed_1 >= 0.5) ival = 2;
+    if (*eng_valve_closed_1 == 1.0) ival = 1;
+    ret = mastercard_display(device,card,51,1,&ival,0);
+    
+    float *spar_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/spar1_valve_closed",-1);
+    ival = 0;
+    if (*spar_valve_closed_1 >= 0.5) ival = 2;
+    if (*spar_valve_closed_1 == 1.0) ival = 1;
+    ret = mastercard_display(device,card,52,1,&ival,0);
+    
+    float *bypass_filter_1 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_1",-1);
+    ival = 0;
+    if (*bypass_filter_1 >= 0.5) ival = 2;
+    if (*bypass_filter_1 == 1.0) ival = 1;
+    ret = mastercard_display(device,card,53,1,&ival,0);
+    
+    float *eng_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/eng2_valve_closed",-1);
+    ival = 0;
+    if (*eng_valve_closed_2 >= 0.5) ival = 2;
+    if (*eng_valve_closed_2 == 1.0) ival = 1;
+    ret = mastercard_display(device,card,54,1,&ival,0);
+    
+    float *spar_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/spar2_valve_closed",-1);
+    ival = 0;
+    if (*spar_valve_closed_2 >= 0.5) ival = 2;
+    if (*spar_valve_closed_2 == 1.0) ival = 1;
+    ret = mastercard_display(device,card,55,1,&ival,0);
+    
+    float *bypass_filter_2 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_2",-1);
+    ival = 0;
+    if (*bypass_filter_2 >= 0.5) ival = 2;
+    if (*bypass_filter_2 == 1.0) ival = 1;
+    ret = mastercard_display(device,card,56,1,&ival,0);
+    
+    float *cross_feed_valve = link_dataref_flt("laminar/B738/fuel/cross_feed_valve",-1);
+    ival = 0;
+    if (*cross_feed_valve >= 0.5) ival = 2;
+    if (*cross_feed_valve == 1.0) ival = 1;
+    ret = mastercard_display(device,card,57,1,&ival,0);
+    
+    int *low_press_ctr_1 = link_dataref_int("laminar/B738/annunciator/low_fuel_press_c1");
+    ret = mastercard_display(device,card,58,1,low_press_ctr_1,0);
+    int *low_press_ctr_2 = link_dataref_int("laminar/B738/annunciator/low_fuel_press_c2");
+    ret = mastercard_display(device,card,59,1,low_press_ctr_2,0);
+    int *low_press_aft_1 = link_dataref_int("laminar/B738/annunciator/low_fuel_press_l1");
+    ret = mastercard_display(device,card,60,1,low_press_aft_1,0);
+    int *low_press_fwd_1 = link_dataref_int("laminar/B738/annunciator/low_fuel_press_l2");
+    ret = mastercard_display(device,card,61,1,low_press_fwd_1,0);
+    int *low_press_fwd_2 = link_dataref_int("laminar/B738/annunciator/low_fuel_press_r2");
+    ret = mastercard_display(device,card,62,1,low_press_fwd_2,0);
+    int *low_press_aft_2 = link_dataref_int("laminar/B738/annunciator/low_fuel_press_r1");
+    ret = mastercard_display(device,card,63,1,low_press_aft_2,0);
+    
   }
     
 }

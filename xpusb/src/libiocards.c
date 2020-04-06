@@ -1051,8 +1051,6 @@ int send_mastercard(void)
     /* check if we have a connected and initialized mastercard */
     if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 1)) {
 
-      /* TODO: check if outputs and displays work with multiple cards */
-
       /* fill send data with output information */
       for (card=0;card<iocard[device].ncards;card++) {
 
