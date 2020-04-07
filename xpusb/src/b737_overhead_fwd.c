@@ -140,7 +140,7 @@ void b737_overhead_fwd(void)
     /* Circuit Breaker Light Potentiometer: used to test Servos for now */
     /* Panel Potentiometer is directly wired to the Overhead Backlighting */
     float servoval = 0.0;
-    int servotest = 0; /* set to 1 for testing servos by using the potentiometer below */
+    int servotest = 1; /* set to 1 for testing servos by using the potentiometer below */
     if (servotest == 1) {
       ret = axis_input(device,3,&servoval,0.0,1.0);
       if (ret == 1) {
@@ -490,15 +490,13 @@ void b737_overhead_fwd(void)
     if ((ret == 1) && (ival == 1)) air_valve_ctrl_pos = 2;
     ret = set_state_updn(&air_valve_ctrl_pos,air_valve_ctrl,air_valve_ctrl_right,air_valve_ctrl_left);
 
-    /*
     device = 8;
     float *outflow_valve = link_dataref_flt("laminar/B738/outflow_valve",-2);
     if (servotest == 1) {
       ret = servos_output(device,0,&servoval,0.0,1.0,500,900);
     } else {
-      ret = servos_output(device,0,outflow_valve,0.0,1.0,425,825);
+      ret = servos_output(device,0,outflow_valve,0.0,1.0,500,900);
     }
-    */
       
     
     /* ---------------- */
@@ -579,18 +577,17 @@ void b737_overhead_fwd(void)
     int *manual_press = link_dataref_int("laminar/B738/annunciator/manual_press");
     ret = digital_output(device,card,24,manual_press);
 
-    /*
     device = 8;
     float *duct_press_left = link_dataref_flt("laminar/B738/indicators/duct_press_L",0);
     float *duct_press_right = link_dataref_flt("laminar/B738/indicators/duct_press_R",0);
     if (servotest == 1) {
-      ret = servos_output(device,1,&servoval,0.0,1.0,130,950);
-      ret = servos_output(device,2,&servoval,0.0,1.0,130,950);
+      ret = servos_output(device,1,&servoval,0.0,1.0,200,1000);
+      ret = servos_output(device,2,&servoval,0.0,1.0,200,1023);
     } else {
-      ret = servos_output(device,1,duct_press_left,0.0,80.0,130,950);
-      ret = servos_output(device,2,duct_press_right,0.0,80.0,130,950);
+      ret = servos_output(device,1,duct_press_left,0.0,75.0,200,1000);
+      ret = servos_output(device,2,duct_press_right,0.0,75.0,200,1023);
     }
-    */
+    
       
     /* ----------------- */
     /* TEMPERATURE Panel */
@@ -622,15 +619,13 @@ void b737_overhead_fwd(void)
     if (ival == 1) *air_temp_source = 6; // PACK L
 
     /* Zone Temp Gauge */
-    /*
     device = 8;
     float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",-1);
     if (servotest == 1) {
-      ret = servos_output(device,3,&servoval,0.0,1.0,160,1023);
+      ret = servos_output(device,3,&servoval,0.0,1.0,210,1023);
     } else {
-      ret = servos_output(device,3,zone_temp,0.0,97.0,160,1023);
+      ret = servos_output(device,3,zone_temp,0.0,90.0,210,1023);
     }
-    */
       
     /* Yellow Annunciators */
     device = 6;
@@ -677,11 +672,11 @@ void b737_overhead_fwd(void)
     if (servotest == 1) {
       ret = servos_output(device,0,&servoval,0.0,1.0,200,1023);
       ret = servos_output(device,1,&servoval,0.0,1.0,210,1023);
-      ret = servos_output(device,2,&servoval,0.0,1.0,200,950);
+      ret = servos_output(device,2,&servoval,0.0,1.0,200,900);
     } else {
       ret = servos_output(device,0,cabin_altitude,0.0,27000.0,200,1023);
       ret = servos_output(device,1,cabin_pressure_diff,0.0,7.0,210,1023);
-      ret = servos_output(device,2,cabin_climb,-2.0,2.5,200,950);
+      ret = servos_output(device,2,cabin_climb,-2.0,2.0,200,900);
     }
     
     /* ---------------------- */
@@ -1025,7 +1020,6 @@ void b737_overhead_fwd(void)
 
     /* Use the analog inputs of the Servo Motors Card because there are not enough digital inputs */
 
-    /*
     device = 8;
     int *drive_discon_1_up = link_dataref_cmd_once("laminar/B738/one_way_switch/drive_disconnect1");
     int *drive_discon_1_dn = link_dataref_cmd_once("laminar/B738/one_way_switch/drive_disconnect1_off");
@@ -1050,7 +1044,6 @@ void b737_overhead_fwd(void)
     if (ret != 0) {
       printf("Drive Disconnect 2 %i \n",drive_discon_2_pos);
     }
-    */
 
     device = 6;
     card = 1;
@@ -1215,23 +1208,29 @@ void b737_overhead_fwd(void)
     ret = digital_input(device,card,58,fuel_pump_aft_2_on,0);
 
     /* use analog inputs of servo card for ctr fuel pump switches */
-    /*
     device = 8;    
     int *fuel_pump_ctr_1_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_ctr1");
     ret = axis_input(device,2,&fval,0.0,1.0);
-    if (fval > 0.5) {
+    if (fval < 0.5) {
      *fuel_pump_ctr_1_on = 1;
     } else {
      *fuel_pump_ctr_1_on = 0;
     }
     int *fuel_pump_ctr_2_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_ctr2");
     ret = axis_input(device,3,&fval,0.0,1.0);
-    if (fval > 0.5) {
+    if (fval < 0.5) {
      *fuel_pump_ctr_2_on = 1;
     } else {
      *fuel_pump_ctr_2_on = 0;
     }
-    */
+
+    float *fuel_temp = link_dataref_flt("xpserver/fuel_temp",0);
+    if (servotest == 1) {
+      ret = servos_output(device,4,&servoval,0.0,1.0,200,975);
+    } else {
+      ret = servos_output(device,4,fuel_temp,-50.0,50.0,200,975);
+    }
+      
 
     device = 6;
     card = 0;
@@ -1290,6 +1289,34 @@ void b737_overhead_fwd(void)
     ret = mastercard_display(device,card,62,1,low_press_fwd_2,0);
     int *low_press_aft_2 = link_dataref_int("laminar/B738/annunciator/low_fuel_press_r1");
     ret = mastercard_display(device,card,63,1,low_press_aft_2,0);
+
+    
+    /* ------------------ */
+    /* NAV / DISP CONTROL */
+    /* ------------------ */
+
+    device = 6;
+    card = 1;
+
+    int *vhf_nav_source = link_dataref_int("laminar/B738/toggle_switch/vhf_nav_source");
+    ret = digital_input(device,card,59,&ival,0);
+    ret = digital_input(device,card,60,&ival2,0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *vhf_nav_source = ival - ival2;
+    
+    int *irs_source = link_dataref_int("laminar/B738/toggle_switch/irs_source");
+    ret = digital_input(device,card,61,&ival,0);
+    ret = digital_input(device,card,62,&ival2,0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *irs_source = ival - ival2;
+    
+    int *display_source = link_dataref_int("laminar/B738/toggle_switch/dspl_source");
+    ret = digital_input(device,card,63,&ival,0);
+    ret = digital_input(device,card,64,&ival2,0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *display_source = ival2 - ival;
+    
+    int *control_panel_source = link_dataref_int("laminar/B738/toggle_switch/dspl_ctrl_pnl");
+    ret = digital_input(device,card,65,&ival,0);
+    ret = digital_input(device,card,66,&ival2,0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *control_panel_source = ival - ival2;
     
   }
     
