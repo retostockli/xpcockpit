@@ -38,6 +38,8 @@ int r_eng_start_pos;
 int air_valve_ctrl_pos;
 int l_wiper_pos;
 int r_wiper_pos;
+int flt_ctrl_A_pos;
+int flt_ctrl_B_pos;
 
 int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
 {
@@ -630,7 +632,9 @@ void b737_overhead_fwd(void)
     /* Yellow Annunciators */
     device = 6;
     card = 0;
-    ival = 1;
+    ival = 0;
+    if ((*lights_test == 1) && (*battery == 1)) ival = 1;
+
     /* CONT CAB ZONE TEMP ANNUNCIATOR */
     ret = digital_output(device,card,25,&ival);
     /* FWD CAB ZONE TEMP ANNUNCIATOR */
@@ -990,8 +994,10 @@ void b737_overhead_fwd(void)
 
     /* Emergency Exit Lights NOT ARMED */
     ival = 0;
-    if ((*exit_lights == 0) || (*exit_lights == 2)) ival = 1;
-    if (*lights_test == 1) ival = 1;
+    if (*battery == 1) {
+      if ((*exit_lights == 0) || (*exit_lights == 2)) ival = 1;
+      if (*lights_test == 1) ival = 1;
+    }
     ret = digital_output(device,card,27,&ival);
 
     /* EQUIP COOLING SUPPLY OFF */
@@ -1069,10 +1075,10 @@ void b737_overhead_fwd(void)
 
     device = 6;
     card = 1;
-    int *grd_pwr_switch = link_dataref_int("laminar/B738/electrical/gpu_pos");
-    ret = digital_input(device,card,38,&ival,0);
-    ret = digital_input(device,card,39,&ival2,0);
-    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *grd_pwr_switch = ival - ival2;
+    int *grd_pwr_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/gpu_up");
+    int *grd_pwr_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/gpu_dn");
+    ret = digital_input(device,card,38,grd_pwr_dn,0);
+    ret = digital_input(device,card,39,grd_pwr_up,0);
    
     int *l_wiper_up = link_dataref_cmd_once("laminar/B738/knob/left_wiper_up");
     int *l_wiper_dn = link_dataref_cmd_once("laminar/B738/knob/left_wiper_dn");
@@ -1196,10 +1202,10 @@ void b737_overhead_fwd(void)
     card = 1;
 
     int *cross_feed = link_dataref_int("laminar/B738/knobs/cross_feed_pos");
-    ret = digital_input(device,card,54,cross_feed,0);
+    ret = digital_input(device,card,44,cross_feed,0);
 
     int *fuel_pump_aft_1_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_lft1");
-    ret = digital_input(device,card,55,fuel_pump_aft_1_on,0);
+    ret = digital_input(device,card,67,fuel_pump_aft_1_on,0);
     int *fuel_pump_fwd_1_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_lft2");
     ret = digital_input(device,card,56,fuel_pump_fwd_1_on,0);
     int *fuel_pump_fwd_2_on = link_dataref_int("laminar/B738/fuel/fuel_tank_pos_rgt2");
@@ -1305,7 +1311,9 @@ void b737_overhead_fwd(void)
     
     int *irs_source = link_dataref_int("laminar/B738/toggle_switch/irs_source");
     ret = digital_input(device,card,61,&ival,0);
+    if (ret == 1) printf("1 %i \n",ival);
     ret = digital_input(device,card,62,&ival2,0);
+    if (ret == 1) printf("2 %i \n",ival2);
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) *irs_source = ival - ival2;
     
     int *display_source = link_dataref_int("laminar/B738/toggle_switch/dspl_source");
@@ -1317,6 +1325,114 @@ void b737_overhead_fwd(void)
     ret = digital_input(device,card,65,&ival,0);
     ret = digital_input(device,card,66,&ival2,0);
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) *control_panel_source = ival - ival2;
+    
+    /* ------------------ */
+    /* ALT FLT CTRL Panel */
+    /* ------------=----- */
+
+    device = 6;
+    card = 1;
+    int *alt_flaps_ctrl_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/alt_flaps_ctrl_up");
+    int *alt_flaps_ctrl_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/alt_flaps_ctrl_dn");
+    ret = digital_input(device,card,54,alt_flaps_ctrl_dn,0);
+    ret = digital_input(device,card,55,alt_flaps_ctrl_up,0);
+
+    int *flt_ctrl_A_up = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_ctr_A_up");
+    int *flt_ctrl_A_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_ctr_A_dn");
+    int *flt_ctrl_A = link_dataref_int("laminar/B738/switches/flt_ctr_A_pos");
+    flt_ctrl_A_pos = 0;
+    ret = digital_input(device,card,68,&ival,0);
+    if (ival == 1) flt_ctrl_A_pos = 1;
+    ret = digital_input(device,card,69,&ival,0);
+    if (ival == 1) flt_ctrl_A_pos = -1;
+    ret = set_state_updn(&flt_ctrl_A_pos,flt_ctrl_A,flt_ctrl_A_dn,flt_ctrl_A_up);
+    if (ret != 0) {
+      printf("FLT CTRL A %i \n",flt_ctrl_A_pos);
+    }
+
+    int *flt_ctrl_B_up = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_ctr_B_up");
+    int *flt_ctrl_B_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_ctr_B_dn");
+    int *flt_ctrl_B = link_dataref_int("laminar/B738/switches/flt_ctr_B_pos");
+    flt_ctrl_B_pos = 0;
+    ret = digital_input(device,card,70,&ival,0);
+    if (ival == 1) flt_ctrl_B_pos = 1;
+    ret = digital_input(device,card,71,&ival,0);
+    if (ival == 1) flt_ctrl_B_pos = -1;
+    ret = set_state_updn(&flt_ctrl_B_pos,flt_ctrl_B,flt_ctrl_B_dn,flt_ctrl_B_up);
+    if (ret != 0) {
+      printf("FLT CTRL B %i \n",flt_ctrl_B_pos);
+    }
+
+
+    /* spillover digital inputs routed through analog inputs of servo card */
+    device = 7;
+    
+    int *alt_flaps_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps");
+    int *alt_flaps = link_dataref_int("laminar/B738/switches/alt_flaps_pos");
+    int alt_flaps_pos = 0;
+    ret = axis_input(device,0,&fval,0.0,1.0);
+    if (fval < 0.5) alt_flaps_pos = 1;
+    ret = set_state_toggle(&alt_flaps_pos,alt_flaps,alt_flaps_toggle);
+    if (ret != 0) {
+      printf("ALTERNATE FLAPS %i \n",alt_flaps_pos);
+    }
+
+    int *yaw_damper = link_dataref_cmd_hold("laminar/B738/toggle_switch/yaw_dumper");
+    ret = axis_input(device,1,&fval,0.0,1.0);
+    if (fval < 0.5) { *yaw_damper = 1; } else { *yaw_damper = 0; };
+
+    int *spoiler_A_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_A");
+    int *spoiler_A = link_dataref_int("laminar/B738/switches/spoiler_A_pos");
+    int spoiler_A_pos = 0;
+    ret = axis_input(device,2,&fval,0.0,1.0);
+    if (fval < 0.5) spoiler_A_pos = 1;
+    ret = set_state_toggle(&spoiler_A_pos,spoiler_A,spoiler_A_toggle);
+    if (ret != 0) {
+      printf("SPOILER A %i \n",spoiler_A_pos);
+    }
+
+    int *spoiler_B_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_B");
+    int *spoiler_B = link_dataref_int("laminar/B738/switches/spoiler_B_pos");
+    int spoiler_B_pos = 0;
+    ret = axis_input(device,3,&fval,0.0,1.0);
+    if (fval < 0.5) spoiler_B_pos = 1;
+    ret = set_state_toggle(&spoiler_B_pos,spoiler_B,spoiler_B_toggle);
+    if (ret != 0) {
+      printf("SPOILER B %i \n",spoiler_B_pos);
+    }
+
+    device = 6;
+    card = 1;
+
+    ival = 0;
+    if ((*lights_test == 1) && (*battery == 1)) ival = 1;
+    /* STDBY HYDRAULICS Hydraulic Quantity */
+    ret = digital_output(device,card,35,&ival);
+    /* STDBY HYDRAULICS Low Pressure */
+    int *stby_hyd_press = link_dataref_int("laminar/B738/annunciator/hyd_stdby_rud");
+    ret = digital_output(device,card,36,stby_hyd_press);
+    /* STDBY HYDRAULICS Low Pressure */
+    int *stby_rud_on = link_dataref_int("laminar/B738/annunciator/std_rud_on");
+    ret = digital_output(device,card,37,stby_rud_on);
+    /* FLT CONTROL A LOW PRESSURE */
+    int *hyd_A_press = link_dataref_int("laminar/B738/annunciator/hyd_A_rud");
+    ret = digital_output(device,card,38,hyd_A_press);
+    /* FLT CONTROL B LOW PRESSURE */
+    int *hyd_B_press = link_dataref_int("laminar/B738/annunciator/hyd_B_rud");
+    ret = digital_output(device,card,39,hyd_B_press);
+    /* FEEL DIFF PRESSURE */
+    int *diff_press = link_dataref_int("laminar/B738/annunciator/feel_diff_press");
+    ret = digital_output(device,card,40,diff_press);
+    /* SPEED TRIM FAIL */
+    ret = digital_output(device,card,41,&ival);
+    /* MACH TRIM FAIL */
+    ret = digital_output(device,card,42,&ival);
+    /* AUTO SLAT FAIL */
+    int *auto_slat_fail = link_dataref_int("laminar/B738/annunciator/auto_slat_fail");
+    ret = digital_output(device,card,43,auto_slat_fail);
+    /* YAW DAMPER */
+    int *yaw_damper_on = link_dataref_int("laminar/B738/annunciator/yaw_damp");
+    ret = digital_output(device,card,44,yaw_damper_on);
     
   }
     
