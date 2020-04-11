@@ -39,8 +39,7 @@
 #define MAXMOTORS 4       /* number of DC motors in DCMotors PLUS card */
 #define MOTORPARK 0       /* park value for DC Motors */
 #define SERVOPARK 0       /* park value for servo motors (this value applies to HITEC servos) */
-//#define SERVOMIN 200      /* minimum value for servo motor (this value applies to HITEC servos) 
-#define SERVOMIN 128      /* minimum value for servo motor (this value applies to HITEC servos) */
+#define SERVOMIN 200      /* minimum value for servo motor (this value applies to HITEC servos) */
 #define SERVOMAX 1023     /* maximum value for servo motor (this value applies to HITEC servos) */
 
 /* LIBIOCARDS PARAMETERS */
