@@ -41,6 +41,7 @@ int r_wiper_pos;
 int flt_ctrl_A_pos;
 int flt_ctrl_B_pos;
 
+
 int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
 {
 
@@ -101,6 +102,26 @@ int set_state_toggle(int *new_state, int *old_state, int *toggle)
   
 }
 
+int set_switch_cover(float *switch_cover_pos, int *switch_cover_toggle, int on)
+{
+  /* open or close switch covers in ZIBO mod. They are animated, so
+     assume it is open as soon as the floating point value is > 0 or
+     assume it is closed as soon as the floating point value is < 1 */
+  int value;
+  if (*switch_cover_pos != FLT_MISS) {
+    if (on == 1) {
+      value = *switch_cover_pos > 0.0;
+    } else {
+      value = *switch_cover_pos == 1.0;
+    }
+  } else {
+    value = INT_MISS;
+  }
+
+  return set_state_toggle(&on,&value,switch_cover_toggle);
+
+}
+
 void b737_overhead_fwd(void)
 {
   int ret;
@@ -109,8 +130,14 @@ void b737_overhead_fwd(void)
   float fval;
   int device = 6;
   int card = 0;
-  char buffer[100];
 
+  /* Switch Covers and related switch states*/
+  char buffer[100];
+  int cover;
+  int ncover;
+  int battery_switch_pos;
+   
+    
   /* device list */
   int mastercard = 6;
   int servo1 = 7;
@@ -121,61 +148,11 @@ void b737_overhead_fwd(void)
     
     int *lights_test = link_dataref_int("laminar/B738/annunciator/test");
 
-    /* Open SWITCH COVERS (Guards) in the airplane so that we can freely move HW switches */
-    int ncover = 11;
-    float *switch_cover = link_dataref_flt_arr("laminar/B738/button_switch/cover_position",ncover,-1,-3);
+    /* set datarefs to switch cover positions */
+    /* need to know those for driving battery switch */
+    ncover = 11;
     int *switch_cover_toggle;
-    for (int i=0;i<ncover;i++) {
-      sprintf(buffer, "laminar/B738/button_switch_cover%02d", i);
-      switch_cover_toggle = link_dataref_cmd_once(buffer);
-      ival = 1;
-      if (switch_cover[i] != FLT_MISS) {
-	if (ival == 1) {
-	  ival2 = switch_cover[i] > 0.0;
-	} else {
-	  ival2 = switch_cover[i] == 1.0;
-	}
-      } else {
-	ival2 = INT_MISS;
-      }
-      ret = set_state_toggle(&ival,&ival2,switch_cover_toggle);
-      if (ret != 0) {
-	printf("Switch Cover %i value %i \n",i,ival);
-      }
-    }
-
-    ncover = 5;
-    char *switch_cover2[5] = {"laminar/B738/switches/alt_flaps_cover_pos",
-			      "laminar/B738/switches/flt_ctr_A_cover_pos",
-			      "laminar/B738/switches/flt_ctr_B_cover_pos",
-			      "laminar/B738/switches/spoiler_A_cover_pos",
-			      "laminar/B738/switches/spoiler_B_cover_pos"};
-    char *switch_cover_toggle2[5] = {"laminar/B738/toggle_switch/alt_flaps_cover",
-				     "laminar/B738/toggle_switch/flt_ctr_A_cover",
-				     "laminar/B738/toggle_switch/flt_ctr_B_cover",
-				     "laminar/B738/toggle_switch/spoiler_A_cover",
-				     "laminar/B738/toggle_switch/spoiler_B_cover"};
-    for (int i=0;i<ncover;i++) {
-      switch_cover = link_dataref_flt(switch_cover2[i],-3);
-      switch_cover_toggle = link_dataref_cmd_once(switch_cover_toggle2[i]);
-      ival = 1;
-      if (*switch_cover != FLT_MISS) {
-	if (ival == 1) {
-	  ival2 = *switch_cover > 0.0;
-	} else {
-	  ival2 = *switch_cover == 1.0;
-	}
-      } else {
-	ival2 = INT_MISS;
-      }
-      ret = set_state_toggle(&ival,&ival2,switch_cover_toggle);
-      if (ret != 0) {
-	printf("Switch Cover %i value %i \n",i,ival);
-      }
-    }
-
-    
-    
+    float *switch_cover_pos = link_dataref_flt_arr("laminar/B738/button_switch/cover_position",ncover,-1,-3);
 
     /* Circuit Breaker Light Potentiometer: used to test Servos for now */
     /* Panel Potentiometer is directly wired to the Overhead Backlighting */
@@ -203,11 +180,16 @@ void b737_overhead_fwd(void)
     int *battery = link_dataref_int("laminar/B738/electric/battery_pos");
     ret = digital_input(device,card,8,&ival,0);
     if (ival != INT_MISS) ival = 1 - ival;
-    ret = set_state_updn(&ival,battery,battery_dn,battery_up);
-    if (ret != 0) {
-      printf("Battery Switch %i \n",ival);
+    battery_switch_pos = ival; // store battery switch state for opening and closing the switch 
+    cover=2; // battery switch cover number
+    if (((ival == 0) && (switch_cover_pos[cover] == 1.0)) ||
+	((ival == 1) && (switch_cover_pos[cover] == 0.0))) {
+      ret = set_state_updn(&ival,battery,battery_dn,battery_up);
+      if (ret != 0) {
+	printf("Battery Switch %i %f \n",ival,switch_cover_pos[cover]);
+      }
     }
-
+ 
     /* DC Power Knob */
     int *dc_power_up = link_dataref_cmd_once("laminar/B738/knob/dc_power_up");
     int *dc_power_dn = link_dataref_cmd_once("laminar/B738/knob/dc_power_dn");
@@ -1011,7 +993,7 @@ void b737_overhead_fwd(void)
     if (ret == 1) {
       printf("EMERGENCY Exit Lights OFF: %i \n",ival2);
     }
-    if ((ival != INT_MISS) && (ival2 != INT_MISS)) ival = ival*2 + (1-ival2);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) ival = (2-ival) * (1-ival2);
     ret = set_state_updn(&ival,exit_lights,exit_lights_dn,exit_lights_up);
 
     int *grd_call = link_dataref_cmd_hold("laminar/B738/push_button/grd_call");
@@ -1079,7 +1061,7 @@ void b737_overhead_fwd(void)
 
     int drive_discon_1_pos = 0;
     ret = axis_input(device,0,&fval,0.0,1.0);
-    if (fval > 0.5) drive_discon_1_pos = 1;
+    if (fval < 0.5) drive_discon_1_pos = 1;
     ret = set_state_updn(&drive_discon_1_pos,drive_discon_1,drive_discon_1_up,drive_discon_1_dn);
     if (ret != 0) {
       printf("Drive Disconnect 1 %i \n",drive_discon_1_pos);
@@ -1091,7 +1073,7 @@ void b737_overhead_fwd(void)
 
     int drive_discon_2_pos = 0;
     ret = axis_input(device,1,&fval,0.0,1.0);
-    if (fval > 0.5) drive_discon_2_pos = 1;
+    if (fval < 0.5) drive_discon_2_pos = 1;
     ret = set_state_updn(&drive_discon_2_pos,drive_discon_2,drive_discon_2_up,drive_discon_2_dn);
     if (ret != 0) {
       printf("Drive Disconnect 2 %i \n",drive_discon_2_pos);
@@ -1148,25 +1130,25 @@ void b737_overhead_fwd(void)
     ret = digital_input(device,card,45,&ival,0);
     if (ival != INT_MISS) *bus_transfer = 1-ival;
     
-    int *gen1_switch = link_dataref_int("laminar/B738/electrical/gen1_pos");
-    ret = digital_input(device,card,46,&ival,0);
-    ret = digital_input(device,card,47,&ival2,0);
-    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *gen1_switch = ival - ival2;
+    int *gen1_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen1_up");
+    int *gen1_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen1_dn");
+    ret = digital_input(device,card,46,gen1_switch_dn,0);
+    ret = digital_input(device,card,47,gen1_switch_up,0);
+           
+    int *apu_gen1_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/apu_gen1_up");
+    int *apu_gen1_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/apu_gen1_dn");
+    ret = digital_input(device,card,48,apu_gen1_switch_dn,0);
+    ret = digital_input(device,card,49,apu_gen1_switch_up,0);
 
-    int *apu_gen1_switch = link_dataref_int("laminar/B738/electrical/apu_gen1_pos");
-    ret = digital_input(device,card,48,&ival,0);
-    ret = digital_input(device,card,49,&ival2,0);
-    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *apu_gen1_switch = ival - ival2;
-
-    int *apu_gen2_switch = link_dataref_int("laminar/B738/electrical/apu_gen2_pos");
-    ret = digital_input(device,card,50,&ival,0);
-    ret = digital_input(device,card,51,&ival2,0);
-    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *apu_gen2_switch = ival - ival2;
-
-    int *gen2_switch = link_dataref_int("laminar/B738/electrical/gen2_pos");
-    ret = digital_input(device,card,52,&ival,0);
-    ret = digital_input(device,card,53,&ival2,0);
-    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *gen2_switch = ival - ival2;
+    int *apu_gen2_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/apu_gen2_up");
+    int *apu_gen2_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/apu_gen2_dn");
+    ret = digital_input(device,card,50,apu_gen2_switch_dn,0);
+    ret = digital_input(device,card,51,apu_gen2_switch_up,0);
+    
+    int *gen2_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen2_up");
+    int *gen2_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen2_dn");
+    ret = digital_input(device,card,52,gen2_switch_dn,0);
+    ret = digital_input(device,card,53,gen2_switch_up,0);
 
     device = mastercard;
     card = 0;
@@ -1375,7 +1357,7 @@ void b737_overhead_fwd(void)
     
     /* ------------------ */
     /* ALT FLT CTRL Panel */
-    /* ------------=----- */
+    /* ------------------ */
 
     device = mastercard;
     card = 1;
@@ -1480,7 +1462,49 @@ void b737_overhead_fwd(void)
     /* YAW DAMPER */
     int *yaw_damper_on = link_dataref_int("laminar/B738/annunciator/yaw_damp");
     ret = digital_output(device,card,44,yaw_damper_on);
-    
+
+
+    /* ------------- */
+    /* SWITCH COVERS */
+    /* ------------- */
+   
+    ncover = 11;
+    for (int cover=0;cover<ncover;cover++) {
+      /* open all covers except the battery switch cover which is linked to the battery switch position */
+      sprintf(buffer, "laminar/B738/button_switch_cover%02d", cover);
+      switch_cover_toggle = link_dataref_cmd_once(buffer);      
+      if (cover == 2) {
+	if (battery_switch_pos != INT_MISS) {
+	  ival = 1 - battery_switch_pos;
+	} else {
+	  ival = INT_MISS;
+	}
+      } else {
+	ival = 1;
+      }
+      ret = set_switch_cover(switch_cover_pos+cover,switch_cover_toggle,ival);     
+    }
+
+    ncover = 5;
+    /* set second datarefs to switch cover positions */
+    char *switch_cover_pos_name[5] = {"laminar/B738/switches/alt_flaps_cover_pos",
+			      "laminar/B738/switches/flt_ctr_A_cover_pos",
+			      "laminar/B738/switches/flt_ctr_B_cover_pos",
+			      "laminar/B738/switches/spoiler_A_cover_pos",
+			      "laminar/B738/switches/spoiler_B_cover_pos"};
+    /* set second datarefs to switch ocver commands */
+    char *switch_cover_toggle_name[5] = {"laminar/B738/toggle_switch/alt_flaps_cover",
+				     "laminar/B738/toggle_switch/flt_ctr_A_cover",
+				     "laminar/B738/toggle_switch/flt_ctr_B_cover",
+				     "laminar/B738/toggle_switch/spoiler_A_cover",
+				     "laminar/B738/toggle_switch/spoiler_B_cover"};
+    for (int cover=0;cover<ncover;cover++) {
+      switch_cover_pos = link_dataref_flt(switch_cover_pos_name[cover],-3);
+      switch_cover_toggle = link_dataref_cmd_once(switch_cover_toggle_name[cover]);
+      ival = 1;
+      ret = set_switch_cover(switch_cover_pos,switch_cover_toggle,ival);
+    }
+   
   }
     
 }

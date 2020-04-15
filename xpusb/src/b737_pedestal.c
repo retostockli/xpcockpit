@@ -226,75 +226,6 @@ void b737_pedestal(void)
   }
   float *master_volume = link_dataref_flt("sim/operation/sound/master_volume_ratio",-1);
 
-  // test for lights
-  int *beacon_lights_737;
-  float *landing_lights_lf_737;
-  float *landing_lights_rf_737;
-  float *landing_lights_lr_737;
-  float *landing_lights_rr_737;
-  int *logo_lights_737;
-  float *logo_lights_flt;
-  int *position_lights_737;
-  int *wheelwell_lights_737;
-  float *wheelwell_lights_flt;
-  float *taxi_lights_737;
-  float *taxi_lights_pos;
-  float *wing_lights_737;
-  float *rwy_turn_lights_l_737;
-  float *rwy_turn_lights_r_737;
-  float *position_lights_flt;
-  int *position_lights_up;
-  int *position_lights_dn;
-
-  int *beacon_lights;
-  int *landing_lights;
-  int *nav_lights;
-  int *strobe_lights;
-  int *taxi_lights;
-  if ((acf_type == 2) || (acf_type == 3)) {
-    //    landing_lights_lf_737 = link_dataref_flt_arr("sim/cockpit2/switches/landing_lights_switch",16,0,-1);
-    //    landing_lights_rf_737 = link_dataref_flt_arr("sim/cockpit2/switches/landing_lights_switch",16,3,-1);
-    landing_lights_lf_737 = link_dataref_flt("laminar/B738/switch/land_lights_left_pos",-1);
-    landing_lights_rf_737 = link_dataref_flt("laminar/B738/switch/land_lights_right_pos",-1);
-
-    rwy_turn_lights_l_737 = link_dataref_flt_arr("sim/cockpit2/switches/generic_lights_switch",128,2,-1);
-    rwy_turn_lights_r_737 = link_dataref_flt_arr("sim/cockpit2/switches/generic_lights_switch",128,3,-1);
-
-    logo_lights_flt = link_dataref_flt_arr("sim/cockpit2/switches/generic_lights_switch",128,1,-1);    
-    beacon_lights = link_dataref_int("sim/cockpit/electrical/beacon_lights_on");
-    nav_lights = link_dataref_int("sim/cockpit/electrical/nav_lights_on");
-    position_lights_flt = link_dataref_flt("laminar/B738/toggle_switch/position_light_pos",-1);
-    position_lights_up = link_dataref_cmd_once("laminar/B738/toggle_switch/position_light_up");
-    position_lights_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/position_light_down");
-    *position_lights_up = 0;
-    *position_lights_dn = 0;
-
-    wing_lights_737 = link_dataref_flt_arr("sim/cockpit2/switches/generic_lights_switch",128,0,-1);
-    wheelwell_lights_flt = link_dataref_flt_arr("sim/cockpit2/switches/generic_lights_switch",128,5,-1);
-
-    taxi_lights = link_dataref_cmd_once("laminar/B738/toggle_switch/taxi_light_brigh_toggle");
-    *taxi_lights = 0;
-    taxi_lights_pos = link_dataref_flt("laminar/B738/toggle_switch/taxi_light_brightness_pos",-1);
-  } else if (acf_type == 1) {
-    beacon_lights_737 = link_dataref_int("x737/systems/exteriorLights/beaconLightSwitch");
-    landing_lights_lf_737 = link_dataref_flt("x737/systems/exteriorLights/leftFixedLanLtSwitch",-2);
-    landing_lights_rf_737 = link_dataref_flt("x737/systems/exteriorLights/rightFixedLanLtSwitch",-2);
-    landing_lights_lr_737 = link_dataref_flt("x737/systems/exteriorLights/leftRetrLanLtSwitch",-2);
-    landing_lights_rr_737 = link_dataref_flt("x737/systems/exteriorLights/rightRetrLanLtSwitch",-2);
-    logo_lights_737 = link_dataref_int("x737/systems/exteriorLights/logoLightSwitch");
-    position_lights_737 = link_dataref_int("x737/systems/exteriorLights/positionLightSwitch");
-    wheelwell_lights_737 = link_dataref_int("x737/systems/exteriorLights/wheelWellLightsSwitch");
-    taxi_lights_737 = link_dataref_flt("x737/systems/exteriorLights/taxiLightsSwitch",-2);
-    wing_lights_737 = link_dataref_flt("x737/systems/exteriorLights/wingLightsSwitch",-2);
-  } else {
-    beacon_lights = link_dataref_int("sim/cockpit/electrical/beacon_lights_on");
-    landing_lights = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
-    nav_lights = link_dataref_int("sim/cockpit/electrical/nav_lights_on");
-    strobe_lights = link_dataref_int("sim/cockpit/electrical/strobe_lights_on");
-    taxi_lights = link_dataref_int("sim/cockpit/electrical/taxi_light_on");
-  }
-    
-
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
   // test for tail hook (fighter, carrier)
@@ -402,10 +333,24 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("SELCAL HF2 button: %i \n",*hf2);
   }
+  /*
+  if ((acf_type == 2) || (acf_type == 3)) {
+    int *irs_r = link_dataref_int("laminar/B738/toggle_switch/irs_right");
+    if (*hf2 != INT_MISS) *irs_r = 2* *hf2;
+  }
+  */
+  
   ret = digital_input(device,card,57,hf1,1);
   if (ret == 1) {
     printf("SELCAL HF1 button: %i \n",*hf1);
   }
+  /*
+  if ((acf_type == 2) || (acf_type == 3)) {
+    int *irs_l = link_dataref_int("laminar/B738/toggle_switch/irs_left");
+    if (*hf1 != INT_MISS) *irs_l = 2* *hf1;
+  }
+  */
+
   ret = digital_input(device,card,58,vhf3,1);
   if (ret == 1) {
     printf("SELCAL VHF3 button: %i \n",*vhf3);
@@ -419,46 +364,6 @@ void b737_pedestal(void)
     printf("SELCAL VHF1 button: %i \n",*vhf1);
   }
 
-  // assign vhf/hf buttons to light switches
-  if ((acf_type == 2) || (acf_type == 3)) {
-    *landing_lights_lf_737 = (float) *vhf1;
-    *landing_lights_rf_737 = (float) *vhf1;
-    *rwy_turn_lights_l_737 = (float) *vhf2;
-    *rwy_turn_lights_r_737 = (float) *vhf2;
-    if (*vhf3 != *taxi_lights_pos/2) {
-      *taxi_lights = 1;
-    }
-    *logo_lights_flt = (float) *hf2;
-    *beacon_lights = *hf1;
-    *nav_lights = *hf1;
-    if (*hf1 > *position_lights_flt) {
-      *position_lights_up = 1;
-    }
-    if (*hf1 < *position_lights_flt) {
-      *position_lights_dn = 1;
-    }
-
-    *wing_lights_737 = (float) *hf2;
-    *wheelwell_lights_flt = (float) *vhf3;
-    
-  } else if (acf_type == 1) {
-    *beacon_lights_737 = *hf1;
-    *landing_lights_lf_737 = (float) *vhf1;
-    *landing_lights_rf_737 = (float) *vhf1;
-    *landing_lights_lr_737 = (float) 2 * *vhf1;
-    *landing_lights_rr_737 = (float) 2 * *vhf1;
-    *logo_lights_737 = *hf2;
-    *position_lights_737 = *hf1;
-    *wheelwell_lights_737 = *hf2;
-    *taxi_lights_737 = (float) *vhf3;
-    *wing_lights_737 = (float) *hf2;
-  } else {
-    *beacon_lights = *hf1;
-    *landing_lights = *vhf1;
-    *nav_lights = *hf1;
-    *strobe_lights = *hf1;
-    *taxi_lights = *vhf3;
-  }
   ret = digital_input(device,card,55,&test,0);
   if (ret == 1) {
     printf("WX Radar Switch: %i \n",test);

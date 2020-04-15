@@ -129,7 +129,7 @@ int main (int argc, char **argv)
 	b737_mcp();
 	b737_throttle();
 	b737_yokerudder();
-	//b737_overhead_fwd();
+	b737_overhead_fwd();
       }
       if (strcmp("boeing737yokerudder",*argv) == 0) {
 	b737_yokerudder();
