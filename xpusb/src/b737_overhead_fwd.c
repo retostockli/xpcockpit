@@ -609,7 +609,7 @@ void b737_overhead_fwd(void)
       ret = servos_output(device,1,duct_press_left,0.0,75.0,200,1000);
       ret = servos_output(device,2,duct_press_right,0.0,75.0,200,1023);
     }
-    
+
       
     /* ----------------- */
     /* TEMPERATURE Panel */
@@ -700,7 +700,7 @@ void b737_overhead_fwd(void)
     } else {
       ret = servos_output(device,0,cabin_altitude,0.0,27000.0,200,1023);
       ret = servos_output(device,1,cabin_pressure_diff,0.0,7.0,210,1023);
-      ret = servos_output(device,2,cabin_climb,-1.8,1.8,200,860);
+      ret = servos_output(device,2,cabin_climb,-1800.,1800.,200,860);
     }
     
     /* ---------------------- */
@@ -1129,7 +1129,7 @@ void b737_overhead_fwd(void)
     int *bus_transfer = link_dataref_int("sim/cockpit2/electrical/cross_tie");
     ret = digital_input(device,card,45,&ival,0);
     if (ival != INT_MISS) *bus_transfer = 1-ival;
-    
+
     int *gen1_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen1_up");
     int *gen1_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen1_dn");
     ret = digital_input(device,card,46,gen1_switch_dn,0);
@@ -1220,7 +1220,6 @@ void b737_overhead_fwd(void)
     } else {
       ret = servos_output(device,3,apu_temp,0.0,100.0,200,990);
     }
-
     
     /* --------------- */
     /* FUEL PUMP Panel */
@@ -1462,7 +1461,6 @@ void b737_overhead_fwd(void)
     /* YAW DAMPER */
     int *yaw_damper_on = link_dataref_int("laminar/B738/annunciator/yaw_damp");
     ret = digital_output(device,card,44,yaw_damper_on);
-
 
     /* ------------- */
     /* SWITCH COVERS */

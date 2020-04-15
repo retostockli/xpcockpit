@@ -327,29 +327,34 @@ void b737_pedestal(void)
   if (*vhf1 == INT_MISS) *vhf1 = 0;
   if (*vhf2 == INT_MISS) *vhf2 = 0;
   if (*vhf3 == INT_MISS) *vhf3 = 0;
+
+  /*
   if (*hf1 == INT_MISS) *hf1 = 0;
   if (*hf2 == INT_MISS) *hf2 = 0;
-  ret = digital_input(device,card,56,hf2,1);
+  */
+  ret = digital_input(device,card,56,hf2,0);
   if (ret == 1) {
     printf("SELCAL HF2 button: %i \n",*hf2);
   }
-  /*
   if ((acf_type == 2) || (acf_type == 3)) {
-    int *irs_r = link_dataref_int("laminar/B738/toggle_switch/irs_right");
-    if (*hf2 != INT_MISS) *irs_r = 2* *hf2;
   }
-  */
   
-  ret = digital_input(device,card,57,hf1,1);
+  ret = digital_input(device,card,57,hf1,0);
   if (ret == 1) {
     printf("SELCAL HF1 button: %i \n",*hf1);
   }
-  /*
   if ((acf_type == 2) || (acf_type == 3)) {
-    int *irs_l = link_dataref_int("laminar/B738/toggle_switch/irs_left");
-    if (*hf1 != INT_MISS) *irs_l = 2* *hf1;
+    int *irs_l_left = link_dataref_cmd_hold("laminar/B738/toggle_switch/irs_L_left");
+    int *irs_l_right = link_dataref_cmd_hold("laminar/B738/toggle_switch/irs_L_right");
+    int *irs_r_left = link_dataref_cmd_hold("laminar/B738/toggle_switch/irs_R_left");
+    int *irs_r_right = link_dataref_cmd_hold("laminar/B738/toggle_switch/irs_R_right");
+    if ((*hf1 != INT_MISS) && (*hf2 != INT_MISS)) {
+      *irs_l_left = *hf1;
+      *irs_l_right = *hf2;
+      *irs_r_left = *hf1;
+      *irs_r_right = *hf2;
+    }
   }
-  */
 
   ret = digital_input(device,card,58,vhf3,1);
   if (ret == 1) {
