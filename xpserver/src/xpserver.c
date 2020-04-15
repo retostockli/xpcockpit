@@ -117,8 +117,6 @@ PLUGIN_API int XPluginStart(
     verbose = default_verbose;
   }
 
-  timeout.tv_sec = 0;		//no timeout!
-  timeout.tv_usec = 0;		//no timeout!
   FD_ZERO(&socketSetRead);
   FD_ZERO(&socketSetMaster);
 
@@ -332,6 +330,9 @@ float	xpserverLoopCallback(
   int on =  1;
 
   int clntSock;
+  struct timeval timeout = {0}; /* TCP/IP Timeout parameters */
+  timeout.tv_sec = 0;		//no timeout!
+  timeout.tv_usec = 0;		//no timeout!
 
   /* copy Master into temporary file descriptor list */
   socketSetRead = socketSetMaster;

@@ -360,6 +360,9 @@ namespace OpenGC
 		  // regular route
 		  glColor3ub(255, 0, 200);
 		}
+		
+		// holds are legs_pth "HA" or "HF" or "HM"
+		// hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
 
 		if ((wpt[max(i-1,0)].rad_ctr_lon != 0.0) && (wpt[max(i-1,0)].rad_ctr_lat != 0.0)) {
 		  // draw curved track from waypoint i-1 to waypoint i

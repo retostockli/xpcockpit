@@ -22,7 +22,6 @@
 /* TCP/IP server/client definitions */
 struct sockaddr_in echoServAddr;    /* Local address */
 struct sockaddr_in echoClntAddr;    /* Client address */
-struct timeval timeout;             /* TCP/IP Timeout parameters */
 int servSock;                       /* Socket descriptor for listening server */
 int servSockMax;                    /* Maximum Socket descriptor (depends on number of clients) */
 int nConnect;                       /* number of concurrent sockets connected */
