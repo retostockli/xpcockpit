@@ -109,15 +109,15 @@ am__hidls_SOURCES_DIST = hid_darwin.c hid_linux.c hidls.c
 am_hidls_OBJECTS = $(am__objects_1) hidls.$(OBJEXT)
 hidls_OBJECTS = $(am_hidls_OBJECTS)
 hidls_LDADD = $(LDADD)
-am__xpusb_SOURCES_DIST = hid_darwin.c hid_linux.c xpusb.c libiocards.c \
-	serverdata.c handleserver.c libusb_interface.c \
+am__xpusb_SOURCES_DIST = hid_darwin.c hid_linux.c common.c xpusb.c \
+	libiocards.c serverdata.c handleserver.c libusb_interface.c \
 	hidapi_interface.c dictionary.c iniparser.c iocard_test.c \
 	usbkeys_test.c usbservos_test.c dcmotorsplus_test.c \
 	bu0836_test.c check_aircraft.c b737_mcp.c b737_pedestal.c \
 	b737_throttle.c b737_efis.c b737_yokerudder.c \
 	b737_overhead_fwd.c a320_overhead.c a320_mcdu_keys.c \
 	a320_pedestal_mip.c
-am_xpusb_OBJECTS = $(am__objects_1) xpusb.$(OBJEXT) \
+am_xpusb_OBJECTS = $(am__objects_1) common.$(OBJEXT) xpusb.$(OBJEXT) \
 	libiocards.$(OBJEXT) serverdata.$(OBJEXT) \
 	handleserver.$(OBJEXT) libusb_interface.$(OBJEXT) \
 	hidapi_interface.$(OBJEXT) dictionary.$(OBJEXT) \
@@ -289,6 +289,7 @@ top_srcdir = @top_srcdir@
 
 # The Sources needed to build the programs
 xpusb_SOURCES = $(OS_SRC) \
+common.c \
 xpusb.c \
 libiocards.c \
 serverdata.c \
@@ -444,6 +445,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/b737_yokerudder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bu0836_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_aircraft.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dcmotorsplus_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dictionary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/handleserver.Po@am__quote@

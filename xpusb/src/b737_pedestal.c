@@ -212,9 +212,24 @@ void b737_pedestal(void)
   int *cargofire_test = link_dataref_int("xpserver/cargofire_test");
   int *cargofire_fault = link_dataref_int("xpserver/cargofire_fault");
   //  int *transponder_select = link_dataref_int("xpserver/transponder_select");
-  int *stab_trim_mode = link_dataref_int("xpserver/stab_trim_mode");
-  int *flt_dk_door = link_dataref_int("xpserver/flt_dk_door");
 
+
+  int *stab_trim_mode;
+  int *flt_dk_door;
+  int *lock_fail;
+  int *auto_unlk;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    stab_trim_mode = link_dataref_int("xpserver/stab_trim_mode");
+    flt_dk_door = link_dataref_int("laminar/B738/toggle_switch/flt_dk_door");
+    lock_fail = link_dataref_int("laminar/B738/annunciator/door_lock_fail");
+    auto_unlk = link_dataref_int("laminar/B738/annunciator/door_auto_unlk");
+  } else {
+    stab_trim_mode = link_dataref_int("xpserver/stab_trim_mode");
+    flt_dk_door = link_dataref_int("xpserver/flt_dk_door");
+    lock_fail = link_dataref_int("xpserver/lock_fail");
+    auto_unlk = link_dataref_int("xpserver/auto_unlk");
+  }
+    
   float *radio_volume1;
   float *radio_volume2;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -238,6 +253,8 @@ void b737_pedestal(void)
   int test;
   int test1; 
   int test2;
+  int test3; 
+  int test4;
   int tfr;
   int temp;
   int integer;
@@ -343,18 +360,6 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("SELCAL HF1 button: %i \n",*hf1);
   }
-  if ((acf_type == 2) || (acf_type == 3)) {
-    int *irs_l_left = link_dataref_cmd_hold("laminar/B738/toggle_switch/irs_L_left");
-    int *irs_l_right = link_dataref_cmd_hold("laminar/B738/toggle_switch/irs_L_right");
-    int *irs_r_left = link_dataref_cmd_hold("laminar/B738/toggle_switch/irs_R_left");
-    int *irs_r_right = link_dataref_cmd_hold("laminar/B738/toggle_switch/irs_R_right");
-    if ((*hf1 != INT_MISS) && (*hf2 != INT_MISS)) {
-      *irs_l_left = *hf1;
-      *irs_l_right = *hf2;
-      *irs_r_left = *hf1;
-      *irs_r_right = *hf2;
-    }
-  }
 
   ret = digital_input(device,card,58,vhf3,1);
   if (ret == 1) {
@@ -369,15 +374,33 @@ void b737_pedestal(void)
     printf("SELCAL VHF1 button: %i \n",*vhf1);
   }
 
+  /* use WX SELECTOR for AUTOBRAKE until we have built the MIP */
   ret = digital_input(device,card,55,&test,0);
   if (ret == 1) {
     printf("WX Radar Switch: %i \n",test);
-    *wxsel = test;
   }
-  ret = digital_input(device,card,54,&test,0);
+  ret = digital_input(device,card,54,&test1,0);
   if (ret == 1) {
-    printf("WX Radar Switch: %i \n",test*2);
-    *wxsel = test*2;
+    printf("WX Radar Switch: %i \n",test1*2);
+  }
+  ret = digital_input(device,card,62,&test2,0);
+  if (ret == 1) {
+    printf("WX Radar Switch: %i \n",test2*3);
+  }  
+  ret = digital_input(device,card,61,&test3,0);
+  if (ret == 1) {
+    printf("WX Radar Switch: %i \n",test3*5);
+  }
+  int autobrake_pos;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    autobrake_pos = test + test1*2 + test2*3 + test3*5;
+    int *autobrake = link_dataref_int("laminar/B738/autobrake/autobrake_pos");
+    int *autobrake_dn = link_dataref_cmd_once("laminar/B738/knob/autobrake_dn");
+    int *autobrake_up = link_dataref_cmd_once("laminar/B738/knob/autobrake_up");
+    ret = set_state_updn(&autobrake_pos,autobrake,autobrake_up,autobrake_dn);
+    if (ret == 1) {
+      printf("AUTOBRAKE: %i \n",autobrake_pos);
+    }
   }
 
   /* CARGO FIRE */
@@ -408,25 +431,48 @@ void b737_pedestal(void)
     printf("Cargo Fire TEST Button: %i \n",test);
     *cargofire_test = test;
   }
-  ret = digital_input(device,card,49,&test,0);
-  if (ret == 1) {
-    printf("Cargo Fire AFT Switch A: %i \n",test);
-    *cargofire_aft_select = test;
-  }
-  ret = digital_input(device,card,50,&test,0);
-  if (ret == 1) {
-    printf("Cargo Fire AFT Switch B: %i \n",test*2);
-    *cargofire_aft_select = test*2;
-  }
-  ret = digital_input(device,card,51,&test,0);
-  if (ret == 1) {
-    printf("Cargo Fire FWD Switch A: %i \n",test);
-    *cargofire_fwd_select = test;
-  }
-  ret = digital_input(device,card,52,&test,0);
-  if (ret == 1) {
-    printf("Cargo Fire FWD Switch B: %i \n",test*2);
-    *cargofire_fwd_select = test*2;
+
+  /* let us map the cargo fire extinguisher select to the IRS select for now */
+  if ((acf_type == 2) || (acf_type == 3)) {
+    ret = digital_input(device,card,49,&test,0);
+    if (ret == 1) {
+      printf("Cargo Fire AFT Switch A: %i \n",test);
+    }
+    ret = digital_input(device,card,50,&test2,0);
+    if (ret == 1) {
+      printf("Cargo Fire AFT Switch B: %i \n",test2);
+    }
+    int irs_r_pos = INT_MISS;
+    if ((test != INT_MISS) && (test2 != INT_MISS)) {
+      irs_r_pos = (1-test) + test2;
+    } 
+    int *irs_r = link_dataref_int("laminar/B738/toggle_switch/irs_right");
+    int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left");
+    int *irs_r_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_right");
+    ret = set_state_updn(&irs_r_pos,irs_r,irs_r_right,irs_r_left);
+    if (ret == 1) {
+      printf("IRS R POS: %i \n",irs_r_pos);
+    }
+
+    ret = digital_input(device,card,51,&test,0);
+    if (ret == 1) {
+      printf("Cargo Fire FWD Switch A: %i \n",test);
+    }
+    ret = digital_input(device,card,52,&test2,0);
+    if (ret == 1) {
+      printf("Cargo Fire FWD Switch B: %i \n",test2);
+    }
+    int irs_l_pos = INT_MISS;
+    if ((test != INT_MISS) && (test2 != INT_MISS)) {
+      irs_l_pos = (1-test) + test2;
+    } 
+    int *irs_l = link_dataref_int("laminar/B738/toggle_switch/irs_left");
+    int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left");
+    int *irs_l_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_right");
+    ret = set_state_updn(&irs_l_pos,irs_l,irs_l_right,irs_l_left);
+    if (ret == 1) {
+      printf("IRS L POS: %i \n",irs_l_pos);
+    }
   }
 
   *tailhook = *cargofire_fwd_armed;
@@ -922,15 +968,16 @@ void b737_pedestal(void)
   ret = digital_input(device,card,28,&test,0);
   if (ret == 1) {
     printf("Flight Deck Door AUTO: %i \n",test);
-    *flt_dk_door = test;
   }
-
-  ret = digital_input(device,card,29,&test,0);
+  ret = digital_input(device,card,29,&test2,0);
   if (ret == 1) {
-    printf("Flight Deck Door DENY: %i \n",test);
-    *flt_dk_door = test*2;
+    printf("Flight Deck Door DENY: %i \n",test2);
+  }
+  if ((test != INT_MISS) && (test2 != INT_MISS)) {
+    *flt_dk_door = test - 1 + test2*2;
   }
 
+  
   /* read encoders */
 
   /* NAV2 */
@@ -1107,12 +1154,8 @@ void b737_pedestal(void)
   ret = digital_output(device,card,16,avionics_on);
 
   /* Flight Deck Door Lock Indicator */
-  if (*flt_dk_door == 1) {
-    ret = digital_output(device,card,18,&one);
-  } else {
-    ret = digital_output(device,card,18,&zero);
-  }
-  ret = digital_output(device,card,17,&one);
+  ret = digital_output(device,card,17,lock_fail);
+  ret = digital_output(device,card,18,auto_unlk);
 
   /* update displays */
 

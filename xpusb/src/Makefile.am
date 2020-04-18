@@ -11,6 +11,7 @@ endif
 
 # The Sources needed to build the programs
 xpusb_SOURCES = $(OS_SRC) \
+common.c \
 xpusb.c \
 libiocards.c \
 serverdata.c \
