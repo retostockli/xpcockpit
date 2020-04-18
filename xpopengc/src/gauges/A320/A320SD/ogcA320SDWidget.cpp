@@ -227,20 +227,20 @@ namespace OpenGC {
       if (*bleed_intercon != INT_MISS) bleedIntercon = *bleed_intercon;
 
       int eng1BldVlv = 0; // Note: does not seem functional)
-      int *eng1_bld_vlv = link_dataref_int_arr ("AirbusFBW/Eng1BleedInd", 2, 0);
-      if (*eng1_bld_vlv != INT_MISS) eng1BldVlv = *eng1_bld_vlv;
+//      int *eng1_bld_vlv = link_dataref_int_arr ("AirbusFBW/Eng1BleedInd", 2, 0);
+//      if (*eng1_bld_vlv != INT_MISS) eng1BldVlv = *eng1_bld_vlv;
 
       int eng2BldVlv = 0; // Note: does not seem functional)
-      int *eng2_bld_vlv = link_dataref_int_arr ("AirbusFBW/Eng2BleedInd", 2, 1);
-      if (*eng2_bld_vlv != INT_MISS) eng2BldVlv = *eng2_bld_vlv;
+//      int *eng2_bld_vlv = link_dataref_int_arr ("AirbusFBW/Eng2BleedInd", 2, 1);
+//      if (*eng2_bld_vlv != INT_MISS) eng2BldVlv = *eng2_bld_vlv;
 
       int eng1HPBleed = 0; // Note: does not seem functional)
-      int *eng1_hp_bleed = link_dataref_int_arr ("AirbusFBW/Eng1HPBleedInd", 2, 0);
-      if (*eng1_hp_bleed != INT_MISS) eng1HPBleed = *eng1_hp_bleed;
+//      int *eng1_hp_bleed = link_dataref_int_arr ("AirbusFBW/Eng1HPBleedInd", 2, 0);
+//      if (*eng1_hp_bleed != INT_MISS) eng1HPBleed = *eng1_hp_bleed;
 
       int eng2HPBleed = 0; // Note: does not seem functional)
-      int *eng2_hp_bleed = link_dataref_int_arr ("AirbusFBW/Eng2HPBleedInd", 2, 1);
-      if (*eng2_hp_bleed != INT_MISS) eng2HPBleed = *eng2_hp_bleed;
+//      int *eng2_hp_bleed = link_dataref_int_arr ("AirbusFBW/Eng2HPBleedInd", 2, 1);
+//      if (*eng2_hp_bleed != INT_MISS) eng2HPBleed = *eng2_hp_bleed;
 
       int pack1FCV = 0;
       int *pack1_fcv = link_dataref_int ("AirbusFBW/Pack1FCVInd");

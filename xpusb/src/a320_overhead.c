@@ -496,7 +496,7 @@ void a320_overhead(void)
       int *dome_sw    = link_dataref_int_arr ("AirbusFBW/OHPLightSwitches", 16, 8);
       /***** Int Lt *****/
 //	AirbusFBW/AnnunBrightSwitch	int	y	Annunciators Brightness Switch
-      int *annun_brt_sw = link_dataref_int ("AirbusFBW/AnnunBrightSwitch");
+      int *annun_brt_sw = link_dataref_int ("AirbusFBW/AnnunMode");
 //	AirbusFBW/OHPBrightnessLevel	float	y	Integr. Lighting Brightness Rheostat
       // Not used in my cockpit (externally regulated)
       /***** Signs *****/

@@ -8,7 +8,7 @@
   Created:
     Date:   2018-05-03
     Author: Hans Jansen
-    Last change: 2020-01-23
+    Last change: 2020-04-06
 
   Copyright (C) 2018-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
@@ -107,7 +107,7 @@ namespace OpenGC {
         glColor3ub (COLOR_BLACK);
 
         // draw the frame
-        glColor3ub (COLOR_GRAY50);
+        glColor3ub (COLOR_GRAY25);
         glBegin (GL_POLYGON);
           glVertex2f (  0,       35);
           glVertex2f (  0,      135);
