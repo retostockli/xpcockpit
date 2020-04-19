@@ -132,6 +132,7 @@ namespace OpenGC
       fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_true",128,-1,-5);
       fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
       fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
+      fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
     } else if (acf_type == 1) {
       /* Javier Cortes Flight Management Computer plugin */
       fmc_ok = link_dataref_flt("FJCC/UFMC/PRESENT",-1);
@@ -206,6 +207,7 @@ namespace OpenGC
 	int wpt_miss2 = INT_MISS;
 	if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
 	  if (acf_type == 1) {
+	    /* UFMC of Javier Cortez */
 	    if ((*fmc_ok > 0.5) && (*fmc_nidx > 0)) {
 	    
 	      if (*fmc_nidx != nwpt) {
@@ -247,19 +249,13 @@ namespace OpenGC
 	    }
 
 	  } else {
+	    /* ZIBO MOD FMC */
 	    nwpt=0;
-	    if ((*fmc_cur != INT_MISS) && (fmc_lon[0] != FLT_MISS)
-		&& (fmc_lat[0] != FLT_MISS)) {
+	    if (*fmc_nidx != INT_MISS) {
 	      wpt_current = *fmc_cur-1;
 	      wpt_miss1 = *fmc_miss1;
 	      wpt_miss2 = *fmc_miss2;
-	      // printf("%s\n",fmc_name);
-	      //	  printf("%f\n",fmc_lon[0]);
-	      //	  printf("%f\n",fmc_lat[0]);
-	      while (((fmc_lon[nwpt]!=0.0) || (fmc_lat[nwpt]!=0.0)) && (nwpt<128)) {
-		nwpt += 1;
-	      }
-	      // printf("%i \n",nwpt);
+	      nwpt = *fmc_nidx;
 	      
 	      if (nwpt > 0) {
 		if (wpt != NULL) {
@@ -306,17 +302,16 @@ namespace OpenGC
 	    }
 	  }
 	
-
 	  /*
 	  for (int i=0;i<(nwpt);i++) {
 	    printf("%i %s %f %f %i \n",i,wpt[i].name,wpt[i].lon,wpt[i].lat,wpt_current);
-	    } */
-	    
+	  }
+	  */
 
 	  if (nwpt > 0) {
 	    for (int i=wpt_current;i<nwpt;i++) {
 
-	      // printf("%i %i %f %f \n",i,nwpt,wpt[i].lon,wpt[i].lat);
+	      //printf("%i %s %f %f %i \n",i,wpt[i].name,wpt[i].lon,wpt[i].lat,wpt_current);
 	      
 	      // convert to azimuthal equidistant coordinates with acf in center
 	      if ((wpt[max(i-1,0)].lon != FLT_MISS) && (wpt[max(i-1,0)].lat != FLT_MISS) &&
@@ -325,8 +320,6 @@ namespace OpenGC
 
 		
 		// convert to azimuthal equidistant coordinates with acf in center
-
-
 		lon = (double) wpt[max(i-1,0)].lon;
 		lat = (double) wpt[max(i-1,0)].lat;
 		lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
@@ -364,13 +357,20 @@ namespace OpenGC
 		// holds are legs_pth "HA" or "HF" or "HM"
 		// hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
 
-		if ((wpt[max(i-1,0)].rad_ctr_lon != 0.0) && (wpt[max(i-1,0)].rad_ctr_lat != 0.0)) {
+		/*
+		if ((wpt[max(i-1,0)].rad_ctr_lon != 0.0) &&
+		    (wpt[max(i-1,0)].rad_ctr_lat != 0.0) &&
+		    (i>2)) {
+		*/
+		if (0) {
+		  // REMOVE CURVED FOR NOW
 		  // draw curved track from waypoint i-1 to waypoint i
+		  // limit to waypoints > 2 for now (we had some odd curves at the beginning of the track 
 		  lon = (double) wpt[max(i-1,0)].rad_ctr_lon;
 		  lat = (double) wpt[max(i-1,0)].rad_ctr_lat;
 		  lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
 		  yPosC = -northing / 1852.0 / mapRange * map_size; 
-		  xPosC = easting / 1852.0  / mapRange * map_size;
+		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
 		  /*
 		  glPushMatrix();
