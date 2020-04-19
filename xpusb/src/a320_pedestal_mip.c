@@ -1,7 +1,7 @@
 /* This is the a320_pedestal_mip.c code which contains code for how to communicate with my Airbus 
    A320 hardware (switches, LED's, displays) connected to the OpenCockpits IOCARDS USB device.
-   To be used with Peter Hager's A320 Airbus, or the QPAC Basic V2 A320 Airbus!
-   (Note: currently being completed for the QPAC plane only!!)
+
+   To be used with the QPAC Basic A320 Airbus V2.04.
 
    Copyright (C) 2014  Hans Jansen, inspired by Reto Stockli
 

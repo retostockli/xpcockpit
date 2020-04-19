@@ -3,11 +3,14 @@
   This is the ogcA320StbyAltComponent.c file, part of the OpenGC subproject
   of the XpIoCards project (https://sourceforge.net/projects/xpiocards/)
 
+  === Airbus A320 style Standby Altitude Indicator ===
+
   Created:
     Date:   2018-05-03
     Author: Hans Jansen
+    Last change: 2020-04-06
 
-  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -41,8 +44,7 @@
 namespace OpenGC {
 
   A320StbyAltComponent::A320StbyAltComponent () {
-  
-    if (verbosity > 0) printf ("A320StbyAltComponent - constructing\n");
+      if (verbosity > 0) printf ("A320StbyAltComponent - constructing\n");
 
     m_Font = m_pFontManager->LoadDefaultFont ();
 
@@ -60,36 +62,32 @@ namespace OpenGC {
 
   A320StbyAltComponent::~A320StbyAltComponent () {}
 
-  // Handle the cold&dark state for the display
-  int coldDarkStAlt = 2;
-
   void A320StbyAltComponent::Render () {
   
-    // Call base class to setup for size and position
-    GaugeComponent::Render ();
-
-    // For drawing circles
+    bool coldAndDark = true;
     CircleEvaluator aCircle;
-
     float fontSize = 8;
     char buffer[8];
 
-    // Request the datarefs we want to use
-    
-    // Note: this dataref is maintained by the a320_overhead.c module
-    int *cold_dark_St_alt = link_dataref_int ("xpserver/cold_and_dark");
-    if (*cold_dark_St_alt == INT_MISS) coldDarkStAlt = 2; else coldDarkStAlt = *cold_dark_St_alt;
-    if (coldDarkStAlt == 0) {
+    // Call base class to setup for size and position
+    GaugeComponent::Render ();
 
-      // Barometer setting (for ISIS)
-      float baroSetting;
-//      float *baro_setting = link_dataref_flt("sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot",-2);
-      float *baro_setting = link_dataref_flt("AirbusFBW/ISIBaroSetting",-2);
-      if (*baro_setting != FLT_MISS) baroSetting = *baro_setting; else baroSetting = 0;
-      // Current altitude (for ISIS)
-      float altCapt;
-      float *alt_capt = link_dataref_flt ("sim/cockpit2/gauges/indicators/altitude_ft_pilot", -1);
-      if (*alt_capt != FLT_MISS) altCapt = *alt_capt; else altCapt = 0.0;
+    // Request the datarefs we want to use
+
+    // Note: this dataref is created and maintained by the a320_overhead.c module
+    int *cold_and_dark = link_dataref_int ("xpserver/cold_and_dark");
+    if (*cold_and_dark == INT_MISS) coldAndDark = true; else coldAndDark = (*cold_and_dark != 0) ? true : false;
+
+    // Barometer setting (for ISIS)
+    float baroSetting;
+//    float *baro_setting = link_dataref_flt("sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot",-2);
+    float *baro_setting = link_dataref_flt("AirbusFBW/ISIBaroSetting",-2);
+    if (*baro_setting != FLT_MISS) baroSetting = *baro_setting; else baroSetting = 0;
+    // Current altitude (for ISIS)
+    float altCapt;
+    float *alt_capt = link_dataref_flt ("sim/cockpit2/gauges/indicators/altitude_ft_pilot", 0);
+    if (*alt_capt != FLT_MISS) altCapt = *alt_capt; else altCapt = 0.0;
+
       if (verbosity > 1) {
         printf ("A320StbyAltComponent - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
         printf ("A320StbyAltComponent -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
@@ -97,8 +95,10 @@ namespace OpenGC {
         printf ("A320StbyAltComponent -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
       }
 
+    if (!coldAndDark) {
+
       double partSize = m_PhysicalSize.x;	// defines total component size (just for name simplification) (square gauge!)
-      double partCenter = partSize / 2;	// defines component center
+      double partCenter = partSize / 2;		// defines component center
 
       m_pFontManager->SetSize (m_Font, fontSize, fontSize);
 
@@ -107,7 +107,7 @@ namespace OpenGC {
         glColor3ub (COLOR_BLACK);
 
         // draw the frame
-        glColor3ub (COLOR_GRAY50);
+        glColor3ub (COLOR_GRAY25);
         glBegin (GL_POLYGON);
           glVertex2f (  0,       35);
           glVertex2f (  0,      135);
@@ -267,7 +267,7 @@ namespace OpenGC {
 
       glPopMatrix ();
 
-    } // end if (! coldDarkStAlt)
+    } // end if (! coldAndDark)
 
   } // end Render ()
 

@@ -8,8 +8,9 @@
   Created:
     Date:   2018-05-03
     Author: Hans Jansen
+    last change: 2020-01-23
 
-  Copyright (C) 2018      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2018-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -51,7 +52,7 @@ namespace OpenGC {
     m_PhysicalSize.x = 170;
     m_PhysicalSize.y = 170;
 
-    // We want to draw an outline
+    // We do not want to draw an outline
     this->SetGaugeOutline (true);
 
     // A Component of the Gauge
@@ -70,13 +71,13 @@ namespace OpenGC {
   
     Gauge::Render ();
 
-    if (verbosity > 1)
-    {
+    if (verbosity > 1) {
       printf ("A320StbyASI - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
       printf ("A320StbyASI -    pixel position: %i %i\n", m_PixelPosition.x, m_PixelPosition.y);
       printf ("A320StbyASI -     physical size: %f %f\n", m_PhysicalSize.x, m_PhysicalSize.y);
       printf ("A320StbyASI -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
     }    
+
   }
 
 } // end namespace OpenGC

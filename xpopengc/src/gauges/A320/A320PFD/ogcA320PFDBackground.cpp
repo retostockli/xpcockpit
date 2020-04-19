@@ -6,10 +6,12 @@
   === Airbus A320 style Primary Flight Display: Background ===
 
   Created:
-    Date:   2011-11-28
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-04
+    (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -41,16 +43,10 @@
 #include "ogcA320PFD.h"
 #include "ogcA320PFDBackground.h"
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
+namespace OpenGC {
 
-namespace OpenGC
-{
-
-  A320PFDBackground::A320PFDBackground()
-  {
-    if (verbosity > 0) printf("A320PFDBackground - constructing\n");
+  A320PFDBackground::A320PFDBackground () {
+    if (verbosity > 0) printf ("A320PFDBackground - constructing\n");
 
     m_Font = m_pFontManager->LoadFont((char*) "CockpitScreens.ttf");
 
@@ -63,19 +59,16 @@ namespace OpenGC
     m_Scale.x = 1.0;
     m_Scale.y = 1.0;
 
-    if (verbosity > 1) printf("A320PFDBackground - constructed\n");
+    if (verbosity > 1) printf ("A320PFDBackground - constructed\n");
   }
 
-  A320PFDBackground::~A320PFDBackground()
-  {
-  }
+  A320PFDBackground::~A320PFDBackground () {}
 
-//////////////////////////////////////////////////////////////////////
+  void A320PFDBackground::Render () {
 
-  void A320PFDBackground::Render()
-  {
-    // Call base class to setup for size and position
-    GaugeComponent::Render();
+    bool coldDarkPfd = true;
+
+    GaugeComponent::Render ();
 
     if (verbosity > 2)
     {
@@ -85,109 +78,112 @@ namespace OpenGC
       printf ("A320PFDBackground -        pixel size: %i %i\n", m_PixelSize.x, m_PixelSize.y);
     }
 
-	if (!ColdAndDark()) {
+    if (!coldDarkPfd) {
+      glPushMatrix ();
 
-    glPushMatrix();
+    // Note: this dataref is created and maintained by the a320_overhead.c module
+    int *cold_dark_pfd = link_dataref_int ("xpserver/cold_and_dark");
+    if (*cold_dark_pfd == INT_MISS) coldDarkPfd = true; else coldDarkPfd = (*cold_dark_pfd != 0) ? true : false;
 
-    // Translate to the center of the ATT component
-    glTranslated(200,235,0);
+      // Translate to the center of the ATT component
+      glTranslated (200,235,0);
 
-      //----------------The bank angle markings----------------
-      // (these are otherwise partially obscured by the ATT mask)
-
-      // Left side bank markings
-      glPushMatrix();
-
-        // Draw in yellow
-        glColor3ub(COLOR_YELLOW);
-        glLineWidth(2.0);
-
-        // Draw the center detent
-        glBegin(GL_LINE_LOOP);
-          glVertex2f(00,125);
-          glVertex2f(-8,137);
-          glVertex2f(8,137);
-        glEnd();
+        //----------------The bank angle markings----------------
+        // (these are otherwise partially obscured by the ATT mask)
 
         // Left side bank markings
+        glPushMatrix ();
 
-        // Draw in white
+          // Draw in yellow
+          glColor3ub(COLOR_YELLOW);
+          glLineWidth (2.0);
+
+          // Draw the center detent
+          glBegin (GL_LINE_LOOP);
+            glVertex2f (00,125);
+            glVertex2f (-8,137);
+            glVertex2f (8,137);
+          glEnd ();
+
+          // Left side bank markings
+
+          // Draw in white
+          glColor3ub(COLOR_WHITE);
+
+          glRotated (10.0,0,0,1);
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (-2,125);
+            glVertex2f (-2,135);
+            glVertex2f (2,135);
+            glVertex2f (2,125);
+          glEnd ();
+
+          glRotated (10.0,0,0,1);
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (-2,125);
+            glVertex2f (-2,135);
+            glVertex2f (2,135);
+            glVertex2f (2,125);
+          glEnd ();
+
+          glRotated (10.0,0,0,1);
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (-2,125);
+            glVertex2f (-2,145);
+            glVertex2f (2,145);
+            glVertex2f (2,125);
+          glEnd ();
+
+          glRotated (15.0,0,0,1);
+          glBegin (GL_LINES);
+            glVertex2f (0,125);
+            glVertex2f (0,135);
+          glEnd ();
+
+        glPopMatrix ();
+
+        // Right side bank markings
         glColor3ub(COLOR_WHITE);
 
-        glRotated(10.0,0,0,1);
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(-2,125);
-          glVertex2f(-2,135);
-          glVertex2f(2,135);
-          glVertex2f(2,125);
-        glEnd();
+        glPushMatrix ();
 
-        glRotated(10.0,0,0,1);
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(-2,125);
-          glVertex2f(-2,135);
-          glVertex2f(2,135);
-          glVertex2f(2,125);
-        glEnd();
-
-        glRotated(10.0,0,0,1);
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(-2,125);
-          glVertex2f(-2,145);
-          glVertex2f(2,145);
-          glVertex2f(2,125);
-        glEnd();
-
-        glRotated(15.0,0,0,1);
-        glBegin(GL_LINES);
-          glVertex2f(0,125);
-          glVertex2f(0,135);
-        glEnd();
-
-      glPopMatrix();
-
-      // Right side bank markings
-      glColor3ub(COLOR_WHITE);
-
-      glPushMatrix();
-
-        glRotated(-10.0,0,0,1);
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(-2,125);
-          glVertex2f(-2,135);
-          glVertex2f(2,135);
-          glVertex2f(2,125);
-        glEnd();
+          glRotated (-10.0,0,0,1);
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (-2,125);
+            glVertex2f (-2,135);
+            glVertex2f (2,135);
+            glVertex2f (2,125);
+          glEnd ();
   
-        glRotated(-10.0,0,0,1);
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(-2,125);
-          glVertex2f(-2,135);
-          glVertex2f(2,135);
-          glVertex2f(2,125);
-        glEnd();
+          glRotated (-10.0,0,0,1);
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (-2,125);
+            glVertex2f (-2,135);
+            glVertex2f (2,135);
+            glVertex2f (2,125);
+          glEnd ();
 
-        glRotated(-10.0,0,0,1);
-        glBegin(GL_LINE_STRIP);
-          glVertex2f(-2,125);
-          glVertex2f(-2,145);
-          glVertex2f(2,145);
-          glVertex2f(2,125);
-        glEnd();
+          glRotated (-10.0,0,0,1);
+          glBegin (GL_LINE_STRIP);
+            glVertex2f (-2,125);
+            glVertex2f (-2,145);
+            glVertex2f (2,145);
+            glVertex2f (2,125);
+          glEnd ();
 
-        glRotated(-15.0,0,0,1);
-        glBegin(GL_LINES);
-          glVertex2f(0,125);
-          glVertex2f(0,135);
-        glEnd();
+          glRotated (-15.0,0,0,1);
+          glBegin (GL_LINES);
+            glVertex2f (0,125);
+            glVertex2f (0,135);
+          glEnd ();
 
-      glPopMatrix();
+        glPopMatrix ();
 
-      //----------------End Bank Markings----------------
+        //----------------End Bank Markings----------------
 
-    glPopMatrix();
+      glPopMatrix ();
 
-	} // end if ((!ColdAndDark())
+    } // end if ((!coldDarkPfd)
 
   } // end Render()
 

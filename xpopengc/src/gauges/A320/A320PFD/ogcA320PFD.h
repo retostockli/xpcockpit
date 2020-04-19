@@ -3,11 +3,12 @@
   This is the ogcA320PFD.h header to ogcA320PFD.cpp
 
   Created:
-    Date:   2011-11-14
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-04
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,32 +37,21 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-  /** Central handling of the Cold&Dark state */
-  extern bool ColdAndDark ();
+  class A320PFD : public Gauge {
 
-  class A320PFD : public Gauge  
-  {
     public:
+      A320PFD ();
+      virtual ~A320PFD ();
+      void Render ();
+      void SetRotation (bool rot);
 
-      A320PFD();
-      virtual ~A320PFD();
+    protected:
+      int m_Font;
+      int m_GaugeRotation;
 
-      /** Overloaded render function */
-      void Render();
-
-      /** Specify whether this gauge should be rotated */
-      void SetRotation(bool rot);
-
-  protected:
-
-    /** Font from the font manager */
-    int m_Font;
-
-    /** Rotation parameter for the gauge */
-    int m_GaugeRotation;
   };
+
 } // end namespace OpenGC
 #endif

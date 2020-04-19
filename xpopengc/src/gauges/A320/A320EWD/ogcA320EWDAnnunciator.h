@@ -3,11 +3,12 @@
   This is the ogcA320EWDAnnunciator.h header to ogcA320EWDAnnunciator.cpp
 
   Created:
-    Date:   2016-03-02
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-06
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -34,22 +35,20 @@
 #include "ogcGaugeComponent.h"
 #include "../ogcAirbusColors.h"
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-class A320EWDAnnunciator : public GaugeComponent  
-{
-public:
-	A320EWDAnnunciator();
-	virtual ~A320EWDAnnunciator();
-	void Render();
+  class A320EWDAnnunciator : public GaugeComponent {
 
-	void setCurrentEngine(int engine);
+    public:
+      A320EWDAnnunciator();
+      virtual ~A320EWDAnnunciator();
+      void Render();
+      void setCurrentEngine(int engine);
 
-protected:
-	int m_Font;
-	int currentEngine;
-};
+    protected:
+      int m_Font;
+      int currentEngine;
+  };
 
 } // end namespace OpenGC
 

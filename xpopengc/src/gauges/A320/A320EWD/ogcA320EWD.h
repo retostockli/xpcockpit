@@ -3,11 +3,12 @@
   This is the A320EWD.h header to A320EWD.cpp
 
   Created:
-    Date:   2011-11-14
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-06
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,21 +37,20 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-  /** Central handling of the Cold&Dark state */
-  extern bool ColdAndDarkEwd ();
+  class A320EWD : public Gauge {
 
-  class A320EWD : public Gauge
-  {
     public:
-
       A320EWD();
-      virtual ~A320EWD();
+      virtual ~A320EWD ();
+      void Render ();
 
-      /** Overloaded render function */
-      void Render();
+    protected:
+      bool CdStateClk = true;
+
   };
+
 } // end namespace OpenGC
+
 #endif

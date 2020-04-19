@@ -5,9 +5,10 @@
   Created:
     Date:   2019-05-03
     Author: Hans Jansen
+    Last change: 2020-01-24
     (see ogcSkeletonGauge.c for more details)
 
-  Copyright (C) 2019      Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2019-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -39,14 +40,10 @@ namespace OpenGC {
 
   class A320StbyISIS : public Gauge {
   
-  public:
-
-    A320StbyISIS ();
-    virtual ~A320StbyISIS ();
-
-    void Render ();
-
-  protected:
+    public:
+      A320StbyISIS ();
+      virtual ~A320StbyISIS ();
+      void Render ();
 
   };
   

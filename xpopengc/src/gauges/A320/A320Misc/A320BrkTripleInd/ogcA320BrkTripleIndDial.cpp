@@ -8,8 +8,9 @@
   Created:
     Date:   2015-06-14
     Author: Hans Jansen
+    Last change: 2020-01-22
 
-  Copyright (C) 2011-2017 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -29,13 +30,6 @@
   The OpenGC subproject has been derived from:
     OpenGC - The Open Source Glass Cockpit Project
     Copyright (c) 2001-2003 Damion Shelton
-
-===============================================================================
-
-  The following datarefs are used by this instrument:
-	AirbusFBW/BrakeAccu		float	n
-	AirbusFBW/TotLeftBrake		float	n
-	AirbusFBW/TotRightBrake		float	n
 
 =============================================================================*/
 
@@ -65,8 +59,7 @@ namespace OpenGC {
     if (verbosity > 2) printf("ogcA320BrkTripleIndDial - constructed\n");
   }
 
-  A320BrkTripleIndDial::~A320BrkTripleIndDial () {
-  }
+  A320BrkTripleIndDial::~A320BrkTripleIndDial () {}
 
   void A320BrkTripleIndDial::Render () {
 
@@ -79,6 +72,7 @@ namespace OpenGC {
     float fontSize = 20;
 
     // Request the datarefs we want to use
+    // Note: these seem to be inactive!
     float *brkAccu  = link_dataref_flt ("AirbusFBW/BrakeAccu", -2);
     if (*brkAccu == FLT_MISS) *brkAccu = 0.0;
     float *brkLeft  = link_dataref_flt ("AirbusFBW/TotLeftBrake", -2);
@@ -87,8 +81,7 @@ namespace OpenGC {
     if (*brkRight == FLT_MISS) *brkRight = 0.0;
     float ndlRot = 0.0;
 
-    if (verbosity > 1)
-    {
+    if (verbosity > 1) {
       printf ("A320BrkTripleIndDial - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
       printf ("A320BrkTripleIndDial -    pixel position: %i %i\n", m_PixelPosition.x,    m_PixelPosition.y);
       printf ("A320BrkTripleIndDial -     physical size: %f %f\n", m_PhysicalSize.x,     m_PhysicalSize.y);
@@ -222,7 +215,7 @@ namespace OpenGC {
           } // end of tick marks rotation
           glPopMatrix ();
         break;
-      }
+      } // end switch (i)
 
       // the dials themselves
       glColor3ub (128, 128, 128); // Gray - large segment rim
@@ -267,38 +260,38 @@ namespace OpenGC {
       glEnd();
 
       // the needles
-    glPushMatrix ();
-    switch (i) {
-      case 0:
-        ndlRot = *brkAccu * 80 + 132;
-      break;
-      case 1:
-        if (*brkLeft <= 0.1) ndlRot = *brkLeft * 480 + 132;
-        else ndlRot = *brkLeft * 96 + 132;
-      break;
-      case 2:
-        if (*brkRight <= 0.1) ndlRot = -(*brkRight * 480 + 132);
-        else ndlRot = -(*brkRight * 96 + 132);
-      break;
-    }
-    glRotated (ndlRot, 0, 0, 1);
-    glColor3ub (255, 255, 255); // White
-    glBegin (GL_POLYGON);
-      glVertex2f (-5, 0);
-      glVertex2f (-5, partSize * 78 / 450);
-      glVertex2f ( 0, partSize * 88 / 450);
-      glVertex2f  (5, partSize * 78 / 450);
-      glVertex2f ( 5, 0);
-    glEnd ();
-    glColor3ub (192, 192, 192); // Light Grey
-    glBegin (GL_POLYGON);
-      glVertex2f (-3, 0);
-      glVertex2f (-3, partSize * 60 / 450);
-      glVertex2f ( 0, partSize * 70 / 450);
-      glVertex2f ( 3, partSize * 60 / 450);
-      glVertex2f ( 3, 0);
-    glEnd ();
-    glPopMatrix ();
+      glPushMatrix ();
+      switch (i) {
+        case 0:
+          ndlRot = *brkAccu * 80 + 132;
+        break;
+        case 1:
+          if (*brkLeft <= 0.1) ndlRot = *brkLeft * 480 + 132;
+          else ndlRot = *brkLeft * 96 + 132;
+        break;
+        case 2:
+          if (*brkRight <= 0.1) ndlRot = -(*brkRight * 480 + 132);
+          else ndlRot = -(*brkRight * 96 + 132);
+        break;
+      } // end 
+      glRotated (ndlRot, 0, 0, 1);
+      glColor3ub (255, 255, 255); // White
+      glBegin (GL_POLYGON);
+        glVertex2f (-5, 0);
+        glVertex2f (-5, partSize * 78 / 450);
+        glVertex2f ( 0, partSize * 88 / 450);
+        glVertex2f  (5, partSize * 78 / 450);
+        glVertex2f ( 5, 0);
+      glEnd ();
+      glColor3ub (192, 192, 192); // Light Grey
+      glBegin (GL_POLYGON);
+        glVertex2f (-3, 0);
+        glVertex2f (-3, partSize * 60 / 450);
+        glVertex2f ( 0, partSize * 70 / 450);
+        glVertex2f ( 3, partSize * 60 / 450);
+        glVertex2f ( 3, 0);
+      glEnd ();
+      glPopMatrix ();
 
       // the needle centers
       glColor3ub (100, 100, 120); // lighter Gray-blue

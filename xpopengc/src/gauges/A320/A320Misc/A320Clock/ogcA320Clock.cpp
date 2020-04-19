@@ -6,10 +6,11 @@
   === Airbus A320 style Main-Panel Clock ===
 
   Created:
-    Date:   2011-11-14
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    Last change: 2020-01-22
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -39,11 +40,12 @@
 #include "ogcA320Clock.h"
 #include "ogcA320ClockComponent.h"
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-A320Clock::A320Clock() {
+  /** The Subwindow */
+  A320ClockComponent* clkComp;
 
+  A320Clock::A320Clock() {
     if (verbosity > 0) printf ("A320Clock - constructing\n");
 
     // Specify our physical size
@@ -54,11 +56,11 @@ A320Clock::A320Clock() {
     this->SetGaugeOutline (false);
 
     // The face of the Clock
-    A320ClockComponent* pComp = new A320ClockComponent ();
-    pComp->SetParentRenderObject (this);
-    pComp->SetPosition (0, 0);
-    pComp->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
-    this->AddGaugeComponent (pComp);
+    clkComp = new A320ClockComponent ();
+    clkComp->SetParentRenderObject (this);
+    clkComp->SetPosition (0, 0);
+    clkComp->SetSize (m_PhysicalSize.x, m_PhysicalSize.y);
+    this->AddGaugeComponent (clkComp);
 
     if (verbosity > 1) printf ("A320Clock - constructed\n");
   }
@@ -68,14 +70,13 @@ A320Clock::A320Clock() {
   void A320Clock::Render () {
     Gauge::Render();
 
-    if (verbosity > 1)
-    {
+    if (verbosity > 1) {
       printf ("A320BrkTripleInd - physical position: %f %f\n", m_PhysicalPosition.x, m_PhysicalPosition.y);
       printf ("A320BrkTripleInd -    pixel position: %i %i\n", m_PixelPosition.x,    m_PixelPosition.y);
       printf ("A320BrkTripleInd -     physical size: %f %f\n", m_PhysicalSize.x,     m_PhysicalSize.y);
       printf ("A320BrkTripleInd -        pixel size: %i %i\n", m_PixelSize.x,        m_PixelSize.y);
     }
 
-  }
+  } // end Render ()
 
 } // end namespace OpenGC

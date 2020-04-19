@@ -9,10 +9,11 @@
   (included in the A320SDWidget's Render() function)
 
   Created:
-    Date:   2015-11-15
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    Last change: 2020-02-02
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -37,7 +38,7 @@
 
 /* inlined code: SD COND Page */
 
-	m_pFontManager->SetSize(m_Font, 14, 14);
+	m_pFontManager->SetSize (m_Font, 14, 14);
 	m_pFontManager->Print (30, 430, "COND", m_Font);
 	glLineWidth (3);
 	glColor3ub (COLOR_WHITE);
@@ -53,9 +54,9 @@
 	aCircle.SetArcStartEnd (180, 310);
 	glLineWidth (3);
 	glColor3ub (COLOR_WHITE);
-	glBegin(GL_LINE_STRIP);
+	glBegin (GL_LINE_STRIP);
 	  aCircle.Evaluate ();
-	glEnd();
+	glEnd ();
 	glLineWidth (3);
 	glBegin (GL_LINE_STRIP);
 	  glVertex2d ( 72, 354);
@@ -86,9 +87,9 @@
 	aCircle.SetArcStartEnd (330,  30);
 	glLineWidth (3);
 	glColor3ub (COLOR_WHITE);
-	glBegin(GL_LINE_STRIP);
+	glBegin (GL_LINE_STRIP);
 	  aCircle.Evaluate ();
-	glEnd();
+	glEnd ();
 	glBegin (GL_LINES);
 	  glVertex2d (125, 300);
 	  glVertex2d (125, 295);
@@ -99,9 +100,9 @@
 	aCircle.SetArcStartEnd (330,  30);
 	glLineWidth (3);
 	glColor3ub (COLOR_WHITE);
-	glBegin(GL_LINE_STRIP);
+	glBegin (GL_LINE_STRIP);
 	  aCircle.Evaluate ();
-	glEnd();
+	glEnd ();
 	glBegin (GL_LINES);
 	  glVertex2d (220, 300);
 	  glVertex2d (220, 295);
@@ -112,9 +113,9 @@
 	aCircle.SetArcStartEnd (330,  30);
 	glLineWidth (3);
 	glColor3ub (COLOR_WHITE);
-	glBegin(GL_LINE_STRIP);
+	glBegin (GL_LINE_STRIP);
 	  aCircle.Evaluate ();
-	glEnd();
+	glEnd ();
 	glBegin (GL_LINES);
 	  glVertex2d (315, 300);
 	  glVertex2d (315, 295);
@@ -138,13 +139,13 @@
 	aCircle.SetArcStartEnd (  0, 360);
 	glLineWidth (3);
 	glColor3ub (COLOR_GREEN);
-	glBegin(GL_LINE_STRIP);
+	glBegin (GL_LINE_STRIP);
 	  aCircle.Evaluate ();
-	glEnd();
+	glEnd ();
 
 	// The fixed texts
 	glColor3ub (COLOR_WHITE);
-	m_pFontManager->SetSize(m_Font, 14, 14);
+	m_pFontManager->SetSize (m_Font, 14, 14);
 	m_pFontManager->Print (350, 410, "TEMP:", m_Font);
 	m_pFontManager->Print (110, 366, "CKPT", m_Font);
 	m_pFontManager->Print (205, 366, "FWD", m_Font);
@@ -195,34 +196,34 @@
 	glPopMatrix();
 
 	// The numeric values // NOTE: totally unclear how this works / should work!
-	m_pFontManager->SetSize(m_Font, 14, 14);
+	m_pFontManager->SetSize (m_Font, 14, 14);
 	glColor3ub (COLOR_GREEN);
-	sprintf(buffer, "%2.0f", 50 * ckptTrimValve); // NOTE: Used these instead of the duct temps - not available in V2!
+	sprintf (buffer, "%2.0f", 50 * ckptTrimValve); // NOTE: Used these instead of the duct temps - not available in V2!
 	m_pFontManager->Print (115, 310, buffer, m_Font);
-	sprintf(buffer, "%2.0f", 50 * forwTrimValve);
+	sprintf (buffer, "%2.0f", 50 * forwTrimValve);
 	m_pFontManager->Print (210, 310, buffer, m_Font);
-	sprintf(buffer, "%2.0f", 50 * aftTrimValve);
+	sprintf (buffer, "%2.0f", 50 * aftTrimValve);
 	m_pFontManager->Print (305, 310, buffer, m_Font);
-	sprintf(buffer, "%2i", cockpitTemp);
+	sprintf (buffer, "%2i", cockpitTemp);
 	m_pFontManager->Print (115, 346, buffer, m_Font);
-	sprintf(buffer, "%2i", fwdCabinTemp);
+	sprintf (buffer, "%2i", fwdCabinTemp);
 	m_pFontManager->Print (210, 346, buffer, m_Font);
-	sprintf(buffer, "%2i", aftCabinTemp);
+	sprintf (buffer, "%2i", aftCabinTemp);
 	m_pFontManager->Print (305, 346, buffer, m_Font);
 
 	// The Hot-Air valve
 	glLineWidth (3);
 	glColor3ub (COLOR_GREEN);
 	if (hotAirValve == 0) {
-	glBegin (GL_LINES);
-	  glVertex2d (385, 225);
-	  glVertex2d (385, 255);
-	glEnd ();
+	  glBegin (GL_LINES);
+	    glVertex2d (385, 225);
+	    glVertex2d (385, 255);
+	  glEnd ();
 	} else {
-	glBegin (GL_LINES);
-	  glVertex2d (370, 240);
-	  glVertex2d (400, 240);
-	glEnd ();
+	  glBegin (GL_LINES);
+	    glVertex2d (370, 240);
+	    glVertex2d (400, 240);
+	  glEnd ();
 	}
 
 /* end of inlined code */

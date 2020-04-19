@@ -3,11 +3,12 @@
   This is the ogcA320ClockComponent.h header to ogcA320ClockComponent.cpp
 
   Created:
-    Date:   2015-06-14
-    Author: Hans Jansen
+    Date:        2015-06-14
+    Author:      Hans Jansen
+    Last change: 2020-01-22
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -38,17 +39,16 @@ extern int verbosity;
 
 namespace OpenGC {
 
-class A320ClockComponent : public GaugeComponent {
+  class A320ClockComponent : public GaugeComponent {
 
-  public:
-    A320ClockComponent ();
-    virtual ~A320ClockComponent ();
+    public:
+      A320ClockComponent ();
+      virtual ~A320ClockComponent ();
+      void Render ();
 
-    void Render();
+    protected:
+      int m_Font;
 
-  protected:
-    /** Font from the font manager */
-    int m_Font;
   };
 
 } // end namespace OpenGC

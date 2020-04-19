@@ -5,9 +5,10 @@
   Created:
     Date:   2011-11-14
     Author: Hans Jansen
+    last change: 2020-02-02
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,17 +37,18 @@
 
 extern int verbosity;
 
-namespace OpenGC
-{
-  class A320SD : public Gauge  
-  {
-    public:
+namespace OpenGC { 
 
+  class A320SD : public Gauge {
+
+    public:
       A320SD();
       virtual ~A320SD();
-
       void SetRotation (int rot);
       void Render();
+
   };
+
 } // end namespace OpenGC
+
 #endif

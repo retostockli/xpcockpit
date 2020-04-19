@@ -6,10 +6,12 @@
   === Airbus A320 style Engine/Warning Display - Fuel-On-Board Indicator ===
 
   Created:
-    Date:   2016-03-02
-    Author: Hans Jansen
+    Date:        2011-11-14
+    Author:      Hans Jansen
+    last change: 2020-02-06
+    (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -37,15 +39,9 @@
 #include "ogcA320EWD.h"
 #include "ogcA320EWDFuel.h"
 
-namespace OpenGC
-{
+namespace OpenGC {
 
-/*=============================================================================
- * Construction/Destruction
- *===========================================================================*/
-
-  A320EWDFuel::A320EWDFuel()
-  {
+  A320EWDFuel::A320EWDFuel () {
     printf("A320EWDFuel constructed\n");
 
     m_Font = m_pFontManager->LoadFont((char*) "CockpitScreens.ttf");
@@ -60,34 +56,35 @@ namespace OpenGC
     m_Scale.y = 1.0;
   }
 
-  A320EWDFuel::~A320EWDFuel()
-  {
-  }
+  A320EWDFuel::~A320EWDFuel () {}
 
-/*=============================================================================
- * The Render function
- *===========================================================================*/
+  void A320EWDFuel::Render () {
 
-  void A320EWDFuel::Render()
-  {
-    GaugeComponent::Render();
+    bool coldAndDark = true;
 
-	if (!ColdAndDarkEwd()) {
+    GaugeComponent::Render ();
 
     // The datarefs we want to use on this instrument
+
+    // Note: this dataref is created and maintained by the a320_overhead.c module
+    int *cold_and_dark = link_dataref_int ("xpserver/cold_and_dark");
+    if (*cold_and_dark == INT_MISS) coldAndDark = true; else coldAndDark = (*cold_and_dark != 0) ? true : false;
+
     float totFOB = 0;
     float *tot_fuel = link_dataref_flt ("sim/flightmodel/weight/m_fuel_total", 0);
     if (*tot_fuel != FLT_MISS) totFOB = *tot_fuel;
 
-    // The instrument display
-    char buffer[32];
-    glColor3ub (COLOR_GREEN);
-    m_pFontManager->SetSize(m_Font, 14, 14);
-    sprintf(buffer, "%5i", ((int) (totFOB + 10) / 20) * 20);
-    m_pFontManager->Print ( 50,   5, buffer, m_Font); // total FOB
+    if (!coldAndDark) {
 
-	} // End if (!ColdAndDarkEwd())
+      // The instrument display
+      char buffer[32];
+      glColor3ub (COLOR_GREEN);
+      m_pFontManager->SetSize (m_Font, 14, 14);
+      sprintf (buffer, "%5i", ((int) (totFOB + 10) / 20) * 20);
+      m_pFontManager->Print ( 50,   5, buffer, m_Font); // total FOB
 
-  } // End Render()
+    } // End if (!coldAndDark)
+
+  } // End Render ()
 
 }

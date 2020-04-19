@@ -118,7 +118,7 @@ int main (int argc, char **argv)
       check_aircraft();
       
       /*** user-space modules begin here ***/
-      if (strcmp(*argv,"airbus320") == 0) {
+      if (strcmp(*argv,"a320usb") == 0) {
 	a320_overhead();
 	a320_pedestal_mip();
 	a320_mcdu_keys();

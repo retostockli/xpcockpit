@@ -1,6 +1,7 @@
 /* This is the a320_overhead.c code which contains code for how to communicate with my Airbus 
    A320 hardware (switches, LED's, displays) connected to the OpenCockpits IOCARDS USB device.
-   To be used with the QPAC Basic V2 A320 Airbus (or Peter Hager's A320 Airbus)!
+
+   To be used with the QPAC Basic A320 Airbus V2.04.
 
    Copyright (C) 2014  Hans Jansen, inspired by Reto Stockli
 
@@ -228,6 +229,31 @@ void a320_overhead(void)
       int *seat_belts_sw = link_dataref_int ("sim/cockpit2/switches/fasten_seat_belts");
 
     /* Overhead */
+//	AirbusFBW/OHPGuardsAllATA	float[64]	y	Overhead Switch Guards - 0=EMER ELEC ManOn, 1=HYD Blue Elec Pump, 2=HYD Rat Man On, 3=COND Ram Air, 4=CAB PRESS Ditching,
+//												5=ELEC Idg1, 6=ELEC Idg2, 7=EVAC Cmd, 8=EMER ELEC GenTest, 9=OXYGEN MaskManOn,
+//												10=CALLS Emer, 11=CARGO SMOKE FwdDisch, 12=CARGO SMOKE AftDisch, 13=MAN START Eng1, 14=MAN START Eng2,
+//												15=N1 MODE Eng1, 16=N1 MODE Eng2, 17=FIRE Eng1, 18=FIRE Eng2, 19=FIRE APU
+//								Note: 5, 6, 11, 12, 17, 18, 19 : not implemented
+      float *emer_man_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  0, 0);
+      float *blelpmp_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  1, 0);
+      float *ratman_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  2, 0);
+      float *ram_air_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  3, 0);
+      float *ditch_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  4, 0);
+//      float *idg1_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  5, 0);
+//      float *idg2_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  6, 0);
+      float *evac_cmd_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  7, 0);
+      float *emer_test_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  8, 0);
+      float *oxy_pax_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64,  9, 0);
+      float *calls_emer_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 10, 0);
+//      float *cg_smk_fwd_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 11, 0);
+//      float *cg_smk_aft_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 12, 0);
+      float *man1start_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 13, 0);
+      float *man2start_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 14, 0);
+      float *n1mode1_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 15, 0);
+      float *n1mode2_gd		= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 16, 0);
+//      float *fire_eng1_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 17, 0);
+//      float *fire_eng2_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 18, 0);
+//      float *fire_apu_gd	= link_dataref_flt_arr("AirbusFBW/OHPGuardsAllATA", 64, 19, 0);
       /* Left-Hand Column */
       /***** Adirs *****/
       // Position displays, DISPLAY/DATA and DISPLAY/SYS switches, and Keyboard not yet implemented
@@ -470,7 +496,7 @@ void a320_overhead(void)
       int *dome_sw    = link_dataref_int_arr ("AirbusFBW/OHPLightSwitches", 16, 8);
       /***** Int Lt *****/
 //	AirbusFBW/AnnunBrightSwitch	int	y	Annunciators Brightness Switch
-      int *annun_brt_sw = link_dataref_int ("AirbusFBW/AnnunBrightSwitch");
+      int *annun_brt_sw = link_dataref_int ("AirbusFBW/AnnunMode");
 //	AirbusFBW/OHPBrightnessLevel	float	y	Integr. Lighting Brightness Rheostat
       // Not used in my cockpit (externally regulated)
       /***** Signs *****/
@@ -559,15 +585,20 @@ void a320_overhead(void)
   ret = digital_input(device,card1,SW_fctlFac1,fac1_sw,0);				// Flt Ctrl Capt: FAC1
   /***** Evac *****/
       // This panel not yet implemented
-//  ret = digital_input(device,card1,SW_evacCmd,evac_cmd_sw,0);			// EVAC: Command
+//  ret = digital_input(device,card1,SW_evacCmd,&temp,0);					// EVAC: Command
+//  if (temp < 0.5) { *evac_cmd_gd = 0.0; *evac_cmd_sw = 0; }
+//  else { *evac_cmd_sw = 1; *evac_cmd_gd = 1.0; }
 //  ret = digital_input(device,card1,PB_evacHornOff,evac_horn_pb,0);	// EVAC: Horn Cutoff
 //  ret = digital_input(device,card1,SW_evacCaptPurs,evac_capt_sw,0);	// EVAC: Capt & Purs
   /***** Emer Elec Pwr *****/
       // EmerManOn switch in ElecOHPArray (ELEC panel)
-  ret = digital_input(device,card1,SW_emerManOn,&temp,0);				// EMER ELEC: Man On
-  *emer_man_sw = (temp) ? 2 : 0;	// (2, not 1: guarded switch!)
+//  ret = digital_input(device,card1,SW_emerManOn,&temp,0);				// EMER ELEC: Man On
+//  if (temp < 0.4) { *emer_man_gd = 0.0; *emer_man_sw = 0; }
+//  else { *emer_man_sw = 1; *emer_man_gd = 0.8; }
+//  ret = digital_input(device,card,SW_emerGenTest,emer_test_sw,0);		// EMER ELEC: Gen Test
+//  if (temp < 0.4) { *emer_test_gd = 0.0; *emer_test_sw = 0; }
+//  else { *emer_test_sw = 1; *emer_test_gd = 0.8; }
       // rest of this panel not yet implemented
-//  ret = digital_input(device,card,SW_emerGenTest,emer_test_sw,0);		// EMER ELEC: 
 //  ret = digital_input(device,card,SW_emerGen1Line,emer_gen1_sw,0);	// EMER ELEC: 
   /***** Gpws *****/
       // This panel not yet implemented
@@ -584,16 +615,20 @@ void a320_overhead(void)
   /***** Oxygen *****/
       // CREW SUPPLY switch and lights not yet implemented
   ret = digital_input(device,card1,SW_oxyMaskManOn,&temp,0);			// OXYGEN: Passengers system
-  *oxy_pax_sw = (temp) ? 2 : 0;	// (2, not 1: guarded switch!)
+  if (temp < 0.4) { *oxy_pax_gd = 0.0; *oxy_pax_sw = 0; }
+  else { *oxy_pax_sw = 1; *oxy_pax_gd = 0.8; }
 //  ret = digital_input(device,card,SW_oxyCrew,oxy_crew_sw,0);			// OXYGEN: Crew system
   /***** Calls *****/
-      // MECH PB not yet implemented
+      // MECH PB not implemented
 //  ret = digital_input(device,card,PB_callsMech,calls_mech_pb,0);		// CALLS: Mech
   ret = digital_input(device,card1,PB_callsFwd,&tmp1,0);				// CALLS: Forward cabin
   ret = digital_input(device,card1,PB_callsAft,&tmp2,0);				// CALLS: Aft cabin
   if ((tmp1) || (tmp2)) *calls_chk_cabin_pb = 1;
   else *calls_chk_cabin_pb = 0;
-  ret = digital_input(device,card1,SW_callsEmer,calls_emer_sw,0);		// CALLS: Emer
+      // Calls: EMER not impleented
+//  ret = digital_input(device,card1,SW_callsEmer,&temp,0);				// CALLS: Emer
+//  if (temp < 0.5) { *calls_emer_gd = 0.0; *calls_emer_sw = 0; }
+//  else { *calls_emer_sw = 1; *calls_emer_gd = 1.0; }
   /***** Wiper Capt  *****/
   ret = digital_input(device,card1,SW_lWiperOff,&temp,0);				// Wiper Speed (NOTE: same as for FO!)
   if (temp) *wiper_spd_sw = 0;
@@ -626,9 +661,11 @@ void a320_overhead(void)
 // Hydraulics Switches - 0=Eng 1 Pump, 1=Rat Man, 2=(blue) Elec Pump, 3=PTU, 4=Eng 2 Pump, 5=Yellow Elec Pump (numbers assumed)
   ret = digital_input(device,card2,SW_hydEng1Pmp,eng1pmp_sw,0);			// HYD: Eng 1 Pump
   ret = digital_input(device,card2,SW_hydRatMan,&temp,0);				// HYD: Rat Man On
-  *ratman_sw = (temp) ? 2 : 0;	// (2, not 1: guarded switch!)
+  if (temp < 0.4) { *ratman_gd = 0.0; *ratman_sw = 0; }
+  else { *ratman_sw = 1; *ratman_gd = 0.8; }
   ret = digital_input(device,card4,SW_hydBlElPmp,&temp,0);				// HYD: Blue Electric Pump
-  *blelpmp_sw = (temp) ? 2 : 0;	// (2, not 1: guarded switch!)
+  if (temp < 0.5) { *blelpmp_gd = 1.0; *blelpmp_sw = 0; }
+  else { *blelpmp_sw = 1; *blelpmp_gd = 0.0; }
   ret = digital_input(device,card3,SW_hydPtu,ptu_sw,0);					// HYD: PTU
   ret = digital_input(device,card3,SW_hydEng2Pmp,eng2pmp_sw,0);			// HYD: Eng 2 Pump
   ret = digital_input(device,card3,PB_hydYElecPmp,ylelpmp_pb,1);		// HYD: Yellow Electric Pump (PB!)
@@ -710,7 +747,9 @@ void a320_overhead(void)
   if (cond1) *x_bleed_sw = 2;
   else if (cond2) *x_bleed_sw = 1;
   else *x_bleed_sw = 0;
-  ret = digital_input(device,card2,SW_condRamAir,ram_air_sw,0);			// COND: Ram Air
+  ret = digital_input(device,card2,SW_condRamAir,&temp,0);				// COND: Ram Air
+  if (temp < 0.5) { *ram_air_gd = 0.0; *ram_air_sw = 0; }
+  else { *ram_air_sw = 1; *ram_air_gd = 1.0; }
   ret = digital_input(device,card3,SW_condApuBld,apu_bleed_sw,0);		// COND: Apu Bleed
   ret = digital_input(device,card2,SW_condEng1Bld,eng1_bleed_sw,0);		// COND: Eng 1 Bleed
   ret = digital_input(device,card3,SW_condEng2Bld,eng2_bleed_sw,0);		// COND: Eng 2 Bleed
@@ -745,7 +784,9 @@ void a320_overhead(void)
   else if (land_elev_7) *land_elev = 0.75;
   else if (land_elev_8) *land_elev = 0.875;
   else *land_elev = 1.0;
-  ret = digital_input(device,card3,SW_pressDitch,ditch_sw,0);			// CABIN PRESS: Ditching
+  ret = digital_input(device,card3,SW_pressDitch,&temp,0);				// CABIN PRESS: Ditching
+  if (temp < 0.5) { *ditch_gd = 0.0; *ditch_sw = 0; }
+  else { *ditch_sw = 1; *ditch_gd = 1.0; }
   /***** Ext Lt *****/
   ret = digital_input(device,card4,SW_xtLtStrobeOn,&strobe_on_sw,0);	// EXT LT: Strobe
   ret = digital_input(device,card4,SW_xtLtStrobeOff,&strobe_off_sw,0);
@@ -826,10 +867,19 @@ void a320_overhead(void)
   ret = digital_input(device,card4,SW_ventExtract,vent_extract_sw,0);		// VENT: Extract
   ret = digital_input(device,card4,SW_ventCabFans,vent_fans_sw,0);			// VENT: Cab Fans
  /***** Engines *****/
-  ret = digital_input(device,card4,SW_engManSt1,man1start_sw,0);			// ENGINES: Man Start Eng 1
-  ret = digital_input(device,card4,SW_engManSt2,man2start_sw,0);			// ENGINES: Man Start Eng 2
-  ret = digital_input(device,card4,SW_engN1Md1,n1mode1_sw,0);				// ENGINES: N1 Mode Eng 1
-  ret = digital_input(device,card4,SW_engN1Md2,n1mode2_sw,0);				// ENGINES: N1 Mode Eng 2
+      // Lights not implemented
+  ret = digital_input(device,card4,SW_engManSt1,&temp,0);					// ENGINES: Man Start Eng 1
+  if (temp < 0.5) { *man1start_gd = 0.0; *man1start_sw = 0; }
+  else { *man1start_sw = 1; *man1start_gd = 1.0; }
+  ret = digital_input(device,card4,SW_engManSt2,&temp,0);					// ENGINES: Man Start Eng 2
+  if (temp < 0.5) { *man2start_gd = 0.0; *man2start_sw = 0; }
+  else { *man2start_sw = 1; *man2start_gd = 1.0; }
+  ret = digital_input(device,card4,SW_engN1Md1,&temp,0);					// ENGINES: N1 Mode Eng 1
+  if (temp < 0.5) { *n1mode1_gd = 0.0; *n1mode1_sw = 0; }
+  else { *n1mode1_sw = 1; *n1mode1_gd = 1.0; }
+  ret = digital_input(device,card4,SW_engN1Md2,&temp,0);					// ENGINES: N1 Mode Eng 2
+  if (temp < 0.5) { *n1mode2_gd = 0.0; *n1mode2_sw = 0; }
+  else { *n1mode2_sw = 1; *n1mode2_gd = 1.0; }
   /***** Wiper FO *****/
 //  ret = digital_input(device,card4,SW_rWiperOff,&temp,0);					// Wiper Speed (NOTE: same as for Captain!)
 //  if (temp) then *wiper_spd_sw = 0;
@@ -937,7 +987,7 @@ void a320_overhead(void)
   ret = digital_output(device,card1,LT_fctlFac1U,&tmp1);
   ret = digital_output(device,card1,LT_fctlFac1L,&tmp2);
   /***** Evac *****/
-//  temp = lightCheck(*evac_cmd_lt);														// EVAC: Command
+//  temp = lightCheck(*evac_cmd_lt);															// EVAC: Command
 //  ret = digital_output(device,card1,LT_evacCmdL,&temp);
 //  ret = digital_output(device,card1,LT_evacCmdU,&zero);
   /***** Emer Elec Pwr *****/
@@ -986,7 +1036,7 @@ void a320_overhead(void)
   ret = digital_output(device,card3,LT_hydEng2PmpU,&tmp1);
   ret = digital_output(device,card3,LT_hydEng2PmpL,&tmp2);
   tmp1 = lightCheck(*blelpmp_lt >> 1); tmp2 = lightCheck(1 - (*blelpmp_lt % 2));			// HYD: Blue Elec Pump
-  ret = digital_output(device,card4,LT_hydBElecPmpU,&tmp1);
+  ret = digital_output(device,card4,LT_hydBElecPmpU,&tmp1);									
   ret = digital_output(device,card4,LT_hydBElecPmpL,&tmp2);
   tmp1 = lightCheck(*ylelpmp_lt >> 1); tmp2 = lightCheck(*ylelpmp_lt % 2);					// HYD: Yellow Elec Pump
   ret = digital_output(device,card3,LT_hydYElecPmpU,&tmp1);
@@ -1149,9 +1199,8 @@ void a320_overhead(void)
 //  ret = digital_output(device,card4,LT_ventCabFansU,&tmp1);
   ret = digital_output(device,card4,LT_ventCabFansL,&tmp2);
   /***** Engines *****/
-  tmp1 = lightCheck(*man1start_lt >> 1); tmp2 = lightCheck(*man1start_lt % 2);				// Engines: Manual Start Eng 1
-//  ret = digital_output(device,card4,LT_engManSt1U,&tmp1);
-  ret = digital_output(device,card4,LT_engManSt1L,&tmp2);
+  temp = lightCheck(*man1start_lt);															// Engines: Manual Start Eng 1
+  ret = digital_output(device,card4,LT_engManSt1L,&temp);
   tmp1 = lightCheck(*man2start_lt >> 1); tmp2 = lightCheck(*man2start_lt % 2);				// Engines: Manual Start Eng 2
 //  ret = digital_output(device,card4,LT_engManSt2U,&tmp1);
   ret = digital_output(device,card4,LT_engManSt2L,&tmp2);

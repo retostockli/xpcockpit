@@ -3,11 +3,12 @@
   This is the ogcA320NDWidget.h header to ogcA320NDWidget.cpp
 
   Created:
-    Date:   2011-11-28
+    Date:   2011-11-14
     Author: Hans Jansen
+    last change: 2020-02-01
     (see ogcSkeletonGauge.cpp for more details)
 
-  Copyright (C) 2011-2016 Hans Jansen (hansjansen@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
   and/or                  Reto Stöckli (stockli@users.sourceforge.net)
 
   This program is free software: you can redistribute it and/or modify it under
@@ -36,18 +37,18 @@
 
 extern int verbosity;
      
-namespace OpenGC
-{
-  class A320NDWidget : public GaugeComponent  
-  {
-  public:
-    A320NDWidget();
-    virtual ~A320NDWidget();
+namespace OpenGC {
 
-    void Render();
+  class A320NDWidget : public GaugeComponent {
 
-  protected:
-    int m_Font;
+    public:
+      A320NDWidget ();
+      virtual ~A320NDWidget ();
+      void Render ();
+
+    protected:
+      int m_Font;
+
   };
 
   struct wptstruct {
@@ -56,5 +57,6 @@ namespace OpenGC
     float lat;
   };
 
-}
+} // end namespace OpenGC
+
 #endif
