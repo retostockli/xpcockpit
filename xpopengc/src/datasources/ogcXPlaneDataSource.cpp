@@ -99,7 +99,7 @@ void XPlaneDataSource::define_server(int port, string ip_address, int maxradar)
     if (init_udp() < 0) exit(-8);
 
     /* generate send message */
-    snprintf(udpSendBuffer, sizeof(udpSendBuffer),"RADR %i",m_maxradar);
+    snprintf(udpSendBuffer, sendlen,"RADR %i",m_maxradar);
     udpSendBuffer[4]='\0';
     udpSendBuffer[6+n]='\0';
 

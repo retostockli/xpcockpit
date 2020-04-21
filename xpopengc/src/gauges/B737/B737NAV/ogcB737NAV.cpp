@@ -138,7 +138,16 @@ void B737NAV::Render()
   int acf_type = m_pDataSource->GetAcfType();
 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
-  if (*avionics_on == 1) {
+  int *irs_mode;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    irs_mode = link_dataref_int("laminar/B738/irs/irs_mode");
+  } else {
+    irs_mode = link_dataref_int("xpserver/irs_mode");
+    *irs_mode = 2;
+  }
+
+  
+  if ((*avionics_on == 1) && (*irs_mode == 2)) {
 
     // First thing to do is call base class setup
     Gauge::Render();

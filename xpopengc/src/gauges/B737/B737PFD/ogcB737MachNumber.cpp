@@ -64,7 +64,7 @@ namespace OpenGC
 
   void B737MachNumber::Render()
   {
-    char buffer[10]; // temporary buffer for text
+    char buffer[12]; // temporary buffer for text
     memset(buffer,0,sizeof(buffer));
     float fontHeight = 5;
     float fontWidth = 5;
@@ -316,7 +316,7 @@ namespace OpenGC
 	m_pFontManager->Print(153,25+0, &buffer[0], m_Font);
       } else {
 	if (*altimeter_pressure_unit == 1) {
-	  snprintf(buffer, sizeof(buffer), "%5.1f hPa", *altimeter_pressure/0.029530);
+	  snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure/0.029530);
 	  m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
 	} else {
 	  snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure);

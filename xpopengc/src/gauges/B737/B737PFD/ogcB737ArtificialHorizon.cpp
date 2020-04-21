@@ -69,6 +69,7 @@ namespace OpenGC
 
     // For drawing circles
     CircleEvaluator aCircle;
+    char buffer[8];
 
     // First, store the "root" position of the gauge component
     glMatrixMode(GL_MODELVIEW);
@@ -79,6 +80,9 @@ namespace OpenGC
     
     float *pitch = link_dataref_flt("sim/flightmodel/position/theta",-1);
     float *roll = link_dataref_flt("sim/flightmodel/position/phi",-1);
+
+    // Altitude above ground level (meters)
+    float *altitude_agl = link_dataref_flt("sim/flightmodel/position/y_agl",0);
 
     int *fd_roll_status;
     int *fd_pitch_status;
@@ -545,6 +549,22 @@ namespace OpenGC
 
     }
 
+    // altitude warning
+    if ((*altitude_agl != FLT_MISS) && (*altitude_agl < 2500.0)) {
+      glColor3ub(0,0,0);
+      glBegin(GL_POLYGON);
+      glVertex2f(m_PhysicalSize.x/2-14,1);
+      glVertex2f(m_PhysicalSize.x/2+12,1);
+      glVertex2f(m_PhysicalSize.x/2+12,10);
+      glVertex2f(m_PhysicalSize.x/2-14,10);
+      glEnd();
+      glColor3ub(255,255,255);
+      m_pFontManager->SetSize(m_Font,6.0, 6.0);
+      snprintf( buffer, sizeof(buffer), "%i", (int) *altitude_agl );
+      m_pFontManager->Print(m_PhysicalSize.x/2-strlen(buffer)*3,2,buffer,m_Font);
+
+    }
+    
     //----------------Flight Director----------------
     
     if ((*fd_pitch_status == 1) && (*fd_pitch != FLT_MISS))

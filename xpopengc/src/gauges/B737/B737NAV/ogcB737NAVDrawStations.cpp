@@ -62,7 +62,7 @@ namespace OpenGC
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-    float lineWidth = 3.0;
+    float lineWidth = 1.5;
 
     
     double dtor = 0.0174533; /* radians per degree */
@@ -146,7 +146,7 @@ namespace OpenGC
     
       // plot map options
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-      glColor3ub(0, 150, 200);
+      glColor3ub(0, 189, 231);
       if (*nav_shows_apt == 1) {
 	m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.388 , "ARPT", m_Font );
       }
@@ -268,7 +268,7 @@ namespace OpenGC
 		  
 		    /* small triangle: white */
 		    float ss2 = 0.50*ss;
-		    glColor3ub(255, 255, 255);
+		    glColor3ub(0, 189, 231);
 		    glLineWidth(lineWidth);
 		    glBegin(GL_LINE_LOOP);
 		    glVertex2f(-ss2, -1.0*ss2);

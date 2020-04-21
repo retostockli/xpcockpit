@@ -197,7 +197,9 @@ void b737_throttle(void)
   int *stab_trim_me = link_dataref_int("xpserver/stab_trim_me");
 
   int *horn_cutoff;
-  if (acf_type == 1) {
+  if ((acf_type == 2) || (acf_type == 3)) { 
+    horn_cutoff = link_dataref_cmd_once("laminar/B738/alert/gear_horn_cutout");
+  } else if (acf_type == 1) {
     horn_cutoff = link_dataref_cmd_once("x737/TQ/HORN_CUTOFF");
   } else {
     horn_cutoff = link_dataref_int("xpserver/HORN_CUTOFF");

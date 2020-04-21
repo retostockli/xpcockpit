@@ -333,7 +333,7 @@ B737MIP::B737MIP()
   
   B737MIPAnn* ann_pseu = new B737MIPAnn();
   ann_pseu->SetParentRenderObject(this);
-  ann_pseu->SetPosition(10 + 5*deltax, m_PhysicalSize.y - deltay - 5 - 6*deltay);
+  ann_pseu->SetPosition(10 + 7*deltax, m_PhysicalSize.y - deltay - 5 - 7*deltay);
   ann_pseu->setAnnName((char*) "PSEU");
   ann_pseu->setAnnForm(0);
   ann_pseu->setAnnFGColor(255,100,0);
@@ -343,7 +343,7 @@ B737MIP::B737MIP()
 
   B737MIPAnn* ann_gps = new B737MIPAnn();
   ann_gps->SetParentRenderObject(this);
-  ann_gps->SetPosition(10 + 2*deltax, m_PhysicalSize.y - deltay - 5 - 6*deltay);
+  ann_gps->SetPosition(10 + 7*deltax, m_PhysicalSize.y - deltay - 5 - 8*deltay);
   ann_gps->setAnnName((char*) "GPS");
   ann_gps->setAnnForm(0);
   ann_gps->setAnnFGColor(255,255,255);
@@ -442,6 +442,7 @@ B737MIP::~B737MIP()
 
 void B737MIP::Render()
 {
+  int fontSize = 0.05*m_PhysicalSize.y;
 
   int acf_type = m_pDataSource->GetAcfType();
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
@@ -455,19 +456,23 @@ void B737MIP::Render()
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
 
-    // grey MIP plate
-    /*
-    glColor3ub( 88, 94, 100 );
-    glPolygonMode(GL_FRONT,GL_FILL);
-    glBegin(GL_POLYGON);
-    glVertex2f( 0, 0);
-    glVertex2f( m_PhysicalSize.x, 0);
-    glVertex2f( m_PhysicalSize.y, m_PhysicalSize.y);
-    glVertex2f( 0, m_PhysicalSize.y);
+    /* split between MIP and AFT OVH */
+    glColor3ub( 100, 100, 100 );
+    glBegin(GL_LINE_STRIP);
+    glVertex2f( 0, 0.4*m_PhysicalSize.y);
+    glVertex2f( m_PhysicalSize.x, 0.4*m_PhysicalSize.y);
     glEnd();
-    */
-    
 
+    /* IRS Position */
+    if ((acf_type == 2) || (acf_type == 3)) {
+      m_pFontManager->SetSize( m_Font, fontSize, fontSize );
+      glColor3ub(255,100,0);
+
+      unsigned char *irs_pos = link_dataref_byte_arr("laminar/B738/irs/irs_pos",40,-1);
+      m_pFontManager->Print( 30.0, m_PhysicalSize.y - 70.0, (const char*) irs_pos, m_Font);
+    }
+    
+    
     // black rectangle of MIP display
     //    glColor3ub(255, 255, 255 );
     //    glBegin(GL_POLYGON);

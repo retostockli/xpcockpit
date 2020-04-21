@@ -55,6 +55,7 @@ protected:
   /* Structure holding FMC waypoints */
   struct wptstruct {
     char name[40];
+    char pth[3];
     float lon;
     float lat;
     float rad_ctr_lon;

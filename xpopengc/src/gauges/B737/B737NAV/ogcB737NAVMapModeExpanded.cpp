@@ -50,6 +50,8 @@ namespace OpenGC
   {
     GaugeComponent::Render();
 
+    int acf_type = m_pDataSource->GetAcfType();
+    
     bool mapCenter = m_NAVGauge->GetMapCenter();
     int mapMode = m_NAVGauge->GetMapMode();
     float mapRange = m_NAVGauge->GetMapRange();
@@ -89,7 +91,6 @@ namespace OpenGC
     // What's the heading?
     float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
     float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
-    float *heading_mag_ap = link_dataref_flt("sim/cockpit2/autopilot/heading_dial_deg_mag_pilot",0);
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
      
       
@@ -110,11 +111,37 @@ namespace OpenGC
     //    unsigned char *adf2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf2_nav_id",500,-1);
     unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",150,-1);
     unsigned char *adf2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf2_nav_id",150,-1);
-    
+
+    float *ap_vspeed = link_dataref_flt("sim/cockpit/autopilot/vertical_velocity",0);
+    float *ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0);
+    float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
+    float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+
+    int *has_heading_bug;
+    float *heading_mag_ap;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      has_heading_bug = link_dataref_int("laminar/B738/nd/hdg_bug_line");
+      heading_mag_ap = link_dataref_flt("laminar/B738/autopilot/mcp_hdg_dial",0);
+    } else {
+      has_heading_bug = link_dataref_int("xpserver/has_hdg_bug");
+      heading_mag_ap = link_dataref_flt("sim/cockpit2/autopilot/heading_dial_deg_mag_pilot",0);
+      *has_heading_bug = 1;
+    }
+
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if (*heading_true != FLT_MISS) {
 
+      float dist_to_altitude = FLT_MISS; // Miles
+      if ((*ap_altitude != FLT_MISS) && (*ap_vspeed != FLT_MISS) &&
+	  (*speed_knots != FLT_MISS) && (*pressure_altitude != FLT_MISS) &&
+	  (*ap_vspeed != 0.0)) {
+	// 1 mile has 5280 feet
+	// one knot has 101 feet per minute
+	dist_to_altitude = *speed_knots * 101.3 * fabs((*ap_altitude - *pressure_altitude) / *ap_vspeed) / 5280.0;
+	//printf("%f %f %f %f %f \n",*ap_altitude,*pressure_altitude,*ap_vspeed,*speed_knots,dist_to_altitude);
+      } 
+      
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
     
@@ -217,7 +244,7 @@ namespace OpenGC
       }
     
       /* MCP selected Heading bug */
-      if ((*heading_mag_ap != FLT_MISS) && (*magnetic_variation != FLT_MISS)) {
+      if ((*heading_mag_ap != FLT_MISS) && (*magnetic_variation != FLT_MISS) && (*has_heading_bug == 1)) {
 
 	glPushMatrix();     
 
@@ -291,6 +318,8 @@ namespace OpenGC
       // Set up big circle for nav range
       if (!mapCenter) {
 	glPushMatrix();
+
+	
 	glLineWidth(lineWidth);
 	glTranslatef(0.0, 0.0, 0.0);
 	CircleEvaluator bCircle;
@@ -323,10 +352,23 @@ namespace OpenGC
 	glBegin(GL_LINE_STRIP);
 	bCircle.Evaluate();
 	glEnd();
+
+	if (dist_to_altitude != FLT_MISS) {
+ 	  /* set up distance to AP-dialed altitude in V/S mode */
+	  glColor3ub(0, 255, 0);
+	  bCircle.SetArcStartEnd(345,15);
+	  bCircle.SetRadius(map_size/mapRange*dist_to_altitude);
+	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+	  glBegin(GL_LINE_STRIP);
+	  bCircle.Evaluate();
+	  glEnd();
+	}
+
 	glPopMatrix();
       }
 
       // set up tick marks
+      glColor3ub(255, 255, 255);
       glPushMatrix();
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
       glRotatef(*heading_mag,0,0,1);

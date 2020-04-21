@@ -72,8 +72,13 @@ namespace OpenGC
     // Get the barometric altitude (feet)
     float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
 
-    // Altitude above ground level (meters)
-    float *altitude_agl = link_dataref_flt("sim/flightmodel/position/y_agl",0);
+    // Runway Altitude
+    float *rwy_altitude;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      rwy_altitude = link_dataref_flt("laminar/B738/pfd/rwy_altitude",0);
+    } else {
+      rwy_altitude = link_dataref_flt("xpserver/rwy_altitude",0);
+    }
     
     // Autopilot altitude (feet)
     float *ap_altitude;
@@ -330,19 +335,19 @@ namespace OpenGC
 	    }
 	}
 
-      if ((*altitude_agl != FLT_MISS) && (*altitude_agl > 5.0)) {
-	float aglaltLocation = (-1.0 * *altitude_agl * 3.28084) *
+      if (*rwy_altitude != FLT_MISS) {
+	float rwyaltLocation = (*rwy_altitude - *pressure_altitude) *
 	  tickSpacing / 100.0 + m_PhysicalSize.y/2;
 	glColor3ub( 200, 200,  0 );
 	glLineWidth(3.0);
 	glBegin(GL_LINE_LOOP);
-	glVertex2f(0.0, aglaltLocation);
-	glVertex2f(m_PhysicalSize.x, aglaltLocation);
+	glVertex2f(0.0, rwyaltLocation);
+	glVertex2f(m_PhysicalSize.x, rwyaltLocation);
 	glEnd();
 	for (int i=-2;i<10;i++) {
 	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(i*m_PhysicalSize.x/10.0, aglaltLocation);
-	  glVertex2f((i+1)*m_PhysicalSize.x/10.0, aglaltLocation-tickSpacing*0.4);
+	  glVertex2f(i*m_PhysicalSize.x/10.0, rwyaltLocation);
+	  glVertex2f((i+1)*m_PhysicalSize.x/10.0, rwyaltLocation-tickSpacing*0.4);
 	  glEnd();
 	}
       }

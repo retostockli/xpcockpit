@@ -68,6 +68,8 @@ namespace OpenGC
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
 
+    int acf_type = m_pDataSource->GetAcfType();
+
     /*
       A few general notes:
   
@@ -100,7 +102,17 @@ namespace OpenGC
     // What's the heading?
     float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
     //    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",0);
-    float *heading_mag_ap = link_dataref_flt("sim/cockpit2/autopilot/heading_dial_deg_mag_pilot",0);
+
+    int *has_heading_bug;
+    float *heading_mag_ap;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      has_heading_bug = link_dataref_int("laminar/B738/nd/hdg_bug_line");
+      heading_mag_ap = link_dataref_flt("laminar/B738/autopilot/mcp_hdg_dial",0);
+    } else {
+      has_heading_bug = link_dataref_int("xpserver/has_hdg_bug");
+      heading_mag_ap = link_dataref_flt("sim/cockpit2/autopilot/heading_dial_deg_mag_pilot",0);
+      *has_heading_bug = 1;
+    }
 
     float *ap_course1 = link_dataref_flt("sim/cockpit/radios/nav1_obs_degm",0);    // NAV autopilot course1     
     //    float *ap_course2 = link_dataref_flt("sim/cockpit/radios/nav2_obs_degm",0);    // NAV autopilot course2    
@@ -214,7 +226,7 @@ namespace OpenGC
 
       // draw magenta AP Heading
 
-      if (*heading_mag_ap != FLT_MISS) {
+      if ((*heading_mag_ap != FLT_MISS) && (*has_heading_bug)) {
 	
 	glPushMatrix();
 	

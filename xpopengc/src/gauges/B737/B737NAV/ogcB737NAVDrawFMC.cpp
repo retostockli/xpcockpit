@@ -109,17 +109,21 @@ namespace OpenGC
     int *fmc_miss1;
     int *fmc_miss2;
     int *fmc_cur;
+    int *fmc_ctr;
     float *fmc_rnp;
     float *fmc_anp;
     unsigned char *fmc_name;
+    unsigned char *fmc_pth;
     int *fmc_idx;
     int *fmc_nidx;
     if ((acf_type == 2) || (acf_type == 3)) {
       /* Laminar FMC for 737 */
       fmc_name = link_dataref_byte_arr("laminar/B738/fms/legs",255,-1);
+      fmc_pth = link_dataref_byte_arr("laminar/B738/fms/legs_pth",255,-1);
       fmc_lon = link_dataref_flt_arr("laminar/B738/fms/legs_lon",128,-1,-5);
       fmc_lat = link_dataref_flt_arr("laminar/B738/fms/legs_lat",128,-1,-5);
-      fmc_cur = link_dataref_int("laminar/B738/fms/legs_step_ctr"); /* link to active wpt */
+      fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr"); 
+      fmc_cur = link_dataref_int("laminar/B738/fms/vnav_idx"); 
       fmc_turn = link_dataref_int_arr("laminar/B738/fms/legs_turn",128,-1);
       fmc_type = link_dataref_int_arr("laminar/B738/fms/legs_type",128,-1);
       fmc_rad_ctr_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lon",128,-1,-5);
@@ -203,6 +207,7 @@ namespace OpenGC
       
 	/* Plot FMC waypoints */
 	int wpt_current = 0;
+	int wpt_center = 0;
 	int wpt_miss1 = INT_MISS;
 	int wpt_miss2 = INT_MISS;
 	if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
@@ -252,7 +257,8 @@ namespace OpenGC
 	    /* ZIBO MOD FMC */
 	    nwpt=0;
 	    if (*fmc_nidx != INT_MISS) {
-	      wpt_current = *fmc_cur-1;
+	      wpt_center = *fmc_ctr-1;
+	      wpt_current = *fmc_cur-1; 
 	      wpt_miss1 = *fmc_miss1;
 	      wpt_miss2 = *fmc_miss2;
 	      nwpt = *fmc_nidx;
@@ -272,6 +278,7 @@ namespace OpenGC
 		}
 		for (int i=0;i<nwpt;i++) {
 		  memset(wpt[i].name,0,sizeof(wpt[i].name));
+		  memset(wpt[i].pth,0,sizeof(wpt[i].pth));
 		  if (pch != NULL) {
 		    //		printf("%s \n",pch);
 		    //		  if ((int) pch[0] != 40) {
@@ -281,6 +288,7 @@ namespace OpenGC
 		    
 		    pch = strtok(NULL," ");
 		  }
+		  memcpy(&wpt[i].pth,fmc_pth+2*i,sizeof(wpt[i].pth)-1);
 		  wpt[i].lon = fmc_lon[i];
 		  wpt[i].lat = fmc_lat[i];
 		  wpt[i].rad_ctr_lon = fmc_rad_ctr_lon[i];
@@ -288,7 +296,7 @@ namespace OpenGC
 		  wpt[i].rad_lon2 = fmc_rad_lon2[i];
 		  wpt[i].rad_lat2 = fmc_rad_lat2[i];
 		  wpt[i].brg = fmc_brg[i];
-		  //		printf("%s %i %i %f %f %f \n",wpt[i].name,fmc_type[i],fmc_turn[i],fmc_lon[i],fmc_rad_lon[i],fmc_radius[i]);
+		  printf("%s %s %i %i %f %f \n",wpt[i].name,wpt[i].pth,fmc_type[i],fmc_turn[i],180./3.14*fmc_brg[i],fmc_rad_lon2[i],fmc_rad_ctr_lon[i]);
 		}
 	      } 
 	    }
@@ -307,6 +315,7 @@ namespace OpenGC
 	    printf("%i %s %f %f %i \n",i,wpt[i].name,wpt[i].lon,wpt[i].lat,wpt_current);
 	  }
 	  */
+	  
 
 	  if (nwpt > 0) {
 	    for (int i=wpt_current;i<nwpt;i++) {
@@ -346,7 +355,7 @@ namespace OpenGC
 		glLineWidth(lineWidth);
 		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
 		  // missed approach route
-		  glColor3ub(0, 150, 200);
+		  glColor3ub(0, 189, 231);
 		  glEnable(GL_LINE_STIPPLE);
 		  glLineStipple( 4, 0x0F0F );
 		} else {
@@ -354,7 +363,10 @@ namespace OpenGC
 		  glColor3ub(255, 0, 200);
 		}
 		
-		// holds are legs_pth "HA" or "HF" or "HM"
+		// holds are legs_pth
+		// "HA" (hold to altitude)
+		// "HF" (hold to a fix)
+		// "HM" (hold with manual termination)
 		// hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
 
 		/*
@@ -550,32 +562,27 @@ namespace OpenGC
 		// draw waypoint symbol and name
 		glTranslatef(xPos2, yPos2, 0.0);
 		glRotatef(-1.0* *heading_true, 0, 0, 1);
-		glColor3ub(255, 255, 255);
 
-		/*
-		  float ss2 = 0.50*ss;
-		  glColor3ub(0, 255, 255);
-		  glLineWidth(1.5);
+		if (i == wpt_current) {
+		  glColor3ub(255, 0, 200);
+		} else {
+		  glColor3ub(255, 255, 255);
+		}
+		if (strcmp(wpt[i].name,"(INTC)") != 0) {
+		  glLineWidth(0.8*lineWidth);
 		  glBegin(GL_LINE_LOOP);
-		  glVertex2f(-ss2, -1.0*ss2);
-		  glVertex2f(ss2, -1.0*ss2);
-		  glVertex2f(0.0, 1.0*ss2);
+		  glVertex2f(0.15*ss, 0.15*ss);
+		  glVertex2f(1.0*ss,  0.0);
+		  glVertex2f(0.15*ss, -0.15*ss);
+		  glVertex2f(0.0, -1.0*ss);
+		  glVertex2f(-0.15*ss, -0.15*ss);
+		  glVertex2f(-1.0*ss, 0.0);
+		  glVertex2f(-0.15*ss, 0.15*ss);
+		  glVertex2f( 0.0, 1.0*ss);
 		  glEnd();
-		*/
-		glLineWidth(0.8*lineWidth);
-		glBegin(GL_LINE_LOOP);
-		glVertex2f(0.15*ss, 0.15*ss);
-		glVertex2f(1.0*ss,  0.0);
-		glVertex2f(0.15*ss, -0.15*ss);
-		glVertex2f(0.0, -1.0*ss);
-		glVertex2f(-0.15*ss, -0.15*ss);
-		glVertex2f(-1.0*ss, 0.0);
-		glVertex2f(-0.15*ss, 0.15*ss);
-		glVertex2f( 0.0, 1.0*ss);
-		glEnd();
-
-		m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
-		m_pFontManager->Print(4,-6, wpt[i].name, m_Font);
+		  m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
+		  m_pFontManager->Print(4,-6, wpt[i].name, m_Font);
+		}
 
 
 		glPopMatrix();
