@@ -60,6 +60,8 @@ namespace OpenGC
 
     char buffer[6];
 
+    CircleEvaluator aCircle;
+
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
     float lineWidth = 1.1 * m_PhysicalSize.x / 100.0;
@@ -94,6 +96,7 @@ namespace OpenGC
     
     // What's the heading?
     float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
      
     float *fmc_ok;
     float *fmc_lon;
@@ -106,6 +109,7 @@ namespace OpenGC
     float *fmc_rad_lat2;
     float *fmc_radius;
     float *fmc_brg;
+    float *fmc_crs;
     int *fmc_miss1;
     int *fmc_miss2;
     int *fmc_cur;
@@ -134,6 +138,7 @@ namespace OpenGC
       fmc_miss1 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx");
       fmc_miss2 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx2");
       fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_true",128,-1,-5);
+      fmc_crs = link_dataref_flt_arr("laminar/B738/fms/legs_crs_mag",128,-1,-5);
       fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
       fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
       fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
@@ -295,8 +300,16 @@ namespace OpenGC
 		  wpt[i].rad_ctr_lat = fmc_rad_ctr_lat[i];
 		  wpt[i].rad_lon2 = fmc_rad_lon2[i];
 		  wpt[i].rad_lat2 = fmc_rad_lat2[i];
-		  wpt[i].brg = fmc_brg[i];
-		  printf("%s %s %i %i %f %f \n",wpt[i].name,wpt[i].pth,fmc_type[i],fmc_turn[i],180./3.14*fmc_brg[i],fmc_rad_lon2[i],fmc_rad_ctr_lon[i]);
+		  wpt[i].brg = fmc_brg[i]; // radians true
+		  wpt[i].crs = fmc_crs[i]; // degrees mag
+		  wpt[i].radius = fmc_radius[i];
+		  wpt[i].turn = fmc_turn[i]; // 0,2: left. 3: right
+
+		  /*
+		  printf("%s %s %i %f %f %f %f %f\n",wpt[i].name,wpt[i].pth,fmc_turn[i],
+			 fmc_rad_lon2[i],fmc_rad_ctr_lon[i],fmc_radius[i],
+			 fmc_brg[i]*180./3.14,fmc_brg[max(i-1,0)]*180./3.14); 
+		  */
 		}
 	      } 
 	    }
@@ -361,20 +374,62 @@ namespace OpenGC
 		} else {
 		  // regular route
 		  glColor3ub(255, 0, 200);
-		}
-		
-		// holds are legs_pth
-		// "HA" (hold to altitude)
-		// "HF" (hold to a fix)
-		// "HM" (hold with manual termination)
-		// hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
+		}		// check if wpt is a holding
+		if ((strcmp(wpt[i].pth,"HM") == 0) ||
+		    (strcmp(wpt[i].pth,"HF") == 0) ||
+		    (strcmp(wpt[i].pth,"HA") == 0)) {
+		  // holds are legs_pth
+		  // "HA" (hold to altitude)
+		  // "HF" (hold to a fix)
+		  // "HM" (hold with manual termination)
+		  // hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
+		  int holdtype = 1; // 1: Right -1: Left --> How do we know it is a lefthand holding?
+		  float holdlen = 3.0 / mapRange * map_size; // nm --> Pixels
+		  float gamma = (wpt[i].crs - *magnetic_variation)*3.14/180.; // inbound direction (radians)
+		  float xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course
+		  float yPos1 = cos(gamma-3.14)*holdlen + yPos2; // Pos2 is end of inbound course
+		  float xPos3 = sin(gamma+0.5*3.14*holdtype)*holdlen + xPos2; // start of outbound course 
+		  float yPos3 = cos(gamma+0.5*3.14*holdtype)*holdlen + yPos2;
+		  float xPos4 = sin(gamma+0.5*3.14*holdtype)*holdlen + xPos1; // end of outbound course 
+		  float yPos4 = cos(gamma+0.5*3.14*holdtype)*holdlen + yPos1;
 
-		/*
-		if ((wpt[max(i-1,0)].rad_ctr_lon != 0.0) &&
-		    (wpt[max(i-1,0)].rad_ctr_lat != 0.0) &&
-		    (i>2)) {
-		*/
-		if (0) {
+		  glBegin(GL_LINES);
+		  glVertex2f(xPos1,yPos1);
+		  glVertex2f(xPos2,yPos2);
+		  glEnd();
+
+		  xPosC = 0.5*(xPos3-xPos2) + xPos2;
+		  yPosC = 0.5*(yPos3-yPos2) + yPos2;
+		  aCircle.SetDegreesPerPoint(5);
+		  aCircle.SetArcStartEnd(180./3.14*(gamma-0.5*3.14),180./3.14*(gamma+0.5*3.14));
+		  aCircle.SetRadius(0.5*holdlen);
+		  aCircle.SetOrigin(xPosC,yPosC);
+		  glBegin(GL_LINE_STRIP);
+		  aCircle.Evaluate();
+		  glEnd();
+		  
+		  glBegin(GL_LINES);
+		  glVertex2f(xPos3,yPos3);
+		  glVertex2f(xPos4,yPos4);
+		  glEnd();
+		  
+		  xPosC = 0.5*(xPos4-xPos1) + xPos1;
+		  yPosC = 0.5*(yPos4-yPos1) + yPos1;
+		  aCircle.SetDegreesPerPoint(5);
+		  aCircle.SetArcStartEnd(180./3.14*(gamma+0.5*3.14),180./3.14*(gamma-0.5*3.14));
+		  aCircle.SetRadius(0.5*holdlen);
+		  aCircle.SetOrigin(xPosC,yPosC);
+		  glBegin(GL_LINE_STRIP);
+		  aCircle.Evaluate();
+		  glEnd();
+
+
+		  /*
+		} else if ((wpt[max(i-1,0)].rad_ctr_lon != 0.0) &&
+			   (wpt[max(i-1,0)].rad_ctr_lat != 0.0) &&
+			   (wpt[max(i-1,0)].radius != 0.0)) {
+		  */
+		} else if (0) {
 		  // REMOVE CURVED FOR NOW
 		  // draw curved track from waypoint i-1 to waypoint i
 		  // limit to waypoints > 2 for now (we had some odd curves at the beginning of the track 
@@ -383,6 +438,11 @@ namespace OpenGC
 		  lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
 		  yPosC = -northing / 1852.0 / mapRange * map_size; 
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
+
+		  /*
+		  printf("%s %f %f / %f %f / %f %f \n",wpt[i].name,wpt[i-1].lon,wpt[i].lon,
+			 wpt[i-1].rad_ctr_lon,wpt[i].rad_ctr_lon,wpt[i-1].rad_lon2,wpt[i].rad_lon2);
+		  */
 
 		  /*
 		  glPushMatrix();
@@ -523,7 +583,6 @@ namespace OpenGC
 		  }
 
 		  // draw curved route
-		  CircleEvaluator aCircle;
 		  aCircle.SetDegreesPerPoint(2);
 		  if (ang2 > ang) {
 		    if ((ang2-ang)>180.0) {

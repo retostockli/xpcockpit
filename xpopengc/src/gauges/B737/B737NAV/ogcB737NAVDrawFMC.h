@@ -63,6 +63,9 @@ protected:
     float rad_lon2;
     float rad_lat2;
     float brg;
+    float crs;
+    float radius;
+    int turn;
   };
 
   wptstruct *wpt;
