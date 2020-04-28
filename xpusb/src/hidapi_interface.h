@@ -14,6 +14,7 @@
 # define WRITEBUFFERSIZE 1024*16
 # define HID_DEBUG 1 /* hid debugging option */
 # define USE_THREADS 1 /* use threadded read */
+# define USE_BLOCKING 1 /* use blocking read with timeout or not */
 
 /* hid device parameters */
 typedef struct {

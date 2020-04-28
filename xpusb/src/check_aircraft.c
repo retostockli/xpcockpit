@@ -37,7 +37,7 @@
 void check_aircraft(void) {
 
   /* determine ACF by tail number */
-  unsigned char *tailnum = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum",  40, -1); 
+  unsigned char *tailnum = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum",  40, -1);
 
   if (tailnum) {
     //    printf("ACF_TAILNUM: %s \n",tailnum);

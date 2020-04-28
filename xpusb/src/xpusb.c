@@ -26,6 +26,7 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 /* xpusb headers */
 #include "common.h"
@@ -60,9 +61,11 @@
 int main (int argc, char **argv)
 {
  
+  //struct timeval tval_before, tval_after, tval_result;
+
   /* print License terms */
   print_license();
-
+  
   /* evaluate command line arguments */
   argv++; 
   argc--;
@@ -80,9 +83,6 @@ int main (int argc, char **argv)
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (initialize_signal_handler()<0) exit_xpusb(-3);
 
-  /* initialize IOCards I/O data */
-  if (initialize_iocardsdata()<0) exit_xpusb(-5);
-
   /* initialize TCP/IP interface */
   if (initialize_tcpip()<0) exit_xpusb(-6);
 
@@ -91,11 +91,15 @@ int main (int argc, char **argv)
   
   /* initialize OpenCockpits IOCards devices */
   if (check_iocards()<0) exit_xpusb(-8);
-
+  
+  /* initialize IOCards I/O data */
+  if (initialize_iocardsdata()<0) exit_xpusb(-5);
+  
   /* main loop */
   /* run until an error occurs or the signal handler deals with ctrl-c */
   for (;;)
     {
+      //gettimeofday(&tval_before, NULL);
 
       /* receive data from MASTERCARD via USB */
       if (receive_mastercard()<0) exit_xpusb(-9);
@@ -106,9 +110,9 @@ int main (int argc, char **argv)
       /* receive analog axis data from IOCard-USBServos */
       if (receive_axes()<0) exit_xpusb(-11);
 
-      /* receive analog axis and digital input data from BU0836X Joystick card */
+      /* receive analog axis and digital input data from BU0836X card */
       if (receive_bu0836()<0) exit_xpusb(-12);
-
+      
       /* check for TCP/IP connection to X-Plane */
       if (check_server()<0) exit_xpusb(-13);
       
@@ -141,9 +145,6 @@ int main (int argc, char **argv)
 	b737_mcp();
 	b737_efis();
       }
-      if (strcmp("boeing737yoke",*argv) == 0) {
-	b737_yokerudder();
-      }
       if (strcmp("boeing737ovhfwd",*argv) == 0) {
 	b737_overhead_fwd();
       }
@@ -159,13 +160,13 @@ int main (int argc, char **argv)
 	// dcmotorsplus_test();
       }
       /*** user-space modules end here ***/
-      
+     
       /* send data to MASTERCARD via USB */
       if (send_mastercard()<0) exit_xpusb(-20);
-
+      
       /* send servo data to USBServos card */
       if (send_servos()<0) exit_xpusb(-21);
-      
+
       /* send motor, servo and output data to DCMotors PLUS card */
       if (send_motors()<0) exit_xpusb(-22);
       
@@ -174,9 +175,16 @@ int main (int argc, char **argv)
       
       /* save a copy of the current I/O state */
       if (copy_iocardsdata()<0) exit_xpusb(-24);
-
-      /* run xpusb data exchange (usb and tcp/ip) every 10000 microseconds */
+     
+      /* run xpusb data exchange (usb and tcp/ip) every 1000 microseconds */
       usleep(INTERVAL*1000);
+     
+      /*
+      gettimeofday(&tval_after, NULL);
+      timersub(&tval_after, &tval_before, &tval_result);
+      printf("Time elapsed: %ld.%06ld\n",
+	     (long int)tval_result.tv_sec, (long int)tval_result.tv_usec);
+      */
 
     }
 

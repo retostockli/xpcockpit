@@ -27,15 +27,14 @@
 
 /* LIBIOCARDS DEFINE STATEMENTS */
 
-#define MAXMASTERCARDS 4     /* maximum number of master cards per USB expansion card */
+#define MAXMASTERCARDS 4  /* maximum number of master cards per USB expansion card */
 #define MAXDEVICES 10     /* maximum number of simultaneous USB IOCARD devices */
 
 #define MAXAXES 8         /* number of axes available on the USB expansion, IOCard-USBServos or BU0836X/A card */
 #define MAXINPUTS 72      /* number of binary input channels per MASTERCARD 0-35 on J3 and 36-71 on J4 */
-#define MAXOUTPUTS 45     /* number of binary output channels per MASTERCARD 11-48 on J2 (work fine), 49-55 on P2 (?) */
+#define MAXOUTPUTS 45     /* number of binary output channels per MASTERCARD 11-48 on J2, 49-55 on P2 */
 #define MAXDISPLAYS 64    /* number of 7-segment displays per MASTERCARD 0-15 on J1 */
-#define MAXKEYS 88        /* number of key matrix combinations per IOCardS-Keys card */
-#define MAXSERVOS 6       /* number of servo motors per IOCard-USBServos  */
+#define MAXSERVOS 6       /* number of servo motors per IOCard-USBServos / DCMotors PLUS */
 #define MAXMOTORS 4       /* number of DC motors in DCMotors PLUS card */
 #define MOTORPARK 0       /* park value for DC Motors */
 #define SERVOPARK 0       /* park value for servo motors (this value applies to HITEC servos) */
@@ -60,11 +59,11 @@ typedef struct {
   /* memory for input/outputs/servos etc. should then be dynamically allocated */
   int ncards;            /* number of sub-cards on USB connection */
   int naxes;             /* number of axes used on the USB expansion card */
-  int ninputs;           /* number of inputs (INOP) */
-  int noutputs;          /* number of outputs (INOP) */
-  int ndisplays;         /* number of displays (INOP) */
-  int nservos;           /* number of servos (INOP) */
-  int nmotors;           /* number of motors (INOP) */
+  int ninputs;           /* number of inputs */
+  int noutputs;          /* number of outputs */
+  int ndisplays;         /* number of displays */
+  int nservos;           /* number of servos */
+  int nmotors;           /* number of motors */
   int nbits;             /* number of bits used for analog inputs */
   int status;
   /* status values:
@@ -76,23 +75,23 @@ typedef struct {
 
   /* variables holding current and previous USB digital and analog I/O states */
 
-  struct timeval time_enc[MAXINPUTS][MAXMASTERCARDS];
-  int slotdata[8][MAXMASTERCARDS];     /* stores slots present in mastercard USB read */
+  struct timeval time_enc[MAXMASTERCARDS][MAXINPUTS];
+  int slotdata[MAXMASTERCARDS][8];     /* stores slots present in mastercard USB read */
 
-  int inputs[MAXINPUTS][MAXMASTERCARDS];
-  int inputs_old[MAXINPUTS][MAXMASTERCARDS];
-  int inputs_read[MAXINPUTS][MAXMASTERCARDS];
+  int inputs[MAXMASTERCARDS][MAXINPUTS];
+  int inputs_old[MAXMASTERCARDS][MAXINPUTS];
+  int inputs_read[MAXMASTERCARDS][MAXINPUTS];
   /* --> only copy new inputs to old ones if they were read at least once */
   /* --> allow sending initial hardware states with commands that have no state */
   
+  int outputs[MAXMASTERCARDS][MAXOUTPUTS];
+  int outputs_old[MAXMASTERCARDS][MAXOUTPUTS];
+  
+  int displays[MAXMASTERCARDS][MAXDISPLAYS];
+  int displays_old[MAXMASTERCARDS][MAXDISPLAYS];
+  
   int axes[MAXAXES];
   int axes_old[MAXAXES];
-  
-  int outputs[MAXOUTPUTS][MAXMASTERCARDS];
-  int outputs_old[MAXOUTPUTS][MAXMASTERCARDS];
-  
-  int displays[MAXDISPLAYS][MAXMASTERCARDS];
-  int displays_old[MAXDISPLAYS][MAXMASTERCARDS];
 
   int servos[MAXSERVOS];
   int servos_old[MAXSERVOS];
@@ -105,7 +104,7 @@ typedef struct {
 
 iocard_struct iocard[MAXDEVICES];
 
-int initial; /* initialization status: */ 
+int initial; /* initialization status: */
 
 /* Prototypes */
 

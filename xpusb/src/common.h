@@ -15,8 +15,7 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#define INTERVAL 1  /* usbiocards loop interval in milliseconds, keep at 1 ms or below in order not to have
-		     a buffer overflow for devices which report at 4 ms (BU836X) - 10 ms (iocards) or even less */
+#define INTERVAL 10
 
 /* verbosity of usbiocards (0-4) */
 int verbose;

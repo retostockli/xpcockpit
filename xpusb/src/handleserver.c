@@ -25,6 +25,7 @@
 #include <sys/socket.h> 
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <stdbool.h>
 #include <unistd.h>   
 #include <string.h>
@@ -145,7 +146,7 @@ int check_server(void)
 
   if (socketStatus == status_Disconnected) { 
 
-    if (check_tcpip_counter == (1000/INTERVAL)) {
+    if (check_tcpip_counter == 1000/INTERVAL) {
       check_tcpip_counter=0;
 
       /* Check for and establish a connection to the X-Plane server */
@@ -534,7 +535,7 @@ int receive_server(void) {
 	  } else {
 	    if (verbose > 0) printf("HANDLESERVER: X-Plane unlinked offset %i dataref %s \n",
 				    offset, serverdata[offset].datarefname);
-	    memset(serverdata[i].datarefname,0,sizeof(serverdata[i].datarefname));
+	    memset(serverdata[offset].datarefname,0,sizeof(serverdata[offset].datarefname));
 
 	    serverdata[offset].status = XPSTATUS_UNINITIALIZED;
 	    count_dataref();
@@ -590,6 +591,8 @@ int receive_server(void) {
 /* send data stream to X-Plane TCP/IP server */
 int send_server(void) {
 
+  //  struct timeval tval_before, tval_after, tval_result;
+  
   int sendMsgSize;  /* size of sent message */
   int send_left;
   char *message_ptr;
@@ -606,7 +609,9 @@ int send_server(void) {
     
     if (serverdata != NULL) {
       /* loop through datarefs */
-      
+
+      //gettimeofday(&tval_before, NULL);
+     
       send_left = 0;
       
       for (i=0;i<numalloc;i++) {
@@ -927,6 +932,12 @@ int send_server(void) {
 	} 
 	
       } /* data to send */
+
+      /*
+      gettimeofday(&tval_after, NULL);
+      timersub(&tval_after, &tval_before, &tval_result);
+      printf("Time elapsed: %li\n",tval_result.tv_usec);
+      */
       
     } /* if serverdata is allocated */
     

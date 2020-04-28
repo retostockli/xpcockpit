@@ -48,8 +48,8 @@ void b737_overhead_fwd(void)
   int ival;
   int ival2;
   float fval;
-  int device = 6;
-  int card = 0;
+  int device;
+  int card;
 
   /* Switch Covers and related switch states*/
   char buffer[100];
@@ -115,7 +115,8 @@ void b737_overhead_fwd(void)
 
 
 
-    
+    device = mastercard;
+   
     /* Circuit Breaker Light Potentiometer: used to test Servos for now */
     /* Panel Potentiometer is directly wired to the Overhead Backlighting */
     float servoval = 0.0;
@@ -126,7 +127,7 @@ void b737_overhead_fwd(void)
 	printf("SERVO TEST: %f \n",servoval);
       }
     }
- 
+
     
     device = mastercard;
     card = 0;
@@ -149,17 +150,17 @@ void b737_overhead_fwd(void)
     if (((ival == 0) && (switch_cover_pos[cover] == 1.0)) ||
 	((ival == 1) && (switch_cover_pos[cover] == 0.0))) {
     */
-      ret = set_state_updn(&ival,battery,battery_dn,battery_up);
-      if (ret != 0) {
-	printf("Battery Switch %i \n",ival);
-      }
-      /*}*/
- 
+    ret = set_state_updn(&ival,battery,battery_dn,battery_up);
+    if (ret != 0) {
+      printf("Battery Switch %i \n",ival);
+    }
+
+    
     /* DC Power Knob */
     int *dc_power_up = link_dataref_cmd_once("laminar/B738/knob/dc_power_up");
     int *dc_power_dn = link_dataref_cmd_once("laminar/B738/knob/dc_power_dn");
     int *dc_power = link_dataref_int("laminar/B738/knob/dc_power");
-    
+
     ret = digital_input(device,card,0,&ival,0);
     if (ival == 1) dc_power_pos = 0; // STBY PWR
     ret = digital_input(device,card,1,&ival,0);
@@ -256,6 +257,7 @@ void b737_overhead_fwd(void)
       ret = mastercard_display(device,card,8,3,&ival,1);
     }
     
+ 
     /* ------------------ */
     /* Engine Start Panel */
     /* ------------------ */
@@ -316,7 +318,7 @@ void b737_overhead_fwd(void)
     ival = (*r_eng_start == 0);
     ret = digital_output(device,card,50,&ival);
 
-
+    
     /* ---------------- */
     /* RHS Lights Panel */
     /* ---------------- */
@@ -355,13 +357,14 @@ void b737_overhead_fwd(void)
     ret = digital_input(device,card,34,&ival,0);
     if ((ret == 1) && (ival == 1)) *wheel_on = 1;
     if ((ret == 1) && (ival == 0)) *wheel_off = 1;        
+
     
     /* ---------------- */
     /* LHS Lights Panel */
     /* ---------------- */
     device = mastercard;
     card = 0;
-
+    
     /* Left Retractable Landing Light */
     int *l_land_retractable_up = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_left_up");
     int *l_land_retractable_dn = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_left_dn");
@@ -393,21 +396,21 @@ void b737_overhead_fwd(void)
     int *r_land = link_dataref_int("laminar/B738/switch/land_lights_right_pos");
     ret = digital_input(device,card,41,&ival,0);
     ret = set_state_updn(&ival,r_land,r_land_on,r_land_off);
-
+    
     /* Left Runway Turnoff Light */
     int *l_rwy_off = link_dataref_cmd_once("laminar/B738/switch/rwy_light_left_off");
     int *l_rwy_on = link_dataref_cmd_once("laminar/B738/switch/rwy_light_left_on");
     int *l_rwy = link_dataref_int("laminar/B738/toggle_switch/rwy_light_left");
     ret = digital_input(device,card,42,&ival,0);
     ret = set_state_updn(&ival,l_rwy,l_rwy_on,l_rwy_off);
-
+    
     /* Right Runway Turnoff Light */
     int *r_rwy_off = link_dataref_cmd_once("laminar/B738/switch/rwy_light_right_off");
     int *r_rwy_on = link_dataref_cmd_once("laminar/B738/switch/rwy_light_right_on");
     int *r_rwy_pos = link_dataref_int("laminar/B738/toggle_switch/rwy_light_right");
     ret = digital_input(device,card,43,&ival,0);
     ret = set_state_updn(&ival,r_rwy_pos,r_rwy_on,r_rwy_off);
-
+   
     /* Taxi Light */
     int *taxi_off = link_dataref_cmd_once("laminar/B738/toggle_switch/taxi_light_brightness_off");
     int *taxi_on = link_dataref_cmd_once("laminar/B738/toggle_switch/taxi_light_brightness_on");
@@ -1304,9 +1307,7 @@ void b737_overhead_fwd(void)
     
     int *irs_source = link_dataref_int("laminar/B738/toggle_switch/irs_source");
     ret = digital_input(device,card,61,&ival,0);
-    if (ret == 1) printf("1 %i \n",ival);
     ret = digital_input(device,card,62,&ival2,0);
-    if (ret == 1) printf("2 %i \n",ival2);
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) *irs_source = ival - ival2;
     
     int *display_source = link_dataref_int("laminar/B738/toggle_switch/dspl_source");
@@ -1426,7 +1427,7 @@ void b737_overhead_fwd(void)
     /* YAW DAMPER */
     int *yaw_damper_on = link_dataref_int("laminar/B738/annunciator/yaw_damp");
     ret = digital_output(device,card,44,yaw_damper_on);
-
+   
   }
     
 }

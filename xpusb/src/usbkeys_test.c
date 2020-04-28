@@ -35,7 +35,7 @@ void usbkeys_test(void)
   int device = 2;
   int key;
   
-  for (key=0;key<MAXKEYS;key++) {
+  for (key=0;key<iocard[device].ninputs;key++) {
     ret = keys_input(device,key);
     if (ret == 1) {
       printf("Key %i pressed! \n",key);

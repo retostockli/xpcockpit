@@ -19,7 +19,7 @@ pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 void *poll_thread_main(void *arg)
 /* thread handles all HID read calls by use of blocking read and a read buffer per device */
 {
-  int ret;
+  int ret = 0;
   int *number = (int*) arg;
 
   if (HID_DEBUG > 1) printf("HIDAPI_INTERFACE: Poll thread running for device: %i \n",*number);
@@ -31,12 +31,19 @@ void *poll_thread_main(void *arg)
 
       if (device[*number].inBuffer != NULL) {
 
-	/* read call goes here */
-	ret = hid_read(device[*number].handle, &device[*number].inBuffer[0], device[*number].inBufferSize);
+	/* read call goes here (100 ms timeout for blocking operation) */
+	if (USE_BLOCKING == 1) {
+	  ret = hid_read_timeout(device[*number].handle,&device[*number].inBuffer[0],
+				 device[*number].inBufferSize,100);
+	} else {
+	  ret = hid_read(device[*number].handle, &device[*number].inBuffer[0],
+			 device[*number].inBufferSize);
+	}
 
 	if (ret < 0) {
-	  device[*number].poll_thread_exit_code = 1;
-	  break;
+	  printf("HIDAPI_INTERFACE: device: %i Read Error Code: %i \n",*number,ret);
+	  //device[*number].poll_thread_exit_code = 1;
+	  //break;
 	} else if ((ret > 0) && (ret <= device[*number].inBufferSize)) {
 	  /* read is ok */
 	  
@@ -63,8 +70,8 @@ void *poll_thread_main(void *arg)
 	} else {
 	  /* nothing read */
 	}
-	/*  break for 1 ms */
-	usleep(1000);
+	/*  break for 1 ms (only in non-blocking operation) */
+	if (USE_BLOCKING == 0) usleep(1000);
       } 
     } /* while loop */
  
@@ -299,9 +306,14 @@ int check_usb (int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8
 
     if (USE_THREADS == 1) {
 
-      /* set read to non-blocking type for threadded read access */
-      ret = hid_set_nonblocking(handle,1);
-
+      /* set read to blocking type for threaded read access */
+      /* --> Added timeout in blocking read of thread */
+      if (USE_BLOCKING == 1) {
+	ret = hid_set_nonblocking(handle,0);
+      } else {
+	ret = hid_set_nonblocking(handle,1);
+      }
+	
       if (ret < 0) {
 	printf("HIDAPI_INTERFACE: Device %i set to non-blocking failed.\n",number);
 	result = -5;

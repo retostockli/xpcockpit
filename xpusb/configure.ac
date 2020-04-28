@@ -90,7 +90,12 @@ AC_MSG_RESULT([$HAVE_DEBUG])
 
 if test "x$HAVE_DEBUG" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address -O0"
+# DEBUGGGING WITH LEAK CHECK AND OUT OF BOUNDS CHECK
+    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address"
+# REGULAR DEBUGGING FOR GDB
+#    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized"
+# DEBUGING WITH GPROF SYMBOLS
+#    CFLAGS="$CFLAGS -g -pg -Wall"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CFLAGS="$CFLAGS -O2"

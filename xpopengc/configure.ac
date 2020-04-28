@@ -44,8 +44,12 @@ AC_MSG_RESULT([$debugit])
 
 if test "x$debugit" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-#    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address -O0"
-    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized -O0"
+# DEBUGGING USING LEAK CHECK
+#    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
+# REGULAR DEBUGGING
+#    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized"
+# DEBUGGING USING GPROF PROFILING
+    CXXFLAGS="$CXXFLAGS -pg -g -Wall -Wno-uninitialized"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CXXFLAGS="$CXXFLAGS -O3"
@@ -161,6 +165,7 @@ to find headers in <directory>/include/freetype and libraries in <directory>/lib
                 [FREETYPEDIR=$with_freetype])
 if test -z "$FREETYPEDIR" ; then
     AC_MSG_RESULT([no])
+    CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2" 
 else
     AC_MSG_RESULT([$FREETYPEDIR])
     LIBS="$LIBS -L$FREETYPEDIR/lib"

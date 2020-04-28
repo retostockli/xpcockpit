@@ -33,6 +33,8 @@
 #include "serverdata.h"
 #include "common.h"
 
+int predict = 1;
+
 /* initialize local dataref structure */
 int initialize_dataref() {
 
@@ -171,20 +173,51 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
 
   if (serverdata != NULL) {
     /* search for dataref */
- 
-    i = 0;
-    while (i<numalloc) {
-      if ( !strcmp(datarefname,serverdata[i].datarefname) && (index == serverdata[i].index)) {
-	found = 1;
-	break;
+
+    if (predict) {
+      if ((lastindex != INT_MISS) && (lastindex < numalloc)) {
+	if (serverdata[lastindex].nextindex != INT_MISS) {
+	  i = serverdata[lastindex].nextindex;
+	  if (!strcmp(datarefname,serverdata[i].datarefname) && (type == serverdata[i].type)
+	      && (index == serverdata[i].index) && (nelements == serverdata[i].nelements)) {
+	    found = 1;
+	    //printf("FOUND %i %i %s \n",lastindex,serverdata[lastindex].nextindex,datarefname);
+	    lastindex = i;
+	  }
+	}
       }
-      i++;
+      if (!found) {
+	i = 0;
+	while (i<numalloc) {
+	  if (!strcmp(datarefname,serverdata[i].datarefname) && (type == serverdata[i].type)
+	      && (index == serverdata[i].index) && (nelements == serverdata[i].nelements)) {
+	    found = 1;
+	    if ((lastindex != INT_MISS) && (lastindex < numalloc)) {
+	      serverdata[lastindex].nextindex = i;
+	    }
+	    //printf("MISSED %i %i %s \n",lastindex,serverdata[lastindex].nextindex,datarefname);
+	    lastindex = i;
+	    break;
+	  }
+	  i++;
+	}	  
+      }
+    } else {
+      i = 0;
+      while (i<numalloc) {
+	if (!strcmp(datarefname,serverdata[i].datarefname) && (type == serverdata[i].type)
+	    && (index == serverdata[i].index) && (nelements == serverdata[i].nelements)) {
+	  found = 1;
+	  break;
+	}
+	i++;
+      }
     }
   } 
 
   if (found) {
     /* check if dataref is consistent */
-
+    
     if (type != serverdata[i].type) {
       printf("Warning: Requested type %i does not match type %i for dataref %s \n",
 	     type,serverdata[i].type,datarefname);
@@ -204,12 +237,12 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
       printf("Warning: Requested precision %i does not match precision %i for dataref %s \n",
 	     precision,serverdata[i].precision,datarefname);
     }
-
   } else {
     /* create a new data element for this dataref */
 
     /* search for first free data reference within allocated data elements */    
     i = 0;
+    lastindex = 0;
     while (i<numalloc) {
       if (!strcmp("",serverdata[i].datarefname)) {
 	break;
@@ -318,12 +351,14 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
       printf("Memory allocation error for dataref %s \n",datarefname);
       return NULL;
     } else {
+      memset(serverdata[i].datarefname,0,sizeof(serverdata[i].datarefname));
       strcpy(serverdata[i].datarefname,datarefname);
       serverdata[i].status = XPSTATUS_ALLOC;
       serverdata[i].type = type;
       serverdata[i].nelements = nelements;
       serverdata[i].index = index;
       serverdata[i].precision = precision;
+      serverdata[i].nextindex = INT_MISS;
       if (type >= XPTYPE_CMD_ONCE) {
 	printf("Created commandref %s \n",datarefname);
       } else {
@@ -367,6 +402,7 @@ int unlink_dataref(const char datarefname[]) {
 	serverdata[i].index = INT_MISS;
 	serverdata[i].precision = INT_MISS;
 	serverdata[i].status = XPSTATUS_DEALLOC;
+	serverdata[i].nextindex = INT_MISS;
 	
 	printf("Unlink: Deallocated dataref: %s \n",datarefname);
       }

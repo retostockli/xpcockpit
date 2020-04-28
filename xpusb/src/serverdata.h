@@ -70,7 +70,7 @@ typedef struct {
   int status;             /* status of the data: see XPSTATUS defines above */
   void *data;             /* pointer to current data values */
   void *data_old;         /* pointer to last data values */
-  void *initval;          /* initial value */
+  int nextindex;          /* stores the index of the next index that will be called */
 } serverdata_struct;
 
 serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data structure */
@@ -78,6 +78,7 @@ serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data str
 int numalloc; /* number of serverdata elements allocated */
 int numlink; /* number of serverdata elements linked */
 char clientname[100]; /* name of x-plane client application */
+int lastindex; /* stores the index of the last Dataref called */
 
 /* Prototype functions for x-plane data handling */
 int initialize_dataref();
