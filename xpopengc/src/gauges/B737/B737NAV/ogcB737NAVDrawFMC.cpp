@@ -58,7 +58,7 @@ namespace OpenGC
     int mapMode = m_NAVGauge->GetMapMode();
     float mapRange = m_NAVGauge->GetMapRange();
 
-    char buffer[6];
+    char buffer[10];
 
     CircleEvaluator aCircle;
 
@@ -102,6 +102,7 @@ namespace OpenGC
     float *fmc_lon;
     float *fmc_lat;
     int *fmc_turn;
+    int *fmc_alt;
     int *fmc_type;
     int *fmc_hold_time;
     float *fmc_rad_ctr_lon;
@@ -123,12 +124,13 @@ namespace OpenGC
     unsigned char *fmc_pth;
     int *fmc_idx;
     int *fmc_nidx;
-    if ((acf_type == 2) || (acf_type == 3)) {
-      /* Laminar FMC for 737 */
+    if (acf_type == 3) {
+      /* ZIBO 737 FMC */
       fmc_name = link_dataref_byte_arr("laminar/B738/fms/legs",255,-1);
       fmc_pth = link_dataref_byte_arr("laminar/B738/fms/legs_pth",255,-1);
       fmc_lon = link_dataref_flt_arr("laminar/B738/fms/legs_lon",128,-1,-5);
       fmc_lat = link_dataref_flt_arr("laminar/B738/fms/legs_lat",128,-1,-5);
+      fmc_alt = link_dataref_int_arr("laminar/B738/fms/legs_alt_rest1",128,-1);
       fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr"); 
       fmc_cur = link_dataref_int("laminar/B738/fms/vnav_idx"); 
       fmc_turn = link_dataref_int_arr("laminar/B738/fms/legs_turn",128,-1);
@@ -143,7 +145,8 @@ namespace OpenGC
       fmc_rad_dta = link_dataref_flt_arr("laminar/B738/fms/legs_radii_dta",128,-1,-5);
       fmc_miss1 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx");
       fmc_miss2 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx2");
-      fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_true",128,-1,-5);
+      //      fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_true",128,-1,-5);
+      fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_mag",128,-1,-5);
       fmc_crs = link_dataref_flt_arr("laminar/B738/fms/legs_crs_mag",128,-1,-5);
       fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
       fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
@@ -302,11 +305,12 @@ namespace OpenGC
 		  memcpy(&wpt[i].pth,fmc_pth+2*i,sizeof(wpt[i].pth)-1);
 		  wpt[i].lon = fmc_lon[i];
 		  wpt[i].lat = fmc_lat[i];
+		  wpt[i].alt = fmc_alt[i];
 		  wpt[i].rad_ctr_lon = fmc_rad_ctr_lon[i];
 		  wpt[i].rad_ctr_lat = fmc_rad_ctr_lat[i];
 		  wpt[i].rad_lon2 = fmc_rad_lon2[i];
 		  wpt[i].rad_lat2 = fmc_rad_lat2[i];
-		  wpt[i].brg = fmc_brg[i]; // radians true
+		  wpt[i].brg = fmc_brg[i]; // radians mag
 		  wpt[i].crs = fmc_crs[i]; // degrees mag
 		  wpt[i].rad_radius = fmc_rad_radius[i];
 		  wpt[i].rad_dta = fmc_rad_dta[i];
@@ -315,9 +319,9 @@ namespace OpenGC
 		  wpt[i].rad_turn = fmc_rad_turn[i]; // HOLD: 0: left, 1: RIGHT
 
 		  /*
-		  printf("%s %s %i %f %f %f %f %f\n",wpt[i].name,wpt[i].pth,fmc_turn[i],
-			 fmc_rad_lon2[i],fmc_rad_ctr_lon[i],fmc_radius[i],
-			 fmc_brg[i]*180./3.14,fmc_brg[max(i-1,0)]*180./3.14); 
+		    printf("%s %s %i %f %f %f %f %f\n",wpt[i].name,wpt[i].pth,fmc_turn[i],
+		    fmc_rad_lon2[i],fmc_rad_ctr_lon[i],fmc_radius[i],
+		    fmc_brg[i]*180./3.14,fmc_brg[max(i-1,0)]*180./3.14); 
 		  */
 		}
 	      } 
@@ -333,10 +337,11 @@ namespace OpenGC
 	  }
 	
 	  /*
-	  for (int i=0;i<(nwpt);i++) {
+	    for (int i=0;i<(nwpt);i++) {
 	    printf("%i %s %f %f %i \n",i,wpt[i].name,wpt[i].lon,wpt[i].lat,wpt_current);
-	  }
+	    }
 	  */
+       
 	  
 
 	  if (nwpt > 0) {
@@ -346,8 +351,7 @@ namespace OpenGC
 	      
 	      // convert to azimuthal equidistant coordinates with acf in center
 	      if ((wpt[max(i-1,0)].lon != FLT_MISS) && (wpt[max(i-1,0)].lat != FLT_MISS) &&
-		  (wpt[i].lon != FLT_MISS) && (wpt[i].lat != FLT_MISS) &&
-		  (strcmp(wpt[max(i-1,0)].name,"DISCONTINUITY") != 0)) {
+		  (wpt[i].lon != FLT_MISS) && (wpt[i].lat != FLT_MISS)) {
 
 		
 		// convert to azimuthal equidistant coordinates with acf in center
@@ -364,15 +368,18 @@ namespace OpenGC
 		xPos = easting / 1852.0  / mapRange * map_size;
 		yPos2 = -northing2 / 1852.0 / mapRange * map_size; 
 		xPos2 = easting2 / 1852.0  / mapRange * map_size;
-	  
+
+		float xPosL = xPos2;
+		float yPosL = yPos2;
+		
 		// Only draw the waypoint if it's visible within the rendering area
 		//	    if (( sqrt(xPos*xPos + yPos*yPos) < 10.0*map_size) &&
 		//		( sqrt(xPos2*xPos2 + yPos2*yPos2) < 10.0*map_size)){
 	    
-		// calculate physical position on heading rotated nav map
-		//  float rotateRad = -1.0 * *heading_true * dtor;
-
 		glPushMatrix();
+
+		/* only draw leg if it is not a Discontinuity in flight plan */
+		if (strcmp(wpt[max(i-1,0)].name,"DISCONTINUITY") != 0) {
 
 		glLineWidth(lineWidth);
 		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
@@ -395,7 +402,7 @@ namespace OpenGC
 		  // hold length is 3.0 NM for a 60 second hold
 		  int holdtype = wpt[i].rad_turn * 2 - 1; // 1: Right -1: Left
 		  float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
-		  float holdlen = wpt[i].hold_time / 60.0 * 3.0 / mapRange * map_size; // nm --> Pixels
+		  float holdlen = max(wpt[i].hold_time,60) / 60.0 * 3.0 / mapRange * map_size; // nm --> Pixels
 		  float gamma = (wpt[i].crs - *magnetic_variation)*3.14/180.; // inbound direction (radians)
 		  float xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course
 		  float yPos1 = cos(gamma-3.14)*holdlen + yPos2; // Pos2 is end of inbound course
@@ -404,6 +411,8 @@ namespace OpenGC
 		  float xPos4 = sin(gamma+0.5*3.14*holdtype)*holdrad*2.0 + xPos1; // end of outbound course 
 		  float yPos4 = cos(gamma+0.5*3.14*holdtype)*holdrad*2.0 + yPos1;
 
+		  // printf("%i %i %i %f \n",i,holdtype, wpt[i].hold_time,wpt[i].crs);
+		  
 		  glBegin(GL_LINES);
 		  glVertex2f(xPos1,yPos1);
 		  glVertex2f(xPos2,yPos2);
@@ -437,12 +446,8 @@ namespace OpenGC
 
 		} else if ((wpt[max(i-1,0)].rad_ctr_lon != 0.0) &&
 			   (wpt[max(i-1,0)].rad_ctr_lat != 0.0) &&
-			   //			   (wpt[max(i-1,0)].rad_radius != 0.0) &&
-			   //			   (wpt[max(i-1,0)].rad_dta != 0.0)) {
-			   (wpt[i].rad_radius != 0.0) &&
-			   (wpt[i].rad_dta != 0.0)) {
-		  //		} else if (0) {
-		  // REMOVE CURVED TRACK FOR NOW
+			   (wpt[max(i-1,0)].rad_radius != 0.0) &&
+			   (wpt[max(i-1,0)].brg != 0.0)) {
 		  // draw curved track from waypoint i-1 to waypoint i
 		  // limit to waypoints > 2 for now (we had some odd curves at the beginning of the track 
 		  lon = (double) wpt[max(i-1,0)].rad_ctr_lon;
@@ -451,9 +456,13 @@ namespace OpenGC
 		  yPosC = -northing / 1852.0 / mapRange * map_size; 
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
-		  printf("%i %s %i %f %f / %f %f / %f %f \n",i,wpt[i].name,wpt[i].turn,wpt[i-1].lon,wpt[i].lon,
-			 wpt[i-1].rad_ctr_lon,wpt[i].rad_ctr_lon,wpt[i-1].rad_lon2,wpt[i].rad_lon2);
+		  /*
+		    printf("%i %s %i %f %f / %f %f \n",i,wpt[i].name,wpt[i].turn,
+		    wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14,
+		    wpt[max(i-1,0)].crs,wpt[i].crs);
+		  */
 
+		  /*
 		  glPushMatrix();
 		  glColor3ub(255, 0, 0);
 		  glPointSize(8.0);
@@ -461,8 +470,10 @@ namespace OpenGC
 		  glVertex2f(xPosC, yPosC);
 		  glEnd();		  
 		  glPopMatrix();
+		  */
 		  
 		  if ((wpt[max(i-1,0)].rad_lon2 != 0.0) && (wpt[max(i-1,0)].rad_lat2 != 0.0)) {
+		    // circle does not start at last waypoint
 		    lon = (double) wpt[max(i-1,0)].rad_lon2;
 		    lat = (double) wpt[max(i-1,0)].rad_lat2;
 		    lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
@@ -472,6 +483,7 @@ namespace OpenGC
 		    // circle starts from xPos,yPos (last waypoint)
 		  }
 
+		  /*
 		  glPushMatrix();		    
 		  glColor3ub(0, 255, 0);
 		  glPointSize(10.0);
@@ -479,8 +491,10 @@ namespace OpenGC
 		  glVertex2f(xPos, yPos);
 		  glEnd();		    
 		  glPopMatrix();
+		  */
 		  
 		  if ((wpt[i].rad_lon2 != 0.0) && (wpt[i].rad_lat2 != 0.0)) {
+		    // circle does not end at next waypoint
 		    lon = (double) wpt[i].rad_lon2;
 		    lat = (double) wpt[i].rad_lat2;
 		    lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
@@ -490,6 +504,7 @@ namespace OpenGC
 		    // circle ends at xPos2,yPos2 (next waypoint)
 		  }
 
+		  /*
 		  glPushMatrix();		    
 		  glColor3ub(0, 0, 255);
 		  glPointSize(10.0);
@@ -497,78 +512,53 @@ namespace OpenGC
 		  glVertex2f(xPos2, yPos2);
 		  glEnd();		    
 		  glPopMatrix();
-
-		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
-		  // missed approach route
-		  glColor3ub(0, 189, 231);
-		  glEnable(GL_LINE_STIPPLE);
-		  glLineStipple( 4, 0x0F0F );
-		} else {
-		  // regular route
-		  glColor3ub(255, 0, 200);
-		}
-		
-		/*
-		  printf("%i %f %f %f %f %f %f \n",i,
-			 (xPos-xPosC),(yPos-yPosC),(xPos2-xPosC),(yPos2-yPosC),
-			 //pow(pow(xPos-xPosC,2) + pow(yPos-yPosC,2),0.5),
-			 //pow(pow(xPos2-xPosC,2) + pow(yPos2-yPosC,2),0.5),
-			 180.0/3.14*atan2((xPos-xPosC),(yPos-yPosC)),
-			 180.0/3.14*atan2((xPos2-xPosC),(yPos2-yPosC))); 
 		  */
+
+		  /* start and end angle of circle with center ctr calculated
+		     from legs magnetic bearing and waypoint turn direction */
+		  float ang = wpt[max(i-1,0)].brg*180./3.14 - *magnetic_variation;
+		  float ang2 = wpt[i].brg*180./3.14 - *magnetic_variation;
+		  float relbrg = fmod(180./3.14*(wpt[i].brg-wpt[max(i-1,0)].brg) + 360.0, 360.0);
 		  float radius = pow(pow(xPos-xPosC,2) + pow(yPos-yPosC,2),0.5);
+		  if (relbrg > 180.0) relbrg -= 360.0;
+		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
+		    /* left turn */
+		    ang += 90.0;
+		    ang2 += 90.0;
+		    if (relbrg > 0.0) relbrg -= 360.0;
+		  } else {
+		    /* right turn */
+		    ang += 270.0;
+		    ang2 += 270.0;
+		    if (relbrg < 0.0) relbrg += 360.0;
+		  }
+		  ang = fmodf(ang + 360.0,360.0);
+		  ang2 = fmodf(ang2 + 360.0,360.0);
+		  //printf("%i %f %f \n",i,ang,ang2);
+				  
+		  // draw curved leg (partial circle)
+		  aCircle.SetDegreesPerPoint(2);
+		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
+		    aCircle.SetArcStartEnd(ang2,ang);
+		  } else {
+		    aCircle.SetArcStartEnd(ang,ang2);
+		  }
+		  aCircle.SetRadius(radius);
+		  aCircle.SetOrigin(xPosC,yPosC);
+		  glBegin(GL_LINE_STRIP);
+		  aCircle.Evaluate();
+		  glEnd();
+		
+		  /* Circle always starts from xPos/yPos, but may need to be extended
+		     by a line to xPos2/yPos2 */		
 		  float D = pow(pow(xPos2-xPosC,2) + pow(yPos2-yPosC,2),0.5);
-
-		  //float ang = wpt[max(i-1,0)].brg*180./3.14;
-		  //float ang2 = wpt[i].brg*180./3.14;
-		  float ang = wpt[max(i-1,0)].crs;
-		  float ang2 = wpt[i].crs;
-		  printf("%i %f %f \n",i,ang,ang2);
-
-		  if (0) {
-		  float ang = 180.0/3.14*atan2((xPos-xPosC),(yPos-yPosC));
-		  float ang2;
-		  float xPosT;
-		  float yPosT;
-		  if (D > radius) {
-		    // the arc does not reach to the second point, so draw a tangent as well
-		    float alpha = asin(radius/pow(pow(xPosC-xPos2,2) + pow(yPosC-yPos2,2),0.5));
-		    float beta = atan2((yPosC-yPos2),(xPosC-xPos2));
-		    float T = pow(D*D - radius*radius,0.5);
-
-		    // the tangent can be put on two sides of the circle: beta +/- alpha
-		    // check which circle goes into the right direction
-		    // calculate relative crs: negative --> left, positive --> right
-		    float relcrs = fmod(180./3.14*(wpt[i].brg-wpt[max(i-1,0)].brg) + 360.0, 360.0);
-		    if (relcrs > 180.0) relcrs -= 360.0;
-		    
-		    float xPosT1 = cos(beta+alpha)*T + xPos2;
-		    float yPosT1 = sin(beta+alpha)*T + yPos2;
-		    float angT1 = 180.0/3.14*atan2((xPosT1-xPosC),(yPosT1-yPosC));		    
-		    float relangT1 = fmod((angT1 - ang) + 360.0, 360.0);
-		    if (relangT1 > 180.0) relangT1 -= 360.0;
-		    printf("%i %f %f %f \n",i,ang,angT1,relangT1);
+		  if (D > (radius+0.1)) {
+		    float xPosT = sin(ang2*3.14/180.)*radius + xPosC;
+		    float yPosT = cos(ang2*3.14/180.)*radius + yPosC;
 
 		    /*
 		    glPushMatrix();		    
-		    glColor3ub(0, 100, 255);
-		    glPointSize(10.0);
-		    glBegin(GL_POINTS);
-		    glVertex2f(xPosT1, yPosT1);
-		    glEnd();		    
-		    glPopMatrix();
-		    */
-		    
-		    float xPosT2 = cos(beta-alpha)*T + xPos2;
-		    float yPosT2 = sin(beta-alpha)*T + yPos2;
-		    float angT2 = 180.0/3.14*atan2((xPosT2-xPosC),(yPosT2-yPosC));
-		    float relangT2 = fmod((angT2 - ang) + 360.0, 360.0);
-		    if (relangT2 > 180.0) relangT2 -= 360.0;
-		    //printf("2: %f %f %f \n",ang, angT2, relangT2);
-
-		    /*
-		    glPushMatrix();		    
-		    glColor3ub(0, 100, 255);
+		    glColor3ub(255, 0, 255);
 		    glPointSize(10.0);
 		    glBegin(GL_POINTS);
 		    glVertex2f(xPosT, yPosT);
@@ -576,66 +566,15 @@ namespace OpenGC
 		    glPopMatrix();
 		    */
 		    
-		    float xPosT;
-		    float yPosT;
-		    if (((relcrs > 0.0) && (relangT1 > 0.0)) || ((relcrs <= 0.0) && (relangT1 <= 0.0))) {
-		      ang2 = angT1;
-		      xPosT = xPosT1;
-		      yPosT = yPosT1;
-		    } else {
-		      ang2 = angT2;
-		      xPosT = xPosT2;
-		      yPosT = yPosT2;
-		    }
-
 		    // draw tangent
-		    /*
 		    glBegin(GL_LINES);
 		    glVertex2f(xPosT,yPosT);
 		    glVertex2f(xPos2,yPos2);
 		    glEnd();
-		    */
-
-		  } else {
-		      
-		    /* with atan2(x,y) we get positive degrees CW from N to S and
-		       negative degrees CCW from N to S */
 		  
-		    ang2 = 180.0/3.14*atan2((xPos2-xPosC),(yPos2-yPosC));
-
 		  }
-
-		  }
-		  
-		  // draw curved route
-		  aCircle.SetDegreesPerPoint(2);
-		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
-		    aCircle.SetArcStartEnd(ang2,ang);
-		  } else {
-		    aCircle.SetArcStartEnd(ang,ang2);
-		  }
-		  /*
-		  if (ang2 > ang) {
-		    if ((ang2-ang)>180.0) {
-		      aCircle.SetArcStartEnd(ang2,ang+360.0);
-		    } else {
-		      aCircle.SetArcStartEnd(ang,ang2);
-		    }
-		  } else {
-		    if ((ang-ang2)>180.0) {
-		      aCircle.SetArcStartEnd(ang,ang2+360.0);
-		    } else {
-		      aCircle.SetArcStartEnd(ang2,ang);
-		    }
-		  }
-		  */
-		  //		  aCircle.SetRadius(pow(pow(xPos2-xPosC,2) + pow(yPos2-yPosC,2),0.5));
-		  aCircle.SetRadius(radius);
-		  aCircle.SetOrigin(xPosC,yPosC);
-		  glBegin(GL_LINE_STRIP);
-		  aCircle.Evaluate();
-		  glEnd();
-
+		
+		
 		} else {
 		  // straight line
 
@@ -649,9 +588,10 @@ namespace OpenGC
 		  glDisable(GL_LINE_STIPPLE);
 		}
 
-
+		} // not a Discontinuity in flight plan
+		
 		// draw waypoint symbol and name
-		glTranslatef(xPos2, yPos2, 0.0);
+		glTranslatef(xPosL, yPosL, 0.0);
 		glRotatef(-1.0* *heading_true, 0, 0, 1);
 
 		if (i == wpt_current) {
@@ -659,22 +599,26 @@ namespace OpenGC
 		} else {
 		  glColor3ub(255, 255, 255);
 		}
-		if (strcmp(wpt[i].name,"(INTC)") != 0) {
-		  glLineWidth(0.8*lineWidth);
-		  glBegin(GL_LINE_LOOP);
-		  glVertex2f(0.15*ss, 0.15*ss);
-		  glVertex2f(1.0*ss,  0.0);
-		  glVertex2f(0.15*ss, -0.15*ss);
-		  glVertex2f(0.0, -1.0*ss);
-		  glVertex2f(-0.15*ss, -0.15*ss);
-		  glVertex2f(-1.0*ss, 0.0);
-		  glVertex2f(-0.15*ss, 0.15*ss);
-		  glVertex2f( 0.0, 1.0*ss);
-		  glEnd();
+		glLineWidth(0.8*lineWidth);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0.15*ss, 0.15*ss);
+		glVertex2f(1.0*ss,  0.0);
+		glVertex2f(0.15*ss, -0.15*ss);
+		glVertex2f(0.0, -1.0*ss);
+		glVertex2f(-0.15*ss, -0.15*ss);
+		glVertex2f(-1.0*ss, 0.0);
+		glVertex2f(-0.15*ss, 0.15*ss);
+		glVertex2f( 0.0, 1.0*ss);
+		glEnd();
+
+		if (strcmp(wpt[i].name,"DISCONTINUITY") != 0) {
 		  m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
 		  m_pFontManager->Print(4,-6, wpt[i].name, m_Font);
+		  if (wpt[i].alt > 0) {
+		    snprintf( buffer, sizeof(buffer), "%i", wpt[i].alt );
+		    m_pFontManager->Print(4,-11, buffer, m_Font);
+		  }
 		}
-
 
 		glPopMatrix();
 	       

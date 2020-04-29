@@ -96,7 +96,7 @@ namespace OpenGC
 
     if (*pressure_altitude != FLT_MISS) {
   
-      char buffer[4];
+      char buffer[10];
       memset(buffer,0,sizeof(buffer));
 
       int alt = (int) *pressure_altitude;

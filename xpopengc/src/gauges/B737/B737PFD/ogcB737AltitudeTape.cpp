@@ -119,7 +119,7 @@ namespace OpenGC
 
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
 
-      char buffer[2];
+      char buffer[10];
       memset(buffer,0,sizeof(buffer));
 
       int nextHighestAlt = (alt/100)*100;
@@ -162,7 +162,7 @@ namespace OpenGC
 	      bool tenk = false;
 	      bool onek = false;
 	      bool zero = true;
-      
+
 	      // 100000's
 	      if(abs(charAlt) >= 100000)
 		{

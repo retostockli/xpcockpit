@@ -58,6 +58,7 @@ protected:
     char pth[3];
     float lon;
     float lat;
+    int alt;
     float rad_ctr_lon;
     float rad_ctr_lat;
     float rad_lon2;

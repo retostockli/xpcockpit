@@ -95,7 +95,7 @@ namespace OpenGC
 
     if (*speed_knots != FLT_MISS) {
 
-      char buffer[4];
+      char buffer[12];
       memset(buffer,0,sizeof(buffer));
 
       // Speed for integer calculations

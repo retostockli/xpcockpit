@@ -185,8 +185,8 @@ namespace OpenGC
 
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
 
-      char buffer[2];
-      char buffer2[5];
+      char buffer[10];
+      char buffer2[10];
       memset(buffer,0,sizeof(buffer));
       memset(buffer2,0,sizeof(buffer));
 
