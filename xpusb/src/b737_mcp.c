@@ -121,13 +121,13 @@ void b737_mcp(void)
   int *ap_mcpspd;
   int *ap_mcpspd_led;
   if ((acf_type == 2) || (acf_type == 3)) {
-    ap_cmd_a = link_dataref_cmd_once("laminar/B738/autopilot/cmd_a_press");     // MCP CMD A mode
+    ap_cmd_a = link_dataref_cmd_hold("laminar/B738/autopilot/cmd_a_press");     // MCP CMD A mode
     ap_cmd_a_led = link_dataref_int("laminar/B738/autopilot/cmd_a_status");
-    ap_cmd_b = link_dataref_cmd_once("laminar/B738/autopilot/cmd_b_press");     // MCP CMD B mode
+    ap_cmd_b = link_dataref_cmd_hold("laminar/B738/autopilot/cmd_b_press");     // MCP CMD B mode
     ap_cmd_b_led = link_dataref_int("laminar/B738/autopilot/cmd_b_status");
-    ap_cws_a = link_dataref_cmd_once("laminar/B738/autopilot/cws_a_press");     // MCP CWS A mode
+    ap_cws_a = link_dataref_cmd_hold("laminar/B738/autopilot/cws_a_press");     // MCP CWS A mode
     ap_cws_a_led = link_dataref_int("laminar/B738/autopilot/cws_a_status");     // MCP CWS A mode
-    ap_cws_b = link_dataref_cmd_once("laminar/B738/autopilot/cws_b_press");     // MCP CWS B mode
+    ap_cws_b = link_dataref_cmd_hold("laminar/B738/autopilot/cws_b_press");     // MCP CWS B mode
     ap_cws_b_led = link_dataref_int("laminar/B738/autopilot/cws_b_status");     // MCP CWS B mode
     ap_fdir_a = link_dataref_int("laminar/B738/switches/autopilot/fd_ca");    // Flight Director mode CA (A)
     ap_fdir_a_led = link_dataref_int("laminar/B738/autopilot/master_capt_status");
@@ -135,27 +135,27 @@ void b737_mcp(void)
     ap_fdir_b_led = link_dataref_int("laminar/B738/autopilot/master_fo_status");
     ap_engage = link_dataref_cmd_once("laminar/B738/autopilot/disconnect_toggle"); // AP engage toggle
     ap_disengage_status = link_dataref_int("laminar/B738/autopilot/disconnect_pos");  // Needs the status too
-    ap_vs_arm = link_dataref_cmd_once("laminar/B738/autopilot/vs_press");   // VS hold MODE (orange)
+    ap_vs_arm = link_dataref_cmd_hold("laminar/B738/autopilot/vs_press");   // VS hold MODE (orange)
     ap_vs_engage = link_dataref_int("laminar/B738/autopilot/vs_status");  // VS hold MODE (green)
-    ap_alt_hold = link_dataref_cmd_once("laminar/B738/autopilot/alt_hld_press");  // ALT HOLD MODE
+    ap_alt_hold = link_dataref_cmd_hold("laminar/B738/autopilot/alt_hld_press");  // ALT HOLD MODE
     ap_alt_hold_led = link_dataref_int("laminar/B738/autopilot/alt_hld_status");
-    ap_lnav = link_dataref_cmd_once("laminar/B738/autopilot/lnav_press");      // AP lateral NAV button
+    ap_lnav = link_dataref_cmd_hold("laminar/B738/autopilot/lnav_press");      // AP lateral NAV button
     ap_lnav_led = link_dataref_int("laminar/B738/autopilot/lnav_status");
-    ap_vor_loc = link_dataref_cmd_once("laminar/B738/autopilot/vorloc_press");   // AP VOR LOC button
+    ap_vor_loc = link_dataref_cmd_hold("laminar/B738/autopilot/vorloc_press");   // AP VOR LOC button
     ap_vor_loc_led = link_dataref_int("laminar/B738/autopilot/vorloc_status");
-    ap_app = link_dataref_cmd_once("laminar/B738/autopilot/app_press");       // AP APP button
+    ap_app = link_dataref_cmd_hold("laminar/B738/autopilot/app_press");       // AP APP button
     ap_app_led = link_dataref_int("laminar/B738/autopilot/app_status");
-    ap_hdg_sel = link_dataref_cmd_once("laminar/B738/autopilot/hdg_sel_press");   // AP HDG SEL button
+    ap_hdg_sel = link_dataref_cmd_hold("laminar/B738/autopilot/hdg_sel_press");   // AP HDG SEL button
     ap_hdg_sel_led = link_dataref_int("laminar/B738/autopilot/hdg_sel_status");
-    ap_lvl_chg = link_dataref_cmd_once("laminar/B738/autopilot/lvl_chg_press");   // AP LVL CHG button
+    ap_lvl_chg = link_dataref_cmd_hold("laminar/B738/autopilot/lvl_chg_press");   // AP LVL CHG button
     ap_lvl_chg_led = link_dataref_int("laminar/B738/autopilot/lvl_chg_status"); 
-    ap_vnav = link_dataref_cmd_once("laminar/B738/autopilot/vnav_press");      // AP vertical NAV button
+    ap_vnav = link_dataref_cmd_hold("laminar/B738/autopilot/vnav_press");      // AP vertical NAV button
     ap_vnav_led = link_dataref_int("laminar/B738/autopilot/vnav_status1");
-    ap_n1 = link_dataref_cmd_once("laminar/B738/autopilot/n1_press"); // AP speed N1 button
+    ap_n1 = link_dataref_cmd_hold("laminar/B738/autopilot/n1_press"); // AP speed N1 button
     ap_n1_led = link_dataref_int("laminar/B738/autopilot/n1_status"); // 0: off, 1: armed, 2: captured
     ap_at_arm = link_dataref_cmd_once("laminar/B738/autopilot/autothrottle_arm_toggle");    // AP Autothrottle arm
     ap_at_arm_status = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
-    ap_mcpspd = link_dataref_cmd_once("laminar/B738/autopilot/speed_press");     // AP mcpspd select switch
+    ap_mcpspd = link_dataref_cmd_hold("laminar/B738/autopilot/speed_press");     // AP mcpspd select switch
     ap_mcpspd_led = link_dataref_int("laminar/B738/autopilot/speed_status1");
   } else if (acf_type == 1) {
     ap_cmd_a = link_dataref_cmd_once("x737/mcp/CMDA_TOGGLE");     // MCP CMD A mode

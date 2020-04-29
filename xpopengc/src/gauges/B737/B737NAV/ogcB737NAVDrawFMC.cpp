@@ -345,7 +345,7 @@ namespace OpenGC
 	  
 
 	  if (nwpt > 0) {
-	    for (int i=wpt_current;i<nwpt;i++) {
+	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
 
 	      //printf("%i %s %f %f %i \n",i,wpt[i].name,wpt[i].lon,wpt[i].lat,wpt_current);
 	      
@@ -369,8 +369,29 @@ namespace OpenGC
 		yPos2 = -northing2 / 1852.0 / mapRange * map_size; 
 		xPos2 = easting2 / 1852.0  / mapRange * map_size;
 
+		/* Label Position */
 		float xPosL = xPos2;
 		float yPosL = yPos2;
+
+		/* Special cases before or after curved routes */
+		if ((wpt[max(i-1,0)].rad_lon2 != 0.0) && (wpt[max(i-1,0)].rad_lat2 != 0.0) &&
+		    (wpt[max(i-1,0)].rad_radius != 0.0) && (wpt[max(i-1,0)].crs != 0.0)) {
+		  // leg does not start at last waypoint
+		  lon = (double) wpt[max(i-1,0)].rad_lon2;
+		  lat = (double) wpt[max(i-1,0)].rad_lat2;
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+		  yPos = -northing / 1852.0 / mapRange * map_size; 
+		  xPos = easting / 1852.0  / mapRange * map_size;
+		} 
+		if ((wpt[i].rad_lon2 != 0.0) && (wpt[i].rad_lat2 != 0.0) &&
+		    (wpt[i].rad_radius != 0.0) && (wpt[i].crs != 0.0)) {
+		  // leg does not end at next waypoint
+		  lon = (double) wpt[i].rad_lon2;
+		  lat = (double) wpt[i].rad_lat2;
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+		  yPos2 = -northing / 1852.0 / mapRange * map_size; 
+		  xPos2 = easting / 1852.0  / mapRange * map_size;		    
+		}
 		
 		// Only draw the waypoint if it's visible within the rendering area
 		//	    if (( sqrt(xPos*xPos + yPos*yPos) < 10.0*map_size) &&
@@ -380,7 +401,7 @@ namespace OpenGC
 
 		/* only draw leg if it is not a Discontinuity in flight plan */
 		if (strcmp(wpt[max(i-1,0)].name,"DISCONTINUITY") != 0) {
-
+		  
 		glLineWidth(lineWidth);
 		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
 		  // missed approach route
@@ -447,7 +468,7 @@ namespace OpenGC
 		} else if ((wpt[max(i-1,0)].rad_ctr_lon != 0.0) &&
 			   (wpt[max(i-1,0)].rad_ctr_lat != 0.0) &&
 			   (wpt[max(i-1,0)].rad_radius != 0.0) &&
-			   (wpt[max(i-1,0)].brg != 0.0)) {
+			   ((wpt[max(i-1,0)].crs != 0.0) || (wpt[i].crs != 0.0))) {
 		  // draw curved track from waypoint i-1 to waypoint i
 		  // limit to waypoints > 2 for now (we had some odd curves at the beginning of the track 
 		  lon = (double) wpt[max(i-1,0)].rad_ctr_lon;
@@ -457,9 +478,9 @@ namespace OpenGC
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
 		  /*
-		    printf("%i %s %i %f %f / %f %f \n",i,wpt[i].name,wpt[i].turn,
-		    wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14,
-		    wpt[max(i-1,0)].crs,wpt[i].crs);
+		  printf("%i %s %i %f %f / %f %f \n",i,wpt[i].name,wpt[i].turn,
+			 wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14,
+			 wpt[max(i-1,0)].crs,wpt[i].crs);
 		  */
 
 		  /*
@@ -471,17 +492,6 @@ namespace OpenGC
 		  glEnd();		  
 		  glPopMatrix();
 		  */
-		  
-		  if ((wpt[max(i-1,0)].rad_lon2 != 0.0) && (wpt[max(i-1,0)].rad_lat2 != 0.0)) {
-		    // circle does not start at last waypoint
-		    lon = (double) wpt[max(i-1,0)].rad_lon2;
-		    lat = (double) wpt[max(i-1,0)].rad_lat2;
-		    lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
-		    yPos = -northing / 1852.0 / mapRange * map_size; 
-		    xPos = easting / 1852.0  / mapRange * map_size;
-		  } else {
-		    // circle starts from xPos,yPos (last waypoint)
-		  }
 
 		  /*
 		  glPushMatrix();		    
@@ -492,17 +502,6 @@ namespace OpenGC
 		  glEnd();		    
 		  glPopMatrix();
 		  */
-		  
-		  if ((wpt[i].rad_lon2 != 0.0) && (wpt[i].rad_lat2 != 0.0)) {
-		    // circle does not end at next waypoint
-		    lon = (double) wpt[i].rad_lon2;
-		    lat = (double) wpt[i].rad_lat2;
-		    lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
-		    yPos2 = -northing / 1852.0 / mapRange * map_size; 
-		    xPos2 = easting / 1852.0  / mapRange * map_size;		    
-		  } else {
-		    // circle ends at xPos2,yPos2 (next waypoint)
-		  }
 
 		  /*
 		  glPushMatrix();		    

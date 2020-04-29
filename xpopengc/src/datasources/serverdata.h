@@ -73,18 +73,10 @@ typedef struct {
   int nextindex;          /* stores the index of the next index that will be called */
 } serverdata_struct;
 
-/* In xpusb/xpclient */
-//serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data structure */
-//int numalloc; /* number of serverdata elements allocated */
-//int numlink; /* number of serverdata elements linked */
-//char clientname[100]; /* name of x-plane client application */
-// int lastindex; /* stores the index of the last Dataref called */
-
-/* In xpopengc */
 extern serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data structure */
 extern int numalloc; /* number of serverdata elements allocated */
 extern int numlink; /* number of serverdata elements linked */
-extern char packageName[100]; /* name of x-plane client package */
+extern char clientname[100]; /* name of x-plane client package */
 extern int lastindex; /* stores the index of the last Dataref called */
 
 /* Prototype functions for x-plane data handling */

@@ -45,11 +45,11 @@ AC_MSG_RESULT([$debugit])
 if test "x$debugit" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
 # DEBUGGING USING LEAK CHECK
-#    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
+    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
 # REGULAR DEBUGGING
 #    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized"
 # DEBUGGING USING GPROF PROFILING
-    CXXFLAGS="$CXXFLAGS -pg -g -Wall -Wno-uninitialized"
+#    CXXFLAGS="$CXXFLAGS -pg -g -Wall -Wno-uninitialized"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CXXFLAGS="$CXXFLAGS -O3"
@@ -234,6 +234,8 @@ if test "x$prefix" = xNONE; then
 fi
 AC_MSG_NOTICE([opengc will be installed in $prefix])
 
+# Define Packagename for CPP directive in C-based datasource code
+AC_DEFINE([XPOPENGC],[],[CPP directive in C-based datasource code])
 
 AC_CONFIG_FILES([Makefile
 src/base/Makefile

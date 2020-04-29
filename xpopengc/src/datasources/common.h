@@ -17,4 +17,4 @@
 // #define verbose 1
 int verbose;
 
-#define INTERVAL 500  /* poll interval in milliseconds: set between 1-1000 or so ... */
+#define INTERVAL 20  /* callback interval in milliseconds: set between 1-1000 or so ... */

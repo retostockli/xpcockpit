@@ -127,10 +127,13 @@ namespace OpenGC
     int *ap_fmcspd_mode;
 
     int *ap_spd_mode;
+    int *ap_spd_mode_arm;
     int *ap_spd_mode_rec;
     int *ap_hdg_mode;   
+    int *ap_hdg_mode_arm;   
     int *ap_hdg_mode_rec;   
     int *ap_alt_mode;   
+    int *ap_alt_mode_arm;   
     int *ap_alt_mode_rec;   
 
     int *ap_flare_mode;   
@@ -148,16 +151,20 @@ namespace OpenGC
     int *ap_toga_mode;   
     int *ap_lnav_mode;   
     int *ap_vorloc_mode;   
-    int *app_single_ch;
+    int *ap_single_ch;
+    int *ap_autoland;
     if ((acf_type == 2) || (acf_type == 3)) {
       ap_athr_armed = link_dataref_int("laminar/B738/autopilot/autothrottle_status");   
       ap_athr_armed_rec = link_dataref_int("laminar/B738/autopilot/rec_thr2_modes");   
 
-      ap_spd_mode = link_dataref_int("laminar/B738/autopilot/pfd_spd_mode");   
+      ap_spd_mode     = link_dataref_int("laminar/B738/autopilot/pfd_spd_mode");   
+      ap_spd_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_spd_mode_arm");   
       ap_spd_mode_rec = link_dataref_int("laminar/B738/autopilot/rec_thr_modes");   
-      ap_hdg_mode = link_dataref_int("laminar/B738/autopilot/pfd_hdg_mode");   
+      ap_hdg_mode     = link_dataref_int("laminar/B738/autopilot/pfd_hdg_mode");   
+      ap_hdg_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_hdg_mode_arm");   
       ap_hdg_mode_rec = link_dataref_int("laminar/B738/autopilot/rec_hdg_modes");   
-      ap_alt_mode = link_dataref_int("laminar/B738/autopilot/pfd_alt_mode");   
+      ap_alt_mode     = link_dataref_int("laminar/B738/autopilot/pfd_alt_mode");   
+      ap_alt_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_alt_mode_arm");   
       ap_alt_mode_rec = link_dataref_int("laminar/B738/autopilot/rec_alt_modes");   
 
       ap_flare_mode = link_dataref_int("laminar/B738/autopilot/flare_status");   
@@ -175,7 +182,8 @@ namespace OpenGC
       ap_toga_mode = link_dataref_int("xpserver/PFD_TOGA_mode_on");   
       ap_lnav_mode = link_dataref_int("laminar/B738/autopilot/pfd_vorloc_lnav");   
       ap_vorloc_mode = link_dataref_int("laminar/B738/autopilot/pfd_vorloc_lnav");   
-      app_single_ch = link_dataref_int("laminar/B738/autopilot/single_ch_status");
+      ap_single_ch = link_dataref_int("laminar/B738/autopilot/single_ch_status");
+      ap_autoland = link_dataref_int("laminar/B738/autopilot/autoland_status");
     } else if (acf_type == 1) {
       ap_athr_armed = link_dataref_int("x737/systems/PFD/PFD_ATHR_ARMED_on");   
       ap_athr_armed_rec = link_dataref_int("xpserver/rec_thr2_modes");   
@@ -195,7 +203,8 @@ namespace OpenGC
       ap_toga_mode = link_dataref_int("x737/systems/PFD/PFD_TOGA_mode_on");   
       ap_lnav_mode = link_dataref_int("x737/systems/PFD/PFD_LNAV_mode_on");   
       ap_vorloc_mode = link_dataref_int("x737/systems/PFD/PFD_VORLOC_mode_on");   
-      app_single_ch = link_dataref_int("x737/systems/afds/SINGLE_CH_warning");
+      ap_single_ch = link_dataref_int("x737/systems/afds/SINGLE_CH_warning");
+      ap_autoland = link_dataref_int("xpserver/autoland_status");
     } else {
       ap_athr_armed = link_dataref_int("xpserver/PFD_ATHR_ARMED_on");   
       ap_athr_armed_rec = link_dataref_int("xpserver/rec_thr2_modes");   
@@ -213,7 +222,8 @@ namespace OpenGC
       ap_hdg_mode = link_dataref_int("xpserver/PFD_HDG_mode_on");   
       ap_hdg_mode_rec = link_dataref_int("xpserver/PFD_HDG_mode_on");   
       ap_vorloc_mode = link_dataref_int("xpserver/PFD_VORLOC_mode_on");   
-      app_single_ch = link_dataref_int("xpserver/SINGLE_CH_warning");
+      ap_single_ch = link_dataref_int("xpserver/SINGLE_CH_warning");
+      ap_autoland = link_dataref_int("xpserver/autoland_status");
     }
   
     //  int *ap_vnav_armed = link_dataref_int("x737/systems/afds/VNAV");   
@@ -239,11 +249,13 @@ namespace OpenGC
       fd_b_status = link_dataref_int("x737/systems/afds/fdB_status");   
       cmd_a_status = link_dataref_int("x737/systems/afds/CMD_A");
       cmd_b_status = link_dataref_int("x737/systems/afds/CMD_B");
+      cmd_rec = link_dataref_int("xpserver/CMD_REC");
     } else {
       fd_a_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");   
       fd_b_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");
       cmd_a_status = link_dataref_int("xpserver/CMD_A");
       cmd_b_status = link_dataref_int("xpserver/CMD_B");
+      cmd_rec = link_dataref_int("xpserver/CMD_REC");
     }
     
     int *nav1_CDI = link_dataref_int("sim/cockpit/radios/nav1_CDI");   
@@ -370,8 +382,6 @@ namespace OpenGC
     m_pFontManager->SetSize(m_Font, 4, 4);
 
     if ((acf_type == 2) || (acf_type == 3)) {
-
-      //      printf("%i %i %i %i\n",*ap_alt_mode,*ap_spd_mode,*ap_flare_mode,*ap_rollout_mode);
   
       // top left
       if (*ap_spd_mode >= 1) {
@@ -438,6 +448,9 @@ namespace OpenGC
 	} else if (*ap_hdg_mode == 3) {
 	  strcpy(buffer, "LNAV");
 	  m_pFontManager->Print(81,183+8, &buffer[0], m_Font);
+	} else if (*ap_hdg_mode == 4) {
+	  strcpy(buffer, "ROLLOUT");
+	  m_pFontManager->Print(77,183+8, &buffer[0], m_Font);
 	}
       }
  
@@ -463,6 +476,9 @@ namespace OpenGC
 	} else if (*ap_alt_mode == 1) {
 	  strcpy(buffer, "V/S");
 	  m_pFontManager->Print(119,183+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode == 2) {
+	  strcpy(buffer, "MCP SPD");
+	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 3) {
 	  strcpy(buffer, "ALT ACQ");
 	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
@@ -482,25 +498,19 @@ namespace OpenGC
       }
 
 
+      /* bottom modes are white */
+      glColor3ub(255,255,255);
+
       // bottom left
-  
-      // bottom center
+      if (*ap_spd_mode_arm >= 1) {
 
-      if (*ap_rollout_mode >= 1) {
-    
-	glColor3ub(255,255,255);
-
-	// White Text on Gray
-	strcpy(buffer, "ROLLOUT");
-	m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
       }
-
-      /*
-      if (*ap_lnav_armed >= 1) {
-
-	glColor3ub(255,255,255);
+      
+      // bottom center
+      if (*ap_hdg_mode_arm >= 1) {
 
 	// White border around background
+	/*
 	if (*ap_lnav_armed == 2) {
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
@@ -510,43 +520,28 @@ namespace OpenGC
 	  glVertex2f(74,179+8);
 	  glEnd();
 	}
+	*/
     
 	// White Text on Gray
+	/*
 	strcpy(buffer, "LNAV ARM");
 	m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
-      }
-      */
-  
-      if (((*ap_vorloc_armed >= 1) || (*ap_vorloc_mode >= 1)) && (*ap_lnav_armed == 0)) {
-
-	if (*ap_vorloc_armed >= 1) {
-	  glColor3ub(255,255,255);
-	} else {
-	  glColor3ub(0,179,0);
-	}
-      
-	// White border around background
-	if ((*ap_vorloc_armed == 2) || (*ap_vorloc_mode == 2)) {
-	  glLineWidth(2.0);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(74,170+8);
-	  glVertex2f(105,170+8);
-	  glVertex2f(105,179+8);
-	  glVertex2f(74,179+8);
-	  glEnd();
-	}
-    
-	// White Text on Gray
 	strcpy(buffer, "VOR LOC");
 	m_pFontManager->Print(77,172+8, &buffer[0], m_Font);
+	*/
+	if (*ap_hdg_mode_arm == 2) {
+	  strcpy(buffer, "ROLLOUT");
+	  m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
+	}
+
       }
+      
 
       // bottom right
-      if (*ap_vvi_mode >= 1) {
-
-	glColor3ub(255,255,255);
+      if (*ap_alt_mode_arm >= 1) {
 
 	// White border around background
+	/*
 	if (*ap_vvi_mode == 2)  {
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
@@ -556,19 +551,15 @@ namespace OpenGC
 	  glVertex2f(107,179+8);
 	  glEnd();
 	}
+	*/
 
-	// White Text on Gray
-	strcpy(buffer, "VERT SPD");
-	m_pFontManager->Print(110,172+8, &buffer[0], m_Font);
-      }
-
-      if (*ap_flare_mode == 1) {
-    
-	glColor3ub(255,255,255);
-
-	// White Text on Gray
-	strcpy(buffer, "FLARE");
-	m_pFontManager->Print(114,172+8, &buffer[0], m_Font);
+	if (*ap_alt_mode_arm == 1) {
+	  strcpy(buffer, "G/S");
+	  m_pFontManager->Print(119,172+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode_arm == 3) {
+	  strcpy(buffer, "FLARE");
+	  m_pFontManager->Print(114,172+8, &buffer[0], m_Font);
+	}
       }
 
     }
@@ -577,48 +568,52 @@ namespace OpenGC
     if (((*fd_a_status >= 1) && is_captain) || ((*fd_b_status >= 1) && is_copilot)) {
       m_pFontManager->SetSize(m_Font, fontHeight*1.2, fontWidth*1.2);
       glColor3ub(0,179,0);
-
-    
-      if (*app_single_ch == 1) {
+   
+      if (*ap_single_ch == 1) {
 	glColor3ub(255,255,0);
 	strcpy(buffer, "SINGLE CH");
 	m_pFontManager->Print(70,155+0, &buffer[0], m_Font);
+      } else if (*ap_autoland == 1) {
+	strcpy(buffer, "LAND 3");
+	m_pFontManager->Print(75,155+0, &buffer[0], m_Font);
+	if (*cmd_rec == 1) {
+	  glLineWidth(2.0);
+	  glBegin(GL_LINE_LOOP);
+	  glVertex2f(70,152);
+	  glVertex2f(110,152);
+	  glVertex2f(110,163);
+	  glVertex2f(70,163);
+	  glEnd();
+	}
       } else {
 	if ((((*cmd_a_status == 1) || (*cmd_b_status == 1)) && (acf_type >= 1)) ||
 	    (((*fd_a_status == 2) || (*fd_b_status == 2)) && (acf_type == 0))) {
 	  strcpy(buffer, "CMD");
-	  m_pFontManager->Print(82,155+0, &buffer[0], m_Font);
-
-	  if ((acf_type == 2) || (acf_type == 3)) {
-	    if (*cmd_rec == 1) {
-	      glLineWidth(2.0);
-	      glBegin(GL_LINE_LOOP);
-	      glVertex2f(79,152);
-	      glVertex2f(100,152);
-	      glVertex2f(100,163);
-	      glVertex2f(79,163);
-	      glEnd();
-	    }
+	  m_pFontManager->Print(82,155+0, &buffer[0], m_Font);	  
+	  if (*cmd_rec == 1) {
+	    glLineWidth(2.0);
+	    glBegin(GL_LINE_LOOP);
+	    glVertex2f(81,152);
+	    glVertex2f(98,152);
+	    glVertex2f(98,163);
+	    glVertex2f(81,163);
+	    glEnd();
 	  }
-	  
 	} else {
 	  strcpy(buffer, "FD");
 	  m_pFontManager->Print(84,155+0, &buffer[0], m_Font);
-	  
-	  if ((acf_type == 2) || (acf_type == 3)) {
-	    if (*cmd_rec == 1) {
-	      glLineWidth(2.0);
-	      glBegin(GL_LINE_LOOP);
-	      glVertex2f(81,152);
-	      glVertex2f(98,152);
-	      glVertex2f(98,163);
-	      glVertex2f(81,163);
-	      glEnd();
-	    }
+	  if (*cmd_rec == 1) {
+	    glLineWidth(2.0);
+	    glBegin(GL_LINE_LOOP);
+	    glVertex2f(81,152);
+	    glVertex2f(98,152);
+	    glVertex2f(98,163);
+	    glVertex2f(81,163);
+	    glEnd();
 	  }
-	  
 	}
-      }
+      }      
+
     }
 
     // Draw the glideslope and localizer displays to the right and bottom of the ADI

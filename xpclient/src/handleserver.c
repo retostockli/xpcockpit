@@ -21,25 +21,19 @@
 #endif
 
 #include <stdio.h>   
-#include <stdlib.h>
-#include <stdint.h>
+#include <stdlib.h>  
+#include <sys/socket.h> 
+#include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <stdbool.h>
 #include <unistd.h>   
 #include <string.h>
-
-#ifdef WIN
-# include <winsock2.h>
-#else
-#include <arpa/inet.h>
+#include <errno.h>
+#include <math.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#endif
-#include <errno.h>
-#include <math.h>
 
 #include "handleserver.h"
 #include "serverdata.h"
@@ -179,12 +173,7 @@ int check_server(void)
 	socketStatus = status_Connected;
 
 	unsigned long nSetSocketType = NON_BLOCKING;
-	//set to non-blocking
-#ifdef WIN
-	if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
-#else
-	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
-#endif
+	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)	//set to non-blocking
 	  {
 	    if (verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
 	    socketStatus = status_Error;
@@ -241,7 +230,7 @@ int receive_server(void) {
     }
     if (recv_left == -1) { // nothing received: error?
       if (errno == EAGAIN) { // just no data yet ...
-	if (verbose > 2) printf("HANDLESERVER: Client Socketé no data yet. \n");
+	if (verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
       } else {
 	if ((errno == ECONNABORTED) || (errno == ECONNREFUSED) ||
@@ -546,7 +535,7 @@ int receive_server(void) {
 	  } else {
 	    if (verbose > 0) printf("HANDLESERVER: X-Plane unlinked offset %i dataref %s \n",
 				    offset, serverdata[offset].datarefname);
-	    memset(serverdata[i].datarefname,0,sizeof(serverdata[i].datarefname));
+	    memset(serverdata[offset].datarefname,0,sizeof(serverdata[offset].datarefname));
 
 	    serverdata[offset].status = XPSTATUS_UNINITIALIZED;
 	    count_dataref();
@@ -602,6 +591,8 @@ int receive_server(void) {
 /* send data stream to X-Plane TCP/IP server */
 int send_server(void) {
 
+  //  struct timeval tval_before, tval_after, tval_result;
+  
   int sendMsgSize;  /* size of sent message */
   int send_left;
   char *message_ptr;
@@ -618,7 +609,9 @@ int send_server(void) {
     
     if (serverdata != NULL) {
       /* loop through datarefs */
-      
+
+      //gettimeofday(&tval_before, NULL);
+     
       send_left = 0;
       
       for (i=0;i<numalloc;i++) {
@@ -926,7 +919,7 @@ int send_server(void) {
 	  
 	  if (sendMsgSize == -1) {
 	    if (errno == EAGAIN) {
-	      if (verbose > 1) printf("HANDLE_CLIENT: Caught EAGAIN signal sending data to Server\n");
+	      if (verbose > 1) printf("HANDLESERVER: Caught EAGAIN signal sending data to Server\n");
 	    } else {
 	      if (verbose > 0) printf("HANDLESERVER: Error Sending data to Server: %i\n", errno);
 	      socketStatus = status_Error;	/* signal a transmission error */
@@ -939,6 +932,12 @@ int send_server(void) {
 	} 
 	
       } /* data to send */
+
+      /*
+      gettimeofday(&tval_after, NULL);
+      timersub(&tval_after, &tval_before, &tval_result);
+      printf("Time elapsed: %li\n",tval_result.tv_usec);
+      */
       
     } /* if serverdata is allocated */
     

@@ -146,7 +146,7 @@ int check_server(void)
 
   if (socketStatus == status_Disconnected) { 
 
-    if (check_tcpip_counter == 1000/INTERVAL) {
+    if (check_tcpip_counter == (1000/INTERVAL)) {
       check_tcpip_counter=0;
 
       /* Check for and establish a connection to the X-Plane server */
