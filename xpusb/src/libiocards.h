@@ -108,7 +108,7 @@ int initial; /* initialization status: */
 
 /* Prototypes */
 
-/* Prototype functions for MASTERCARD input / output signal decoding */
+/* Prototype user space functions for reading inputs and writing outputs */
 int initialize_iocardsdata(void);
 int copy_iocardsdata(void);
 
@@ -123,11 +123,7 @@ int servos_output(int device, int servo, float *value, float minval, float maxva
 		  int servominval, int servomaxval);
 int motors_output(int device, int motor, float *value, float range);
 
-/* Prototype functions for Iocards communication */
-int initialize_mastercard(int device);
-int initialize_keys(int device);
-int initialize_servos(int device);
-int initialize_motors(int device);
+/* Prototype functions for Iocards communication (do not use directly in your code) */
 int send_mastercard(void);
 int receive_mastercard(void);
 int receive_keys(void);
@@ -141,6 +137,10 @@ void print_license(void);
 int read_ini(char ininame[]);
 
 /* Prototype functions for initializations and exiting */
-int check_iocards(void);
 int initialize_iocards(void);
-void exit_iocards(void);
+int initialize_usb(void);
+void terminate_usb(void);
+int initialize_mastercard(int device);
+int initialize_keys(int device);
+int initialize_servos(int device);
+int initialize_motors(int device);

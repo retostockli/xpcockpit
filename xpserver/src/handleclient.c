@@ -836,13 +836,22 @@ void send_client(int clntSock) {
 		 and reset the command from 1 to 0. But in order to allow for
 		 state changes in other plugins we first set it to 2 and only to 0
 		 after the next callback so that our external plugins know
-		 that they can only execute another command after the command is 0 again */
+		 that they can only execute another command after the command is
+		 back to 0. The state 2 is kept internally here. It is not
+		 sent to the client. */
 	      datai = *(int *) clientdata[i].data;
-	      if ((datai == 1) || (datai == 2)) changed = 1;
-	      if (changed == 1) {
-		if (datai == 2) datai = 0; // second cycle: reset to 0
-		if (datai == 1) datai = 2; // first cycle: report 2
+	      if (datai == 2) {
+		 // second cycle: reset to 0
+		changed = 1;
+		datai = 0;
 		memcpy(clientdata[i].data,&datai,sizeof(int));
+	      }
+	      if (datai == 1) {
+		// first cycle: report 2
+		datai = 2; 
+		memcpy(clientdata[i].data,&datai,sizeof(int));
+	      }
+	      if (changed == 1) {
 		if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
 		  first = MARK_DATA + i;
 		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
