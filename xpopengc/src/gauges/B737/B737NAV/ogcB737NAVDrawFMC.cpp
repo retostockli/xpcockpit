@@ -347,8 +347,13 @@ namespace OpenGC
 	  if (nwpt > 0) {
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
 
-	      //printf("%i %s %f %f %i \n",i,wpt[i].name,wpt[i].lon,wpt[i].lat,wpt_current);
-	      
+	      /*
+	      printf("%i %s %f / %f %f / %f %f / %f %f \n",i,wpt[i].name,wpt[i].lon,
+		     wpt[i].rad_lon2,wpt[max(i-1,0)].rad_lon2,
+		     wpt[i].rad_radius,wpt[max(i-1,0)].rad_radius,
+		     wpt[i].crs,wpt[max(i-1,0)].crs);
+	      */
+
 	      // convert to azimuthal equidistant coordinates with acf in center
 	      if ((wpt[max(i-1,0)].lon != FLT_MISS) && (wpt[max(i-1,0)].lat != FLT_MISS) &&
 		  (wpt[i].lon != FLT_MISS) && (wpt[i].lat != FLT_MISS)) {
@@ -375,7 +380,9 @@ namespace OpenGC
 
 		/* Special cases before or after curved routes */
 		if ((wpt[max(i-1,0)].rad_lon2 != 0.0) && (wpt[max(i-1,0)].rad_lat2 != 0.0) &&
-		    (wpt[max(i-1,0)].rad_radius != 0.0) && (wpt[max(i-1,0)].crs != 0.0)) {
+		    (wpt[max(i-1,0)].rad_radius != 0.0) && // (wpt[max(i-1,0)].crs != 0.0) &&
+		    (wpt[max(i-1,0)].rad_lon2 != FLT_MISS) && (wpt[max(i-1,0)].rad_lat2 != FLT_MISS) &&
+		    (wpt[max(i-1,0)].rad_radius != FLT_MISS)) { // && (wpt[max(i-1,0)].crs != FLT_MISS)) {
 		  // leg does not start at last waypoint
 		  lon = (double) wpt[max(i-1,0)].rad_lon2;
 		  lat = (double) wpt[max(i-1,0)].rad_lat2;
@@ -384,7 +391,9 @@ namespace OpenGC
 		  xPos = easting / 1852.0  / mapRange * map_size;
 		} 
 		if ((wpt[i].rad_lon2 != 0.0) && (wpt[i].rad_lat2 != 0.0) &&
-		    (wpt[i].rad_radius != 0.0) && (wpt[i].crs != 0.0)) {
+		    (wpt[i].rad_radius != 0.0) && // (wpt[i].crs != 0.0) &&
+		    (wpt[i].rad_lon2 != FLT_MISS) && (wpt[i].rad_lat2 != FLT_MISS) &&
+		    (wpt[i].rad_radius != FLT_MISS)) { // && (wpt[i].crs != FLT_MISS)) {
 		  // leg does not end at next waypoint
 		  lon = (double) wpt[i].rad_lon2;
 		  lat = (double) wpt[i].rad_lat2;
@@ -394,8 +403,8 @@ namespace OpenGC
 		}
 		
 		// Only draw the waypoint if it's visible within the rendering area
-		//	    if (( sqrt(xPos*xPos + yPos*yPos) < 10.0*map_size) &&
-		//		( sqrt(xPos2*xPos2 + yPos2*yPos2) < 10.0*map_size)){
+		if (( sqrt(xPos*xPos + yPos*yPos) < map_size) ||
+		    ( sqrt(xPos2*xPos2 + yPos2*yPos2) < map_size)){
 	    
 		glPushMatrix();
 
@@ -620,7 +629,9 @@ namespace OpenGC
 		}
 
 		glPopMatrix();
-	       
+
+		}
+		
 	      }
 	    }
 	  } /* has waypoints */

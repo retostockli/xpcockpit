@@ -196,11 +196,13 @@ void b737_pedestal(void)
   //  int *engine_fires = link_dataref_int_arr("sim/cockpit2/annunciators/engine_fires",8,-1);
 
 
+
+  /* TEMPORARY ASSIGNMENT TO BETTERPUSHBACK */
+  int *vhf1 = link_dataref_cmd_once("BetterPushback/start");
+  int *vhf2 = link_dataref_cmd_once("BetterPushback/stop");
+  int *vhf3 = link_dataref_cmd_once("BetterPushback/disconnect");
   
   /* unimplemented datarefs (not available in X-Plane and not in x737) */
-  int *vhf1 = link_dataref_int("xpserver/selcal/vhf1");
-  int *vhf2 = link_dataref_int("xpserver/selcal/vhf2");
-  int *vhf3 = link_dataref_int("xpserver/selcal/vhf3");
   int *hf1 = link_dataref_int("xpserver/selcal/hf1");
   int *hf2 = link_dataref_int("xpserver/selcal/hf2");
   int *wxsel = link_dataref_int("xpserver/wxradar/sel");
@@ -254,7 +256,6 @@ void b737_pedestal(void)
   int test1; 
   int test2;
   int test3; 
-  int test4;
   int tfr;
   int temp;
   int integer;
@@ -341,14 +342,6 @@ void b737_pedestal(void)
   }
 
   /* SELCAL */
-  if (*vhf1 == INT_MISS) *vhf1 = 0;
-  if (*vhf2 == INT_MISS) *vhf2 = 0;
-  if (*vhf3 == INT_MISS) *vhf3 = 0;
-
-  /*
-  if (*hf1 == INT_MISS) *hf1 = 0;
-  if (*hf2 == INT_MISS) *hf2 = 0;
-  */
   ret = digital_input(device,card,56,hf2,0);
   if (ret == 1) {
     printf("SELCAL HF2 button: %i \n",*hf2);
@@ -361,15 +354,15 @@ void b737_pedestal(void)
     printf("SELCAL HF1 button: %i \n",*hf1);
   }
 
-  ret = digital_input(device,card,58,vhf3,1);
+  ret = digital_input(device,card,58,vhf3,2);
   if (ret == 1) {
     printf("SELCAL VHF3 button: %i \n",*vhf3);
   }
-  ret = digital_input(device,card,59,vhf2,1);
+  ret = digital_input(device,card,59,vhf2,2);
   if (ret == 1) {
     printf("SELCAL VHF2 button: %i \n",*vhf2);
   }
-  ret = digital_input(device,card,60,vhf1,1);
+  ret = digital_input(device,card,60,vhf1,2);
   if (ret == 1) {
     printf("SELCAL VHF1 button: %i \n",*vhf1);
   }

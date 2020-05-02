@@ -127,7 +127,7 @@ namespace OpenGC
     int *ap_fmcspd_mode;
 
     int *ap_spd_mode;
-    int *ap_spd_mode_arm;
+    //int *ap_spd_mode_arm;
     int *ap_spd_mode_rec;
     int *ap_hdg_mode;   
     int *ap_hdg_mode_arm;   
@@ -158,7 +158,7 @@ namespace OpenGC
       ap_athr_armed_rec = link_dataref_int("laminar/B738/autopilot/rec_thr2_modes");   
 
       ap_spd_mode     = link_dataref_int("laminar/B738/autopilot/pfd_spd_mode");   
-      ap_spd_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_spd_mode_arm");   
+      // ap_spd_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_spd_mode_arm");   
       ap_spd_mode_rec = link_dataref_int("laminar/B738/autopilot/rec_thr_modes");   
       ap_hdg_mode     = link_dataref_int("laminar/B738/autopilot/pfd_hdg_mode");   
       ap_hdg_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_hdg_mode_arm");   
@@ -502,9 +502,9 @@ namespace OpenGC
       glColor3ub(255,255,255);
 
       // bottom left
-      if (*ap_spd_mode_arm >= 1) {
+      //      if (*ap_spd_mode_arm >= 1) {
 
-      }
+      //      }
       
       // bottom center
       if (*ap_hdg_mode_arm >= 1) {

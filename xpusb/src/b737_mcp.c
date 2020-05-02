@@ -542,13 +542,13 @@ void b737_mcp(void)
   }
   
   ret = digital_input(device,card,37,ap_fdir_a,0);
+  /*
   if (acf_type == 1) {
     ret = digital_input(device,card,37,&temp,0);
     if (ret==1) {
       *ap_fdir_a = temp;
     }
   } else {
-    /* please check: fdir_a is linked to ap_engage in some aircraft */
     ret = digital_input(device,card,37,&temp,0);
     if (ret==1) {
       if (temp==1) {
@@ -562,6 +562,7 @@ void b737_mcp(void)
       }
     }
   }
+  */
    
   ret = digital_input(device,card,24,ap_fdir_b,0);
   /*  ret = digital_input(device,card,24,&temp,0);

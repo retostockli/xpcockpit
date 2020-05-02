@@ -449,7 +449,7 @@ int digital_input(int device, int card, int input, int *value, int type)
 	      *value = iocard[device].inputs[card][input];
 	      retval = 0;
 	    }
-	  } else {
+	  } else if (type == 1) {
 	    /* toggle state everytime you press button */
 	    /* inputs_old[input] always stores last state */
 	    /* new state is then stored in inputs[input] */
@@ -467,6 +467,25 @@ int digital_input(int device, int card, int input, int *value, int type)
 	      /* retain */
 	      retval = 0;
 	    }	
+	  } else if (type == 2) {
+	    /* simple pushbutton / switch like type 0
+	       BUT ONLY THE STATE CHANGE FROM 0 TO 1 IS RETURNED AS VALUE, 
+	       FOR PERMANENT SWITCH STATE OF 0 OR 1 OR A SWITH STATE 
+	       CHANGE FROM 1 TO 0 THE VALUE IS PRESERVED.
+	       THIS IS GOOD FOR EXECUTING COMMANDS WITH LINK_DATAREF_CMD_ONCE  */
+	    if ((iocard[device].inputs_old[card][input] == 0) &&
+		(iocard[device].inputs[card][input] == 1)) {
+	      /* something changed */
+	      *value = iocard[device].inputs[card][input];
+	      retval = 1;
+	      if (verbose > 1) {
+		printf("LIBIOCARDS: Pushbutton                  : device=%i card=%i input=%i value=%i \n",
+		  device, card, input, iocard[device].inputs[card][input]);
+	      }
+	    } else {
+	      /* nothing changed */
+	      retval = 0;
+	    }
 	  }
 	} else {
 	  retval = -1;

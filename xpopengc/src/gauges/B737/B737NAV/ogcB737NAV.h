@@ -58,6 +58,8 @@ public:
   bool GetMapCenter(void) {return m_MapCenter;}
   int GetMapMode(void) {return m_MapMode;}
   float GetMapRange(void) {return m_MapRange;}
+  float GetMapCtrLon(void) {return m_MapCtrLon;}
+  float GetMapCtrLat(void) {return m_MapCtrLat;}
  
  protected:
 
@@ -67,6 +69,8 @@ public:
   bool m_MapCenter; // NAV Display Centered (true) or Expanded (false)?
   int m_MapMode; // NAV Display Mode: 0: APP, 1: VOR, 2: MAP, 3: PLN
   float m_MapRange; // NAV Display Range in [nm]
+  float m_MapCtrLon; // NAV Display Center Longitude [deg E]
+  float m_MapCtrLat; // NAV Display Center Latitude [deg N]
   
 };
 
