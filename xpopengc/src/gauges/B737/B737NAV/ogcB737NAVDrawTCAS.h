@@ -51,6 +51,11 @@ protected:
   /* Pointer to the calling Navigation Gauge */
   B737NAV* m_NAVGauge;
 
+  int maxmp = 19;
+  //int maxtcas = 20;
+  float mp_x[19];
+  int counter;
+
 };
 
 } // end namespace OpenGC

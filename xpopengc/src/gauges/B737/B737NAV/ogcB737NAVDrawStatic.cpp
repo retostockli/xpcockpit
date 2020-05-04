@@ -88,7 +88,7 @@ namespace OpenGC
     // float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
      
     // What's the heading?
-    // float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
     float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
 
     /* link x-plane datarefs needed for NAV display */
@@ -120,7 +120,7 @@ namespace OpenGC
     float *adf2_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_dme_distance_nm",-1);
 
     if (*heading_mag != FLT_MISS) {
-    
+      
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
@@ -137,7 +137,7 @@ namespace OpenGC
       m_pFontManager->Print( m_PhysicalSize.x*0.140,m_PhysicalSize.y*0.957,"TAS", m_Font );
 
 
-      /* Draws the box around the mag heading number displayed at top-center */
+      /* Draws the box around the heading number displayed at top-center */
       glLineWidth( lineWidth );
       glBegin(GL_LINE_STRIP);
       glVertex2f( m_PhysicalSize.x*0.443, m_PhysicalSize.y*0.980);
@@ -146,6 +146,7 @@ namespace OpenGC
       glVertex2f( m_PhysicalSize.x*0.557, m_PhysicalSize.y*0.980);
       glEnd();
 
+      // THIS TRIANGLE WOULD MARK THE WIND CORRECTION!
       glBegin(GL_LINE_LOOP);
       glVertex2f( m_PhysicalSize.x*0.480, m_PhysicalSize.y*0.917);
       glVertex2f( m_PhysicalSize.x*0.500, m_PhysicalSize.y*0.888);

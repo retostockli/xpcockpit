@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpusb], [0.61], [Reto Stockli])
+AC_INIT([xpusb], [0.70], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/dictionary.c])
 
 # produce makefiles (turn on warnings on automake!)
@@ -91,9 +91,9 @@ AC_MSG_RESULT([$HAVE_DEBUG])
 if test "x$HAVE_DEBUG" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
 # DEBUGGGING WITH LEAK CHECK AND OUT OF BOUNDS CHECK
-    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address"
+#    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address"
 # REGULAR DEBUGGING FOR GDB
-#    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized"
+    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized"
 # DEBUGING WITH GPROF SYMBOLS
 #    CFLAGS="$CFLAGS -g -pg -Wall"
 else

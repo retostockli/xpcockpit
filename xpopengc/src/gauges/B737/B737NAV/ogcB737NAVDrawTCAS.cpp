@@ -39,6 +39,11 @@ namespace OpenGC
   
     m_Font = m_pFontManager->LoadDefaultFont();
 
+    for (int i=0;i<maxmp;i++) {
+      mp_x[i] = FLT_MISS;
+    }
+    counter = 0;
+
   }
 
   B737NAVDrawTCAS::~B737NAVDrawTCAS()
@@ -56,8 +61,6 @@ namespace OpenGC
 
     char buffer[15];
     char buffer2[50];
-    int maxmp = 19;
-    int maxtcas = 20;
     
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
@@ -82,7 +85,7 @@ namespace OpenGC
     float map_y_max = 0.888;
     float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
 
-    // Where is the aircraft?
+    // Where is our aircraft?
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
     float *aircraftAlt = link_dataref_flt("sim/flightmodel/position/elevation",0); // meters
@@ -91,18 +94,21 @@ namespace OpenGC
     float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
         
     /* TCAS Datarefs (AI Planes) */
+    /*
     float *tcas_heading = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_bearing_degs",maxtcas,-1,0);
     float *tcas_distance = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_distance_mtrs",maxtcas,-1,1);
-    float *tcas_altitude = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_altitude_mtrs",maxtcas,-1,1);
+    float *tcas_altitude = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_altitude_mtrs",maxtcas,-1,1);*/
 
-    /* Multiplayer Datarefs (XSquawkbox) */
+    /* Multiplayer Datarefs (XSquawkbox + AI Planes) */
     float mp_lon[maxmp];
     float mp_lat[maxmp];
     float mp_alt[maxmp];
     for (int i=0;i<maxmp;i++) {
       snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_x",i+1);
-      float *px = link_dataref_flt(buffer2,0); // 0 if no plane exists
+      float *px = link_dataref_flt(buffer2,-1); // 0 if no plane exists
       if ((*px != 0.0) && (*px != FLT_MISS)) {
+	if (mp_x[i] == FLT_MISS) mp_x[i] = *px;
+
 	snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_lon",i+1);
 	float *plon = link_dataref_flt(buffer2,-3);
 	if ((*plon != 0.0) && (*plon != FLT_MISS)) {
@@ -160,38 +166,37 @@ namespace OpenGC
 	// this scale gives the radius of the symbol in physical units
 	float ss = m_PhysicalSize.y*0.02;
 
-	// plot TCAS of AI aircraft first and then of multiplayer planes
-	for (int i=0;i<(maxtcas+maxmp);i++) {
+	// plot MP or TCAS planes
+	// for (int i=0;i<maxtcas;i++) {
+	for (int i=0;i<maxmp;i++) {
 
 	  xPos = FLT_MISS;
 	  yPos = FLT_MISS;
 	  zPos = FLT_MISS;
-	  if (i<maxtcas) {
-	    if ((*(tcas_distance+i) > 0.0) && (*(tcas_heading+i) != FLT_MISS) &&
-		(*(tcas_altitude+i) != FLT_MISS)) {
-
-	      float rotateRad = (*(tcas_heading+i) + *heading_true) * dtor;
-
-	      xPos = *(tcas_distance+i) * sin(rotateRad) / 1852.0 / mapRange * map_size; 
-	      yPos = *(tcas_distance+i) * cos(rotateRad) / 1852.0 / mapRange * map_size;
-	      zPos = *(tcas_altitude+i) *3.28084; // altitude difference to our ACF
-	      //printf("%i %f %f %f \n",i,*(tcas_distance+i),*(tcas_heading+i),*(tcas_altitude+i));
-	    }
-	  } else {
-	    int j = i - maxtcas;
-	    if ((mp_lon[j] != FLT_MISS) && (mp_lat[j] != FLT_MISS) && (mp_alt[j] != FLT_MISS)) {
-	      double lon = (double) mp_lon[j];
-	      double lat = (double) mp_lat[j];
-	      double easting;
-	      double northing;
-	      lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
-	      
-	      // Compute physical position relative to acf center on screen
-	      yPos = -northing / 1852.0 / mapRange * map_size; 
-	      xPos = easting / 1852.0  / mapRange * map_size;
-	      zPos = (mp_alt[j] - *aircraftAlt)*3.28084;
-	      // printf("%i %f %f %f %f %f \n",j,xPos,yPos,zPos,mp_alt[j]*3.28084,*aircraftAlt*3.28084);
-	    }
+	  /*
+	  if ((*(tcas_distance+i) > 0.0) && (*(tcas_heading+i) != FLT_MISS) &&
+	      (*(tcas_altitude+i) != FLT_MISS)) {
+	    
+	    float rotateRad = (*(tcas_heading+i) + *heading_true) * dtor;
+	    
+	    xPos = *(tcas_distance+i) * sin(rotateRad) / 1852.0 / mapRange * map_size; 
+	    yPos = *(tcas_distance+i) * cos(rotateRad) / 1852.0 / mapRange * map_size;
+	    zPos = *(tcas_altitude+i) *3.28084; // altitude difference to our ACF
+	    //printf("%i %f %f %f \n",i,*(tcas_distance+i),*(tcas_heading+i),*(tcas_altitude+i));
+	  }
+	  */
+	  if ((mp_lon[i] != FLT_MISS) && (mp_lat[i] != FLT_MISS) && (mp_alt[i] != FLT_MISS)) {
+	    double lon = (double) mp_lon[i];
+	    double lat = (double) mp_lat[i];
+	    double easting;
+	    double northing;
+	    lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+	    
+	    // Compute physical position relative to acf center on screen
+	    yPos = -northing / 1852.0 / mapRange * map_size; 
+	    xPos = easting / 1852.0  / mapRange * map_size;
+	    zPos = (mp_alt[i] - *aircraftAlt)*3.28084;
+	    // printf("%i %f %f %f %f %f \n",j,xPos,yPos,zPos,mp_alt[i]*3.28084,*aircraftAlt*3.28084);
 	  }
 
 	  if ((xPos != FLT_MISS) && (yPos != FLT_MISS) && (zPos != FLT_MISS)) {	    

@@ -403,8 +403,8 @@ namespace OpenGC
 		}
 		
 		// Only draw the waypoint if it's visible within the rendering area
-		if (( sqrt(xPos*xPos + yPos*yPos) < map_size) ||
-		    ( sqrt(xPos2*xPos2 + yPos2*yPos2) < map_size)){
+		//if (( sqrt(xPos*xPos + yPos*yPos) < map_size) ||
+		//    ( sqrt(xPos2*xPos2 + yPos2*yPos2) < map_size)) {
 	    
 		glPushMatrix();
 
@@ -477,9 +477,9 @@ namespace OpenGC
 		} else if ((wpt[max(i-1,0)].rad_ctr_lon != 0.0) &&
 			   (wpt[max(i-1,0)].rad_ctr_lat != 0.0) &&
 			   (wpt[max(i-1,0)].rad_radius != 0.0) &&
-			   ((wpt[max(i-1,0)].crs != 0.0) || (wpt[i].crs != 0.0))) {
+			   ((wpt[max(i-1,0)].brg != 0.0) || (wpt[i].brg != 0.0))) {
 		  // draw curved track from waypoint i-1 to waypoint i
-		  // limit to waypoints > 2 for now (we had some odd curves at the beginning of the track 
+
 		  lon = (double) wpt[max(i-1,0)].rad_ctr_lon;
 		  lat = (double) wpt[max(i-1,0)].rad_ctr_lat;
 		  lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
@@ -630,7 +630,7 @@ namespace OpenGC
 
 		glPopMatrix();
 
-		}
+		//}
 		
 	      }
 	    }
