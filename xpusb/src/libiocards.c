@@ -1590,6 +1590,7 @@ int send_servos(void)
 	if (iocard[device].time_servos[servo] != FLT_MISS) {
 	  dt = time.tv_sec + time.tv_usec/1000000.0 - iocard[device].time_servos[servo];
 	  if (dt > dtmax) {
+	    // After some time: Put Servo into parking position
 	    changed = 1;
 	  }
 	} else {

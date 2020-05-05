@@ -187,7 +187,7 @@ void XPlaneDataSource::OnIdle()
     if (!m_sent) {
       // request radar only once at start, you will then get the data forever
       ret = send_udp();
-      printf("Sent: %i \n",ret);
+      printf("Sent Request for WXR Data to X-Plane: %i \n",ret);
       m_sent = true;
     }
    

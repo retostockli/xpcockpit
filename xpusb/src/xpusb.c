@@ -138,6 +138,9 @@ int main (int argc, char **argv)
       if (strcmp("boeing737yokerudder",*argv) == 0) {
 	b737_yokerudder();
       }
+      if (strcmp("boeing737throttle",*argv) == 0) {
+	b737_throttle();
+      }
       if (strcmp("boeing737pedestal",*argv) == 0) {
 	b737_pedestal();
       }

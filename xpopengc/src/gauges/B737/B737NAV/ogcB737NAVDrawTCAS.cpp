@@ -39,10 +39,16 @@ namespace OpenGC
   
     m_Font = m_pFontManager->LoadDefaultFont();
 
-    for (int i=0;i<maxmp;i++) {
+    for (int i=0;i<MAXMP;i++) {
       mp_x[i] = FLT_MISS;
+      mp_x_save[i] = FLT_MISS;
+      mp_lon[i] = FLT_MISS;
+      mp_lat[i] = FLT_MISS;
+      mp_alt[i] = FLT_MISS;
+      mp_alive[i] = 0;
     }
-    counter = 0;
+    count = 0;
+    maxcount = 50; // the OpenGC updates 50x per second, so check for plane movement every second
 
   }
 
@@ -95,47 +101,81 @@ namespace OpenGC
         
     /* TCAS Datarefs (AI Planes) */
     /*
-    float *tcas_heading = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_bearing_degs",maxtcas,-1,0);
-    float *tcas_distance = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_distance_mtrs",maxtcas,-1,1);
-    float *tcas_altitude = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_altitude_mtrs",maxtcas,-1,1);*/
-
-    /* Multiplayer Datarefs (XSquawkbox + AI Planes) */
-    float mp_lon[maxmp];
-    float mp_lat[maxmp];
-    float mp_alt[maxmp];
-    for (int i=0;i<maxmp;i++) {
+    float *tcas_heading = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_bearing_degs",MAXTCAS,-1,0);
+    float *tcas_distance = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_distance_mtrs",MAXTCAS,-1,1);
+    float *tcas_altitude = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_altitude_mtrs",MAXTCAS,-1,1);*/
+    
+    /* Multiplayer Datarefs (XSquawkbox + AI Planes): max of 19 planes.
+       But e.g. XSquawkbox recycles the datarefs for different planes, so generate
+       our own database of MAXMP planes. */
+    int j;
+    for (int i=0;i<19;i++) {
       snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_x",i+1);
-      float *px = link_dataref_flt(buffer2,-1); // 0 if no plane exists
-      if ((*px != 0.0) && (*px != FLT_MISS)) {
-	if (mp_x[i] == FLT_MISS) mp_x[i] = *px;
+      float *px = link_dataref_flt(buffer2,0); // 0 if no plane exists
+      snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_lon",i+1);
+      float *plon = link_dataref_flt(buffer2,-3);
+      snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_lat",i+1);
+      float *plat = link_dataref_flt(buffer2,-3);
+      snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_el",i+1);
+      float *palt = link_dataref_flt(buffer2,1); // elevation in meters
+      if ((*plon != 0.0) && (*plon != FLT_MISS) &&
+	  (*plat != 0.0) && (*plat != FLT_MISS) &&
+	  (*palt != 0.0) && (*palt != FLT_MISS) &&
+	  (*px != 0.0) && (*px != FLT_MISS)) {
 
-	snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_lon",i+1);
-	float *plon = link_dataref_flt(buffer2,-3);
-	if ((*plon != 0.0) && (*plon != FLT_MISS)) {
-	  mp_lon[i] = *plon;
-	} else {
-	  mp_lon[i] = FLT_MISS;
+	int jmin = -1;
+	int javail = -1;
+	float minval = 100.0;
+	  
+	for (j=0;j<MAXMP;j++) {
+	  if ((mp_lon[j] != FLT_MISS) && (mp_lat[j] != FLT_MISS)) {
+	    float val = fabs(*plon - mp_lon[j]) + fabs(*plat - mp_lat[j]);
+	    if (val < minval) {
+	      minval = val;
+	      jmin = j;
+	    }
+	  } else {
+	    if (javail < 0) javail = j;
+	  }
 	}
-	snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_lat",i+1);
-	float *plat = link_dataref_flt(buffer2,-3);
-	if ((*plat != 0.0) && (*plat != FLT_MISS)) {
-	  mp_lat[i] = *plat;
-	} else {
-	  mp_lat[i] = FLT_MISS;
+	if ((jmin >= 0) && (minval < 0.005)) {
+	  // update TCAS blib
+	  j=jmin;
+	  //printf("Found: %i %f %f %f %f \n",j,*plon,mp_lon[j],*plat,mp_lat[j]);
+	  mp_x[j] = *px;
+	  mp_lon[j] = *plon;
+	  mp_lat[j] = *plat;
+	  mp_alt[j] = *palt;
+	} else if (javail >= 0) {
+	  j = javail;
+	  // save new TCAS blib
+	  printf("New: %i %f %f %f %f \n",j,*plon,mp_lon[j],*plat,mp_lat[j]);
+	  mp_x[j] = *px;
+	  mp_lon[j] = *plon;
+	  mp_lat[j] = *plat;
+	  mp_alt[j] = *palt;
 	}
-	snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_el",i+1);
-	float *palt = link_dataref_flt(buffer2,1); // elevation in meters
-	if ((*palt != 0.0) && (*palt != FLT_MISS)) {
-	  mp_alt[i] = *palt;
+      }      
+    }
+    if (count == maxcount) {	      
+      /* Check if planes did move, if they did, they are alive:
+	 If multiplayer planes leave their position datarefs still 
+	 show values. But position stays constant */
+
+      int number = 0;
+      for (j=0;j<MAXMP;j++) {
+	if (mp_x_save[j] == mp_x[j]) {
+	  mp_alive[j] = 0;
 	} else {
-	  mp_alt[i] = FLT_MISS;
+	  mp_alive[j] = 1;
+	  number++;
 	}
-      } else {
-	mp_lon[i] = FLT_MISS;
-	mp_lat[i] = FLT_MISS;
-	mp_alt[i] = FLT_MISS;
+	mp_x_save[j] = mp_x[j];
       }
-      
+      printf("TCAS ALIVE : %i \n",number);
+      count = 0;
+    } else {
+      count ++;
     }
     
     // The input coordinates are in lon/lat, so we have to rotate against true heading
@@ -150,8 +190,8 @@ namespace OpenGC
       glRotatef(*heading_true, 0, 0, 1);
 
 
-      /* valid coordinates ? */
-      if ((*aircraftLon >= -180.0) && (*aircraftLon <= 180.0) && (*aircraftLat >= -90.0) && (*aircraftLat <= 90.0)) {
+      /* valid own aircraft coordinates ? */
+      if ((*aircraftLon != FLT_MISS) && (*aircraftLat != FLT_MISS) && (*aircraftAlt != FLT_MISS)) {
         
 	// Set up circle for small symbols
 	CircleEvaluator aCircle;
@@ -167,9 +207,9 @@ namespace OpenGC
 	float ss = m_PhysicalSize.y*0.02;
 
 	// plot MP or TCAS planes
-	// for (int i=0;i<maxtcas;i++) {
-	for (int i=0;i<maxmp;i++) {
-
+	// for (int i=0;i<MAXTCAS;i++) {
+	for (int i=0;i<MAXMP;i++) {
+	  
 	  xPos = FLT_MISS;
 	  yPos = FLT_MISS;
 	  zPos = FLT_MISS;
@@ -185,7 +225,10 @@ namespace OpenGC
 	    //printf("%i %f %f %f \n",i,*(tcas_distance+i),*(tcas_heading+i),*(tcas_altitude+i));
 	  }
 	  */
-	  if ((mp_lon[i] != FLT_MISS) && (mp_lat[i] != FLT_MISS) && (mp_alt[i] != FLT_MISS)) {
+	  //printf("%i %i %f %f %f \n",i,mp_alive[i],mp_lon[i],mp_lat[i],mp_alt[i]);
+	  
+	  if ((mp_lon[i] != FLT_MISS) && (mp_lat[i] != FLT_MISS) &&
+	      (mp_alt[i] != FLT_MISS) && (mp_alive[i] == 1)) {
 	    double lon = (double) mp_lon[i];
 	    double lat = (double) mp_lat[i];
 	    double easting;

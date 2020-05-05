@@ -657,7 +657,7 @@ void b737_throttle(void)
     /* Manual Park Brake */
     *parkbrake_xplane = (float) parkbrake;
 
-    //    printf("M: %f \n",*parkbrake_xplane);
+    //printf("M: %f \n",*parkbrake_xplane);
     
     /* disable Park Brake servo */
     value = -1.0;

@@ -29,6 +29,8 @@ OpenGC - The Open Source Glass Cockpit Project
 #include "ogcGauge.h"
 #include "ogcB737NAV.h"
 
+#define MAXMP 100
+
 namespace OpenGC
 {
 
@@ -51,10 +53,14 @@ protected:
   /* Pointer to the calling Navigation Gauge */
   B737NAV* m_NAVGauge;
 
-  int maxmp = 19;
-  //int maxtcas = 20;
-  float mp_x[19];
-  int counter;
+  float mp_x[MAXMP];
+  float mp_x_save[MAXMP];
+  float mp_lon[MAXMP];
+  float mp_lat[MAXMP];
+  float mp_alt[MAXMP];
+  int mp_alive[MAXMP];
+  int count;
+  int maxcount;
 
 };
 

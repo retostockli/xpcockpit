@@ -770,6 +770,11 @@ void b737_pedestal(void)
       }
     }
 
+    ret = digital_input(device,card,67,&test,0);
+    if (ret == 1) {
+      printf("Fire Bell Cutout: %i \n",test);
+    }
+
     /* fire pull and rotate switches for Engines 1, 2 and APU */
     ret = digital_input(device,card,55,&test,0);
     if (ret == 1) printf("Fire Engine 1 DISCH Pulled: %i \n",1-test);
