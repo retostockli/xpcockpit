@@ -48,7 +48,7 @@ namespace OpenGC
       mp_alive[i] = 0;
     }
     count = 0;
-    maxcount = 50; // the OpenGC updates 50x per second, so check for plane movement every second
+    maxcount = 150; // the OpenGC updates 50x per second, so check for plane movement every second
 
   }
 
@@ -92,12 +92,12 @@ namespace OpenGC
     float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
 
     // Where is our aircraft?
-    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
-    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
+    double aircraftLon = m_NAVGauge->GetMapCtrLon();
+    double aircraftLat = m_NAVGauge->GetMapCtrLat();
     float *aircraftAlt = link_dataref_flt("sim/flightmodel/position/elevation",0); // meters
     
     // What's the heading?
-    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    float heading_map =  m_NAVGauge->GetMapHeading();
         
     /* TCAS Datarefs (AI Planes) */
     /*
@@ -139,18 +139,20 @@ namespace OpenGC
 	  }
 	}
 	if ((jmin >= 0) && (minval < 0.005)) {
-	  // update TCAS blib
+	  // FOUND EXISTING: update TCAS position
 	  j=jmin;
 	  //printf("Found: %i %f %f %f %f \n",j,*plon,mp_lon[j],*plat,mp_lat[j]);
 	  mp_x[j] = *px;
 	  mp_lon[j] = *plon;
 	  mp_lat[j] = *plat;
 	  mp_alt[j] = *palt;
-	} else if (javail >= 0) {
-	  j = javail;
+	} else if (count == 0) {
+	  // Start of check for alive period (count 0)
+	  j = javail; // first available (empty) TCAS index
 	  // save new TCAS blib
-	  printf("New: %i %f %f %f %f \n",j,*plon,mp_lon[j],*plat,mp_lat[j]);
+	  printf("New: %i %f %f %f \n",j,*plon,*plat,minval);
 	  mp_x[j] = *px;
+	  mp_x_save[j] = *px;
 	  mp_lon[j] = *plon;
 	  mp_lat[j] = *plat;
 	  mp_alt[j] = *palt;
@@ -166,6 +168,11 @@ namespace OpenGC
       for (j=0;j<MAXMP;j++) {
 	if (mp_x_save[j] == mp_x[j]) {
 	  mp_alive[j] = 0;
+	  mp_x[j] = FLT_MISS;
+	  mp_x_save[j] = FLT_MISS;
+	  mp_lon[j] = FLT_MISS;
+	  mp_lat[j] = FLT_MISS;
+	  mp_alt[j] = FLT_MISS;
 	} else {
 	  mp_alive[j] = 1;
 	  number++;
@@ -180,18 +187,18 @@ namespace OpenGC
     
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if (*heading_true != FLT_MISS) {
+    if (heading_map != FLT_MISS) {
 
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
     
       // Shift center and rotate about heading
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-      glRotatef(*heading_true, 0, 0, 1);
+      glRotatef(heading_map, 0, 0, 1);
 
 
       /* valid own aircraft coordinates ? */
-      if ((*aircraftLon != FLT_MISS) && (*aircraftLat != FLT_MISS) && (*aircraftAlt != FLT_MISS)) {
+      if ((aircraftLon != FLT_MISS) && (aircraftLat != FLT_MISS) && (*aircraftAlt != FLT_MISS)) {
         
 	// Set up circle for small symbols
 	CircleEvaluator aCircle;
@@ -217,7 +224,7 @@ namespace OpenGC
 	  if ((*(tcas_distance+i) > 0.0) && (*(tcas_heading+i) != FLT_MISS) &&
 	      (*(tcas_altitude+i) != FLT_MISS)) {
 	    
-	    float rotateRad = (*(tcas_heading+i) + *heading_true) * dtor;
+	    float rotateRad = (*(tcas_heading+i) + heading_map) * dtor;
 	    
 	    xPos = *(tcas_distance+i) * sin(rotateRad) / 1852.0 / mapRange * map_size; 
 	    yPos = *(tcas_distance+i) * cos(rotateRad) / 1852.0 / mapRange * map_size;
@@ -233,7 +240,7 @@ namespace OpenGC
 	    double lat = (double) mp_lat[i];
 	    double easting;
 	    double northing;
-	    lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+	    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 	    
 	    // Compute physical position relative to acf center on screen
 	    yPos = -northing / 1852.0 / mapRange * map_size; 
@@ -247,7 +254,7 @@ namespace OpenGC
 	    glPushMatrix();
 
 	    glTranslatef(xPos, yPos, 0.0);
-	    glRotatef(-1.0* *heading_true, 0, 0, 1);
+	    glRotatef(-1.0* heading_map, 0, 0, 1);
 
 	    glLineWidth(2.0);
 

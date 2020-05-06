@@ -49,6 +49,7 @@ a slingle MAP mode (the MAP MODE EXPANDED) implemented.
 #include "B737/B737NAV/ogcB737NAVDrawFMC.h"
 #include "B737/B737NAV/ogcB737NAVDrawTCAS.h"
 #include "B737/B737NAV/ogcB737NAVMapModeExpanded.h"
+#include "B737/B737NAV/ogcB737NAVMapModePlan.h"
 
 // The components listed below are planned...
 //#include "ogcB737NAVMapModeCenter.h"
@@ -72,6 +73,9 @@ B737NAV::B737NAV()
   m_MapCenter = false;
   m_MapMode = 1;
   m_MapRange = 20;
+
+  m_MapCtrLon = FLT_MISS;
+  m_MapCtrLat = FLT_MISS;
   
   m_Font = m_pFontManager->LoadDefaultFont();
  
@@ -89,8 +93,6 @@ B737NAV::B737NAV()
   pDrawWXR->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawWXR);
 
-
-
   B737NAVDrawStatic* pDrawStatic = new B737NAVDrawStatic();
   pDrawStatic->SetParentRenderObject(this);
   pDrawStatic->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -104,6 +106,13 @@ B737NAV::B737NAV()
   pMapExp->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pMapExp->SetNAVGauge(this);
   this->AddGaugeComponent(pMapExp);
+
+  B737NAVMapModePlan* pMapPlan = new B737NAVMapModePlan();
+  pMapPlan->SetParentRenderObject(this);
+  pMapPlan->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pMapPlan->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pMapPlan->SetNAVGauge(this);
+  this->AddGaugeComponent(pMapPlan);
 
   B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
   pDrawStat->SetParentRenderObject(this);
@@ -152,6 +161,10 @@ void B737NAV::Render()
     // First thing to do is call base class setup
     Gauge::Render();
      
+    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
+    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
+    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+
     bool is_captain = (this->GetArg() == 1);
 
     // Get Map Mode (APP/VOR/MAP/PLN)
@@ -170,6 +183,17 @@ void B737NAV::Render()
       m_MapMode = *map_mode;
     }
 
+    if (m_MapMode != 3) {
+      SetMapCtrLon(*aircraftLon);
+      SetMapCtrLat(*aircraftLat);
+      m_MapHeading = *heading_true;
+    } else {
+      // set throught DrawFMC gauge component when reading center FMS waypoint
+      m_MapHeading = 0.0;
+    }
+
+    //    printf("%f %f \n",m_MapCtrLon,m_MapCtrLat);
+    
     // Get Map Centered vs. Expanded Mode
     int *map_expanded;
     if ((acf_type == 2) || (acf_type == 3)) {
@@ -229,7 +253,7 @@ void B737NAV::Render()
     }
 
     /* Centered Mode: forward range is only half of the selected range */
-    if (m_MapCenter) {
+    if ((m_MapCenter) && (m_MapMode != 3)) {
       m_MapRange /= 2;
     }
 

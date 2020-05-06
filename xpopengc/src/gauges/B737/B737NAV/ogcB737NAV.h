@@ -58,8 +58,11 @@ public:
   bool GetMapCenter(void) {return m_MapCenter;}
   int GetMapMode(void) {return m_MapMode;}
   float GetMapRange(void) {return m_MapRange;}
-  float GetMapCtrLon(void) {return m_MapCtrLon;}
-  float GetMapCtrLat(void) {return m_MapCtrLat;}
+  double GetMapCtrLon(void) {return m_MapCtrLon;}
+  double GetMapCtrLat(void) {return m_MapCtrLat;}
+  void SetMapCtrLon(double lon) {m_MapCtrLon=lon;}
+  void SetMapCtrLat(double lat) {m_MapCtrLat=lat;}
+  float GetMapHeading(void) {return m_MapHeading;}
  
  protected:
 
@@ -69,8 +72,9 @@ public:
   bool m_MapCenter; // NAV Display Centered (true) or Expanded (false)?
   int m_MapMode; // NAV Display Mode: 0: APP, 1: VOR, 2: MAP, 3: PLN
   float m_MapRange; // NAV Display Range in [nm]
-  float m_MapCtrLon; // NAV Display Center Longitude [deg E]
-  float m_MapCtrLat; // NAV Display Center Latitude [deg N]
+  double m_MapCtrLon; // NAV Display Center Longitude [deg E]
+  double m_MapCtrLat; // NAV Display Center Latitude [deg N]
+  float m_MapHeading; // True Heading of MAP (=0 or N in Plan Mode)
   
 };
 

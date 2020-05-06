@@ -87,15 +87,12 @@ namespace OpenGC
     // Get information on what dynamic information we display on NAV MAP
  
     // Where is the aircraft?
-    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
-    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
-    //    double *aircraftx = link_dataref_dbl("sim/flightmodel/position/local_x",0);
-    //    double *aircrafty = link_dataref_dbl("sim/flightmodel/position/local_y",0);
-    //    double *aircraftz = link_dataref_dbl("sim/flightmodel/position/local_z",0);
-    
+    double aircraftLon = m_NAVGauge->GetMapCtrLon();
+    double aircraftLat = m_NAVGauge->GetMapCtrLat();
+   
     // What's the heading?
-    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
-    
+    float heading_map =  m_NAVGauge->GetMapHeading();
+   
     // int *nav_shows_wxr;
     // int *nav_shows_data;
     // int *nav_shows_pos;
@@ -138,7 +135,7 @@ namespace OpenGC
         
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if (*heading_true != FLT_MISS) {
+    if (heading_map != FLT_MISS) {
 
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -158,11 +155,11 @@ namespace OpenGC
       }
 
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-      glRotatef(*heading_true, 0, 0, 1);
+      glRotatef(heading_map, 0, 0, 1);
 
   
       /* valid coordinates ? */
-      if ((*aircraftLon >= -180.0) && (*aircraftLon <= 180.0) && (*aircraftLat >= -90.0) && (*aircraftLat <= 90.0)) {
+      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
         
 	// Set up circle for small symbols
 	CircleEvaluator aCircle;
@@ -183,9 +180,9 @@ namespace OpenGC
 	// calculate approximate lon/lat range to search for given selected map range
 	int nlat = ceil(mapRange * 1852.0 / (2.0 * 3.141592 * 6378137.0) * 360.0);
 	int nlon;
-	if (fabs(*aircraftLat) < 89.5) {
+	if (fabs(aircraftLat) < 89.5) {
 	  nlon = ceil(mapRange * 1852.0 / (2.0 * 3.141592 * 6378137.0) * 360.0 / 
-		      cos(*aircraftLat * 0.0174533));
+		      cos(aircraftLat * 0.0174533));
 	} else {
 	  // north/south pole: span full longitude range
 	  nlon = 180;
@@ -201,8 +198,8 @@ namespace OpenGC
 	for (int la=-nlat; la <=nlat; la++) {
 	  for (int lo=-nlon; lo <=nlon; lo++) {
 
-	    aircraftLon2 = *aircraftLon + (double) lo;
-	    aircraftLat2 = *aircraftLat + (double) la;
+	    aircraftLon2 = aircraftLon + (double) lo;
+	    aircraftLat2 = aircraftLat + (double) la;
 
 	    // REMOVED: only display Fixes with a map range <= 40 nm
 	    if (*nav_shows_fix == 1) {
@@ -225,7 +222,7 @@ namespace OpenGC
 		lat = (*fixIt)->GetDegreeLat();
 
 		// convert to azimuthal equidistant coordinates with acf in center
-		lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+		lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 
 		// Compute physical position relative to acf center on screen
 		yPos = -northing / 1852.0 / mapRange * map_size; 
@@ -244,7 +241,7 @@ namespace OpenGC
 		  }
 		  
 		  // calculate physical position on heading rotated nav map
-		  float rotateRad = -1.0 * *heading_true * dtor;
+		  float rotateRad = -1.0 * heading_map * dtor;
 
 		  xPosR = cos(rotateRad) * xPos + sin(rotateRad) * yPos;
 		  yPosR = -sin(rotateRad) * xPos + cos(rotateRad) * yPos;
@@ -264,7 +261,7 @@ namespace OpenGC
 		    glPushMatrix();
 		  
 		    glTranslatef(xPos, yPos, 0.0);
-		    glRotatef(-1.0* *heading_true, 0, 0, 1);
+		    glRotatef(-1.0* heading_map, 0, 0, 1);
 		  
 		    /* small triangle: white */
 		    float ss2 = 0.50*ss;
@@ -305,7 +302,7 @@ namespace OpenGC
 	      lat = (*navIt)->GetDegreeLat();
 
 	      // convert to azimuthal equidistant coordinates with acf in center
-	      lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+	      lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 
 	      // Compute physical position relative to acf center on screen
 	      yPos = -northing / 1852.0 / mapRange * map_size; 
@@ -315,7 +312,7 @@ namespace OpenGC
 	      if ( sqrt(xPos*xPos + yPos*yPos) < map_size) {
 
 		// calculate physical position on heading rotated nav map
-		float rotateRad = -1.0 * *heading_true * dtor;
+		float rotateRad = -1.0 * heading_map * dtor;
 
 		xPosR = cos(rotateRad) * xPos + sin(rotateRad) * yPos;
 		yPosR = -sin(rotateRad) * xPos + cos(rotateRad) * yPos;
@@ -340,7 +337,7 @@ namespace OpenGC
 		    glPushMatrix();
 
 		    glTranslatef(xPos, yPos, 0.0);
-		    glRotatef(-1.0* *heading_true, 0, 0, 1);
+		    glRotatef(-1.0* heading_map, 0, 0, 1);
       
 		    if (type == 2) {
 		      /* NDB: two circles violet */
@@ -432,7 +429,7 @@ namespace OpenGC
 		lat = (*aptIt)->GetDegreeLat();
 
 		// convert to azimuthal equidistant coordinates with acf in center
-		lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+		lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 
 		// Compute physical position relative to acf center on screen
 		yPos = -northing / 1852.0 / mapRange * map_size; 
@@ -442,7 +439,7 @@ namespace OpenGC
 		if ( sqrt(xPos*xPos + yPos*yPos) < map_size) {
 		
 		  // calculate physical position on heading rotated nav map
-		  float rotateRad = -1.0 * *heading_true * dtor;
+		  float rotateRad = -1.0 * heading_map * dtor;
 
 		  xPosR = cos(rotateRad) * xPos + sin(rotateRad) * yPos;
 		  yPosR = -sin(rotateRad) * xPos + cos(rotateRad) * yPos;
@@ -464,7 +461,7 @@ namespace OpenGC
 		    glPushMatrix();
 
 		    glTranslatef(xPos, yPos, 0.0);
-		    glRotatef(-1.0* *heading_true, 0, 0, 1);
+		    glRotatef(-1.0* heading_map, 0, 0, 1);
 
 		    // Airports are light blue 
 		    glColor3ub(0, 150, 200);

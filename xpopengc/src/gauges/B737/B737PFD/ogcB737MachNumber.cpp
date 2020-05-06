@@ -494,6 +494,9 @@ namespace OpenGC
 	} else if (*ap_alt_mode == 10) {
 	  strcpy(buffer, "VNAV ALT");
 	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode == 11) {
+	  strcpy(buffer, "TO/GA");
+	  m_pFontManager->Print(114,183+8, &buffer[0], m_Font);
 	}
       }
 
@@ -529,9 +532,15 @@ namespace OpenGC
 	strcpy(buffer, "VOR LOC");
 	m_pFontManager->Print(77,172+8, &buffer[0], m_Font);
 	*/
-	if (*ap_hdg_mode_arm == 2) {
+	if (*ap_hdg_mode_arm == 1) {
+	  strcpy(buffer, "VOR/LOC");
+	  m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
+	} else if (*ap_hdg_mode_arm == 2) {
 	  strcpy(buffer, "ROLLOUT");
 	  m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
+	} else if (*ap_hdg_mode_arm == 3) {
+	  strcpy(buffer, "LNAV");
+	  m_pFontManager->Print(81,172+8, &buffer[0], m_Font);
 	}
 
       }
@@ -555,6 +564,9 @@ namespace OpenGC
 
 	if (*ap_alt_mode_arm == 1) {
 	  strcpy(buffer, "G/S");
+	  m_pFontManager->Print(119,172+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode_arm == 2) {
+	  strcpy(buffer, "V/S");
 	  m_pFontManager->Print(119,172+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode_arm == 3) {
 	  strcpy(buffer, "FLARE");
@@ -589,14 +601,14 @@ namespace OpenGC
 	if ((((*cmd_a_status == 1) || (*cmd_b_status == 1)) && (acf_type >= 1)) ||
 	    (((*fd_a_status == 2) || (*fd_b_status == 2)) && (acf_type == 0))) {
 	  strcpy(buffer, "CMD");
-	  m_pFontManager->Print(82,155+0, &buffer[0], m_Font);	  
+	  m_pFontManager->Print(80,155+0, &buffer[0], m_Font);	  
 	  if (*cmd_rec == 1) {
 	    glLineWidth(2.0);
 	    glBegin(GL_LINE_LOOP);
-	    glVertex2f(81,152);
-	    glVertex2f(98,152);
-	    glVertex2f(98,163);
-	    glVertex2f(81,163);
+	    glVertex2f(77,152);
+	    glVertex2f(102,152);
+	    glVertex2f(102,163);
+	    glVertex2f(77,163);
 	    glEnd();
 	  }
 	} else {

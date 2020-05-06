@@ -88,14 +88,11 @@ namespace OpenGC
     // Get information on what dynamic information we display on NAV MAP
  
     // Where is the aircraft?
-    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
-    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
-    //    double *aircraftx = link_dataref_dbl("sim/flightmodel/position/local_x",0);
-    //    double *aircrafty = link_dataref_dbl("sim/flightmodel/position/local_y",0);
-    //    double *aircraftz = link_dataref_dbl("sim/flightmodel/position/local_z",0);
+    double aircraftLon = m_NAVGauge->GetMapCtrLon();
+    double aircraftLat = m_NAVGauge->GetMapCtrLat();
     
     // What's the heading?
-    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    float heading_map =  m_NAVGauge->GetMapHeading();
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
      
     float *fmc_ok;
@@ -151,6 +148,17 @@ namespace OpenGC
       fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
       fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
       fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
+
+      /* set center lat/lon of map to currently selected waypoint
+	 in Plan Mode Map */
+      if ((*fmc_ctr != INT_MISS) && (mapMode == 3)) {
+	if (*fmc_nidx >= *fmc_ctr) {
+	  if ((fmc_lon[*fmc_ctr - 1] != FLT_MISS) && (fmc_lat[*fmc_ctr - 1] != FLT_MISS)) {
+	    m_NAVGauge->SetMapCtrLon(fmc_lon[*fmc_ctr - 1]);
+	    m_NAVGauge->SetMapCtrLat(fmc_lat[*fmc_ctr - 1]);
+	  }
+	}
+      }
     } else if (acf_type == 1) {
       /* Javier Cortes Flight Management Computer plugin */
       fmc_ok = link_dataref_flt("FJCC/UFMC/PRESENT",-1);
@@ -165,35 +173,37 @@ namespace OpenGC
       
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if (*heading_true != FLT_MISS) {
+    if (heading_map != FLT_MISS) {
 
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
 
-      // plot RNP/ANP
-      if ((acf_type == 2) || (acf_type == 3)) {
-	if (*fmc_rnp != FLT_MISS) {
-	  glColor3ub( 0, 255, 0 );
-	  m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
-	  m_pFontManager->Print(0.4*m_PhysicalSize.x,0.05*m_PhysicalSize.y, "RNP", m_Font);
-	  snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_rnp );
-	  m_pFontManager->Print(0.4*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
-	}
-	if (*fmc_anp != FLT_MISS) {
-	  glColor3ub( 0, 255, 0 );
-	  m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
-	  m_pFontManager->Print(0.52*m_PhysicalSize.x,0.05*m_PhysicalSize.y, "ANP", m_Font);
-	  snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_anp );
-	  m_pFontManager->Print(0.52*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
+      if (mapMode != 3) {
+	// plot RNP/ANP
+	if ((acf_type == 2) || (acf_type == 3)) {
+	  if (*fmc_rnp != FLT_MISS) {
+	    glColor3ub( 0, 255, 0 );
+	    m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
+	    m_pFontManager->Print(0.4*m_PhysicalSize.x,0.05*m_PhysicalSize.y, "RNP", m_Font);
+	    snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_rnp );
+	    m_pFontManager->Print(0.4*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
+	  }
+	  if (*fmc_anp != FLT_MISS) {
+	    glColor3ub( 0, 255, 0 );
+	    m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
+	    m_pFontManager->Print(0.52*m_PhysicalSize.x,0.05*m_PhysicalSize.y, "ANP", m_Font);
+	    snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_anp );
+	    m_pFontManager->Print(0.52*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
+	  }
 	}
       }
       
       // Shift center and rotate about heading
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-      glRotatef(*heading_true, 0, 0, 1);
+      glRotatef(heading_map, 0, 0, 1);
  
       /* valid coordinates ? */
-      if ((*aircraftLon >= -180.0) && (*aircraftLon <= 180.0) && (*aircraftLat >= -90.0) && (*aircraftLat <= 90.0)) {
+      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
         
 	// Set up circle for small symbols
 	CircleEvaluator aCircle;
@@ -221,7 +231,6 @@ namespace OpenGC
       
 	/* Plot FMC waypoints */
 	int wpt_current = 0;
-	int wpt_center = 0;
 	int wpt_miss1 = INT_MISS;
 	int wpt_miss2 = INT_MISS;
 	if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
@@ -271,11 +280,11 @@ namespace OpenGC
 	    /* ZIBO MOD FMC */
 	    nwpt=0;
 	    if (*fmc_nidx != INT_MISS) {
-	      wpt_center = *fmc_ctr-1;
 	      wpt_current = *fmc_cur-1; 
 	      wpt_miss1 = *fmc_miss1;
 	      wpt_miss2 = *fmc_miss2;
 	      nwpt = *fmc_nidx;
+
 	      
 	      if (nwpt > 0) {
 		if (wpt != NULL) {
@@ -362,11 +371,11 @@ namespace OpenGC
 		// convert to azimuthal equidistant coordinates with acf in center
 		lon = (double) wpt[max(i-1,0)].lon;
 		lat = (double) wpt[max(i-1,0)].lat;
-		lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+		lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 		
 		lon = (double) wpt[i].lon;
 		lat = (double) wpt[i].lat;
-		lonlat2gnomonic(&lon, &lat, &easting2, &northing2, aircraftLon, aircraftLat);
+		lonlat2gnomonic(&lon, &lat, &easting2, &northing2, &aircraftLon, &aircraftLat);
 	      
 		// Compute physical position relative to acf center on screen
 		yPos = -northing / 1852.0 / mapRange * map_size; 
@@ -386,7 +395,7 @@ namespace OpenGC
 		  // leg does not start at last waypoint
 		  lon = (double) wpt[max(i-1,0)].rad_lon2;
 		  lat = (double) wpt[max(i-1,0)].rad_lat2;
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 		  yPos = -northing / 1852.0 / mapRange * map_size; 
 		  xPos = easting / 1852.0  / mapRange * map_size;
 		} 
@@ -397,7 +406,7 @@ namespace OpenGC
 		  // leg does not end at next waypoint
 		  lon = (double) wpt[i].rad_lon2;
 		  lat = (double) wpt[i].rad_lat2;
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 		  yPos2 = -northing / 1852.0 / mapRange * map_size; 
 		  xPos2 = easting / 1852.0  / mapRange * map_size;		    
 		}
@@ -482,7 +491,7 @@ namespace OpenGC
 
 		  lon = (double) wpt[max(i-1,0)].rad_ctr_lon;
 		  lat = (double) wpt[max(i-1,0)].rad_ctr_lat;
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 		  yPosC = -northing / 1852.0 / mapRange * map_size; 
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
@@ -600,7 +609,7 @@ namespace OpenGC
 		
 		// draw waypoint symbol and name
 		glTranslatef(xPosL, yPosL, 0.0);
-		glRotatef(-1.0* *heading_true, 0, 0, 1);
+		glRotatef(-1.0* heading_map, 0, 0, 1);
 
 		if (i == wpt_current) {
 		  glColor3ub(255, 0, 200);
