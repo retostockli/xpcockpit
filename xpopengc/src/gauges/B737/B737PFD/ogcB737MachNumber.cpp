@@ -488,6 +488,9 @@ namespace OpenGC
 	} else if (*ap_alt_mode == 6) {
 	  strcpy(buffer, "FLARE");
 	  m_pFontManager->Print(114,183+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode == 8) {
+	  strcpy(buffer, "VNAV SPD");
+	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 9) {
 	  strcpy(buffer, "VNAV PTH");
 	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
@@ -571,6 +574,9 @@ namespace OpenGC
 	} else if (*ap_alt_mode_arm == 3) {
 	  strcpy(buffer, "FLARE");
 	  m_pFontManager->Print(114,172+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode_arm == 5) {
+	  strcpy(buffer, "VNAV");
+	  m_pFontManager->Print(116,172+8, &buffer[0], m_Font);
 	}
       }
 
