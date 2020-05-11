@@ -1,4 +1,8 @@
-Created on 2020/05/03 by Reto Stockli
+Created on 2020/05/10 by Reto Stockli
+
+Version 0.21
+------------
+- added Windows (mingw) support. Successfully tested on Ubuntu 18.04 with wine.
 
 Version 0.2
 -----------

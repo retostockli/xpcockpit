@@ -64,9 +64,9 @@ int main (int argc,char **argv)
   float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 1, 0);
  
     
-  /*
   unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
 
+  /*
   unsigned char *fmc1 = link_dataref_byte_arr("laminar/B738/fmc1/Line02_X", 40,-1);
 
   float *test = link_dataref_flt("x737/cockpit/fireSupPanel/fireWarnTestSw_f",-3);
@@ -127,7 +127,11 @@ int main (int argc,char **argv)
       } else {
 	*custom = 1;
       }
-      
+
+      if (acf_tailnum) {
+	printf("ACF TAILNUM: %s \n",acf_tailnum);
+      }
+       
       /*
       if (*framerate != FLT_MISS) {
 	printf("framerate %f \n",1. / *framerate);
@@ -164,10 +168,6 @@ int main (int argc,char **argv)
       }
 
 
-      if (acf_tailnum) {
-	printf("ACF_TAILNUM: %s \n",acf_tailnum);
-      }
- 
       */
 
       /*
