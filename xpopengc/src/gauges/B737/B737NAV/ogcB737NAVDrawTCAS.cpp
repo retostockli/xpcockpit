@@ -39,6 +39,17 @@ namespace OpenGC
   
     m_Font = m_pFontManager->LoadDefaultFont();
 
+    for (int i=0;i<MAXMP;i++) {
+      mp_x[i] = FLT_MISS;
+      mp_x_save[i] = FLT_MISS;
+      mp_lon[i] = FLT_MISS;
+      mp_lat[i] = FLT_MISS;
+      mp_alt[i] = FLT_MISS;
+      mp_alive[i] = 0;
+    }
+    count = 0;
+    maxcount = 150; // the OpenGC updates 50x per second, so check for plane movement every second
+
   }
 
   B737NAVDrawTCAS::~B737NAVDrawTCAS()
@@ -54,8 +65,9 @@ namespace OpenGC
     int mapMode = m_NAVGauge->GetMapMode();
     float mapRange = m_NAVGauge->GetMapRange();
 
-    char buffer[5];
-
+    char buffer[15];
+    char buffer2[50];
+    
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
     // float lineWidth = 1.5 * m_PhysicalSize.x / 100.0;
@@ -79,38 +91,114 @@ namespace OpenGC
     float map_y_max = 0.888;
     float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
 
-    // Where is the aircraft?
-    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
-    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
-    //    double *aircraftx = link_dataref_dbl("sim/flightmodel/position/local_x",0);
-    //    double *aircrafty = link_dataref_dbl("sim/flightmodel/position/local_y",0);
-    //    double *aircraftz = link_dataref_dbl("sim/flightmodel/position/local_z",0);
+    // Where is our aircraft?
+    double aircraftLon = m_NAVGauge->GetMapCtrLon();
+    double aircraftLat = m_NAVGauge->GetMapCtrLat();
+    float *aircraftAlt = link_dataref_flt("sim/flightmodel/position/elevation",0); // meters
     
     // What's the heading?
-    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    float heading_map =  m_NAVGauge->GetMapHeading();
         
-    /* TCAS */
-    float *tcas_heading = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_bearing_degs",20,-1,0);
-    float *tcas_distance = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_distance_mtrs",20,-1,1);
-    float *tcas_altitude = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_altitude_mtrs",20,-1,1);
-    //   double *x1 = link_dataref_dbl("sim/multiplayer/position/plane1_x",1);
-    //   double *y1 = link_dataref_dbl("sim/multiplayer/position/plane1_y",1);
-    //    double *z1 = link_dataref_dbl("sim/multiplayer/position/plane1_z",1);
+    /* TCAS Datarefs (AI Planes) */
+    /*
+    float *tcas_heading = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_bearing_degs",MAXTCAS,-1,0);
+    float *tcas_distance = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_distance_mtrs",MAXTCAS,-1,1);
+    float *tcas_altitude = link_dataref_flt_arr("sim/cockpit2/tcas/indicators/relative_altitude_mtrs",MAXTCAS,-1,1);*/
+    
+    /* Multiplayer Datarefs (XSquawkbox + AI Planes): max of 19 planes.
+       But e.g. XSquawkbox recycles the datarefs for different planes, so generate
+       our own database of MAXMP planes. */
+    int j;
+    for (int i=0;i<19;i++) {
+      snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_x",i+1);
+      float *px = link_dataref_flt(buffer2,0); // 0 if no plane exists
+      snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_lon",i+1);
+      float *plon = link_dataref_flt(buffer2,-3);
+      snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_lat",i+1);
+      float *plat = link_dataref_flt(buffer2,-3);
+      snprintf(buffer2,sizeof(buffer2),"sim/multiplayer/position/plane%i_el",i+1);
+      float *palt = link_dataref_flt(buffer2,1); // elevation in meters
+      if ((*plon != 0.0) && (*plon != FLT_MISS) &&
+	  (*plat != 0.0) && (*plat != FLT_MISS) &&
+	  (*palt != 0.0) && (*palt != FLT_MISS) &&
+	  (*px != 0.0) && (*px != FLT_MISS)) {
+
+	int jmin = -1;
+	int javail = -1;
+	float minval = 100.0;
+	  
+	for (j=0;j<MAXMP;j++) {
+	  if ((mp_lon[j] != FLT_MISS) && (mp_lat[j] != FLT_MISS)) {
+	    float val = fabs(*plon - mp_lon[j]) + fabs(*plat - mp_lat[j]);
+	    if (val < minval) {
+	      minval = val;
+	      jmin = j;
+	    }
+	  } else {
+	    if (javail < 0) javail = j;
+	  }
+	}
+	if ((jmin >= 0) && (minval < 0.005)) {
+	  // FOUND EXISTING: update TCAS position
+	  j=jmin;
+	  //printf("Found: %i %f %f %f %f \n",j,*plon,mp_lon[j],*plat,mp_lat[j]);
+	  mp_x[j] = *px;
+	  mp_lon[j] = *plon;
+	  mp_lat[j] = *plat;
+	  mp_alt[j] = *palt;
+	} else if (count == 0) {
+	  // Start of check for alive period (count 0)
+	  j = javail; // first available (empty) TCAS index
+	  // save new TCAS blib
+	  printf("New: %i %f %f %f \n",j,*plon,*plat,minval);
+	  mp_x[j] = *px;
+	  mp_x_save[j] = *px;
+	  mp_lon[j] = *plon;
+	  mp_lat[j] = *plat;
+	  mp_alt[j] = *palt;
+	}
+      }      
+    }
+    if (count == maxcount) {	      
+      /* Check if planes did move, if they did, they are alive:
+	 If multiplayer planes leave their position datarefs still 
+	 show values. But position stays constant */
+
+      int number = 0;
+      for (j=0;j<MAXMP;j++) {
+	if (mp_x_save[j] == mp_x[j]) {
+	  mp_alive[j] = 0;
+	  mp_x[j] = FLT_MISS;
+	  mp_x_save[j] = FLT_MISS;
+	  mp_lon[j] = FLT_MISS;
+	  mp_lat[j] = FLT_MISS;
+	  mp_alt[j] = FLT_MISS;
+	} else {
+	  mp_alive[j] = 1;
+	  number++;
+	}
+	mp_x_save[j] = mp_x[j];
+      }
+      printf("TCAS ALIVE : %i \n",number);
+      count = 0;
+    } else {
+      count ++;
+    }
     
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if (*heading_true != FLT_MISS) {
+    if (heading_map != FLT_MISS) {
 
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
     
       // Shift center and rotate about heading
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-      glRotatef(*heading_true, 0, 0, 1);
+      glRotatef(heading_map, 0, 0, 1);
 
 
-      /* valid coordinates ? */
-      if ((*aircraftLon >= -180.0) && (*aircraftLon <= 180.0) && (*aircraftLat >= -90.0) && (*aircraftLat <= 90.0)) {
+      /* valid own aircraft coordinates ? */
+      if ((aircraftLon != FLT_MISS) && (aircraftLat != FLT_MISS) && (*aircraftAlt != FLT_MISS)) {
         
 	// Set up circle for small symbols
 	CircleEvaluator aCircle;
@@ -119,33 +207,59 @@ namespace OpenGC
 
 	float xPos;
 	float yPos;
+	float zPos;
 
 	// define overall symbol size (for DME, FIX, VOR, APT etc.)
 	// this scale gives the radius of the symbol in physical units
 	float ss = m_PhysicalSize.y*0.02;
 
-	// plot TCAS of AI aircraft
-	for (int i=0;i<20;i++) {
+	// plot MP or TCAS planes
+	// for (int i=0;i<MAXTCAS;i++) {
+	for (int i=0;i<MAXMP;i++) {
+	  
+	  xPos = FLT_MISS;
+	  yPos = FLT_MISS;
+	  zPos = FLT_MISS;
+	  /*
 	  if ((*(tcas_distance+i) > 0.0) && (*(tcas_heading+i) != FLT_MISS) &&
-	      (*(tcas_altitude+i) != FLT_MISS))  {
+	      (*(tcas_altitude+i) != FLT_MISS)) {
+	    
+	    float rotateRad = (*(tcas_heading+i) + heading_map) * dtor;
+	    
+	    xPos = *(tcas_distance+i) * sin(rotateRad) / 1852.0 / mapRange * map_size; 
+	    yPos = *(tcas_distance+i) * cos(rotateRad) / 1852.0 / mapRange * map_size;
+	    zPos = *(tcas_altitude+i) *3.28084; // altitude difference to our ACF
+	    //printf("%i %f %f %f \n",i,*(tcas_distance+i),*(tcas_heading+i),*(tcas_altitude+i));
+	  }
+	  */
+	  //printf("%i %i %f %f %f \n",i,mp_alive[i],mp_lon[i],mp_lat[i],mp_alt[i]);
+	  
+	  if ((mp_lon[i] != FLT_MISS) && (mp_lat[i] != FLT_MISS) &&
+	      (mp_alt[i] != FLT_MISS) && (mp_alive[i] == 1)) {
+	    double lon = (double) mp_lon[i];
+	    double lat = (double) mp_lat[i];
+	    double easting;
+	    double northing;
+	    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+	    
+	    // Compute physical position relative to acf center on screen
+	    yPos = -northing / 1852.0 / mapRange * map_size; 
+	    xPos = easting / 1852.0  / mapRange * map_size;
+	    zPos = (mp_alt[i] - *aircraftAlt)*3.28084;
+	    // printf("%i %f %f %f %f %f \n",j,xPos,yPos,zPos,mp_alt[i]*3.28084,*aircraftAlt*3.28084);
+	  }
 
-	    float distancemeters = *(tcas_distance+i);
-	    float altitudemeters = *(tcas_altitude+i);
-	    float rotateRad = (*(tcas_heading+i) + *heading_true) * dtor;
-
-	    xPos = distancemeters * sin(rotateRad) / 1852.0 / mapRange * map_size; 
-	    yPos = distancemeters * cos(rotateRad) / 1852.0 / mapRange * map_size;
-	    // printf("%i %f %f %f \n",i,distancemeters,*(tcas_heading+i),altitudemeters*3.28084/100);
+	  if ((xPos != FLT_MISS) && (yPos != FLT_MISS) && (zPos != FLT_MISS)) {	    
 
 	    glPushMatrix();
 
 	    glTranslatef(xPos, yPos, 0.0);
-	    glRotatef(-1.0* *heading_true, 0, 0, 1);
+	    glRotatef(-1.0* heading_map, 0, 0, 1);
 
 	    glLineWidth(2.0);
 
 	    float ss2 = 0.65*ss;
-	    if (fabs(altitudemeters)*3.28084 < 300.) {
+	    if (fabs(zPos) < 300.) {
 	      // Resolution Advisory (red filled square)
 	      glColor3ub(255, 0, 0);
 	      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
@@ -155,7 +269,7 @@ namespace OpenGC
 	      glVertex2f(ss2, ss2);
 	      glVertex2f(-ss2, ss2);
 	      glEnd();
-	    } else if (fabs(altitudemeters)*3.28084 < 900.) {
+	    } else if (fabs(zPos) < 900.) {
 	      // traffic advisory (yellow filled circle)
 	      glColor3ub(255, 255, 0);
 	      CircleEvaluator tCircle;
@@ -179,14 +293,14 @@ namespace OpenGC
 	      glPolygonMode(GL_FRONT,GL_FILL);
 	    }
 
-	    if (fabs(altitudemeters*3.28084/100) < 100) {
-	      if (altitudemeters > 0) {
+	    if (fabs(zPos/100) < 100) {
+	      if (zPos > 0) {
 		m_pFontManager->SetSize( m_Font, 0.6*fontSize, 0.6*fontSize );
-		snprintf(buffer, sizeof(buffer), "+%i", (int) (fabs(altitudemeters)*3.28084/100));
+		snprintf(buffer, sizeof(buffer), "+%i", (int) (fabs(zPos)/100));
 		m_pFontManager->Print(-0.9*fontSize,ss2+0.05*fontSize, &buffer[0], m_Font);	      
 	      } else {
 		m_pFontManager->SetSize( m_Font, 0.6*fontSize, 0.6*fontSize );
-		snprintf(buffer, sizeof(buffer), "-%i", (int) (fabs(altitudemeters)*3.28084/100));
+		snprintf(buffer, sizeof(buffer), "-%i", (int) (fabs(zPos)/100));
 		m_pFontManager->Print(-0.9*fontSize,-ss2-0.65*fontSize, &buffer[0], m_Font);
 	      }
 	    }

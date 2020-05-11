@@ -144,12 +144,6 @@ void b737_overhead_fwd(void)
     ret = digital_input(device,card,8,&ival,0);
     if (ival != INT_MISS) ival = 1 - ival;
 
-    /*
-    battery_switch_pos = ival; // store battery switch state for opening and closing the switch 
-    cover=2; // battery switch cover number
-    if (((ival == 0) && (switch_cover_pos[cover] == 1.0)) ||
-	((ival == 1) && (switch_cover_pos[cover] == 0.0))) {
-    */
     ret = set_state_updn(&ival,battery,battery_dn,battery_up);
     if (ret != 0) {
       printf("Battery Switch %i \n",ival);

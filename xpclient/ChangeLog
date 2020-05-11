@@ -1,4 +1,8 @@
-Created on 2019/12/18 by Reto Stockli
+Created on 2020/05/03 by Reto Stockli
+
+Version 0.2
+-----------
+- much faster link_dataref handling
 
 Version 0.12
 ------------

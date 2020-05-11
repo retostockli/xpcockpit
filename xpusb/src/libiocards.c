@@ -449,7 +449,7 @@ int digital_input(int device, int card, int input, int *value, int type)
 	      *value = iocard[device].inputs[card][input];
 	      retval = 0;
 	    }
-	  } else {
+	  } else if (type == 1) {
 	    /* toggle state everytime you press button */
 	    /* inputs_old[input] always stores last state */
 	    /* new state is then stored in inputs[input] */
@@ -467,6 +467,25 @@ int digital_input(int device, int card, int input, int *value, int type)
 	      /* retain */
 	      retval = 0;
 	    }	
+	  } else if (type == 2) {
+	    /* simple pushbutton / switch like type 0
+	       BUT ONLY THE STATE CHANGE FROM 0 TO 1 IS RETURNED AS VALUE, 
+	       FOR PERMANENT SWITCH STATE OF 0 OR 1 OR A SWITH STATE 
+	       CHANGE FROM 1 TO 0 THE VALUE IS PRESERVED.
+	       THIS IS GOOD FOR EXECUTING COMMANDS WITH LINK_DATAREF_CMD_ONCE  */
+	    if ((iocard[device].inputs_old[card][input] == 0) &&
+		(iocard[device].inputs[card][input] == 1)) {
+	      /* something changed */
+	      *value = iocard[device].inputs[card][input];
+	      retval = 1;
+	      if (verbose > 1) {
+		printf("LIBIOCARDS: Pushbutton                  : device=%i card=%i input=%i value=%i \n",
+		  device, card, input, iocard[device].inputs[card][input]);
+	      }
+	    } else {
+	      /* nothing changed */
+	      retval = 0;
+	    }
 	  }
 	} else {
 	  retval = -1;
@@ -1061,28 +1080,95 @@ int send_mastercard(void)
   int count;
   int firstoutput = 11; /* output channels start at 11, and go to 55 */
   int totchannels = 64; /* total channels per card (second card starts at 64(+11), 3rd at 128(+11), 4th at 192+11))*/
-  int channelspersegment = 8;
+  int channelspersegment = 8; // each segment can hold 8 outputs (and one display)
+  int slotspercycle = 4; // each cycle can hold 4 slots (1 byte with address + 1 byte with values)
   int card;
   int channel;
   int changed;
+  int changedinsegment;
   int segment; /* we have to write full segments of 8 outputs each */
+  int slot;
 
   for (device=0;device<MAXDEVICES;device++) {
 
     /* check if we have a connected and initialized mastercard */
     if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 1)) {
-
-      
-      /* fill send data with output information */
+	
       for (card=0;card<iocard[device].ncards;card++) {
 
+	/* fill send data with output information */
+	slot = 0;
+	changed = 0;
+	memset(send_data,0xff,sizeof(send_data));
+	for (segment=0;segment<(totchannels/channelspersegment);segment++) {
+
+	  changedinsegment = 0;
+	  
+	  if ((segment*channelspersegment) < iocard[device].noutputs) {
+	    /* 8-byte segment transfers */
+	    for (count=0;count<channelspersegment;count++) {
+
+	      channel = segment*channelspersegment + count;
+
+	      if (channel < iocard[device].noutputs) {
+		if (iocard[device].outputs[card][channel] != iocard[device].outputs_old[card][channel]) {
+		  changed = 1;
+		  changedinsegment = 1;
+		}
+		if (count == 0) {
+		  send_data[slot*2+1] = iocard[device].outputs[card][channel]*pow(2,count);
+		} else {
+		  send_data[slot*2+1] += iocard[device].outputs[card][channel]*pow(2,count);
+		}
+	      } else {
+		if (count == 0) {
+		  send_data[slot*2+1] = pow(2,count);
+		} else {
+		  send_data[slot*2+1] += pow(2,count);
+		}
+	      }
+	    }
+
+	    if (changedinsegment == 1) {
+
+	      send_data[slot*2] = card*totchannels + segment*channelspersegment + firstoutput;
+	      changedinsegment = 0;
+	      slot++;
+	      
+	      if (verbose > 2) {
+		for (count = 0;count<channelspersegment;count++){	      
+		  channel = count + segment*channelspersegment;
+		  if (channel < iocard[device].noutputs) {
+		    printf("LIBIOCARDS: send output to MASTERCARD device=%i card=%i output=%i value=%i \n",
+			   device, card, firstoutput+channel, iocard[device].outputs[card][channel]);
+		  }
+		}
+	      }
+	    }
+	  }
+	  
+	  if ((slot == slotspercycle) ||
+	      ((changed == 1) && (segment==(totchannels/channelspersegment-1)))) {
+	    send_status = write_usb(device, send_data, buffersize);
+	    if ((send_status) < 0) {
+	      result = send_status;
+	      break;
+	    }
+	    
+	    slot = 0;
+	    changed = 0;
+	    memset(send_data,0xff,sizeof(send_data));
+	  }
+	}
+
+	/*
 	for (segment=0;segment<(totchannels/channelspersegment);segment++) {
 
 	  changed = 0;
 
 	  if ((segment*channelspersegment) < iocard[device].noutputs) {
 
-	    /* 8-byte segment transfers */
+	    memset(send_data,0xff,sizeof(send_data));
 	    for (count=0;count<channelspersegment;count++) {
 
 	      channel = segment*channelspersegment + count;
@@ -1127,11 +1213,43 @@ int send_mastercard(void)
 	    }
 	  }
 	}
-
+	*/
+	
 	/* fill send data with display information */
+	slot = 0;
+	changed = 0;
 	for (count=0;count<iocard[device].ndisplays;count++) {
 	  if (iocard[device].displays[card][count] != iocard[device].displays_old[card][count]) {
-        
+	    changed = 1;
+	    if (slot == 0) {
+	      memset(send_data,0xff,sizeof(send_data));
+	    }
+	    send_data[slot*2] = iocard[device].displays[card][count];
+	    send_data[slot*2+1] = card*iocard[device].ndisplays + count;
+	    slot++;
+
+	    if (verbose > 2) {
+	      printf("LIBIOCARDS: send display to MASTERCARD device=%i card=%i display=%i value=%i \n",
+		     device, card, count, iocard[device].displays[card][count]);
+	    }
+	    
+	  }
+	  if ((slot == slotspercycle) ||
+	      ((changed == 1) && (count == (iocard[device].ndisplays-1)))) {
+	    send_status = write_usb(device,send_data, buffersize);
+	    if ((send_status) < 0) {
+	      result = send_status;
+	      break;
+	    }
+	    changed = 0;
+	    slot = 0;
+	  }
+	}
+	/*
+	for (count=0;count<iocard[device].ndisplays;count++) {
+	  if (iocard[device].displays[card][count] != iocard[device].displays_old[card][count]) {
+
+	    memset(send_data,0xff,sizeof(send_data));
 	    send_data[0] = iocard[device].displays[card][count];
 	    send_data[1] = card*iocard[device].ndisplays + count;
 	
@@ -1147,14 +1265,15 @@ int send_mastercard(void)
 	    }
 	  }
 	}
+	*/
 
 	if (result < 0) break;
 
-      }
+      } // cards on master card
 
-    }
+    } // master card?
 
-  }
+  } // devices
   return result;
 }
 
@@ -1471,6 +1590,7 @@ int send_servos(void)
 	if (iocard[device].time_servos[servo] != FLT_MISS) {
 	  dt = time.tv_sec + time.tv_usec/1000000.0 - iocard[device].time_servos[servo];
 	  if (dt > dtmax) {
+	    // After some time: Put Servo into parking position
 	    changed = 1;
 	  }
 	} else {
@@ -2011,7 +2131,7 @@ int initialize_bu0836(int device)
 
 /* loop through selected devices and check if some have been connected
    or disconnected. Initialize or free devices as needed */
-int check_iocards(void)
+int initialize_iocards(void)
 {
   int device;
   int ret;
@@ -2059,19 +2179,19 @@ int check_iocards(void)
 }
 
 /* Initializes USB driver */
-int initialize_iocards(void)
+int initialize_usb(void)
 {
   int ret;
 
   /* initialize USB driver */
-  ret = initialize_usb();
+  ret = init_usb();
 
   return ret;
 }
 
 
-/* Closes TCP/IP connection and terminates USB connections */
-void exit_iocards(void)
+/* Terminates USB connections */
+void terminate_usb(void)
 {
 
   /* stop usb driver */

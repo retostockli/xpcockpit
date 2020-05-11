@@ -35,14 +35,18 @@
 
 int predict = 1;
 
+serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data structure */
+int numalloc; /* number of serverdata elements allocated */
+int numlink; /* number of serverdata elements linked */
+char clientname[100]; /* name of x-plane client package */
+int lastindex; /* stores the index of the last Dataref called */
+
 /* initialize local dataref structure */
 int initialize_dataref() {
 
   serverdata = NULL;
   numalloc = 0;
   numlink = 0;
-
-  strncpy(clientname,PACKAGE_NAME,sizeof(clientname));
 
   return 0;
 }
@@ -71,7 +75,6 @@ void clear_dataref() {
       serverdata = NULL;
       numalloc = 0;
       numlink = 0;
-      strncpy(clientname,"",sizeof(clientname));
 
       printf("serverdata structure deallocated\n");
     }

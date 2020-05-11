@@ -67,7 +67,7 @@ GeographicObject
 
     *x_meters = a * rho * sin(theta);
     *y_meters = a * -rho * cos(theta);
-      
+
   }
   
   void lonlat2gnomonic(double *lon, double *lat, double *x_meters, double *y_meters, double *lon0, double *lat0)
@@ -84,9 +84,11 @@ GeographicObject
     double dtor = 0.0174533; /* radians per degree */
     // double radeg = 57.2958;  /* degree per radians */
 
-    double cos_c = sin(*lat0 * dtor) * sin(*lat * dtor) + 
-		    cos(*lat0 * dtor) * cos(*lat * dtor) * cos((*lon - *lon0) * dtor);
+    // double cos_c = sin(*lat0 * dtor) * sin(*lat * dtor) + 
+    //		    cos(*lat0 * dtor) * cos(*lat * dtor) * cos((*lon - *lon0) * dtor);
 
+    double cos_c = 1.0; // ZIBO MOD SIMPLIFICATION
+    
     *x_meters = a * cos(*lat * dtor) * sin((*lon - *lon0) * dtor) / cos_c;
 
     *y_meters = -a * (cos(*lat0 * dtor) * sin(*lat * dtor) - sin(*lat0 * dtor) * cos(*lat * dtor) *

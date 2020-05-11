@@ -348,7 +348,7 @@ int check_usb (int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8
 }
 
 /* initialize HID device variables */  
-int initialize_usb (void) 
+int init_usb (void) 
 {
   int result = 0;
   int i;

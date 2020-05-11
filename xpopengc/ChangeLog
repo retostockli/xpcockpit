@@ -1,6 +1,10 @@
-2019/12/18 Reto Stockli / Hans Jansen
+2020/05/03 Reto Stockli / Hans Jansen
 
 This file documents changes since Version 0.60
+
+Version 0.81
+------------
+- much faster link_dataref commands
 
 Version 0.80
 ------------

@@ -92,7 +92,7 @@
 
 extern int verbosity;
 
-extern "C" char packageName[];
+extern "C" char clientname[100];
 
 namespace OpenGC
 {
@@ -244,7 +244,7 @@ bool AppObject::DoFileInitialization(char* iniFile)
   int default_server_port = 8091;
   char default_data_source[] = "X-Plane";
   char default_xplane_path[] = "NONE";
-  char default_package_name[] = "xpopengc";
+  char default_client_name[] = "xpopengc";
   int default_maxradar = 0; // do not query RADAR from X-Plane
 
   printf("AppObject - Starting initialization with %s\n", iniFile);
@@ -259,7 +259,7 @@ bool AppObject::DoFileInitialization(char* iniFile)
     verbosity = iniparser_getint(ini,"General:Verbosity", default_verbosity); 
 
     /* client name for the server */
-    strncpy(packageName,iniparser_getstring(ini,"General:Name", default_package_name),sizeof(packageName));
+    strncpy(clientname,iniparser_getstring(ini,"General:Name", default_client_name),sizeof(clientname));
 
     // path to X-Plane installation
     strcpy(m_XPlanePath,iniparser_getstring(ini,"General:XPlanePath",default_xplane_path));

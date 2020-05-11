@@ -38,7 +38,7 @@ typedef struct {
 device_struct device[MAXDEVICES];
 
 /* prototype functions */
-int initialize_usb(void);
+int init_usb(void);
 void exit_usb(void);
 int setbuffer_usb(int number, int bufferSize);
 int check_usb(int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8_t address, const char *path);

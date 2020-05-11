@@ -550,7 +550,7 @@ namespace OpenGC
     }
 
     // altitude warning
-    if ((*altitude_agl != FLT_MISS) && (*altitude_agl < 2500.0)) {
+    if ((*altitude_agl != FLT_MISS) && (*altitude_agl < (2500.0/3.28))) {
       glColor3ub(0,0,0);
       glBegin(GL_POLYGON);
       glVertex2f(m_PhysicalSize.x/2-14,1);
@@ -560,7 +560,7 @@ namespace OpenGC
       glEnd();
       glColor3ub(255,255,255);
       m_pFontManager->SetSize(m_Font,6.0, 6.0);
-      snprintf( buffer, sizeof(buffer), "%i", (int) *altitude_agl );
+      snprintf( buffer, sizeof(buffer), "%i", (int) (3.28084 * *altitude_agl) );
       m_pFontManager->Print(m_PhysicalSize.x/2-strlen(buffer)*3,2,buffer,m_Font);
 
     }

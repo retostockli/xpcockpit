@@ -77,7 +77,7 @@ namespace OpenGC
     bool is_captain = (this->GetArg() == 1);
 
     bool mapCenter = m_NAVGauge->GetMapCenter();
-    // int mapMode = m_NAVGauge->GetMapMode();
+    int mapMode = m_NAVGauge->GetMapMode();
     float mapRange = m_NAVGauge->GetMapRange();
  
     // define geometric stuff
@@ -107,11 +107,11 @@ namespace OpenGC
     // Get information on what dynamic information we display on NAV MAP
  
     // Where is the aircraft?
-    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
-    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
+    double aircraftLon = m_NAVGauge->GetMapCtrLon();
+    double aircraftLat = m_NAVGauge->GetMapCtrLat();
      
     // What's the heading?
-    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    float heading_map =  m_NAVGauge->GetMapHeading();
     // What's the altitude? (feet)
     //float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     
@@ -130,18 +130,18 @@ namespace OpenGC
 
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if ((*heading_true != FLT_MISS) && (*nav_shows_wxr == 1) &&
-	(udpRecvBuffer != NULL)) {
+    if ((heading_map != FLT_MISS) && (*nav_shows_wxr == 1) &&
+	(udpRecvBuffer != NULL) && (mapMode != 3)) {
 
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
 
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-      glRotatef(*heading_true, 0, 0, 1);
+      glRotatef(heading_map, 0, 0, 1);
 
       /* valid coordinates ? */
-      if ((*aircraftLon >= -180.0) && (*aircraftLon <= 180.0) && (*aircraftLat >= -90.0) && (*aircraftLat <= 90.0)) {
+      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
 
 	double northing;
 	double easting;
@@ -171,7 +171,7 @@ namespace OpenGC
 	    dlat = (double) lat;
 	    
 	    // convert to azimuthal equidistant coordinates with acf in center
-	    lonlat2gnomonic(&dlon, &dlat, &easting, &northing, aircraftLon, aircraftLat);
+	    lonlat2gnomonic(&dlon, &dlat, &easting, &northing, &aircraftLon, &aircraftLat);
 	    
 	    //	    printf("%i lon %f lat %f hgt %f lev %d \n",i,lon,lat,hgt,lev);
 	    

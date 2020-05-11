@@ -1,8 +1,9 @@
 /*=========================================================================
-OpenGC - The Open Source Glass Cockpit Project
+
+  OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
   
-  Module:  $RCSfile: ogcB737DrawTCAS.h,v $
+  Module:  $RCSfile: ogcB737MapModePlan.h,v $
 
   Last modification:
     Date:      $Date: 2004/10/14 19:28:10 $
@@ -23,23 +24,21 @@ OpenGC - The Open Source Glass Cockpit Project
  * Test gauge component for nav stuff
  */
 
-#ifndef ogcB737NAVDrawTCAS_h
-#define ogcB737NAVDrawTCAS_h
+#ifndef ogcB737NAVMapModePlan_h
+#define ogcB737NAVMapModePlan_h
 
 #include "ogcGauge.h"
 #include "ogcB737NAV.h"
 
-#define MAXMP 50
-
 namespace OpenGC
 {
 
-class B737NAVDrawTCAS : public GaugeComponent
+class B737NAVMapModePlan : public GaugeComponent
 {
 public:
 
-  B737NAVDrawTCAS();
-  virtual ~B737NAVDrawTCAS();
+  B737NAVMapModePlan();
+  virtual ~B737NAVMapModePlan();
 
   void Render();
 
@@ -52,15 +51,6 @@ protected:
 
   /* Pointer to the calling Navigation Gauge */
   B737NAV* m_NAVGauge;
-
-  float mp_x[MAXMP];
-  float mp_x_save[MAXMP];
-  float mp_lon[MAXMP];
-  float mp_lat[MAXMP];
-  float mp_alt[MAXMP];
-  int mp_alive[MAXMP];
-  int count;
-  int maxcount;
 
 };
 

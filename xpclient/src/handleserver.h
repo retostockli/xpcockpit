@@ -14,11 +14,8 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#ifdef WIN
-# include <winsock2.h>
-#else
 #include <arpa/inet.h>
-#endif
+
 
 /* TCP/IP DEFINE STATEMENTS */
 #define BLOCKING 0

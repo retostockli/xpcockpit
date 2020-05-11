@@ -87,10 +87,10 @@ int main (int argc, char **argv)
   if (initialize_tcpip()<0) exit_xpusb(-6);
 
   /* initialize USB/HID interface */
-  if (initialize_iocards()<0) exit_xpusb(-7);
+  if (initialize_usb()<0) exit_xpusb(-7);
   
-  /* initialize OpenCockpits IOCards devices */
-  if (check_iocards()<0) exit_xpusb(-8);
+  /* initialize OpenCockpits and Leo Bodnar's devices */
+  if (initialize_iocards()<0) exit_xpusb(-8);
   
   /* initialize IOCards I/O data */
   if (initialize_iocardsdata()<0) exit_xpusb(-5);
@@ -138,6 +138,9 @@ int main (int argc, char **argv)
       if (strcmp("boeing737yokerudder",*argv) == 0) {
 	b737_yokerudder();
       }
+      if (strcmp("boeing737throttle",*argv) == 0) {
+	b737_throttle();
+      }
       if (strcmp("boeing737pedestal",*argv) == 0) {
 	b737_pedestal();
       }
@@ -160,10 +163,10 @@ int main (int argc, char **argv)
 	// dcmotorsplus_test();
       }
       /*** user-space modules end here ***/
-     
+      
       /* send data to MASTERCARD via USB */
       if (send_mastercard()<0) exit_xpusb(-20);
-      
+     
       /* send servo data to USBServos card */
       if (send_servos()<0) exit_xpusb(-21);
 
@@ -195,7 +198,7 @@ void exit_xpusb(int ret)
 {
 
   /* cancel USB connection */
-  exit_iocards();
+  terminate_usb();
 
   /* cancel tcp/ip connection */
   exit_tcpip();

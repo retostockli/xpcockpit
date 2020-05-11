@@ -24,7 +24,8 @@ int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
   if ((new_state) && (old_state) && (up) && (dn)) {
     if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
 
-      if ((*up == 1) || (*up == 2) || (*dn == 1) || (*dn == 2)) {
+      //      if ((*up == 1) || (*up == 2) || (*dn == 1) || (*dn == 2)) {
+      if ((*up == 1) || (*dn == 1)) {
 	/* we just upped or downed, so wait for a cycle */
       } else {
 	if (*new_state > *old_state) {
@@ -55,7 +56,8 @@ int set_state_toggle(int *new_state, int *old_state, int *toggle)
   if ((new_state) && (old_state) && (toggle)) {
     if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
 
-      if ((*toggle == 1) || (*toggle == 2)) {
+      //if ((*toggle == 1) || (*toggle == 2)) {
+      if (*toggle == 1) {
 	/* we just upped or downed, so wait for a cycle */
       } else {
 	if (*new_state > *old_state) {

@@ -10,7 +10,6 @@
    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
    See the GNU General Public License for more details.
-
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. 
 */
@@ -348,7 +347,6 @@ void b737_throttle(void)
     printf("Park Brake: %i \n",parkbrake);
   }
 
-  //  printf("%i %f\n",parkbrake,*parkbrake_xplane);
   if ((parkbrake_mode < 0) && (parkbrake_mode > 2)) parkbrake_mode = 0;
   if ((parkbrake_mode == 0) && (parkbrake != INT_MISS) && (*parkbrake_xplane != FLT_MISS) &&
       (fabs((float) parkbrake - *parkbrake_xplane) > difparkbrake)) {
@@ -365,6 +363,7 @@ void b737_throttle(void)
     /* Idle mode: H/W and X-Plane in same position */
     parkbrake_mode = 0;
   }
+  //printf("%i: HW %i XP %f \n",parkbrake_mode,parkbrake,*parkbrake_xplane);
   
   if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     if (*fuel_mixture_left != FLT_MISS) {
@@ -513,7 +512,7 @@ void b737_throttle(void)
       if (*(throttle+en) > (throttle0+0.02)) {
 	if (throttle0 < maxval)	{
 	  value = max(min(pow((fabs(*(throttle+en) - throttle0))*2.0,0.5),maxval),0.25*maxval);
-	  //	   printf("+++ Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle+en),value);
+	  //printf("+++ Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle+en),value);
 	  ret = digital_output(device_dcmotor,card,0,&one); /* activate motor for thrust lever for engine 1 */
 	} else {
 	  ret = digital_output(device_dcmotor,card,0,&zero); /* deactivate motor for thrust lever for engine 1 */
@@ -522,7 +521,7 @@ void b737_throttle(void)
       if (*(throttle+en) < (throttle0-0.02)) {
 	if (throttle0 > minval)	{
 	  value = -max(min(pow((fabs(*(throttle+en) - throttle0))*2.0,0.5),maxval),0.25*maxval);
-	  //	  printf("--- Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle+en),value);
+	  //printf("--- Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle+en),value);
 	  ret = digital_output(device_dcmotor,card,0,&one); /* activate motor for thrust lever for engine 1 */
 	} else {
 	  ret = digital_output(device_dcmotor,card,0,&zero); /* deactivate motor for thrust lever for engine 1 */
@@ -658,7 +657,7 @@ void b737_throttle(void)
     /* Manual Park Brake */
     *parkbrake_xplane = (float) parkbrake;
 
-    //    printf("M: %f \n",*parkbrake_xplane);
+    //printf("M: %f \n",*parkbrake_xplane);
     
     /* disable Park Brake servo */
     value = -1.0;
@@ -666,9 +665,10 @@ void b737_throttle(void)
   }
   if (parkbrake_mode == 2) {
     /* Auto Park Brake */
-    //    printf("A: %f \n",*parkbrake_xplane);
     if (*parkbrake_xplane != FLT_MISS) {
-      value = (1.0-(*parkbrake_xplane))*(0.6-0.10)+0.10;
+      value = (1.0-(*parkbrake_xplane))*(0.6-0.25)+0.25;
+      //printf("A: %f %f \n",*parkbrake_xplane, value);
+      // IS MY SERVO OUT OF ORDER?
       ret = servos_output(device_dcmotor,2,&value,minval,maxval,0,1023);
     }
   }

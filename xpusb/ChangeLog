@@ -1,6 +1,17 @@
-2020/01/07 Reto Stockli and Hans Jansen
+2020/05/03 Reto Stockli and Hans Jansen
 
 This file documents changes since USBIOCARDS Version 0.1
+
+Version 0.70
+------------
+- Changed a lot of mastercard code to optimize performance in mastercard write
+- link_dataref_cmd_once now returns to 0 from the server side
+- dataref treatment much faster. link_dataref calls now predict their 
+  dataref index instead of searching through string arrays
+- callback time for xpusb is now 10 ms instead of 1 ms. But USB read still happens
+  at a faster rate by a) switching to blocking reads with timeout and
+  executing the card read calls each 10 ms as many times until the read
+  buffer is empty.
 
 Version 0.61
 ------------

@@ -57,7 +57,7 @@ namespace OpenGC
     // bool is_captain = (this->GetArg() == 1);
 
     // bool mapCenter = m_NAVGauge->GetMapCenter();
-    // int mapMode = m_NAVGauge->GetMapMode();
+    int mapMode = m_NAVGauge->GetMapMode();
     // float mapRange = m_NAVGauge->GetMapRange();
  
     // define geometric stuff
@@ -88,7 +88,7 @@ namespace OpenGC
     // float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
      
     // What's the heading?
-    // float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
     float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
 
     /* link x-plane datarefs needed for NAV display */
@@ -120,48 +120,54 @@ namespace OpenGC
     float *adf2_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_dme_distance_nm",-1);
 
     if (*heading_mag != FLT_MISS) {
-    
+      
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
 
       /* print small font stuff */
-      m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-      glColor3ub( 0, 255, 82 );
-      m_pFontManager->Print( m_PhysicalSize.x*0.355, m_PhysicalSize.y*0.932, "TRK", m_Font);
-      m_pFontManager->Print( m_PhysicalSize.x*0.571, m_PhysicalSize.y*0.932, "MAG", m_Font);
-
+      if (mapMode != 3) {
+	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
+	glColor3ub( 0, 255, 82 );
+	m_pFontManager->Print( m_PhysicalSize.x*0.355, m_PhysicalSize.y*0.932, "TRK", m_Font);
+	m_pFontManager->Print( m_PhysicalSize.x*0.571, m_PhysicalSize.y*0.932, "MAG", m_Font);
+      }
+	
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       glColor3ub( 255, 255, 255 );
       m_pFontManager->Print( m_PhysicalSize.x*0.014,m_PhysicalSize.y*0.957,"GS", m_Font );
       m_pFontManager->Print( m_PhysicalSize.x*0.140,m_PhysicalSize.y*0.957,"TAS", m_Font );
 
-
-      /* Draws the box around the mag heading number displayed at top-center */
-      glLineWidth( lineWidth );
-      glBegin(GL_LINE_STRIP);
-      glVertex2f( m_PhysicalSize.x*0.443, m_PhysicalSize.y*0.980);
-      glVertex2f( m_PhysicalSize.x*0.443, m_PhysicalSize.y*0.922);
-      glVertex2f( m_PhysicalSize.x*0.557, m_PhysicalSize.y*0.922);
-      glVertex2f( m_PhysicalSize.x*0.557, m_PhysicalSize.y*0.980);
-      glEnd();
-
-      glBegin(GL_LINE_LOOP);
-      glVertex2f( m_PhysicalSize.x*0.480, m_PhysicalSize.y*0.917);
-      glVertex2f( m_PhysicalSize.x*0.500, m_PhysicalSize.y*0.888);
-      glVertex2f( m_PhysicalSize.x*0.520, m_PhysicalSize.y*0.917);
-      glEnd();
+      if (mapMode != 3) {
+	/* Draws the box around the heading number displayed at top-center */
+	glLineWidth( lineWidth );
+	glBegin(GL_LINE_STRIP);
+	glVertex2f( m_PhysicalSize.x*0.443, m_PhysicalSize.y*0.980);
+	glVertex2f( m_PhysicalSize.x*0.443, m_PhysicalSize.y*0.922);
+	glVertex2f( m_PhysicalSize.x*0.557, m_PhysicalSize.y*0.922);
+	glVertex2f( m_PhysicalSize.x*0.557, m_PhysicalSize.y*0.980);
+	glEnd();
+	
+	// THIS TRIANGLE WOULD MARK THE WIND CORRECTION!
+	glBegin(GL_LINE_LOOP);
+	glVertex2f( m_PhysicalSize.x*0.480, m_PhysicalSize.y*0.917);
+	glVertex2f( m_PhysicalSize.x*0.500, m_PhysicalSize.y*0.888);
+	glVertex2f( m_PhysicalSize.x*0.520, m_PhysicalSize.y*0.917);
+	glEnd();
+      }
 
       /* put all the dynamic data fields that appear on all NAV display modes */
       glColor3ub( 255, 255, 255 );
 
-      /* big heading number on top of NAV display */
-      if (*heading_mag != FLT_MISS) {
-	m_pFontManager->SetSize( m_Font, 1.30*fontSize, 1.30*fontSize );
-	snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*heading_mag));
-	m_pFontManager->Print( m_PhysicalSize.x*0.452, m_PhysicalSize.y*0.93, &buffer[0], m_Font);
+      if (mapMode != 3) {
+	/* big heading number on top of NAV display */
+	if (*heading_mag != FLT_MISS) {
+	  m_pFontManager->SetSize( m_Font, 1.30*fontSize, 1.30*fontSize );
+	  snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*heading_mag));
+	  m_pFontManager->Print( m_PhysicalSize.x*0.452, m_PhysicalSize.y*0.93, &buffer[0], m_Font);
+	}
       }
-
+      
       m_pFontManager->SetSize( m_Font, fontSize, fontSize );
 
       /* plot ground speed and air speed in knots (convert from m/s) */
@@ -202,83 +208,87 @@ namespace OpenGC
 	m_pFontManager->Print( m_PhysicalSize.x*0.126, m_PhysicalSize.y*0.919 , buffer, m_Font );
       }
 
-      /* plot NAVAID name and DME if available on the lower part of the NAV display */
-      if ((*efis1_selector_pilot == 0) || (*efis1_selector_pilot == 2)) {
-	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
+      if (mapMode != 3) {
+      
+	/* plot NAVAID name and DME if available on the lower part of the NAV display */
+	if ((*efis1_selector_pilot == 0) || (*efis1_selector_pilot == 2)) {
+	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     
-	if (*efis1_selector_pilot == 0) {
-	  glColor3ub( 0, 255, 255 );
-	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "ADF 1", m_Font );
-	  snprintf( buffer, sizeof(buffer), "%s", adf1_name );
-	  if (strcmp(buffer,"") == 0) {
-	    snprintf( buffer, sizeof(buffer), "%s", "------" );
-	  } 
-	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.052 , buffer, m_Font );
-	  if (*adf1_has_dme == 1) {
-	    snprintf( buffer, sizeof(buffer), "%0.1f", *adf1_dme_distance_nm );
+	  if (*efis1_selector_pilot == 0) {
+	    glColor3ub( 0, 255, 255 );
+	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "ADF 1", m_Font );
+	    snprintf( buffer, sizeof(buffer), "%s", adf1_name );
+	    if (strcmp(buffer,"") == 0) {
+	      snprintf( buffer, sizeof(buffer), "%s", "------" );
+	    } 
+	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.052 , buffer, m_Font );
+	    if (*adf1_has_dme == 1) {
+	      snprintf( buffer, sizeof(buffer), "%0.1f", *adf1_dme_distance_nm );
+	    } else {
+	      snprintf( buffer, sizeof(buffer), "%s", "---" );
+	    }
+	    m_pFontManager->Print( m_PhysicalSize.x*0.080, m_PhysicalSize.y*0.012 , buffer, m_Font );
+	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  } else {
-	    snprintf( buffer, sizeof(buffer), "%s", "---" );
+	    glColor3ub( 0, 255, 82 );
+	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "VOR 1", m_Font );
+	    snprintf( buffer, sizeof(buffer), "%s", nav1_name );
+	    if (strcmp(buffer,"") == 0) {
+	      snprintf( buffer, sizeof(buffer), "%s", "------" );
+	    } 
+	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.052 , buffer, m_Font );
+	    if (*nav1_has_dme == 1) {
+	      snprintf( buffer, sizeof(buffer), "%0.1f", *nav1_dme_distance_nm );
+	    } else {
+	      snprintf( buffer, sizeof(buffer), "%s", "---" );
+	    }
+	    m_pFontManager->Print( m_PhysicalSize.x*0.080, m_PhysicalSize.y*0.012 , buffer, m_Font );
+	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  }
-	  m_pFontManager->Print( m_PhysicalSize.x*0.080, m_PhysicalSize.y*0.012 , buffer, m_Font );
-	  m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.012 , "DME", m_Font );
-	} else {
-	  glColor3ub( 0, 255, 82 );
-	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "VOR 1", m_Font );
-	  snprintf( buffer, sizeof(buffer), "%s", nav1_name );
-	  if (strcmp(buffer,"") == 0) {
-	    snprintf( buffer, sizeof(buffer), "%s", "------" );
-	  } 
-	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.052 , buffer, m_Font );
-	  if (*nav1_has_dme == 1) {
-	    snprintf( buffer, sizeof(buffer), "%0.1f", *nav1_dme_distance_nm );
-	  } else {
-	    snprintf( buffer, sizeof(buffer), "%s", "---" );
-	  }
-	  m_pFontManager->Print( m_PhysicalSize.x*0.080, m_PhysicalSize.y*0.012 , buffer, m_Font );
-	  m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.012 , "DME", m_Font );
+
 	}
 
-      }
-
-      if ((*efis2_selector_pilot == 0) || (*efis2_selector_pilot == 2)) {
-	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
+	if ((*efis2_selector_pilot == 0) || (*efis2_selector_pilot == 2)) {
+	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     
-	if (*efis2_selector_pilot == 0) {
-	  glColor3ub( 0, 255, 255 );
-	  m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "ADF 2", m_Font );
-	  snprintf( buffer, sizeof(buffer), "%s", adf2_name );
-	  if (strcmp(buffer,"") == 0) {
-	    snprintf( buffer, sizeof(buffer), "%s", "------" );
-	  } 
-	  m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.052 , buffer, m_Font );
-	  if (*adf2_has_dme == 1) {
-	    snprintf( buffer, sizeof(buffer), "%0.1f", *adf2_dme_distance_nm );
+	  if (*efis2_selector_pilot == 0) {
+	    glColor3ub( 0, 255, 255 );
+	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "ADF 2", m_Font );
+	    snprintf( buffer, sizeof(buffer), "%s", adf2_name );
+	    if (strcmp(buffer,"") == 0) {
+	      snprintf( buffer, sizeof(buffer), "%s", "------" );
+	    } 
+	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.052 , buffer, m_Font );
+	    if (*adf2_has_dme == 1) {
+	      snprintf( buffer, sizeof(buffer), "%0.1f", *adf2_dme_distance_nm );
+	    } else {
+	      snprintf( buffer, sizeof(buffer), "%s", "---" );
+	    }
+	    m_pFontManager->Print( m_PhysicalSize.x*0.080, m_PhysicalSize.y*0.012 , buffer, m_Font );      
+	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  } else {
-	    snprintf( buffer, sizeof(buffer), "%s", "---" );
+	    glColor3ub( 0, 255, 82 );
+	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "VOR 2", m_Font );
+	    snprintf( buffer, sizeof(buffer), "%s", nav2_name );
+	    if (strcmp(buffer,"") == 0) {
+	      snprintf( buffer, sizeof(buffer), "%s", "------" );
+	    } 
+	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.052 , buffer, m_Font );
+	    if (*nav2_has_dme == 1) {
+	      snprintf( buffer, sizeof(buffer), "%0.1f", *nav2_dme_distance_nm );
+	    } else {
+	      snprintf( buffer, sizeof(buffer), "%s", "---" );
+	    }
+	    m_pFontManager->Print( m_PhysicalSize.x*(0.839+0.067), m_PhysicalSize.y*0.012 ,buffer,m_Font);
+	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  }
-	  m_pFontManager->Print( m_PhysicalSize.x*0.080, m_PhysicalSize.y*0.012 , buffer, m_Font );      
-	  m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	  m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.012 , "DME", m_Font );
-	} else {
-	  glColor3ub( 0, 255, 82 );
-	  m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "VOR 2", m_Font );
-	  snprintf( buffer, sizeof(buffer), "%s", nav2_name );
-	  if (strcmp(buffer,"") == 0) {
-	    snprintf( buffer, sizeof(buffer), "%s", "------" );
-	  } 
-	  m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.052 , buffer, m_Font );
-	  if (*nav2_has_dme == 1) {
-	    snprintf( buffer, sizeof(buffer), "%0.1f", *nav2_dme_distance_nm );
-	  } else {
-	    snprintf( buffer, sizeof(buffer), "%s", "---" );
-	  }
-	  m_pFontManager->Print( m_PhysicalSize.x*(0.839+0.067), m_PhysicalSize.y*0.012 ,buffer,m_Font);
-	  m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	  m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.012 , "DME", m_Font );
-	}
 
+	}
+	
       }
   
       glPopMatrix();
