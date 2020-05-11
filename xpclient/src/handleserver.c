@@ -77,7 +77,15 @@ int initialize_tcpip(void)
 
   /* reset counter */
   check_tcpip_counter = 0;
-
+  
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    exit (EXIT_FAILURE);
+  }
+#endif
+    
   /* Create a reliable, stream socket using TCP */
   if ((clntSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
     printf("HANDLESERVER: Cannot initialize client TCP socket \n");
@@ -135,8 +143,13 @@ void exit_tcpip(void)
   }
 
   /* Close TCP client socket */
+#ifdef WIN
+  closesocket(clntSock);
+  WSACleanup();
+#else
   close(clntSock); 
-
+#endif
+  
   socketStatus = status_Disconnected;
 
   if (verbose > 0) printf("HANDLESERVER: Client Socket closed\n");
@@ -160,8 +173,12 @@ int check_server(void)
       if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
 	/* no server visible yet ... */
 	if (verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
-
-	close(clntSock);
+#ifdef WIN
+	closesocket(clntSock);
+	WSACleanup();
+#else
+	close(clntSock); 
+#endif
 	if (initialize_tcpip() < 0) {
 	  if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
 	  ret = -43;
@@ -255,7 +272,7 @@ int receive_server(void) {
 	  recvMsgSize = 0;
 	  break;
         } else { // here we have a real error
-	  if (verbose > 0) printf("HANDLESERVER: Client Socket Error %i \n",errno);
+	  if (verbose > 0) printf("HANDLESERVER: Client Socket Error %i. Received %i bytes \n",errno,recv_left);
 	  socketStatus = status_Error;
 	  recv_left = errno; 
 	  recvMsgSize = 0;

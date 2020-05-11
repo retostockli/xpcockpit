@@ -51,7 +51,7 @@ int main (int argc,char **argv)
 
   /* initialize TCP/IP interface */
   if (initialize_tcpip()<0) exit_client(-6);
-
+  
   /* subscribe to specific datarefs */
 
   // a custom dataref which can be accessed by other plugins/clients
@@ -107,7 +107,7 @@ int main (int argc,char **argv)
       
       /* receive data from X-Plane via TCP/IP */
       if (receive_server()<0) exit_client(-12);
-     
+    
       /***** start do something with the datarefs *****/
 
       if (*latitude != FLT_MISS) {
@@ -181,7 +181,7 @@ int main (int argc,char **argv)
 
       /* send data to X-Plane via TCP/IP */
       if (send_server()<0) exit_client(-15);
-
+ 
       /* run usbiocards data exchange (usb and tcp/ip) every second as an example (INTERVAL is 1 ms).
 	 In a real application you would run it e.g. every 10 ms to make sure you get a smooth update
 	 of flight data in your client and vice versa */
