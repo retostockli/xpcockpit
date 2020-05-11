@@ -51,7 +51,7 @@ int main (int argc,char **argv)
 
   /* initialize TCP/IP interface */
   if (initialize_tcpip()<0) exit_client(-6);
-
+  
   /* subscribe to specific datarefs */
 
   // a custom dataref which can be accessed by other plugins/clients
@@ -64,9 +64,9 @@ int main (int argc,char **argv)
   float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 1, 0);
  
     
-  /*
   unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
 
+  /*
   unsigned char *fmc1 = link_dataref_byte_arr("laminar/B738/fmc1/Line02_X", 40,-1);
 
   float *test = link_dataref_flt("x737/cockpit/fireSupPanel/fireWarnTestSw_f",-3);
@@ -107,7 +107,7 @@ int main (int argc,char **argv)
       
       /* receive data from X-Plane via TCP/IP */
       if (receive_server()<0) exit_client(-12);
-     
+    
       /***** start do something with the datarefs *****/
 
       if (*latitude != FLT_MISS) {
@@ -127,7 +127,11 @@ int main (int argc,char **argv)
       } else {
 	*custom = 1;
       }
-      
+
+      if (acf_tailnum) {
+	printf("ACF TAILNUM: %s \n",acf_tailnum);
+      }
+       
       /*
       if (*framerate != FLT_MISS) {
 	printf("framerate %f \n",1. / *framerate);
@@ -164,10 +168,6 @@ int main (int argc,char **argv)
       }
 
 
-      if (acf_tailnum) {
-	printf("ACF_TAILNUM: %s \n",acf_tailnum);
-      }
- 
       */
 
       /*
@@ -181,7 +181,7 @@ int main (int argc,char **argv)
 
       /* send data to X-Plane via TCP/IP */
       if (send_server()<0) exit_client(-15);
-
+ 
       /* run usbiocards data exchange (usb and tcp/ip) every second as an example (INTERVAL is 1 ms).
 	 In a real application you would run it e.g. every 10 ms to make sure you get a smooth update
 	 of flight data in your client and vice versa */

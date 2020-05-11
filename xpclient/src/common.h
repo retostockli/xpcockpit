@@ -16,4 +16,5 @@
 
 #define verbose 1
 
-#define INTERVAL 1000  /* poll interval in milliseconds: set between 1-1000 or so ... */
+#define INTERVAL 999  /* poll interval in milliseconds: set between 1-999 milliseconds
+			 (>= 1000 ms will not work with some usleep implementations) */

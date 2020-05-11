@@ -20,10 +20,9 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
 #include <stdio.h>   
 #include <stdlib.h>  
-#include <sys/socket.h> 
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <stdbool.h>
@@ -31,9 +30,16 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+
+#ifdef WIN
+#include <winsock2.h>
+#else
+#include <sys/socket.h> 
+#include <sys/ioctl.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#endif
 
 #include "handleserver.h"
 #include "serverdata.h"
@@ -71,16 +77,21 @@ int initialize_tcpip(void)
 
   /* reset counter */
   check_tcpip_counter = 0;
-
+  
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    exit (EXIT_FAILURE);
+  }
+#endif
+    
   /* Create a reliable, stream socket using TCP */
   if ((clntSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
     printf("HANDLESERVER: Cannot initialize client TCP socket \n");
     ret = -41; 
   } else {
     
-    tcptimeout.tv_sec = 0;		//no timeout!
-    tcptimeout.tv_usec = 0;		//no timeout!
-
     /* Construct the server address structure */
     memset(&ServAddr, 0, sizeof(ServAddr));            /* Zero out structure */
     ServAddr.sin_family      = AF_INET;                /* Internet address family */
@@ -129,8 +140,13 @@ void exit_tcpip(void)
   }
 
   /* Close TCP client socket */
+#ifdef WIN
+  closesocket(clntSock);
+  WSACleanup();
+#else
   close(clntSock); 
-
+#endif
+  
   socketStatus = status_Disconnected;
 
   if (verbose > 0) printf("HANDLESERVER: Client Socket closed\n");
@@ -154,8 +170,12 @@ int check_server(void)
       if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
 	/* no server visible yet ... */
 	if (verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
-
-	close(clntSock);
+#ifdef WIN
+	closesocket(clntSock);
+	WSACleanup();
+#else
+	close(clntSock); 
+#endif
 	if (initialize_tcpip() < 0) {
 	  if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
 	  ret = -43;
@@ -173,7 +193,11 @@ int check_server(void)
 	socketStatus = status_Connected;
 
 	unsigned long nSetSocketType = NON_BLOCKING;
-	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)	//set to non-blocking
+#ifdef WIN
+	if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
+#else
+	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
+#endif
 	  {
 	    if (verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
 	    socketStatus = status_Error;
@@ -220,6 +244,9 @@ int receive_server(void) {
     
     /* Check for new data from server */
     recv_left = recv(clntSock, message_ptr, TCPBUFSIZE, 0);
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
     
     if (recv_left == 0) { // disconnection
       if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected without notice from client socket. \n");
@@ -229,14 +256,25 @@ int receive_server(void) {
       break;
     }
     if (recv_left == -1) { // nothing received: error?
-      if (errno == EAGAIN) { // just no data yet ...
+#ifdef WIN
+      if (wsaerr == WSAEWOULDBLOCK) { // just no data yet ...
+#else
+      if (errno == EWOULDBLOCK) { // just no data yet ...
+#endif
 	if (verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
       } else {
+#ifdef WIN
+	if ((wsaerr == WSAECONNABORTED) || (wsaerr == WSAECONNREFUSED) ||
+	    (wsaerr == WSAECONNRESET)   || (wsaerr == WSAEHOSTUNREACH) ||
+	    (wsaerr == WSAENETDOWN)     || (wsaerr == WSAENETRESET)    ||
+	    (wsaerr == WSAENETUNREACH)  || (wsaerr == WSAETIMEDOUT)) { // now we have a network status
+#else
 	if ((errno == ECONNABORTED) || (errno == ECONNREFUSED) ||
 	    (errno == ECONNRESET)   || (errno == EHOSTUNREACH) ||
 	    (errno == ENETDOWN)     || (errno == ENETRESET)    ||
 	    (errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
+#endif
 	  if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected with error from client socket. Error: %i \n", errno);
 	  socketStatus = status_Disconnected;
 	  disconnected = 1;
@@ -244,7 +282,7 @@ int receive_server(void) {
 	  recvMsgSize = 0;
 	  break;
         } else { // here we have a real error
-	  if (verbose > 0) printf("HANDLESERVER: Client Socket Error %i \n",errno);
+	  if (verbose > 0) printf("HANDLESERVER: Client Socket Error %i. Received %i bytes \n",errno,recv_left);
 	  socketStatus = status_Error;
 	  recv_left = errno; 
 	  recvMsgSize = 0;
