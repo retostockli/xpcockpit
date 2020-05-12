@@ -2,11 +2,11 @@
 #define _XPWidgets_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik
+ * Copyright 2005 Sandy Barbour and Ben Supnik
  * 
  * All rights reserved.  See license.txt for usage.
  * 
- * X-Plane SDK Version: 2.1.1                                                  
+ * X-Plane SDK Version: 1.0.2                                                  
  *
  */
 
@@ -199,8 +199,8 @@ WIDGET_API int                  XPSendMessageToWidget(
                                    XPWidgetID           inWidget,    
                                    XPWidgetMessage      inMessage,    
                                    XPDispatchMode       inMode,    
-                                   intptr_t             inParam1,    
-                                   intptr_t             inParam2);    
+                                   long                 inParam1,    
+                                   long                 inParam2);    
 
 /***************************************************************************
  * WIDGET POSITIONING AND VISIBILITY
@@ -252,7 +252,7 @@ WIDGET_API int                  XPCountChildWidgets(
  */
 WIDGET_API XPWidgetID           XPGetNthChildWidget(
                                    XPWidgetID           inWidget,    
-                                   int                  inIndex);    
+                                   long                 inIndex);    
 
 /*
  * XPGetParentWidget
@@ -439,10 +439,10 @@ WIDGET_API void                 XPSetWidgetDescriptor(
  * terminated (this routine has 'strncpy' semantics).                          
  *
  */
-WIDGET_API int                  XPGetWidgetDescriptor(
+WIDGET_API long                 XPGetWidgetDescriptor(
                                    XPWidgetID           inWidget,    
                                    char *               outDescriptor,    
-                                   int                  inMaxDescLength);    
+                                   long                 inMaxDescLength);    
 
 /*
  * XPSetWidgetProperty
@@ -454,7 +454,7 @@ WIDGET_API int                  XPGetWidgetDescriptor(
 WIDGET_API void                 XPSetWidgetProperty(
                                    XPWidgetID           inWidget,    
                                    XPWidgetPropertyID   inProperty,    
-                                   intptr_t             inValue);    
+                                   long                 inValue);    
 
 /*
  * XPGetWidgetProperty
@@ -466,7 +466,7 @@ WIDGET_API void                 XPSetWidgetProperty(
  * information. 						                                                         
  *
  */
-WIDGET_API intptr_t             XPGetWidgetProperty(
+WIDGET_API long                 XPGetWidgetProperty(
                                    XPWidgetID           inWidget,    
                                    XPWidgetPropertyID   inProperty,    
                                    int *                inExists);    /* Can be NULL */

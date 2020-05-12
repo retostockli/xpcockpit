@@ -2,11 +2,11 @@
 #define _XPLMDefs_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik
+ * Copyright 2005 Sandy Barbour and Ben Supnik
  * 
  * All rights reserved.  See license.txt for usage.
  * 
- * X-Plane SDK Version: 2.1.1                                                  
+ * X-Plane SDK Version: 1.0.2                                                  
  *
  */
 
@@ -29,8 +29,6 @@ extern "C" {
 
 #if IBM
 #include <windows.h>
-#else
-#include <stdint.h>
 #endif
 /***************************************************************************
  * DLL Definitions
@@ -121,7 +119,6 @@ extern "C" {
 #else
 	#error "Platform not defined!"
 #endif
-
 /***************************************************************************
  * GLOBAL DEFINITIONS
  ***************************************************************************/
@@ -155,8 +152,8 @@ typedef int XPLMPluginID;
 /* X-Plane itself                                                              */
 #define XPLM_PLUGIN_XPLANE   (0)
 
-/* The current XPLM revision is 2.10 (210).                                    */
-#define kXPLM_Version        (210)
+/* The current XPLM revision is 2.00 (200).                                    */
+#define kXPLM_Version        (200)
 
 /*
  * XPLMKeyFlags

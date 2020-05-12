@@ -18,19 +18,25 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
 #include <stdio.h>     
 #include <stdlib.h>
-#include <sys/socket.h> 
 #include <sys/types.h>
 #include <unistd.h>    
 #include <string.h>
-#include <errno.h>
 #include <math.h>
 #include <stdbool.h>
-#include <arpa/inet.h> 
+
+#ifdef WIN
+#include <winsock2.h>
+#else
+#include <errno.h>
+#include <sys/socket.h> 
+#include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#endif
 
 #include "common.h"
 
@@ -133,6 +139,9 @@ void receive_client(int clntSock) {
     
     /* Check for new data from client */
     recv_left = recv(clntSock, message_ptr, TCPBUFSIZE, 0);
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
 
     if (recv_left == 0) { // disconnection
       if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Disconnected. \n", clntSock);
@@ -141,21 +150,30 @@ void receive_client(int clntSock) {
       break;
     }
     if (recv_left == -1) { // nothing received: error?
-      if (errno == EAGAIN) { // error or just no data yet ...
+#ifdef WIN
+      if (wsaerr == WSAEWOULDBLOCK) { // just no data yet ...
+#else
+      if (errno == EWOULDBLOCK) { // just no data yet ...
+#endif
 	if (verbose > 2) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : No data yet. \n", clntSock);
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
       } else {
-	if ((errno == ECONNABORTED) || (errno == ECONNREFUSED)  ||
-	    (errno == ECONNRESET)   || (errno == EHOSTUNREACH)  ||
-	    (errno == ENETDOWN)     || (errno == ENETRESET)     ||
-	    (errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
-	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Disconnected! Status: %i \n", clntSock, errno);
+#ifdef WIN
+	if ((wsaerr == WSAECONNABORTED) || (wsaerr == WSAECONNREFUSED) ||
+	    (wsaerr == WSAECONNRESET)   || (wsaerr == WSAEHOSTUNREACH) ||
+	    (wsaerr == WSAENETDOWN)     || (wsaerr == WSAENETRESET)) { // now we have a network status
+#else
+	if ((errno == ECONNABORTED) || (errno == ECONNREFUSED) ||
+	    (errno == ECONNRESET)   || (errno == EHOSTUNREACH) ||
+	    (errno == ENETDOWN)     || (errno == ENETRESET)) { // now we have a network status
+#endif
+	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Disconnected!\n",clntSock);
 	  socketStatus = status_Disconnected;
 	  recv_left = 0;
 	  recvMsgSize = 0;
 	  break;
 	} else { // here a real error
-	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Error %i!\n",clntSock, errno);
+	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Error!\n",clntSock);
 	  socketStatus = status_Error;	// signal a real error.
 	  recv_left = 0;
 	  recvMsgSize = 0;
@@ -899,14 +917,21 @@ void send_client(int clntSock) {
 	while ((send_left > 0) && (socketStatus != status_Error)) {
 	  
 	  sendMsgSize = send(clntSock, message_ptr, send_left, 0);
+#ifdef WIN
+	  int wsaerr = WSAGetLastError();
+#endif
 	  
 	  if (sendMsgSize == -1) {
-	    if (errno == EAGAIN) {
+#ifdef WIN
+	    if (wsaerr == WSAEWOULDBLOCK) {
+#else
+	    if (errno == EWOULDBLOCK) {
+#endif
 	      if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Caught EAGAIN signal sending data.\n",
 				       clntSock);
 	    } else {
-	      if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Error sending data: %i\n", 
-				       clntSock,errno);
+	      if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Error sending data. \n", 
+				       clntSock);
 	      socketStatus = status_Error;	/* signal a transmission error */
 	    }
 	  } else {

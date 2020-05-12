@@ -172,7 +172,6 @@ int check_server(void)
 	if (verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
 #ifdef WIN
 	closesocket(clntSock);
-	WSACleanup();
 #else
 	close(clntSock); 
 #endif
@@ -259,7 +258,7 @@ int receive_server(void) {
 #ifdef WIN
       if (wsaerr == WSAEWOULDBLOCK) { // just no data yet ...
 #else
-      if (errno == EWOULDBLOCK) { // just no data yet ...
+      if (errno == EAGAIN) { // just no data yet ...
 #endif
 	if (verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
@@ -275,16 +274,16 @@ int receive_server(void) {
 	    (errno == ENETDOWN)     || (errno == ENETRESET)    ||
 	    (errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
 #endif
-	  if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected with error from client socket. Error: %i \n", errno);
+	  if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected with error from client socket. Error! \n");
 	  socketStatus = status_Disconnected;
 	  disconnected = 1;
 	  recv_left = 0;
 	  recvMsgSize = 0;
 	  break;
         } else { // here we have a real error
-	  if (verbose > 0) printf("HANDLESERVER: Client Socket Error %i. Received %i bytes \n",errno,recv_left);
+	  if (verbose > 0) printf("HANDLESERVER: Client Socket Error. Received %i bytes \n",recv_left);
 	  socketStatus = status_Error;
-	  recv_left = errno; 
+	  recv_left = 0; 
 	  recvMsgSize = 0;
 	  break;
 	} 
@@ -954,12 +953,19 @@ int send_server(void) {
 	while ((send_left > 0) && (socketStatus == status_Connected)) {
 	  
 	  sendMsgSize = send(clntSock, message_ptr, send_left, 0);
+#ifdef WIN
+	  int wsaerr = WSAGetLastError();
+#endif
 	  
 	  if (sendMsgSize == -1) {
+#ifdef WIN
+	    if (wsaerr == WSAEWOULDBLOCK) {
+#else
 	    if (errno == EAGAIN) {
+#endif
 	      if (verbose > 1) printf("HANDLESERVER: Caught EAGAIN signal sending data to Server\n");
 	    } else {
-	      if (verbose > 0) printf("HANDLESERVER: Error Sending data to Server: %i\n", errno);
+	      if (verbose > 0) printf("HANDLESERVER: Error Sending data to Server \n");
 	      socketStatus = status_Error;	/* signal a transmission error */
 	    }
 	  } else {

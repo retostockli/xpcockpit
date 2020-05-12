@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpserver], [0.61], [Reto Stockli])
+AC_INIT([xpserver], [0.62], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/xpserver.c])
 
 # produce makefiles (turn on warnings on automake!)
@@ -22,18 +22,24 @@ CFLAGS=$OLD_CFLAGS
 AC_CANONICAL_HOST
 case $host_os in
 linux*)
-	OS=lin
+	os=lin
         ;;
 darwin*)
-	OS=mac
+	os=mac
         ;;
+mingw*)
+	os=win
+	AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
+	;;
 *)
         AC_MSG_ERROR([Unsupported operating system. Currently only Linux and Darwin/OSX are supported.])
 esac
 
-AM_CONDITIONAL([OS_LINUX], [test "x$OS" = xlin])
-AM_CONDITIONAL([OS_APPLE], [test "x$OS" = xmac])
+AM_CONDITIONAL([OS_LIN], [test "x$os" = xlin])
+AM_CONDITIONAL([OS_MAC], [test "x$os" = xmac])
+AM_CONDITIONAL([OS_WIN], [test "x$os" = xwin])
 
+	
 # Debug compilation support
 AC_MSG_CHECKING([whether to build with debug information])
 AC_ARG_ENABLE([debug],
@@ -51,26 +57,6 @@ else
     CFLAGS="$CFLAGS -O3"
 fi
 
-# Check for X-Plane root directory
-#HAVE_XPLANEDIR="yes"
-#AC_MSG_CHECKING([whether the X-Plane installation directory was specified])
-#AC_ARG_WITH([xplanedir],
-#[AS_HELP_STRING([--with-xplanedir=<directory>],
-#		[Specify the installation directory of X-Plane. Configure will expect to find the 
-#subdirectory 'Resources' in there.])],
-#		[xplanedir=$with_xplanedir])
-#		
-#if test -z "$xplanedir"; then
-#    AC_MSG_RESULT([no])
-#    AC_MSG_ERROR([Please specify the installation directory of X-Plane by use of --with-xplanedir=<directory>.])
-#else
-#    AC_MSG_RESULT([$xplanedir])
-#    
-#    if test ! -d "$xplanedir/Resources"; then
-#	AC_MSG_ERROR([X-Plane is not installed in the specified directory. Please provide a correct installation directory.])
-#    fi
-#fi
-
 # set installation prefix to current directory if none was given
 if test "x$prefix" = xNONE; then
     prefix=`pwd`;
@@ -83,20 +69,23 @@ AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 # Substitution
 AC_SUBST([AM_CPPFLAGS])
 AC_SUBST([AM_LDFLAGS])
-AC_SUBST([OS])
+AC_SUBST([os])
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
-
-# Checks for typedefs, structures, and compiler characteristics.
-#AC_HEADER_STDBOOL
-#AC_TYPE_UINT32_T
+AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
+if test "x$os" = xwin; then
+AC_CHECK_HEADERS([winsock2.h])
+else
+AC_CHECK_HEADERS([arpa/inet.h sys/ioctl.h sys/socket.h netinet/tcp.h netinet/in.h netinet/ip.h])
+fi
 
 # Checks for library functions.
 AC_CHECK_FUNCS([inet_ntoa memset pow select socket strchr strtol malloc])
 AC_CHECK_LIB([m],[roundf])
+if test "x$os" = xwin; then
+    AC_CHECK_LIB([ws2_32],[socket])
+fi
 
-#AC_CONFIG_FILES([Makefile src/32/Makefile src/64/Makefile])
 AC_CONFIG_FILES([Makefile src/Makefile])
 
 AC_OUTPUT

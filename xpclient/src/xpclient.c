@@ -65,7 +65,7 @@ int main (int argc,char **argv)
  
     
   unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
-
+  
   /*
   unsigned char *fmc1 = link_dataref_byte_arr("laminar/B738/fmc1/Line02_X", 40,-1);
 
