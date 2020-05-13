@@ -920,7 +920,6 @@ void send_client(int clntSock) {
 #ifdef WIN
 	  int wsaerr = WSAGetLastError();
 #endif
-	  
 	  if (sendMsgSize == -1) {
 #ifdef WIN
 	    if (wsaerr == WSAEWOULDBLOCK) {

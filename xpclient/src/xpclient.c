@@ -42,6 +42,7 @@ int main (int argc,char **argv)
   strcpy(server_ip,"127.0.0.1");
   // strcpy(server_ip,"192.168.0.100");
   server_port = 8091;
+  strcpy(clientname,"xpclient");
 
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (initialize_signal_handler()<0) exit_client(-3);

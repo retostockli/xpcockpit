@@ -160,6 +160,11 @@ int check_server(void)
 
   int ret = 0;
 
+  if (socketStatus == status_Error) {
+    if (verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
+    socketStatus = status_Connected;
+  }
+  
   if (socketStatus == status_Disconnected) { 
 
     if (check_tcpip_counter == (1000/INTERVAL)) {
@@ -183,7 +188,7 @@ int check_server(void)
 	socketStatus = status_Disconnected;
 
       } else {
-	/* yeah, we found one ... */
+	/* yeah, we found the xpserver plugin running in X-Plane ... */
 	if (verbose > 0) {
 	  printf("HANDLESERVER: Connected to X-Plane. \n");
 	  printf("X-Plane Server Plugin Address:Port is %s:%i \n",server_ip, server_port);
@@ -254,11 +259,12 @@ int receive_server(void) {
       recvMsgSize = 0;
       break;
     }
+    
     if (recv_left == -1) { // nothing received: error?
 #ifdef WIN
       if (wsaerr == WSAEWOULDBLOCK) { // just no data yet ...
 #else
-      if (errno == EAGAIN) { // just no data yet ...
+      if (errno == EWOULDBLOCK) { // just no data yet ...
 #endif
 	if (verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
@@ -614,7 +620,11 @@ int receive_server(void) {
     }
     /* valid dataref, check status */
     
-    close(clntSock);
+#ifdef WIN
+    closesocket(clntSock);
+#else
+    close(clntSock); 
+#endif
     if (initialize_tcpip() < 0) {
       if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
       recvMsgSize = -123;
@@ -956,12 +966,11 @@ int send_server(void) {
 #ifdef WIN
 	  int wsaerr = WSAGetLastError();
 #endif
-	  
 	  if (sendMsgSize == -1) {
 #ifdef WIN
 	    if (wsaerr == WSAEWOULDBLOCK) {
 #else
-	    if (errno == EAGAIN) {
+	    if (errno == EWOULDBLOCK) {
 #endif
 	      if (verbose > 1) printf("HANDLESERVER: Caught EAGAIN signal sending data to Server\n");
 	    } else {
@@ -973,8 +982,10 @@ int send_server(void) {
 	    send_left -= sendMsgSize;
 	    message_ptr += sendMsgSize;
 	  }
+
 	} 
-	
+	  
+	  
       } /* data to send */
 
       /*
