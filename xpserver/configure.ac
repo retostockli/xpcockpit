@@ -46,7 +46,7 @@ AM_CONDITIONAL([OS_WIN], [test "x$os" = xwin])
 AC_MSG_CHECKING([whether to build with debug information])
 AC_ARG_ENABLE([debug],
     [AS_HELP_STRING([--enable-debug],
-        [enable debug data generation (def=no)])],
+        [enable debug data generation (default=no)])],
     [debugit=yes],
     [debugit=no])
 AC_MSG_RESULT([$debugit])
@@ -58,6 +58,25 @@ else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CFLAGS="$CFLAGS -O3"
 fi
+
+# Compile a 32 bit plugin instead of 64 bit
+AC_MSG_CHECKING([whether to compile a 32 bit plugin instead of 64 bit])
+AC_ARG_ENABLE([32],
+    [AS_HELP_STRING([--enable-32],
+        [enable 32 bit plugin build (default=no)])],
+    [use32bit=yes],
+    [use32bit=no])
+AC_MSG_RESULT([$use32bit])
+
+if test x"$use32bit" = x"yes"; then
+    CFLAGS="$CFLAGS -m32"
+    LDFLAGS="$LDFLAGS -m32"
+else
+    CFLAGS="$CFLAGS -m64"
+    LDFLAGS="$LDFLAGS -m64"
+fi
+
+AM_CONDITIONAL([XPL32], [test "x$use32bit" = xyes])
 
 # set installation prefix to current directory if none was given
 if test "x$prefix" = xNONE; then
@@ -84,9 +103,6 @@ fi
 # Checks for library functions.
 AC_CHECK_FUNCS([inet_ntoa memset pow select socket strchr strtol malloc])
 AC_CHECK_LIB([m],[roundf])
-if test "x$os" = xwin; then
-    AC_CHECK_LIB([ws2_32],[socket])
-fi
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 
