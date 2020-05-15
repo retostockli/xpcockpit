@@ -2,11 +2,11 @@
 #define _XPLMScenery_h_
 
 /*
- * Copyright 2005 Sandy Barbour and Ben Supnik
+ * Copyright 2005-2012 Sandy Barbour and Ben Supnik
  * 
  * All rights reserved.  See license.txt for usage.
  * 
- * X-Plane SDK Version: 1.0.2                                                  
+ * X-Plane SDK Version: 2.1.1                                                  
  *
  */
 
@@ -174,7 +174,6 @@ XPLM_API XPLMProbeResult      XPLMProbeTerrainXYZ(
                                    XPLMProbeInfo_t *    outInfo);    
 
 #endif /* XPLM200 */
-#if defined(XPLM200)
 /***************************************************************************
  * Object Drawing
  ***************************************************************************/
@@ -188,7 +187,7 @@ XPLM_API XPLMProbeResult      XPLMProbeTerrainXYZ(
 
 
 
-
+#if defined(XPLM200)
 /*
  * XPLMObjectRef
  * 
@@ -197,7 +196,9 @@ XPLM_API XPLMProbeResult      XPLMProbeTerrainXYZ(
  *
  */
 typedef void * XPLMObjectRef;
+#endif /* XPLM200 */
 
+#if defined(XPLM200)
 /*
  * XPLMDrawInfo_t
  * 
@@ -222,7 +223,28 @@ typedef struct {
      /* Roll to rotate the object.                                                  */
      float                     roll;
 } XPLMDrawInfo_t;
+#endif /* XPLM200 */
 
+#if defined(XPLM210)
+/*
+ * XPLMObjectLoaded_f
+ * 
+ * You provide this callback when loading an object asynchronously; it will be 
+ * called once the object is loaded.  Your refcon is passed back.  The object 
+ * ref passed in is the newly loaded object (ready for use) or NULL if an 
+ * error occured. 
+ * 
+ * If your plugin is disabled, this callback will be delivered as soon as the 
+ * plugin is re-enabled.  If your plugin is unloaded before this callback is 
+ * ever called, the SDK will release the object handle for you.                
+ *
+ */
+typedef void (* XPLMObjectLoaded_f)(
+                                   XPLMObjectRef        inObject,    
+                                   void *               inRefcon);    
+#endif /* XPLM210 */
+
+#if defined(XPLM200)
 /*
  * XPLMLoadObject
  * 
@@ -249,7 +271,33 @@ typedef struct {
  */
 XPLM_API XPLMObjectRef        XPLMLoadObject(
                                    const char *         inPath);    
+#endif /* XPLM200 */
 
+#if defined(XPLM210)
+/*
+ * XPLMLoadObjectAsync
+ * 
+ * This routine loads an object asynchronously; control is returned to you 
+ * immediately while X-Plane loads the object.  The sim will not stop flying 
+ * while the object loads.  For large objects, it may be several seconds 
+ * before the load finishes. 
+ * 
+ * You provide a callback function that is called once the load has completed. 
+ * Note that if the object cannot be loaded, you will not find out until the 
+ * callback function is called with a NULL object handle.   
+ * 
+ * There is no way to cancel an asynchronous object load; you must wait for 
+ * the load to complete and then release the object if it is no longer 
+ * desired.                                                                    
+ *
+ */
+XPLM_API void                 XPLMLoadObjectAsync(
+                                   const char *         inPath,    
+                                   XPLMObjectLoaded_f   inCallback,    
+                                   void *               inRefcon);    
+#endif /* XPLM210 */
+
+#if defined(XPLM200)
 /*
  * XPLMDrawObjects
  * 
@@ -280,7 +328,9 @@ XPLM_API void                 XPLMDrawObjects(
                                    XPLMDrawInfo_t *     inLocations,    
                                    int                  lighting,    
                                    int                  earth_relative);    
+#endif /* XPLM200 */
 
+#if defined(XPLM200)
 /*
  * XPLMUnloadObject
  * 
@@ -292,8 +342,8 @@ XPLM_API void                 XPLMDrawObjects(
  */
 XPLM_API void                 XPLMUnloadObject(
                                    XPLMObjectRef        inObject);    
-
 #endif /* XPLM200 */
+
 #if defined(XPLM200)
 /***************************************************************************
  * Library Access

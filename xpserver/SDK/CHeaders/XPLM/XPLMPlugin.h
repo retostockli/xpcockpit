@@ -2,11 +2,11 @@
 #define _XPLMPlugin_h_
 
 /*
- * Copyright 2005 Sandy Barbour and Ben Supnik
+ * Copyright 2005-2012 Sandy Barbour and Ben Supnik
  * 
  * All rights reserved.  See license.txt for usage.
  * 
- * X-Plane SDK Version: 1.0.2                                                  
+ * X-Plane SDK Version: 2.1.1                                                  
  *
  */
 
@@ -51,7 +51,7 @@ XPLM_API XPLMPluginID         XPLMGetMyID(void);
  * disabled and enabled.                                                       
  *
  */
-XPLM_API long                 XPLMCountPlugins(void);
+XPLM_API int                  XPLMCountPlugins(void);
 
 /*
  * XPLMGetNthPlugin
@@ -62,7 +62,7 @@ XPLM_API long                 XPLMCountPlugins(void);
  *
  */
 XPLM_API XPLMPluginID         XPLMGetNthPlugin(
-                                   long                 inIndex);    
+                                   int                  inIndex);    
 
 /*
  * XPLMFindPluginByPath
@@ -195,8 +195,7 @@ XPLM_API void                 XPLMReloadPlugins(void);
 #define XPLM_MSG_PLANE_LOADED 102
 
 /* This messages is called whenever the user's plane is positioned at a new    *
- * airport. The parameter is of type int, passed as the value of the pointer.  *
- * (That is: the parameter is an int, not a pointer to an int.)                */
+ * airport.                                                                    */
 #define XPLM_MSG_AIRPORT_LOADED 103
 
 /* This message is sent whenever new scenery is loaded.  Use datarefs to       *
@@ -217,6 +216,24 @@ XPLM_API void                 XPLMReloadPlugins(void);
 #define XPLM_MSG_PLANE_UNLOADED 106
 #endif /* XPLM200 */
 
+#if defined(XPLM210)
+/* This message is sent to your plugin right before X-Plane writes its         *
+ * preferences file.  You can use this for two purposes: to write your own     *
+ * preferences, and to modify any datarefs to influence preferences output.    *
+ * For example, if your plugin temporarily modifies saved preferences, you can *
+ * put them back to their default values here to avoid  having the tweaks be   *
+ * persisted if your plugin is not loaded on the next invocation of X-Plane.   */
+#define XPLM_MSG_WILL_WRITE_PREFS 107
+#endif /* XPLM210 */
+
+#if defined(XPLM210)
+/* This message is sent to your plugin right after a livery is loaded for an   *
+ * airplane.  You can use this to check the new livery (via datarefs) and      *
+ * react accordingly.  The parameter is of type int, passed as the value of a  *
+ * pointer and represents the aicraft plane number - 0 is the user's plane.    */
+#define XPLM_MSG_LIVERY_LOADED 108
+#endif /* XPLM210 */
+
 /*
  * XPLMSendMessageToPlugin
  * 
@@ -227,7 +244,7 @@ XPLM_API void                 XPLMReloadPlugins(void);
  */
 XPLM_API void                 XPLMSendMessageToPlugin(
                                    XPLMPluginID         inPlugin,    
-                                   long                 inMessage,    
+                                   int                  inMessage,    
                                    void *               inParam);    
 
 #if defined(XPLM200)

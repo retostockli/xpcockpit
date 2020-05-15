@@ -2,11 +2,11 @@
 #define _XPWidgetUtils_h_
 
 /*
- * Copyright 2005 Sandy Barbour and Ben Supnik
+ * Copyright 2005-2012 Sandy Barbour and Ben Supnik
  * 
  * All rights reserved.  See license.txt for usage.
  * 
- * X-Plane SDK Version: 1.0.2                                                  
+ * X-Plane SDK Version: 2.1.1                                                  
  *
  */
 
@@ -126,7 +126,7 @@ typedef struct {
  */
 WIDGET_API void                 XPUCreateWidgets(
                                    const XPWidgetCreate_t * inWidgetDefs,    
-                                   long                 inCount,    
+                                   int                  inCount,    
                                    XPWidgetID           inParamParent,    
                                    XPWidgetID *         ioWidgets);    
 
@@ -165,8 +165,8 @@ WIDGET_API void                 XPUMoveWidgetBy(
 WIDGET_API int                  XPUFixedLayout(
                                    XPWidgetMessage      inMessage,    
                                    XPWidgetID           inWidget,    
-                                   long                 inParam1,    
-                                   long                 inParam2);    
+                                   intptr_t             inParam1,    
+                                   intptr_t             inParam2);    
 
 /***************************************************************************
  * WIDGET PROC BEHAVIORS
@@ -191,8 +191,8 @@ WIDGET_API int                  XPUFixedLayout(
 WIDGET_API int                  XPUSelectIfNeeded(
                                    XPWidgetMessage      inMessage,    
                                    XPWidgetID           inWidget,    
-                                   long                 inParam1,    
-                                   long                 inParam2,    
+                                   intptr_t             inParam1,    
+                                   intptr_t             inParam2,    
                                    int                  inEatClick);    
 
 /*
@@ -205,8 +205,8 @@ WIDGET_API int                  XPUSelectIfNeeded(
 WIDGET_API int                  XPUDefocusKeyboard(
                                    XPWidgetMessage      inMessage,    
                                    XPWidgetID           inWidget,    
-                                   long                 inParam1,    
-                                   long                 inParam2,    
+                                   intptr_t             inParam1,    
+                                   intptr_t             inParam2,    
                                    int                  inEatClick);    
 
 /*
@@ -220,8 +220,8 @@ WIDGET_API int                  XPUDefocusKeyboard(
 WIDGET_API int                  XPUDragWidget(
                                    XPWidgetMessage      inMessage,    
                                    XPWidgetID           inWidget,    
-                                   long                 inParam1,    
-                                   long                 inParam2,    
+                                   intptr_t             inParam1,    
+                                   intptr_t             inParam2,    
                                    int                  inLeft,    
                                    int                  inTop,    
                                    int                  inRight,    

@@ -23,9 +23,11 @@ AC_CANONICAL_HOST
 case $host_os in
 linux*)
 	os=lin
+	AC_DEFINE([LIN],[1],[Define if Host Type is Linux])
         ;;
 darwin*)
 	os=mac
+	AC_DEFINE([MAC],[1],[Define if Host Type is Apple])
         ;;
 mingw*)
 	os=win

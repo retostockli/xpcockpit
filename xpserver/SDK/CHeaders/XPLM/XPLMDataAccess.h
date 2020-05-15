@@ -2,11 +2,11 @@
 #define _XPLMDataAccess_h_
 
 /*
- * Copyright 2005 Sandy Barbour and Ben Supnik
+ * Copyright 2005-2012 Sandy Barbour and Ben Supnik
  * 
  * All rights reserved.  See license.txt for usage.
  * 
- * X-Plane SDK Version: 1.0.2                                                  
+ * X-Plane SDK Version: 2.1.1                                                  
  *
  */
 
@@ -290,7 +290,7 @@ XPLM_API void                 XPLMSetDatad(
  * plugin may have different behavior.                                         
  *
  */
-XPLM_API long                 XPLMGetDatavi(
+XPLM_API int                  XPLMGetDatavi(
                                    XPLMDataRef          inDataRef,    
                                    int *                outValues,    /* Can be NULL */
                                    int                  inOffset,    
@@ -334,7 +334,7 @@ XPLM_API void                 XPLMSetDatavi(
  * plugin may have different behavior.                                         
  *
  */
-XPLM_API long                 XPLMGetDatavf(
+XPLM_API int                  XPLMGetDatavf(
                                    XPLMDataRef          inDataRef,    
                                    float *              outValues,    /* Can be NULL */
                                    int                  inOffset,    
@@ -377,11 +377,11 @@ XPLM_API void                 XPLMSetDatavf(
  * plugin may have different behavior.                                         
  *
  */
-XPLM_API long                 XPLMGetDatab(
+XPLM_API int                  XPLMGetDatab(
                                    XPLMDataRef          inDataRef,    
                                    void *               outValue,    /* Can be NULL */
-                                   long                 inOffset,    
-                                   long                 inMaxBytes);    
+                                   int                  inOffset,    
+                                   int                  inMaxBytes);    
 
 /*
  * XPLMSetDatab
@@ -400,8 +400,8 @@ XPLM_API long                 XPLMGetDatab(
 XPLM_API void                 XPLMSetDatab(
                                    XPLMDataRef          inDataRef,    
                                    void *               inValue,    
-                                   long                 inOffset,    
-                                   long                 inLength);    
+                                   int                  inOffset,    
+                                   int                  inLength);    
 
 /***************************************************************************
  * PUBLISHING YOUR PLUGINS DATA
@@ -495,7 +495,7 @@ typedef void (* XPLMSetDatad_f)(
  * 
  *
  */
-typedef long (* XPLMGetDatavi_f)(
+typedef int (* XPLMGetDatavi_f)(
                                    void *               inRefcon,    
                                    int *                outValues,    /* Can be NULL */
                                    int                  inOffset,    
@@ -517,7 +517,7 @@ typedef void (* XPLMSetDatavi_f)(
  * 
  *
  */
-typedef long (* XPLMGetDatavf_f)(
+typedef int (* XPLMGetDatavf_f)(
                                    void *               inRefcon,    
                                    float *              outValues,    /* Can be NULL */
                                    int                  inOffset,    
@@ -539,11 +539,11 @@ typedef void (* XPLMSetDatavf_f)(
  * 
  *
  */
-typedef long (* XPLMGetDatab_f)(
+typedef int (* XPLMGetDatab_f)(
                                    void *               inRefcon,    
                                    void *               outValue,    /* Can be NULL */
                                    int                  inOffset,    
-                                   long                 inMaxLength);    
+                                   int                  inMaxLength);    
 
 /*
  * XPLMSetDatab_f
@@ -554,7 +554,7 @@ typedef void (* XPLMSetDatab_f)(
                                    void *               inRefcon,    
                                    void *               inValue,    
                                    int                  inOffset,    
-                                   long                 inLength);    
+                                   int                  inLength);    
 
 /*
  * XPLMRegisterDataAccessor

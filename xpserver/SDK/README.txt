@@ -31,23 +31,60 @@ license.txt	Copyright information for this download.
 README.txt	This document
 CHeaders	Header files for compiling C/C++ plugins
 Delphi		Interfaces for compiling Pascal plugins
-Libraries	Import libraries for linking on Windows.
+Libraries	Import libraries for linking on Windows
+		and frameworks for linking on Mac.
 
-Note: there are no import/link-time libraries for Mac (Mach-O) or Linux; on
-these platforms, plugins simply leave SDK symbols undefined and they are 
-discovered at runtime.  The SDK website explains this process in more detail.
+Note: there are no import/link-time libraries for Linux; on Linux, plugins
+simply leave SDK symbols undefined and they are discovered at runtime.  The 
+SDK website explains this process in more detail.
 
-Mac CFM plugins are not supported by the 2.0 SDK; the 2.0 SDK requires X-Plane
-9.0 or newer, and X-Plane 9 will not run on Mac OS 9.  Therefore CFM plugins
-are not useful (and are probably counterproductive since they cannot support
-x86 code).  If you have a CFM plugin, continue to use the 1.0 SDK to build it.
-You will have to port to Mach-O if you want to use 2.0 features.
+Mac CFM plugins are not supported by the SDK versions 2.0 and higher; the 
+2.0 SDK requires X-Plane 9.0 or newer, and X-Plane 9 will not run on 
+Mac OS 9.  Therefore CFM plugins are not useful (and are probably 
+counterproductive since they cannot support x86 code).  If you have a CFM 
+plugin, continue to use the 1.0 SDK to build it. You will have to port to 
+Mach-O if you want to use 2.0 features.
 
 -------------------------------------------------------------------------------
                               RELEASE NOTES
 -------------------------------------------------------------------------------
 
 This section contains per-release notes for the history of the X-Plane SDK.
+
+X-Plane SDK Release 2.1.3 11/14/13
+
+Fixed XPC Wrappers to use int and intptr_t instead of long.  This fixes
+crashes for plugins on 64-bit Windows.
+
+X-Plane SDK Release 2.1.2 RC2 1/15/13
+
+Removed headers from frameworks, as they don't work; updated README.
+
+X-Plane SDK Release 2.1.2 RC1 1/12/13
+
+The 2.1.2 SDK adds frameworks for the XPLM and XPWidgets; Mac developers
+can link directly against these frameworks and avoid unresolved symbols 
+and flat namespace problems.  The frameworks produce plugins that will
+work on X-Plane 8, 9, and 10 depending on the plugin CPU architecture,
+minimum system SDK, and XPLM API revision number.
+
+X-Plane SDK Release 2.1.1 RC1 10/29/12
+
+The 2.1.1 update to the SDK provides 64-bit build materials.
+
+X-Plane SDK Release 2.1.0 RC1 3/31/12
+
+This is the first release of the version 2.1 X-Plane SDK.  This version of the 
+SDK exposes new APIs.
+
+This API also replaces all references to "long" with int or intptr_t,
+depending on whether the integer needs to be wide enough to hold coerced
+pointers.  Most of the time, int is used; the notable exception is the widgets
+library where params and properties can contain pointers to user data.
+
+This change is not an ABI change - compiled plugins will work unmodified.
+However for some compilers, you may need to replace long with int or intptr_t
+in your code.
 
 X-Plane SDK Release 2.0.1 RC1 7/21/10
 

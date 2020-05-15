@@ -2,11 +2,11 @@
 #define _XPLMUtilities_h_
 
 /*
- * Copyright 2005 Sandy Barbour and Ben Supnik
+ * Copyright 2005-2012 Sandy Barbour and Ben Supnik
  * 
  * All rights reserved.  See license.txt for usage.
  * 
- * X-Plane SDK Version: 1.0.2                                                  
+ * X-Plane SDK Version: 2.1.1                                                  
  *
  */
 
@@ -550,13 +550,13 @@ XPLM_API char *               XPLMExtractFileAndPath(
  */
 XPLM_API int                  XPLMGetDirectoryContents(
                                    const char *         inDirectoryPath,    
-                                   long                 inFirstReturn,    
+                                   int                  inFirstReturn,    
                                    char *               outFileNames,    
-                                   long                 inFileNameBufSize,    
+                                   int                  inFileNameBufSize,    
                                    char **              outIndices,    /* Can be NULL */
-                                   long                 inIndexCount,    
-                                   long *               outTotalFiles,    /* Can be NULL */
-                                   long *               outReturnedFiles);    /* Can be NULL */
+                                   int                  inIndexCount,    
+                                   int *                outTotalFiles,    /* Can be NULL */
+                                   int *                outReturnedFiles);    /* Can be NULL */
 
 /*
  * XPLMInitialized
@@ -601,10 +601,9 @@ XPLM_API XPLMLanguageCode     XPLMGetLanguage(void);
 /*
  * XPLMDebugString
  * 
- * This routine outputs a C-style string to the Error.out file (or 
- * deverror.out file if one is being created).  The file is immediately 
- * flushed so you will not lose  data.  (This does cause a performance 
- * penalty.)                                                                   
+ * This routine outputs a C-style string to the Log.txt file.  The file is 
+ * immediately flushed so you will not lose  data.  (This does cause a 
+ * performance penalty.)                                                       
  *
  */
 XPLM_API void                 XPLMDebugString(
