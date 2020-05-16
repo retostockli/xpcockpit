@@ -17,9 +17,10 @@
 
 /* INCLUDES */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-#include <arpa/inet.h>
+//#include <arpa/inet.h>
 #include <sys/types.h>
 
 #include <errno.h>

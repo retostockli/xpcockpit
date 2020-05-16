@@ -9,6 +9,10 @@ if OS_LINUX
 OS_SRC = hid_linux.c
 endif
 
+if OS_WINDOWS
+OS_SRC = hid_windows.c
+endif
+
 # The Sources needed to build the programs
 xpusb_SOURCES = $(OS_SRC) \
 common.c \

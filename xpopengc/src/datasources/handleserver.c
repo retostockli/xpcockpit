@@ -78,8 +78,6 @@ int initialize_tcpip(void)
     ret = -41; 
   } else {
     
-    tcptimeout.tv_sec = 0;		//no timeout!
-    tcptimeout.tv_usec = 0;		//no timeout!
 
     /* Construct the server address structure */
     memset(&ServAddr, 0, sizeof(ServAddr));            /* Zero out structure */
