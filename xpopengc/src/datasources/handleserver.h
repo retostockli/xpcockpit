@@ -14,8 +14,11 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#ifdef WIN
+#include <winsock2.h>
+#else
 #include <arpa/inet.h>
-
+#endif
 
 /* TCP/IP DEFINE STATEMENTS */
 #define BLOCKING 0
@@ -52,7 +55,6 @@ char recvBuffer[TCPBUFSIZE];        /* Buffer for receive string */
 char sendBuffer[TCPBUFSIZE];        /* Buffer for send string */
 
 struct sockaddr_in ServAddr;     /* Server address structure */
-struct timeval tcptimeout;       /* TCP/IP Timeout parameters */
 int socketStatus;                /* Socket status 1-5 */
 int clntSock;                    /* client socket descriptor */
 int check_tcpip_counter;  /* only check for server every x calls to check_server */

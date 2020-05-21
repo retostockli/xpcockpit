@@ -36,7 +36,7 @@ mingw*)
     LIBS="$LIBS -lws2_32 -lsetupapi"
     ;;
 **)
-    AC_MSG_ERROR([Unsupported operating system. Currently only Linux, OSX and MinGW are supported.])
+    AC_MSG_ERROR([Unsupported operating system $host_os. Currently only Linux, OSX and MinGW are supported.])
 esac
 
 AM_CONDITIONAL([OS_LINUX], [test "x$os" = xlin])

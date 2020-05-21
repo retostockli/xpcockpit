@@ -98,7 +98,11 @@ int read_ini(char ininame[])
 
   /* check if we are in the source code directory or in the binary installation path */
   if (getcwd(cwd, sizeof(cwd)) == NULL) return -2;
+#ifdef WIN
+  pch = strstr (cwd,"\\bin");
+#else
   pch = strstr (cwd,"/bin");
+#endif
   if (pch == NULL) {
     sprintf(filename,"../inidata/%s.ini",ininame);
   } else {

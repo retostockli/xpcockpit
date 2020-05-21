@@ -32,20 +32,27 @@
 
 =========================================================================*/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <stdio.h>
-#include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
-#include <arpa/inet.h>  /* for sockaddr_in and inet_addr() */
 #include <stdlib.h>     /* for atoi() and exit() */
 #include <string.h>     /* for memset() */
 #include <unistd.h>     /* for close() */
 #include <sys/types.h>
-#include <sys/ioctl.h>
 #include <signal.h>
 #include <errno.h>
+#include <math.h>
+
+#ifdef WIN
+#include <winsock2.h>
+#else
+#include <sys/socket.h> 
+#include <sys/ioctl.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <math.h>
+#endif
 
 #include "ogcFLTKRenderWindow.h"
 #include "ogcDataSource.h"
@@ -108,8 +115,6 @@ void XPlaneDataSource::define_server(int port, string ip_address, int maxradar)
 
 XPlaneDataSource::XPlaneDataSource()
 {
-/* TCP CLIENT VARS */					  
-  sig_t sig_handler;
   
   printf("XPlaneDataSource constructed\n");
 
@@ -117,8 +122,7 @@ XPlaneDataSource::XPlaneDataSource()
   if (initialize_dataref() < 0) exit(-8);
 
   // Set up a signal handler so we can clean up when we're interrupted from the command line
-  sig_handler = signal(SIGINT, signal_handler);
-  if (sig_handler == SIG_ERR) {
+  if (signal(SIGINT, signal_handler) == SIG_ERR) {
     printf("Could not establish new signal handler.\n");
   }
   

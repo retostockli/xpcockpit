@@ -114,6 +114,9 @@ protected:
   /** Maximum # of Radar Returns per Cycle **/
   int m_maxradar;
 
+  /** whether to read from X-Plane's Custom Data path **/
+  int m_customdata;
+
   /**
    * We treat the file initialization process as a finite
    * state machine, where the current state is given below
