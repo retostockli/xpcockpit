@@ -41,6 +41,7 @@ device_struct device[MAXDEVICES];
 int init_usb(void);
 void exit_usb(void);
 int setbuffer_usb(int number, int bufferSize);
-int check_usb(int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8_t address, const char *path);
+int check_usb(const char *name, int number, uint16_t vendor, uint16_t product,
+	      uint8_t bus, uint8_t address, const char *path);
 int write_usb(int number, unsigned char *bytes, int size);
 int read_usb(int number, unsigned char *bytes, int size);

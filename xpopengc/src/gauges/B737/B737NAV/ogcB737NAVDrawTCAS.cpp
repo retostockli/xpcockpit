@@ -150,7 +150,7 @@ namespace OpenGC
 	  // Start of check for alive period (count 0)
 	  j = javail; // first available (empty) TCAS index
 	  // save new TCAS blib
-	  printf("New: %i %f %f %f \n",j,*plon,*plat,minval);
+	  //printf("New: %i %f %f %f \n",j,*plon,*plat,minval);
 	  mp_x[j] = *px;
 	  mp_x_save[j] = *px;
 	  mp_lon[j] = *plon;
@@ -179,7 +179,7 @@ namespace OpenGC
 	}
 	mp_x_save[j] = mp_x[j];
       }
-      printf("TCAS ALIVE : %i \n",number);
+      //printf("TCAS ALIVE : %i \n",number);
       count = 0;
     } else {
       count ++;

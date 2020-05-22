@@ -259,7 +259,9 @@ int setbuffer_usb(int number, int bufferSize)
 /* find suitable HID devices and set up asynchronous read and write calls */
 /* bus / address not used in hidapi interface, please use path to address device */
 /* or set path to "" to open any device with given product / vendor # combination */
-int check_usb (int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8_t address, const char *path)
+/* please supply Product name as first argument to perform a suitable matching */
+int check_usb (const char *name, int number, uint16_t vendor, uint16_t product,
+	       uint8_t bus, uint8_t address, const char *path)
 {
   int result = 0;
   int ret;
@@ -268,6 +270,7 @@ int check_usb (int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8
 #define MAX_STR 255
   hid_device *handle;
   wchar_t wstr[MAX_STR];
+  char str[MAX_STR];
 
   // Open the device using the VID, PID,
   // and optionally, if available by the Device Path
@@ -293,54 +296,63 @@ int check_usb (int number, uint16_t vendor, uint16_t product, uint8_t bus, uint8
     ret = hid_get_manufacturer_string(handle, wstr, MAX_STR);
     printf("Manufacturer String: %ls\n", wstr);
 
-    // Read the Product String
+    // Read the Product String and see if it matches device name supplied by user
     wstr[0] = 0x0000;
     ret = hid_get_product_string(handle, wstr, MAX_STR);
-    printf("Product String: %ls\n", wstr);
+    sprintf(str,"%ls",wstr);
+    printf("Product String: %s \n",str);
 
-    device[number].readBuffer = malloc(device[number].readBufferSize);
-    device[number].writeBuffer = malloc(device[number].writeBufferSize);
 
-    /* printf("ALLOC: %i %p %p \n",number,&device[number].readBuffer[0],
-       &device[number].readBuffer[device[number].readBufferSize-1]); */
-
-    if (USE_THREADS == 1) {
-
-      /* set read to blocking type for threaded read access */
-      /* --> Added timeout in blocking read of thread */
-      if (USE_BLOCKING == 1) {
-	ret = hid_set_nonblocking(handle,0);
-      } else {
-	ret = hid_set_nonblocking(handle,1);
-      }
+    if (!strncmp(str,name,strlen(name))) {
+    
+      device[number].readBuffer = malloc(device[number].readBufferSize);
+      device[number].writeBuffer = malloc(device[number].writeBufferSize);
+      
+      /* printf("ALLOC: %i %p %p \n",number,&device[number].readBuffer[0],
+	 &device[number].readBuffer[device[number].readBufferSize-1]); */
+      
+      if (USE_THREADS == 1) {
 	
-      if (ret < 0) {
-	printf("HIDAPI_INTERFACE: Device %i set to non-blocking failed.\n",number);
-	result = -5;
-      } else {
-	/* start a thread that handles the read polling to the HID device */
-	device[number].poll_thread_exit_code = 0;
-	ret = pthread_create(&device[number].poll_thread, NULL, &poll_thread_main, &device[number].number);
-	if (ret>0) {
-	  printf("HIDAPI_INTERFACE: poll thread could not be created.\n");
-	  result = -7;
+	/* set read to blocking type for threaded read access */
+	/* --> Added timeout in blocking read of thread */
+	if (USE_BLOCKING == 1) {
+	  ret = hid_set_nonblocking(handle,0);
+	} else {
+	  ret = hid_set_nonblocking(handle,1);
 	}
+	
+	if (ret < 0) {
+	  printf("HIDAPI_INTERFACE: Device %i set to non-blocking failed.\n",number);
+	  result = -5;
+	} else {
+	  /* start a thread that handles the read polling to the HID device */
+	  device[number].poll_thread_exit_code = 0;
+	  ret = pthread_create(&device[number].poll_thread, NULL, &poll_thread_main, &device[number].number);
+	  if (ret>0) {
+	    printf("HIDAPI_INTERFACE: poll thread could not be created.\n");
+	    result = -7;
+	  }
+	}
+	
+      } else {
+	
+	/* set read to non-blocking type for direct device access */
+	ret = hid_set_nonblocking(handle,1);
+	
+	if (ret < 0) {
+	  printf("HIDAPI_INTERFACE: Device %i set to non-blocking failed.\n",number);
+	  result = -5;
+	} 
       }
-
     } else {
-
-      /* set read to non-blocking type for direct device access */
-      ret = hid_set_nonblocking(handle,1);
-
-      if (ret < 0) {
-	printf("HIDAPI_INTERFACE: Device %i set to non-blocking failed.\n",number);
-	result = -5;
-      } 
+      /* product string does not match user supplied string */
+      printf("HIDAPI_INTERFACE: Device %i name (%s) does not match product name: %s\n",number,name,str);
+      result = -6;
     }
   } else {
     /* no device found */
     printf("HIDAPI_INTERFACE: Device %i not found.\n",number);
-    result = -6;
+    result = -7;
   }
 
   return result;

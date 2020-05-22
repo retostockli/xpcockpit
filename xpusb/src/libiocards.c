@@ -5,7 +5,6 @@
 
    Additions for analog axes treatment by Hans Jansen 2011
    Also several cosmetic changes and changes for Linux compilation
-
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
    either version 3 of the License, or (at your option) any later version.
@@ -362,8 +361,9 @@ int copy_iocardsdata(void)
    number for the USB Expansion card*/
 int digital_output(int device, int card, int output, int *value)
 {
-  char device_name1[] = "IOCardUSB";
-  char device_name2[] = "DCMotors PLUS";
+  char device_name1[] = "USB-Expancion V3";
+  char device_name2[] = "USBexp V2";
+  char device_name3[] = "DCMotors PLUS";
   int retval = 0;
   int firstoutput; /* On Mastercard output channels start at 11, and go to 55 */
 
@@ -371,12 +371,14 @@ int digital_output(int device, int card, int output, int *value)
 
     /* check if we have a connected and initialized mastercard */
     if ((!strcmp(iocard[device].name,device_name1) || 
-	 !strcmp(iocard[device].name,device_name2)) 
-	&& (iocard[device].status == 1)) {
+	 !strcmp(iocard[device].name,device_name2) || 
+	 !strcmp(iocard[device].name,device_name3)) &&
+	(iocard[device].status == 1)) {
 
       if (*value != INT_MISS) {
 	
-	if (!strcmp(iocard[device].name,device_name1)) {
+	if (!strcmp(iocard[device].name,device_name1) || 
+	    !strcmp(iocard[device].name,device_name2)) {
 	  firstoutput = 11;
 	} else {
 	  firstoutput = 0;
@@ -412,15 +414,16 @@ int digital_output(int device, int card, int output, int *value)
   return (retval);
 }
 
-/* retrieve input value from given input position on MASTERCARD or BU0836X/A */
+/* retrieve input value from given input position on MASTERCARD or BU0836X/A Interface */
 /* Two types : */
 /* 0: pushbutton */
 /* 1: toggle switch */
 int digital_input(int device, int card, int input, int *value, int type)
 {
-  char device_name1[] = "IOCardUSB";
-  char device_name2[] = "BU0836X";
-  char device_name3[] = "BU0836A";
+  char device_name1[] = "USB-Expancion V3";
+  char device_name2[] = "USBexp V2";
+  char device_name3[] = "BU0836X Interface";
+  char device_name4[] = "BU0836A Interface";
   int retval = 0; /* returns 1 if something changed, and 0 if nothing changed, and -1 if something went wrong */
 
   if (value != NULL) {
@@ -428,7 +431,8 @@ int digital_input(int device, int card, int input, int *value, int type)
     /* check if we have a connected and initialized device */
     if ((!strcmp(iocard[device].name,device_name1) ||
 	 !strcmp(iocard[device].name,device_name2) ||
-	 !strcmp(iocard[device].name,device_name3)) 
+	 !strcmp(iocard[device].name,device_name3) ||
+	 !strcmp(iocard[device].name,device_name4)) 
 	&& (iocard[device].status == 1)) {
 
       if ((card >=0) && (card<iocard[device].ncards)) {
@@ -498,7 +502,7 @@ int digital_input(int device, int card, int input, int *value, int type)
 
     } else {
       retval = -1;
-      if (verbose > 1) printf("LIBIOCARDS: Device either not a MASTERCARD or BU0836X/A or not ready: %i \n", device);
+      if (verbose > 1) printf("LIBIOCARDS: Device either not a MASTERCARD or BU0836X/A Interface or not ready: %i \n", device);
     }
   
   }
@@ -506,7 +510,7 @@ int digital_input(int device, int card, int input, int *value, int type)
   return(retval);
 }
 
-/* retrieve encoder value and for given encoder type from given input position on MASTERCARD OR BU0836X/A */
+/* retrieve encoder value and for given encoder type from given input position on MASTERCARD OR BU0836X/A Interface */
 /* three type of encoders: */
 /* 0: 1x12 rotary switch, wired like demonstrated on OpenCockpits website */
 /* 1: optical rotary encoder using the Encoder II card */
@@ -514,9 +518,10 @@ int digital_input(int device, int card, int input, int *value, int type)
 /* 3: optical rotary encoder without the Encoder II card */
 int mastercard_encoder(int device, int card, int input, float *value, float multiplier, int accelerator, int type)
 {
-  char device_name1[] = "IOCardUSB";
-  char device_name2[] = "BU0836X";
-  char device_name3[] = "BU0836A";
+  char device_name1[] = "USB-Expancion V3";
+  char device_name2[] = "USBexp V2";
+  char device_name3[] = "BU0836X Interface";
+  char device_name4[] = "BU0836A Interface";
   int oldcount, newcount; /* encoder integer counters */
   int updown = 0; /* encoder direction */
   int retval = 0; /* returns 1 if something changed, 0 if nothing changed and -1 if something went wrong */
@@ -528,7 +533,8 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
     /* check if we have a connected and initialized device */
     if ((!strcmp(iocard[device].name,device_name1) ||
 	 !strcmp(iocard[device].name,device_name2) ||
-	 !strcmp(iocard[device].name,device_name3)) 
+	 !strcmp(iocard[device].name,device_name3) ||
+	 !strcmp(iocard[device].name,device_name4)) 
 	&& (iocard[device].status == 1)) {
 
       if ((card >=0) && (card<iocard[device].ncards)) {
@@ -742,7 +748,7 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
 
     } else {
       retval = -1;
-      if (verbose > 1)	printf("LIBIOCARDS: Device either not a MASTERCARD or BU0836X/A or not ready: %i \n", device);
+      if (verbose > 1)	printf("LIBIOCARDS: Device either not a MASTERCARD or BU0836X/A Interface or not ready: %i \n", device);
     }
 
   }
@@ -753,7 +759,8 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
 /* fill display at given output position on MASTERCARD */
 int mastercard_display(int device, int card, int pos, int n, int *value, int hasspecial)
 {
-  char device_name[] = "IOCardUSB";
+  char device_name1[] = "USB-Expancion V3";
+  char device_name2[] = "USBexp V2";
   int retval = 0;
   int single;
   int count;
@@ -776,7 +783,9 @@ int mastercard_display(int device, int card, int pos, int n, int *value, int has
   if (value != NULL) {
 
     /* check if we have a connected and initialized mastercard */
-    if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 1)) {
+    if ((!strcmp(iocard[device].name,device_name1) ||
+	 !strcmp(iocard[device].name,device_name2)) &&
+	(iocard[device].status == 1)) {
 
       if ((card >=0) && (card<iocard[device].ncards)) {
 	if ((pos >=0) && ((pos+n)<=iocard[device].ndisplays)) {
@@ -879,24 +888,28 @@ int mastercard_display(int device, int card, int pos, int n, int *value, int has
   return (retval);
 }
 
-/* retrieve input value from given axis on USB expander, USBServos, DCMotors PLUS or BU0836X/A card */
+/* retrieve input value from given axis on USB expander, USBServos, DCMotors PLUS or BU0836X/A Interface card */
 int axis_input(int device, int input, float *value, float minval, float maxval)
 {
-  char device_name1[] = "IOCardUSB";
-  char device_name2[] = "IOCard-USBServos";
-  char device_name3[] = "DCMotors PLUS";
-  char device_name4[] = "BU0836X";
-  char device_name5[] = "BU0836A";
+  char device_name1[] = "USB-Expancion V3";
+  char device_name2[] = "USBexp V2";
+  char device_name3[] = "IOCard-USBServos";
+  char device_name4[] = "USBServos v3";
+  char device_name5[] = "DCMotors PLUS";
+  char device_name6[] = "BU0836X Interface";
+  char device_name7[] = "BU0836A Interface";
   int retval = 0; /* returns 1 if something changed, and 0 if nothing changed, and -1 if something went wrong */
 
   if (value != NULL) {
 
     /* check if we have a connected and initialized Expansion card */
     if ((!strcmp(iocard[device].name,device_name1) ||
-	 !strcmp(iocard[device].name,device_name2) || 
+	 !strcmp(iocard[device].name,device_name2) ||
 	 !strcmp(iocard[device].name,device_name3) || 
 	 !strcmp(iocard[device].name,device_name4) || 
-	 !strcmp(iocard[device].name,device_name5)) &&
+	 !strcmp(iocard[device].name,device_name5) || 
+	 !strcmp(iocard[device].name,device_name6) || 
+	 !strcmp(iocard[device].name,device_name7)) &&
 	(iocard[device].status == 1)) {
 
       if ((input>=0) && (input<iocard[device].naxes)) {
@@ -923,7 +936,7 @@ int axis_input(int device, int input, float *value, float minval, float maxval)
       }
     } else {
       retval = -1;
-      if (verbose > 1)	printf("LIBIOCARDS: Device either not a USB Expansion, USBServos, DCMotors PLUS or BU0836X/A card or not ready: %i \n", device);
+      if (verbose > 1)	printf("LIBIOCARDS: Device either not a USB Expansion, USBServos, DCMotors PLUS or BU0836X/A Interface card or not ready: %i \n", device);
     }
 
   }
@@ -972,13 +985,15 @@ int servos_output(int device, int servo, float *value, float minval, float maxva
 		  int servominval, int servomaxval)
 {
   char device_name1[] = "IOCard-USBServos";
-  char device_name2[] = "DCMotors PLUS";
+  char device_name2[] = "USBServos v3";
+  char device_name3[] = "DCMotors PLUS";
   int retval = 0;
   int data;           /* integer servo value */
  
   /* check if we have a connected and initialized USBServos or DCMotors PLUS card */
   if ((!strcmp(iocard[device].name,device_name1) ||
-       !strcmp(iocard[device].name,device_name2)) && (iocard[device].status == 1)) {    
+       !strcmp(iocard[device].name,device_name2) ||
+       !strcmp(iocard[device].name,device_name3)) && (iocard[device].status == 1)) {    
  
     if (value != NULL) {
 
@@ -1071,7 +1086,8 @@ int motors_output(int device, int motor, float *value, float range)
 /* MASTERCARD is connected to USB EXPANSION CARD */
 int send_mastercard(void)
 {
-  char device_name[] = "IOCardUSB";
+  char device_name1[] = "USB-Expancion V3";
+  char device_name2[] = "USBexp V2";
   int device;
   int result = 0;
   int buffersize = 8;
@@ -1092,7 +1108,9 @@ int send_mastercard(void)
   for (device=0;device<MAXDEVICES;device++) {
 
     /* check if we have a connected and initialized mastercard */
-    if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 1)) {
+    if ((!strcmp(iocard[device].name,device_name1) ||
+	 !strcmp(iocard[device].name,device_name2)) &&
+	(iocard[device].status == 1)) {
 	
       for (card=0;card<iocard[device].ncards;card++) {
 
@@ -1281,7 +1299,8 @@ int send_mastercard(void)
 /* MASTERCARD is connected to USB EXPANSION CARD */
 int receive_mastercard(void)
 {
-  char device_name[] = "IOCardUSB";
+  char device_name1[] = "USB-Expancion V3";
+  char device_name2[] = "USBexp V2";
   int result = 0;
   int recv_status;
   int input[8][8]; /* 8 byte bit storage */
@@ -1322,8 +1341,10 @@ int receive_mastercard(void)
   for (device=0;device<MAXDEVICES;device++) {
 
     /* check if we have a connected USB expander card */
-    if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 1)) {
-
+    if ((!strcmp(iocard[device].name,device_name1) ||
+	 !strcmp(iocard[device].name,device_name2)) &&
+	(iocard[device].status == 1)) {
+      
       do {
       
       /* check whether there is new data on the read buffer */
@@ -1554,7 +1575,8 @@ int receive_keys(void)
 /* send servo value to IOCard-USBServos card */
 int send_servos(void)
 {
-  char device_name[] = "IOCard-USBServos";
+  char device_name1[] = "IOCard-USBServos";
+  char device_name2[] = "USBServos v3";
   int device;
   int result = 0;
   int buffersize = 8;
@@ -1573,7 +1595,9 @@ int send_servos(void)
   for (device=0;device<MAXDEVICES;device++) {
 
     /* check if we have a connected and initialized IOCard-USBServos card */
-    if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 1)) {
+    if ((!strcmp(iocard[device].name,device_name1) ||
+	 !strcmp(iocard[device].name,device_name2)) &&
+	(iocard[device].status == 1)) {
       
       changed = 0;
 
@@ -1796,7 +1820,8 @@ int send_motors(void)
 int receive_axes(void)
 {
   char device_name1[] = "IOCard-USBServos";
-  char device_name2[] = "DCMotors PLUS";
+  char device_name2[] = "USBServos v3";
+  char device_name3[] = "DCMotors PLUS";
   int device;
   int result = 0;
   int recv_status;
@@ -1808,8 +1833,10 @@ int receive_axes(void)
 
   for (device=0;device<MAXDEVICES;device++) {
 
-    /* check if we have a IOCard-USBServos card */
-    if (!strcmp(iocard[device].name,device_name1) && (iocard[device].status == 1)) {
+    /* check if we have a IOCard-USBServos or USBServos v3 card */
+    if ((!strcmp(iocard[device].name,device_name1) ||
+	 !strcmp(iocard[device].name,device_name2)) &&
+	(iocard[device].status == 1)) {
       
       do {
 	/* check whether there is new data on the read buffer */
@@ -1834,7 +1861,7 @@ int receive_axes(void)
     }
 
     /* check if we have a DCMotors PLUS card */
-    if (!strcmp(iocard[device].name,device_name2) && (iocard[device].status == 1)) {
+    if (!strcmp(iocard[device].name,device_name3) && (iocard[device].status == 1)) {
 
       do {
       
@@ -1862,19 +1889,19 @@ int receive_axes(void)
   return result;
 
 }
-/* receive USB data from a BU0836X or BU0836A card */
+/* receive USB data from a BU0836X Interface or BU0836A Interface card */
 /* containing the data from the analog axes and the buttons of */
 /* Leo Bodnar's Joystick card */
-/* BU0836X Card: */
+/* BU0836X Interface Card: */
 /* The configuration of the read data really depends very much on the */
 /* configuration of the card. This read script is configured for: */
 /* naxes analog inputs and 32 buttons */
-/* BU0836A Card: */
+/* BU0836A Interface Card: */
 /* naxes analog inputs and 32 buttons */
 int receive_bu0836(void)
 {
-  char device_name1[] = "BU0836X";
-  char device_name2[] = "BU0836A";
+  char device_name1[] = "BU0836X Interface";
+  char device_name2[] = "BU0836A Interface";
   int device;
   int result = 0;
   int recv_status;
@@ -1885,7 +1912,7 @@ int receive_bu0836(void)
   int bit;
   int nbutton = 32;
   int card = 0;
-  unsigned char recv_data[buffersize];	/* BU0836X/A raw IO data */
+  unsigned char recv_data[buffersize];	/* BU0836X/A Interface raw IO data */
 
   for (device=0;device<MAXDEVICES;device++) {
 
@@ -1900,7 +1927,7 @@ int receive_bu0836(void)
 
 	if (recv_status > 0) {
 
-	  if (verbose > 3) printf("LIBIOCARDS: received %i bytes from BU0836X/A \n",recv_status);
+	  if (verbose > 3) printf("LIBIOCARDS: received %i bytes from BU0836X/A Interface \n",recv_status);
 
 	  /* read analog axis (2 bytes per axis) */
 	  for (axis=0;axis<iocard[device].naxes;axis++) {
@@ -1909,10 +1936,10 @@ int receive_bu0836(void)
 	  }
 	  for (button=0;button<nbutton;button++) {
 	    if (!strcmp(iocard[device].name,device_name1)) {
-	      // BU0836X: a byte between axes and buttons (maybe it is the # of bytes to reach max 8 inputs) 
+	      // BU0836X Interface: a byte between axes and buttons (maybe it is the # of bytes to reach max 8 inputs) 
 	      byte = 2*iocard[device].naxes + 1 + button/8;
 	    } else {
-	      // BU0836A
+	      // BU0836A Interface
 	      byte = 2*iocard[device].naxes + button/8;
 	    }
 	    bit = button - (button/8)*8;
@@ -1935,14 +1962,17 @@ int receive_bu0836(void)
 /* MASTERCARD is connected to USB EXPANSION CARD */
 int initialize_mastercard(int device)
 {
-  char device_name[] = "IOCardUSB";
+  char device_name1[] = "USB-Expancion V3";
+  char device_name2[] = "USBexp V2";
   int send_status;
   int result = 0;
   int buffersize = 8;
   unsigned char send_data[] = { 0x3d,0x00,0x3a,0x00,0x39,0x00,0xff,0xff };
 
   /* check if we have a connected mastercard */
-  if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 0)) {
+  if ((!strcmp(iocard[device].name,device_name1) ||
+       !strcmp(iocard[device].name,device_name2)) &&
+      (iocard[device].status == 0)) {
 
     /* allocate input/output buffer */
     result = setbuffer_usb(device,buffersize);
@@ -2017,15 +2047,18 @@ int initialize_keys(int device)
 /* the initialization string sets all servos to position 0 */
 int initialize_servos(int device)
 {
-  char device_name[] = "IOCard-USBServos";
+  char device_name1[] = "IOCard-USBServos";
+  char device_name2[] = "USBServos v3";
   int send_status;
   int result = 0;
   int buffersize = 8;
   /* set all servos to 0: servo parking value. This is where the servo motor can be turned manually */
   unsigned char send_data[] = { 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xf0 };
 
-  /* check if we have a connected IOCard-USBServos card */
-  if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 0)) {
+  /* check if we have a connected IOCard-USBServos or USBServos v3 card */
+  if ((!strcmp(iocard[device].name,device_name1) ||
+       !strcmp(iocard[device].name,device_name2)) &&
+      (iocard[device].status == 0)) {
 
     /* allocate input/output buffer */
     result = setbuffer_usb(device,buffersize);
@@ -2094,15 +2127,15 @@ int initialize_motors(int device)
   return result;
 }
 
-/* initialize Leo Bodnar's BU0836X card (do not send anything, this card just has an Input descriptor) */
+/* initialize Leo Bodnar's BU0836X Interface card (do not send anything, this card just has an Input descriptor) */
 int initialize_bu0836(int device)
 {
-  char device_name1[] = "BU0836X";
-  char device_name2[] = "BU0836A";
+  char device_name1[] = "BU0836X Interface";
+  char device_name2[] = "BU0836A Interface";
   int result = 0;
   int buffersize = 32;
 
-  /* check if we have a connected BU0836X card */
+  /* check if we have a connected BU0836X Interface card */
   if ((!strcmp(iocard[device].name,device_name1) || (!strcmp(iocard[device].name,device_name2))) &&
       (iocard[device].status == 0)) {
 
@@ -2119,7 +2152,7 @@ int initialize_bu0836(int device)
     iocard[device].ndisplays = 0;
     iocard[device].nbits = 12;
 
-    if (verbose > 0) printf("LIBIOCARDS: Initialized BU0836X/A (device %i) \n",
+    if (verbose > 0) printf("LIBIOCARDS: Initialized BU0836X/A Interface (device %i) \n",
 			    device );
 
     result = 1;
@@ -2147,7 +2180,7 @@ int initialize_iocards(void)
 	printf("LIBIOCARDS: Initialize device: %i Name: %s \n",device,iocard[device].name);
       }
 	
-      ret = check_usb(device,iocard[device].vendor,iocard[device].product,
+      ret = check_usb(iocard[device].name,device,iocard[device].vendor,iocard[device].product,
 		      iocard[device].bus, iocard[device].address, iocard[device].path);
 	
       if (ret<0) {

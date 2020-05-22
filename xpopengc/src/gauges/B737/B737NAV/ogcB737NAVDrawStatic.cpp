@@ -211,10 +211,10 @@ namespace OpenGC
       if (mapMode != 3) {
       
 	/* plot NAVAID name and DME if available on the lower part of the NAV display */
-	if ((*efis1_selector_pilot == 0) || (*efis1_selector_pilot == 2)) {
+	//	if ((*efis1_selector_pilot == 0) || (*efis1_selector_pilot == 2)) {
 	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     
-	  if (*efis1_selector_pilot == 0) {
+	  if ((*efis1_selector_pilot == 0) || (*efis1_selector_pilot == 1)) {
 	    glColor3ub( 0, 255, 255 );
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "ADF 1", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", adf1_name );
@@ -248,12 +248,12 @@ namespace OpenGC
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  }
 
-	}
+	  //	}
 
-	if ((*efis2_selector_pilot == 0) || (*efis2_selector_pilot == 2)) {
+	  //	if ((*efis2_selector_pilot == 0) || (*efis2_selector_pilot == 2)) {
 	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     
-	  if (*efis2_selector_pilot == 0) {
+	  if ((*efis2_selector_pilot == 0) || (*efis2_selector_pilot == 1)) {
 	    glColor3ub( 0, 255, 255 );
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "ADF 2", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", adf2_name );
@@ -266,7 +266,7 @@ namespace OpenGC
 	    } else {
 	      snprintf( buffer, sizeof(buffer), "%s", "---" );
 	    }
-	    m_pFontManager->Print( m_PhysicalSize.x*0.080, m_PhysicalSize.y*0.012 , buffer, m_Font );      
+	    m_pFontManager->Print( m_PhysicalSize.x*(0.839+0.067), m_PhysicalSize.y*0.012 , buffer, m_Font );      
 	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  } else {
@@ -287,7 +287,7 @@ namespace OpenGC
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  }
 
-	}
+	  //	}
 	
       }
   
