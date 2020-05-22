@@ -60,15 +60,18 @@ NavDatabase
 }
 
 void NavDatabase
-::InitDatabase(string pathToNav)
+::InitDatabase(string pathToNav, int customdata)
 {
   printf("NavDatabase::InitDatabase() - Loading geographic data...\n");
 
   printf("NavDatabase::InitDatabase() - Loading navigation data\n");
   m_NavaidList = new NavaidList;
-  //  m_NavaidList->InitializeList( pathToNav + "earth_nav.dat" );
-  m_NavaidList->InitializeList( pathToNav + "/Resources/default data/earth_nav.dat" );
-
+  if (customdata == 1) {
+    m_NavaidList->InitializeList( pathToNav + "/Custom Data/earth_nav.dat" );
+  } else {
+    m_NavaidList->InitializeList( pathToNav + "/Resources/default data/earth_nav.dat" );
+  }
+  
   printf("NavDatabase::InitDatabase() - Creating navaid hash\n");
   m_NavaidHash = new GeographicHash;
   printf("NavDatabase::InitDatabase() - Doing the hash\n");
@@ -76,8 +79,11 @@ void NavDatabase
 
   printf("NavDatabase::InitDatabase() - Loading fix data\n");
   m_FixList = new FixList;
-  //  m_FixList->InitializeList( pathToNav + "earth_fix.dat" );
-  m_FixList->InitializeList( pathToNav + "/Resources/default data/earth_fix.dat" );
+  if (customdata == 1) {
+    m_FixList->InitializeList( pathToNav + "/Custom Data/earth_fix.dat" );
+  } else {
+    m_FixList->InitializeList( pathToNav + "/Resources/default data/earth_fix.dat" );
+  }
   
   printf("NavDatabase::InitDatabase() - Creating fix hash\n");
   m_FixHash = new GeographicHash;
@@ -86,7 +92,7 @@ void NavDatabase
 
   printf("NavDatabase::InitDatabase() - Loading airport data\n");
   m_AirportList = new AirportList;
-  //  m_AirportList->InitializeList( pathToNav + "apt.dat" );
+  // Todo: Implement reading all apt.dat in custom scenery
   m_AirportList->InitializeList( pathToNav + "/Resources/default scenery/default apt dat/Earth nav data/apt.dat" );
 
   printf("NavDatabase::InitDatabase() - Creating airport hash\n");

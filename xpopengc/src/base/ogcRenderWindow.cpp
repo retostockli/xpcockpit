@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #include "ogcGLHeaders.h"
 #include "ogcGauge.h"

@@ -103,18 +103,20 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__hidls_SOURCES_DIST = hid_darwin.c hid_linux.c hidls.c
+am__hidls_SOURCES_DIST = hid_darwin.c hid_linux.c hid_windows.c \
+	hidls.c
+@OS_DARWIN_FALSE@@OS_LINUX_FALSE@@OS_WINDOWS_TRUE@am__objects_1 = hid_windows.$(OBJEXT)
 @OS_DARWIN_FALSE@@OS_LINUX_TRUE@am__objects_1 = hid_linux.$(OBJEXT)
 @OS_DARWIN_TRUE@am__objects_1 = hid_darwin.$(OBJEXT)
 am_hidls_OBJECTS = $(am__objects_1) hidls.$(OBJEXT)
 hidls_OBJECTS = $(am_hidls_OBJECTS)
 hidls_LDADD = $(LDADD)
-am__xpusb_SOURCES_DIST = hid_darwin.c hid_linux.c common.c xpusb.c \
-	libiocards.c serverdata.c handleserver.c libusb_interface.c \
-	hidapi_interface.c dictionary.c iniparser.c iocard_test.c \
-	usbkeys_test.c usbservos_test.c dcmotorsplus_test.c \
-	bu0836_test.c check_aircraft.c b737_mcp.c b737_pedestal.c \
-	b737_throttle.c b737_efis.c b737_yokerudder.c \
+am__xpusb_SOURCES_DIST = hid_darwin.c hid_linux.c hid_windows.c \
+	common.c xpusb.c libiocards.c serverdata.c handleserver.c \
+	libusb_interface.c hidapi_interface.c dictionary.c iniparser.c \
+	iocard_test.c usbkeys_test.c usbservos_test.c \
+	dcmotorsplus_test.c bu0836_test.c check_aircraft.c b737_mcp.c \
+	b737_pedestal.c b737_throttle.c b737_efis.c b737_yokerudder.c \
 	b737_overhead_fwd.c a320_overhead.c a320_mcdu_keys.c \
 	a320_pedestal_mip.c
 am_xpusb_OBJECTS = $(am__objects_1) common.$(OBJEXT) xpusb.$(OBJEXT) \
@@ -286,6 +288,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 @OS_DARWIN_TRUE@OS_SRC = hid_darwin.c
 @OS_LINUX_TRUE@OS_SRC = hid_linux.c
+@OS_WINDOWS_TRUE@OS_SRC = hid_windows.c
 
 # The Sources needed to build the programs
 xpusb_SOURCES = $(OS_SRC) \
@@ -451,6 +454,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/handleserver.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hid_darwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hid_linux.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hid_windows.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hidapi_interface.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hidls.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iniparser.Po@am__quote@

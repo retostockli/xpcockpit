@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpclient], [0.20], [Reto Stockli])
+AC_INIT([xpclient], [0.21], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/xpclient.c])
 
 # produce makefiles (turn on warnings on automake!)
@@ -22,22 +22,24 @@ AC_CANONICAL_HOST
 echo $host_os
 case $host_os in
 linux*)
-    os=linux
+    os=lin
+    AC_DEFINE([LIN],[1],[Define if Host Type is Linux])
     ;;
 darwin*)
-    os=darwin
+    os=mac
+    AC_DEFINE([MAC],[1],[Define if Host Type is Apple])
     ;;
 mingw*)
-    os=windows
+    os=win
     AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
     ;;
 *)
-    AC_MSG_ERROR([Unsupported operating system. Currently only Linux and Darwin/OSX are supported.])
+    AC_MSG_ERROR([Unsupported operating system. Currently only Linux, OSX and MinGW are supported.])
 esac
 
-AM_CONDITIONAL([OS_LINUX], [test "x$os" = xlinux])
-AM_CONDITIONAL([OS_DARWIN], [test "x$os" = xdarwin])
-AM_CONDITIONAL([OS_WINDOWS], [test "x$os" = xwindows])
+AM_CONDITIONAL([OS_LINUX], [test "x$os" = xlin])
+AM_CONDITIONAL([OS_DARWIN], [test "x$os" = xmac])
+AM_CONDITIONAL([OS_WINDOWS], [test "x$os" = xwin])
 
 # Debug compilation support
 AC_MSG_CHECKING([whether to build with debug information])
@@ -58,7 +60,7 @@ fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
-if test "x$os" = xwindows; then
+if test "x$os" = xwin; then
 AC_CHECK_HEADERS([winsock2.h])
 else
 AC_CHECK_HEADERS([arpa/inet.h sys/ioctl.h sys/socket.h netinet/tcp.h netinet/in.h netinet/ip.h])
@@ -73,7 +75,7 @@ AC_TYPE_UINT8_T
 # Checks for library functions.
 AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol malloc])
 AC_CHECK_LIB([m],[roundf])
-if test "x$os" = xwindows; then
+if test "x$os" = xwin; then
     AC_CHECK_LIB([ws2_32],[socket])
 fi
 

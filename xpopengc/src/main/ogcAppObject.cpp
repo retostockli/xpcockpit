@@ -33,6 +33,9 @@
 
 =========================================================================*/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <stdio.h>
 
 //--------GL Stuff---------
@@ -133,7 +136,11 @@ int AppObject::Go(char* iniFileName)
 
   /* check if we are in the source code directory or in the binary installation path */
   if (getcwd(cwd, sizeof(cwd)) == NULL) return -2;
+#ifdef WIN
+  pch = strstr (cwd,"\\bin");
+#else
   pch = strstr (cwd,"/bin");
+#endif
   if (pch == NULL) {
     snprintf (iniFile, sizeof(iniFile), "../../inidata/%s.ini", iniFileName);
     snprintf (m_FontPath, sizeof(m_FontPath), "../../fonts/");
@@ -246,6 +253,7 @@ bool AppObject::DoFileInitialization(char* iniFile)
   char default_xplane_path[] = "NONE";
   char default_client_name[] = "xpopengc";
   int default_maxradar = 0; // do not query RADAR from X-Plane
+  int default_customdata = 0; // do not read from X-Plane's "Custom Data" directory
 
   printf("AppObject - Starting initialization with %s\n", iniFile);
 
@@ -264,10 +272,13 @@ bool AppObject::DoFileInitialization(char* iniFile)
     // path to X-Plane installation
     strcpy(m_XPlanePath,iniparser_getstring(ini,"General:XPlanePath",default_xplane_path));
 
+    // whether to use X-Plane's Custom Data path
+    m_customdata = iniparser_getint(ini,"General:CustomData", default_customdata);
+
     // Initialize the nav database
     if (verbosity > 0) printf("AppObject - Initializing the navigation database in %s\n", m_XPlanePath);
     m_pNavDatabase = new NavDatabase;
-    m_pNavDatabase->InitDatabase(m_XPlanePath);
+    m_pNavDatabase->InitDatabase(m_XPlanePath,m_customdata);
 
     // Set up font manager
     m_pFontManager = new FontManager();

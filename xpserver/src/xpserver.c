@@ -19,19 +19,25 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
 #include <stdio.h>      /* for printf() and fprintf() */
-#include <sys/socket.h> /* for socket(), bind(), and connect() */
-#include <sys/types.h>  /* for socket(), bind(), and connect() */
-#include <sys/time.h>   /* for socket(), bind(), and connect() */
-#include <arpa/inet.h>  /* for sockaddr_in and inet_ntoa() */
+#include <sys/types.h> 
+#include <sys/time.h>   
 #include <stdlib.h>     /* for atoi() and exit() */
 #include <string.h>     /* for memset() */
 #include <unistd.h>     /* for close() */
+
+#ifdef WIN
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>  
+#include <sys/socket.h> 
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#endif
 
 #include "common.h"   
 
@@ -116,6 +122,14 @@ PLUGIN_API int XPluginStart(
     server_port = default_server_port;
     verbose = default_verbose;
   }
+ 
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    exit (EXIT_FAILURE);
+  }
+#endif
 
   FD_ZERO(&socketSetRead);
   FD_ZERO(&socketSetMaster);
@@ -175,7 +189,11 @@ PLUGIN_API int XPluginStart(
     }
 
   unsigned long nSetSocketType = NON_BLOCKING;
-  if (ioctl(servSock,FIONBIO,&nSetSocketType) < 0)	//set to non-blocking
+#ifdef WIN
+  if (ioctlsocket(servSock,FIONBIO,&nSetSocketType) < 0)
+#else
+  if (ioctl(servSock,FIONBIO,&nSetSocketType) < 0)
+#endif
     {
       if (verbose > 0) fprintf(logfileptr,"XPSERVER: Server set to non-blocking failed\n");
       socketStatus = status_Error;
@@ -245,12 +263,21 @@ PLUGIN_API void	XPluginStop(void)
 	  strncpy(clientnameArray[j],"",sizeof(clientnameArray[j]));
 
 	  if (verbose > 0) fprintf(logfileptr,"XPSERVER: Clear client socket: %i \n",clntSockArray[j]);
+#ifdef WIN
+	  closesocket(clntSockArray[j]);
+#else
 	  close(clntSockArray[j]);
+#endif
 	}
     }
   /* at the end: also close the server socket */
   if (verbose > 0) fprintf(logfileptr,"XPSERVER: Clear server socket: %i \n",servSock);
+#ifdef WIN
+  closesocket(servSock);
+  WSACleanup();
+#else
   close(servSock);
+#endif
 
   if (verbose > 0) fclose(logfileptr);
 
@@ -326,7 +353,7 @@ float	xpserverLoopCallback(
 
 
   int i,j;
-  socklen_t clntLen = sizeof (echoClntAddr);            /* Length of client address data structure */
+  int clntLen = sizeof (echoClntAddr);            /* Length of client address data structure */
   int on =  1;
 
   int clntSock;
@@ -363,7 +390,11 @@ float	xpserverLoopCallback(
 				
 	/* initialize new connection with non-blocking and tcp/ip */
 	unsigned long nSetSocketType = NON_BLOCKING;
+#ifdef WIN
+	if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
+#else
 	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
+#endif
 	  {
 	    if (verbose > 0) fprintf(logfileptr,"XPSERVER: Client set to non-blocking failed\n");
 	  }
@@ -402,7 +433,11 @@ float	xpserverLoopCallback(
 
 	/* socket not available - disconnected? */
 	/* close it... */	
+#ifdef WIN
+	closesocket(clntSockArray[j]);
+#else
 	close(clntSockArray[j]);
+#endif
 
 	/* remove from master set */
 	if (verbose > 0) fprintf(logfileptr,"XPSERVER: Clear client socket: %i \n",clntSockArray[j]);

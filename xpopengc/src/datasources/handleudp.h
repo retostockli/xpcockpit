@@ -14,11 +14,15 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#ifdef WIN
+#include <winsock2.h>
+#else
 #include <arpa/inet.h>
+#endif
 
 /* UDP CLIENT PARAMETERS */
 char udpServerIP[30];
-short int udpServerPort;
+int udpServerPort;
 int udpSocket;
 
 struct sockaddr_in udpServAddr;     /* Server address structure */

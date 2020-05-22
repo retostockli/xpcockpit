@@ -27,6 +27,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <signal.h>
 
 /* xpusb headers */
 #include "common.h"
@@ -155,8 +156,8 @@ int main (int argc, char **argv)
 	iocard_test();
       }
       if (strcmp(*argv,"test") == 0) {
-	iocard_test();
-	// usbkeys_test();
+	//iocard_test();
+	usbkeys_test();
 	// usbservos_test();
 	// dcmotorsplus_test();
 	// bu0836_test();
@@ -218,8 +219,7 @@ int initialize_signal_handler(void)
 {
   int ret = 0;
 
-  sig_handler = signal(SIGINT, exit_xpusb);
-  if (sig_handler == SIG_ERR) {
+  if (signal(SIGINT, exit_xpusb) == SIG_ERR) {
     printf("Could not establish new signal handler.\n");
     ret = -1;
   }

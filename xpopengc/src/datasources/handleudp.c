@@ -22,17 +22,22 @@
 
 #include <stdio.h>   
 #include <stdlib.h>  
-#include <sys/socket.h> 
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <stdbool.h>
 #include <unistd.h>   
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+
+#ifdef WIN
+#include <winsock2.h>
+#else
+#include <sys/socket.h> 
+#include <sys/ioctl.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#endif
 
 #include "handleudp.h"
 #include "udpdata.h"
@@ -57,7 +62,11 @@ int init_udp(void)
 
     //set to non-blocking
     unsigned long nSetSocketType = 1;
+#ifdef WIN
+    if (ioctlsocket(udpSocket,FIONBIO,&nSetSocketType) < 0) {
+#else
     if (ioctl(udpSocket,FIONBIO,&nSetSocketType) < 0) {
+#endif
       printf("HANDLEUDP: Client set to non-blocking failed\n");
       ret = -1;
     } else {
@@ -71,7 +80,11 @@ int init_udp(void)
 /* end udp connection */
 void exit_udp(void)
 {
+#ifdef WIN
+  closesocket(udpSocket);
+#else
   close(udpSocket);
+#endif
 }
 
 
@@ -79,10 +92,14 @@ void exit_udp(void)
 int send_udp(void) {
 
   int n;
-  
+
+  /*
   n = sendto(udpSocket, udpSendBuffer, udpSendBufferLen, 
 	 MSG_CONFIRM, (const struct sockaddr *) &udpServAddr, 
 	 sizeof(udpServAddr));
+  */
+  n = sendto(udpSocket, udpSendBuffer, udpSendBufferLen, 
+	 0, (const struct sockaddr *) &udpServAddr, sizeof(udpServAddr));
   
   //  printf("Sent to X-Plane: %i \n",n); 
 
@@ -95,10 +112,13 @@ int recv_udp(void) {
   int n; 
   
   int addrlen = sizeof(udpServAddr);
+  /*
   n = recvfrom(udpSocket, udpRecvBuffer, udpRecvBufferLen, 
 	       MSG_DONTWAIT, (struct sockaddr *) &udpServAddr, 
-	       //	       MSG_WAITALL, (struct sockaddr *) &udpServAddr, 
 	       &addrlen);
+  */
+  n = recvfrom(udpSocket, udpRecvBuffer, udpRecvBufferLen, 
+	       0, (struct sockaddr *) &udpServAddr, &addrlen);
 
   //  printf("Received from X-Plane: %i \n",n);
 

@@ -12,16 +12,27 @@ AC_CANONICAL_HOST
 AC_MSG_CHECKING([operating system])
 case $host_os in
 linux*)
-        os=linux;;
+    os=lin
+    AC_DEFINE([LIN],[1],[Define if Host Type is Linux])
+    ;;
 darwin*)
-        os=darwin;;
-*)
-        AC_MSG_ERROR([Unsupported operating system $host_os. Currently only Linux and Darwin/OSX are supported. Please add support for $host_os to configure.ac and Makefile.am in all source code directories.])
+    os=mac
+    AC_DEFINE([MAC],[1],[Define if Host Type is Apple])
+    ;;
+mingw*)
+    os=win
+    AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
+    LDFLAGS="$LDFLAGS -static"
+    LIBS="$LIBS -mwindows -lws2_32 -lsetupapi -lole32 -luuid -lcomctl32"
+    ;;
+**)
+        AC_MSG_ERROR([Unsupported operating system $host_os. Currently only Linux, OSX and MinGW are supported.])
 esac
 AC_MSG_RESULT([$os])
 
-AM_CONDITIONAL([OS_LINUX], [test "x$os" = "xlinux"])
-AM_CONDITIONAL([OS_DARWIN], [test "x$os" = "xdarwin"])
+AM_CONDITIONAL([OS_LINUX], [test "x$os" = "xlin"])
+AM_CONDITIONAL([OS_DARWIN], [test "x$os" = "xmac"])
+AM_CONDITIONAL([OS_WINDOWS], [test "x$os" = "xwin"])
 
 # Checks for programs.
 OLD_CXXFLAGS=$CXXFLAGS
@@ -45,9 +56,9 @@ AC_MSG_RESULT([$debugit])
 if test "x$debugit" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
 # DEBUGGING USING LEAK CHECK
-    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
+#    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
 # REGULAR DEBUGGING
-#    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized"
+    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized"
 # DEBUGGING USING GPROF PROFILING
 #    CXXFLAGS="$CXXFLAGS -pg -g -Wall -Wno-uninitialized"
 else
@@ -74,14 +85,15 @@ else
     CPPFLAGS="$CPPFLAGS -I$GLDIR/include"
 fi
 
-if test "x$os" = xdarwin; then
+if test "x$os" = xmac; then
 # OSX Darwin: no more checking, just link the frameworks
    LIBS="$LIBS -framework AGL -framework OpenGL"
-else
+else 
+  if test "x$os" = xlin; then
 # Linux: check presence of OpenGL library and headers
    AC_CHECK_LIB(GL, main, , unset HAVE_GL, -lGL)
-   AC_CHECK_LIB(GLU, main, , unset HAVE_GL, -lGL)
-#   AC_CHECK_LIB(GLUT, main, , unset HAVE_GL,-lGL)
+   AC_CHECK_LIB(GLU, main, , unset HAVE_GL, -lGLU)
+#   AC_CHECK_LIB(GLUT, main, , unset HAVE_GL,-lGLUT)
 
    AC_CHECK_HEADERS(GL/gl.h GL/glu.h GL/glext.h, , unset HAVE_GL,
        [
@@ -95,36 +107,31 @@ else
         #include <GL/glu.h>
         #endif
        ])
+  else
+# Windows: check presence of OpenGL32 / glu32 library and headers
+   AC_CHECK_LIB(opengl32, main, , unset HAVE_GL, -lopengl32)
+   AC_CHECK_LIB(glu32, main, , unset HAVE_GL, -lglu32)
+
+   AC_CHECK_HEADERS(GL/gl.h GL/glu.h GL/glext.h, , unset HAVE_GL,
+       [
+	#ifdef WIN32
+        #include <windows.h>
+        #endif
+        #if HAVE_GL_GL_H
+        #include <GL/gl.h>
+        #endif
+            #if HAVE_GL_GLU_H
+        #include <GL/glu.h>
+        #endif
+       ])
+
+fi
 fi
 
 if test -z "$HAVE_GL"; then
     AC_MSG_ERROR([Can't find OpenGL libraries, or can't link a program to it.
 please use --with-gl=<directory> to specify a custom installation directory for OpenGL.])
 fi
-
-
-# check for PLIB library and headers
-HAVE_PLIB=yes
-AC_MSG_CHECKING([whether a location for the plib library was specified])
-AC_ARG_WITH([plib],
-[AS_HELP_STRING([--with-plib=<directory>],
-                [Specify location the plib library. Configure will expect
-to find headers in <directory>/include/plib and libraries in <directory>/lib.])],
-                [PLIBDIR=$with_plib])
-if test -z "$PLIBDIR" ; then
-    AC_MSG_RESULT([no])
-else
-    AC_MSG_RESULT([$PLIBDIR])
-    LIBS="$LIBS -L$PLIBDIR/lib"
-    CPPFLAGS="$CPPFLAGS -I$PLIBDIR/include/plib"
-fi
-
-#AC_CHECK_LIB(plibnet, main, , unset HAVE_PLIB)
-#AC_CHECK_HEADER(netSocket.h, , unset HAVE_PLIB)
-#if test -z "$HAVE_PLIB"; then
-#    AC_MSG_ERROR([Can't find plib library, or can't link a program to it.
-#please use --with-plib=<directory> to specify a custom installation directory for plib.])
-#fi
 
 
 # check for the FLTK libraries and headers
@@ -212,7 +219,12 @@ fi
 AC_CHECK_LIB(z, main)
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h netinet/in.h stdlib.h string.h sys/time.h sys/ioctl.h sys/socket.h unistd.h])
+AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
+if test "x$os" = xwin; then
+AC_CHECK_HEADERS([winsock2.h])
+else
+AC_CHECK_HEADERS([arpa/inet.h sys/ioctl.h sys/socket.h netinet/tcp.h netinet/in.h netinet/ip.h])
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -227,7 +239,7 @@ CPPFLAGS="$CPPFLAGS -I$PWD/src/base -I$PWD/src/datasources -I$PWD/src/navigation
 # Substitute
 AC_SUBST(AM_CXXFLAGS)
 AC_SUBST(AM_CPPFLAGS)
-#AC_SUBST(AM_LDFLAGS)
+AC_SUBST(AM_LDFLAGS)
 
 if test "x$prefix" = xNONE; then
     prefix=`pwd`;

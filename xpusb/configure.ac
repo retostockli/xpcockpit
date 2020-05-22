@@ -21,33 +21,40 @@ CFLAGS=$OLD_CFLAGS
 AC_CANONICAL_HOST
 case $host_os in
 linux*)
-    AC_DEFINE([LINUX],[],[Compile for Linux])
-    os=linux
+    os=lin
+    AC_DEFINE([LIN],[1],[Define if Host Type is Linux])
     ;;
 darwin*)
-    AC_DEFINE([DARWIN],[],[Compile for Darwin])
+    os=mac
+    AC_DEFINE([MAC],[1],[Define if Host Type is Apple])
     LIBS="$LIBS -framework IOKit -framework CoreFoundation"
-    os=darwin
     ;;
-*)
-    AC_MSG_ERROR([Unsupported operating system. Currently only Linux and Darwin/OSX are supported.])
+mingw*)
+    os=win
+    AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
+    LDFLAGS="$LDFLAGS -static"
+    LIBS="$LIBS -lws2_32 -lsetupapi"
+    ;;
+**)
+    AC_MSG_ERROR([Unsupported operating system $host_os. Currently only Linux, OSX and MinGW are supported.])
 esac
 
-AM_CONDITIONAL([OS_LINUX], [test "x$os" = xlinux])
-AM_CONDITIONAL([OS_DARWIN], [test "x$os" = xdarwin])
+AM_CONDITIONAL([OS_LINUX], [test "x$os" = xlin])
+AM_CONDITIONAL([OS_DARWIN], [test "x$os" = xmac])
+AM_CONDITIONAL([OS_WINDOWS], [test "x$os" = xwin])
 
 # Checks for libraries.
 AC_MSG_CHECKING([whether a location for the libusb-1.0 library was specified])
 AC_ARG_WITH([libusb],
 [AS_HELP_STRING([--with-libusb=<directory>],
                 [Specify location the libusb-1.0 library. Configure will expect
-to find subdirs include and lib. If none is given, by default hidraw and hidapi is used])],
+to find subdirs include and lib. If none is given, by default hidapi is used])],
                 [LIBUSBDIR=$with_libusb])
 if test -z "$LIBUSBDIR" ; then
 # no libusb path was provided: use HIDAPI to access HID devices directly
     AC_MSG_RESULT([no])
     HAVE_LIBUSB=no
-    HAVE_HIDRAW=yes
+    HAVE_HIDAPI=yes
     AC_DEFINE([HIDAPI],[],[Use HIDAPI to access HID devices directly])
 else
 # libusb path was provided: use libusb-1.0 library to access HID devices as USB devices
@@ -55,7 +62,7 @@ else
     LIBS="$LIBS -L$LIBUSBDIR/lib"
     CPPFLAGS="$CPPFLAGS -I$LIBUSBDIR/include"
     HAVE_LIBUSB=yes
-    HAVE_HIDRAW=no
+    HAVE_HIDAPI=no
     AC_DEFINE([LIBUSB],[],[Use LIBUSB to access HID devices as regular USB devices])
 
     # check for library presence
@@ -65,16 +72,14 @@ else
     fi
 fi
 
-# on linux, check for udev, rt and math library - also, for SDL and SDL_ttf libraries
-if test "x$os" = xlinux; then
-    if test "x$HAVE_HIDRAW" = xyes; then
+# on linux, check for udev, rt and math library
+if test "x$os" = xlin; then
+    if test "x$HAVE_HIDAPI" = xyes; then
 	AC_CHECK_LIB(udev,main,,AC_MSG_ERROR([Could not find the udev library]))
     fi
     AC_CHECK_LIB(rt,clock_gettime,,AC_MSG_ERROR([Could not find the rt library]))
-    AC_CHECK_LIB(m,main,,AC_MSG_ERROR([Could not find the math library]))
-#    AC_CHECK_LIB(SDL,main,,AC_MSG_ERROR([Could not find the SDL library]))
-#    AC_CHECK_LIB(SDL_ttf,main,,AC_MSG_ERROR([Could not find the SDL_ttf library]))
 fi
+AC_CHECK_LIB(m,main,,AC_MSG_ERROR([Could not find the math library]))
 
 # Enable Threading support
 CFLAGS="$CFLAGS -pthread"
@@ -102,7 +107,12 @@ else
 fi
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h stdlib.h string.h sys/ioctl.h sys/socket.h unistd.h])
+AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
+if test "x$os" = xwin; then
+AC_CHECK_HEADERS([winsock2.h])
+else
+AC_CHECK_HEADERS([arpa/inet.h sys/ioctl.h sys/socket.h netinet/tcp.h netinet/in.h netinet/ip.h])
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SSIZE_T
@@ -119,7 +129,7 @@ AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol malloc])
 if test "x$prefix" = xNONE; then
     prefix=`pwd`;
 fi
-AC_MSG_NOTICE([usbiocards will be installed in $prefix])
+AC_MSG_NOTICE([xpusb will be installed in $prefix])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile])
