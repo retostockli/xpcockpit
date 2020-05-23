@@ -342,6 +342,8 @@ int receive_server(void) {
 	      nelements = 1;
 	    }
 
+	    serverdata[offset].nrecv++;
+	    
 	    switch (serverdata[offset].type) {
 	    case XPTYPE_INT:		
 	      if (recv_left >= sizeof(int)) {
@@ -939,6 +941,8 @@ int send_server(void) {
 	      break;
 	    }
 
+	    if (changed == 1) serverdata[i].nsend++;
+	    
 	    break;
 
 	  default:
@@ -978,7 +982,7 @@ int send_server(void) {
 	      socketStatus = status_Error;	/* signal a transmission error */
 	    }
 	  } else {
-	    if (verbose > 1) printf("HANDLESERVER: Partial sending %i bytes \n",sendMsgSize);
+	    if (verbose > 2) printf("HANDLESERVER: Partial sending %i bytes \n",sendMsgSize);
 	    send_left -= sendMsgSize;
 	    message_ptr += sendMsgSize;
 	  }

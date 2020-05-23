@@ -40,6 +40,7 @@ int numalloc; /* number of serverdata elements allocated */
 int numlink; /* number of serverdata elements linked */
 char clientname[100]; /* name of x-plane client package */
 int lastindex; /* stores the index of the last Dataref called */
+struct timeval time_start; /* stores the time when we initialized the dataref structure */
 
 /* initialize local dataref structure */
 int initialize_dataref() {
@@ -47,6 +48,8 @@ int initialize_dataref() {
   serverdata = NULL;
   numalloc = 0;
   numlink = 0;
+  
+  gettimeofday(&time_start, NULL);
 
   return 0;
 }
@@ -56,11 +59,38 @@ int initialize_dataref() {
 void clear_dataref() {
 
   int i;
-
+  struct timeval time_end;
+  struct timeval time_elapsed;
+  float seconds_elapsed;
+  float fsend;
+  float frecv;
+  gettimeofday(&time_end, NULL);
+  timersub(&time_end, &time_start, &time_elapsed);
+  seconds_elapsed = (float) time_elapsed.tv_sec + ((float) time_elapsed.tv_usec) / 1000000.0;
+  
   if (serverdata != NULL) {    
     if (numalloc > 0) {
+      if (verbose > 1) {
+	printf("\n");
+	printf("Time elapsed: %f seconds\n",seconds_elapsed);
+	printf("Statistics on Dataref exchange \n");
+	printf("No.    send/s    recv/s   datarefname \n");
+      }
       for (i=0;i<numalloc;i++) {
 	if (serverdata[i].data != NULL) {
+	  if (verbose > 1) {
+	    fsend = (float) serverdata[i].nsend / seconds_elapsed;
+	    frecv = (float) serverdata[i].nrecv / seconds_elapsed;
+	    if ((fsend > 15.0) || (frecv > 15.0)) {
+	      printf("\033[1;31m");
+	    } else if ((fsend > 5.0) || (frecv > 5.0)) {
+	      printf("\033[1;33m");
+	    } else if ((fsend > 1.0) || (frecv > 1.0)) {
+	      printf("\033[1;32m");
+	    }
+	    printf("%4i %8.3f %8.3f  %s \n",i,fsend,frecv,serverdata[i].datarefname);
+	    printf("\033[0m");
+	  }
 	  free(serverdata[i].data);
 	  serverdata[i].data = NULL;
 	}
@@ -362,6 +392,8 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
       serverdata[i].index = index;
       serverdata[i].precision = precision;
       serverdata[i].nextindex = INT_MISS;
+      serverdata[i].nsend = 0;
+      serverdata[i].nrecv = 0;
       if (type >= XPTYPE_CMD_ONCE) {
 	printf("Created commandref %s \n",datarefname);
       } else {
@@ -406,6 +438,8 @@ int unlink_dataref(const char datarefname[]) {
 	serverdata[i].precision = INT_MISS;
 	serverdata[i].status = XPSTATUS_DEALLOC;
 	serverdata[i].nextindex = INT_MISS;
+	serverdata[i].nsend = INT_MISS;
+	serverdata[i].nrecv = INT_MISS;
 	
 	printf("Unlink: Deallocated dataref: %s \n",datarefname);
       }

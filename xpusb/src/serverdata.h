@@ -16,6 +16,8 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#include <time.h>
+
 /* missing values: UCHAR has no missing value. FLT and DBL are the same */
 #define INT_MISS -2000000000
 #define FLT_MISS -2000000000.0
@@ -71,7 +73,11 @@ typedef struct {
   void *data;             /* pointer to current data values */
   void *data_old;         /* pointer to last data values */
   int nextindex;          /* stores the index of the next index that will be called */
+  int nsend;              /* number of times the dataref was sent to the server */
+  int nrecv;              /* number of times the dataref was received from the server */
 } serverdata_struct;
+
+extern struct timeval time_start;
 
 extern serverdata_struct *serverdata; /* pointer to dynamically allocatable xp data structure */
 extern int numalloc; /* number of serverdata elements allocated */
