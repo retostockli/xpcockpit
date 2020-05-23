@@ -207,9 +207,13 @@ void exit_xpusb(int ret)
   /* free local dataref structure */
   clear_dataref();
 
-  printf("Exiting with status %i \n",ret);
-
-  exit(ret);
+  if (ret != 2) {
+    printf("Exiting with status %i \n",ret);
+    exit(ret);
+  } else {
+    /* A signal 2 means CTRL-C by user. All is fine */
+    exit(0);
+  }
 }
 
 

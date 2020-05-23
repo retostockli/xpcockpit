@@ -70,7 +70,7 @@ void clear_dataref() {
   
   if (serverdata != NULL) {    
     if (numalloc > 0) {
-      if (verbose > 1) {
+      if (verbose > 0) {
 	printf("\n");
 	printf("Time elapsed: %f seconds\n",seconds_elapsed);
 	printf("Statistics on Dataref exchange \n");
@@ -78,7 +78,7 @@ void clear_dataref() {
       }
       for (i=0;i<numalloc;i++) {
 	if (serverdata[i].data != NULL) {
-	  if (verbose > 1) {
+	  if (verbose > 0) {
 	    fsend = (float) serverdata[i].nsend / seconds_elapsed;
 	    frecv = (float) serverdata[i].nrecv / seconds_elapsed;
 	    if ((fsend > 15.0) || (frecv > 15.0)) {
