@@ -72,11 +72,11 @@ namespace OpenGC
     float *engn_hydp1;
     float *engn_hydp2;
     if (acf_type == 1) {
-      engn_hydp1 = link_dataref_flt("x737/systems/hydraulics/systemAHydPress",1);
-      engn_hydp2 = link_dataref_flt("x737/systems/hydraulics/systemBHydPress",1);
+      engn_hydp1 = link_dataref_flt("x737/systems/hydraulics/systemAHydPress",2);
+      engn_hydp2 = link_dataref_flt("x737/systems/hydraulics/systemBHydPress",2);
     } else {
-      engn_hydp1 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_pressure_1",1);
-      engn_hydp2 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_pressure_2",1);
+      engn_hydp1 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_pressure_1",2);
+      engn_hydp2 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_pressure_2",2);
     }
     
     switch (currentEngine)
@@ -122,7 +122,7 @@ namespace OpenGC
       // gauge
       //float percentage = (value + negativeoffset) / (max - min);
       //float degree = minDegrees + ((maxDegreesUse360 - minDegrees) * percentage);
-      int x = (int) min(max(value,0.f),3.f);
+      int x = (int) min(max(value,0.f),4.f);
       float degreeT = (degreeV[x+1] - degreeV[x]) * (value - x);
       float degree = degreeV[x] + degreeT;
       glBegin(GL_LINE_STRIP);

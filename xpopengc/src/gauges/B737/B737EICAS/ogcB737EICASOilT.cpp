@@ -67,7 +67,7 @@ namespace OpenGC
 
     float value;
 
-    float *engn_oiltemp = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_oil_temp_c",8,-1,-2);
+    float *engn_oiltemp = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_oil_temp_c",8,-1,0);
 
     switch (currentEngine)
       {

@@ -161,8 +161,8 @@ void B737NAV::Render()
     // First thing to do is call base class setup
     Gauge::Render();
      
-    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
-    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
+    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
+    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
     float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
 
     bool is_captain = (this->GetArg() == 1);

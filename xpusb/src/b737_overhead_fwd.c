@@ -936,7 +936,7 @@ void b737_overhead_fwd(void)
     if (ret == 1) {
       printf("Fasten Belts Off: %i \n",ival2);
     }
-    if ((ival != INT_MISS) && (ival2 != INT_MISS)) ival = ival*2 + (1-ival2);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) ival = ival*2 + (1-ival)*(1-ival2);
     ret = set_state_updn(&ival,belts,belts_dn,belts_up);
 
     int *eq_cool_supply = link_dataref_int("laminar/B738/toggle_switch/eq_cool_supply");

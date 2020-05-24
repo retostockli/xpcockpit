@@ -108,7 +108,6 @@ namespace OpenGC
     float *fmc_rad_lat2;
     int *fmc_rad_turn;
     float *fmc_rad_radius;
-    float *fmc_rad_dta;
     float *fmc_brg;
     float *fmc_crs;
     int *fmc_miss1;
@@ -134,12 +133,11 @@ namespace OpenGC
       fmc_type = link_dataref_int_arr("laminar/B738/fms/legs_type",128,-1);
       fmc_hold_time = link_dataref_int_arr("laminar/B738/fms/legs_hold_time",128,-1);
       fmc_rad_turn = link_dataref_int_arr("laminar/B738/fms/legs_rad_turn",128,-1);
-      fmc_rad_ctr_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lon",128,-1,-5);
-      fmc_rad_ctr_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lat",128,-1,-5);
-      fmc_rad_lon2 = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lon2",128,-1,-5);
-      fmc_rad_lat2 = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lat2",128,-1,-5);
-      fmc_rad_radius = link_dataref_flt_arr("laminar/B738/fms/legs_radii_radius",128,-1,-5);
-      fmc_rad_dta = link_dataref_flt_arr("laminar/B738/fms/legs_radii_dta",128,-1,-5);
+      fmc_rad_ctr_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lon",128,-1,-4);
+      fmc_rad_ctr_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lat",128,-1,-4);
+      fmc_rad_lon2 = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lon2",128,-1,-4);
+      fmc_rad_lat2 = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lat2",128,-1,-4);
+      fmc_rad_radius = link_dataref_flt_arr("laminar/B738/fms/legs_radii_radius",128,-1,-1);
       fmc_miss1 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx");
       fmc_miss2 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx2");
       //      fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_true",128,-1,-5);
@@ -322,7 +320,6 @@ namespace OpenGC
 		  wpt[i].brg = fmc_brg[i]; // radians mag
 		  wpt[i].crs = fmc_crs[i]; // degrees mag
 		  wpt[i].rad_radius = fmc_rad_radius[i];
-		  wpt[i].rad_dta = fmc_rad_dta[i];
 		  wpt[i].turn = fmc_turn[i]; // 0,2: left. 3: right
 		  wpt[i].hold_time = fmc_hold_time[i]; // holding time in seconds
 		  wpt[i].rad_turn = fmc_rad_turn[i]; // HOLD: 0: left, 1: RIGHT

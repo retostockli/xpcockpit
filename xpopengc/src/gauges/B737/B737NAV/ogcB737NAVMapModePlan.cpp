@@ -84,8 +84,8 @@ namespace OpenGC
       float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
 
       // Where is the aircraft?
-      double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-5);
-      double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-5);
+      double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
+      double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
     
       // What's the heading?
       float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);

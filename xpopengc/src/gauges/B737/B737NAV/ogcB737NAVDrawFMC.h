@@ -64,7 +64,6 @@ protected:
     float rad_lon2;
     float rad_lat2;
     float rad_radius;
-    float rad_dta;
     int rad_turn;
     int turn;
     int hold_time;
