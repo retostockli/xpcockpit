@@ -95,7 +95,9 @@ B737/B737PFD/ogcB737PFD.cpp \
 B737/B737PFD/ogcB737PFDHeadingIndicator.cpp \
 B737/B737PFD/ogcB737SpeedTape.cpp \
 B737/B737PFD/ogcB737SpeedTicker.cpp \
-B737/B737PFD/ogcB737VSI.cpp
+B737/B737PFD/ogcB737VSI.cpp \
+B737/B737CLOCK/ogcB737Clock.cpp \
+B737/B737CLOCK/ogcB737ClockComponent.cpp
 
 noinst_HEADERS = \
 Dummy/ogcDummyGauge.h \
@@ -199,4 +201,6 @@ B737/B737PFD/ogcB737PFD.h \
 B737/B737PFD/ogcB737PFDHeadingIndicator.h \
 B737/B737PFD/ogcB737SpeedTape.h \
 B737/B737PFD/ogcB737SpeedTicker.h \
-B737/B737PFD/ogcB737VSI.h
+B737/B737PFD/ogcB737VSI.h \
+B737/B737CLOCK/ogcB737Clock.h \
+B737/B737CLOCK/ogcB737ClockComponent.h

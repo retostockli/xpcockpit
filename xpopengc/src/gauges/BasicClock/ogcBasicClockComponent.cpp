@@ -52,7 +52,7 @@ namespace OpenGC
     if (verbosity > 0) printf("BasicClockComponent - constructing\n");
 
     m_Font = m_pFontManager->LoadDefaultFont();
-
+  
     //    m_PhysicalPosition.x = 0;
     //    m_PhysicalPosition.y = 0;
 

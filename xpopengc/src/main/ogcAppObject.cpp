@@ -83,6 +83,7 @@
 #include "B737/B737NAV/ogcB737NAV.h"
 #include "B737/B737FMC/ogcB737FMC.h"
 #include "B737/B737MIP/ogcB737MIP.h"
+#include "B737/B737CLOCK/ogcB737Clock.h"
 
 //----------NonFunctional--------
 /*
@@ -400,6 +401,7 @@ bool AppObject::DoFileInitialization(char* iniFile)
   else if (strcmp(name, "B737NAV")==0) pGauge = new B737NAV();
   else if (strcmp(name, "B737FMC")==0) pGauge = new B737FMC();
   else if (strcmp(name, "B737MIP")==0) pGauge = new B737MIP();
+  else if (strcmp(name, "B737CLOCK")==0) pGauge = new B737Clock();
 /*
   else if (strcmp(name, "B737AnalogFlaps")==0) pGauge = new B737AnalogFlaps();
   else if (strcmp(name, "B737VerticalSpeedDigital")==0) pGauge = new B737VerticalSpeedDigital();
