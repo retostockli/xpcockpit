@@ -244,10 +244,6 @@ void b737_pedestal(void)
   float *master_volume = link_dataref_flt("sim/operation/sound/master_volume_ratio",-1);
 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
-
-  // test for tail hook (fighter, carrier)
-  int *tailhook = link_dataref_int("sim/cockpit2/switches/tailhook_deploy");
-
  
   /* local variables */
   int ret;
@@ -397,33 +393,38 @@ void b737_pedestal(void)
   }
 
   /* CARGO FIRE */
-  ret = digital_input(device,card,45,&test,0);
-  if (ret == 1) {
-    printf("Cargo Fire DISCH Button: %i \n",test);
-    *cargofire_disch = test;
 
-    if (test == 0) {
-      *cargofire_fwd_armed = test;
-      *cargofire_aft_armed = test;
+  /* let us map cargo fire disch/armed buttons to the clock for now */
+  if ((acf_type == 2) || (acf_type == 3)) {
+    int *chr_mode = link_dataref_cmd_hold("laminar/B738/push_button/chrono_cycle_capt");
+    int *et_mode = link_dataref_cmd_hold("laminar/B738/push_button/chrono_capt_et_mode");
+    int *et_reset = link_dataref_cmd_hold("laminar/B738/push_button/et_reset_capt");
+    int *date_mode = link_dataref_cmd_hold("laminar/B738/push_button/chrono_disp_mode_capt");
+    ret = digital_input(device,card,45,&test,0);
+    if (ret == 1) {
+      printf("Cargo Fire DISCH Button: %i \n",test);
     }
+    *chr_mode = test;
+    
+    ret = digital_input(device,card,46,&test,0);
+    if (ret == 1) {
+      printf("Cargo Fire AFT ARMED Button: %i \n",test);
+    }
+    *et_reset = test;
+
+    ret = digital_input(device,card,47,&test,0);
+    if (ret == 1) {
+      printf("Cargo Fire FWD ARMED Button: %i \n",test);
+    }
+    *et_mode = test;
+  
+    ret = digital_input(device,card,48,&test,0);
+    if (ret == 1) {
+      printf("Cargo Fire TEST Button: %i \n",test);
+    }
+    *date_mode = test;
   }
-  if (*cargofire_aft_armed == INT_MISS) *cargofire_aft_armed = 0;
-  ret = digital_input(device,card,46,&test,1);
-  if (ret == 1) {
-    printf("Cargo Fire AFT ARMED Button: %i \n",test);
-    *cargofire_aft_armed = test;
-  }
-  if (*cargofire_fwd_armed == INT_MISS) *cargofire_fwd_armed = 0;
-  ret = digital_input(device,card,47,&test,1);
-  if (ret == 1) {
-    printf("Cargo Fire FWD ARMED Button: %i \n",test);
-    *cargofire_fwd_armed = test;
-  }
-  ret = digital_input(device,card,48,&test,0);
-  if (ret == 1) {
-    printf("Cargo Fire TEST Button: %i \n",test);
-    *cargofire_test = test;
-  }
+
 
   /* let us map the cargo fire extinguisher select to the IRS select for now */
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -467,8 +468,6 @@ void b737_pedestal(void)
       printf("IRS L POS: %i \n",irs_l_pos);
     }
   }
-
-  *tailhook = *cargofire_fwd_armed;
 
   /* TRANSPONDER */
 
