@@ -96,19 +96,19 @@ namespace OpenGC {
     if (*adf1_dme_distance_nm != FLT_MISS) dstAdf1 = *adf1_dme_distance_nm; else dstAdf1 = 0;
     float *adf2_dme_distance_nm = link_dataref_flt ("sim/cockpit2/radios/indicators/adf2_dme_distance_nm",-1);
     if (*adf2_dme_distance_nm != FLT_MISS) dstAdf2 = *adf2_dme_distance_nm; else dstAdf2 = 0;
-    float *nav1_bearing = link_dataref_flt ("sim/cockpit2/radios/indicators/nav1_bearing_deg_mag",-1);
+    float *nav1_bearing = link_dataref_flt ("sim/cockpit2/radios/indicators/nav1_relative_bearing_deg",-1);
     if (*nav1_bearing != FLT_MISS) brngNav1 = *nav1_bearing; else brngNav1 = 0;
-    float *nav2_bearing = link_dataref_flt ("sim/cockpit2/radios/indicators/nav2_bearing_deg_mag",-1);
+    float *nav2_bearing = link_dataref_flt ("sim/cockpit2/radios/indicators/nav2_relative_bearing_deg",-1);
     if (*nav2_bearing != FLT_MISS) brngNav2 = *nav2_bearing; else brngNav2 = 0;
-    float *adf1_bearing = link_dataref_flt ("sim/cockpit2/radios/indicators/adf1_bearing_deg_mag",-1);
+    float *adf1_bearing = link_dataref_flt ("sim/cockpit2/radios/indicators/adf1_relative_bearing_deg",-1);
     if (*adf1_bearing != FLT_MISS) brngAdf1 = *adf1_bearing; else brngAdf1 = 0;
-    float *adf2_bearing = link_dataref_flt ("sim/cockpit2/radios/indicators/adf2_bearing_deg_mag",-1);
+    float *adf2_bearing = link_dataref_flt ("sim/cockpit2/radios/indicators/adf2_relative_bearing_deg",-1);
     if (*adf2_bearing != FLT_MISS) brngAdf2 = *adf2_bearing; else brngAdf2 = 0;
     int *efis1_select = link_dataref_int ("sim/cockpit2/EFIS/EFIS_1_selection_pilot"); // 0=ADF, 1=off, 2=VOR
     if (*efis1_select != FLT_MISS) efis1Select = *efis1_select; else efis1Select = 1;
     int *efis2_select = link_dataref_int ("sim/cockpit2/EFIS/EFIS_2_selection_pilot"); // 0=ADF, 1=off, 2=VOR
     if (*efis2_select != FLT_MISS) efis2Select = *efis2_select; else efis2Select = 1;
-    float *heading_mag = link_dataref_flt ("im/cockpit2/gauges/indicators/compass_heading_deg_mag",-1);
+    float *heading_mag = link_dataref_flt ("sim/cockpit2/gauges/indicators/compass_heading_deg_mag",-1);
     if (*heading_mag != FLT_MISS) hdngMag = *heading_mag; else hdngMag = 0;
   if (verbosity > 1) {
 
