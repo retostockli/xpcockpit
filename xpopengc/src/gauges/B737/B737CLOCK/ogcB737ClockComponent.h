@@ -47,6 +47,7 @@ namespace OpenGC {
 
     protected:
       int m_Font;
+      int m_DigiFont;
       
   };
 

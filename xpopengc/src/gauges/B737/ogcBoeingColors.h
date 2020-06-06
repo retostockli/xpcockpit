@@ -1,15 +1,14 @@
 /*=============================================================================
 
-  This is the ogcB737Clock.h header to ogcB737Clock.cpp
+  This is the ogcBoeingColors.h header defining Boeing color names
 
   Created:
-    Date:        2011-11-14
-    Author:      Hans Jansen
-    last change: 2020-01-22
-    (see ogcSkeletonGauge.cpp for more details)
+    Date:   2020-06-01
+    Author: Reto Stockli
+    (see ogcSkeletonGauge.c for more details)
 
-  Copyright (C) 2011-2020 Hans Jansen (hansjansen@users.sourceforge.net)
-  and/or                  Reto Stöckli (stockli@users.sourceforge.net)
+  Copyright (C) 2011-2020 Hans Jansen 
+  and/or                  Reto Stöckli 
 
   This program is free software: you can redistribute it and/or modify it under
   the terms of the GNU General Public License as published by the Free Software
@@ -26,28 +25,30 @@
 =============================================================================*/
 
 /**
- * B737 style Main-Panel Clock
+ * Boeing style Colors
  */
 
-#ifndef OGCB737Clock_H
-#define OGCB737Clock_H
+#ifndef BOEINGCOLORS_H
+#define BOEINGCOLORS_H
 
-#include "ogcGauge.h"
-#include "../ogcBoeingColors.h"
+/* STANDARD */
+#define COLOR_BLACK 0, 0, 0
+#define COLOR_BLUE 0, 0, 255
+#define COLOR_GREEN 0, 255, 0
+#define COLOR_RED 255, 0, 0
+#define COLOR_CYAN 0, 255, 255
+#define COLOR_MAGENTA 255, 0, 255
+#define COLOR_YELLOW 255, 255, 0
+#define COLOR_WHITE 255, 255, 255
 
-extern int verbosity;
+#define COLOR_GRAY25 64, 64, 64
+#define COLOR_GRAY40 100, 100, 100
+#define COLOR_GRAY50 128, 128, 128
+#define COLOR_GRAY75 192, 192, 192
 
-namespace OpenGC {
+/* SPECIFIC */
+#define COLOR_DARKVIOLETT 30, 14, 34
 
-  class B737Clock : public Gauge {
+#endif // BOEINGCOLORS_H
 
-    public:
-      B737Clock ();
-      virtual ~B737Clock ();
-      void Render ();
 
-  };
-
-} // end namespace OpenGC
-
-#endif

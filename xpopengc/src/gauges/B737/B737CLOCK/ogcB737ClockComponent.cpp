@@ -46,7 +46,8 @@ namespace OpenGC {
   B737ClockComponent::B737ClockComponent () {
     if (verbosity > 0) printf("ogcB737ClockComponent - constructing\n");
 
-    m_Font = m_pFontManager->LoadFont((char*) "CockpitScreens.ttf");
+    m_Font = m_pFontManager->LoadDefaultFont();
+    m_DigiFont = m_pFontManager->LoadFont((char*) "digital.ttf");
 
     m_PhysicalPosition.x = 0;
     m_PhysicalPosition.y = 0;
@@ -56,7 +57,7 @@ namespace OpenGC {
 
     m_Scale.x = 1.0;
     m_Scale.y = 1.0;
-
+    
     if (verbosity > 2) printf ("ogcB737ClockComponent - constructed\n");
   }
 
@@ -65,165 +66,307 @@ namespace OpenGC {
  
   void B737ClockComponent::Render () {
 
-    float fontHeight = 4;
-    float fontWidth = 3.5;
-    char buff[36];
+    int acf_type = m_pDataSource->GetAcfType();
+    if ((acf_type == 2) || (acf_type == 3)) {
 
-    // Call base class to setup for size and position
-    GaugeComponent::Render ();
+      float fontHeight = 4;
+      float fontWidth = 4;
+      char buff[36];
 
-    // Request the datarefs we want to use
+      // Call base class to setup for size and position
+      GaugeComponent::Render ();
 
-    //    int *cy = link_dataref_int ("sim/cockpit2/clock_timer/current_year");        // not defined in sim & not used here
-    int *cm = link_dataref_int ("sim/cockpit2/clock_timer/current_month");
-    int *cd = link_dataref_int ("sim/cockpit2/clock_timer/current_day");
-    int *zth = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_hours");
-    int *ztm = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_minutes");
-    int *zts = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_seconds");
-    int *ds = link_dataref_int ("sim/cockpit2/clock_timer/date_is_showing");
-    int *tr = link_dataref_int ("sim/cockpit2/clock_timer/timer_running");      
-    int *eth = link_dataref_int ("sim/cockpit2/clock_timer/elapsed_time_hours"); 
-    int *etm = link_dataref_int ("sim/cockpit2/clock_timer/elapsed_time_minutes");
-    int *ets = link_dataref_int ("sim/cockpit2/clock_timer/elapsed_time_seconds");
-    float *trt = link_dataref_flt ("sim/time/total_running_time_sec", 0);
+      // Request the datarefs we want to use
 
-    /* Draw the Dial */
+      //    int *cy = link_dataref_int ("sim/cockpit2/clock_timer/current_year");        // not defined in sim & not used here
+      int *mon = link_dataref_int ("sim/cockpit2/clock_timer/current_month");
+      int *day = link_dataref_int ("sim/cockpit2/clock_timer/current_day");
+      int *zth = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_hours");
+      int *ztm = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_minutes");
+      int *lth = link_dataref_int ("sim/cockpit2/clock_timer/local_time_hours");
+      int *ltm = link_dataref_int ("sim/cockpit2/clock_timer/local_time_minutes");
+      int *et_mode = link_dataref_int("laminar/B738/clock/captain/et_mode");
+      int *c_mode = link_dataref_int ("laminar/B738/clock/captain/chrono_mode");
+      int *c_disp = link_dataref_int ("laminar/B738/clock/chrono_display_mode_capt");
+      int *t_disp = link_dataref_int ("laminar/B738/clock/clock_display_mode_capt");
+      int *eth = link_dataref_int ("laminar/B738/clock/captain/et_hours");
+      int *etm = link_dataref_int ("laminar/B738/clock/captain/et_minutes");
+      int *ets = link_dataref_int ("laminar/B738/clock/captain/et_seconds");
+      int *cm = link_dataref_int ("laminar/B738/clock/captain/chrono_minutes");
+      int *cs = link_dataref_int ("laminar/B738/clock/captain/chrono_seconds");
+   
+      /* Draw the Dial */
+
+      if ((*zth != INT_MISS) && (*ztm != INT_MISS)) {
     
-    // For drawing circles
-    CircleEvaluator aCircle;
+	// For drawing circles
+	CircleEvaluator aCircle;
 
-    double partSize = m_PhysicalSize.x;	// defines total component size (just for name simplification) (always square!)
-    double partCenter = partSize / 2;		// defines component center
+	float partSize = m_PhysicalSize.x; // defines total component size (square part!)
+	float partCenter = partSize / 2;   // defines component center
+      
+      
+	/* Draw from Center */
+	glPushMatrix();
+	glTranslated(partCenter, partCenter, 0);
+      
+      
+	// The background of the dial
+      
+	glColor3ub(COLOR_GRAY25);
+	glBegin(GL_POLYGON);
+	glVertex2f(-partSize/2,-partSize/2*0.65);
+	glVertex2f(-partSize/2*0.65,-partSize/2);
+	glVertex2f(+partSize/2*0.65,-partSize/2);
+	glVertex2f(+partSize/2,-partSize/2*0.65);
+	glVertex2f(+partSize/2,+partSize/2*0.65);
+	glVertex2f(+partSize/2*0.65,+partSize/2);
+	glVertex2f(-partSize/2*0.65,+partSize/2);
+	glVertex2f(-partSize/2,+partSize/2*0.65);
+	glEnd();
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(-partSize/2*0.82,-partSize/2*0.45);
+	glVertex2f(-partSize/2*0.45,-partSize/2*0.82);
+	glVertex2f(+partSize/2*0.45,-partSize/2*0.82);
+	glVertex2f(+partSize/2*0.82,-partSize/2*0.45);
+	glVertex2f(+partSize/2*0.82,+partSize/2*0.45);
+	glVertex2f(+partSize/2*0.45,+partSize/2*0.82);
+	glVertex2f(-partSize/2*0.45,+partSize/2*0.82);
+	glVertex2f(-partSize/2*0.82,+partSize/2*0.45);
+	glEnd();
+      
+	glColor3ub(COLOR_DARKVIOLETT);
+	aCircle.SetOrigin(0, 0);
+	aCircle.SetRadius(partSize*0.81/2);
+	aCircle.SetDegreesPerPoint(5);
+	aCircle.SetArcStartEnd(0.0,360.0);
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2f(0,partSize*0.81/2);
+	glVertex2f(partSize*0.81/2,0);
+	aCircle.Evaluate();
+	glVertex2f(0,0);
+	glEnd();
+      
+	glPopMatrix();
 
-    m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
+	// Buttons
+	glColor3ub(COLOR_WHITE); // White
+	m_pFontManager->SetSize(m_Font, 0.7*fontWidth, 0.8*fontHeight);
+	m_pFontManager->Print(partSize*0.015, partSize*0.3, "ET", m_Font );
+	m_pFontManager->Print(partSize*0.3, partSize*0.025, "RESET", m_Font );
+	m_pFontManager->Print(partSize*0.225, partSize*0.925, "CHR", m_Font );
+	m_pFontManager->Print(partSize*0.45, partSize*0.925, "TIME/DATE", m_Font );
+	m_pFontManager->Print(partSize*0.91, partSize*0.675, "SET", m_Font );
+	m_pFontManager->Print(partSize*0.7, partSize*0.025, "-", m_Font );
+	m_pFontManager->Print(partSize*0.94, partSize*0.3, "+", m_Font );
 
-    glPushMatrix();
-    glTranslated(partCenter, partCenter, 0);
+	float ox;
+	float oy;
+	float dx;
+	float dy;
+	glColor3ub(COLOR_BLACK);
+	// CHR Button
+	glBegin(GL_POLYGON);
+	ox = partSize*0.05;
+	oy = partSize*0.85;
+	dx = partSize*0.075;
+	dy = partSize*0.075;
+	glVertex2f(ox,oy);
+	glVertex2f(ox+dx,oy-dy);
+	glVertex2f(ox+2.5*dx,oy+0.5*dy);
+	glVertex2f(ox+1.5*dx,oy+1.5*dy);
+	glEnd();
+	// ET Button
+	glBegin(GL_POLYGON);
+	ox = partSize*0.015;
+	oy = partSize*0.21;
+	dx = partSize*0.06;
+	dy = partSize*0.06;
+	glVertex2f(ox,oy);
+	glVertex2f(ox+1.5*dx,oy-1.5*dy);
+	glVertex2f(ox+2.5*dx,oy-0.5*dy);
+	glVertex2f(ox+dx,oy+dy);
+	glEnd();
+	// RESET Button
+	glBegin(GL_POLYGON);
+	ox = partSize*0.015+1.6*dx;
+	oy = partSize*0.21-1.6*dy;
+	glVertex2f(ox,oy);
+	glVertex2f(ox+1.5*dx,oy-1.5*dy);
+	glVertex2f(ox+2.5*dx,oy-0.5*dy);
+	glVertex2f(ox+dx,oy+dy);
+	glEnd();
+	// TIME/DATE Button
+	glBegin(GL_POLYGON);
+	ox = partSize*0.735;
+	oy = partSize*0.925;
+	dx = partSize*0.06;
+	dy = partSize*0.06;
+	glVertex2f(ox,oy);
+	glVertex2f(ox+1.5*dx,oy-1.5*dy);
+	glVertex2f(ox+2.5*dx,oy-0.5*dy);
+	glVertex2f(ox+dx,oy+dy);
+	glEnd();
+	// SET Button
+	glBegin(GL_POLYGON);
+	ox = partSize*0.735+1.6*dx;
+	oy = partSize*0.925-1.6*dy;
+	dx = partSize*0.06;
+	dy = partSize*0.06;
+	glVertex2f(ox,oy);
+	glVertex2f(ox+1.5*dx,oy-1.5*dy);
+	glVertex2f(ox+2.5*dx,oy-0.5*dy);
+	glVertex2f(ox+dx,oy+dy);
+	glEnd();
+	// - Button
+	glBegin(GL_POLYGON);
+	ox = partSize*0.735;
+	oy = partSize*0.084;
+	dx = partSize*0.06;
+	dy = partSize*0.06;
+	glVertex2f(ox,oy);
+	glVertex2f(ox+dx,oy-dy);
+	glVertex2f(ox+2.5*dx,oy+0.5*dy);
+	glVertex2f(ox+1.5*dx,oy+1.5*dy);
+	glEnd();
+	// + Button
+	glBegin(GL_POLYGON);
+	ox = partSize*0.735+1.6*dx;
+	oy = partSize*0.084+1.6*dy;
+	dx = partSize*0.06;
+	dy = partSize*0.06;
+	glVertex2f(ox,oy);
+	glVertex2f(ox+dx,oy-dy);
+	glVertex2f(ox+2.5*dx,oy+0.5*dy);
+	glVertex2f(ox+1.5*dx,oy+1.5*dy);
+	glEnd();
+        
+  
+	// The tick marks
+	glColor3ub( COLOR_WHITE ); // White
+	glPushMatrix();
+	glTranslated(partCenter, partCenter, 0);
+	for ( int i=1; i<=60; i++ ) {
+	  glRotated(-6.0,0,0,1);
+	  if ( i % 5 == 0 ) {
+	    glLineWidth(4.0);
+	    glBegin(GL_LINES);
+	    glVertex2f(0,partSize*0.675/2);
+	    glVertex2f(0,partSize*0.80/2);
+	    glEnd();
+	  } else {
+	    glLineWidth(2.0);
+	    glBegin(GL_LINES);
+	    glVertex2f(0,partSize*0.675/2);
+	    glVertex2f(0,partSize*0.75/2);
+	    glEnd();
+	  }
+	}
+	glPopMatrix();
 
-    // The rim of the dial
-    glColor3ub(100,100,120); // lighter Gray-blue
-    aCircle.SetOrigin(0, 0);
-    aCircle.SetRadius(partSize/2);
-    aCircle.SetDegreesPerPoint(5);
-    aCircle.SetArcStartEnd(0.0,360.0);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(0,partSize/2);
-    glVertex2f(partSize/2,0);
-    aCircle.Evaluate();
-    glVertex2f(0,0);
-    glEnd();
+	// The Seconds Digits of the Dial
+	float d_r  = partSize * 0.315;
+	float d_rx = d_r * 0.82;
+	float d_ry = d_r * 0.5;
+	float d_h  = fontHeight * 0.5;
+	float d_f  = fontHeight * 0.125;
+	float d_w  = fontWidth; // width of a single character (non-proportional font!)
+	m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
+	m_pFontManager->Print( partCenter - d_w + d_f,        partCenter - d_h - d_r  + d_f, "30", m_Font );
+	m_pFontManager->Print( partCenter - d_w + d_rx,       partCenter - d_h - d_ry + d_f, "20", m_Font );
+	m_pFontManager->Print( partCenter - d_w + d_rx,       partCenter - d_h + d_ry - d_f, "10", m_Font );
+	m_pFontManager->Print( partCenter - d_w + d_f,        partCenter - d_h + d_r  - d_f, "60", m_Font );
+	m_pFontManager->Print( partCenter - d_w - d_rx + 2*d_f, partCenter - d_h + d_ry - d_f, "50", m_Font );
+	m_pFontManager->Print( partCenter - d_w - d_rx + 2*d_f, partCenter - d_h - d_ry + d_f, "40", m_Font );
 
-    // The background of the dial
-    glColor3ub(10,10,20); // darker Gray-blue
-    aCircle.SetOrigin(0, 0);
-    aCircle.SetRadius(partSize*0.93/2);
-    aCircle.SetDegreesPerPoint(5);
-    aCircle.SetArcStartEnd(0.0,360.0);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(0,partSize*0.93/2);
-    glVertex2f(partSize*0.93/2,0);
-    aCircle.Evaluate();
-    glVertex2f(0,0);
-    glEnd();
-    glPopMatrix();
 
-    // The tick marks
-    glColor3ub( 255, 255, 255 ); // White
-    glPushMatrix();
-    glTranslated(partCenter, partCenter, 0);
-    glLineWidth(2.0);
-    for ( int i=1; i<=60; i++ ) {
-      glRotated(-6.0,0,0,1);
-      if ( i % 5 == 0 ) {
-        glBegin(GL_LINES);
-	glVertex2f(0,partSize*0.75/2);
-	glVertex2f(0,partSize*0.90/2);
-        glEnd();
-      } else {
-        glBegin(GL_LINES);
-	glVertex2f(0,partSize*0.75/2);
-	glVertex2f(0,partSize*0.825/2);
-       glEnd();
+	// The hand
+	glPushMatrix(); 
+	glTranslated(partCenter, partCenter, 0);
+	glRotated(*cs * -6.0, 0, 0, 1);
+	glColor3ub( COLOR_WHITE ); 
+	glBegin(GL_POLYGON);
+	glVertex2f(-0.75,partSize*0.775/2);
+	glVertex2f(0.75,partSize*0.775/2);
+	glVertex2f(0.25,partSize*0.45/2);
+	glVertex2f(-0.25,partSize*0.45/2);
+	glEnd();
+	glPopMatrix();
+
+	// The states
+	glColor3ub (COLOR_WHITE);
+	m_pFontManager->SetSize (m_Font, 0.5*fontWidth, 0.5*fontHeight);
+	if (*et_mode == 1) {
+	  m_pFontManager->Print(partSize*0.22, partSize*0.15, "RUN", m_Font );
+	} else {
+	  m_pFontManager->Print(partSize*0.22, partSize*0.15, "HLD", m_Font );
+	}
+	if ((*t_disp == 1) || (*t_disp == 2)) {
+	  m_pFontManager->Print(partSize*0.72, partSize*0.8225, "UTC", m_Font );
+	} else {
+	  m_pFontManager->Print(partSize*0.72, partSize*0.8225, "MAN", m_Font );
+	}
+      
+	// The displays
+	glColor3ub (COLOR_WHITE);
+	if ((*t_disp == 1) || (*t_disp == 3)) {
+	  // time display
+	  m_pFontManager->SetSize (m_Font, 0.8*fontWidth, 0.8*fontHeight);
+	  m_pFontManager->Print ( partCenter-1.5*fontWidth, partCenter+1.4*2.5*fontHeight, "TIME", m_Font);
+	  m_pFontManager->SetSize (m_DigiFont, 2.5*fontWidth, 2.5*fontHeight);
+	  if (*t_disp == 1) {
+	    sprintf (buff, "%02d", *zth);
+	  } else {
+	    sprintf (buff, "%02d", *lth);
+	  }
+	  m_pFontManager->Print ( partCenter-1.4*2.5*fontWidth, partCenter+0.3*2.5*fontHeight, buff, m_DigiFont);
+	  sprintf (buff, ":");
+	  m_pFontManager->Print ( partCenter-0.3*2.5*fontWidth, partCenter+0.3*2.5*fontHeight, buff, m_DigiFont);
+	  if (*t_disp == 1) {	
+	    sprintf (buff, "%02d", *ztm);
+	  } else {
+	    sprintf (buff, "%02d", *ltm);
+	  }
+	  m_pFontManager->Print ( partCenter+0.2*2.5*fontWidth, partCenter+0.3*2.5*fontHeight, buff, m_DigiFont);
+	} else {
+	  // date display
+	  m_pFontManager->SetSize (m_Font, 0.8*fontWidth, 0.8*fontHeight);
+	  m_pFontManager->Print ( partCenter-1.5*fontWidth, partCenter+1.4*2.5*fontHeight, "DATE", m_Font);
+	  m_pFontManager->SetSize (m_DigiFont, 2.5*fontWidth, 2.5*fontHeight);
+	  sprintf (buff, "%02d", *mon);
+	  m_pFontManager->Print ( partCenter-1.4*2.5*fontWidth, partCenter+0.3*2.5*fontHeight, buff, m_DigiFont);
+	  sprintf (buff, "%02d", *day);
+	  m_pFontManager->Print ( partCenter+0.2*2.5*fontWidth, partCenter+0.3*2.5*fontHeight, buff, m_DigiFont);
+	}
+	if (*c_disp == 1) {
+	  // ET display
+	  m_pFontManager->SetSize (m_Font, 0.8*fontWidth, 0.8*fontHeight);
+	  m_pFontManager->Print ( partCenter-2.0*fontWidth, partCenter-1.8*2.5*fontHeight, "ET", m_Font);
+	  m_pFontManager->SetSize (m_DigiFont, 2.5*fontWidth, 2.5*fontHeight);
+	  sprintf (buff, "%02d", *eth);
+	  m_pFontManager->Print ( partCenter-1.4*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
+	  sprintf (buff, ":");
+	  m_pFontManager->Print ( partCenter-0.3*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
+	  sprintf (buff, "%02d", *etm);
+	  m_pFontManager->Print ( partCenter+0.2*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
+	} else {
+	  // CHR display
+	  m_pFontManager->SetSize (m_Font, 0.8*fontWidth, 0.8*fontHeight);
+	  m_pFontManager->Print ( partCenter+0.5*fontWidth, partCenter-1.8*2.5*fontHeight, "CHR", m_Font);
+	  m_pFontManager->SetSize (m_DigiFont, 2.5*fontWidth, 2.5*fontHeight);
+	  sprintf (buff, "%02d", *cm);
+	  m_pFontManager->Print ( partCenter-1.4*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
+	  sprintf (buff, ":");
+	  m_pFontManager->Print ( partCenter-0.3*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
+	  sprintf (buff, "%02d", *cs);
+	  m_pFontManager->Print ( partCenter+0.2*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
+	}
+
       }
-    }
-    glPopMatrix();
 
-    // The minutes digits
-    int cl_i = (int) partSize * 0.33;
-    int cl_m = (int) partSize * 0.36;
-    int cl_o = (int) partSize * 0.39;
-    int d_r  = (int) partSize * 0.35;
-    int d_rx = (int) d_r * 0.82;
-    int d_ry = (int) d_r * 0.5;
-    int d_h  = (int) fontHeight * 0.5;
-    int d_f  = (int) fontHeight * 0.125;
-    int d_w  = (int) fontWidth;        // width of a single character (non-proportional font!)
-    m_pFontManager->Print( partSize/2 - d_w,        partSize/2 - d_h - d_r  - d_f, "30", m_Font );
-    m_pFontManager->Print( partSize/2 - d_w + d_rx, partSize/2 - d_h - d_ry - d_f, "20", m_Font );
-    m_pFontManager->Print( partSize/2 - d_w + d_rx, partSize/2 - d_h + d_ry - d_f, "10", m_Font );
-    m_pFontManager->Print( partSize/2 - d_w,        partSize/2 - d_h + d_r  - d_f, "60", m_Font );
-    m_pFontManager->Print( partSize/2 - d_w - d_rx, partSize/2 - d_h + d_ry - d_f, "50", m_Font );
-    m_pFontManager->Print( partSize/2 - d_w - d_rx, partSize/2 - d_h - d_ry - d_f, "40", m_Font );
-
-    // The hands
-    glTranslated(partCenter, partCenter, 0);
-
-    glPushMatrix(); // Seconds
-    glRotated(*zts * -6.0, 0, 0, 1);
-    glColor3ub( 255, 255, 0 ); // Yellow
-    glBegin(GL_POLYGON);
-    glVertex2f(-1,0);
-    glVertex2f(-1,partSize*0.68/2);
-    glVertex2f(0,partSize*0.78/2);
-    glVertex2f(1,partSize*0.68/2);
-    glVertex2f(1,0);
-    glEnd();
-    glPopMatrix();
-
-    glPushMatrix(); // Central disc
-    glColor3ub(100, 100, 100); // somewhat darker Yellow
-    aCircle.SetOrigin(0, 0);
-    aCircle.SetRadius(partSize*0.07/2);
-    aCircle.SetDegreesPerPoint(15);
-    aCircle.SetArcStartEnd(0.0,360.0);
-    glBegin(GL_POLYGON);
-    aCircle.Evaluate();
-    glEnd();
-    glPopMatrix();
-
-    glTranslated(-partCenter, -partCenter, 0);
-
-    // The borders of the displays
-    /*
-    glColor3ub (255,255,255);
-    glBegin (GL_LINE_STRIP);
-    glVertex2f ( 20, 120); glVertex2f (150, 120); glVertex2f (150,  85); glVertex2f ( 20,  85); glVertex2f ( 20, 120);
-    glEnd ();
-    glBegin (GL_LINE_STRIP);
-    glVertex2f ( 35,  50); glVertex2f (130,  50); glVertex2f (130,  15); glVertex2f ( 35,  15); glVertex2f ( 35,  50);
-    glEnd ();
-    */
-    
-    // The texts
-    glColor3ub (255,255,255);
-    m_pFontManager->SetSize (m_Font, fontHeight, fontWidth);
-    m_pFontManager->Print ( 35, 45, "GMT", m_Font);
-    m_pFontManager->Print ( 30, 32, "ET/CHR", m_Font);
-
-    // The displays
-    glColor3ub (255,255,255);
-    if (*ds == 0) {
-      // normal time display
-      m_pFontManager->SetSize (m_Font, 2.5*fontHeight, 2.5*fontWidth);
-      sprintf (buff, "%02d:%02d", *zth, *ztm); m_pFontManager->Print ( 20,  50, buff, m_Font);
-    } else {
-      // date display
-      m_pFontManager->SetSize (m_Font, 2.5*fontHeight, 2.5*fontWidth);
-      m_pFontManager->Print (113,  95, "  ", m_Font);
-      sprintf (buff, "%02d:%02d", *cm, *cd);
-      m_pFontManager->Print ( 20,  50, buff, m_Font);
-    }
-
+    } // if ZIBO737
+				    
   } // end Render()
 
 } // end namespace OpenGC

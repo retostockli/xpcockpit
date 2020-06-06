@@ -50,7 +50,7 @@ namespace OpenGC {
     m_PhysicalSize.y = 80;
 
     // We do not want to draw an outline
-    this->SetGaugeOutline (true);
+    this->SetGaugeOutline (false);
 
     // The face of the Clock
     B737ClockComponent* clkComp = new B737ClockComponent ();
