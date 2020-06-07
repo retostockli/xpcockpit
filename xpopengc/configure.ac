@@ -56,9 +56,9 @@ AC_MSG_RESULT([$debugit])
 if test "x$debugit" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
 # DEBUGGING USING LEAK CHECK
-    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
+#    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
 # REGULAR DEBUGGING
-#    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized"
+    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized"
 # DEBUGGING USING GPROF PROFILING
 #    CXXFLAGS="$CXXFLAGS -pg -g -Wall -Wno-uninitialized"
 else
