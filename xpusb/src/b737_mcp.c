@@ -120,7 +120,7 @@ void b737_mcp(void)
   int *ap_at_arm_status;
   int *ap_mcpspd;
   int *ap_mcpspd_led;
-  if ((acf_type == 2) || (acf_type == 3)) {
+  if (acf_type == 3) {
     ap_cmd_a = link_dataref_cmd_hold("laminar/B738/autopilot/cmd_a_press");     // MCP CMD A mode
     ap_cmd_a_led = link_dataref_int("laminar/B738/autopilot/cmd_a_status");
     ap_cmd_b = link_dataref_cmd_hold("laminar/B738/autopilot/cmd_b_press");     // MCP CMD B mode
@@ -247,14 +247,18 @@ void b737_mcp(void)
   int *master_caution_fo;
   int *fire_warn_cp;
   int *fire_warn_fo;
-  float *master_cautionf_cp;
-  float *master_cautionf_fo;
-  float *fire_warnf_cp;
-  float *fire_warnf_fo;
+  float *master_caution_cp_f;
+  float *master_caution_fo_f;
+  float *fire_warn_cp_f;
+  float *fire_warn_fo_f;
   int *master_caution_cp_light;
   int *master_caution_fo_light;
+  float *master_caution_cp_light_f;
+  float *master_caution_fo_light_f;
   int *fire_warn_cp_light;
   int *fire_warn_fo_light;
+  float *fire_warn_cp_light_f;
+  float *fire_warn_fo_light_f;
   
   int *sixpack_flt_cont;
   int *sixpack_irs;
@@ -262,6 +266,12 @@ void b737_mcp(void)
   int *sixpack_elec;
   int *sixpack_apu;
   int *sixpack_overheat;
+  float *sixpack_flt_cont_f;
+  float *sixpack_irs_f;
+  float *sixpack_fuel_f;
+  float *sixpack_elec_f;
+  float *sixpack_apu_f;
+  float *sixpack_overheat_f;
   
   int *sixpack_anti_ice;
   int *sixpack_hyd;
@@ -269,35 +279,41 @@ void b737_mcp(void)
   int *sixpack_eng;
   int *sixpack_overhead;
   int *sixpack_air_cond;
+  float *sixpack_anti_ice_f;
+  float *sixpack_hyd_f;
+  float *sixpack_doors_f;
+  float *sixpack_eng_f;
+  float *sixpack_overhead_f;
+  float *sixpack_air_cond_f;
   if ((acf_type == 2) || (acf_type == 3)) {
     master_caution_cp = link_dataref_cmd_hold("laminar/B738/push_button/master_caution1");
     master_caution_fo = link_dataref_cmd_hold("laminar/B738/push_button/master_caution2");
     fire_warn_cp = link_dataref_cmd_hold("laminar/B738/push_button/fire_bell_light1");
     fire_warn_fo = link_dataref_cmd_hold("laminar/B738/push_button/fire_bell_light2");
-    master_caution_cp_light = link_dataref_int("laminar/B738/annunciator/master_caution_light");
-    master_caution_fo_light = link_dataref_int("laminar/B738/annunciator/master_caution_light");
-    fire_warn_cp_light = link_dataref_int("laminar/B738/annunciator/fire_bell_annun");
-    fire_warn_fo_light = link_dataref_int("laminar/B738/annunciator/fire_bell_annun");
+    master_caution_cp_light_f = link_dataref_flt("laminar/B738/annunciator/master_caution_light",0);
+    master_caution_fo_light_f = link_dataref_flt("laminar/B738/annunciator/master_caution_light",0);
+    fire_warn_cp_light_f = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",0);
+    fire_warn_fo_light_f = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",0);
     
-    sixpack_flt_cont = link_dataref_int("laminar/B738/annunciator/six_pack_flt_cont");
-    sixpack_irs = link_dataref_int("laminar/B738/annunciator/six_pack_irs");
-    sixpack_fuel = link_dataref_int("laminar/B738/annunciator/six_pack_fuel");
-    sixpack_elec = link_dataref_int("laminar/B738/annunciator/six_pack_elec");
-    sixpack_apu = link_dataref_int("laminar/B738/annunciator/six_pack_apu");
-    sixpack_overheat = link_dataref_int("laminar/B738/annunciator/six_pack_fire");
+    sixpack_flt_cont_f = link_dataref_flt("laminar/B738/annunciator/six_pack_flt_cont",0);
+    sixpack_irs_f = link_dataref_flt("laminar/B738/annunciator/six_pack_irs",0);
+    sixpack_fuel_f = link_dataref_flt("laminar/B738/annunciator/six_pack_fuel",0);
+    sixpack_elec_f = link_dataref_flt("laminar/B738/annunciator/six_pack_elec",0);
+    sixpack_apu_f = link_dataref_flt("laminar/B738/annunciator/six_pack_apu",0);
+    sixpack_overheat_f = link_dataref_flt("laminar/B738/annunciator/six_pack_fire",0);
     
-    sixpack_anti_ice = link_dataref_int("laminar/B738/annunciator/six_pack_ice");
-    sixpack_hyd = link_dataref_int("laminar/B738/annunciator/six_pack_hyd");
-    sixpack_doors = link_dataref_int("laminar/B738/annunciator/six_pack_doors");
-    sixpack_eng = link_dataref_int("laminar/B738/annunciator/six_pack_eng");
-    sixpack_overhead = link_dataref_int("laminar/B738/annunciator/six_pack_overhead");
-    sixpack_air_cond = link_dataref_int("laminar/B738/annunciator/six_pack_air_cond");
+    sixpack_anti_ice_f = link_dataref_flt("laminar/B738/annunciator/six_pack_ice",0);
+    sixpack_hyd_f = link_dataref_flt("laminar/B738/annunciator/six_pack_hyd",0);
+    sixpack_doors_f = link_dataref_flt("laminar/B738/annunciator/six_pack_doors",0);
+    sixpack_eng_f = link_dataref_flt("laminar/B738/annunciator/six_pack_eng",0);
+    sixpack_overhead_f = link_dataref_flt("laminar/B738/annunciator/six_pack_overhead",0);
+    sixpack_air_cond_f = link_dataref_flt("laminar/B738/annunciator/six_pack_air_cond",0);
     
   } else if (acf_type == 1) {
-    master_cautionf_cp = link_dataref_flt("x737/cockpit/warningSys/MASTER_CAUTION_capt",0);
-    master_cautionf_fo = link_dataref_flt("x737/cockpit/warningSys/MASTER_CAUTION_fo",0);
-    fire_warnf_cp = link_dataref_flt("x737/cockpit/warningSys/FIRE_WARN_capt",0);
-    fire_warnf_fo = link_dataref_flt("x737/cockpit/warningSys/FIRE_WARN_fo",0);
+    master_caution_cp_f = link_dataref_flt("x737/cockpit/warningSys/MASTER_CAUTION_capt",0);
+    master_caution_fo_f = link_dataref_flt("x737/cockpit/warningSys/MASTER_CAUTION_fo",0);
+    fire_warn_cp_f = link_dataref_flt("x737/cockpit/warningSys/FIRE_WARN_capt",0);
+    fire_warn_fo_f = link_dataref_flt("x737/cockpit/warningSys/FIRE_WARN_fo",0);
     master_caution_cp_light = link_dataref_int("x737/cockpit/warningSys/MASTER_CAUTION_capt_on");
     master_caution_fo_light = link_dataref_int("x737/cockpit/warningSys/MASTER_CAUTION_fo_on");
     fire_warn_cp_light = link_dataref_int("x737/cockpit/warningSys/FIRE_WARN_capt_on");
@@ -346,25 +362,25 @@ void b737_mcp(void)
   
   /* read inputs */
 
-  if ((acf_type == 1 ) || (acf_type == 2) || (acf_type == 3)) {
+  if ((acf_type == 1 ) || (acf_type == 3)) {
     ret = digital_input(device,card,39,&temp,0);
     if ((ret==1) && (temp==1)) printf("MASTER CAUTION (FO) \n");
     if (acf_type == 1) {
-      *master_cautionf_fo = (float) temp;
+      *master_caution_fo_f = (float) temp;
     } else {
       *master_caution_fo = temp;
     }
     ret = digital_input(device,card,40,&temp,0);
     if ((ret==1) && (temp==0)) printf("FIRE WARN CP \n");
     if (acf_type == 1) {
-      *fire_warnf_cp = (float) 1-temp;
+      *fire_warn_cp_f = (float) 1-temp;
     } else {
       *fire_warn_cp = 1-temp;
     }
     ret = digital_input(device,card,41,&temp,0);
     if ((ret == 1) && (temp == 0)) printf("MASTER CAUTION CP \n");
     if (acf_type == 1) {
-      *master_cautionf_cp = (float) 1-temp;
+      *master_caution_cp_f = (float) 1-temp;
     } else {
       *master_caution_cp = 1-temp;
     }
@@ -372,7 +388,7 @@ void b737_mcp(void)
     ret = digital_input(device,card,42,&temp,0);
     if ((ret==1) && (temp==1)) printf("FIRE WARN FO \n");
     if (acf_type == 1) {
-      *fire_warnf_fo = (float) temp;
+      *fire_warn_fo_f = (float) temp;
     } else {
       *fire_warn_fo = temp;
     }
@@ -417,7 +433,7 @@ void b737_mcp(void)
   }
 
  
-  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+  if ((acf_type == 1) || (acf_type == 3)) {
     ret = digital_input(device,card,20,ap_cmd_a,0);
     if (ret == 1) {
       printf("CMD A pressed\n");
@@ -668,7 +684,21 @@ void b737_mcp(void)
   ret = digital_output(device,card,49,avionics_on);
 
   /* MASTER CAUTION Annunciator: relais #2 */
-  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+  if ((acf_type == 2) || (acf_type == 3)) {
+    if ((*master_caution_cp_light_f == 1) || (*master_caution_fo_light_f == 1)) {
+      ret = digital_output(device,card,50,&one);
+    } else {
+      ret = digital_output(device,card,50,&zero);
+    }
+    
+    /* FIRE WARN Annunciator: relais #3 */
+    if ((*fire_warn_cp_light_f == 1) || (*fire_warn_fo_light_f == 1)) {
+      ret = digital_output(device,card,51,&one);
+    } else {
+      ret = digital_output(device,card,51,&zero);
+    }
+  }
+  if (acf_type == 1) {
     if ((*master_caution_cp_light == 1) || (*master_caution_fo_light == 1)) {
       ret = digital_output(device,card,50,&one);
     } else {
@@ -703,8 +733,21 @@ void b737_mcp(void)
   /* EFIS backlighting: relais #7 */
   ret = digital_output(device,card,55,avionics_on);
   
-  /* SIX PACK CP side */
-  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+  /* SIX PACK CP/FO side */
+  if ((acf_type == 2) || (acf_type == 3)) {
+    ret = digital_outputf(device,card,37,sixpack_eng_f); // FO ENG
+    ret = digital_outputf(device,card,38,sixpack_overhead_f); // FO OVERHEAD
+    ret = digital_outputf(device,card,39,sixpack_air_cond_f); // FO AIR COND
+    ret = digital_outputf(device,card,40,sixpack_anti_ice_f); // FO ANTI-ICE
+    ret = digital_outputf(device,card,41,sixpack_hyd_f); // FO HYD
+    ret = digital_outputf(device,card,42,sixpack_doors_f); // FO DOORS
+    ret = digital_outputf(device,card,43,sixpack_flt_cont_f); // CP FLT CONT
+    ret = digital_outputf(device,card,44,sixpack_irs_f); // CP IRS
+    ret = digital_outputf(device,card,45,sixpack_fuel_f); // CP FUEL
+    ret = digital_outputf(device,card,46,sixpack_elec_f); // CP ELEC
+    ret = digital_outputf(device,card,47,sixpack_apu_f); // CP APU
+    ret = digital_outputf(device,card,48,sixpack_overheat_f); // CP OVERHEAT
+  } else if (acf_type == 1) {
     ret = digital_output(device,card,37,sixpack_eng); // FO ENG
     ret = digital_output(device,card,38,sixpack_overhead); // FO OVERHEAD
     ret = digital_output(device,card,39,sixpack_air_cond); // FO AIR COND

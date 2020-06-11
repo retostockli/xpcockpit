@@ -113,7 +113,6 @@ void b737_pedestal(void)
   float *fire_eng2_pulled_status;
   float *fire_eng2_rotate_status;
   if ((acf_type == 2) || (acf_type == 3)) {
-    fire_test = link_dataref_int("laminar/B738/toggle_switch/fire_test"); // -1: fault, 0: off, 1: ovht
     fire_test_fault = link_dataref_cmd_hold("laminar/B738/toggle_switch/fire_test_lft"); 
     fire_test_ovht = link_dataref_cmd_hold("laminar/B738/toggle_switch/fire_test_rgt"); 
     fire_eng_ext_test_left = link_dataref_cmd_hold("laminar/B738/toggle_switch/exting_test_lft"); 

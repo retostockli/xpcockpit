@@ -114,6 +114,7 @@ int initialize_iocardsdata(void);
 int copy_iocardsdata(void);
 
 int get_acceleration (int device, int card, int input, int accelerator);
+int digital_outputf(int device, int card, int output, float *fvalue);
 int digital_output(int device, int card, int output, int *value);
 int digital_input(int device, int card, int input, int *value, int type);
 int mastercard_encoder(int device, int card, int input, float *value, float multiplier, int accelerator, int type);

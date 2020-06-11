@@ -360,6 +360,23 @@ int copy_iocardsdata(void)
 
 }
 
+/* wrapper for digital_output when supplying floating point value 
+   Values < 0.5 are set to 0 output and values >= 0.5 are set to 1 output */
+int digital_outputf(int device, int card, int output, float *fvalue) {
+
+  int value;
+  
+  if (*fvalue == FLT_MISS) {
+    value = INT_MISS;
+  } else if (*fvalue >= 0.5) {
+    value = 1;
+  } else {
+    value = 0;
+  }
+    
+  return digital_output(device, card, output, &value);
+}
+  
 /* fill output value for given output position on MASTERCARD or on DCMotor PLUS Card
    Argument 'card' is not used for DCMotor PLUS Card since it specifies the MASTERCARD
    number for the USB Expansion card*/
