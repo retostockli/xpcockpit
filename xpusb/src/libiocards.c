@@ -1737,7 +1737,7 @@ int send_motors(void)
 
   for (device=0;device<MAXDEVICES;device++) {
 
-    /* check if we have a connected and DCMotors PLUS card */
+    /* check if we have a connected and initialized DCMotors PLUS card */
     if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 1)) {
       
       changed = 0;
@@ -1836,6 +1836,41 @@ int send_motors(void)
 
 }
 
+extern unsigned char* output_chrono320 (void);
+
+/* send values to IOCard-Chrono320 card */
+int send_chrono320 (void) {
+  char device_name[] = "IOCard-Chrono320";
+  int device;
+  int result = 0;
+  int buffersize = 8;
+  unsigned char *new_data;
+  unsigned char send_data[] = { 0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0x0f };
+  int send_status = 0;
+  int changed = 0;
+  int card = 0;
+
+  for (device=0; device < MAXDEVICES; device++) {
+    /* check if we have a connected and initialized Chrono320 card */
+    if (!strcmp (iocard[device].name, device_name) && (iocard[device].status == 1)) {
+      // call the chrono320 module to compose the output report
+      new_data = output_chrono320 (); // Note: result must be freed after use!!
+      // check whether any value changed
+      changed = 0;
+      for (int i = 0; i < buffersize; i++) {
+        if (send_data[i] != new_data[i]) changed = 1;
+        send_data[i] = new_data[i];
+      }
+      if (changed == 1) {
+        int send_status = write_usb (device, send_data, buffersize);
+        result = send_status;
+      } // end (changed)
+      free (new_data);
+    } // end (connected)
+  } // end (loop)
+  return result;
+}
+
 /* receive USB data from a IOCard-USBServos card */
 /* containing the data from the 4 analog axes of the card */
 int receive_axes(void)
@@ -1910,6 +1945,7 @@ int receive_axes(void)
   return result;
 
 }
+
 /* receive USB data from a BU0836X Interface or BU0836A Interface card */
 /* containing the data from the analog axes and the buttons of */
 /* Leo Bodnar's Joystick card */
@@ -1977,6 +2013,37 @@ int receive_bu0836(void)
 
   return result;
 
+}
+
+extern int input_chrono320 (unsigned char*);
+
+/* receive USB data from a IOCard-Chrono320 card */
+/* containing the data from the encoder, switches and buttons of */
+/* the OpenCockpits Chrono-A320 USB-module */
+int receive_chrono320 (void) {
+  char device_name[] = "IOCard-Chrono320";
+  int device;
+  int result = 0;
+  int recv_status;
+  int buffersize = 8;
+  int card = 0;
+  unsigned char recv_data[buffersize]; /* Chrono320 raw input data */
+
+  for (device=0; device<MAXDEVICES; device++) {
+    /* check if we have a connected and initialized IOCard-Chrono320 card */
+    if (!strcmp (iocard[device].name, device_name) && (iocard[device].status == 1)) {
+      /* check whether there is new data on the read buffer */
+      do {
+	recv_status = read_usb (device, recv_data, buffersize);
+	if (recv_status > 0) {
+	  if (verbose > 3) printf ("LIBIOCARDS: received %i bytes from Chrono320 Interface \n", recv_status);
+          // call chrono320 module to process the input record
+          result = input_chrono320 (recv_data);
+	}
+      } while (recv_status > 0);
+    }
+  }
+  return result;
 }
 
 /* sends initialization string to the MASTERCARD */
@@ -2183,6 +2250,43 @@ int initialize_bu0836(int device)
   return result;
 }
 
+/* send initialization string to the IOCard-Chrono320 */
+int initialize_chrono320(int device) {
+
+  char device_name[] = "IOCard-Chrono320";
+  int send_status;
+  int result = 0;
+  int buffersize = 8;
+  unsigned char send_data[] = { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0x0f };
+
+  /* check if we have a connected IOCard-Chrono320 card */
+  if (!strcmp(iocard[device].name,device_name) && (iocard[device].status == 0)) {
+
+    /* allocate input/output buffer */
+    result = setbuffer_usb(device,buffersize);
+
+    iocard[device].ncards = 1;
+    iocard[device].naxes = 0;
+    iocard[device].noutputs = 7;
+    iocard[device].ninputs = 7;
+    iocard[device].nservos = 0;
+    iocard[device].nmotors = 0;
+    iocard[device].ndisplays = 0;
+
+    /* initialize */
+    send_status = write_usb(device, send_data, buffersize);
+
+    if (send_status == sizeof(send_data)) result = 1;
+
+    if (verbose > 0) printf("LIBIOCARDS: Initialized IOCard-Chrono320 (device %i) with %i bytes \n",
+			    device,send_status );
+
+  }
+
+  return result;
+
+}
+
 /* loop through selected devices and check if some have been connected
    or disconnected. Initialize or free devices as needed */
 int initialize_iocards(void)
@@ -2203,7 +2307,7 @@ int initialize_iocards(void)
 	
       ret = check_usb(iocard[device].name,device,iocard[device].vendor,iocard[device].product,
 		      iocard[device].bus, iocard[device].address, iocard[device].path);
-	
+
       if (ret<0) {
 	result = ret;
 	break;
@@ -2213,6 +2317,8 @@ int initialize_iocards(void)
 	if (initialize_mastercard(device) == 1) {
 	  iocard[device].status = 1;
 	} else if (initialize_keys(device) == 1) {
+	  iocard[device].status = 1;
+	} else if (initialize_chrono320(device) == 1) {
 	  iocard[device].status = 1;
 	} else if (initialize_servos(device) == 1) {
 	  iocard[device].status = 1;

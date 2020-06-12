@@ -37,6 +37,7 @@ b737_efis.c \
 b737_yokerudder.c \
 b737_overhead_fwd.c \
 a320_overhead.c \
+a320_chrono.c \
 a320_mcdu_keys.c \
 a320_pedestal_mip.c
 
@@ -67,5 +68,6 @@ b737_efis.h \
 b737_yokerudder.h \
 b737_overhead_fwd.h \
 a320_overhead.h \
+a320_chrono.h \
 a320_mcdu_keys.h \
 a320_pedestal_mip.h
