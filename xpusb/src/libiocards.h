@@ -131,6 +131,8 @@ int receive_mastercard(void);
 int receive_keys(void);
 int receive_axes(void);
 int receive_bu0836(void);
+int send_chrono320(void);
+int receive_chrono320(void);
 int send_servos(void);
 int send_motors(void);
 
@@ -144,5 +146,6 @@ int initialize_usb(void);
 void terminate_usb(void);
 int initialize_mastercard(int device);
 int initialize_keys(int device);
+int initialize_chrono320(int device);
 int initialize_servos(int device);
 int initialize_motors(int device);

@@ -48,6 +48,7 @@
 #include "a320_pedestal_mip.h"	
 #include "a320_overhead.h"	
 #include "a320_mcdu_keys.h"	
+#include "a320_chrono.h"
 
 #include "b737_mcp.h"
 #include "b737_efis.h"
@@ -55,6 +56,8 @@
 #include "b737_throttle.h"
 #include "b737_yokerudder.h"
 #include "b737_overhead_fwd.h"
+
+void a320_chrono (void);
 
 
 /* Main program for data exchange between X-Plane and the OpenCockpits IOCARDS */
@@ -93,6 +96,9 @@ int main (int argc, char **argv)
   /* initialize OpenCockpits and Leo Bodnar's devices */
   if (initialize_iocards()<0) exit_xpusb(-8);
   
+//  /* initialize OpenCockpits Chrono-A320 module */
+//  if (initialize_chrono320() < 0) exit_xpusb(-15);
+
   /* initialize IOCards I/O data */
   if (initialize_iocardsdata()<0) exit_xpusb(-5);
   
@@ -117,15 +123,22 @@ int main (int argc, char **argv)
       /* check for TCP/IP connection to X-Plane */
       if (check_server()<0) exit_xpusb(-13);
       
+      /* receive data from Chrono-A320 module */
+      if (receive_chrono320()<0) exit_xpusb(-16);
+      
       /* receive data from X-Plane via TCP/IP */
       if (receive_server()<0) exit_xpusb(-14);
 
       check_aircraft();
       
       /*** user-space modules begin here ***/
+      if (strcmp(*argv,"a320chrono") == 0) {
+	a320_chrono();
+      }
       if (strcmp(*argv,"a320usb") == 0) {
 	a320_overhead();
 	a320_pedestal_mip();
+	a320_chrono();
 	a320_mcdu_keys();
       }
       if (strcmp("boeing737",*argv) == 0) {
@@ -156,8 +169,8 @@ int main (int argc, char **argv)
 	iocard_test();
       }
       if (strcmp(*argv,"test") == 0) {
-	//iocard_test();
-	usbkeys_test();
+	// iocard_test();
+	// usbkeys_test();
 	// usbservos_test();
 	// dcmotorsplus_test();
 	// bu0836_test();
@@ -173,6 +186,9 @@ int main (int argc, char **argv)
 
       /* send motor, servo and output data to DCMotors PLUS card */
       if (send_motors()<0) exit_xpusb(-22);
+      
+      /* send data from Chrono-A320 module */
+      if (send_chrono320()<0) exit_xpusb(-25);
       
       /* send data to X-Plane via TCP/IP */
       if (send_server()<0) exit_xpusb(-23);
