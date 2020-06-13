@@ -16,15 +16,15 @@
 
 #include "serverdata.h"
 
-int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
+
+int set_state_updnf(float *new_state, float *old_state, int *up, int *dn)
 {
 
   int ret = 0;
   
   if ((new_state) && (old_state) && (up) && (dn)) {
-    if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
+    if ((*new_state != FLT_MISS) && (*old_state != FLT_MISS)) {
 
-      //      if ((*up == 1) || (*up == 2) || (*dn == 1) || (*dn == 2)) {
       if ((*up == 1) || (*dn == 1)) {
 	/* we just upped or downed, so wait for a cycle */
       } else {
@@ -48,7 +48,67 @@ int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
   
 }
 
-int set_state_toggle(int *new_state, int *old_state, int *toggle)
+int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
+{
+
+  int ret = 0;
+  
+  if ((new_state) && (old_state) && (up) && (dn)) {
+    if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
+
+      if ((*up == 1) || (*dn == 1)) {
+	/* we just upped or downed, so wait for a cycle */
+      } else {
+	if (*new_state > *old_state) {
+	  *up = 1;
+	  *dn = 0;
+	  ret = 1;
+	} else if (*new_state < *old_state) {
+	  *up = 0;
+	  *dn = 1;
+	  ret =-1;
+	} else {
+	  /* nothing to do */
+	}
+      }
+
+    }
+  }
+
+  return ret;
+  
+}
+
+int set_state_togglef(float *new_state, float *old_state, int *toggle)
+{
+
+  int ret = 0;
+  
+  if ((new_state) && (old_state) && (toggle)) {
+    if ((*new_state != FLT_MISS) && (*old_state != FLT_MISS)) {
+
+      if (*toggle == 1) {
+	/* we just upped or downed, so wait for a cycle */
+      } else {
+	if (*new_state > *old_state) {
+	  *toggle = 1;
+	  ret = 1;
+	} else if (*new_state < *old_state) {
+	  *toggle = 1;
+	  ret =-1;
+	} else {
+	  /* nothing to do */
+	}
+      }
+
+    }
+  }
+
+  return ret;
+  
+}
+ 
+ int set_state_toggle(int *new_state, int *old_state, int *toggle)
 {
 
   int ret = 0;
@@ -56,7 +116,6 @@ int set_state_toggle(int *new_state, int *old_state, int *toggle)
   if ((new_state) && (old_state) && (toggle)) {
     if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
 
-      //if ((*toggle == 1) || (*toggle == 2)) {
       if (*toggle == 1) {
 	/* we just upped or downed, so wait for a cycle */
       } else {

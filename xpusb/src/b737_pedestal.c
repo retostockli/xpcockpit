@@ -216,19 +216,19 @@ void b737_pedestal(void)
 
 
   int *stab_trim_mode;
-  int *flt_dk_door;
-  int *lock_fail;
-  int *auto_unlk;
+  float *flt_dk_door;
+  float *lock_fail;
+  float *auto_unlk;
   if ((acf_type == 2) || (acf_type == 3)) {
     stab_trim_mode = link_dataref_int("xpserver/stab_trim_mode");
-    flt_dk_door = link_dataref_int("laminar/B738/toggle_switch/flt_dk_door");
-    lock_fail = link_dataref_int("laminar/B738/annunciator/door_lock_fail");
-    auto_unlk = link_dataref_int("laminar/B738/annunciator/door_auto_unlk");
+    flt_dk_door = link_dataref_flt("laminar/B738/toggle_switch/flt_dk_door",0);
+    lock_fail = link_dataref_flt("laminar/B738/annunciator/door_lock_fail",0);
+    auto_unlk = link_dataref_flt("laminar/B738/annunciator/door_auto_unlk",0);
   } else {
     stab_trim_mode = link_dataref_int("xpserver/stab_trim_mode");
-    flt_dk_door = link_dataref_int("xpserver/flt_dk_door");
-    lock_fail = link_dataref_int("xpserver/lock_fail");
-    auto_unlk = link_dataref_int("xpserver/auto_unlk");
+    flt_dk_door = link_dataref_flt("xpserver/flt_dk_door",0);
+    lock_fail = link_dataref_flt("xpserver/lock_fail",0);
+    auto_unlk = link_dataref_flt("xpserver/auto_unlk",0);
   }
     
   float *radio_volume1;
@@ -379,15 +379,15 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("WX Radar Switch: %i \n",test3*5);
   }
-  int autobrake_pos;
+  float autobrake_pos;
   if ((acf_type == 2) || (acf_type == 3)) {
-    autobrake_pos = test + test1*2 + test2*3 + test3*5;
-    int *autobrake = link_dataref_int("laminar/B738/autobrake/autobrake_pos");
+    autobrake_pos = (float) test + test1*2 + test2*3 + test3*5;
+    float *autobrake = link_dataref_flt("laminar/B738/autobrake/autobrake_pos",0);
     int *autobrake_dn = link_dataref_cmd_once("laminar/B738/knob/autobrake_dn");
     int *autobrake_up = link_dataref_cmd_once("laminar/B738/knob/autobrake_up");
-    ret = set_state_updn(&autobrake_pos,autobrake,autobrake_up,autobrake_dn);
+    ret = set_state_updnf(&autobrake_pos,autobrake,autobrake_up,autobrake_dn);
     if (ret == 1) {
-      printf("AUTOBRAKE: %i \n",autobrake_pos);
+      printf("AUTOBRAKE: %f \n",autobrake_pos);
     }
   }
 
@@ -970,7 +970,7 @@ void b737_pedestal(void)
     printf("Flight Deck Door DENY: %i \n",test2);
   }
   if ((test != INT_MISS) && (test2 != INT_MISS)) {
-    *flt_dk_door = test - 1 + test2*2;
+    *flt_dk_door = (float) test - 1 + test2*2;
   }
 
   
@@ -1150,8 +1150,8 @@ void b737_pedestal(void)
   ret = digital_output(device,card,16,avionics_on);
 
   /* Flight Deck Door Lock Indicator */
-  ret = digital_output(device,card,17,lock_fail);
-  ret = digital_output(device,card,18,auto_unlk);
+  ret = digital_outputf(device,card,17,lock_fail);
+  ret = digital_outputf(device,card,18,auto_unlk);
 
   /* update displays */
 
