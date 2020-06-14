@@ -435,6 +435,17 @@ int digital_output(int device, int card, int output, int *value)
   return (retval);
 }
 
+/* wrapper for digital_input with floating point values */
+int digital_inputf(int device, int card, int input, float *fvalue, int type)
+{
+  int value = INT_MISS;
+  if (*fvalue != FLT_MISS) value = (int) lroundf(*fvalue);
+  int ret = digital_input(device, card, input, &value, type);
+  if (value != INT_MISS) *fvalue = (float) value;
+  return ret;
+    
+}
+
 /* retrieve input value from given input position on MASTERCARD or BU0836X/A Interface */
 /* Two types : */
 /* 0: pushbutton */
@@ -775,6 +786,15 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
   }
 
   return(retval);
+}
+
+/* wrapper for floating point inputs */
+int mastercard_displayf(int device, int card, int pos, int n, float *fvalue, int hasspecial)
+{
+
+  int value = INT_MISS;
+  if (*fvalue != FLT_MISS) value = (int) lroundf(*fvalue);
+  return mastercard_display(device, card, pos, n, &value, hasspecial);
 }
 
 /* fill display at given output position on MASTERCARD */
