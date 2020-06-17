@@ -86,6 +86,7 @@ B737MIP::B737MIP()
   ann_nosegreen->setAnnFGColor(0,255,0);
   ann_nosegreen->setAnnDataRefType1(2);
   ann_nosegreen->setAnnDataRef1((char*) "x737/systems/landinggear/noseGearAnn1_green");
+  ann_nosegreen->setAnnDataRefType2(2);
   ann_nosegreen->setAnnDataRef2((char*) "laminar/B738/annunciator/nose_gear_safe");
   this->AddGaugeComponent(ann_nosegreen);
 
@@ -99,6 +100,7 @@ B737MIP::B737MIP()
   ann_nosered->setAnnFGColor(255,100,0);
   ann_nosered->setAnnDataRefType1(2);
   ann_nosered->setAnnDataRef1((char*) "x737/systems/landinggear/noseGearAnn1_red");
+  ann_nosered->setAnnDataRefType2(2);
   ann_nosered->setAnnDataRef2((char*) "laminar/B738/annunciator/nose_gear_transit");
   this->AddGaugeComponent(ann_nosered);
 
@@ -112,6 +114,7 @@ B737MIP::B737MIP()
   ann_leftgreen->setAnnFGColor(0,255,0);
   ann_leftgreen->setAnnDataRefType1(2);
   ann_leftgreen->setAnnDataRef1((char*) "x737/systems/landinggear/leftGearAnn1_green");
+  ann_leftgreen->setAnnDataRefType2(2);
   ann_leftgreen->setAnnDataRef2((char*) "laminar/B738/annunciator/left_gear_safe");
   this->AddGaugeComponent(ann_leftgreen);
 
@@ -125,6 +128,7 @@ B737MIP::B737MIP()
   ann_leftred->setAnnFGColor(255,100,0);
   ann_leftred->setAnnDataRefType1(2);
   ann_leftred->setAnnDataRef1((char*) "x737/systems/landinggear/leftGearAnn1_red");
+  ann_leftred->setAnnDataRefType2(2);
   ann_leftred->setAnnDataRef2((char*) "laminar/B738/annunciator/left_gear_transit");
   this->AddGaugeComponent(ann_leftred);
 
@@ -138,6 +142,7 @@ B737MIP::B737MIP()
   ann_rightgreen->setAnnFGColor(0,255,0);
   ann_rightgreen->setAnnDataRefType1(2);
   ann_rightgreen->setAnnDataRef1((char*) "x737/systems/landinggear/rightGearAnn1_green");
+  ann_rightgreen->setAnnDataRefType2(2);
   ann_rightgreen->setAnnDataRef2((char*) "laminar/B738/annunciator/right_gear_safe");
   this->AddGaugeComponent(ann_rightgreen);
 
@@ -151,6 +156,7 @@ B737MIP::B737MIP()
   ann_rightred->setAnnFGColor(255,100,0);
   ann_rightred->setAnnDataRefType1(2);
   ann_rightred->setAnnDataRef1((char*) "x737/systems/landinggear/rightGearAnn1_red");
+  ann_rightred->setAnnDataRefType2(2);
   ann_rightred->setAnnDataRef2((char*) "laminar/B738/annunciator/right_gear_transit");
   this->AddGaugeComponent(ann_rightred);
 
@@ -161,7 +167,7 @@ B737MIP::B737MIP()
   ann_cabinaltitude->setAnnName((char*) "CABIN ALTITUDE");
   ann_cabinaltitude->setAnnForm(0);
   ann_cabinaltitude->setAnnFGColor(255,100,0);
-  ann_cabinaltitude->setAnnDataRefType2(1);
+  ann_cabinaltitude->setAnnDataRefType2(2);
   ann_cabinaltitude->setAnnDataRef2((char*) "laminar/B738/annunciator/cabin_alt");
   this->AddGaugeComponent(ann_cabinaltitude);
 
@@ -171,7 +177,7 @@ B737MIP::B737MIP()
   ann_takeoffconfig->setAnnName((char*) "TAKEOFF CONFIG");
   ann_takeoffconfig->setAnnForm(0);
   ann_takeoffconfig->setAnnFGColor(255,100,0);
-  ann_takeoffconfig->setAnnDataRefType2(1);
+  ann_takeoffconfig->setAnnDataRefType2(2);
   ann_takeoffconfig->setAnnDataRef2((char*) "laminar/B738/annunciator/takeoff_config");
   this->AddGaugeComponent(ann_takeoffconfig);
 
@@ -183,7 +189,7 @@ B737MIP::B737MIP()
   ann_speedbrakes->setAnnFGColor(255,100,0);
   ann_speedbrakes->setAnnDataRefType1(1);
   ann_speedbrakes->setAnnDataRef1((char*) "x737/systems/speedbrake/spdbrkExtendedLight");
-  ann_speedbrakes->setAnnDataRefType2(1);
+  ann_speedbrakes->setAnnDataRefType2(2);
   ann_speedbrakes->setAnnDataRef2((char*) "laminar/B738/annunciator/speedbrake_extend");
   this->AddGaugeComponent(ann_speedbrakes);
 
@@ -193,7 +199,7 @@ B737MIP::B737MIP()
   ann_belowgs->setAnnName((char*) "BELOW.G/S P.INHIBIT");
   ann_belowgs->setAnnForm(0);
   ann_belowgs->setAnnFGColor(255,100,0);
-  ann_belowgs->setAnnDataRefType1(2);
+  ann_belowgs->setAnnDataRefType2(2);
   ann_belowgs->setAnnDataRef2((char*) "laminar/B738/annunciator/below_gs");
   this->AddGaugeComponent(ann_belowgs);
 
@@ -209,6 +215,7 @@ B737MIP::B737MIP()
   ann_capt_aprst->setAnnFGColor(255,100,0);
   ann_capt_aprst->setAnnDataRefType1(1);
   ann_capt_aprst->setAnnDataRef1((char*) "x737/systems/afds/alert/capt/AP_PRST_amber");
+  ann_capt_aprst->setAnnDataRefType2(2);
   ann_capt_aprst->setAnnDataRef2((char*) "laminar/B738/annunciator/ap_disconnect");
   ann_capt_aprst->setAnnKeyDataRefType1(2);
   ann_capt_aprst->setAnnKeyDataRef1((char*) "x737/systems/afds/alert/capt/AP_PRST_reset");
@@ -226,6 +233,7 @@ B737MIP::B737MIP()
   ann_capt_atrst->setAnnFGColor(255,100,0);
   ann_capt_atrst->setAnnDataRefType1(1);
   ann_capt_atrst->setAnnDataRef1((char*) "x737/systems/afds/alert/capt/AT_PRST_amber");
+  ann_capt_atrst->setAnnDataRefType2(2);
   ann_capt_atrst->setAnnDataRef2((char*) "laminar/B738/annunciator/at_disconnect");
   ann_capt_atrst->setAnnKeyDataRefType2(4);
   ann_capt_atrst->setAnnKeyDataRef2((char*) "laminar/B738/push_button/at_light_pilot");
@@ -251,7 +259,7 @@ B737MIP::B737MIP()
   ann_flapsext->setAnnFGColor(0,255,0);
   ann_flapsext->setAnnDataRefType1(2);
   ann_flapsext->setAnnDataRef1((char*) "x737/systems/flaps/LE_EXT");
-  ann_flapsext->setAnnDataRefType2(1);
+  ann_flapsext->setAnnDataRefType2(2);
   ann_flapsext->setAnnDataRef2((char*) "laminar/B738/annunciator/slats_extend");
   this->AddGaugeComponent(ann_flapsext);
 
@@ -263,7 +271,7 @@ B737MIP::B737MIP()
   ann_flapstransit->setAnnFGColor(255,100,0);
   ann_flapstransit->setAnnDataRefType1(2);
   ann_flapstransit->setAnnDataRef1((char*) "x737/systems/flaps/LE_TRANSIT");
-  ann_flapstransit->setAnnDataRefType2(1);
+  ann_flapstransit->setAnnDataRefType2(2);
   ann_flapstransit->setAnnDataRef2((char*) "laminar/B738/annunciator/slats_transit");
   this->AddGaugeComponent(ann_flapstransit);
 
@@ -275,7 +283,7 @@ B737MIP::B737MIP()
   ann_antiskid_inop->setAnnFGColor(255,100,0);
   ann_antiskid_inop->setAnnDataRefType1(2);
   ann_antiskid_inop->setAnnDataRef1((char*) "x737/systems/brakes/antiskidInopOn");
-  ann_antiskid_inop->setAnnDataRefType2(1);
+  ann_antiskid_inop->setAnnDataRefType2(2);
   ann_antiskid_inop->setAnnDataRef2((char*) "laminar/B738/annunciator/anti_skid_inop");
   this->AddGaugeComponent(ann_antiskid_inop);
 
@@ -287,7 +295,7 @@ B737MIP::B737MIP()
   ann_autobrake_disarm->setAnnFGColor(255,100,0);
   ann_autobrake_disarm->setAnnDataRefType1(2);
   ann_autobrake_disarm->setAnnDataRef1((char*) "x737/systems/brakes/abrkDisarmedOn");
-  ann_autobrake_disarm->setAnnDataRefType2(1);
+  ann_autobrake_disarm->setAnnDataRefType2(2);
   ann_autobrake_disarm->setAnnDataRef2((char*) "laminar/B738/annunciator/auto_brake_disarm");
   this->AddGaugeComponent(ann_autobrake_disarm);
  
@@ -299,7 +307,7 @@ B737MIP::B737MIP()
   ann_speedbrake_arm->setAnnFGColor(0,255,0);
   ann_speedbrake_arm->setAnnDataRefType1(2);
   ann_speedbrake_arm->setAnnDataRef1((char*) "x737/systems/speedbrake/spdbrkIsArmed_f");
-  ann_speedbrake_arm->setAnnDataRefType2(1);
+  ann_speedbrake_arm->setAnnDataRefType2(2);
   ann_speedbrake_arm->setAnnDataRef2((char*) "laminar/B738/annunciator/speedbrake_armed");
   this->AddGaugeComponent(ann_speedbrake_arm);
 
@@ -311,7 +319,7 @@ B737MIP::B737MIP()
   ann_speedbrake_donotarm->setAnnFGColor(255,100,0);
   ann_speedbrake_donotarm->setAnnDataRefType1(1);
   ann_speedbrake_donotarm->setAnnDataRef1((char*) "x737/systems/speedbrake/spdbrkDoNotArmLight");
-  ann_speedbrake_donotarm->setAnnDataRefType2(1);
+  ann_speedbrake_donotarm->setAnnDataRefType2(2);
   ann_speedbrake_donotarm->setAnnDataRef2((char*) "laminar/B738/annunciator/spd_brk_not_arm");
   this->AddGaugeComponent(ann_speedbrake_donotarm);
 
@@ -325,7 +333,7 @@ B737MIP::B737MIP()
   ann_staboutoftrim->setAnnFGColor(255,100,0);
   ann_staboutoftrim->setAnnDataRefType1(1);
   ann_staboutoftrim->setAnnDataRef1((char*) "x737/systems/stabtrim/stabOutOfTrimLight");
-  ann_staboutoftrim->setAnnDataRefType2(1);
+  ann_staboutoftrim->setAnnDataRefType2(2);
   ann_staboutoftrim->setAnnDataRef2((char*) "laminar/B738/annunciator/stab_out_of_trim");
   this->AddGaugeComponent(ann_staboutoftrim);
 
@@ -337,7 +345,7 @@ B737MIP::B737MIP()
   ann_pseu->setAnnName((char*) "PSEU");
   ann_pseu->setAnnForm(0);
   ann_pseu->setAnnFGColor(255,100,0);
-  ann_pseu->setAnnDataRefType2(1);
+  ann_pseu->setAnnDataRefType2(2);
   ann_pseu->setAnnDataRef2((char*) "laminar/B738/annunciator/test");
   this->AddGaugeComponent(ann_pseu);
 
@@ -347,7 +355,7 @@ B737MIP::B737MIP()
   ann_gps->setAnnName((char*) "GPS");
   ann_gps->setAnnForm(0);
   ann_gps->setAnnFGColor(255,255,255);
-  ann_gps->setAnnDataRefType2(1);
+  ann_gps->setAnnDataRefType2(2);
   ann_gps->setAnnDataRef2((char*) "laminar/B738/annunciator/gps");
   this->AddGaugeComponent(ann_gps);
 
@@ -357,7 +365,7 @@ B737MIP::B737MIP()
   ann_irs_l_align->setAnnName((char*) "ALIGN");
   ann_irs_l_align->setAnnForm(0);
   ann_irs_l_align->setAnnFGColor(255,255,255);
-  ann_irs_l_align->setAnnDataRefType2(1);
+  ann_irs_l_align->setAnnDataRefType2(2);
   ann_irs_l_align->setAnnDataRef2((char*) "laminar/B738/annunciator/irs_align_left");
   this->AddGaugeComponent(ann_irs_l_align);
 
@@ -367,7 +375,7 @@ B737MIP::B737MIP()
   ann_irs_l_on_dc->setAnnName((char*) "ON.DC");
   ann_irs_l_on_dc->setAnnForm(0);
   ann_irs_l_on_dc->setAnnFGColor(255,100,0);
-  ann_irs_l_on_dc->setAnnDataRefType2(1);
+  ann_irs_l_on_dc->setAnnDataRefType2(2);
   ann_irs_l_on_dc->setAnnDataRef2((char*) "laminar/B738/annunciator/irs_on_dc_left");
   this->AddGaugeComponent(ann_irs_l_on_dc);
 
@@ -377,7 +385,7 @@ B737MIP::B737MIP()
   ann_irs_l_fail->setAnnName((char*) "FAULT");
   ann_irs_l_fail->setAnnForm(0);
   ann_irs_l_fail->setAnnFGColor(255,100,0);
-  ann_irs_l_fail->setAnnDataRefType2(1);
+  ann_irs_l_fail->setAnnDataRefType2(2);
   ann_irs_l_fail->setAnnDataRef2((char*) "laminar/B738/annunciator/irs_align_fail_left");
   this->AddGaugeComponent(ann_irs_l_fail);
 
@@ -387,7 +395,7 @@ B737MIP::B737MIP()
   ann_irs_l_dc_fail->setAnnName((char*) "DC.FAIL");
   ann_irs_l_dc_fail->setAnnForm(0);
   ann_irs_l_dc_fail->setAnnFGColor(255,100,0);
-  ann_irs_l_dc_fail->setAnnDataRefType2(1);
+  ann_irs_l_dc_fail->setAnnDataRefType2(2);
   ann_irs_l_dc_fail->setAnnDataRef2((char*) "laminar/B738/annunciator/irs_dc_fail_left");
   this->AddGaugeComponent(ann_irs_l_dc_fail);
 
@@ -399,7 +407,7 @@ B737MIP::B737MIP()
   ann_irs_r_align->setAnnName((char*) "ALIGN");
   ann_irs_r_align->setAnnForm(0);
   ann_irs_r_align->setAnnFGColor(255,255,255);
-  ann_irs_r_align->setAnnDataRefType2(1);
+  ann_irs_r_align->setAnnDataRefType2(2);
   ann_irs_r_align->setAnnDataRef2((char*) "laminar/B738/annunciator/irs_align_right");
   this->AddGaugeComponent(ann_irs_r_align);
 
@@ -409,7 +417,7 @@ B737MIP::B737MIP()
   ann_irs_r_on_dc->setAnnName((char*) "ON.DC");
   ann_irs_r_on_dc->setAnnForm(0);
   ann_irs_r_on_dc->setAnnFGColor(255,100,0);
-  ann_irs_r_on_dc->setAnnDataRefType2(1);
+  ann_irs_r_on_dc->setAnnDataRefType2(2);
   ann_irs_r_on_dc->setAnnDataRef2((char*) "laminar/B738/annunciator/irs_on_dc_right");
   this->AddGaugeComponent(ann_irs_r_on_dc);
 
@@ -419,7 +427,7 @@ B737MIP::B737MIP()
   ann_irs_r_fail->setAnnName((char*) "FAULT");
   ann_irs_r_fail->setAnnForm(0);
   ann_irs_r_fail->setAnnFGColor(255,100,0);
-  ann_irs_r_fail->setAnnDataRefType2(1);
+  ann_irs_r_fail->setAnnDataRefType2(2);
   ann_irs_r_fail->setAnnDataRef2((char*) "laminar/B738/annunciator/irs_align_fail_right");
   this->AddGaugeComponent(ann_irs_r_fail);
 
@@ -429,7 +437,7 @@ B737MIP::B737MIP()
   ann_irs_r_dc_fail->setAnnName((char*) "DC.FAIL");
   ann_irs_r_dc_fail->setAnnForm(0);
   ann_irs_r_dc_fail->setAnnFGColor(255,100,0);
-  ann_irs_r_dc_fail->setAnnDataRefType2(1);
+  ann_irs_r_dc_fail->setAnnDataRefType2(2);
   ann_irs_r_dc_fail->setAnnDataRef2((char*) "laminar/B738/annunciator/irs_dc_fail_right");
   this->AddGaugeComponent(ann_irs_r_dc_fail);
 

@@ -85,7 +85,7 @@ void b737_yokerudder(void)
   if ((acf_type == 2) || (acf_type == 3)) {
     stab_trim_up = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_up");
     stab_trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down");
-    ap_disconnect = link_dataref_cmd_once("laminar/B738/autopilot/capt_disco_press");
+    ap_disconnect = link_dataref_cmd_hold("laminar/B738/autopilot/capt_disco_press");
   } else if (acf_type == 1) {
     stab_trim_up = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_UP_ALL");
     stab_trim_down = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_DOWN_ALL");

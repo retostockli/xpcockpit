@@ -85,15 +85,15 @@ namespace OpenGC {
       int *ztm = link_dataref_int ("sim/cockpit2/clock_timer/zulu_time_minutes");
       int *lth = link_dataref_int ("sim/cockpit2/clock_timer/local_time_hours");
       int *ltm = link_dataref_int ("sim/cockpit2/clock_timer/local_time_minutes");
-      int *et_mode = link_dataref_int("laminar/B738/clock/captain/et_mode");
-      int *c_mode = link_dataref_int ("laminar/B738/clock/captain/chrono_mode");
-      int *c_disp = link_dataref_int ("laminar/B738/clock/chrono_display_mode_capt");
-      int *t_disp = link_dataref_int ("laminar/B738/clock/clock_display_mode_capt");
-      int *eth = link_dataref_int ("laminar/B738/clock/captain/et_hours");
-      int *etm = link_dataref_int ("laminar/B738/clock/captain/et_minutes");
-      int *ets = link_dataref_int ("laminar/B738/clock/captain/et_seconds");
-      int *cm = link_dataref_int ("laminar/B738/clock/captain/chrono_minutes");
-      int *cs = link_dataref_int ("laminar/B738/clock/captain/chrono_seconds");
+      float *et_mode = link_dataref_flt("laminar/B738/clock/captain/et_mode",0);
+      float *c_mode = link_dataref_flt ("laminar/B738/clock/captain/chrono_mode",0);
+      float *c_disp = link_dataref_flt ("laminar/B738/clock/chrono_display_mode_capt",0);
+      float *t_disp = link_dataref_flt ("laminar/B738/clock/clock_display_mode_capt",0);
+      float *eth = link_dataref_flt ("laminar/B738/clock/captain/et_hours",0);
+      float *etm = link_dataref_flt ("laminar/B738/clock/captain/et_minutes",0);
+      float *ets = link_dataref_flt ("laminar/B738/clock/captain/et_seconds",0);
+      float *cm = link_dataref_flt ("laminar/B738/clock/captain/chrono_minutes",0);
+      float *cs = link_dataref_flt ("laminar/B738/clock/captain/chrono_seconds",0);
    
       /* Draw the Dial */
 
@@ -297,12 +297,12 @@ namespace OpenGC {
 	// The states
 	glColor3ub (COLOR_WHITE);
 	m_pFontManager->SetSize (m_Font, 0.5*fontWidth, 0.5*fontHeight);
-	if (*et_mode == 1) {
+	if (*et_mode == 1.0) {
 	  m_pFontManager->Print(partSize*0.22, partSize*0.15, "RUN", m_Font );
 	} else {
 	  m_pFontManager->Print(partSize*0.22, partSize*0.15, "HLD", m_Font );
 	}
-	if ((*t_disp == 1) || (*t_disp == 2)) {
+	if ((*t_disp == 1.0) || (*t_disp == 2.0)) {
 	  m_pFontManager->Print(partSize*0.72, partSize*0.8225, "UTC", m_Font );
 	} else {
 	  m_pFontManager->Print(partSize*0.72, partSize*0.8225, "MAN", m_Font );
@@ -310,12 +310,12 @@ namespace OpenGC {
       
 	// The displays
 	glColor3ub (COLOR_WHITE);
-	if ((*t_disp == 1) || (*t_disp == 3)) {
+	if ((*t_disp == 1.0) || (*t_disp == 3.0)) {
 	  // time display
 	  m_pFontManager->SetSize (m_Font, 0.8*fontWidth, 0.8*fontHeight);
 	  m_pFontManager->Print ( partCenter-1.5*fontWidth, partCenter+1.4*2.5*fontHeight, "TIME", m_Font);
 	  m_pFontManager->SetSize (m_DigiFont, 2.5*fontWidth, 2.5*fontHeight);
-	  if (*t_disp == 1) {
+	  if (*t_disp == 1.0) {
 	    sprintf (buff, "%02d", *zth);
 	  } else {
 	    sprintf (buff, "%02d", *lth);
@@ -323,7 +323,7 @@ namespace OpenGC {
 	  m_pFontManager->Print ( partCenter-1.4*2.5*fontWidth, partCenter+0.3*2.5*fontHeight, buff, m_DigiFont);
 	  sprintf (buff, ":");
 	  m_pFontManager->Print ( partCenter-0.3*2.5*fontWidth, partCenter+0.3*2.5*fontHeight, buff, m_DigiFont);
-	  if (*t_disp == 1) {	
+	  if (*t_disp == 1.0) {	
 	    sprintf (buff, "%02d", *ztm);
 	  } else {
 	    sprintf (buff, "%02d", *ltm);
@@ -339,27 +339,27 @@ namespace OpenGC {
 	  sprintf (buff, "%02d", *day);
 	  m_pFontManager->Print ( partCenter+0.2*2.5*fontWidth, partCenter+0.3*2.5*fontHeight, buff, m_DigiFont);
 	}
-	if (*c_disp == 1) {
+	if (*c_disp == 1.0) {
 	  // ET display
 	  m_pFontManager->SetSize (m_Font, 0.8*fontWidth, 0.8*fontHeight);
 	  m_pFontManager->Print ( partCenter-2.0*fontWidth, partCenter-1.8*2.5*fontHeight, "ET", m_Font);
 	  m_pFontManager->SetSize (m_DigiFont, 2.5*fontWidth, 2.5*fontHeight);
-	  sprintf (buff, "%02d", *eth);
+	  sprintf (buff, "%02.0f", *eth);
 	  m_pFontManager->Print ( partCenter-1.4*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
 	  sprintf (buff, ":");
 	  m_pFontManager->Print ( partCenter-0.3*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
-	  sprintf (buff, "%02d", *etm);
+	  sprintf (buff, "%02.0f", *etm);
 	  m_pFontManager->Print ( partCenter+0.2*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
 	} else {
 	  // CHR display
 	  m_pFontManager->SetSize (m_Font, 0.8*fontWidth, 0.8*fontHeight);
 	  m_pFontManager->Print ( partCenter+0.5*fontWidth, partCenter-1.8*2.5*fontHeight, "CHR", m_Font);
 	  m_pFontManager->SetSize (m_DigiFont, 2.5*fontWidth, 2.5*fontHeight);
-	  sprintf (buff, "%02d", *cm);
+	  sprintf (buff, "%02.0f", *cm);
 	  m_pFontManager->Print ( partCenter-1.4*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
 	  sprintf (buff, ":");
 	  m_pFontManager->Print ( partCenter-0.3*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
-	  sprintf (buff, "%02d", *cs);
+	  sprintf (buff, "%02.0f", *cs);
 	  m_pFontManager->Print ( partCenter+0.2*2.5*fontWidth, partCenter-1.2*2.5*fontHeight, buff, m_DigiFont);
 	}
 

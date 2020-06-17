@@ -14,38 +14,17 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#include <math.h>
 #include "serverdata.h"
+#include "common.h"
 
-
-int set_state_updnf(float *new_state, float *old_state, int *up, int *dn)
+int set_state_updnf(float *new_statef, float *old_statef, int *up, int *dn)
 {
-
-  int ret = 0;
-  
-  if ((new_state) && (old_state) && (up) && (dn)) {
-    if ((*new_state != FLT_MISS) && (*old_state != FLT_MISS)) {
-
-      if ((*up == 1) || (*dn == 1)) {
-	/* we just upped or downed, so wait for a cycle */
-      } else {
-	if (*new_state > *old_state) {
-	  *up = 1;
-	  *dn = 0;
-	  ret = 1;
-	} else if (*new_state < *old_state) {
-	  *up = 0;
-	  *dn = 1;
-	  ret =-1;
-	} else {
-	  /* nothing to do */
-	}
-      }
-
-    }
-  }
-
-  return ret;
-  
+  int new_state = INT_MISS;
+  if (*new_statef != FLT_MISS) new_state = lroundf(*new_statef);
+  int old_state = INT_MISS;
+  if (*old_statef != FLT_MISS) old_state = lroundf(*old_statef);
+  return set_state_updn(&new_state, &old_state, up,dn);
 }
 
 int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
@@ -79,36 +58,16 @@ int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
   
 }
 
-int set_state_togglef(float *new_state, float *old_state, int *toggle)
+int set_state_togglef(float *new_statef, float *old_statef, int *toggle)
 {
-
-  int ret = 0;
-  
-  if ((new_state) && (old_state) && (toggle)) {
-    if ((*new_state != FLT_MISS) && (*old_state != FLT_MISS)) {
-
-      if (*toggle == 1) {
-	/* we just upped or downed, so wait for a cycle */
-      } else {
-	if (*new_state > *old_state) {
-	  *toggle = 1;
-	  ret = 1;
-	} else if (*new_state < *old_state) {
-	  *toggle = 1;
-	  ret =-1;
-	} else {
-	  /* nothing to do */
-	}
-      }
-
-    }
-  }
-
-  return ret;
-  
+  int new_state = INT_MISS;
+  if (*new_statef != FLT_MISS) new_state = lroundf(*new_statef);
+  int old_state = INT_MISS;
+  if (*old_statef != FLT_MISS) old_state = lroundf(*old_statef);
+  return set_state_toggle(&new_state, &old_state, toggle);
 }
  
- int set_state_toggle(int *new_state, int *old_state, int *toggle)
+int set_state_toggle(int *new_state, int *old_state, int *toggle)
 {
 
   int ret = 0;

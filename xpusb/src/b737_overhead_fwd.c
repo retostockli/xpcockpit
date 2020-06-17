@@ -31,8 +31,8 @@
 #include "b737_overhead_fwd.h"
 
 /* permanent storage */
-int dc_power_pos;
-int ac_power_pos;
+float dc_power_pos;
+float ac_power_pos;
 float l_eng_start_pos;
 float r_eng_start_pos;
 float air_valve_ctrl_pos;
@@ -157,53 +157,53 @@ void b737_overhead_fwd(void)
     /* DC Power Knob */
     int *dc_power_up = link_dataref_cmd_once("laminar/B738/knob/dc_power_up");
     int *dc_power_dn = link_dataref_cmd_once("laminar/B738/knob/dc_power_dn");
-    int *dc_power = link_dataref_int("laminar/B738/knob/dc_power");
+    float *dc_power = link_dataref_flt("laminar/B738/knob/dc_power",0);
 
     ret = digital_input(device,card,0,&ival,0);
-    if (ival == 1) dc_power_pos = 0; // STBY PWR
+    if (ival == 1) dc_power_pos = 0.0; // STBY PWR
     ret = digital_input(device,card,1,&ival,0);
-    if (ival == 1) dc_power_pos = 1; // BAT BUS
+    if (ival == 1) dc_power_pos = 1.0; // BAT BUS
     ret = digital_input(device,card,2,&ival,0);
-    if (ival == 1) dc_power_pos = 2; // BAT
+    if (ival == 1) dc_power_pos = 2.0; // BAT
     ret = digital_input(device,card,3,&ival,0);
-    if (ival == 1) dc_power_pos = 2; // AUX BAT (does not exist in ZIBO)
+    if (ival == 1) dc_power_pos = 2.0; // AUX BAT (does not exist in ZIBO)
     ret = digital_input(device,card,4,&ival,0);
-    if (ival == 1) dc_power_pos = 3; // TR1
+    if (ival == 1) dc_power_pos = 3.0; // TR1
     ret = digital_input(device,card,5,&ival,0);
-    if (ival == 1) dc_power_pos = 4; // TR2
+    if (ival == 1) dc_power_pos = 4.0; // TR2
     ret = digital_input(device,card,6,&ival,0);
-    if (ival == 1) dc_power_pos = 5; // TR3
+    if (ival == 1) dc_power_pos = 5.0; // TR3
     ret = digital_input(device,card,7,&ival,0);
-    if (ival == 1) dc_power_pos = 6; // TEST
+    if (ival == 1) dc_power_pos = 6.0; // TEST
 
-    ret = set_state_updn(&dc_power_pos,dc_power,dc_power_up,dc_power_dn);
+    ret = set_state_updnf(&dc_power_pos,dc_power,dc_power_up,dc_power_dn);
     if (ret != 0) {
-      printf("DC Power knob %i \n",dc_power_pos);
+      printf("DC Power knob %f \n",dc_power_pos);
     }
     
     /* AC Power Knob */
     int *ac_power_up = link_dataref_cmd_once("laminar/B738/knob/ac_power_up");
     int *ac_power_dn = link_dataref_cmd_once("laminar/B738/knob/ac_power_dn");
-    int *ac_power = link_dataref_int("laminar/B738/knob/ac_power");
+    float *ac_power = link_dataref_flt("laminar/B738/knob/ac_power",0);
     
     ret = digital_input(device,card,9,&ival,0);
-    if (ival == 1) ac_power_pos = 0; // STBY PWR
+    if (ival == 1) ac_power_pos = 0.0; // STBY PWR
     ret = digital_input(device,card,10,&ival,0);
-    if (ival == 1) ac_power_pos = 1; // GRD PWR
+    if (ival == 1) ac_power_pos = 1.0; // GRD PWR
     ret = digital_input(device,card,11,&ival,0);
-    if (ival == 1) ac_power_pos = 2; // GEN1
+    if (ival == 1) ac_power_pos = 2.0; // GEN1
     ret = digital_input(device,card,12,&ival,0);
-    if (ival == 1) ac_power_pos = 3; // APU GEN
+    if (ival == 1) ac_power_pos = 3.0; // APU GEN
     ret = digital_input(device,card,13,&ival,0);
-    if (ival == 1) ac_power_pos = 4; // GEN2
+    if (ival == 1) ac_power_pos = 4.0; // GEN2
     ret = digital_input(device,card,14,&ival,0);
-    if (ival == 1) ac_power_pos = 5; // INV
+    if (ival == 1) ac_power_pos = 5.0; // INV
     ret = digital_input(device,card,15,&ival,0);
-    if (ival == 1) ac_power_pos = 6; // TEST
+    if (ival == 1) ac_power_pos = 6.0; // TEST
 
-    ret = set_state_updn(&ac_power_pos,ac_power,ac_power_up,ac_power_dn);
+    ret = set_state_updnf(&ac_power_pos,ac_power,ac_power_up,ac_power_dn);
     if (ret != 0) {
-      printf("AC Power knob %i \n",ac_power_pos);
+      printf("AC Power knob %f \n",ac_power_pos);
     }
 
     /* Galley PWR */
@@ -220,12 +220,12 @@ void b737_overhead_fwd(void)
     ret = digital_outputf(device,card,49,battery);
 
     /* Annunciators */
-    int *bat_discharge = link_dataref_int("laminar/B738/annunciator/bat_discharge");
-    ret = digital_output(device,card,11,bat_discharge);
-    int *tr_unit = link_dataref_int("laminar/B738/annunciator/tr_unit");
-    ret = digital_output(device,card,12,tr_unit);
-    int *elec = link_dataref_int("laminar/B738/annunciator/elec");
-    ret = digital_output(device,card,13,elec);
+    float *bat_discharge = link_dataref_flt("laminar/B738/annunciator/bat_discharge",0);
+    ret = digital_outputf(device,card,11,bat_discharge);
+    float *tr_unit = link_dataref_flt("laminar/B738/annunciator/tr_unit",0);
+    ret = digital_outputf(device,card,12,tr_unit);
+    float *elec = link_dataref_flt("laminar/B738/annunciator/elec",0);
+    ret = digital_outputf(device,card,13,elec);
 
     /* AC/DC 7 Segment Displays
        Lower Row: DC Volts 6,7, AC Amps 4,5, AC Volts 1,2,3
@@ -235,17 +235,17 @@ void b737_overhead_fwd(void)
     device = mastercard;
     card = 1;
 
-    int *dc_volt = link_dataref_int("laminar/B738/dc_volt_value");
-    int *dc_amps = link_dataref_int("laminar/B738/dc_amp_value");
-    int *ac_volt = link_dataref_int("laminar/B738/ac_volt_value");
-    int *ac_amps = link_dataref_int("laminar/B738/ac_amp_value");
-    int *ac_freq = link_dataref_int("laminar/B738/ac_freq_value");
+    float *dc_volt = link_dataref_flt("laminar/B738/dc_volt_value",0);
+    float *dc_amps = link_dataref_flt("laminar/B738/dc_amp_value",0);
+    float *ac_volt = link_dataref_flt("laminar/B738/ac_volt_value",0);
+    float *ac_amps = link_dataref_flt("laminar/B738/ac_amp_value",0);
+    float *ac_freq = link_dataref_flt("laminar/B738/ac_freq_value",0);
     if (*battery == 1.0) {
-      ret = mastercard_display(device,card,11,2,dc_amps,0);
-      ret = mastercard_display(device,card,6,2,dc_volt,0);
-      ret = mastercard_display(device,card,1,3,ac_volt,0);
-      ret = mastercard_display(device,card,4,2,ac_amps,0);
-      ret = mastercard_display(device,card,8,3,ac_freq,0);
+      ret = mastercard_displayf(device,card,11,2,dc_amps,0);
+      ret = mastercard_displayf(device,card,6,2,dc_volt,0);
+      ret = mastercard_displayf(device,card,1,3,ac_volt,0);
+      ret = mastercard_displayf(device,card,4,2,ac_amps,0);
+      ret = mastercard_displayf(device,card,8,3,ac_freq,0);
     } else {
       ival = 10;
       ret = mastercard_display(device,card,11,2,&ival,1);
@@ -273,7 +273,7 @@ void b737_overhead_fwd(void)
     /* Left Engine Start Knob */
     int *l_eng_start_left = link_dataref_cmd_once("laminar/B738/knob/eng1_start_left");
     int *l_eng_start_right = link_dataref_cmd_once("laminar/B738/knob/eng1_start_right");
-    float *l_eng_start = link_dataref_flt("laminar/B738/engine/starter1_pos",0);
+    float *l_eng_start = link_dataref_flt("laminar/B738/engine/starter1_pos",-1);
     
     ret = digital_input(device,card,18,&ival,0);
     if (ival == 1) l_eng_start_pos = 0.0; // GRD
@@ -286,7 +286,8 @@ void b737_overhead_fwd(void)
 
     ret = set_state_updnf(&l_eng_start_pos,l_eng_start,l_eng_start_right,l_eng_start_left);
     if (ret != 0) {
-      printf("L Engine Start Pos %f \n",l_eng_start_pos);
+      printf("L Engine Start Pos %f %f %i %i \n",
+	     l_eng_start_pos,*l_eng_start,*l_eng_start_right,*l_eng_start_left);
     }
 
     /* set relay 2 on output 51 to hold left engine knob at GRD */
@@ -296,7 +297,7 @@ void b737_overhead_fwd(void)
     /* Right Engine Start Knob */
     int *r_eng_start_left = link_dataref_cmd_once("laminar/B738/knob/eng2_start_left");
     int *r_eng_start_right = link_dataref_cmd_once("laminar/B738/knob/eng2_start_right");
-    float *r_eng_start = link_dataref_flt("laminar/B738/engine/starter2_pos",0);
+    float *r_eng_start = link_dataref_flt("laminar/B738/engine/starter2_pos",-1);
     
     ret = digital_input(device,card,22,&ival,0);
     if (ival == 1) r_eng_start_pos = 0.0; // GRD
@@ -309,7 +310,8 @@ void b737_overhead_fwd(void)
 
     ret = set_state_updnf(&r_eng_start_pos,r_eng_start,r_eng_start_right,r_eng_start_left);
     if (ret != 0) {
-      printf("R Engine Start Pos %f \n",r_eng_start_pos);
+      printf("R Engine Start Pos %f %f %i %i \n",
+	     r_eng_start_pos,*r_eng_start,*r_eng_start_right,*r_eng_start_left);
     }
 
     /* set relay 1 on output 50 to hold right engine knob at GRD */
@@ -421,15 +423,17 @@ void b737_overhead_fwd(void)
     /* APU Switch */
     int *apu_dn = link_dataref_cmd_once("laminar/B738/spring_toggle_switch/APU_start_pos_dn");
     int *apu_up = link_dataref_cmd_once("laminar/B738/spring_toggle_switch/APU_start_pos_up");
+    int *apu_hold_dn = link_dataref_cmd_hold("laminar/B738/spring_toggle_switch/APU_start_pos_dn");
     float *apu = link_dataref_flt("laminar/B738/spring_toggle_switch/APU_start_pos",0);
-    fval = FLT_MISS;
-    ret = digital_input(device,card,45,&ival,0);
-    if (ival != INT_MISS) fval = (float) (1 - ival);
-    ret = digital_input(device,card,46,&ival2,0);
-    /* only set APU switch to 2 (start) if pressed since the original switch is spring loaded */
-    //if ((ret == 1) && (fval != FLT_MISS)) fval += (float) ival2; 
-    if ((ival != INT_MISS) && (ival2 != INT_MISS)) fval = (float) (1 - ival) + ival2; 
-    ret = set_state_updnf(&fval,apu,apu_dn,apu_up);
+    ret = digital_input(device,card,45,&ival,0); // OFF
+    if (*apu <= 1.0) {
+      fval = FLT_MISS;
+      if (ival != INT_MISS) fval = (float) (1 - ival); 
+      ret = set_state_updnf(&fval,apu,apu_dn,apu_up);
+    }
+    if (*apu >= 1.0) {
+      ret = digital_input(device,card,46,apu_hold_dn,0); // START: spring loaded
+    }
     
     /* -------------- */
     /* ALTITUDE Panel */
@@ -661,7 +665,7 @@ void b737_overhead_fwd(void)
     device = servo1;
     float *cabin_altitude = link_dataref_flt("laminar/B738/cabin_alt",2);
     float *cabin_pressure_diff = link_dataref_flt("laminar/B738/cabin_pressure_diff",-1);
-    float *cabin_climb = link_dataref_flt("laminar/B738/cabin_vvi",0);
+    float *cabin_climb = link_dataref_flt("laminar/B738/cabin_vvi",1);    
     if (*servotest == 1) {
       ret = servos_output(device,0,&servoval,0.0,1.0,200,1023);
       ret = servos_output(device,1,&servoval,0.0,1.0,210,1023);
