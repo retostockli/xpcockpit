@@ -79,21 +79,11 @@ void b737_overhead_fwd(void)
     ncover = 11;
     int *switch_cover_toggle;
     float *switch_cover_pos = link_dataref_flt_arr("laminar/B738/button_switch/cover_position",ncover,-1,-3);
+    /* open all covers */
     for (cover=0;cover<ncover;cover++) {
-      /* open all covers except the battery switch cover which is linked to the battery switch position */
       sprintf(buffer, "laminar/B738/button_switch_cover%02d", cover);
       switch_cover_toggle = link_dataref_cmd_once(buffer);
-      /*
-      if (cover == 2) {
-	if (battery_switch_pos != INT_MISS) {
-	  ival = 1 - battery_switch_pos;
-	} else {
-	  ival = INT_MISS;
-	}
-      } else {
-      */
-	ival = 1;
-	/*}*/
+      ival = 1;
       ret = set_switch_cover(switch_cover_pos+cover,switch_cover_toggle,ival);     
     }
 
@@ -153,7 +143,6 @@ void b737_overhead_fwd(void)
       printf("Battery Switch %f \n",fval);
     }
 
-    
     /* DC Power Knob */
     int *dc_power_up = link_dataref_cmd_once("laminar/B738/knob/dc_power_up");
     int *dc_power_dn = link_dataref_cmd_once("laminar/B738/knob/dc_power_dn");
@@ -1464,6 +1453,16 @@ void b737_overhead_fwd(void)
     float *yaw_damper_on = link_dataref_flt("laminar/B738/annunciator/yaw_damp",0);
     ret = digital_outputf(device,card,44,yaw_damper_on);
    
+  } else {
+    /* A few basic switches for other ACF */
+    device = mastercard;
+    card = 0;
+
+    int *battery_i = link_dataref_int("sim/cockpit/electrical/battery_on");
+    ret = digital_input(device,card,8,&ival,0);
+    if (ival != INT_MISS) *battery_i = 1-ival;
+   
+
   }
     
 }

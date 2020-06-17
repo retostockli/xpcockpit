@@ -44,7 +44,10 @@ void check_aircraft(void) {
 
     /* Add your own number > 3 for any of your favorite aircraft */
     
-    if (strcmp((const char*) tailnum,"ZB738")==0) {
+    if (strcmp((const char*) tailnum,"DO328")==0) {
+      /* MG Dornier 328 */
+      acf_type = 4;
+    } else if (strcmp((const char*) tailnum,"ZB738")==0) {
       /* ZIBO MOD of B737-800 */
       acf_type = 3;
     } else if (strcmp((const char*) tailnum,"NN816N")==0) {

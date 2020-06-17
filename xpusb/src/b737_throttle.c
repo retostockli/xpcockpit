@@ -128,8 +128,12 @@ void b737_throttle(void)
     flap_ratio = link_dataref_flt("sim/flightmodel/controls/flaprqst", -4);
   }
   int *propmode = link_dataref_int_arr("sim/flightmodel/engine/ENGN_propmode",8,-1);
-  float *parkbrake_xplane = link_dataref_flt("sim/flightmodel/controls/parkbrake",-1);
-
+  float *parkbrake_xplane;;
+  if (acf_type == 4) {
+    parkbrake_xplane = link_dataref_flt("mgdornier/do328/parking_brake_ratio",-1);
+  } else {
+    parkbrake_xplane = link_dataref_flt("sim/flightmodel/controls/parkbrake",-1);
+  }
   
 
   float *speedbrake_xplane;

@@ -52,14 +52,14 @@ void b737_yokerudder(void)
 
   float* left_brake;
   float* right_brake;
-  if (acf_type <= 1) {
-    brakescale = 1.0;
-    left_brake = link_dataref_flt("sim/cockpit2/controls/left_brake_ratio",-3);
-    right_brake = link_dataref_flt("sim/cockpit2/controls/right_brake_ratio",-3);
-  } else {
+  if ((acf_type == 2) || (acf_type == 3)) {
     brakescale = 0.5;
     left_brake = link_dataref_flt("laminar/B738/axis/left_toe_brake",-3);
     right_brake = link_dataref_flt("laminar/B738/axis/right_toe_brake",-3);
+  } else {
+    brakescale = 1.0;
+    left_brake = link_dataref_flt("sim/cockpit2/controls/left_brake_ratio",-3);
+    right_brake = link_dataref_flt("sim/cockpit2/controls/right_brake_ratio",-3);
   }
   
   int* viewmode = link_dataref_int("xpserver/viewmode");
