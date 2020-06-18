@@ -534,7 +534,8 @@ void b737_pedestal(void)
     if (*nav1_freq_stdby != INT_MISS) {
       integer = *nav1_freq_stdby / 100;
       decimal = *nav1_freq_stdby - integer*100;
-      decimal = min(max(decimal + (int) updn,0),95);
+      decimal = (decimal + (int) updn) % 100;
+      if (decimal < 0) decimal += 100;
       *nav1_freq_stdby = integer*100 + decimal;
       printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
     }
@@ -558,7 +559,8 @@ void b737_pedestal(void)
     if (*com1_freq_stdby != INT_MISS) {
       integer = *com1_freq_stdby / 100;
       decimal = (int) (roundf(((float) ((*com1_freq_stdby - integer*100)*10))/25.0)*25.0);
-      decimal = min(max(decimal + (int) updn,0),975);
+      decimal = (decimal + (int) updn) % 1000;
+      if (decimal < 0) decimal += 1000;
       *com1_freq_stdby = integer*100 + decimal/10;
       printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
     }
@@ -566,7 +568,7 @@ void b737_pedestal(void)
 
   /* ADF1 */
   updn = 0.;
-  ret = mastercard_encoder(device,card,22,&updn,10.0,2,3);
+  ret = mastercard_encoder(device,card,22,&updn,100.0,2,3);
   if (ret == 1) {
     if (*adf1_freq_stdby != INT_MISS) {
       *adf1_freq_stdby += (int) updn;
@@ -701,8 +703,10 @@ void b737_pedestal(void)
 
   /* COM1 */
   temp = *com1_freq_active * 10;
+  if ((temp%100 == 20) || (temp%100 == 70)) temp += 5;
   ret = mastercard_display(device,card,10,6, &temp, 0);
   temp = *com1_freq_stdby * 10;
+  if ((temp%100 == 20) || (temp%100 == 70)) temp += 5;
   ret = mastercard_display(device,card,16,6, &temp, 0);
 
   /* ADF1 */
@@ -995,7 +999,8 @@ void b737_pedestal(void)
     if (*nav2_freq_stdby != INT_MISS) {
       integer = *nav2_freq_stdby / 100;
       decimal = *nav2_freq_stdby - integer*100;
-      decimal = min(max(decimal + (int) updn,0),95);
+      decimal = (decimal + (int) updn) % 100;
+      if (decimal < 0) decimal += 100;
       *nav2_freq_stdby = integer*100 + decimal;
       printf("NAV2 STDBY FREQ: %i \n",*nav2_freq_stdby);
     }
@@ -1019,7 +1024,8 @@ void b737_pedestal(void)
     if (*com2_freq_stdby != INT_MISS) {
       integer = *com2_freq_stdby / 100;
       decimal = (int) (roundf(((float) ((*com2_freq_stdby - integer*100)*10))/25.0)*25.0);
-      decimal = min(max(decimal + (int) updn,0),975);
+      decimal = (decimal + (int) updn) % 1000;
+      if (decimal < 0) decimal += 1000;
       *com2_freq_stdby = integer*100 + decimal/10;
       printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
     }
@@ -1028,7 +1034,7 @@ void b737_pedestal(void)
 
   /* ADF2 */
   updn = 0.;
-  ret = mastercard_encoder(device,card,21,&updn,10.0,2,3);
+  ret = mastercard_encoder(device,card,21,&updn,100.0,2,3);
   if (ret == 1) {
     if (*adf2_freq_stdby != INT_MISS) {
       *adf2_freq_stdby += (int) updn;
@@ -1161,8 +1167,10 @@ void b737_pedestal(void)
 
   /* COM2 */
   temp = *com2_freq_active * 10;
+  if ((temp%100 == 20) || (temp%100 == 70)) temp += 5;
   ret = mastercard_display(device,card,10,6, &temp, 0);
   temp = *com2_freq_stdby * 10;
+  if ((temp%100 == 20) || (temp%100 == 70)) temp += 5;
   ret = mastercard_display(device,card,16,6, &temp, 0);
 
   /* ADF2 */
