@@ -6,14 +6,14 @@
   Module:  $RCSfile: ogcB737FMCKey.cpp,v $
 
   Copyright (C) 2018 by:
-    Original author:
-      Reto Stockli
-    Contributors (in alphabetical order):
+  Original author:
+  Reto Stockli
+  Contributors (in alphabetical order):
 
   Last modification:
-    Date:      $Date: 2018/04/12 $
-    Version:   $Revision: $
-    Author:    $Author: stockli $
+  Date:      $Date: 2018/04/12 $
+  Version:   $Revision: $
+  Author:    $Author: stockli $
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -29,10 +29,10 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-=========================================================================*/
+  =========================================================================*/
 
 /*
- The Boeing 737 Flight Management Computer Display Component
+  The Boeing 737 Flight Management Computer Display Component
 */
 
 #include <stdio.h>
@@ -88,149 +88,159 @@ namespace OpenGC
 
     int acf_type = m_pDataSource->GetAcfType();
 
+    float *fkey = NULL;
+    int *ikey = NULL;
     if (acf_type == 1) {
-      float *fkey = link_dataref_flt(m_KeyDataRef1,0);
-      *fkey = 0.0;
+      if (strcmp(m_KeyDataRef1,"") != 0) {
+	fkey = link_dataref_flt(m_KeyDataRef1,0);
+	*fkey = 0.0;
+      }
+    } else if ((acf_type == 2) || (acf_type == 3)) {
+      if (strcmp(m_KeyDataRef2,"") != 0) {
+	ikey = link_dataref_cmd_once(m_KeyDataRef2);
+	*ikey = 0;
+      }
+    }
+
+    if (fkey || ikey) {
+    
+      CircleEvaluator tCircle;
+      tCircle.SetDegreesPerPoint(20);	    
+      tCircle.SetArcStartEnd(0,360);
+      tCircle.SetRadius(m_PhysicalSize.y/2*0.8);
+    
+      tCircle.SetOrigin(m_PhysicalSize.x/2,m_PhysicalSize.y/2);
+
+
+      glMatrixMode(GL_MODELVIEW);
+      glPushMatrix();
+
+      switch(m_KeyForm) {
+      case 0:
+	glColor3ub( 50, 50, 50 );
+	glPolygonMode(GL_FRONT,GL_FILL);
+	glBegin(GL_POLYGON);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glEnd();
+	break;
+      case 1:
+	glColor3ub( 50, 50, 50 );
+	glPolygonMode(GL_FRONT,GL_FILL);
+	glBegin(GL_POLYGON);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glEnd();
+	glColor3ub(255, 255, 255 );
+	glBegin(GL_LINE_LOOP);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glEnd();
+	break;
+      case 2:
+	glColor3ub( 50, 50, 50 );
+	glPolygonMode(GL_FRONT,GL_FILL);
+	glBegin(GL_POLYGON);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glEnd();
+	break;
+      case 3:
+	glColor3ub(50, 50, 50);
+	glBegin(GL_POLYGON);
+	tCircle.Evaluate();
+	glEnd();
+	break;
+      default:
+	glColor3ub( 50, 50, 50 );
+	glPolygonMode(GL_FRONT,GL_FILL);
+	glBegin(GL_POLYGON);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
+	glEnd();      
+	glColor3ub(255, 255, 255);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f( 0.9*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
+	glVertex2f( 1.0*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
+	glEnd();      
+	glBegin(GL_LINE_LOOP);
+	glVertex2f( 0.0*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
+	glVertex2f( 0.1*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
+	glEnd();      
+      }
+      sprintf( buffer, "%s", m_KeyName );
+
+      glColor3ub(255, 255, 255);
+
+      /* wide keys: search for space, means line break */
+      if ((m_PhysicalSize.x > 1.1*m_PhysicalSize.y) && (m_KeyForm != 4)) {
+	fontSize = 0.2*m_PhysicalSize.y;
+	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
+
+	char *token = strtok(buffer," ");
+        
+	if (token != NULL) {
+	  int nc = strlen(token);
+	  xpos = (0.5-0.06*nc)*m_PhysicalSize.x;
+	  if (strchr(m_KeyName,' ') != NULL) {
+	    ypos = 0.6*m_PhysicalSize.y;
+	  } else {
+	    ypos = 0.4*m_PhysicalSize.y;
+	  }
+	  m_pFontManager->Print( xpos, ypos, token, m_Font);
+	  char *token = strtok(NULL," ");
+	  if (token != NULL) {
+	    int nc = strlen(token);
+	    xpos = (0.5-0.06*nc)*m_PhysicalSize.x;
+	    ypos = 0.2*m_PhysicalSize.y;
+	    m_pFontManager->Print( xpos, ypos, token, m_Font);
+	  }
+	}
+      } else {
+	int nc = strlen(buffer);
+	if (nc <= 2) {
+	  fontSize = 0.4*m_PhysicalSize.y;
+	  xpos = 0.35*m_PhysicalSize.x;
+	  ypos = 0.3*m_PhysicalSize.y;
+	} else {
+	  fontSize = 0.3*m_PhysicalSize.y;
+	  xpos = (0.5-0.12*nc)*m_PhysicalSize.x;
+	  ypos = 0.35*m_PhysicalSize.y;
+	}
+	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
+	m_pFontManager->Print( xpos, ypos, buffer, m_Font);
+      }
+
+      glPopMatrix();
+
+    }
+    
+  }
+
+  void B737FMCKey::OnMouseDown(int button, double physicalX, double physicalY)
+  {
+
+    //  printf("BLA %f %f \n",physicalX,physicalY);
+    int acf_type = m_pDataSource->GetAcfType();
+  
+    if (acf_type == 1) {
+      float *fkey = link_dataref_flt(m_KeyDataRef1,0);  
+      *fkey = 1.0;
     } else {
       int *ikey = link_dataref_cmd_once(m_KeyDataRef2);
-      *ikey = 0;
-    }
-      
-    CircleEvaluator tCircle;
-    tCircle.SetDegreesPerPoint(20);	    
-    tCircle.SetArcStartEnd(0,360);
-    tCircle.SetRadius(m_PhysicalSize.y/2*0.8);
-    
-    tCircle.SetOrigin(m_PhysicalSize.x/2,m_PhysicalSize.y/2);
-
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-
-    switch(m_KeyForm) {
-    case 0:
-      glColor3ub( 50, 50, 50 );
-      glPolygonMode(GL_FRONT,GL_FILL);
-      glBegin(GL_POLYGON);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glEnd();
-      break;
-    case 1:
-      glColor3ub( 50, 50, 50 );
-      glPolygonMode(GL_FRONT,GL_FILL);
-      glBegin(GL_POLYGON);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glEnd();
-      glColor3ub(255, 255, 255 );
-      glBegin(GL_LINE_LOOP);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glEnd();
-      break;
-    case 2:
-      glColor3ub( 50, 50, 50 );
-      glPolygonMode(GL_FRONT,GL_FILL);
-      glBegin(GL_POLYGON);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glEnd();
-      break;
-    case 3:
-      glColor3ub(50, 50, 50);
-      glBegin(GL_POLYGON);
-      tCircle.Evaluate();
-      glEnd();
-      break;
-    default:
-      glColor3ub( 50, 50, 50 );
-      glPolygonMode(GL_FRONT,GL_FILL);
-      glBegin(GL_POLYGON);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
-      glEnd();      
-      glColor3ub(255, 255, 255);
-      glBegin(GL_LINE_LOOP);
-      glVertex2f( 0.9*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
-      glVertex2f( 1.0*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
-      glEnd();      
-      glBegin(GL_LINE_LOOP);
-      glVertex2f( 0.0*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
-      glVertex2f( 0.1*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
-      glEnd();      
-    }
-    sprintf( buffer, "%s", m_KeyName );
-
-    glColor3ub(255, 255, 255);
-
-    /* wide keys: search for space, means line break */
-    if ((m_PhysicalSize.x > 1.1*m_PhysicalSize.y) && (m_KeyForm != 4)) {
-      fontSize = 0.2*m_PhysicalSize.y;
-      m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-
-      char *token = strtok(buffer," ");
-        
-      if (token != NULL) {
-	int nc = strlen(token);
-	xpos = (0.5-0.06*nc)*m_PhysicalSize.x;
-	if (strchr(m_KeyName,' ') != NULL) {
-	  ypos = 0.6*m_PhysicalSize.y;
-	} else {
-	  ypos = 0.4*m_PhysicalSize.y;
-	}
-	m_pFontManager->Print( xpos, ypos, token, m_Font);
-	char *token = strtok(NULL," ");
-	if (token != NULL) {
-	int nc = strlen(token);
-	xpos = (0.5-0.06*nc)*m_PhysicalSize.x;
-	ypos = 0.2*m_PhysicalSize.y;
-	m_pFontManager->Print( xpos, ypos, token, m_Font);
-	}
-      }
-    } else {
-      int nc = strlen(buffer);
-      if (nc <= 2) {
-	fontSize = 0.4*m_PhysicalSize.y;
-	xpos = 0.35*m_PhysicalSize.x;
-	ypos = 0.3*m_PhysicalSize.y;
-      } else {
-	fontSize = 0.3*m_PhysicalSize.y;
-	xpos = (0.5-0.12*nc)*m_PhysicalSize.x;
-	ypos = 0.35*m_PhysicalSize.y;
-      }
-      m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-      m_pFontManager->Print( xpos, ypos, buffer, m_Font);
+      *ikey = 1;
     }
 
-    glPopMatrix();
-    
   }
-
-void B737FMCKey::OnMouseDown(int button, double physicalX, double physicalY)
-{
-
-  //  printf("BLA %f %f \n",physicalX,physicalY);
-  int acf_type = m_pDataSource->GetAcfType();
-  
-  if (acf_type == 1) {
-    float *fkey = link_dataref_flt(m_KeyDataRef1,0);  
-    *fkey = 1.0;
-  } else {
-    int *ikey = link_dataref_cmd_once(m_KeyDataRef2);
-    *ikey = 1;
-  }
-
-}
  
 }

@@ -714,7 +714,6 @@ B737FMC::B737FMC()
   key_n1->setKeyName((char*) "N1 LIMIT");
   key_n1->setKeyForm(2);
   key_n1->setKeySizeX(deltax2);
-  key_n1->setKeyDataRef1((char*) "FJCC/UFMC/N1");
   key_n1->setKeyDataRef2((char*) "laminar/B738/button/fmc1_n1_lim");
   this->AddGaugeComponent(key_n1);
 
@@ -1002,12 +1001,23 @@ void B737FMC::Render()
     glVertex2f( 0, m_PhysicalSize.y);
     glEnd();
     */
- 
-    if ((acf_type == 2) || (acf_type == 3)) {
-      int *message = link_dataref_int("laminar/B738/fmc/fmc_message");
-      int *exec = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
-      
-      if (*message == 1) {
+
+    int message = 0;
+    int exec = 0;
+    if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+      if (acf_type == 1) {
+	float *fmessage = link_dataref_flt("FJCC/UFMC/Offset_on",0);
+	float *fexec = link_dataref_flt("FJCC/UFMC/Exec_Light_on",0);
+	if (*fmessage == 1.0) message = 1;
+	if (*fexec == 1.0) exec = 1;
+      } else {
+	int *imessage = link_dataref_int("laminar/B738/fmc/fmc_message");
+	int *iexec = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
+	if (*imessage == 1) message = 1;
+	if (*iexec == 1) exec = 1;
+      }
+	
+      if (message == 1) {
 	glColor3ub(255, 100, 0 );
 	char buffer[2];
 	float fontSize = 0.035 * m_PhysicalSize.x;
@@ -1021,7 +1031,7 @@ void B737FMC::Render()
 	
       }
 
-      if (*exec == 1) {
+      if (exec == 1) {
 	float x0 = m_PhysicalSize.x / 2 + 29;
 	float x1 = m_PhysicalSize.x / 2 + 40;
 	float y0 = m_PhysicalSize.y / 2 - 6;
@@ -1045,10 +1055,10 @@ void B737FMC::Render()
     //    glBegin(GL_POLYGON);
     glBegin(GL_LINE_LOOP);
     glVertex2f( 13, m_PhysicalSize.y - 1 );
-    glVertex2f( 95, m_PhysicalSize.y - 1 );
+    glVertex2f( 97, m_PhysicalSize.y - 1 );
     //glVertex2f( 98, 4 );
     //glVertex2f( 10, 4 );
-    glVertex2f( 95, m_PhysicalSize.y - 79 );
+    glVertex2f( 97, m_PhysicalSize.y - 79 );
     glVertex2f( 13, m_PhysicalSize.y - 79 );
     glEnd();
 

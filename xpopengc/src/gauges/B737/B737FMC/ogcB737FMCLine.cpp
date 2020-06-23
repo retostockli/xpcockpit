@@ -94,14 +94,18 @@ namespace OpenGC
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
 
-    unsigned char *line; // pointer to line dataref
+    unsigned char *line = NULL; // pointer to line dataref
 
     if (acf_type == 1) {
       /* we read the Javier Cortez FMC for x737 */
-      line = link_dataref_byte_arr(m_LineDataRef1,nb,-1);
-    } else {
+      if (strcmp(m_LineDataRef1,"") != 0) {
+	line = link_dataref_byte_arr(m_LineDataRef1,nb,-1);
+      }
+    } else if ((acf_type == 2) || (acf_type == 3)) {
       /* we read the ZIBO 737 FMC */
-      line = link_dataref_byte_arr(m_LineDataRef2,nb,-1);
+      if (strcmp(m_LineDataRef2,"") != 0) {
+	line = link_dataref_byte_arr(m_LineDataRef2,nb,-1);
+      }
     }
     
     float xFontSize = m_LineSizeX * fontSize;
@@ -110,7 +114,7 @@ namespace OpenGC
     glColor3ub( m_LineColor[0], m_LineColor[1], m_LineColor[2] );
    
     if (line) {
-
+      
       char buffer[nb];
       memset(buffer,0,sizeof(buffer));
       snprintf( buffer, nb, "%s", line );
