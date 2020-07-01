@@ -94,14 +94,20 @@ namespace OpenGC
     float *vle;
     float *vne;
     float *min_speed;
+    float *min_speed_show;
     float *max_speed;
     float *min_maneuver_speed;
+    float *min_maneuver_speed_show;
     float *max_maneuver_speed;
+    float *max_maneuver_speed_show;
     if ((acf_type == 2) || (acf_type ==3)) {
       min_speed = link_dataref_flt("laminar/B738/pfd/min_speed",0);
+      min_speed_show = link_dataref_flt("laminar/B738/pfd/min_speed_show",0);
       max_speed = link_dataref_flt("laminar/B738/pfd/max_speed",0);
       min_maneuver_speed = link_dataref_flt("laminar/B738/pfd/min_maneuver_speed",0);
+      min_maneuver_speed_show = link_dataref_flt("laminar/B738/pfd/min_maneuver_speed_show",0);
       max_maneuver_speed = link_dataref_flt("laminar/B738/pfd/max_maneuver_speed",0);
+      max_maneuver_speed_show = link_dataref_flt("laminar/B738/pfd/max_maneuver_speed_show",0);
     } else {
       //    float *vs = link_dataref_flt("sim/aircraft/view/acf_Vs",0);
       vfe = link_dataref_flt("sim/aircraft/view/acf_Vfe",0);
@@ -319,21 +325,25 @@ namespace OpenGC
       // draw red minimum and maximum speed rectangles
 
       if ((acf_type == 2) || (acf_type == 3)) {
-	if (*min_speed != FLT_MISS) {
+	if ((*min_speed != FLT_MISS) && (*min_speed_show == 1.0)) {
 	  float minspdLocation = float(*min_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
-	  
-	  glColor3ub( 255, 0,  0 );
-	  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	  for (i=0;i<5;i++) {
-	    glBegin(GL_POLYGON);
-	    glVertex2f(indent_x+tickSpacing*0.35, minspdLocation-tickSpacing*0.30*i*2);
-	    glVertex2f(indent_x+tickSpacing*0.35, minspdLocation-tickSpacing*0.30*(i*2+1));
-	    glVertex2f(indent_x,                  minspdLocation-tickSpacing*0.30*(i*2+1));
-	    glVertex2f(indent_x,                  minspdLocation-tickSpacing*0.30*i*2);
-	    glEnd();
+
+	  int nbox = (int) (minspdLocation / tickSpacing*0.30 * 5.0 + 3.0);
+
+	  if (nbox > 0) {
+	    glColor3ub( 255, 0,  0 );
+	    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	    for (i=0;i<nbox;i++) {
+	      glBegin(GL_POLYGON);
+	      glVertex2f(indent_x+tickSpacing*0.35, minspdLocation-tickSpacing*0.30*i*2);
+	      glVertex2f(indent_x+tickSpacing*0.35, minspdLocation-tickSpacing*0.30*(i*2+1));
+	      glVertex2f(indent_x,                  minspdLocation-tickSpacing*0.30*(i*2+1));
+	      glVertex2f(indent_x,                  minspdLocation-tickSpacing*0.30*i*2);
+	      glEnd();
+	    }
 	  }
 
-	  if (*min_maneuver_speed != FLT_MISS) {
+	  if ((*min_maneuver_speed != FLT_MISS) && (*min_maneuver_speed_show == 1.0)) {
 	    float minmaneuverspdLocation = float(*min_maneuver_speed - ias_flt) *
 	      tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	    glColor3ub( 255, 140,  0 );
@@ -350,19 +360,23 @@ namespace OpenGC
       if ((acf_type == 2) || (acf_type == 3)) {
 	if (*max_speed != FLT_MISS) {
 	  float maxspdLocation = float(*max_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
-	  
-	  glColor3ub( 255, 0,  0 );
-	  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	  for (i=0;i<5;i++) {
-	    glBegin(GL_POLYGON);
-	    glVertex2f(indent_x+tickSpacing*0.35, maxspdLocation+tickSpacing*0.30*i*2);
-	    glVertex2f(indent_x+tickSpacing*0.35, maxspdLocation+tickSpacing*0.30*(i*2+1));
-	    glVertex2f(indent_x,                  maxspdLocation+tickSpacing*0.30*(i*2+1));
-	    glVertex2f(indent_x,                  maxspdLocation+tickSpacing*0.30*i*2);
-	    glEnd();
+
+	  int nbox = (int) ((m_PhysicalSize.y - maxspdLocation) / tickSpacing*0.30 * 5.0 + 3.0);
+
+	  if (nbox > 0) {
+	    glColor3ub( 255, 0,  0 );
+	    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	    for (i=0;i<nbox;i++) {
+	      glBegin(GL_POLYGON);
+	      glVertex2f(indent_x+tickSpacing*0.35, maxspdLocation+tickSpacing*0.30*i*2);
+	      glVertex2f(indent_x+tickSpacing*0.35, maxspdLocation+tickSpacing*0.30*(i*2+1));
+	      glVertex2f(indent_x,                  maxspdLocation+tickSpacing*0.30*(i*2+1));
+	      glVertex2f(indent_x,                  maxspdLocation+tickSpacing*0.30*i*2);
+	      glEnd();
+	    }
 	  }
 	  
-	  if (*max_maneuver_speed != FLT_MISS) {
+	  if ((*max_maneuver_speed != FLT_MISS) && (*max_maneuver_speed_show == 1.0)) {
 	    float maxmaneuverspdLocation = float(*max_maneuver_speed - ias_flt) *
 	      tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	    glColor3ub( 255, 140,  0 );

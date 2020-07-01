@@ -354,10 +354,10 @@ namespace OpenGC
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
 
 	      /*
-	      printf("%i %s %f / %f %f / %f %f / %f %f \n",i,wpt[i].name,wpt[i].lon,
+	      printf("%i %s %s %f / %f %f / %f %f / %f %f \n",i,wpt[i].name,wpt[i].pth,wpt[i].lon,
 		     wpt[i].rad_lon2,wpt[max(i-1,0)].rad_lon2,
 		     wpt[i].rad_radius,wpt[max(i-1,0)].rad_radius,
-		     wpt[i].crs,wpt[max(i-1,0)].crs);
+		     wpt[i].brg*180./3.14,wpt[max(i-1,0)].brg*180./3.14);
 	      */
 
 	      // convert to azimuthal equidistant coordinates with acf in center
@@ -385,22 +385,26 @@ namespace OpenGC
 		float yPosL = yPos2;
 
 		/* Special cases before or after curved routes */
+
+		// leg does not start at last waypoint
 		if ((wpt[max(i-1,0)].rad_lon2 != 0.0) && (wpt[max(i-1,0)].rad_lat2 != 0.0) &&
-		    (wpt[max(i-1,0)].rad_radius != 0.0) && // (wpt[max(i-1,0)].crs != 0.0) &&
+		    (wpt[max(i-1,0)].rad_radius != 0.0) && 
 		    (wpt[max(i-1,0)].rad_lon2 != FLT_MISS) && (wpt[max(i-1,0)].rad_lat2 != FLT_MISS) &&
-		    (wpt[max(i-1,0)].rad_radius != FLT_MISS)) { // && (wpt[max(i-1,0)].crs != FLT_MISS)) {
-		  // leg does not start at last waypoint
+		    (wpt[max(i-1,0)].rad_radius != FLT_MISS)) {
+		  //printf("Leg does not start at last waypoint \n");
 		  lon = (double) wpt[max(i-1,0)].rad_lon2;
 		  lat = (double) wpt[max(i-1,0)].rad_lat2;
 		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 		  yPos = -northing / 1852.0 / mapRange * map_size; 
 		  xPos = easting / 1852.0  / mapRange * map_size;
 		} 
+
+		// leg does not end at next waypoint
 		if ((wpt[i].rad_lon2 != 0.0) && (wpt[i].rad_lat2 != 0.0) &&
-		    (wpt[i].rad_radius != 0.0) && // (wpt[i].crs != 0.0) &&
+		    (wpt[i].rad_radius != 0.0) && 
 		    (wpt[i].rad_lon2 != FLT_MISS) && (wpt[i].rad_lat2 != FLT_MISS) &&
-		    (wpt[i].rad_radius != FLT_MISS)) { // && (wpt[i].crs != FLT_MISS)) {
-		  // leg does not end at next waypoint
+		    (wpt[i].rad_radius != FLT_MISS)) {
+		  //printf("Leg does not end at next waypoint \n");
 		  lon = (double) wpt[i].rad_lon2;
 		  lat = (double) wpt[i].rad_lat2;
 		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
@@ -493,9 +497,9 @@ namespace OpenGC
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
 		  /*
-		  printf("%i %s %i %f %f / %f %f \n",i,wpt[i].name,wpt[i].turn,
-			 wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14,
-			 wpt[max(i-1,0)].crs,wpt[i].crs);
+		  printf("%i %s %i / %f %f %f / %f %f \n",i,wpt[i].name,wpt[max(i-1,0)].turn,
+			 wpt[max(i-1,0)].rad_ctr_lon,wpt[max(i-1,0)].lon,wpt[max(i-1,0)].rad_lon2,
+			 wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14);
 		  */
 
 		  /*
@@ -535,49 +539,54 @@ namespace OpenGC
 		  float relbrg = fmod(180./3.14*(wpt[i].brg-wpt[max(i-1,0)].brg) + 360.0, 360.0);
 		  float radius = pow(pow(xPos-xPosC,2) + pow(yPos-yPosC,2),0.5);
 		  if (relbrg > 180.0) relbrg -= 360.0;
+		 		  
 		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
 		    /* left turn */
 		    ang += 90.0;
 		    ang2 += 90.0;
-		    if (relbrg > 0.0) relbrg -= 360.0;
 		  } else {
 		    /* right turn */
 		    ang += 270.0;
 		    ang2 += 270.0;
-		    if (relbrg < 0.0) relbrg += 360.0;
 		  }
 		  ang = fmodf(ang + 360.0,360.0);
 		  ang2 = fmodf(ang2 + 360.0,360.0);
 		  //printf("%i %f %f \n",i,ang,ang2);
-				  
-		  // draw curved leg (partial circle)
-		  aCircle.SetDegreesPerPoint(2);
-		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
-		    aCircle.SetArcStartEnd(ang2,ang);
-		  } else {
-		    aCircle.SetArcStartEnd(ang,ang2);
+		    
+		  if (fabs(relbrg) > 5.0) {
+		    // Only draw circles for large enough change in direction
+		    // There are occasions where this curved legs do not work
+		    
+		    // draw curved leg (partial circle)
+		    aCircle.SetDegreesPerPoint(2);
+		    if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
+		      aCircle.SetArcStartEnd(ang2,ang);
+		    } else {
+		      aCircle.SetArcStartEnd(ang,ang2);
+		    }
+		    aCircle.SetRadius(radius);
+		    aCircle.SetOrigin(xPosC,yPosC);
+		    glBegin(GL_LINE_STRIP);
+		    aCircle.Evaluate();
+		    glEnd();
+
 		  }
-		  aCircle.SetRadius(radius);
-		  aCircle.SetOrigin(xPosC,yPosC);
-		  glBegin(GL_LINE_STRIP);
-		  aCircle.Evaluate();
-		  glEnd();
-		
+		  
 		  /* Circle always starts from xPos/yPos, but may need to be extended
 		     by a line to xPos2/yPos2 */		
 		  float D = pow(pow(xPos2-xPosC,2) + pow(yPos2-yPosC,2),0.5);
 		  if (D > (radius+0.1)) {
 		    float xPosT = sin(ang2*3.14/180.)*radius + xPosC;
 		    float yPosT = cos(ang2*3.14/180.)*radius + yPosC;
-
+		    
 		    /*
-		    glPushMatrix();		    
-		    glColor3ub(255, 0, 255);
-		    glPointSize(10.0);
-		    glBegin(GL_POINTS);
-		    glVertex2f(xPosT, yPosT);
-		    glEnd();		    
-		    glPopMatrix();
+		      glPushMatrix();		    
+		      glColor3ub(255, 0, 255);
+		      glPointSize(10.0);
+		      glBegin(GL_POINTS);
+		      glVertex2f(xPosT, yPosT);
+		      glEnd();		    
+		      glPopMatrix();
 		    */
 		    
 		    // draw tangent
@@ -585,9 +594,7 @@ namespace OpenGC
 		    glVertex2f(xPosT,yPosT);
 		    glVertex2f(xPos2,yPos2);
 		    glEnd();
-		  
 		  }
-		
 		
 		} else {
 		  // straight line

@@ -1208,8 +1208,7 @@ void b737_pedestal(void)
     //    printf("engine volume: %f \n",*master_volume);
   }
 
-  /* steer servo for rudder position indicator */
-  
+  /* steer servo for rudder position indicator */  
   ret = servos_output(device,0,rudder_trim,-1.0,1.0,425,750);
   
 }
