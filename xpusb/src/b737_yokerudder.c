@@ -61,6 +61,9 @@ void b737_yokerudder(void)
     left_brake = link_dataref_flt("sim/cockpit2/controls/left_brake_ratio",-3);
     right_brake = link_dataref_flt("sim/cockpit2/controls/right_brake_ratio",-3);
   }
+
+  int* override_auto_toe_brake = link_dataref_int("sim/operation/override/override_toe_brakes");
+  *override_auto_toe_brake = 1;
   
   int* viewmode = link_dataref_int("xpserver/viewmode");
 
