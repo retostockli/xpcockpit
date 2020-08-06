@@ -92,13 +92,12 @@ void b737_yokerudder(void)
   } else if (acf_type == 1) {
     stab_trim_up = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_UP_ALL");
     stab_trim_down = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_DOWN_ALL");
-    ap_disconnect = link_dataref_cmd_once("x737/yoke/capt_AP_DISENG_BTN");
+    ap_disconnect = link_dataref_cmd_hold("x737/yoke/capt_AP_DISENG_BTN");
   } else {
     stab_trim_up = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_up");
     stab_trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down");
-    ap_disconnect = link_dataref_cmd_once("sim/autopilot/servos_toggle");
+    ap_disconnect = link_dataref_cmd_hold("sim/autopilot/servos_off_any");
   }
-  *ap_disconnect = 0;
 
   /* temporary dataref for stab trim main elec */
   int *stab_trim_me = link_dataref_int("xpserver/stab_trim_me");
@@ -144,13 +143,7 @@ void b737_yokerudder(void)
   }
 
   /* AP disconnect button */
-  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     ret = digital_input(device,card,4,ap_disconnect,0);
-  } else {
-    if (*ap_engage == 2) {
-      ret = digital_input(device,card,4,ap_disconnect,0);
-    }
-  }
   /* hat switch buttons */
   /* 
      6 up

@@ -389,7 +389,7 @@ void b737_throttle(void)
   } else {
     if (*num_engines != INT_MISS) {
       for (i=0;i<*num_engines;i++) {
-	if (i<(*num_engines/2)) {
+	if ((i<(*num_engines/2)) || (*num_engines == 1)) {
 	  if (*(fuel_mixture+i) != FLT_MISS) {
 	    input = 1;
 	    ret = digital_input(device_bu0836,0,input,&ivalue,0);

@@ -206,6 +206,7 @@ void b737_overhead_fwd(void)
     ret = digital_input(device,card,17,maint,0);
     
     /* set relay 0 on output 49 on relay card through d-sub con */
+    /* Backlighting Only when Battery is on */
     ret = digital_outputf(device,card,49,battery);
 
     /* Annunciators */
@@ -1464,6 +1465,12 @@ void b737_overhead_fwd(void)
       *battery_i = 1-ival;
       *avionics_i = 1-ival;
     }
+
+    /* set relay 0 on output 49 on relay card through d-sub con */
+    /* Backlighting Only when Battery is on */
+    device = mastercard;
+    card = 0;
+    ret = digital_output(device,card,49,battery_i);
    
     /* Ignitior Switch for first engine */
     device = mastercard;
@@ -1482,6 +1489,13 @@ void b737_overhead_fwd(void)
     card = 0;
     int *engine_start = link_dataref_cmd_hold("sim/engines/engage_starters");
     ret = digital_input(device,card,18,engine_start,0);
+
+    /* Blank Altitude Panel */
+    device = mastercard;
+    card = 0;
+    ival = 10;
+    ret = mastercard_display(device,card,0,5,&ival,1);
+    ret = mastercard_display(device,card,6,5,&ival,1);
 
     /* Fuel Pump */
     device = mastercard;

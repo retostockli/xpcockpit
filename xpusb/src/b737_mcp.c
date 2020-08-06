@@ -193,13 +193,13 @@ void b737_mcp(void)
     ap_mcpspd = link_dataref_cmd_once("x737/mcp/MCPSPD_MODE_TOGGLE");     // AP mcpspd select switch
     ap_mcpspd_led = link_dataref_int("x737/systems/MCP/LED_MCPSPD_on");
   } else {
-    ap_cmd_a = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");     // MCP CMD A mode
-    ap_cmd_a_led = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");
+    ap_cmd_a = link_dataref_int("xpserver/CMD_A");     // MCP CMD A mode
+    ap_cmd_a_led = link_dataref_int("xpserver/LED_CMDA_on");
     ap_cmd_b = link_dataref_int("xpserver/CMD_B");     // MCP CMD B mode
     ap_cmd_b_led = link_dataref_int("xpserver/LED_CMDB_on");
-    ap_cws_a = link_dataref_int("xpserver/ap_cws_a");     // MCP CWS A mode
+    ap_cws_a = link_dataref_cmd_hold("sim/autopilot/CWSA");     // MCP CWS A mode
     ap_cws_a_led = link_dataref_int("xpserver/ap_cws_a_led");     // MCP CWS A mode
-    ap_cws_b = link_dataref_int("xpserver/ap_cws_b");     // MCP CWS B mode
+    ap_cws_b = link_dataref_cmd_hold("sim/autopilot/CWSB");     // MCP CWS B mode
     ap_cws_b_led = link_dataref_int("xpserver/ap_cws_b_led");     // MCP CWS B mode
     ap_fdir_a = link_dataref_int("sim/cockpit2/autopilot/flight_director_mode");    // Flight Director mode CA (A)
     ap_fdir_a_led = link_dataref_int("sim/cockpit2/autopilot/flight_director_mode");
@@ -442,11 +442,6 @@ void b737_mcp(void)
     ret = digital_input(device,card,20,&temp,0);
     if ((ret == 1) && (temp == 1)){
       printf("CMD A pressed\n");
-      if (*ap_engage == 1) {
-	*ap_engage = 2;
-      } else if (*ap_engage == 2) {
-	*ap_engage = 1;
-      }
     }
   }
 
@@ -462,7 +457,7 @@ void b737_mcp(void)
   if (ret == 1) {
     printf("CWS B pressed\n");
   }
-
+  
   /* only change ap_engage if switch has changed */
   /* safe algorithm for solenoid relais in pedestal code */
    if ((acf_type == 2) || (acf_type == 3)) {
@@ -487,7 +482,7 @@ void b737_mcp(void)
     if (ret == 1) {
       if (temp == 1) {
 	if (*ap_engage == 0) {
-	  *ap_engage = 1;
+	  *ap_engage = 2;
 	}
       } else {
 	if (*ap_engage >= 1) {
@@ -496,7 +491,7 @@ void b737_mcp(void)
       }   
     } 
   }
-
+   
   ret = digital_input(device,card,26,ap_vnav,0);
   ret = digital_input(device,card,27,ap_lnav,0);
 
@@ -557,28 +552,20 @@ void b737_mcp(void)
     }
   }
   
-  ret = digital_input(device,card,37,ap_fdir_a,0);
-  /*
-  if (acf_type == 1) {
-    ret = digital_input(device,card,37,&temp,0);
+  ret = digital_input(device,card,37,&temp,0);
+  if ((acf_type == 2) || (acf_type == 3)) {
+    *ap_fdir_a = temp;
+  } else if (acf_type == 1) {
     if (ret==1) {
       *ap_fdir_a = temp;
     }
   } else {
-    ret = digital_input(device,card,37,&temp,0);
-    if (ret==1) {
-      if (temp==1) {
-	if (*ap_fdir_a == 0) {
-	  *ap_fdir_a = 1;
-	}
-      } else {
-	if (*ap_fdir_a == 1) {
-	  *ap_fdir_a = 0;
-	}
-      }
+    if (temp==1) {
+      *ap_fdir_a = 2;
+    } else {
+      *ap_fdir_a = 0;
     }
   }
-  */
    
   ret = digital_input(device,card,24,ap_fdir_b,0);
   /*  ret = digital_input(device,card,24,&temp,0);
