@@ -15,12 +15,13 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#define INTERVAL 10
+#define INTERVAL 5
 
 /* verbosity of usbiocards (0-4) */
 int verbose;
 
 int acf_type; /* aircraft type: 
+                -1: undefined (acf info not yet received)
 		 0: any X-Plane aircraft
 		 1: x737 by Benedikt Stratmann
 		 2: Laminar B737-800

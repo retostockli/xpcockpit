@@ -76,6 +76,12 @@ void b737_yokerudder(void)
   int* view_right = link_dataref_cmd_hold("sim/general/right");
   int* view_up = link_dataref_cmd_hold("sim/general/up");
   int* view_down = link_dataref_cmd_hold("sim/general/down");
+
+  int* weapon_down = link_dataref_cmd_hold("sim/weapons/weapon_select_down");
+  int* weapon_up = link_dataref_cmd_hold("sim/weapons/weapon_select_up");
+  int* target_down = link_dataref_cmd_hold("sim/weapons/weapon_target_down");
+  int* target_up = link_dataref_cmd_hold("sim/weapons/weapon_target_up");
+  int* weapon_fire = link_dataref_cmd_hold("sim/weapons/fire_any_armed");
   
   float *view_horizontal = link_dataref_flt("sim/graphics/view/field_of_view_horizontal_deg",0);
   float *view_vertical = link_dataref_flt("sim/graphics/view/field_of_view_vertical_deg",0);

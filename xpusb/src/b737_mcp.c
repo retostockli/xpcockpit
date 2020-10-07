@@ -559,13 +559,13 @@ void b737_mcp(void)
     if (ret==1) {
       *ap_fdir_a = temp;
     }
-  } else {
+  } else if (acf_type == 0) {
     if (temp==1) {
       *ap_fdir_a = 2;
     } else {
       *ap_fdir_a = 0;
     }
-  }
+  } // don't do anything if acf_type is -1 (undefined)
    
   ret = digital_input(device,card,24,ap_fdir_b,0);
   /*  ret = digital_input(device,card,24,&temp,0);

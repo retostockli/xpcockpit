@@ -156,7 +156,7 @@ void B737NAV::Render()
   }
 
   
-  if ((*avionics_on == 1) && (*irs_mode == 2)) {
+  if (*avionics_on == 1) {
 
     // First thing to do is call base class setup
     Gauge::Render();
@@ -192,6 +192,9 @@ void B737NAV::Render()
       m_MapHeading = 0.0;
     }
 
+    // if IRS is not aligned disable map display
+    if (*irs_mode != 2) m_MapHeading = FLT_MISS;
+    
     //    printf("%f %f \n",m_MapCtrLon,m_MapCtrLat);
     
     // Get Map Centered vs. Expanded Mode

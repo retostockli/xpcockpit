@@ -315,7 +315,7 @@ void b737_throttle(void)
   ret = axis_input(device_bu0836,axis,&stabilizer,-maxstabilizer,-minstabilizer);
   stabilizer = -stabilizer;
   if (ret == 1) {
-    //    printf("Stabilizer Trim: %i %f %f \n",stabilizer_mode,stabilizer,*stabilizer_xplane);
+    //printf("Stabilizer Trim: %i %f %f \n",stabilizer_mode,stabilizer,*stabilizer_xplane);
   }
   if ((stabilizer_mode < 0) || (stabilizer_mode > 2)) stabilizer_mode = 0;
   if ((stabilizer_mode == 0) && (stabilizer != FLT_MISS) && (*stabilizer_xplane != FLT_MISS) &&
@@ -341,7 +341,7 @@ void b737_throttle(void)
   }
 
   if (ret == 1) {
-    //    printf("Stabilizer Mode: %i %i %f \n",stabilizer_mode,*stab_trim_ap,stabilizer - *stabilizer_xplane);
+    //printf("Stabilizer Mode: %i %i %f \n",stabilizer_mode,*stab_trim_ap,stabilizer - *stabilizer_xplane);
   }
   
     

@@ -1103,21 +1103,21 @@ int motors_output(int device, int motor, float *value, float range)
 	  /* update motor internal data array for sending */
 	  if (data != iocard[device].motors[motor]) {	  
 	    iocard[device].motors[motor] = data;
-	    if (verbose > 2) printf("LIBIOCARDS: Device %i Motor %i has value %i \n",device, motor, data);	  
+	    if (verbose > -1) printf("LIBIOCARDS: Device %i Motor %i has value %i \n",device, motor, data);	  
 	  }
 
 	}
 
       } else {
 	retval = -1;
-	if (verbose > 0) printf("LIBIOCARDS: Motor number outside allowed range: %i \n", motor);
+	if (verbose > -1) printf("LIBIOCARDS: Motor number outside allowed range: %i \n", motor);
       }
       
     }
 
   } else {
     retval = -1;
-    if (verbose > 1) printf("LIBIOCARDS: Device either not a IOCard-USBMotors or not ready: %i \n", device);
+    if (verbose > -1) printf("LIBIOCARDS: Device either not a IOCard-USBMotors or not ready: %i \n", device);
   }
 
   return (retval);

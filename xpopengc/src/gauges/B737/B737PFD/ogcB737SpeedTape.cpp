@@ -394,6 +394,9 @@ namespace OpenGC
 	// draw MCP dialed speed if within the speed tape range (PLEASE ADAPT FOR AP MACH SPEEED)
 	float mcpspdLocation = float(*ap_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
+	// keep MCP speed within bounds of tape
+	mcpspdLocation = fmin(fmax(0.0,mcpspdLocation),m_PhysicalSize.y);
+
 	// draw a magenta MCP altitude indicator
 	glLineWidth(3.0);
 	glColor3ub( 210, 5,  210 );

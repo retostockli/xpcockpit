@@ -356,6 +356,9 @@ namespace OpenGC
       if (*ap_altitude != FLT_MISS) {
 	float mcpaltLocation = (*ap_altitude - *pressure_altitude) *
 	  tickSpacing / 100.0 + m_PhysicalSize.y/2;
+
+	// keep MCP altitude within bounds of tape
+	mcpaltLocation = fmin(fmax(0.0,mcpaltLocation),m_PhysicalSize.y);
 	
 	// draw a magenta MCP altitude indicator
 	glColor3ub( 210, 5,  210 );
