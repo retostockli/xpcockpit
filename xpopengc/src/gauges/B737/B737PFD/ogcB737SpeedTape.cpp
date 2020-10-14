@@ -36,6 +36,7 @@
 #include <math.h>
 
 #include "ogcGaugeComponent.h"
+#include "ogcB737PFD.h"
 #include "ogcB737SpeedTape.h"
 
 namespace OpenGC
@@ -100,6 +101,21 @@ namespace OpenGC
     float *min_maneuver_speed_show;
     float *max_maneuver_speed;
     float *max_maneuver_speed_show;
+
+    float *vflap0;
+    float *vflap1;
+    float *vflap2;
+    float *vflap5;
+    float *vflap10;
+    float *vflap15;
+    float *vflap25;
+    int *sflap0;
+    int *sflap1;
+    int *sflap2;
+    int *sflap5;
+    int *sflap10;
+    int *sflap15;
+    int *sflap25;
     if ((acf_type == 2) || (acf_type ==3)) {
       min_speed = link_dataref_flt("laminar/B738/pfd/min_speed",0);
       min_speed_show = link_dataref_flt("laminar/B738/pfd/min_speed_show",0);
@@ -108,6 +124,22 @@ namespace OpenGC
       min_maneuver_speed_show = link_dataref_flt("laminar/B738/pfd/min_maneuver_speed_show",0);
       max_maneuver_speed = link_dataref_flt("laminar/B738/pfd/max_maneuver_speed",0);
       max_maneuver_speed_show = link_dataref_flt("laminar/B738/pfd/max_maneuver_speed_show",0);
+
+      vflap0 = link_dataref_flt("laminar/B738/pfd/flaps_up",0);
+      vflap1 = link_dataref_flt("laminar/B738/pfd/flaps_1",0);
+      vflap2 = link_dataref_flt("laminar/B738/pfd/flaps_2",0);
+      vflap5 = link_dataref_flt("laminar/B738/pfd/flaps_5",0);
+      vflap10 = link_dataref_flt("laminar/B738/pfd/flaps_10",0);
+      vflap15 = link_dataref_flt("laminar/B738/pfd/flaps_15",0);
+      vflap25 = link_dataref_flt("laminar/B738/pfd/flaps_25",0);
+      sflap0 = link_dataref_int("laminar/B738/pfd/flaps_up_show");
+      sflap1 = link_dataref_int("laminar/B738/pfd/flaps_1_show");
+      sflap2 = link_dataref_int("laminar/B738/pfd/flaps_2_show");
+      sflap5 = link_dataref_int("laminar/B738/pfd/flaps_5_show");
+      sflap10 = link_dataref_int("laminar/B738/pfd/flaps_10_show");
+      sflap15 = link_dataref_int("laminar/B738/pfd/flaps_15_show");
+      sflap25 = link_dataref_int("laminar/B738/pfd/flaps_25_show");
+      
     } else {
       //    float *vs = link_dataref_flt("sim/aircraft/view/acf_Vs",0);
       vfe = link_dataref_flt("sim/aircraft/view/acf_Vfe",0);
@@ -169,7 +201,7 @@ namespace OpenGC
       glPushMatrix();
 
       // Draw in gray-blue
-      glColor3ub(51,51,76);
+      glColor3ub(COLOR_GRAYBLUE);
 
       // Draw the background rectangle
       glBegin(GL_POLYGON);
@@ -482,6 +514,99 @@ namespace OpenGC
 	  glEnd();
  	  
 	}
+	
+	if ((*vflap0 != FLT_MISS) && (*sflap0 == 1)) {
+	  float vLocation = float(*vflap0 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 0, 179, 0);
+	  strcpy(buffer2, "UP");
+	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
+	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
+	  
+	  glBegin(GL_LINES);
+	  glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	  glVertex2f(indent_x + 1.0, vLocation);
+	  glEnd();
+	}
+	if ((*vflap1 != FLT_MISS) && (*sflap1 == 1)) {
+	  float vLocation = float(*vflap1 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 0, 179, 0);
+	  strcpy(buffer2, "1");
+	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
+	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
+	  
+	  glBegin(GL_LINES);
+	  glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	  glVertex2f(indent_x + 1.0, vLocation);
+	  glEnd();
+	}
+	if ((*vflap2 != FLT_MISS) && (*sflap2 == 1)) {
+	  float vLocation = float(*vflap2 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 0, 179, 0);
+	  strcpy(buffer2, "2");
+	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
+	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
+	  
+	  glBegin(GL_LINES);
+	  glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	  glVertex2f(indent_x + 1.0, vLocation);
+	  glEnd();
+	}
+	if ((*vflap5 != FLT_MISS) && (*sflap5 == 1)) {
+	  float vLocation = float(*vflap5 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 0, 179, 0);
+	  strcpy(buffer2, "5");
+	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
+	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
+	  
+	  glBegin(GL_LINES);
+	  glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	  glVertex2f(indent_x + 1.0, vLocation);
+	  glEnd();
+	}
+	if ((*vflap10 != FLT_MISS) && (*sflap10 == 1)) {
+	  float vLocation = float(*vflap10 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 0, 179, 0);
+	  strcpy(buffer2, "10");
+	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
+	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
+	  
+	  glBegin(GL_LINES);
+	  glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	  glVertex2f(indent_x + 1.0, vLocation);
+	  glEnd();
+	}
+	if ((*vflap15 != FLT_MISS) && (*sflap15 == 1)) {
+	  float vLocation = float(*vflap15 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 0, 179, 0);
+	  strcpy(buffer2, "15");
+	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
+	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
+	  
+	  glBegin(GL_LINES);
+	  glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	  glVertex2f(indent_x + 1.0, vLocation);
+	  glEnd();
+	}
+	if ((*vflap25 != FLT_MISS) && (*sflap25 == 1)) {
+	  float vLocation = float(*vflap25 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	  
+	  glColor3ub( 0, 179, 0);
+	  strcpy(buffer2, "25");
+	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
+	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
+	  
+	  glBegin(GL_LINES);
+	  glVertex2f(indent_x - 0.5*tickWidth, vLocation);
+	  glVertex2f(indent_x + 1.0, vLocation);
+	  glEnd();
+	}
+	
       }
 
       if ((*speed_acceleration != FLT_MISS) && (fabs(*speed_acceleration) > 0.1)) {
@@ -500,20 +625,20 @@ namespace OpenGC
 	if (*speed_acceleration > 0.0) {
 	  glBegin(GL_LINES);
 	  glVertex2f(indent_x - tickWidth/2, vLocation);
-	  glVertex2f(indent_x - tickWidth/2 - tickWidth/4, vLocation - tickWidth/3);
+	  glVertex2f(indent_x - tickWidth/2 - tickWidth/3, vLocation - tickWidth/2);
 	  glEnd();	
 	  glBegin(GL_LINES);
 	  glVertex2f(indent_x - tickWidth/2, vLocation);
-	  glVertex2f(indent_x - tickWidth/2 + tickWidth/4, vLocation - tickWidth/3);
+	  glVertex2f(indent_x - tickWidth/2 + tickWidth/3, vLocation - tickWidth/2);
 	  glEnd();
 	} else {
 	  glBegin(GL_LINES);
 	  glVertex2f(indent_x - tickWidth/2, vLocation);
-	  glVertex2f(indent_x - tickWidth/2 - tickWidth/4, vLocation + tickWidth/3);
+	  glVertex2f(indent_x - tickWidth/2 - tickWidth/3, vLocation + tickWidth/2);
 	  glEnd();	
 	  glBegin(GL_LINES);
 	  glVertex2f(indent_x - tickWidth/2, vLocation);
-	  glVertex2f(indent_x - tickWidth/2 + tickWidth/4, vLocation + tickWidth/3);
+	  glVertex2f(indent_x - tickWidth/2 + tickWidth/3, vLocation + tickWidth/2);
 	  glEnd();
 	}
       }

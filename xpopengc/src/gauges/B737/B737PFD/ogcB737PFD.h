@@ -40,6 +40,7 @@
 #define ogcB737PFD_h
 
 #include "ogcGauge.h"
+#include "../ogcBoeingColors.h"
 
 namespace OpenGC
 {

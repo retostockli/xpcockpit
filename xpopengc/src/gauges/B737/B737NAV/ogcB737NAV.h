@@ -42,6 +42,7 @@ is required to "sync" the data types contained in the packet
 #define ogcB737NAV_h
 
 #include <ogcGauge.h>
+#include "../ogcBoeingColors.h"
 
 namespace OpenGC
 {

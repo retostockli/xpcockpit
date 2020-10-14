@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "ogcGaugeComponent.h"
+#include "ogcB737PFD.h"
 #include "ogcB737MachNumber.h"
 #include "ogcCircleEvaluator.h"
 
@@ -291,7 +292,7 @@ namespace OpenGC
       // transform air speed (knots) to Mach number
       float mach = fabs( *ias / (38.967854 * sqrt(*tat+273.15)));
     
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       glLineWidth(2.0);
     
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
@@ -302,7 +303,7 @@ namespace OpenGC
 
     // 2. Plot Autopilot dialed speed above the speed tape
 
-    glColor3ub( 210, 5,  210 );
+    glColor3ub(COLOR_VIOLET);
     glLineWidth(2.0);
 
     // m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
@@ -319,7 +320,7 @@ namespace OpenGC
 
     // 3. Plot dialed barometric pressure in In Hg below the altitude tape
 
-    glColor3ub(50,255,50);
+    glColor3ub(COLOR_GREEN);
     glLineWidth(2.0);
 
     if (*altimeter_pressure != FLT_MISS) {
@@ -339,7 +340,7 @@ namespace OpenGC
 
     // 4. Plot dialed Autopilot altitude in feet above the altitude tape
 
-    glColor3ub( 210, 5,  210 );
+    glColor3ub(COLOR_VIOLET);
     glLineWidth(2.0);
 
     if (*ap_altitude != FLT_MISS) {
@@ -350,7 +351,7 @@ namespace OpenGC
     // 5. Plot MCP states above PFD 
 
     // Draw in gray
-    glColor3ub(50,50,50);
+    glColor3ub(COLOR_GRAYBLUE);
 
     // Draw the background rectangle
     glBegin(GL_POLYGON);
@@ -361,7 +362,7 @@ namespace OpenGC
     glEnd();  
 
     // Draw in black
-    glColor3ub(0,0,0);
+    glColor3ub(COLOR_BLACK);
     glLineWidth(3.0);
 
     glBegin(GL_LINES);
@@ -379,7 +380,7 @@ namespace OpenGC
 
     // Draw Autopilot states 
 
-    m_pFontManager->SetSize(m_Font, 4, 4);
+    m_pFontManager->SetSize(m_Font, 4, 5);
 
     if ((acf_type == 2) || (acf_type == 3)) {
   
@@ -388,7 +389,7 @@ namespace OpenGC
     
 	// Green border around background
 	if (*ap_spd_mode_rec == 1) {
-	  glColor3ub(0,179,0);
+	  glColor3ub(COLOR_GREEN);
 	  glLineWidth(2.0);
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(40,181+8);
@@ -400,23 +401,27 @@ namespace OpenGC
     
 	// White Text on Gray
 	if (*ap_spd_mode == 1) {
-	  glColor3ub(255,255,255);
+	  glColor3ub(COLOR_WHITE);
 	  strcpy(buffer, "ARM");
 	  m_pFontManager->Print(49,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 2) {
-	  glColor3ub(0,179,0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer, "N1");
 	  m_pFontManager->Print(50,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 3) {
-	  glColor3ub(0,179,0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer, "MCP SPD");
 	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 4) {
-	  glColor3ub(0,179,0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer, "FMC SPD");
 	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
+	} else if (*ap_spd_mode == 6) {
+	  glColor3ub(COLOR_GREEN);
+	  strcpy(buffer, "THR HLD");
+	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 7) {
-	  glColor3ub(0,179,0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer, "RETARD");
 	  m_pFontManager->Print(46,183+8, &buffer[0], m_Font);
 	}
@@ -425,7 +430,7 @@ namespace OpenGC
       // top center
       if (*ap_hdg_mode >= 1) {
 
-	glColor3ub(0,179,0);
+	glColor3ub(COLOR_GREEN);
 
 	if (*ap_hdg_mode_rec == 1) {
 	  // Green border around background
@@ -457,7 +462,7 @@ namespace OpenGC
       // top right
       if (*ap_alt_mode >= 1) {
 
-	glColor3ub(0,179,0);
+	glColor3ub(COLOR_GREEN);
 
 	// Green border around background
 	if (*ap_alt_mode_rec == 1) {
@@ -493,7 +498,7 @@ namespace OpenGC
 	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 9) {
 	  strcpy(buffer, "VNAV PTH");
-	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
+	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 10) {
 	  strcpy(buffer, "VNAV ALT");
 	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
@@ -505,7 +510,7 @@ namespace OpenGC
 
 
       /* bottom modes are white */
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
 
       // bottom left
       //      if (*ap_spd_mode_arm >= 1) {
@@ -585,10 +590,10 @@ namespace OpenGC
     // Print FD status
     if (((*fd_a_status >= 1) && is_captain) || ((*fd_b_status >= 1) && is_copilot)) {
       m_pFontManager->SetSize(m_Font, fontHeight*1.2, fontWidth*1.2);
-      glColor3ub(0,179,0);
+      glColor3ub(COLOR_GREEN);
    
       if (*ap_single_ch == 1) {
-	glColor3ub(255,255,0);
+	glColor3ub(COLOR_YELLOW);
 	strcpy(buffer, "SINGLE CH");
 	m_pFontManager->Print(70,155+0, &buffer[0], m_Font);
       } else if (*ap_autoland == 1) {
@@ -663,7 +668,7 @@ namespace OpenGC
 	float dotsHoriz = ADICenterX + 55;
     
 	// Horizontal center line
-	glColor3ub( 255, 255,  255 );
+	glColor3ub(COLOR_WHITE);
 	glBegin(GL_LINES);
 	glVertex2f( dotsHoriz - 4, ADICenterY );
 	glVertex2f( dotsHoriz + 4, ADICenterY );
@@ -702,7 +707,7 @@ namespace OpenGC
 	// This is the glideslope bug
 	// Todo: fill the glideslope bug when we are in glide slope
 	// color is magenta
-	glColor3ub( 210, 5,  210 );
+	glColor3ub(COLOR_VIOLET);
 	if (fabs(rawGlideslope) < 2.0) {
 	  glBegin(GL_POLYGON);
 	} else {
@@ -737,7 +742,7 @@ namespace OpenGC
 	float localizerPosition = ADICenterX + rawLocalizer * localizerWidth;
 		
 	// Verticalal center line
-	glColor3ub( 255, 255,  255 );
+	glColor3ub(COLOR_WHITE);
 	glBegin(GL_LINES);
 	glVertex2f( ADICenterX, localizerHeight + 4 );
 	glVertex2f( ADICenterX, localizerHeight - 4 );
@@ -774,8 +779,7 @@ namespace OpenGC
 	glEnd();
 		
 	// This is the localizer bug
-	// color is magenta
-	glColor3ub( 210, 5,  210 );
+	glColor3ub(COLOR_VIOLET);
 	if (fabs(rawLocalizer) < 2.0) {
 	  glBegin(GL_POLYGON);
 	} else {
@@ -793,7 +797,7 @@ namespace OpenGC
     if (*gpws != INT_MISS) {
       if (*gpws == 1) {
 	m_pFontManager->SetSize(m_Font, fontHeight*1.5, fontWidth*1.5);
-	glColor3ub( 255, 0,  0 );
+	glColor3ub(COLOR_RED);
 	strcpy(buffer, "PULL UP");
 	m_pFontManager->Print(70,42, &buffer[0], m_Font);
       }
@@ -802,7 +806,7 @@ namespace OpenGC
     if (*windshear != INT_MISS) {
       if (*windshear == 1) {
 	m_pFontManager->SetSize(m_Font, fontHeight*1.5, fontWidth*1.5);
-	glColor3ub( 255, 0,  0 );
+	glColor3ub(COLOR_RED);
 	strcpy(buffer, "WINDSHEAR");
 	m_pFontManager->Print(58,42, &buffer[0], m_Font);
       }
@@ -811,7 +815,7 @@ namespace OpenGC
     // draw minimum altitude (feet)
     if (*altimeter_minimum != FLT_MISS) {
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
-      glColor3ub( 0, 255,  0 );
+      glColor3ub(COLOR_GREEN);
       if ((acf_type == 2) || (acf_type == 3)) {
 	if (*minimum_mode == 0) {
 	  strcpy(buffer, "RADIO");
@@ -837,7 +841,7 @@ namespace OpenGC
       
       m_pFontManager->SetSize(m_Font, 3.8, 3.8);
       glLineWidth(2.0);
-      glColor3ub( 255, 255,  255 );
+      glColor3ub(COLOR_WHITE);
       
       bCircle.SetOrigin(xcircle,ycircle);
       glBegin(GL_LINE_STRIP);
@@ -888,6 +892,16 @@ namespace OpenGC
 	strcpy(buffer, "D");
 	m_pFontManager->Print(34,101, &buffer[0], m_Font); 
        }
+
+      // NAV Text on PFD
+      unsigned char *text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",20,-1);
+      unsigned char *text2 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt2",20,-1);
+      m_pFontManager->SetSize(m_Font, 4, 4.5);
+      glColor3ub(COLOR_WHITE);
+      snprintf( buffer, sizeof(buffer), "%s", text1 );
+      m_pFontManager->Print(42,170,buffer, m_Font); 
+      snprintf( buffer, sizeof(buffer), "%s", text2 );
+      m_pFontManager->Print(42,162,buffer, m_Font); 
     }
 
     
