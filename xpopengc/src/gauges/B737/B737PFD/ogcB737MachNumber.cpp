@@ -92,9 +92,9 @@ namespace OpenGC
     float *ap_altitude;
 
     if ((acf_type == 2) || (acf_type == 3)) {
-      ap_speed = link_dataref_flt("sim/cockpit/autopilot/airspeed",0);
+      ap_speed = link_dataref_flt("laminar/B738/autopilot/mcp_speed_dial_kts_mach",0);
       ap_speed_is_mach = link_dataref_int("sim/cockpit/autopilot/airspeed_is_mach");  
-      ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0); 
+      ap_altitude = link_dataref_flt("laminar/B738/autopilot/mcp_alt_dial",0); 
     } else if (acf_type == 1) {
       ap_speed = link_dataref_flt("x737/systems/athr/MCPSPD_spd",0);
       ap_speed_is_mach = link_dataref_int("x737/systems/athr/MCPSPD_ismach");  
@@ -295,7 +295,7 @@ namespace OpenGC
       glColor3ub(COLOR_WHITE);
       glLineWidth(2.0);
     
-      m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
+      m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
     
       snprintf(buffer, sizeof(buffer), "%5.3f", mach);
       m_pFontManager->Print(10,25+0, &buffer[0], m_Font);
@@ -306,20 +306,21 @@ namespace OpenGC
     glColor3ub(COLOR_VIOLET);
     glLineWidth(2.0);
 
-    // m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
+    m_pFontManager->SetSize(m_Font, 1.15*fontWidth, 1.35*fontHeight);
 
     if (*ap_speed != FLT_MISS) {
       if (*ap_speed_is_mach == 1) {
-	snprintf(buffer, sizeof(buffer), "%3.2f", *ap_speed);
-	m_pFontManager->Print(12,170+0, &buffer[0], m_Font);
+	snprintf(buffer, sizeof(buffer), "%03.2f", *ap_speed);
+	m_pFontManager->Print(15,170+3, &buffer[0], m_Font);
       } else {
 	snprintf(buffer, sizeof(buffer), "%4.0f", *ap_speed);
-	m_pFontManager->Print(10,170+0, &buffer[0], m_Font);
+	m_pFontManager->Print(14,170+3, &buffer[0], m_Font);
       }
     }
 
     // 3. Plot dialed barometric pressure in In Hg below the altitude tape
 
+    m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
     glColor3ub(COLOR_GREEN);
     glLineWidth(2.0);
 
@@ -344,8 +345,18 @@ namespace OpenGC
     glLineWidth(2.0);
 
     if (*ap_altitude != FLT_MISS) {
-      snprintf(buffer, sizeof(buffer), "%5.0f", *ap_altitude);
-      m_pFontManager->Print(150,170+0, &buffer[0], m_Font);
+      int thousands = (int) *ap_altitude / 1000.0;
+      int hundreds = (int) *ap_altitude - thousands*1000.0;
+      snprintf(buffer, sizeof(buffer), "%2d", thousands);
+      m_pFontManager->SetSize(m_Font, 1.15*fontWidth, 1.35*fontHeight);
+      if (thousands >= 10) {
+	m_pFontManager->Print(149.5,170+3, &buffer[0], m_Font);
+      } else {
+	m_pFontManager->Print(152,170+3, &buffer[0], m_Font);
+      }
+      snprintf(buffer, sizeof(buffer), "%03d", hundreds);
+      m_pFontManager->SetSize(m_Font, 1.15*fontWidth, 1.15*fontHeight);
+      m_pFontManager->Print(160,170+3, &buffer[0], m_Font);
     }
 
     // 5. Plot MCP states above PFD 
@@ -814,7 +825,7 @@ namespace OpenGC
 
     // draw minimum altitude (feet)
     if (*altimeter_minimum != FLT_MISS) {
-      m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
+      m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
       glColor3ub(COLOR_GREEN);
       if ((acf_type == 2) || (acf_type == 3)) {
 	if (*minimum_mode == 0) {
@@ -835,19 +846,33 @@ namespace OpenGC
       float xcircle = 130;
       float ycircle = 164;
       CircleEvaluator bCircle;
-      bCircle.SetRadius(R);
-      bCircle.SetArcStartEnd(minDegrees,maxDegrees);
-      bCircle.SetDegreesPerPoint(10);
       
       m_pFontManager->SetSize(m_Font, 3.8, 3.8);
       glLineWidth(2.0);
-      glColor3ub(COLOR_WHITE);
       
+      glColor3ub(COLOR_WHITE);
+      bCircle.SetRadius(R);
+      bCircle.SetArcStartEnd(minDegrees,maxDegrees);
+      bCircle.SetDegreesPerPoint(10);
       bCircle.SetOrigin(xcircle,ycircle);
       glBegin(GL_LINE_STRIP);
       bCircle.Evaluate();
       glEnd();
+      glColor3ub(COLOR_GREEN);
+      bCircle.SetRadius(R+1);
+      bCircle.SetArcStartEnd(78.0,102.0);
+      bCircle.SetDegreesPerPoint(10);
+      bCircle.SetOrigin(xcircle,ycircle);
+      glBegin(GL_LINE_STRIP);
+      bCircle.Evaluate();
+      glEnd();
+      glColor3ub(COLOR_RED);
+      glBegin(GL_LINES);
+      glVertex2f(xcircle,ycircle+R);
+      glVertex2f(xcircle,ycircle+R+2);
+      glEnd();
 
+      glColor3ub(COLOR_WHITE);
       float radians;
       for (float degrees = minDegrees; degrees <= maxDegrees; degrees += 45.0) {
 	radians = degrees * atan2(0.0, -1.0) / 180.;
@@ -896,12 +921,17 @@ namespace OpenGC
       // NAV Text on PFD
       unsigned char *text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",20,-1);
       unsigned char *text2 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt2",20,-1);
+      int *lnav_engaged = link_dataref_int("laminar/B738/autopilot/lnav_engaged");
       m_pFontManager->SetSize(m_Font, 4, 4.5);
       glColor3ub(COLOR_WHITE);
       snprintf( buffer, sizeof(buffer), "%s", text1 );
       m_pFontManager->Print(42,170,buffer, m_Font); 
       snprintf( buffer, sizeof(buffer), "%s", text2 );
-      m_pFontManager->Print(42,162,buffer, m_Font); 
+      m_pFontManager->Print(42,162,buffer, m_Font);
+      if (*lnav_engaged == 1) {
+	strcpy( buffer, "LNAV/VNAV");
+	m_pFontManager->Print(42,154,buffer, m_Font);
+      }
     }
 
     

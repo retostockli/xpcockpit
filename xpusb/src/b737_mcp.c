@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "common.h"
 #include "libiocards.h"
@@ -53,12 +54,11 @@ void b737_mcp(void)
   }
   float *ap_ias; // IAS autopilot
   if ((acf_type == 2) || (acf_type == 3)) {
-    ap_ias = link_dataref_flt("laminar/B738/autopilot/mcp_speed_dial_kts_mach",0);      
-    //ap_ias = link_dataref_flt("sim/cockpit2/autopilot/airspeed_dial_kts_mach",0);      
+    ap_ias = link_dataref_flt("laminar/B738/autopilot/mcp_speed_dial_kts_mach",-2);      
   } else if (acf_type == 1) {  
-    ap_ias = link_dataref_flt("x737/systems/athr/MCPSPD_spd",0);           
+    ap_ias = link_dataref_flt("x737/systems/athr/MCPSPD_spd",-2);           
   } else {
-    ap_ias = link_dataref_flt("sim/cockpit/autopilot/airspeed",0);
+    ap_ias = link_dataref_flt("sim/cockpit/autopilot/airspeed",-2);
   }
 
   float *ap_vspeed; // autopilot vertical speed
@@ -77,11 +77,11 @@ void b737_mcp(void)
     ap_banklimit = link_dataref_int("sim/cockpit/autopilot/heading_roll_mode");     
   }
     
-  int *ap_spd_ismach; 
+  int *ap_spd_is_mach; 
   if (acf_type == 1) {
-    ap_spd_ismach = link_dataref_int("x737/systems/athr/MCPSPD_ismach"); // MCP speed in mach 
+    ap_spd_is_mach = link_dataref_int("x737/systems/athr/MCPSPD_ismach"); // MCP speed in mach 
   } else {
-    ap_spd_ismach = link_dataref_int("sim/cockpit2/autopilot/airspeed_is_mach"); // MCP speed in mach 
+    ap_spd_is_mach = link_dataref_int("sim/cockpit2/autopilot/airspeed_is_mach"); // MCP speed in mach 
   }
 
   int *ap_cmd_a;
@@ -573,7 +573,7 @@ void b737_mcp(void)
     *ap_fdir_b = temp;
     } */
 
-  ret = digital_input(device,card,38,ap_spd_ismach,1);
+  ret = digital_input(device,card,38,ap_spd_is_mach,1);
  
   /* Bank limit - 0 = auto, 1-6 = 5-30 degrees of bank */
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -609,12 +609,12 @@ void b737_mcp(void)
     printf("course1: %f \n",*ap_course1);
   }
     
-  if (*ap_spd_ismach == 1) {
+  if (*ap_spd_is_mach == 1) {
     ret = mastercard_encoder(device,card,11,ap_ias,0.01,2,3);
   } else {
     ret = mastercard_encoder(device,card,11,ap_ias,1.0,2,3);
   }
-  if (ret==1) printf("ias: %i %f \n",*ap_spd_ismach,*ap_ias);
+  if (ret==1) printf("ias: %i %f \n",*ap_spd_is_mach,*ap_ias);
 
   ret = mastercard_encoder(device,card,13,ap_altitude,100.0,2,3);
   if (ret==1) printf("altitude: %f \n",*ap_altitude);
@@ -752,10 +752,10 @@ void b737_mcp(void)
   /* update displays */
   temp = (int) *ap_course1;
   ret = mastercard_display(device,card,0,3, &temp, 0);
-  if (*ap_spd_ismach == 1) {
-    temp = (int) (*ap_ias * 100.0);
-    ret = mastercard_display(device,card,6,1, &ten, 1);  // clear first digit
-    ret = mastercard_display(device,card,3,3, &temp, 0); // mach spd in 3 digits
+  if (*ap_spd_is_mach == 1) {
+    temp = (int) roundf(*ap_ias * 100.0);
+    ret = mastercard_display(device,card,3,2, &ten, 1);  // clear last two digits
+    ret = mastercard_display(device,card,5,2, &temp, 0); // mach spd in two first digits
   } else {
     temp = (int) *ap_ias;
     ret = mastercard_display(device,card,3,4, &temp, 0);

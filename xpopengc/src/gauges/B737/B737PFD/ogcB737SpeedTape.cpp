@@ -424,8 +424,14 @@ namespace OpenGC
 
       if (*ap_speed != FLT_MISS) {
 	// draw MCP dialed speed if within the speed tape range (PLEASE ADAPT FOR AP MACH SPEEED)
-	float mcpspdLocation = float(*ap_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
-    
+	float mcpspdLocation;
+	if (*ap_speed_is_mach == 1) {
+	  // approximate knots with standard formula (20degC / dry air)
+	  mcpspdLocation = float(*ap_speed * 661.0 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	} else {
+	  mcpspdLocation = float(*ap_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
+	}
+	  
 	// keep MCP speed within bounds of tape
 	mcpspdLocation = fmin(fmax(0.0,mcpspdLocation),m_PhysicalSize.y);
 

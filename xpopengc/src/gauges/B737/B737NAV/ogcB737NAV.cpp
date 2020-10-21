@@ -163,7 +163,8 @@ void B737NAV::Render()
      
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
-    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    //float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
 
     bool is_captain = (this->GetArg() == 1);
 
@@ -186,7 +187,7 @@ void B737NAV::Render()
     if (m_MapMode != 3) {
       SetMapCtrLon(*aircraftLon);
       SetMapCtrLat(*aircraftLat);
-      m_MapHeading = *heading_true;
+      m_MapHeading = *track_mag;
     } else {
       // set throught DrawFMC gauge component when reading center FMS waypoint
       m_MapHeading = 0.0;

@@ -126,6 +126,7 @@ namespace OpenGC
     float *fmc_vrnp;
     float *fmc_vanp;
     int *fmc_has_vrnp;
+    int *fmc_rnav_enable;
     unsigned char *fmc_name;
     unsigned char *fmc_pth;
     int *fmc_idx;
@@ -160,6 +161,7 @@ namespace OpenGC
       fmc_vrnp = link_dataref_flt("laminar/B738/fms/vrnp",-2);
       fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",-2);
       fmc_has_vrnp = link_dataref_int("laminar/B738/fms/vrnp_enable");
+      fmc_rnav_enable = link_dataref_int("laminar/B738/fms/rnav_enable");
       fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
 
       /* set center lat/lon of map to currently selected waypoint
@@ -208,7 +210,7 @@ namespace OpenGC
 	    snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_anp );
 	    m_pFontManager->Print(0.52*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
 	  }
-	  if (*fmc_has_vrnp == 1) {
+	  if ((*fmc_has_vrnp == 1) && (*fmc_rnav_enable == 1)) {
 	    glColor3ub(COLOR_WHITE);
 	    glLineWidth(lineWidth);
 	    glBegin(GL_LINES);
@@ -415,7 +417,7 @@ namespace OpenGC
 	      xPos = easting / 1852.0  / mapRange * map_size;
 	      glPushMatrix();
 	      glTranslatef(xPos, yPos, 0.0);
-	      glRotatef(*aircraftHdg, 0, 0, 1);
+	      glRotatef(-*aircraftHdg+270.0, 0, 0, 1);
 
 	      float sc = 3.1;
 	      glLineWidth(lineWidth);
@@ -742,28 +744,30 @@ namespace OpenGC
     
 	    glPopMatrix();
 
-	    /* Draw currently active waypoint at UR corner of NAV display */
-	    glPushMatrix();
-	    glColor3ub(COLOR_VIOLET);
-	    m_pFontManager->SetSize(m_Font, 0.8*fontSize, 0.9*fontSize);
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, wpt[wpt_current].name, m_Font);
-	    glColor3ub(COLOR_WHITE);
-	    int hour=wpt[wpt_current].eta;
-	    float minute=(wpt[wpt_current].eta - (float) hour)*60.0;
-	    snprintf( buffer, sizeof(buffer), "%02d%2.1fz", hour, minute );
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
-
-	    lon = (double) wpt[wpt_current].lon;
-	    lat = (double) wpt[wpt_current].lat;
-	    lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
-	    northing *= 0.00054;
-	    easting *= 0.00054;
-	    float distance = sqrt(easting*easting + northing*northing);
-	    
-	    snprintf( buffer, sizeof(buffer), "%.1fnm", distance );
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
-	    glPopMatrix();
-	    
+	    if (wpt_current < nwpt) {	    
+	      /* Draw currently active waypoint at UR corner of NAV display */
+	      glPushMatrix();
+	      glColor3ub(COLOR_VIOLET);
+	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 1.0*fontSize);
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, wpt[wpt_current].name, m_Font);
+	      glColor3ub(COLOR_WHITE);
+	      int hour=wpt[wpt_current].eta;
+	      float minute=(wpt[wpt_current].eta - (float) hour)*60.0;
+	      snprintf( buffer, sizeof(buffer), "%02d%2.1fz", hour, minute );
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
+	      
+	      lon = (double) wpt[wpt_current].lon;
+	      lat = (double) wpt[wpt_current].lat;
+	      lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+	      northing *= 0.00054;
+	      easting *= 0.00054;
+	      float distance = sqrt(easting*easting + northing*northing);
+	      
+	      snprintf( buffer, sizeof(buffer), "%.1fNM", distance );
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
+	      glPopMatrix();
+	    }
+	      
 	  } /* has waypoints */
 	} /* we are on either UFMC or ZIBO FMC for 737 */
 	
