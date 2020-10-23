@@ -245,7 +245,7 @@ namespace OpenGC
 
 	  glPushMatrix();     
 
-	  glRotatef(-*heading_mag_ap + *magnetic_variation, 0, 0, 1);
+	  glRotatef(-*heading_mag_ap, 0, 0, 1);
 	  glColor3ub(255, 0, 200);
 	  glLineWidth(lineWidth);
 	  glEnable(GL_LINE_STIPPLE);

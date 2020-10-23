@@ -125,6 +125,8 @@ namespace OpenGC
     float *fmc_anp;
     float *fmc_vrnp;
     float *fmc_vanp;
+    float *fmc_vnav_td_dist;
+    float *fmc_vnav_err;
     int *fmc_has_vrnp;
     int *fmc_rnav_enable;
     unsigned char *fmc_name;
@@ -160,6 +162,8 @@ namespace OpenGC
       fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
       fmc_vrnp = link_dataref_flt("laminar/B738/fms/vrnp",-2);
       fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",-2);
+      fmc_vnav_td_dist = link_dataref_flt("laminar/B738/fms/vnav_td_dist",-1);
+      fmc_vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",0);
       fmc_has_vrnp = link_dataref_int("laminar/B738/fms/vrnp_enable");
       fmc_rnav_enable = link_dataref_int("laminar/B738/fms/rnav_enable");
       fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
@@ -210,7 +214,7 @@ namespace OpenGC
 	    snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_anp );
 	    m_pFontManager->Print(0.52*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
 	  }
-	  if ((*fmc_has_vrnp == 1) && (*fmc_rnav_enable == 1)) {
+	  if ((*fmc_has_vrnp == 1) && (*fmc_vnav_td_dist == 0.0)) {
 	    glColor3ub(COLOR_WHITE);
 	    glLineWidth(lineWidth);
 	    glBegin(GL_LINES);
@@ -229,7 +233,7 @@ namespace OpenGC
 	    glVertex2f(0.92*m_PhysicalSize.x,0.20*m_PhysicalSize.y);
 	    glVertex2f(0.95*m_PhysicalSize.x,0.20*m_PhysicalSize.y);
 	    glEnd();
-
+	    
 	    if (*fmc_vrnp != FLT_MISS) {
 	      glColor3ub(COLOR_GREEN);
 	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
@@ -243,6 +247,28 @@ namespace OpenGC
 	      m_pFontManager->Print(0.87*m_PhysicalSize.x,0.26*m_PhysicalSize.y, "ANP", m_Font);
 	      snprintf( buffer, sizeof(buffer), "%03.0f", *fmc_vanp );
 	      m_pFontManager->Print(0.87*m_PhysicalSize.x,0.22*m_PhysicalSize.y, buffer, m_Font);	  
+	    }
+	    if (*fmc_vnav_err != FLT_MISS) {
+	      glColor3ub(COLOR_WHITE);
+	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
+	      snprintf( buffer, sizeof(buffer), "%3.0f", *fmc_vnav_err );
+	      m_pFontManager->Print(0.88*m_PhysicalSize.x,0.42*m_PhysicalSize.y, buffer, m_Font);
+	    }
+	      
+	    if ((*fmc_vnav_err != FLT_MISS) && (*fmc_vrnp != FLT_MISS)) {
+	      glPushMatrix();
+	      glTranslatef(0.96*m_PhysicalSize.x, 0.30*m_PhysicalSize.y +
+			   0.1*m_PhysicalSize.y * *fmc_vnav_err / *fmc_vrnp, 0.0);
+	      glColor3ub(COLOR_VIOLET);
+	      float ss = 0.01 * m_PhysicalSize.x;
+	      glBegin(GL_LINE_LOOP);
+	      glVertex2f(0.0,-ss);
+	      glVertex2f(-ss,0.0);
+	      glVertex2f(0.0,ss);
+	      glVertex2f(ss,0.0);
+	      glEnd();
+	      glPopMatrix();
+
 	    }
 	  }
 	}
@@ -447,13 +473,14 @@ namespace OpenGC
 	    
 	    
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
+	      //for (int i=nwpt-1;i<nwpt;i++) {
 
 	      /*
 	      printf("%i %s %s %f / %f %f / %f %f / %f %f \n",i,wpt[i].name,wpt[i].pth,wpt[i].lon,
-		     wpt[i].rad_lon2,wpt[max(i-1,0)].rad_lon2,
-		     wpt[i].rad_radius,wpt[max(i-1,0)].rad_radius,
-		     wpt[i].brg*180./3.14,wpt[max(i-1,0)].brg*180./3.14);
-	      */
+		     wpt[max(i-1,0)].rad_lon2,wpt[i].rad_lon2,
+		     wpt[max(i-1,0)].rad_radius,wpt[i].rad_radius,
+		     wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14);
+	      */	      
 
 	      // convert to azimuthal equidistant coordinates with acf in center
 	      if ((wpt[max(i-1,0)].lon != FLT_MISS) && (wpt[max(i-1,0)].lat != FLT_MISS) &&
@@ -485,7 +512,8 @@ namespace OpenGC
 		if ((wpt[max(i-1,0)].rad_lon2 != 0.0) && (wpt[max(i-1,0)].rad_lat2 != 0.0) &&
 		    (wpt[max(i-1,0)].rad_radius != 0.0) && 
 		    (wpt[max(i-1,0)].rad_lon2 != FLT_MISS) && (wpt[max(i-1,0)].rad_lat2 != FLT_MISS) &&
-		    (wpt[max(i-1,0)].rad_radius != FLT_MISS)) {
+		    (wpt[max(i-1,0)].rad_radius != FLT_MISS) &&
+		    (i > 0)) {
 		  //printf("Leg does not start at last waypoint \n");
 		  lon = (double) wpt[max(i-1,0)].rad_lon2;
 		  lat = (double) wpt[max(i-1,0)].rad_lat2;
@@ -498,7 +526,8 @@ namespace OpenGC
 		if ((wpt[i].rad_lon2 != 0.0) && (wpt[i].rad_lat2 != 0.0) &&
 		    (wpt[i].rad_radius != 0.0) && 
 		    (wpt[i].rad_lon2 != FLT_MISS) && (wpt[i].rad_lat2 != FLT_MISS) &&
-		    (wpt[i].rad_radius != FLT_MISS)) {
+		    (wpt[i].rad_radius != FLT_MISS) &&
+		    (i < (nwpt-1))) {
 		  //printf("Leg does not end at next waypoint \n");
 		  lon = (double) wpt[i].rad_lon2;
 		  lat = (double) wpt[i].rad_lat2;
@@ -525,7 +554,9 @@ namespace OpenGC
 		} else {
 		  // regular route
 		  glColor3ub(COLOR_VIOLET);
-		}		// check if wpt is a holding
+		}
+
+		// check if wpt is a holding
 		if ((strcmp(wpt[i].pth,"HM") == 0) ||
 		    (strcmp(wpt[i].pth,"HF") == 0) ||
 		    (strcmp(wpt[i].pth,"HA") == 0)) {
