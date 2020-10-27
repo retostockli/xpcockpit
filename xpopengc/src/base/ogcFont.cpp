@@ -48,7 +48,6 @@ Font
 ::~Font()
 {
 
-  /*
   if(m_PolygonFont != 0)
   {
     delete m_PolygonFont;
@@ -60,7 +59,6 @@ Font
     delete m_OutlineFont;
   }
   m_OutlineFont = 0;
-  */
 
   delete[] m_Name;
 }
