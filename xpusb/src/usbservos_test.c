@@ -34,7 +34,7 @@ void usbservos_test(void)
   int ret = 0;
   int device = 1;
   int servo = 0;
-  int axis = 0;
+  int axis = 1;
   float value;
   float minval = 0.0;
   float maxval = 1023.0;
