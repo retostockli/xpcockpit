@@ -156,14 +156,16 @@ void B737NAV::Render()
   }
 
   
-  if ((*avionics_on == 1) && (*irs_mode == 2)) {
+  if (*avionics_on == 1) {
 
     // First thing to do is call base class setup
     Gauge::Render();
      
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
-    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+    //float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
+    float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
     bool is_captain = (this->GetArg() == 1);
 
@@ -186,12 +188,15 @@ void B737NAV::Render()
     if (m_MapMode != 3) {
       SetMapCtrLon(*aircraftLon);
       SetMapCtrLat(*aircraftLat);
-      m_MapHeading = *heading_true;
+      m_MapHeading = *track_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols are on TRACK TRUE
     } else {
       // set throught DrawFMC gauge component when reading center FMS waypoint
       m_MapHeading = 0.0;
     }
 
+    // if IRS is not aligned disable map display
+    if (*irs_mode != 2) m_MapHeading = FLT_MISS;
+    
     //    printf("%f %f \n",m_MapCtrLon,m_MapCtrLat);
     
     // Get Map Centered vs. Expanded Mode

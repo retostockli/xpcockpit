@@ -61,6 +61,9 @@ void b737_yokerudder(void)
     left_brake = link_dataref_flt("sim/cockpit2/controls/left_brake_ratio",-3);
     right_brake = link_dataref_flt("sim/cockpit2/controls/right_brake_ratio",-3);
   }
+
+  int* override_auto_toe_brake = link_dataref_int("sim/operation/override/override_toe_brakes");
+  *override_auto_toe_brake = 1;
   
   int* viewmode = link_dataref_int("xpserver/viewmode");
 
@@ -73,6 +76,12 @@ void b737_yokerudder(void)
   int* view_right = link_dataref_cmd_hold("sim/general/right");
   int* view_up = link_dataref_cmd_hold("sim/general/up");
   int* view_down = link_dataref_cmd_hold("sim/general/down");
+
+  int* weapon_down = link_dataref_cmd_hold("sim/weapons/weapon_select_down");
+  int* weapon_up = link_dataref_cmd_hold("sim/weapons/weapon_select_up");
+  int* target_down = link_dataref_cmd_hold("sim/weapons/weapon_target_down");
+  int* target_up = link_dataref_cmd_hold("sim/weapons/weapon_target_up");
+  int* weapon_fire = link_dataref_cmd_hold("sim/weapons/fire_any_armed");
   
   float *view_horizontal = link_dataref_flt("sim/graphics/view/field_of_view_horizontal_deg",0);
   float *view_vertical = link_dataref_flt("sim/graphics/view/field_of_view_vertical_deg",0);
@@ -89,13 +98,12 @@ void b737_yokerudder(void)
   } else if (acf_type == 1) {
     stab_trim_up = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_UP_ALL");
     stab_trim_down = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_DOWN_ALL");
-    ap_disconnect = link_dataref_cmd_once("x737/yoke/capt_AP_DISENG_BTN");
+    ap_disconnect = link_dataref_cmd_hold("x737/yoke/capt_AP_DISENG_BTN");
   } else {
     stab_trim_up = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_up");
     stab_trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down");
-    ap_disconnect = link_dataref_cmd_once("sim/autopilot/servos_toggle");
+    ap_disconnect = link_dataref_cmd_hold("sim/autopilot/servos_off_any");
   }
-  *ap_disconnect = 0;
 
   /* temporary dataref for stab trim main elec */
   int *stab_trim_me = link_dataref_int("xpserver/stab_trim_me");
@@ -141,13 +149,7 @@ void b737_yokerudder(void)
   }
 
   /* AP disconnect button */
-  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
     ret = digital_input(device,card,4,ap_disconnect,0);
-  } else {
-    if (*ap_engage == 2) {
-      ret = digital_input(device,card,4,ap_disconnect,0);
-    }
-  }
   /* hat switch buttons */
   /* 
      6 up

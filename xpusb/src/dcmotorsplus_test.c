@@ -32,24 +32,48 @@ void dcmotorsplus_test(void)
 {
 
   int ret = 0;
-  int device = 6;
+  int device_dcmotor = 2;
+  int device_bu0836 = 3; 
+  int axis = 4;
+  int input = 0;
   int servo = 2;
-  int axis = 1;
+  int card = 0;
   int motor = 0;
   int output = 0;
-  float value = 700.0;
-  float motorvalue = 70.0;
-  float minval = 200.0;
-  float maxval = 1023.0;
-  int one = 1;
+  float motorvalue;
+  float minval = 0.0;
+  float maxval = 1.0;
 
-  /* read potentiometer from analog input #1 on DCmotors Plus card, scale it to the range 0-360 degrees */
-  ret = axis_input(device,axis,&value,minval,maxval);
+  float speedbrake;
+  ret = axis_input(device_bu0836,axis,&speedbrake,minval,maxval);    
   if (ret == 1) {
-    printf("Analog Input %i has value: %f \n",axis,value);
+    printf("Speedbrake, Analog Input %i has value: %f \n",axis,speedbrake);
+  }
+
+  int parkbrake;
+  ret = digital_input(device_bu0836,0,input,&parkbrake,0);
+  if (ret == 1) {
+    printf("Park Brake: %i \n",parkbrake);
+  }
+
+  /* activate/deactivate stab trim motor on B737 Throttle Quadrant */
+  ret = digital_output(device_dcmotor,card,output,&parkbrake); 
+  ret = digital_output(device_dcmotor,card,output+1,&parkbrake); 
+  ret = digital_output(device_dcmotor,card,output+2,&parkbrake); 
+
+  /* drive motor with speedbrake value */
+  motorvalue = speedbrake - 0.35;
+  ret = motors_output(device_dcmotor,motor,&motorvalue,0.35); /* move motor for stabilizer trim */
+  ret = motors_output(device_dcmotor,motor+1,&motorvalue,0.35); /* move motor for stabilizer trim */
+  ret = motors_output(device_dcmotor,motor+2,&motorvalue,0.35); /* move motor for stabilizer trim */
+  
+  /* read potentiometer from analog input #1 on DCmotors Plus card, scale it to the range 0-360 degrees */
+  //ret = axis_input(device,axis,&value,minval,maxval);
+  //if (ret == 1) {
+  //  printf("Analog Input %i has value: %f \n",axis,value);
     /* steer servo according with potentiometer value */
     //    ret = servos_output(device,servo,&value,minval,maxval,0,1023);
-  }
+  //}
 
   //  ret = servos_output(device,servo,&value,minval,maxval);
  

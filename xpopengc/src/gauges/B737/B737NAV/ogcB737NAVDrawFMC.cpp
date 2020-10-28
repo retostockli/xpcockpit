@@ -58,7 +58,7 @@ namespace OpenGC
     int mapMode = m_NAVGauge->GetMapMode();
     float mapRange = m_NAVGauge->GetMapRange();
 
-    char buffer[10];
+    char buffer[12];
 
     CircleEvaluator aCircle;
 
@@ -87,9 +87,14 @@ namespace OpenGC
 
     // Get information on what dynamic information we display on NAV MAP
  
-    // Where is the aircraft?
-    double aircraftLon = m_NAVGauge->GetMapCtrLon();
-    double aircraftLat = m_NAVGauge->GetMapCtrLat();
+    // These are ACF coordinates, except for Plan mode
+    double MapCenterLon = m_NAVGauge->GetMapCtrLon();
+    double MapCenterLat = m_NAVGauge->GetMapCtrLat();
+
+    // ACF coordinates (Always ACF coordinates) 
+    double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
+    double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
+    float *aircraftHdg = link_dataref_flt("sim/flightmodel/position/psi",-1);
     
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
@@ -102,6 +107,8 @@ namespace OpenGC
     int *fmc_alt;
     int *fmc_type;
     int *fmc_hold_time;
+    float *fmc_dist;
+    float *fmc_eta;
     float *fmc_rad_ctr_lon;
     float *fmc_rad_ctr_lat;
     float *fmc_rad_lon2;
@@ -116,6 +123,12 @@ namespace OpenGC
     int *fmc_ctr;
     float *fmc_rnp;
     float *fmc_anp;
+    float *fmc_vrnp;
+    float *fmc_vanp;
+    float *fmc_vnav_td_dist;
+    float *fmc_vnav_err;
+    int *fmc_has_vrnp;
+    int *fmc_rnav_enable;
     unsigned char *fmc_name;
     unsigned char *fmc_pth;
     int *fmc_idx;
@@ -133,6 +146,8 @@ namespace OpenGC
       fmc_type = link_dataref_int_arr("laminar/B738/fms/legs_type",128,-1);
       fmc_hold_time = link_dataref_int_arr("laminar/B738/fms/legs_hold_time",128,-1);
       fmc_rad_turn = link_dataref_int_arr("laminar/B738/fms/legs_rad_turn",128,-1);
+      fmc_dist = link_dataref_flt_arr("laminar/B738/fms/legs_dist",128,-1,-2);
+      fmc_eta = link_dataref_flt_arr("laminar/B738/fms/legs_eta",128,-1,-2);
       fmc_rad_ctr_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lon",128,-1,-4);
       fmc_rad_ctr_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lat",128,-1,-4);
       fmc_rad_lon2 = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lon2",128,-1,-4);
@@ -145,15 +160,21 @@ namespace OpenGC
       fmc_crs = link_dataref_flt_arr("laminar/B738/fms/legs_crs_mag",128,-1,-5);
       fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
       fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
+      fmc_vrnp = link_dataref_flt("laminar/B738/fms/vrnp",-2);
+      fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",-2);
+      fmc_vnav_td_dist = link_dataref_flt("laminar/B738/fms/vnav_td_dist",-1);
+      fmc_vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",0);
+      fmc_has_vrnp = link_dataref_int("laminar/B738/fms/vrnp_enable");
+      fmc_rnav_enable = link_dataref_int("laminar/B738/fms/rnav_enable");
       fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
 
       /* set center lat/lon of map to currently selected waypoint
-	 in Plan Mode Map */
+	 in Plan Mode Map (Center Waypoint) */
       if ((*fmc_ctr != INT_MISS) && (mapMode == 3)) {
 	if (*fmc_nidx >= *fmc_ctr) {
 	  if ((fmc_lon[*fmc_ctr - 1] != FLT_MISS) && (fmc_lat[*fmc_ctr - 1] != FLT_MISS)) {
 	    m_NAVGauge->SetMapCtrLon(fmc_lon[*fmc_ctr - 1]);
-	    m_NAVGauge->SetMapCtrLat(fmc_lat[*fmc_ctr - 1]);
+	    m_NAVGauge->SetMapCtrLat(fmc_lat[*fmc_ctr - 1]);	    	    
 	  }
 	}
       }
@@ -174,34 +195,89 @@ namespace OpenGC
     if (heading_map != FLT_MISS) {
 
       glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
 
+      glPushMatrix();
       if (mapMode != 3) {
 	// plot RNP/ANP
 	if ((acf_type == 2) || (acf_type == 3)) {
 	  if (*fmc_rnp != FLT_MISS) {
-	    glColor3ub( 0, 255, 0 );
+	    glColor3ub(COLOR_GREEN);
 	    m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
 	    m_pFontManager->Print(0.4*m_PhysicalSize.x,0.05*m_PhysicalSize.y, "RNP", m_Font);
 	    snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_rnp );
 	    m_pFontManager->Print(0.4*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
 	  }
 	  if (*fmc_anp != FLT_MISS) {
-	    glColor3ub( 0, 255, 0 );
+	    glColor3ub(COLOR_GREEN);
 	    m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
 	    m_pFontManager->Print(0.52*m_PhysicalSize.x,0.05*m_PhysicalSize.y, "ANP", m_Font);
 	    snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_anp );
 	    m_pFontManager->Print(0.52*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
 	  }
+	  if ((*fmc_has_vrnp == 1) && (*fmc_vnav_td_dist == 0.0)) {
+	    glColor3ub(COLOR_WHITE);
+	    glLineWidth(lineWidth);
+	    glBegin(GL_LINES);
+	    glVertex2f(0.95*m_PhysicalSize.x,0.40*m_PhysicalSize.y);
+	    glVertex2f(0.95*m_PhysicalSize.x,0.20*m_PhysicalSize.y);
+	    glEnd();
+	    glBegin(GL_LINES);
+	    glVertex2f(0.92*m_PhysicalSize.x,0.40*m_PhysicalSize.y);
+	    glVertex2f(0.95*m_PhysicalSize.x,0.40*m_PhysicalSize.y);
+	    glEnd();
+	    glBegin(GL_LINES);
+	    glVertex2f(0.92*m_PhysicalSize.x,0.30*m_PhysicalSize.y);
+	    glVertex2f(0.95*m_PhysicalSize.x,0.30*m_PhysicalSize.y);
+	    glEnd();
+	    glBegin(GL_LINES);
+	    glVertex2f(0.92*m_PhysicalSize.x,0.20*m_PhysicalSize.y);
+	    glVertex2f(0.95*m_PhysicalSize.x,0.20*m_PhysicalSize.y);
+	    glEnd();
+	    
+	    if (*fmc_vrnp != FLT_MISS) {
+	      glColor3ub(COLOR_GREEN);
+	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
+	      m_pFontManager->Print(0.87*m_PhysicalSize.x,0.36*m_PhysicalSize.y, "RNP", m_Font);
+	      snprintf( buffer, sizeof(buffer), "%03.0f", *fmc_vrnp );
+	      m_pFontManager->Print(0.87*m_PhysicalSize.x,0.32*m_PhysicalSize.y, buffer, m_Font);	  
+	    }
+	    if (*fmc_vanp != FLT_MISS) {
+	      glColor3ub(COLOR_GREEN);
+	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
+	      m_pFontManager->Print(0.87*m_PhysicalSize.x,0.26*m_PhysicalSize.y, "ANP", m_Font);
+	      snprintf( buffer, sizeof(buffer), "%03.0f", *fmc_vanp );
+	      m_pFontManager->Print(0.87*m_PhysicalSize.x,0.22*m_PhysicalSize.y, buffer, m_Font);	  
+	    }
+	    if (*fmc_vnav_err != FLT_MISS) {
+	      glColor3ub(COLOR_WHITE);
+	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
+	      snprintf( buffer, sizeof(buffer), "%3.0f", *fmc_vnav_err );
+	      m_pFontManager->Print(0.88*m_PhysicalSize.x,0.42*m_PhysicalSize.y, buffer, m_Font);
+	    }
+	      
+	    if ((*fmc_vnav_err != FLT_MISS) && (*fmc_vrnp != FLT_MISS)) {
+	      glPushMatrix();
+	      glTranslatef(0.96*m_PhysicalSize.x, 0.30*m_PhysicalSize.y +
+			   0.1*m_PhysicalSize.y * *fmc_vnav_err / *fmc_vrnp, 0.0);
+	      glColor3ub(COLOR_VIOLET);
+	      float ss = 0.01 * m_PhysicalSize.x;
+	      glBegin(GL_LINE_LOOP);
+	      glVertex2f(0.0,-ss);
+	      glVertex2f(-ss,0.0);
+	      glVertex2f(0.0,ss);
+	      glVertex2f(ss,0.0);
+	      glEnd();
+	      glPopMatrix();
+
+	    }
+	  }
 	}
       }
+      glPopMatrix();
       
-      // Shift center and rotate about heading
-      glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-      glRotatef(heading_map, 0, 0, 1);
- 
       /* valid coordinates ? */
-      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
+      if ((MapCenterLon >= -180.0) && (MapCenterLon <= 180.0) &&
+	  (MapCenterLat >= -90.0) && (MapCenterLat <= 90.0)) {
         
 	// Set up circle for small symbols
 	CircleEvaluator aCircle;
@@ -231,7 +307,10 @@ namespace OpenGC
 	int wpt_current = 0;
 	int wpt_miss1 = INT_MISS;
 	int wpt_miss2 = INT_MISS;
+
+	/* Currently only x737 and ZIBO Mod are supported */
 	if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+
 	  if (acf_type == 1) {
 	    /* UFMC of Javier Cortez */
 	    if ((*fmc_ok > 0.5) && (*fmc_nidx > 0)) {
@@ -313,6 +392,8 @@ namespace OpenGC
 		  wpt[i].lon = fmc_lon[i];
 		  wpt[i].lat = fmc_lat[i];
 		  wpt[i].alt = fmc_alt[i];
+		  wpt[i].dist = fmc_dist[i];
+		  wpt[i].eta = fmc_eta[i];
 		  wpt[i].rad_ctr_lon = fmc_rad_ctr_lon[i];
 		  wpt[i].rad_ctr_lat = fmc_rad_ctr_lat[i];
 		  wpt[i].rad_lon2 = fmc_rad_lon2[i];
@@ -346,19 +427,60 @@ namespace OpenGC
 	    for (int i=0;i<(nwpt);i++) {
 	    printf("%i %s %f %f %i \n",i,wpt[i].name,wpt[i].lon,wpt[i].lat,wpt_current);
 	    }
-	  */
-       
-	  
+	  */	  
 
 	  if (nwpt > 0) {
+
+	    // Shift center and rotate about heading
+	    glPushMatrix();
+	    glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
+	    glRotatef(heading_map, 0, 0, 1);
+
+	    /* Draw Aircraft Symbol in Plan mode */
+	    if (mapMode == 3) {
+	      lonlat2gnomonic(aircraftLon, aircraftLat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+	      yPos = -northing / 1852.0 / mapRange * map_size; 
+	      xPos = easting / 1852.0  / mapRange * map_size;
+	      glPushMatrix();
+	      glTranslatef(xPos, yPos, 0.0);
+	      glRotatef(-*aircraftHdg+270.0, 0, 0, 1);
+
+	      float sc = 3.1;
+	      glLineWidth(lineWidth);
+	      glColor3ub(COLOR_WHITE);
+	      glBegin(GL_LINE_LOOP);
+	      glVertex2f(-0.5*sc, 0.0*sc);
+	      glVertex2f( 0.0*sc,-0.5*sc);
+	      glVertex2f( 2.0*sc,-0.5*sc);
+	      glVertex2f( 3.5*sc,-3.5*sc);
+	      glVertex2f( 4.5*sc,-3.5*sc);
+	      glVertex2f( 4.0*sc,-0.5*sc);
+	      glVertex2f( 5.0*sc,-0.5*sc);
+	      glVertex2f( 5.5*sc,-1.5*sc);
+	      glVertex2f( 6.2*sc,-1.5*sc);
+	      glVertex2f( 6.0*sc, 0.0*sc);
+	      glVertex2f( 6.2*sc, 1.5*sc);
+	      glVertex2f( 5.5*sc, 1.5*sc);
+	      glVertex2f( 5.0*sc, 0.5*sc);
+	      glVertex2f( 4.0*sc, 0.5*sc);
+	      glVertex2f( 4.5*sc, 3.5*sc);
+	      glVertex2f( 3.5*sc, 3.5*sc);
+	      glVertex2f( 2.0*sc, 0.5*sc);
+	      glVertex2f( 0.0*sc, 0.5*sc);
+	      glEnd();
+	      glPopMatrix();
+	    }
+	    
+	    
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
+	      //for (int i=nwpt-1;i<nwpt;i++) {
 
 	      /*
-	      printf("%i %s %f / %f %f / %f %f / %f %f \n",i,wpt[i].name,wpt[i].lon,
-		     wpt[i].rad_lon2,wpt[max(i-1,0)].rad_lon2,
-		     wpt[i].rad_radius,wpt[max(i-1,0)].rad_radius,
-		     wpt[i].crs,wpt[max(i-1,0)].crs);
-	      */
+	      printf("%i %s %s %f / %f %f / %f %f / %f %f \n",i,wpt[i].name,wpt[i].pth,wpt[i].lon,
+		     wpt[max(i-1,0)].rad_lon2,wpt[i].rad_lon2,
+		     wpt[max(i-1,0)].rad_radius,wpt[i].rad_radius,
+		     wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14);
+	      */	      
 
 	      // convert to azimuthal equidistant coordinates with acf in center
 	      if ((wpt[max(i-1,0)].lon != FLT_MISS) && (wpt[max(i-1,0)].lat != FLT_MISS) &&
@@ -368,11 +490,11 @@ namespace OpenGC
 		// convert to azimuthal equidistant coordinates with acf in center
 		lon = (double) wpt[max(i-1,0)].lon;
 		lat = (double) wpt[max(i-1,0)].lat;
-		lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
 		
 		lon = (double) wpt[i].lon;
 		lat = (double) wpt[i].lat;
-		lonlat2gnomonic(&lon, &lat, &easting2, &northing2, &aircraftLon, &aircraftLat);
+		lonlat2gnomonic(&lon, &lat, &easting2, &northing2, &MapCenterLon, &MapCenterLat);
 	      
 		// Compute physical position relative to acf center on screen
 		yPos = -northing / 1852.0 / mapRange * map_size; 
@@ -385,25 +507,31 @@ namespace OpenGC
 		float yPosL = yPos2;
 
 		/* Special cases before or after curved routes */
+
+		// leg does not start at last waypoint
 		if ((wpt[max(i-1,0)].rad_lon2 != 0.0) && (wpt[max(i-1,0)].rad_lat2 != 0.0) &&
-		    (wpt[max(i-1,0)].rad_radius != 0.0) && // (wpt[max(i-1,0)].crs != 0.0) &&
+		    (wpt[max(i-1,0)].rad_radius != 0.0) && 
 		    (wpt[max(i-1,0)].rad_lon2 != FLT_MISS) && (wpt[max(i-1,0)].rad_lat2 != FLT_MISS) &&
-		    (wpt[max(i-1,0)].rad_radius != FLT_MISS)) { // && (wpt[max(i-1,0)].crs != FLT_MISS)) {
-		  // leg does not start at last waypoint
+		    (wpt[max(i-1,0)].rad_radius != FLT_MISS) &&
+		    (i > 0)) {
+		  //printf("Leg does not start at last waypoint \n");
 		  lon = (double) wpt[max(i-1,0)].rad_lon2;
 		  lat = (double) wpt[max(i-1,0)].rad_lat2;
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
 		  yPos = -northing / 1852.0 / mapRange * map_size; 
 		  xPos = easting / 1852.0  / mapRange * map_size;
 		} 
+
+		// leg does not end at next waypoint
 		if ((wpt[i].rad_lon2 != 0.0) && (wpt[i].rad_lat2 != 0.0) &&
-		    (wpt[i].rad_radius != 0.0) && // (wpt[i].crs != 0.0) &&
+		    (wpt[i].rad_radius != 0.0) && 
 		    (wpt[i].rad_lon2 != FLT_MISS) && (wpt[i].rad_lat2 != FLT_MISS) &&
-		    (wpt[i].rad_radius != FLT_MISS)) { // && (wpt[i].crs != FLT_MISS)) {
-		  // leg does not end at next waypoint
+		    (wpt[i].rad_radius != FLT_MISS) &&
+		    (i < (nwpt-1))) {
+		  //printf("Leg does not end at next waypoint \n");
 		  lon = (double) wpt[i].rad_lon2;
 		  lat = (double) wpt[i].rad_lat2;
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
 		  yPos2 = -northing / 1852.0 / mapRange * map_size; 
 		  xPos2 = easting / 1852.0  / mapRange * map_size;		    
 		}
@@ -420,13 +548,15 @@ namespace OpenGC
 		glLineWidth(lineWidth);
 		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
 		  // missed approach route
-		  glColor3ub(0, 189, 231);
+		  glColor3ub(COLOR_LIGHTBLUE);
 		  glEnable(GL_LINE_STIPPLE);
 		  glLineStipple( 4, 0x0F0F );
 		} else {
 		  // regular route
-		  glColor3ub(255, 0, 200);
-		}		// check if wpt is a holding
+		  glColor3ub(COLOR_VIOLET);
+		}
+
+		// check if wpt is a holding
 		if ((strcmp(wpt[i].pth,"HM") == 0) ||
 		    (strcmp(wpt[i].pth,"HF") == 0) ||
 		    (strcmp(wpt[i].pth,"HA") == 0)) {
@@ -488,19 +618,19 @@ namespace OpenGC
 
 		  lon = (double) wpt[max(i-1,0)].rad_ctr_lon;
 		  lat = (double) wpt[max(i-1,0)].rad_ctr_lat;
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
 		  yPosC = -northing / 1852.0 / mapRange * map_size; 
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
 		  /*
-		  printf("%i %s %i %f %f / %f %f \n",i,wpt[i].name,wpt[i].turn,
-			 wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14,
-			 wpt[max(i-1,0)].crs,wpt[i].crs);
+		  printf("%i %s %i / %f %f %f / %f %f \n",i,wpt[i].name,wpt[max(i-1,0)].turn,
+			 wpt[max(i-1,0)].rad_ctr_lon,wpt[max(i-1,0)].lon,wpt[max(i-1,0)].rad_lon2,
+			 wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14);
 		  */
 
 		  /*
 		  glPushMatrix();
-		  glColor3ub(255, 0, 0);
+		  glColor3ub(COLOR_RED);
 		  glPointSize(8.0);
 		  glBegin(GL_POINTS);
 		  glVertex2f(xPosC, yPosC);
@@ -510,7 +640,7 @@ namespace OpenGC
 
 		  /*
 		  glPushMatrix();		    
-		  glColor3ub(0, 255, 0);
+		  glColor3ub(COLOR_GREEN);
 		  glPointSize(10.0);
 		  glBegin(GL_POINTS);
 		  glVertex2f(xPos, yPos);
@@ -520,7 +650,7 @@ namespace OpenGC
 
 		  /*
 		  glPushMatrix();		    
-		  glColor3ub(0, 0, 255);
+		  glColor3ub(COLOR_BLUE);
 		  glPointSize(10.0);
 		  glBegin(GL_POINTS);
 		  glVertex2f(xPos2, yPos2);
@@ -535,49 +665,54 @@ namespace OpenGC
 		  float relbrg = fmod(180./3.14*(wpt[i].brg-wpt[max(i-1,0)].brg) + 360.0, 360.0);
 		  float radius = pow(pow(xPos-xPosC,2) + pow(yPos-yPosC,2),0.5);
 		  if (relbrg > 180.0) relbrg -= 360.0;
+		 		  
 		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
 		    /* left turn */
 		    ang += 90.0;
 		    ang2 += 90.0;
-		    if (relbrg > 0.0) relbrg -= 360.0;
 		  } else {
 		    /* right turn */
 		    ang += 270.0;
 		    ang2 += 270.0;
-		    if (relbrg < 0.0) relbrg += 360.0;
 		  }
 		  ang = fmodf(ang + 360.0,360.0);
 		  ang2 = fmodf(ang2 + 360.0,360.0);
 		  //printf("%i %f %f \n",i,ang,ang2);
-				  
-		  // draw curved leg (partial circle)
-		  aCircle.SetDegreesPerPoint(2);
-		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
-		    aCircle.SetArcStartEnd(ang2,ang);
-		  } else {
-		    aCircle.SetArcStartEnd(ang,ang2);
+		    
+		  if (fabs(relbrg) > 5.0) {
+		    // Only draw circles for large enough change in direction
+		    // There are occasions where this curved legs do not work
+		    
+		    // draw curved leg (partial circle)
+		    aCircle.SetDegreesPerPoint(2);
+		    if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
+		      aCircle.SetArcStartEnd(ang2,ang);
+		    } else {
+		      aCircle.SetArcStartEnd(ang,ang2);
+		    }
+		    aCircle.SetRadius(radius);
+		    aCircle.SetOrigin(xPosC,yPosC);
+		    glBegin(GL_LINE_STRIP);
+		    aCircle.Evaluate();
+		    glEnd();
+
 		  }
-		  aCircle.SetRadius(radius);
-		  aCircle.SetOrigin(xPosC,yPosC);
-		  glBegin(GL_LINE_STRIP);
-		  aCircle.Evaluate();
-		  glEnd();
-		
+		  
 		  /* Circle always starts from xPos/yPos, but may need to be extended
 		     by a line to xPos2/yPos2 */		
 		  float D = pow(pow(xPos2-xPosC,2) + pow(yPos2-yPosC,2),0.5);
 		  if (D > (radius+0.1)) {
 		    float xPosT = sin(ang2*3.14/180.)*radius + xPosC;
 		    float yPosT = cos(ang2*3.14/180.)*radius + yPosC;
-
+		    
 		    /*
-		    glPushMatrix();		    
-		    glColor3ub(255, 0, 255);
-		    glPointSize(10.0);
-		    glBegin(GL_POINTS);
-		    glVertex2f(xPosT, yPosT);
-		    glEnd();		    
-		    glPopMatrix();
+		      glPushMatrix();		    
+		      glColor3ub(COLOR_MAGENTA);
+		      glPointSize(10.0);
+		      glBegin(GL_POINTS);
+		      glVertex2f(xPosT, yPosT);
+		      glEnd();		    
+		      glPopMatrix();
 		    */
 		    
 		    // draw tangent
@@ -585,9 +720,7 @@ namespace OpenGC
 		    glVertex2f(xPosT,yPosT);
 		    glVertex2f(xPos2,yPos2);
 		    glEnd();
-		  
 		  }
-		
 		
 		} else {
 		  // straight line
@@ -609,9 +742,9 @@ namespace OpenGC
 		glRotatef(-1.0* heading_map, 0, 0, 1);
 
 		if (i == wpt_current) {
-		  glColor3ub(255, 0, 200);
+		  glColor3ub(COLOR_VIOLET);
 		} else {
-		  glColor3ub(255, 255, 255);
+		  glColor3ub(COLOR_WHITE);
 		}
 		glLineWidth(0.8*lineWidth);
 		glBegin(GL_LINE_LOOP);
@@ -635,17 +768,41 @@ namespace OpenGC
 		}
 
 		glPopMatrix();
-
-		//}
 		
 	      }
+	      
+	    } /* cycle through waypoints */
+    
+	    glPopMatrix();
+
+	    if (wpt_current < nwpt) {	    
+	      /* Draw currently active waypoint at UR corner of NAV display */
+	      glPushMatrix();
+	      glColor3ub(COLOR_VIOLET);
+	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 1.0*fontSize);
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, wpt[wpt_current].name, m_Font);
+	      glColor3ub(COLOR_WHITE);
+	      int hour=wpt[wpt_current].eta;
+	      float minute=(wpt[wpt_current].eta - (float) hour)*60.0;
+	      snprintf( buffer, sizeof(buffer), "%02d%2.1fz", hour, minute );
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
+	      
+	      lon = (double) wpt[wpt_current].lon;
+	      lat = (double) wpt[wpt_current].lat;
+	      lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
+	      northing *= 0.00054;
+	      easting *= 0.00054;
+	      float distance = sqrt(easting*easting + northing*northing);
+	      
+	      snprintf( buffer, sizeof(buffer), "%.1fNM", distance );
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
+	      glPopMatrix();
 	    }
+	      
 	  } /* has waypoints */
 	} /* we are on either UFMC or ZIBO FMC for 737 */
 	
       } // valid acf coordinates
-    
-      glPopMatrix();
 
     }
     

@@ -82,7 +82,9 @@ namespace OpenGC
     
     // Autopilot altitude (feet)
     float *ap_altitude;
-    if (acf_type == 1) {
+    if ((acf_type == 2) || (acf_type == 3)) {
+      ap_altitude = link_dataref_flt("laminar/B738/autopilot/mcp_alt_dial",0); 
+    } else if (acf_type == 1) {
       ap_altitude = link_dataref_flt("x737/systems/afds/ALTHLD_baroalt",0);
     } else {
       ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0); 
@@ -356,6 +358,9 @@ namespace OpenGC
       if (*ap_altitude != FLT_MISS) {
 	float mcpaltLocation = (*ap_altitude - *pressure_altitude) *
 	  tickSpacing / 100.0 + m_PhysicalSize.y/2;
+
+	// keep MCP altitude within bounds of tape
+	mcpaltLocation = fmin(fmax(0.0,mcpaltLocation),m_PhysicalSize.y);
 	
 	// draw a magenta MCP altitude indicator
 	glColor3ub( 210, 5,  210 );

@@ -62,7 +62,7 @@ namespace OpenGC
 
       // define geometric stuff
       float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-      float lineWidth = 1.5 * m_PhysicalSize.x / 100.0;
+      float lineWidth = 1.0 * m_PhysicalSize.x / 100.0;
 
       // double dtor = 0.0174533; /* radians per degree */
       // double radeg = 57.2958;  /* degree per radians */
@@ -91,7 +91,7 @@ namespace OpenGC
       float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
       float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
       float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
-     
+      float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
       
       int *efis1_selector_pilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
       //  int *efis1_selector_copilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
@@ -127,9 +127,7 @@ namespace OpenGC
 	*has_heading_bug = 1;
       }
 
-      // The input coordinates are in lon/lat, so we have to rotate against true heading
-      // despite the NAV display is showing mag heading
-      if (*heading_true != FLT_MISS) {
+      if ((*heading_mag != FLT_MISS) && (*track_mag != FLT_MISS)) {
 
 	float dist_to_altitude = FLT_MISS; // Miles
 	if ((*ap_altitude != FLT_MISS) && (*ap_vspeed != FLT_MISS) &&
@@ -146,7 +144,7 @@ namespace OpenGC
     
 	// Shift center and rotate about heading
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-	glRotatef(*heading_true, 0, 0, 1);
+	glRotatef(*track_mag, 0, 0, 1);
 
 	// plot ADF / VOR 1/2 heading arrows
 	// TODO: extend to co-pilot EFIS selector
@@ -158,14 +156,14 @@ namespace OpenGC
 
 	  if (*efis1_selector_pilot == 0) {
 	    glRotatef(-*adf1_bearing, 0, 0, 1);
-	    glColor3ub(0, 255, 255);
+	    glColor3ub(COLOR_CYAN);
 	  } else {
 	    glRotatef(-*nav1_bearing, 0, 0, 1);
 	    glColor3ub(0, 255, 82);
 	  }
 
 	  // arrow-head giving heading to NAVAID
-	  glLineWidth(3.0);
+	  glLineWidth(lineWidth);
 	  glTranslatef(0.0, map_size, 0.0);
 	  glBegin(GL_LINE_STRIP);
 	  glVertex2f(0.0, m_PhysicalSize.y * -0.085);
@@ -210,7 +208,7 @@ namespace OpenGC
 	  }
 
 	  // outline arrow-head giving heading to NAVAID
-	  glLineWidth(3.0);
+	  glLineWidth(lineWidth);
 	  glTranslatef(0.0, map_size, 0.0);
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(m_PhysicalSize.x * -0.012, m_PhysicalSize.y * -0.075);
@@ -247,7 +245,7 @@ namespace OpenGC
 
 	  glPushMatrix();     
 
-	  glRotatef(-*heading_mag_ap + *magnetic_variation, 0, 0, 1);
+	  glRotatef(-*heading_mag_ap, 0, 0, 1);
 	  glColor3ub(255, 0, 200);
 	  glLineWidth(lineWidth);
 	  glEnable(GL_LINE_STIPPLE);
@@ -317,7 +315,6 @@ namespace OpenGC
 	// Set up big circle for nav range
 	if (!mapCenter) {
 	  glPushMatrix();
-
 	
 	  glLineWidth(lineWidth);
 	  glTranslatef(0.0, 0.0, 0.0);
@@ -370,7 +367,7 @@ namespace OpenGC
 	glColor3ub(255, 255, 255);
 	glPushMatrix();
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	glRotatef(*heading_mag,0,0,1);
+	glRotatef(*track_mag,0,0,1);
 	for ( int i=0; i<=71; i++ ) {
 	  float ticklen;
 	  if ( i % 2 == 0 ) {
@@ -400,6 +397,19 @@ namespace OpenGC
 
 	glPopMatrix();
 
+	glPushMatrix();
+	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
+	glRotatef(*track_mag - *heading_mag,0,0,1); // put wind correction rotation here
+	
+	// THIS TRIANGLE ON TOP OF THE MAP WOULD MARK THE WIND CORRECTION!
+	glColor3ub(COLOR_WHITE);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(0.0,map_size);
+	glVertex2f(0.02*m_PhysicalSize.x,map_size*1.045);
+	glVertex2f(-0.02*m_PhysicalSize.x,map_size*1.045);
+	glEnd();
+	glPopMatrix();
+	
       }
       
     }

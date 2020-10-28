@@ -206,6 +206,7 @@ void b737_overhead_fwd(void)
     ret = digital_input(device,card,17,maint,0);
     
     /* set relay 0 on output 49 on relay card through d-sub con */
+    /* Backlighting Only when Battery is on */
     ret = digital_outputf(device,card,49,battery);
 
     /* Annunciators */
@@ -1457,12 +1458,56 @@ void b737_overhead_fwd(void)
     /* A few basic switches for other ACF */
     device = mastercard;
     card = 0;
-
     int *battery_i = link_dataref_int("sim/cockpit/electrical/battery_on");
+    int *avionics_i = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
     ret = digital_input(device,card,8,&ival,0);
-    if (ival != INT_MISS) *battery_i = 1-ival;
-   
+    if (ival != INT_MISS) {
+      *battery_i = 1-ival;
+      *avionics_i = 1-ival;
+    }
 
+    /* set relay 0 on output 49 on relay card through d-sub con */
+    /* Backlighting Only when Battery is on */
+    device = mastercard;
+    card = 0;
+    ret = digital_output(device,card,49,battery_i);
+   
+    /* Ignitior Switch for first engine */
+    device = mastercard;
+    card = 0;
+    int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on",8,-1);
+    for (int i=0;i<8;i++) {
+      ignition_on[i] = 3;
+      ret = digital_input(device,card,27,&ival,0);
+      if (ival == 1) ignition_on[i] = 2;
+      ret = digital_input(device,card,28,&ival,0);
+      if (ival == 1) ignition_on[i] = 1;
+    }
+    
+    /* Engine Starters */
+    device = mastercard;
+    card = 0;
+    int *engine_start = link_dataref_cmd_hold("sim/engines/engage_starters");
+    ret = digital_input(device,card,18,engine_start,0);
+
+    /* Blank Altitude Panel */
+    device = mastercard;
+    card = 0;
+    ival = 10;
+    ret = mastercard_display(device,card,0,5,&ival,1);
+    ret = mastercard_display(device,card,6,5,&ival,1);
+
+    /* Fuel Pump */
+    device = mastercard;
+    card = 1;
+    int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on",8,-1);
+    ret = digital_input(device,card,67,&ival,0);
+    if (ival != INT_MISS) {
+      for (int i=0;i<8;i++) {
+	fuel_pump_on[i] = ival;
+      }
+    }
+  
   }
     
 }

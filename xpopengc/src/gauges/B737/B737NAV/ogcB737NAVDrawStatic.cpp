@@ -62,8 +62,8 @@ namespace OpenGC
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-    float lineWidth = 3.0;
-    
+    float lineWidth = 1.0 * m_PhysicalSize.x / 100.0;
+   
     char buffer[36];
     
     // double dtor = 0.0174533; /* radians per degree */
@@ -89,7 +89,8 @@ namespace OpenGC
      
     // What's the heading?
     //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
-    float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    //float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
 
     /* link x-plane datarefs needed for NAV display */
     float *ground_speed = link_dataref_flt("sim/flightmodel/position/groundspeed",0);
@@ -119,7 +120,7 @@ namespace OpenGC
     float *adf1_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf1_dme_distance_nm",-1);
     float *adf2_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_dme_distance_nm",-1);
 
-    if (*heading_mag != FLT_MISS) {
+    if (*track_mag != FLT_MISS) {
       
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -136,7 +137,7 @@ namespace OpenGC
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       glColor3ub( 255, 255, 255 );
       m_pFontManager->Print( m_PhysicalSize.x*0.014,m_PhysicalSize.y*0.957,"GS", m_Font );
-      m_pFontManager->Print( m_PhysicalSize.x*0.140,m_PhysicalSize.y*0.957,"TAS", m_Font );
+      m_pFontManager->Print( m_PhysicalSize.x*0.150,m_PhysicalSize.y*0.957,"TAS", m_Font );
 
       if (mapMode != 3) {
 	/* Draws the box around the heading number displayed at top-center */
@@ -147,13 +148,6 @@ namespace OpenGC
 	glVertex2f( m_PhysicalSize.x*0.557, m_PhysicalSize.y*0.922);
 	glVertex2f( m_PhysicalSize.x*0.557, m_PhysicalSize.y*0.980);
 	glEnd();
-	
-	// THIS TRIANGLE WOULD MARK THE WIND CORRECTION!
-	glBegin(GL_LINE_LOOP);
-	glVertex2f( m_PhysicalSize.x*0.480, m_PhysicalSize.y*0.917);
-	glVertex2f( m_PhysicalSize.x*0.500, m_PhysicalSize.y*0.888);
-	glVertex2f( m_PhysicalSize.x*0.520, m_PhysicalSize.y*0.917);
-	glEnd();
       }
 
       /* put all the dynamic data fields that appear on all NAV display modes */
@@ -161,9 +155,9 @@ namespace OpenGC
 
       if (mapMode != 3) {
 	/* big heading number on top of NAV display */
-	if (*heading_mag != FLT_MISS) {
+	if (*track_mag != FLT_MISS) {
 	  m_pFontManager->SetSize( m_Font, 1.30*fontSize, 1.30*fontSize );
-	  snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*heading_mag));
+	  snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*track_mag));
 	  m_pFontManager->Print( m_PhysicalSize.x*0.452, m_PhysicalSize.y*0.93, &buffer[0], m_Font);
 	}
       }
@@ -177,17 +171,17 @@ namespace OpenGC
       }
       if (*air_speed != FLT_MISS) {
 	snprintf(buffer, sizeof(buffer), "%d", (int) lroundf(*air_speed * 1.943844));
-	m_pFontManager->Print( m_PhysicalSize.x*0.206, m_PhysicalSize.y*0.957 , buffer, m_Font );
+	m_pFontManager->Print( m_PhysicalSize.x*0.210, m_PhysicalSize.y*0.957 , buffer, m_Font );
       }
 
       /* plot wind speed and direction and draw wind arrow */
       if (*wind_direction_mag != FLT_MISS) {
-	snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*wind_direction_mag));
+	snprintf(buffer, sizeof(buffer), "%03d°", (int) lroundf(*wind_direction_mag));
 	m_pFontManager->Print( m_PhysicalSize.x*0.014, m_PhysicalSize.y*0.919 , buffer, m_Font );
   
 	glPushMatrix();
 	glTranslatef(m_PhysicalSize.x*0.055, m_PhysicalSize.y*0.878, 0);
-	glRotatef(180.0 - (*wind_direction_mag - *heading_mag),0,0,1);
+	glRotatef(180.0 - (*wind_direction_mag - *track_mag),0,0,1);
 	glLineWidth( lineWidth );
 	glBegin(GL_LINE_STRIP);
 	glVertex2f( m_PhysicalSize.x*0.0, -m_PhysicalSize.y*0.035);
@@ -202,10 +196,10 @@ namespace OpenGC
     
       }
 
-      m_pFontManager->Print( m_PhysicalSize.x*0.085, m_PhysicalSize.y*0.919 , " /", m_Font );
+      m_pFontManager->Print( m_PhysicalSize.x*0.090, m_PhysicalSize.y*0.919 , " /", m_Font );
       if (*wind_speed != FLT_MISS) {
 	snprintf(buffer, sizeof(buffer), "%d", (int) *wind_speed);
-	m_pFontManager->Print( m_PhysicalSize.x*0.126, m_PhysicalSize.y*0.919 , buffer, m_Font );
+	m_pFontManager->Print( m_PhysicalSize.x*0.128, m_PhysicalSize.y*0.919 , buffer, m_Font );
       }
 
       if (mapMode != 3) {

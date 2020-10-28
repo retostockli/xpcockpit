@@ -601,7 +601,6 @@ int receive_server(void) {
 
       if (first == MARK_DISCONNECT) {
 	if (verbose > 0) printf("HANDLESERVER: Received Disconnect Marker \n");
-	    
 	socketStatus = status_Disconnected;
 	disconnected = 1;
       }
