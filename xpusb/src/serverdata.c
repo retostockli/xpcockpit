@@ -42,6 +42,28 @@ char clientname[100]; /* name of x-plane client package */
 int lastindex; /* stores the index of the last Dataref called */
 struct timeval time_start; /* stores the time when we initialized the dataref structure */
 
+int time_subtract (struct timeval *x, struct timeval *y, struct timeval *result) {
+  /* Perform the carry for the later subtraction by updating y. */
+  if (x->tv_usec < y->tv_usec) {
+    int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+    y->tv_usec -= 1000000 * nsec;
+    y->tv_sec += nsec;
+  }
+  if (x->tv_usec - y->tv_usec > 1000000) {
+    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+    y->tv_usec += 1000000 * nsec;
+    y->tv_sec -= nsec;
+  }
+
+  /* Compute the time remaining to wait.
+     tv_usec is certainly positive. */
+  result->tv_sec = x->tv_sec - y->tv_sec;
+  result->tv_usec = x->tv_usec - y->tv_usec;
+
+  /* Return 1 if result is negative. */
+  return x->tv_sec < y->tv_sec;
+}
+
 /* initialize local dataref structure */
 int initialize_dataref() {
 
@@ -65,7 +87,7 @@ void clear_dataref() {
   float fsend;
   float frecv;
   gettimeofday(&time_end, NULL);
-  timersub(&time_end, &time_start, &time_elapsed);
+  time_subtract(&time_end, &time_start, &time_elapsed);
   seconds_elapsed = (float) time_elapsed.tv_sec + ((float) time_elapsed.tv_usec) / 1000000.0;
   
   if (serverdata != NULL) {    

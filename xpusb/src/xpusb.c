@@ -174,13 +174,8 @@ int main (int argc, char **argv)
       if (strcmp(*argv,"test") == 0) {
 	// iocard_test();
 	// usbkeys_test();
-<<<<<<< HEAD
 	usbservos_test();
 	// dcmotorsplus_test();
-=======
-	// usbservos_test();
-	dcmotorsplus_test();
->>>>>>> 2f53d056aa1aa4448979c98326447eaeb6cd54ae
 	// bu0836_test();
 	// dcmotorsplus_test();
       }
