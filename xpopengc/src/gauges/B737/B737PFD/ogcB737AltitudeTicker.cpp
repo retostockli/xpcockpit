@@ -35,6 +35,7 @@
 #include <stdio.h>
 
 #include "ogcGaugeComponent.h"
+#include "ogcB737PFD.h"
 #include "ogcB737AltitudeTicker.h"
 
 namespace OpenGC
@@ -68,7 +69,7 @@ namespace OpenGC
 
 
     // Draw black background
-    glColor3ub(0,0,0);
+    glColor3ub(COLOR_BLACK);
     // Rectangular part
     glRectd(3.5,0.0,28.0,18.0);
     // Triangular part
@@ -80,7 +81,7 @@ namespace OpenGC
 
     // White border around background
     glLineWidth(2.5);
-    glColor3ub(255,255,255);
+    glColor3ub(COLOR_WHITE);
     glBegin(GL_LINE_LOOP);
     glVertex2f(0.0,9.0);
     glVertex2f(3.5,12.0);
@@ -109,7 +110,7 @@ namespace OpenGC
       m_pFontManager->SetSize(m_Font, 6.0, bigFontHeight);
 
       // Draw text in white
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
 
       // 100000's: don't draw for now
       if(abs(alt) >= 100000)
@@ -131,7 +132,7 @@ namespace OpenGC
 	}
       else // draw a green square
 	{
-	  glColor3ub(0,179,0);
+	  glColor3ub(COLOR_GREEN);
 	  glBegin(GL_POLYGON);
 	  glVertex2f(4.0,texty);
 	  glVertex2f(4.0,texty + bigFontHeight);
@@ -139,11 +140,11 @@ namespace OpenGC
 	  glVertex2f(8.0,texty);
 	  glVertex2f(4.0,texty);
 	  glEnd();
-	  glColor3ub(255,255,255);
 	}
   
       // 1000's
       //_itoa( alt / 1000, buffer, 10);
+      glColor3ub(COLOR_WHITE);
       snprintf(buffer, sizeof(buffer), "%i", abs(alt)/1000);
       m_pFontManager->Print(9.5, texty, &buffer[0], m_Font);
       alt = alt-1000*(int)(alt/1000);

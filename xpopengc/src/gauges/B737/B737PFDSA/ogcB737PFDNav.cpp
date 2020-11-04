@@ -34,6 +34,7 @@
 
 #include <math.h>
 #include "ogcCircleEvaluator.h"
+#include "B737/B737PFDSA/ogcB737PFDSA.h"
 #include "B737/B737PFDSA/ogcB737PFDNav.h"
 
 namespace OpenGC
@@ -84,7 +85,7 @@ void B737PFDNav::Render()
 	glPushMatrix();
 	// gray background
 	float R = 44.5;
-	glColor3ub(93, 116, 150);
+	glColor3ub(COLOR_GRAY40);
 
 	aCircle.SetOrigin(45, 45);
 	aCircle.SetRadius(R);
@@ -124,7 +125,7 @@ void B737PFDNav::Render()
 
 
 	// cut out corners
-	glColor3ub(0,0,0);
+	glColor3ub(COLOR_BLACK);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,84);
 	glVertex2f(0,90);
@@ -159,7 +160,7 @@ void B737PFDNav::Render()
 
 	// center "plane"
 	glLineWidth(2.0);
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	glBegin(GL_LINE_STRIP);
 	glVertex2f(-2.6, 9.5);
 	glVertex2f(-2.6, -9.5);
@@ -192,7 +193,7 @@ void B737PFDNav::Render()
 
 		radians = i * atan2(0.0, -1.0) / 180;
 		glLineWidth(2.0);
-		glColor3ub(255, 255, 255);
+		glColor3ub(COLOR_WHITE);
 		glBegin(GL_LINE_STRIP);
 		xcircle = (R) * sin(radians);
 		ycircle = (R) * cos(radians);
@@ -220,7 +221,7 @@ void B737PFDNav::Render()
 	glRotated(-value2, 0, 0, 1);
 
 	glLineWidth( 2.0 );
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(0, 40);
@@ -248,7 +249,7 @@ void B737PFDNav::Render()
 
 
 	glLineWidth(2.0);
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 
 	glTranslatef(-20, 0, 0);
 	qobj = gluNewQuadric();
@@ -276,7 +277,7 @@ void B737PFDNav::Render()
 	if (m_pDataSource->GetAirframe()->GetNav1_Valid()) {
 		float tx = value3 * 30;
 		glLineWidth(2.5);
-		glColor3ub(152, 68, 121);
+		glColor3ub(COLOR_VIOLET);
 		glBegin(GL_LINE_LOOP);
 		glVertex2f(-1.5 + tx, -18.2);
 		glVertex2f(-1.5 + tx, 18.2);
@@ -293,7 +294,7 @@ void B737PFDNav::Render()
 
 	// cut bottom
 	glTranslatef(-45, -45, 0);
-	glColor3ub(0,0,0);
+	glColor3ub(COLOR_BLACK);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,0);
 	glVertex2f(0,bottomHide);

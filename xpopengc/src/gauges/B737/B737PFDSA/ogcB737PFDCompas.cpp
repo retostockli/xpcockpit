@@ -31,6 +31,7 @@
 
 =========================================================================*/
 
+#include "B737/B737PFDSA/ogcB737PFDSA.h"
 #include "B737/B737PFDSA/ogcB737PFDCompas.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -102,7 +103,7 @@ void B737PFDCompas::Render()
 		glRotated(i, 0, 0, 1);
 		if (i != 0) {
 			glLineWidth(2.0);
-			glColor3ub(255, 255, 255);
+			glColor3ub(COLOR_WHITE);
 			glBegin(GL_LINE_STRIP);
 			glVertex2f(0, R);
 			glVertex2f(0, R+3);
@@ -110,7 +111,7 @@ void B737PFDCompas::Render()
 		}
 		else {
 			glLineWidth(2.0);
-			glColor3ub(255, 255, 255);
+			glColor3ub(COLOR_WHITE);
 			glBegin(GL_POLYGON);
 			glVertex2f(0, R);
 			glVertex2f(2, R+3);
@@ -125,7 +126,7 @@ void B737PFDCompas::Render()
 
 	glRotated(value, 0, 0, 1);
 
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	qobj = gluNewQuadric();
 	gluPartialDisk(qobj, R-1, R, 50, 1, 0, 360);
   gluDeleteQuadric(qobj);
@@ -144,7 +145,7 @@ void B737PFDCompas::Render()
 
 		glRotated(i, 0, 0, 1);
 		glLineWidth(2.0);
-		glColor3ub(255, 255, 255);
+		glColor3ub(COLOR_WHITE);
 		glBegin(GL_LINE_STRIP);
 		glVertex2f(0, R);
 		glVertex2f(0, R-linelength);
@@ -170,7 +171,7 @@ void B737PFDCompas::Render()
 		glPushMatrix();
 		glRotated(-nav1DirValue, 0, 0, 1);
 		glLineWidth(2.0);
-		glColor3ub(0, 255, 0);
+		glColor3ub(COLOR_GREEN);
 		glBegin(GL_POLYGON);
 		glVertex2f(0, R-5);
 		glVertex2f(-4, R-9);
@@ -193,7 +194,7 @@ void B737PFDCompas::Render()
 		glPushMatrix();
 		glRotated(-nav2DirValue, 0, 0, 1);
 		glLineWidth(2.0);
-		glColor3ub(0, 255, 0);
+		glColor3ub(COLOR_GREEN);
 		glBegin(GL_POLYGON);
 		glVertex2f(0, R-5);
 		glVertex2f(-4, R-9);
@@ -212,7 +213,7 @@ void B737PFDCompas::Render()
 		glPushMatrix();
 		glRotated(-adfValue, 0, 0, 1);
 		glLineWidth(2.0);
-		glColor3ub(66, 190, 252);
+		glColor3ub(COLOR_CYAN);
 		glBegin(GL_POLYGON);
 		glVertex2f(0, R-5);
 		glVertex2f(-4, R-9);
@@ -235,7 +236,7 @@ void B737PFDCompas::Render()
 	// small circle in the middle of the gauge
 	glPushMatrix();
 	glLineWidth(2.0);
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	qobj = gluNewQuadric();
 	gluPartialDisk(qobj, 1, 2, 50, 1, 0, 360);
   gluDeleteQuadric(qobj);

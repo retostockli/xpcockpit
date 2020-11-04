@@ -129,13 +129,13 @@ namespace OpenGC
       /* print small font stuff */
       if (mapMode != 3) {
 	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-	glColor3ub( 0, 255, 82 );
+	glColor3ub(COLOR_GREEN);
 	m_pFontManager->Print( m_PhysicalSize.x*0.355, m_PhysicalSize.y*0.932, "TRK", m_Font);
 	m_pFontManager->Print( m_PhysicalSize.x*0.571, m_PhysicalSize.y*0.932, "MAG", m_Font);
       }
 	
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-      glColor3ub( 255, 255, 255 );
+      glColor3ub( COLOR_WHITE );
       m_pFontManager->Print( m_PhysicalSize.x*0.014,m_PhysicalSize.y*0.957,"GS", m_Font );
       m_pFontManager->Print( m_PhysicalSize.x*0.150,m_PhysicalSize.y*0.957,"TAS", m_Font );
 
@@ -151,7 +151,7 @@ namespace OpenGC
       }
 
       /* put all the dynamic data fields that appear on all NAV display modes */
-      glColor3ub( 255, 255, 255 );
+      glColor3ub( COLOR_WHITE );
 
       if (mapMode != 3) {
 	/* big heading number on top of NAV display */
@@ -209,7 +209,7 @@ namespace OpenGC
 	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     
 	  if ((*efis1_selector_pilot == 0) || (*efis1_selector_pilot == 1)) {
-	    glColor3ub( 0, 255, 255 );
+	    glColor3ub(COLOR_CYAN);
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "ADF 1", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", adf1_name );
 	    if (strcmp(buffer,"") == 0) {
@@ -225,7 +225,7 @@ namespace OpenGC
 	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  } else {
-	    glColor3ub( 0, 255, 82 );
+	    glColor3ub(COLOR_GREEN);
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "VOR 1", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", nav1_name );
 	    if (strcmp(buffer,"") == 0) {
@@ -248,7 +248,7 @@ namespace OpenGC
 	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     
 	  if ((*efis2_selector_pilot == 0) || (*efis2_selector_pilot == 1)) {
-	    glColor3ub( 0, 255, 255 );
+	    glColor3ub(COLOR_CYAN);
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "ADF 2", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", adf2_name );
 	    if (strcmp(buffer,"") == 0) {
@@ -264,7 +264,7 @@ namespace OpenGC
 	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  } else {
-	    glColor3ub( 0, 255, 82 );
+	    glColor3ub(COLOR_GREEN);
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "VOR 2", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", nav2_name );
 	    if (strcmp(buffer,"") == 0) {

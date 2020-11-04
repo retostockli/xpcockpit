@@ -37,6 +37,7 @@
 
 #include "ogcGaugeComponent.h"
 #include "ogcCircleEvaluator.h"
+#include "ogcB737PFD.h"
 #include "ogcB737PFDHeadingIndicator.h"
 
 namespace OpenGC
@@ -128,7 +129,7 @@ namespace OpenGC
       glTranslatef(centerX, centerY, 0);
 
       // Draw in gray
-      glColor3ub(51,51,76);
+      glColor3ub(COLOR_GRAYBLUE);
       glLineWidth( 1.75 );
 
       // Set up the circle
@@ -145,7 +146,7 @@ namespace OpenGC
       glEnd();
 
       // Draw the center detent
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       glBegin(GL_LINE_LOOP);
       glVertex2f(0.0f,radius);
       glVertex2f(-3.0f,radius+5.0);
@@ -236,7 +237,7 @@ namespace OpenGC
 	// rotate to dialed AP Heading
 	glRotatef((*heading_mag_ap - *heading_mag) * indicatorDegreesPerTrueDegrees,0,0,-1);
 	
-	glColor3ub(255, 0, 200);
+	glColor3ub(COLOR_MAGENTA);
 	glLineWidth(2.0);
 	
 	glBegin(GL_LINE_LOOP);
@@ -262,7 +263,7 @@ namespace OpenGC
 	m_pFontManager->SetSize(m_Font, littleFontSize, littleFontSize );
 	m_pFontManager->Print(45, 1 ,"H", m_Font ); 
 
-	glColor3ub(0, 255, 82);
+	glColor3ub(COLOR_GREEN);
   
 	m_pFontManager->SetSize(m_Font, littleFontSize, littleFontSize );
 	m_pFontManager->Print(70, 1 ,"MAG", m_Font ); 
@@ -282,7 +283,7 @@ namespace OpenGC
 	// rotate to dialed NAV1/ADF1 Heading
 	glRotatef((*ap_course1 - *heading_mag) * indicatorDegreesPerTrueDegrees, 0, 0, -1);
 	
-	glColor3ub( 255, 255,  255 );
+	glColor3ub(COLOR_WHITE);
 	glLineWidth(3.0);
 	
 	// draw Heading arrow

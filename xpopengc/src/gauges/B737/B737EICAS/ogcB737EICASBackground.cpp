@@ -32,6 +32,7 @@
 
   =========================================================================*/
 
+#include "B737/B737EICAS/ogcB737EICAS.h"
 #include "B737/B737EICAS/ogcB737EICASBackground.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -91,7 +92,7 @@ namespace OpenGC
     glEnable(GL_LINE_SMOOTH);
 
     glLineWidth(3.0);
-    glColor3ub(0, 189, 231);
+    glColor3ub(COLOR_LIGHTBLUE);
 
     glBegin(GL_LINE_STRIP);
     glVertex2f(116, 165);
@@ -126,7 +127,7 @@ namespace OpenGC
 	
     m_pFontManager->Print(80, 190, "TAT", m_Font);
     m_pFontManager->SetSize(m_Font,6,6);
-    glColor3ub(255, 255, 255);
+    glColor3ub(COLOR_WHITE);
     char buf[50];
 
     if (*tat != FLT_MISS) {
@@ -139,7 +140,7 @@ namespace OpenGC
 
     if (acf_type == 1) {
       if (*valve1 == 1.0) {
-	glColor3ub(255, 204, 109);
+	glColor3ub(COLOR_YELLOW);
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(120, 194.5);
@@ -147,12 +148,12 @@ namespace OpenGC
 	glVertex2f(155, 185.5);
 	glVertex2f(120, 185.5);
 	glEnd();;
-	glColor3ub(0, 0, 0);
+	glColor3ub(COLOR_BLACK);
 	m_pFontManager->Print(124, 191,"START VALVE", m_Font);
 	m_pFontManager->Print(132, 186,"OPEN", m_Font);
       }
       if (*valve2 == 1.0) {
-	glColor3ub(255, 204, 109);
+	glColor3ub(COLOR_YELLOW);
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(120+40, 194.5);
@@ -160,13 +161,13 @@ namespace OpenGC
 	glVertex2f(155+40, 185.5);
 	glVertex2f(120+40, 185.5);
 	glEnd();;
-	glColor3ub(0, 0, 0);
+	glColor3ub(COLOR_BLACK);
 	m_pFontManager->Print(124+40, 191,"START VALVE", m_Font);
 	m_pFontManager->Print(132+40, 186,"OPEN", m_Font);
       }
       
       if (*filter1 == 1.0) {
-	glColor3ub(255, 204, 109);
+	glColor3ub(COLOR_YELLOW);
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(120, 194.5-10);
@@ -174,12 +175,12 @@ namespace OpenGC
 	glVertex2f(155, 185.5-10);
 	glVertex2f(120, 185.5-10);
 	glEnd();;
-	glColor3ub(0, 0, 0);
+	glColor3ub(COLOR_BLACK);
 	m_pFontManager->Print(126, 191-10,"OIL FILTER", m_Font);
 	m_pFontManager->Print(130, 186-10,"BYPASS", m_Font);
       }
       if (*filter2 == 1.0) {
-	glColor3ub(255, 204, 109);
+	glColor3ub(COLOR_YELLOW);
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(120+40, 194.5-10);
@@ -187,14 +188,14 @@ namespace OpenGC
 	glVertex2f(155+40, 185.5-10);
 	glVertex2f(120+40, 185.5-10);
 	glEnd();;
-	glColor3ub(0, 0, 0);
+	glColor3ub(COLOR_BLACK);
 	m_pFontManager->Print(126+40, 191-10,"OIL FILTER", m_Font);
 	m_pFontManager->Print(130+40, 186-10,"BYPASS", m_Font);
       }
     }
 
     if (*oilpress1 == 1) {
-      glColor3ub(255, 204, 109);
+      glColor3ub(COLOR_YELLOW);
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glBegin(GL_POLYGON);
       glVertex2f(120, 194.5-20);
@@ -202,12 +203,12 @@ namespace OpenGC
       glVertex2f(155, 185.5-20);
       glVertex2f(120, 185.5-20);
       glEnd();;
-      glColor3ub(0, 0, 0);
+      glColor3ub(COLOR_BLACK);
       m_pFontManager->Print(129, 191-20,"LOW OIL", m_Font);
       m_pFontManager->Print(127, 186-20,"PRESSURE", m_Font);
     }
     if (*oilpress2 == 1) {
-      glColor3ub(255, 204, 109);
+      glColor3ub(COLOR_YELLOW);
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glBegin(GL_POLYGON);
       glVertex2f(120+40, 194.5-20);
@@ -215,7 +216,7 @@ namespace OpenGC
       glVertex2f(155+40, 185.5-20);
       glVertex2f(120+40, 185.5-20);
       glEnd();;
-      glColor3ub(0, 0, 0);
+      glColor3ub(COLOR_BLACK);
       m_pFontManager->Print(129+40, 191-20,"LOW OIL", m_Font);
       m_pFontManager->Print(127+40, 186-20,"PRESSURE", m_Font);
     }

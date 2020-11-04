@@ -992,7 +992,7 @@ void B737FMC::Render()
 
     // grey FMC plate
     /*
-    glColor3ub( 88, 94, 100 );
+    glColor3ub(COLOR_GRAY40);
     glPolygonMode(GL_FRONT,GL_FILL);
     glBegin(GL_POLYGON);
     glVertex2f( 0, 0);
@@ -1018,7 +1018,7 @@ void B737FMC::Render()
       }
 	
       if (message == 1) {
-	glColor3ub(255, 100, 0 );
+	glColor3ub(COLOR_ORANGE);
 	char buffer[2];
 	float fontSize = 0.035 * m_PhysicalSize.x;
 	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
@@ -1037,7 +1037,7 @@ void B737FMC::Render()
 	float y0 = m_PhysicalSize.y / 2 - 6;
 	float y1 = m_PhysicalSize.y / 2 - 8;
 	
-	glColor3ub( 255, 255, 0 );
+	glColor3ub(COLOR_YELLOW);
 	glPolygonMode(GL_FRONT,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( x0, y0);
@@ -1051,7 +1051,7 @@ void B737FMC::Render()
     }
 
     // black rectangle of FMC display
-    glColor3ub(255, 255, 255 );
+    glColor3ub(COLOR_WHITE);
     //    glBegin(GL_POLYGON);
     glBegin(GL_LINE_LOOP);
     glVertex2f( 13, m_PhysicalSize.y - 1 );

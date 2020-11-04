@@ -32,6 +32,7 @@
 
   =========================================================================*/
 
+#include "B737/B737EICAS/ogcB737EICAS.h"
 #include "B737/B737EICAS/ogcB737EICASHydQ.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -108,7 +109,7 @@ namespace OpenGC
 
       glLineWidth(2.0);
       glEnable(GL_LINE_SMOOTH);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
 
       // white rectangle containing the text
       glBegin(GL_LINE_LOOP);

@@ -33,6 +33,7 @@
   =========================================================================*/
 
 #include <math.h>
+#include "B737/B737EICAS/ogcB737EICAS.h"
 #include "B737/B737EICAS/ogcB737EICASN1.h"
 
 namespace OpenGC
@@ -137,9 +138,9 @@ namespace OpenGC
 
       // gauge
       if(value > 98)
-	glColor3ub(255, 0, 0);
+	glColor3ub(COLOR_RED);
       else
-	glColor3ub(51, 62, 90);
+	glColor3ub(COLOR_GRAYBLUE);
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, 0, R+1, 50, 1, minDegrees, value / max_red * (maxDegrees-minDegrees));
       gluDeleteQuadric(qobj);
@@ -147,7 +148,7 @@ namespace OpenGC
       float percentage = value / (max_red-min) ;
       float degree = minDegrees + ((maxDegrees - minDegrees) * percentage);
       glBegin(GL_LINE_STRIP);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       glVertex2f(0, 0);
       radians = degree * atan2(0.0, -1.0) / 180;
       xcircle = (R) * sin(radians);
@@ -156,7 +157,7 @@ namespace OpenGC
       glEnd();
 
       // white partial circle 
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R, R+1, 50, 1, minDegrees, maxDegrees-minDegrees);
       gluDeleteQuadric(qobj);
@@ -164,7 +165,7 @@ namespace OpenGC
       // green stripe
       float percentageg = max_green / (max_red - min) ;
       float degreegreen = minDegrees + ((maxDegrees - minDegrees) * percentageg);
-      glColor3ub(0, 255, 0);
+      glColor3ub(COLOR_GREEN);
       radians = degreegreen * atan2(0.0, -1.0) / 180.;
       glBegin(GL_LINE_STRIP);
       xcircle = (R) * sin(radians);
@@ -194,7 +195,7 @@ namespace OpenGC
       // red stripe
       float percentager = max_red / (max_red - min) ;
       float degreered =  minDegrees + ((maxDegrees - minDegrees) * percentager);
-      glColor3ub(255, 0, 0);
+      glColor3ub(COLOR_RED);
       glBegin(GL_LINE_STRIP);
       radians = degreered * atan2(0.0, -1.0) / 180.;
       xcircle = (R) * sin(radians);
@@ -213,9 +214,8 @@ namespace OpenGC
 	  percentagev = xs / (max_red - min) ;
 	  degreev = minDegrees + ((maxDegrees - minDegrees) * percentagev);
 	  glLineWidth(2.0);
-	  glColor3ub(255, 255, 255);
+	  glColor3ub(COLOR_WHITE);
 	  glBegin(GL_LINE_STRIP);
-	  glColor3ub(255, 255, 255);
 	  radians = degreev * atan2(0.0, -1.0) / 180.;
 	  xcircle = (R) * sin(radians);
 	  ycircle = (R) * cos(radians);
@@ -229,7 +229,7 @@ namespace OpenGC
 	  if ((xs > 0) && ((int)(xs/10) % 2 == 0)) {
 	    glTranslatef(-2, -1, 0);
 	    snprintf(buf, sizeof(buf), "%.0f", xs/10);
-	    glColor3ub(255, 255, 255);
+	    glColor3ub(COLOR_WHITE);
 	    xcircle = (R - 4.5) * sin(radians);
 	    ycircle = (R - 4.5) * cos(radians);
 	    m_pFontManager->Print(xcircle, ycircle, buf, m_Font);
@@ -241,7 +241,7 @@ namespace OpenGC
 
       // white rectangle containing the text
       glLineWidth(2.0);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       glBegin(GL_LINE_LOOP);
       glVertex2f( 20, 30 );
       glVertex2f( 42, 30 );
@@ -251,13 +251,13 @@ namespace OpenGC
 
       // n1: text
       m_pFontManager->SetSize(m_Font, 5, 5);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       snprintf(buf, sizeof(buf), "%.01f", value);
       m_pFontManager->Print( 21.9, 22.7, buf, m_Font);
 
       // n1-limit or reverser: text
       m_pFontManager->SetSize(m_Font, 5, 5);
-      glColor3ub(0, 255, 0);
+      glColor3ub(COLOR_GREEN);
       if (rev == 1) {
 	snprintf(buf, sizeof(buf), "REV");
       } else {

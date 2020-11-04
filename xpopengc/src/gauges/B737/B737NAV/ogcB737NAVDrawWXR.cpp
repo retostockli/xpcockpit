@@ -262,7 +262,7 @@ namespace OpenGC
       // plot map options
       glPushMatrix();
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-      glColor3ub(0, 150, 200);
+      glColor3ub(COLOR_LIGHTBLUE);
       m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"WXR",m_Font);
       glPopMatrix();
 

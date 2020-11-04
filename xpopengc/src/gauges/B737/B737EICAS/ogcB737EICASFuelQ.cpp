@@ -33,6 +33,7 @@
   =========================================================================*/
 
 #include <math.h>
+#include "B737/B737EICAS/ogcB737EICAS.h"
 #include "B737/B737EICAS/ogcB737EICASFuelQ.h"
 
 namespace OpenGC
@@ -127,13 +128,13 @@ namespace OpenGC
       glTranslatef(18, 14, 0);
 
       // gauge
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R-2, R, 50, 1, minDegrees, value / max * (maxDegreesUse360-minDegrees));
       gluDeleteQuadric(qobj);
 
       // unit markers
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       float percentagev, degreev;
       float xs = 0;
       for(int i = 0; i < 11; i++)
@@ -156,7 +157,7 @@ namespace OpenGC
 
       // text gauge
       m_pFontManager->SetSize(m_Font, 5, 5);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       snprintf(buf, sizeof(buf), "%.0f", value);
       if (value  < 100)
 	m_pFontManager->Print(14, 11, buf, m_Font);
@@ -170,7 +171,7 @@ namespace OpenGC
 
       // text tank
       m_pFontManager->SetSize(m_Font, 4, 4);
-      glColor3ub(0, 189, 231);
+      glColor3ub(COLOR_LIGHTBLUE);
       if (currentTank > 0) {
 	snprintf(buf, sizeof(buf), "%d", currentTank);
 	m_pFontManager->Print(16, 20, buf, m_Font);

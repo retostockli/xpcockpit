@@ -33,6 +33,7 @@
 =========================================================================*/
 
 #include "ogcCircleEvaluator.h"
+#include "B737/B737PFDSA/ogcB737PFDSA.h"
 #include "B737/B737PFDSA/ogcB737PFDAttitude.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -92,8 +93,7 @@ void B737PFDAttitude::Render()
 
   // The "ground" rectangle
   // Remember, the coordinate system is now centered in the gauge component
-  //glColor3ub(179,102,0);
-  glColor3ub(138, 126, 28);
+  glColor3ub(COLOR_GROUND);
 
   glBegin(GL_POLYGON);
   glVertex2f(-300,-300);
@@ -105,8 +105,7 @@ void B737PFDAttitude::Render()
 
   // The "sky" rectangle
   // Remember, the coordinate system is now centered in the gauge component
-  //glColor3ub(0,153,204);
-  glColor3ub(66, 190, 252);
+  glColor3ub(COLOR_SKY);
   
   glBegin(GL_POLYGON);
   glVertex2f(-300,0);
@@ -119,7 +118,7 @@ void B737PFDAttitude::Render()
   //------------Draw the pitch markings--------------
 
   // Draw in white
-  glColor3ub(255,255,255);
+  glColor3ub(COLOR_WHITE);
   // Specify line width
   glLineWidth(1.0);
   // The size for all pitch text
@@ -219,8 +218,8 @@ void B737PFDAttitude::Render()
   glPushMatrix();
 
   // Draw in the sky color
-  //glColor3ub(0,153,204);
-  glColor3ub(0,0,0);
+  //glColor3ub(COLOR_SKY);
+  glColor3ub(COLOR_BLACK);
 
   aCircle.SetOrigin(47,49);
   aCircle.SetRadius(46);
@@ -286,7 +285,7 @@ void B737PFDAttitude::Render()
   glPushMatrix();
 
   // Draw in white
-  glColor3ub(255,255,255);
+  glColor3ub(COLOR_WHITE);
   glLineWidth(2.0);
 
   // Move to the center of the window
@@ -380,7 +379,7 @@ void B737PFDAttitude::Render()
   glRotated(m_pDataSource->GetAirframe()->GetRoll(), 0, 0, 1);
 
   // Draw in white
-  glColor3ub(255,255,255);
+  glColor3ub(COLOR_WHITE);
   // Specify line width
   glLineWidth(2.0);
 
@@ -408,7 +407,7 @@ void B737PFDAttitude::Render()
 
   // The center axis indicator
   // Black background
-  glColor3ub(0,0,0);
+  glColor3ub(COLOR_BLACK);
   glBegin(GL_POLYGON);
   glVertex2f(1.25,1.25);
   glVertex2f(1.25,-1.25);
@@ -417,7 +416,7 @@ void B737PFDAttitude::Render()
   glVertex2f(1.25,1.25);
   glEnd();
   // White lines
-  glColor3ub(255,255,255);
+  glColor3ub(COLOR_WHITE);
   glLineWidth(2.0);
   glBegin(GL_LINE_LOOP);
   glVertex2f(1.25,1.25);
@@ -428,7 +427,7 @@ void B737PFDAttitude::Render()
 
   // The left part
   // Black background
-  glColor3ub(0,0,0);
+  glColor3ub(COLOR_BLACK);
   glBegin(GL_POLYGON);
   glVertex2f(-30,1.25);
   glVertex2f(-10,1.25);
@@ -445,7 +444,7 @@ void B737PFDAttitude::Render()
   glEnd();
   
   // White lines
-  glColor3ub(255,255,255);
+  glColor3ub(COLOR_WHITE);
   glLineWidth(2.0);
   glBegin(GL_LINE_LOOP);
   glVertex2f(-30,1.25);
@@ -458,7 +457,7 @@ void B737PFDAttitude::Render()
 
   // The right part
   // Black background
-  glColor3ub(0,0,0);
+  glColor3ub(COLOR_BLACK);
   glBegin(GL_POLYGON);
   glVertex2f(30,1.25);
   glVertex2f(10,1.25);
@@ -475,7 +474,7 @@ void B737PFDAttitude::Render()
   glEnd();
   
   // White lines
-  glColor3ub(255,255,255);
+  glColor3ub(COLOR_WHITE);
   glLineWidth(2.0);
   glBegin(GL_LINE_LOOP);
   glVertex2f(30,1.25);
@@ -500,7 +499,7 @@ void B737PFDAttitude::Render()
     // Move to the center of the window
     glTranslated(47,49,0);
 
-    glColor3ub(255,0,255);
+    glColor3ub(COLOR_MAGENTA);
     glLineWidth(3.0);
     
     glPushMatrix();
@@ -532,7 +531,7 @@ void B737PFDAttitude::Render()
     // Move to the center of the window
     glTranslated(47,0,0);
 
-    glColor3ub(0,255,0);
+    glColor3ub(COLOR_GREEN;
     glLineWidth(2.4);
 
     glPushMatrix();
@@ -556,7 +555,7 @@ void B737PFDAttitude::Render()
     glEnd();
     glPopMatrix();
     
-    glColor3ub(255,0,255);
+    glColor3ub(COLOR_MAGENTA);
     glLineWidth(3.0);
     glPushMatrix();
     glBegin(GL_LINE_STRIP);

@@ -41,6 +41,7 @@ is required to "sync" the data types contained in the packet
 #define ogcB737FMC_h
 
 #include <ogcGauge.h>
+#include "../ogcBoeingColors.h"
 
 namespace OpenGC
 {

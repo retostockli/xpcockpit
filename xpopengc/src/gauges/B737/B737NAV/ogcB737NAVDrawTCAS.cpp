@@ -261,7 +261,7 @@ namespace OpenGC
 	    float ss2 = 0.65*ss;
 	    if (fabs(zPos) < 300.) {
 	      // Resolution Advisory (red filled square)
-	      glColor3ub(255, 0, 0);
+	      glColor3ub(COLOR_RED);
 	      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	      glBegin(GL_POLYGON);
 	      glVertex2f(-ss2, -ss2);
@@ -271,7 +271,7 @@ namespace OpenGC
 	      glEnd();
 	    } else if (fabs(zPos) < 900.) {
 	      // traffic advisory (yellow filled circle)
-	      glColor3ub(255, 255, 0);
+	      glColor3ub(COLOR_YELLOW);
 	      CircleEvaluator tCircle;
 	      tCircle.SetDegreesPerPoint(20);	    
 	      tCircle.SetArcStartEnd(0,360);
@@ -282,7 +282,7 @@ namespace OpenGC
 	      glEnd();
 	    } else {
 	      // other: white diamond
-	      glColor3ub(255, 255, 255);
+	      glColor3ub(COLOR_WHITE);
 	      glPolygonMode(GL_FRONT,GL_LINE);
 	      glBegin(GL_POLYGON);
 	      glVertex2f(0, -ss2);

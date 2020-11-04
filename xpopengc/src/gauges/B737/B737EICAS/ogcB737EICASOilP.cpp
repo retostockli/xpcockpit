@@ -33,6 +33,7 @@
   =========================================================================*/
 
 #include <math.h>
+#include "B737/B737EICAS/ogcB737EICAS.h"
 #include "B737/B737EICAS/ogcB737EICASOilP.h"
 
 namespace OpenGC
@@ -111,7 +112,7 @@ namespace OpenGC
       float percentage = (value * 100.0 + negativeoffset) / (max - min) ;
       float degree = minDegrees + ((maxDegreesUse360 - minDegrees) * percentage);
       glBegin(GL_LINE_STRIP);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       glVertex2f(0, 0);
       radians = degree * atan2(0.0, -1.0) / 180;
       xcircle = (R) * sin(radians);
@@ -120,7 +121,7 @@ namespace OpenGC
       glEnd();
 
       // white partial circle 
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
 
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R, R+1, 50, 1, minDegrees, maxDegreesUse360-minDegrees);
@@ -132,14 +133,14 @@ namespace OpenGC
       float degreered =  minDegrees+ ((maxDegreesUse360 - minDegrees) * percentager);
 
       // yellow partial circle
-      glColor3ub(247, 231, 8);
+      glColor3ub(COLOR_YELLOW);
 
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R, R+1, 50, 1, degreeyellow, degreered-degreeyellow);
       gluDeleteQuadric(qobj);
 
       // red partial circle
-      glColor3ub(255, 0, 0);
+      glColor3ub(COLOR_RED);
       qobj = gluNewQuadric();
       if(redstripevalue > yellowstripevalue)
 	gluPartialDisk(qobj, R, R+1, 50, 1, degreered, maxDegreesUse360-degreered);
@@ -149,7 +150,7 @@ namespace OpenGC
 
       //yellow stripe
       glBegin(GL_LINE_STRIP);
-      glColor3ub(247, 231, 8);
+      glColor3ub(COLOR_YELLOW);
       radians=degreeyellow * atan2(0.0, -1.0) / 180;
       xcircle = (R) * sin(radians);
       ycircle = (R) * cos(radians);
@@ -161,7 +162,7 @@ namespace OpenGC
 
       //red stripe
       glBegin(GL_LINE_STRIP);
-      glColor3ub(255, 0, 0);
+      glColor3ub(COLOR_RED);
       radians=degreered * atan2(0.0, -1.0) / 180;
       xcircle = (R) * sin(radians);
       ycircle = (R) * cos(radians);
@@ -181,20 +182,20 @@ namespace OpenGC
 	  if(redstripevalue > yellowstripevalue)
 	    {
 	      if(xs >= redstripevalue)
-		glColor3ub(255, 0, 0);
+		glColor3ub(COLOR_RED);
 	      else if(xs >= yellowstripevalue)
-		glColor3ub(247, 231, 8);
+		glColor3ub(COLOR_YELLOW);
 	      else
-		glColor3ub(255, 255, 255);
+		glColor3ub(COLOR_WHITE);
 	    }
 	  else
 	    {
 	      if(xs <= redstripevalue)
-		glColor3ub(255, 0, 0);
+		glColor3ub(COLOR_RED);
 	      else if(xs <= yellowstripevalue)
-		glColor3ub(247, 231, 8);
+		glColor3ub(COLOR_YELLOW);
 	      else
-		glColor3ub(255, 255, 255);
+		glColor3ub(COLOR_WHITE);
 	    }
 	  radians=degreev * atan2(0.0, -1.0) / 180;
 	  xcircle = (R) * sin(radians);
@@ -208,7 +209,7 @@ namespace OpenGC
 
       // text in unitmarkers
       m_pFontManager->SetSize(m_Font, 4, 4);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
 
       m_pFontManager->Print(  7, -6, "0", m_Font);
       m_pFontManager->Print(-11, -2, "50", m_Font);

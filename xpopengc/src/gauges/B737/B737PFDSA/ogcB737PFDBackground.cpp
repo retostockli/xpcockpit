@@ -31,6 +31,7 @@
 
 =========================================================================*/
 
+#include "B737/B737PFDSA/ogcB737PFDSA.h"
 #include "B737/B737PFDSA/ogcB737PFDBackground.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -72,7 +73,7 @@ void B737PFDBackground::Render()
 	glPushMatrix();
 
 	glLineWidth(2.0);
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 
 	glBegin(GL_LINE_STRIP);
 		glVertex2f(70, 186);
@@ -88,7 +89,7 @@ void B737PFDBackground::Render()
 	glEnd();
 
 	m_pFontManager->SetSize(m_Font, 5, 6);
-	glColor3ub(44, 214, 47);
+	glColor3ub(COLOR_GREEN);
 
 
 	if (m_pDataSource->GetAirframe()->GetAutopilot_Engaged())

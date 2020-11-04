@@ -33,6 +33,7 @@
   =========================================================================*/
 
 #include <math.h>
+#include "B737/B737EICAS/ogcB737EICAS.h"
 #include "B737/B737EICAS/ogcB737EICASN2.h"
 
 namespace OpenGC
@@ -97,9 +98,9 @@ namespace OpenGC
 
       // gauge
       if(value > 98)
-	glColor3ub(255, 0, 0);
+	glColor3ub(COLOR_RED);
       else
-	glColor3ub(51, 62, 90);
+	glColor3ub(COLOR_GRAYBLUE);
 
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, 0, R+1, 50, 1, minDegrees, value / max * (maxDegrees-minDegrees));
@@ -108,7 +109,7 @@ namespace OpenGC
       float percentage = value / (max-min) ;
       float degree = minDegrees + ((maxDegrees - minDegrees) * percentage);
       glBegin(GL_LINE_STRIP);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       glVertex2f(0, 0);
       radians = degree * atan2(0.0, -1.0) / 180;
       xcircle = (R) * sin(radians);
@@ -117,7 +118,7 @@ namespace OpenGC
       glEnd();
 
       // white partial circle 
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
 	
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R, R+1, 50, 1, minDegrees, maxDegrees-minDegrees);
@@ -127,7 +128,7 @@ namespace OpenGC
       float percentagey = 95 / (max - min) ;
       float degreeyellow = minDegrees + ((maxDegrees - minDegrees) * percentagey);
       glBegin(GL_LINE_STRIP);
-      glColor3ub(247, 231, 8);
+      glColor3ub(COLOR_YELLOW);
       radians = degreeyellow * atan2(0.0, -1.0) / 180.;
       xcircle = (R) * sin(radians);
       ycircle = (R) * cos(radians);
@@ -141,7 +142,7 @@ namespace OpenGC
       float percentager = 100 / (max - min) ;
       float degreered =  minDegrees + ((maxDegrees - minDegrees) * percentager);
       glBegin(GL_LINE_STRIP);
-      glColor3ub(255, 0, 0);
+      glColor3ub(COLOR_RED);
       radians = degreered * atan2(0.0, -1.0) / 180.;
       xcircle = (R) * sin(radians);
       ycircle = (R) * cos(radians);
@@ -155,7 +156,7 @@ namespace OpenGC
 
       // white rectangle containing the text
       glBegin(GL_LINE_LOOP);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       glVertex2f( 20, 30 );
       glVertex2f( 42, 30 );
       glVertex2f( 42, 20 );
@@ -164,7 +165,7 @@ namespace OpenGC
 
       // text
       m_pFontManager->SetSize(m_Font, 5, 5);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       snprintf(buf, sizeof(buf), "%.01f", value);
       m_pFontManager->Print( 21.9, 22.7, buf, m_Font);
 

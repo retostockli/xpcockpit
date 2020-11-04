@@ -465,7 +465,7 @@ void B737MIP::Render()
     glPushMatrix();
 
     /* split between MIP and AFT OVH */
-    glColor3ub( 100, 100, 100 );
+    glColor3ub(COLOR_GRAY40);
     glBegin(GL_LINE_STRIP);
     glVertex2f( 0, 0.4*m_PhysicalSize.y);
     glVertex2f( m_PhysicalSize.x, 0.4*m_PhysicalSize.y);
@@ -474,7 +474,7 @@ void B737MIP::Render()
     /* IRS Position */
     if ((acf_type == 2) || (acf_type == 3)) {
       m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-      glColor3ub(255,100,0);
+      glColor3ub(COLOR_ORANGE);
 
       unsigned char *irs_pos = link_dataref_byte_arr("laminar/B738/irs/irs_pos",40,-1);
       m_pFontManager->Print( 30.0, m_PhysicalSize.y - 70.0, (const char*) irs_pos, m_Font);
@@ -482,7 +482,7 @@ void B737MIP::Render()
     
     
     // black rectangle of MIP display
-    //    glColor3ub(255, 255, 255 );
+    //    glColor3ub(COLOR_WHITE);
     //    glBegin(GL_POLYGON);
     //    glBegin(GL_LINE_LOOP);
     //    glVertex2f( 10, m_PhysicalSize.y - 4 );

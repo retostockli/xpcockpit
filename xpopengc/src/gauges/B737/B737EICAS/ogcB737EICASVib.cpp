@@ -33,6 +33,7 @@
   =========================================================================*/
 
 #include <math.h>
+#include "B737/B737EICAS/ogcB737EICAS.h"
 #include "B737/B737EICAS/ogcB737EICASVib.h"
 
 namespace OpenGC
@@ -113,7 +114,7 @@ namespace OpenGC
       glTranslatef(18, 18, 0);
 
       // gauge
-      glColor3ub(51, 62, 90);
+      glColor3ub(COLOR_GRAYBLUE);
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, 0, R+1, 50, 1, minDegrees, value / max * (maxDegreesUse360-minDegrees));
       gluDeleteQuadric(qobj);
@@ -121,7 +122,7 @@ namespace OpenGC
       float percentage = value / (max-min) ;
       float degree = minDegrees + ((maxDegreesUse360 - minDegrees) * percentage);
       glBegin(GL_LINE_STRIP);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       glVertex2f(0, 0);
       radians = degree * atan2(0.0, -1.0) / 180;
       xcircle = (R) * sin(radians);
@@ -130,7 +131,7 @@ namespace OpenGC
       glEnd();
 	
       //circle outside
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R, R+1, 50, 1, minDegrees, maxDegreesUse360-minDegrees);
       gluDeleteQuadric(qobj);
@@ -143,7 +144,7 @@ namespace OpenGC
 	  percentagev = (xs+negativeoffset) / (max-min) ;
 	  degreev =  minDegrees+ ((maxDegreesUse360- minDegrees)*percentagev);
 	  glBegin(GL_LINE_STRIP);
-	  glColor3ub(255, 255, 255);
+	  glColor3ub(COLOR_WHITE);
 	  radians=degreev * atan2(0.0, -1.0) / 180;
 	  xcircle = (R) * sin(radians);
 	  ycircle = (R) * cos(radians);
@@ -168,7 +169,7 @@ namespace OpenGC
       glPushMatrix();
       snprintf(buf, sizeof(buf), "INOP");
       glTranslatef(10, 18, 0);
-      glColor3ub(255, 165, 0);
+      glColor3ub(COLOR_ORANGE);
       m_pFontManager->SetSize(m_Font, 4, 4);
       m_pFontManager->Print(0 , 0, buf, m_Font);			
       glTranslatef(-10, -18, 0);

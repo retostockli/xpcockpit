@@ -159,7 +159,7 @@ namespace OpenGC
 	    glColor3ub(COLOR_CYAN);
 	  } else {
 	    glRotatef(-*nav1_bearing, 0, 0, 1);
-	    glColor3ub(0, 255, 82);
+	    glColor3ub(COLOR_GREEN);
 	  }
 
 	  // arrow-head giving heading to NAVAID
@@ -201,10 +201,10 @@ namespace OpenGC
 
 	  if (*efis2_selector_pilot == 0) {
 	    glRotatef(-*adf2_bearing, 0, 0, 1);
-	    glColor3ub(0, 255, 255);
+	    glColor3ub(COLOR_CYAN);
 	  } else {
 	    glRotatef(-*nav2_bearing, 0, 0, 1);
-	    glColor3ub(0, 255, 82);
+	    glColor3ub(COLOR_GREEN);
 	  }
 
 	  // outline arrow-head giving heading to NAVAID
@@ -246,7 +246,7 @@ namespace OpenGC
 	  glPushMatrix();     
 
 	  glRotatef(-*heading_mag_ap, 0, 0, 1);
-	  glColor3ub(255, 0, 200);
+	  glColor3ub(COLOR_MAGENTA);
 	  glLineWidth(lineWidth);
 	  glEnable(GL_LINE_STIPPLE);
 	  glLineStipple( 4, 0x0F0F );
@@ -277,7 +277,7 @@ namespace OpenGC
 	glTranslatef(0.0, 0.0, 0.0);
 	glRotatef(0, 0, 0, 1);
       
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	glLineWidth(lineWidth);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(m_PhysicalSize.x*(acf_x-0.030), m_PhysicalSize.y*(acf_y-0.070));
@@ -351,7 +351,7 @@ namespace OpenGC
 
 	  if (dist_to_altitude != FLT_MISS) {
 	    /* set up distance to AP-dialed altitude in V/S mode */
-	    glColor3ub(0, 255, 0);
+	    glColor3ub(COLOR_GREEN);
 	    bCircle.SetArcStartEnd(345,15);
 	    bCircle.SetRadius(map_size/mapRange*dist_to_altitude);
 	    bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
@@ -364,7 +364,7 @@ namespace OpenGC
 	}
 
 	// set up tick marks
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	glPushMatrix();
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
 	glRotatef(*track_mag,0,0,1);
@@ -401,7 +401,7 @@ namespace OpenGC
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
 	glRotatef(*track_mag - *heading_mag,0,0,1); // put wind correction rotation here
 	
-	// THIS TRIANGLE ON TOP OF THE MAP WOULD MARK THE WIND CORRECTION!
+	// TRIANGLE ON TOP OF THE MAP MARKS THE WIND CORRECTION!
 	glColor3ub(COLOR_WHITE);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(0.0,map_size);

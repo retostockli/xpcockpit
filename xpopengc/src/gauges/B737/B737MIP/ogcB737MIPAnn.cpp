@@ -39,6 +39,7 @@
 #include <math.h>
 
 #include "ogcCircleEvaluator.h"
+#include "B737/B737MIP/ogcB737MIP.h"
 #include "B737/B737MIP/ogcB737MIPAnn.h"
 
 
@@ -159,7 +160,7 @@ namespace OpenGC
       glVertex2f( 0.95*m_PhysicalSize.x, 0.95*m_PhysicalSize.y);
       glVertex2f( 0.05*m_PhysicalSize.x, 0.95*m_PhysicalSize.y);
       glEnd();
-      glColor3ub(120,100,100);
+      glColor3ub(COLOR_GRAY40);
       glBegin(GL_LINE_LOOP);
       glVertex2f( 0.05*m_PhysicalSize.x, 0.05*m_PhysicalSize.y);
       glVertex2f( 0.95*m_PhysicalSize.x, 0.05*m_PhysicalSize.y);
@@ -173,7 +174,7 @@ namespace OpenGC
 
     //    printf("%f \n",*ann_f);
 
-    glColor3ub(0,0,0);
+    glColor3ub(COLOR_BLACK);
     if (strcmp(AnnDataRef,"") != 0) {
       if (AnnDataRefType == 1) {
 	if (*ann_i == 1) {

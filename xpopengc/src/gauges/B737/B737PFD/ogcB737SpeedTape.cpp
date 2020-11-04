@@ -251,7 +251,7 @@ namespace OpenGC
       // Vertical location of the tick mark
       float tickLocation = 0;
 
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       glLineWidth(2.0);
 
       float i = 0; // counter
@@ -373,7 +373,7 @@ namespace OpenGC
 	  int nbox = (int) (minspdLocation / tickSpacing*0.30 * 5.0 + 3.0);
 
 	  if (nbox > 0) {
-	    glColor3ub( 255, 0,  0 );
+	    glColor3ub(COLOR_RED);
 	    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	    for (i=0;i<nbox;i++) {
 	      glBegin(GL_POLYGON);
@@ -388,7 +388,7 @@ namespace OpenGC
 	  if ((*min_maneuver_speed != FLT_MISS) && (*min_maneuver_speed_show == 1.0)) {
 	    float minmaneuverspdLocation = float(*min_maneuver_speed - ias_flt) *
 	      tickSpacing / 10.0 + m_PhysicalSize.y/2;
-	    glColor3ub( 255, 140,  0 );
+	    glColor3ub(COLOR_ORANGE);
 	    glLineWidth(2.0);
 	    glBegin(GL_LINE_STRIP);
 	    glVertex2f(indent_x+tickSpacing*0.175, minspdLocation);
@@ -406,7 +406,7 @@ namespace OpenGC
 	  int nbox = (int) ((m_PhysicalSize.y - maxspdLocation) / tickSpacing*0.30 * 5.0 + 3.0);
 
 	  if (nbox > 0) {
-	    glColor3ub( 255, 0,  0 );
+	    glColor3ub(COLOR_RED);
 	    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	    for (i=0;i<nbox;i++) {
 	      glBegin(GL_POLYGON);
@@ -421,7 +421,7 @@ namespace OpenGC
 	  if ((*max_maneuver_speed != FLT_MISS) && (*max_maneuver_speed_show == 1.0)) {
 	    float maxmaneuverspdLocation = float(*max_maneuver_speed - ias_flt) *
 	      tickSpacing / 10.0 + m_PhysicalSize.y/2;
-	    glColor3ub( 255, 140,  0 );
+	    glColor3ub(COLOR_ORANGE);
 	    glLineWidth(2.0);
 	    glBegin(GL_LINE_STRIP);
 	    glVertex2f(indent_x+tickSpacing*0.175, maxspdLocation);
@@ -447,7 +447,7 @@ namespace OpenGC
 
 	// draw a magenta MCP altitude indicator
 	glLineWidth(3.0);
-	glColor3ub( 210, 5,  210 );
+	glColor3ub(COLOR_MAGENTA);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(indent_x-5.0, mcpspdLocation);
 	glVertex2f(indent_x, mcpspdLocation+tickSpacing*0.3);
@@ -463,7 +463,7 @@ namespace OpenGC
 	if ((*vref != FLT_MISS) && (*vref != 0.0) && (*vref_show == 1)) {
 	  float vLocation = float(*vref - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "REF");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -476,7 +476,7 @@ namespace OpenGC
 	if ((*v1 != FLT_MISS) && (*v1 != 0.0) && (*v1_show == 1)) {
 	  float vLocation = float(*v1 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "V1");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -490,7 +490,7 @@ namespace OpenGC
 	if ((*v2 != FLT_MISS) && (*v2 != 0.0) && (*v2_show == 1)) {
 	  float vLocation = float(*v2 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "V2");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -504,7 +504,7 @@ namespace OpenGC
 	if ((*vr != FLT_MISS) && (*vr != 0.0) && (*vr_show == 1)) {
 	  float vLocation = float(*vr - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
     
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "VR");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -521,7 +521,7 @@ namespace OpenGC
 	if ((*v2_15 != FLT_MISS) && (*v2_15 != 0.0) && (*v2_15_show == 1)) {
 	  float vLocation = float(*v2_15 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
-	  glColor3ub( 255, 255, 255);
+	  glColor3ub(COLOR_WHITE);
 	  glLineWidth(1.0);
 
 	  glBegin(GL_LINE_LOOP);
@@ -537,7 +537,7 @@ namespace OpenGC
 	if ((*flap0 != FLT_MISS) && (*flap_show_0 == 1)) {
 	  float vLocation = float(*flap0 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "UP");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -550,7 +550,7 @@ namespace OpenGC
 	if ((*flap1 != FLT_MISS) && (*flap_show_1 == 1)) {
 	  float vLocation = float(*flap1 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "1");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -563,7 +563,7 @@ namespace OpenGC
 	if ((*flap2 != FLT_MISS) && (*flap_show_2 == 1)) {
 	  float vLocation = float(*flap2 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "2");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -576,7 +576,7 @@ namespace OpenGC
 	if ((*flap5 != FLT_MISS) && (*flap_show_5 == 1)) {
 	  float vLocation = float(*flap5 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "5");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -589,7 +589,7 @@ namespace OpenGC
 	if ((*flap10 != FLT_MISS) && (*flap_show_10 == 1)) {
 	  float vLocation = float(*flap10 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "10");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -602,7 +602,7 @@ namespace OpenGC
 	if ((*flap15 != FLT_MISS) && (*flap_show_15 == 1)) {
 	  float vLocation = float(*flap15 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "15");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -615,7 +615,7 @@ namespace OpenGC
 	if ((*flap25 != FLT_MISS) && (*flap_show_25 == 1)) {
 	  float vLocation = float(*flap25 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
-	  glColor3ub( 0, 179, 0);
+	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer2, "25");
 	  m_pFontManager->SetSize(m_Font, 0.7*fontHeight, 0.7*fontWidth);
 	  m_pFontManager->Print(indent_x+1.5, vLocation-0.35*fontHeight, &buffer2[0], m_Font);
@@ -631,7 +631,7 @@ namespace OpenGC
       if ((*speed_acceleration != FLT_MISS) && (fabs(*speed_acceleration) > 0.1)) {
 	float vLocation = float(*speed_acceleration*10.0) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 
-	glColor3ub( 0, 179, 0);
+	glColor3ub(COLOR_GREEN);
 	glLineWidth(2.0);
 	glBegin(GL_LINES);
 	glVertex2f(indent_x - tickWidth, m_PhysicalSize.y/2);

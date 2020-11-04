@@ -36,6 +36,7 @@
 
 #include "ogcGaugeComponent.h"
 #include "ogcCircleEvaluator.h"
+#include "ogcB737PFD.h"
 #include "ogcB737ArtificialHorizon.h"
 
 namespace OpenGC
@@ -138,7 +139,7 @@ namespace OpenGC
 
       // The "ground" rectangle
       // Remember, the coordinate system is now centered in the gauge component
-      glColor3ub(179,102,0);
+      glColor3ub(COLOR_GROUND);
 
       glBegin(GL_POLYGON);
       glVertex2f(-300,-300);
@@ -150,7 +151,7 @@ namespace OpenGC
 
       // The "sky" rectangle
       // Remember, the coordinate system is now centered in the gauge component
-      glColor3ub(0,153,204);
+      glColor3ub(COLOR_SKY);
   
       glBegin(GL_POLYGON);
       glVertex2f(-300,0);
@@ -164,7 +165,7 @@ namespace OpenGC
       //------------Draw the pitch markings--------------
 
       // Draw in white
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       // Specify line width
       glLineWidth(1.0);
       // The size for all pitch text
@@ -265,7 +266,7 @@ namespace OpenGC
       glPushMatrix();
 
       // Draw in the sky color
-      glColor3ub(0,153,204);
+      glColor3ub(COLOR_SKY);
 
       aCircle.SetOrigin(47,49);
       aCircle.SetRadius(46);
@@ -296,7 +297,7 @@ namespace OpenGC
       glPushMatrix();
 
       // Draw in white
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
 
       // Move to the center of the window
       glTranslatef(47,49,0);
@@ -391,7 +392,7 @@ namespace OpenGC
       glRotatef(*roll, 0, 0, 1);
 
       // Draw in white
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       // Specify line width
       glLineWidth(2.0);
 
@@ -419,7 +420,7 @@ namespace OpenGC
 
       // The center axis indicator
       // Black background
-      glColor3ub(0,0,0);
+      glColor3ub(COLOR_BLACK);
       glBegin(GL_POLYGON);
       glVertex2f(1.25,1.25);
       glVertex2f(1.25,-1.25);
@@ -428,7 +429,7 @@ namespace OpenGC
       glVertex2f(1.25,1.25);
       glEnd();
       // White lines
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       glLineWidth(2.0);
       glBegin(GL_LINE_LOOP);
       glVertex2f(1.25,1.25);
@@ -439,7 +440,7 @@ namespace OpenGC
 
       // The left part
       // Black background
-      glColor3ub(0,0,0);
+      glColor3ub(COLOR_BLACK);
       glBegin(GL_POLYGON);
       glVertex2f(-39,1.25);
       glVertex2f(-19,1.25);
@@ -456,7 +457,7 @@ namespace OpenGC
       glEnd();
   
       // White lines
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       glLineWidth(2.0);
       glBegin(GL_LINE_LOOP);
       glVertex2f(-39,1.25);
@@ -469,7 +470,7 @@ namespace OpenGC
 
       // The right part
       // Black background
-      glColor3ub(0,0,0);
+      glColor3ub(COLOR_BLACK);
       glBegin(GL_POLYGON);
       glVertex2f(39,1.25);
       glVertex2f(19,1.25);
@@ -486,7 +487,7 @@ namespace OpenGC
       glEnd();
   
       // White lines
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       glLineWidth(2.0);
       glBegin(GL_LINE_LOOP);
       glVertex2f(39,1.25);
@@ -510,7 +511,7 @@ namespace OpenGC
       // by fanning out triangles from a point just off each corner
       // to an arc descrbing the curved portion of the art. horiz.
 
-      glColor3ub(0,0,0);
+      glColor3ub(COLOR_BLACK);
       // Lower left
       glBegin(GL_TRIANGLE_FAN);
       glVertex2f(-1.0,-1.0);
@@ -551,14 +552,14 @@ namespace OpenGC
 
     // altitude warning
     if ((*altitude_agl != FLT_MISS) && (*altitude_agl < (2500.0/3.28))) {
-      glColor3ub(0,0,0);
+      glColor3ub(COLOR_BLACK);
       glBegin(GL_POLYGON);
       glVertex2f(m_PhysicalSize.x/2-14,1);
       glVertex2f(m_PhysicalSize.x/2+12,1);
       glVertex2f(m_PhysicalSize.x/2+12,10);
       glVertex2f(m_PhysicalSize.x/2-14,10);
       glEnd();
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       m_pFontManager->SetSize(m_Font,6.0, 6.0);
       snprintf( buffer, sizeof(buffer), "%i", (int) (3.28084 * *altitude_agl) );
       m_pFontManager->Print(m_PhysicalSize.x/2-strlen(buffer)*3,2,buffer,m_Font);
@@ -573,7 +574,7 @@ namespace OpenGC
 	
 	// Move to the center of the window
 	glTranslatef(47,49,0);
-	glColor3ub( 210, 5,  210 );
+	glColor3ub(COLOR_MAGENTA);
 	glLineWidth(3.0);
     
 	glTranslatef(0,*fd_pitch*2.0,0);
@@ -591,7 +592,7 @@ namespace OpenGC
 	
 	// Move to the center of the window
 	glTranslatef(47,49,0);
-	glColor3ub( 210, 5,  210 );
+	glColor3ub(COLOR_MAGENTA);
 	glLineWidth(3.0);
 
 	glTranslatef(*fd_roll,0,0);
@@ -611,7 +612,7 @@ namespace OpenGC
 	{
 	  // Move to the center of the window
 	  glTranslatef(47,49,0);
-	  glColor3ub( 210, 5,  210 );
+	  glColor3ub(COLOR_MAGENTA);
 	  glLineWidth(3.0);
 	  
 	  glPushMatrix();

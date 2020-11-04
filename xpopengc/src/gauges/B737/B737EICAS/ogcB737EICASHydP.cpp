@@ -33,6 +33,7 @@
   =========================================================================*/
 
 #include <math.h>
+#include "B737/B737EICAS/ogcB737EICAS.h"
 #include "B737/B737EICAS/ogcB737EICASHydP.h"
 
 namespace OpenGC
@@ -126,7 +127,7 @@ namespace OpenGC
       float degreeT = (degreeV[x+1] - degreeV[x]) * (value - x);
       float degree = degreeV[x] + degreeT;
       glBegin(GL_LINE_STRIP);
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
       glVertex2f(0, 0);
       radians = degree * atan2(0.0, -1.0) / 180;
       xcircle = (R) * sin(radians);
@@ -135,7 +136,7 @@ namespace OpenGC
       glEnd();
 
       // white partial circle 
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
 
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R, R+1, 50, 1, minDegrees, maxDegreesUse360-minDegrees);
@@ -146,7 +147,7 @@ namespace OpenGC
       int redE1 = 228;
       int redB2 = 0;
       int redE2 = 40;
-      glColor3ub(255, 0, 0);
+      glColor3ub(COLOR_RED);
 	
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R, R+1, 50, 1, redB1, redE1-redB1);
@@ -181,7 +182,7 @@ namespace OpenGC
       int yellowE1 = 260;
       int yellowB2 = 330;
       int yellowE2 = 360;
-      glColor3ub(247, 231, 8);
+      glColor3ub(COLOR_YELLOW);
 	
       qobj = gluNewQuadric();
       gluPartialDisk(qobj, R, R+1, 50, 1, yellowB1, yellowE1-yellowB1);
@@ -216,9 +217,9 @@ namespace OpenGC
       for(int i = 0; i < 5; i++)
 	{
 	  if (i <= 2 || i == 4)
-	    glColor3ub(255, 0, 0);
+	    glColor3ub(COLOR_RED);
 	  else
-	    glColor3ub(255, 255, 255);
+	    glColor3ub(COLOR_WHITE);
 	  glBegin(GL_LINE_STRIP);
 	  radians = degreeV[i] * atan2(0.0, -1.0) / 180;
 	  xcircle = (R) * sin(radians);
@@ -229,7 +230,7 @@ namespace OpenGC
 	  glVertex2f(xcircle, ycircle);
 	  glEnd();
 
-	  glColor3ub(255, 255, 255);
+	  glColor3ub(COLOR_WHITE);
 	  xcircle = (R-5) * sin(radians);
 	  ycircle = (R-5) * cos(radians);
 	  snprintf(buf, sizeof(buf), "%d", i);

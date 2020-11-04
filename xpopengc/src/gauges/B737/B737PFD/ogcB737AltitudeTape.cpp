@@ -36,6 +36,7 @@
 #include <math.h>
 
 #include "ogcGaugeComponent.h"
+#include "ogcB737PFD.h"
 #include "ogcB737AltitudeTape.h"
 
 namespace OpenGC
@@ -99,7 +100,7 @@ namespace OpenGC
       glPushMatrix();
 
       // Draw in gray-blue
-      glColor3ub(51,51,76);
+      glColor3ub(COLOR_GRAYBLUE);
 
       // Draw the background rectangle
       glBegin(GL_POLYGON);
@@ -137,7 +138,7 @@ namespace OpenGC
       // Vertical location of the tick mark
       float tickLocation = 0;
 
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
       glLineWidth(2.0);
 
       float i = 0; // counter
@@ -340,7 +341,7 @@ namespace OpenGC
       if (*rwy_altitude != FLT_MISS) {
 	float rwyaltLocation = (*rwy_altitude - *pressure_altitude) *
 	  tickSpacing / 100.0 + m_PhysicalSize.y/2;
-	glColor3ub( 200, 200,  0 );
+	glColor3ub(COLOR_YELLOW);
 	glLineWidth(3.0);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(0.0, rwyaltLocation);
@@ -363,7 +364,7 @@ namespace OpenGC
 	mcpaltLocation = fmin(fmax(0.0,mcpaltLocation),m_PhysicalSize.y);
 	
 	// draw a magenta MCP altitude indicator
-	glColor3ub( 210, 5,  210 );
+	glColor3ub(COLOR_MAGENTA);
 	glLineWidth(3.0);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(0.5, mcpaltLocation+tickSpacing*0.2);
@@ -382,7 +383,7 @@ namespace OpenGC
       if ((*vertical_speed != FLT_MISS) && (fabs(*vertical_speed) > 100)) {
 	float vLocation = *vertical_speed/6.0 * tickSpacing / 100.0 + m_PhysicalSize.y/2;
 	
-	glColor3ub( 0, 179, 0);
+	glColor3ub(COLOR_GREEN);
 	glLineWidth(2.0);
 	glBegin(GL_LINES);
 	glVertex2f(tickWidth, m_PhysicalSize.y/2);

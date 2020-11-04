@@ -905,7 +905,7 @@ namespace OpenGC
       // No Reference Speed indicator
       if (*no_vspeed == 1) {
 	m_pFontManager->SetSize(m_Font, 4.5, 5.5);
-	glColor3ub( 200, 175,  30 );
+	glColor3ub(COLOR_ORANGE);
 	strcpy(buffer, "NO");
 	m_pFontManager->Print(32,130, &buffer[0], m_Font); 
 	strcpy(buffer, "V");

@@ -43,7 +43,6 @@
 #include "ogcB737VSI.h"
 #include "ogcB737PFD.h"
 #include "ogcB737MachNumber.h"
-//#include "ogcB737GradientADI.h"
 
 namespace OpenGC
 {

@@ -89,7 +89,6 @@ B737/B737PFDSA/ogcB737PFDSpeedIndicator.cpp \
 B737/B737PFD/ogcB737AltitudeTape.cpp \
 B737/B737PFD/ogcB737AltitudeTicker.cpp \
 B737/B737PFD/ogcB737ArtificialHorizon.cpp \
-B737/B737PFD/ogcB737GradientADI.cpp \
 B737/B737PFD/ogcB737MachNumber.cpp \
 B737/B737PFD/ogcB737PFD.cpp \
 B737/B737PFD/ogcB737PFDHeadingIndicator.cpp \
@@ -196,7 +195,6 @@ B737/B737PFDSA/ogcB737PFDSpeedIndicator.h \
 B737/B737PFD/ogcB737AltitudeTape.h \
 B737/B737PFD/ogcB737AltitudeTicker.h \
 B737/B737PFD/ogcB737ArtificialHorizon.h \
-B737/B737PFD/ogcB737GradientADI.h \
 B737/B737PFD/ogcB737MachNumber.h \
 B737/B737PFD/ogcB737PFD.h \
 B737/B737PFD/ogcB737PFDHeadingIndicator.h \

@@ -36,6 +36,7 @@
 #define ogcB737MIP_h
 
 #include <ogcGauge.h>
+#include "../ogcBoeingColors.h"
 
 namespace OpenGC
 {

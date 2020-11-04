@@ -143,7 +143,7 @@ namespace OpenGC
     
       // plot map options
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-      glColor3ub(0, 189, 231);
+      glColor3ub(COLOR_LIGHTBLUE);
       if (*nav_shows_apt == 1) {
 	m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.388 , "ARPT", m_Font );
       }
@@ -265,7 +265,7 @@ namespace OpenGC
 		  
 		    /* small triangle: white */
 		    float ss2 = 0.50*ss;
-		    glColor3ub(0, 189, 231);
+		    glColor3ub(COLOR_LIGHTBLUE);
 		    glLineWidth(lineWidth);
 		    glBegin(GL_LINE_LOOP);
 		    glVertex2f(-ss2, -1.0*ss2);
@@ -341,7 +341,7 @@ namespace OpenGC
       
 		    if (type == 2) {
 		      /* NDB: two circles violet */
-		      glColor3ub(52, 72, 139);
+		      glColor3ub(COLOR_VIOLET);
 		      glLineWidth(lineWidth);
 		      aCircle.SetRadius(ss);
 		      aCircle.SetOrigin(0.0, 0.0);
@@ -357,7 +357,7 @@ namespace OpenGC
 		    } else if (type == 3) {
 		      // VOR: six point polygon light blue
 		      float ss3 = 0.65*ss;
-		      glColor3ub(0, 255, 82);
+		      glColor3ub(COLOR_GREEN);
 		      glLineWidth(lineWidth);
 		      glBegin(GL_LINE_LOOP);
 		      glVertex2f(-0.5*ss3, -0.866*ss3);
@@ -370,8 +370,7 @@ namespace OpenGC
 		    } else {
 		      // DME or DME part of VOR/VORTAC: add three radial boxes to VOR symbol
 		      float ss4 = 0.65*ss;
-		      //		    glColor3ub(130, 168, 217);
-		      glColor3ub(0, 255, 82);
+		      glColor3ub(COLOR_GREEN);
 		      glLineWidth(lineWidth);
 		      glBegin(GL_LINE_LOOP);
 		      glVertex2f(-0.5*ss4, -0.866*ss4);
@@ -464,7 +463,7 @@ namespace OpenGC
 		    glRotatef(-1.0* heading_map, 0, 0, 1);
 
 		    // Airports are light blue 
-		    glColor3ub(0, 150, 200);
+		    glColor3ub(COLOR_LIGHTBLUE);
 		    glLineWidth(lineWidth);
 		    aCircle.SetRadius(ss);
 		    aCircle.SetOrigin(0.0, 0.0);

@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "ogcGaugeComponent.h"
+#include "ogcB737PFD.h"
 #include "ogcB737SpeedTicker.h"
 
 namespace OpenGC
@@ -67,7 +68,7 @@ namespace OpenGC
     GaugeComponent::Render();
 
     // Draw black background
-    glColor3ub(0,0,0);
+    glColor3ub(COLOR_BLACK);
     // Rectangular part
     glRectd(0.0,0.0,18.0,18.0);
     // Triangular part
@@ -78,7 +79,7 @@ namespace OpenGC
     glEnd();
 
     // White border around background
-    glColor3ub(255,255,255);
+    glColor3ub(COLOR_WHITE);
     glLineWidth(2.5);
     glBegin(GL_LINE_LOOP);
     glVertex2f(0.0,0.0);
@@ -116,7 +117,7 @@ namespace OpenGC
       m_pFontManager->SetSize(m_Font, 6.0, fontHeight);
 
       // Draw text in white
-      glColor3ub(255,255,255);
+      glColor3ub(COLOR_WHITE);
   
       if(fabs(ias_flt)>=100.0)
 	{

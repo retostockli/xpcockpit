@@ -39,6 +39,7 @@
 #include <math.h>
 
 #include "ogcCircleEvaluator.h"
+#include "B737/B737FMC/ogcB737FMC.h"
 #include "B737/B737FMC/ogcB737FMCKey.h"
 
 
@@ -117,7 +118,7 @@ namespace OpenGC
 
       switch(m_KeyForm) {
       case 0:
-	glColor3ub( 50, 50, 50 );
+	glColor3ub( COLOR_GRAY25 );
 	glPolygonMode(GL_FRONT,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
@@ -127,7 +128,7 @@ namespace OpenGC
 	glEnd();
 	break;
       case 1:
-	glColor3ub( 50, 50, 50 );
+	glColor3ub( COLOR_GRAY25 );
 	glPolygonMode(GL_FRONT,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
@@ -135,7 +136,7 @@ namespace OpenGC
 	glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
 	glEnd();
-	glColor3ub(255, 255, 255 );
+	glColor3ub(COLOR_WHITE );
 	glBegin(GL_LINE_LOOP);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
 	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
@@ -144,7 +145,7 @@ namespace OpenGC
 	glEnd();
 	break;
       case 2:
-	glColor3ub( 50, 50, 50 );
+	glColor3ub( COLOR_GRAY25 );
 	glPolygonMode(GL_FRONT,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
@@ -154,13 +155,13 @@ namespace OpenGC
 	glEnd();
 	break;
       case 3:
-	glColor3ub(50, 50, 50);
+	glColor3ub(COLOR_GRAY25);
 	glBegin(GL_POLYGON);
 	tCircle.Evaluate();
 	glEnd();
 	break;
       default:
-	glColor3ub( 50, 50, 50 );
+	glColor3ub( COLOR_GRAY25 );
 	glPolygonMode(GL_FRONT,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
@@ -168,7 +169,7 @@ namespace OpenGC
 	glVertex2f( 0.9*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.9*m_PhysicalSize.y);
 	glEnd();      
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f( 0.9*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
 	glVertex2f( 1.0*m_PhysicalSize.x, 0.5*m_PhysicalSize.y);
@@ -180,7 +181,7 @@ namespace OpenGC
       }
       sprintf( buffer, "%s", m_KeyName );
 
-      glColor3ub(255, 255, 255);
+      glColor3ub(COLOR_WHITE);
 
       /* wide keys: search for space, means line break */
       if ((m_PhysicalSize.x > 1.1*m_PhysicalSize.y) && (m_KeyForm != 4)) {

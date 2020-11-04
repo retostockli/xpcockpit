@@ -99,7 +99,7 @@ namespace OpenGC
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
     
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	glLineWidth(lineWidth);
 
 	// Shift center and rotate about heading
@@ -132,13 +132,13 @@ namespace OpenGC
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
 
 	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-	glColor3ub(0, 255, 0);
+	glColor3ub(COLOR_GREEN);
 	m_pFontManager->Print( -0.5*fontSize, map_size*1.1, "N", m_Font);
 	m_pFontManager->Print( -0.5*fontSize, -map_size*1.15, "S", m_Font);
 	m_pFontManager->Print( map_size*1.1 , -0.5*fontSize , "E", m_Font);
 	m_pFontManager->Print( -map_size*1.2 , -0.5*fontSize , "W", m_Font);
 
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 	if (mapRange > 5.0) {
 	  snprintf(buffer, sizeof(buffer), "%i", (int) (mapRange / 2.0));

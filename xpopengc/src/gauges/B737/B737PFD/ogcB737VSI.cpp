@@ -39,6 +39,7 @@
 #include <math.h>
 
 #include "ogcGaugeComponent.h"
+#include "ogcB737PFD.h"
 #include "ogcB737VSI.h"
 
 namespace OpenGC
@@ -80,7 +81,7 @@ namespace OpenGC
     m_pFontManager->SetSize(m_Font,4.0, 4.0);
 
     // Draw in gray-blue
-    glColor3ub(51,51,76);
+    glColor3ub(COLOR_GRAYBLUE);
 
     // Bottom angular part
     glBegin(GL_POLYGON);
@@ -110,7 +111,7 @@ namespace OpenGC
     glVertex2f(16.0, 66.0);
     glEnd();
   
-    glColor3ub( 255, 255, 255 );
+    glColor3ub(COLOR_WHITE);
  
     // float *vertical_speed = link_dataref_flt("sim/flightmodel/position/vh_ind_fpm",1);
     float *vertical_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/vvi_fpm_pilot",1);

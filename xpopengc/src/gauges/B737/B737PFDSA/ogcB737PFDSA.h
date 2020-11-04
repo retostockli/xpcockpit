@@ -35,6 +35,7 @@
 #define BOEING737PFDSA
 
 #include "ogcGauge.h"
+#include "../ogcBoeingColors.h"
 
 namespace OpenGC
 {

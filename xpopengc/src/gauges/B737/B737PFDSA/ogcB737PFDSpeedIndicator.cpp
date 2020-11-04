@@ -33,6 +33,7 @@
 
 #include <math.h>
 #include "ogcCircleEvaluator.h"
+#include "B737/B737PFDSA/ogcB737PFDSA.h"
 #include "B737/B737PFDSA/ogcB737PFDSpeedIndicator.h"
 
 namespace OpenGC
@@ -84,7 +85,7 @@ void B737PFDSpeedIndicator::Render()
 	float R = 39.5;
 
 	// gray background
-	glColor3ub(93, 116, 150);
+	glColor3ub(COLOR_GRAY40);
 
 	aCircle.SetOrigin(40,40);
 	aCircle.SetRadius(R);
@@ -124,7 +125,7 @@ void B737PFDSpeedIndicator::Render()
 
 
 	// cut out corners
-	glColor3ub(0,0,0);
+	glColor3ub(COLOR_BLACK);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,74);
 	glVertex2f(0,80);
@@ -175,7 +176,7 @@ void B737PFDSpeedIndicator::Render()
 		else
 			linecut = 2.5;
 		glLineWidth(2.0);
-		glColor3ub(255, 255, 255);
+		glColor3ub(COLOR_WHITE);
 		glBegin(GL_LINE_STRIP);
 		xcircle = (R - linecut) * sin(radians);
 		ycircle = (R - linecut) * cos(radians);
@@ -228,7 +229,7 @@ void B737PFDSpeedIndicator::Render()
 		else
 			linecut = 2.5;
 		glLineWidth(2.0);
-		glColor3ub(255, 255, 255);
+		glColor3ub(COLOR_WHITE);
 		glBegin(GL_LINE_STRIP);
 		xcircle = (R - linecut) * sin(radians);
 		ycircle = (R - linecut) * cos(radians);
@@ -270,7 +271,7 @@ void B737PFDSpeedIndicator::Render()
 		else
 			linecut = 2.5;
 		glLineWidth(2.0);
-		glColor3ub(255, 255, 255);
+		glColor3ub(COLOR_WHITE);
 		glBegin(GL_LINE_STRIP);
 		xcircle = (R - linecut) * sin(radians);
 		ycircle = (R - linecut) * cos(radians);
@@ -295,9 +296,9 @@ void B737PFDSpeedIndicator::Render()
 		if ((xs >= overspeedValue) && ((int)xs % 20 == 0)) {
 			glLineWidth(2.0);
 			if (red)
-				glColor3ub(255, 0, 0);
+				glColor3ub(COLOR_RED);
 			else
-				glColor3ub(255, 255, 255);
+				glColor3ub(COLOR_WHITE);
 
 			if (xs == overspeedValue) {
 				glBegin(GL_LINE_STRIP);
@@ -329,7 +330,7 @@ void B737PFDSpeedIndicator::Render()
 
 	// rectangle containg text
 	glLineWidth(2.0);
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f( -10, -5 );
 	glVertex2f( 10, -5 );
@@ -340,7 +341,7 @@ void B737PFDSpeedIndicator::Render()
 
 	// text
 	m_pFontManager->SetSize(m_Font, 7, 8);
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 	snprintf(buf, sizeof(buf), "%.0f", value);
 	float textX;
 	if (value < 10)
@@ -354,7 +355,7 @@ void B737PFDSpeedIndicator::Render()
 
 	// circle in the middle of the gauge
 	glLineWidth(2.0);
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 
 	qobj = gluNewQuadric();
 	gluPartialDisk(qobj, 1, 2, 50, 1, 0, 360);
@@ -390,7 +391,7 @@ void B737PFDSpeedIndicator::Render()
 	glPushMatrix();
 
 	glLineWidth(3.0);
-	glColor3ub(255, 255, 255);
+	glColor3ub(COLOR_WHITE);
 
 	percentage = (vGauge - min) / (max-min) ;
 	degree = minDegrees + ((maxDegrees - minDegrees) * percentage);
@@ -423,7 +424,7 @@ void B737PFDSpeedIndicator::Render()
 	glPushMatrix();
 
 	glLineWidth(1.0);
-	glColor3ub(250, 10, 200);
+	glColor3ub(COLOR_MAGENTA);
 	percentage = (vGauge - min) / (max-min) ;
 	degree = minDegrees + ((maxDegrees - minDegrees) * percentage);
 	glRotated(-degree, 0, 0, 1);
