@@ -129,6 +129,7 @@ namespace OpenGC
     float *fmc_vnav_err;
     int *fmc_has_vrnp;
     int *fmc_rnav_enable;
+    float *fmc_rnav_alt;
     unsigned char *fmc_name;
     unsigned char *fmc_pth;
     int *fmc_idx;
@@ -166,6 +167,7 @@ namespace OpenGC
       fmc_vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",0);
       fmc_has_vrnp = link_dataref_int("laminar/B738/fms/vrnp_enable");
       fmc_rnav_enable = link_dataref_int("laminar/B738/fms/rnav_enable");
+      fmc_rnav_alt = link_dataref_flt("laminar/B738/fms/rnav_alt",0);
       fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
 
       /* set center lat/lon of map to currently selected waypoint
@@ -214,7 +216,7 @@ namespace OpenGC
 	    snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_anp );
 	    m_pFontManager->Print(0.52*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
 	  }
-	  if ((*fmc_has_vrnp == 1) && (*fmc_vnav_td_dist == 0.0)) {
+	  if ((*fmc_has_vrnp == 1) && (*fmc_vnav_td_dist == 0.0) && (*fmc_rnav_alt != 0.0)) {
 	    glColor3ub(COLOR_WHITE);
 	    glLineWidth(lineWidth);
 	    glBegin(GL_LINES);

@@ -57,6 +57,7 @@ namespace OpenGC
       int acf_type = m_pDataSource->GetAcfType();    
       float mapRange = m_NAVGauge->GetMapRange();
       bool mapCenter = m_NAVGauge->GetMapCenter();
+      float heading_map =  m_NAVGauge->GetMapHeading();
     
       char buffer[5];
 
@@ -89,7 +90,7 @@ namespace OpenGC
     
       // What's the heading?
       float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
-      float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
+      //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
       float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
       float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
       
@@ -149,8 +150,10 @@ namespace OpenGC
 	// plot ADF / VOR 1/2 heading arrows
 	// TODO: extend to co-pilot EFIS selector
 
-	if (((*efis1_selector_pilot == 0) && (*adf1_bearing != FLT_MISS) && (strcmp((const char*) adf1_name,"") != 0)) || 
-	    ((*efis1_selector_pilot == 2) && (*nav1_bearing != FLT_MISS) && (strcmp((const char*) nav1_name,"") != 0))) {
+	if ((((*efis1_selector_pilot == 0) && (*adf1_bearing != FLT_MISS) &&
+	     (strcmp((const char*) adf1_name,"") != 0)) || 
+	    ((*efis1_selector_pilot == 2) && (*nav1_bearing != FLT_MISS) &&
+	     (strcmp((const char*) nav1_name,"") != 0))) && (heading_map != FLT_MISS)) {
 
 	  glPushMatrix();     
 
@@ -194,8 +197,10 @@ namespace OpenGC
 	  glPopMatrix();
 	}
  
-	if (((*efis2_selector_pilot == 0) && (*adf2_bearing != FLT_MISS) && (strcmp((const char*) adf2_name,"") != 0)) || 
-	    ((*efis2_selector_pilot == 2) && (*nav2_bearing != FLT_MISS) && (strcmp((const char*) nav2_name,"") != 0))) {
+	if ((((*efis2_selector_pilot == 0) && (*adf2_bearing != FLT_MISS) &&
+	     (strcmp((const char*) adf2_name,"") != 0)) || 
+	    ((*efis2_selector_pilot == 2) && (*nav2_bearing != FLT_MISS) &&
+	     (strcmp((const char*) nav2_name,"") != 0))) && (heading_map != FLT_MISS)) {
 
 	  glPushMatrix();     
 
@@ -241,7 +246,8 @@ namespace OpenGC
 	}
     
 	/* MCP selected Heading bug */
-	if ((*heading_mag_ap != FLT_MISS) && (*magnetic_variation != FLT_MISS) && (*has_heading_bug == 1)) {
+	if ((*heading_mag_ap != FLT_MISS) && (*magnetic_variation != FLT_MISS) &&
+	    (*has_heading_bug == 1) && (heading_map != FLT_MISS)) {
 
 	  glPushMatrix();     
 
@@ -285,15 +291,30 @@ namespace OpenGC
 	glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
 	glEnd();
 
-	glBegin(GL_LINE_STRIP);
-	glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*(acf_y+0.080));
-	glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*map_y_max);
-	glEnd();
+	if (heading_map != FLT_MISS) {
+	  glColor3ub(COLOR_WHITE);
+	  glBegin(GL_LINE_STRIP);
+	  glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*(acf_y+0.080));
+	  glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*map_y_max);
+	  glEnd();
+	} else {
+	  glColor3ub(COLOR_ORANGE);
+	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y+map_size*0.35, 0);
+	  m_pFontManager->SetSize( m_Font, 1.30*fontSize, 1.30*fontSize );
+	  m_pFontManager->Print( -2.0*fontSize, 0.0,"MAP", m_Font);
+	  glBegin(GL_LINE_LOOP);
+	  glVertex2f(-2.2*fontSize, 1.6*fontSize);
+	  glVertex2f(-2.2*fontSize, -0.3*fontSize);
+	  glVertex2f(2.2*fontSize, -0.3*fontSize);
+	  glVertex2f(2.2*fontSize, 1.6*fontSize);
+	  glEnd();	  
+	}
       
 	glPopMatrix();
 
 	// plot range scale
 	glPushMatrix();
+	glColor3ub(COLOR_WHITE);
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
 	m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 	if (mapRange > 5.0) {
@@ -320,28 +341,30 @@ namespace OpenGC
 	  glTranslatef(0.0, 0.0, 0.0);
 	  CircleEvaluator bCircle;
 	  bCircle.SetDegreesPerPoint(2);
-	
-	  //      bCircle.SetArcStartEnd(300,60);
-	  bCircle.SetArcStartEnd(270,90);
-	  bCircle.SetRadius(map_size*1.0);
-	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
-	  glBegin(GL_LINE_STRIP);
-	  bCircle.Evaluate();
-	  glEnd();
-	  //      bCircle.SetArcStartEnd(310,50);
+
+	  if (heading_map != FLT_MISS) {
+	    bCircle.SetArcStartEnd(270,90);
+	    bCircle.SetRadius(map_size*1.0);
+	    bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+	    glBegin(GL_LINE_STRIP);
+	    bCircle.Evaluate();
+	    glEnd();
+	  }
+
 	  bCircle.SetArcStartEnd(270,90);
 	  bCircle.SetRadius(map_size*0.75);
 	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
 	  glBegin(GL_LINE_STRIP);
 	  bCircle.Evaluate();
 	  glEnd();
-	  //      bCircle.SetArcStartEnd(300,60);
+
 	  bCircle.SetArcStartEnd(270,90);
 	  bCircle.SetRadius(map_size*0.5);
 	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
 	  glBegin(GL_LINE_STRIP);
 	  bCircle.Evaluate();
 	  glEnd();
+
 	  bCircle.SetArcStartEnd(270,90);
 	  bCircle.SetRadius(map_size*0.25);
 	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
@@ -364,51 +387,55 @@ namespace OpenGC
 	}
 
 	// set up tick marks
-	glColor3ub(COLOR_WHITE);
-	glPushMatrix();
-	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	glRotatef(*track_mag,0,0,1);
-	for ( int i=0; i<=71; i++ ) {
-	  float ticklen;
-	  if ( i % 2 == 0 ) {
-	    ticklen = 0.040;
-	  } else {
-	    ticklen = 0.020;
-	  }
-	  glLineWidth(lineWidth);
-	  glBegin(GL_LINE_STRIP);
-	  glVertex2f(0,map_size);
-	  glVertex2f(0,m_PhysicalSize.y*(map_y_max-acf_y-ticklen));
-	  glEnd();
-
-	  if ( i % 6 == 0 ) {
-	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-
-	    int deg10 = i*5/10;
-	    snprintf(buffer, sizeof(buffer), "%i", deg10);
-	    if (deg10 < 10) {
-	      m_pFontManager->Print( -0.4*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
+	if (heading_map != FLT_MISS) {
+	  glColor3ub(COLOR_WHITE);
+	  glPushMatrix();
+	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
+	  glRotatef(*track_mag,0,0,1);
+	  for ( int i=0; i<=71; i++ ) {
+	    float ticklen;
+	    if ( i % 2 == 0 ) {
+	      ticklen = 0.040;
 	    } else {
-	      m_pFontManager->Print( -0.8*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
+	      ticklen = 0.020;
 	    }
+	    glLineWidth(lineWidth);
+	    glBegin(GL_LINE_STRIP);
+	    glVertex2f(0,map_size);
+	    glVertex2f(0,m_PhysicalSize.y*(map_y_max-acf_y-ticklen));
+	    glEnd();
+	    
+	    if ( i % 6 == 0 ) {
+	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	      
+	      int deg10 = i*5/10;
+	      snprintf(buffer, sizeof(buffer), "%i", deg10);
+	      if (deg10 < 10) {
+		m_pFontManager->Print( -0.4*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
+	      } else {
+		m_pFontManager->Print( -0.8*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
+	      }
+	    }
+	    glRotatef(-5.0,0,0,1);
 	  }
-	  glRotatef(-5.0,0,0,1);
+	  
+	  glPopMatrix();
+
+	  
+	  glPushMatrix();
+	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
+	  glRotatef(*track_mag - *heading_mag,0,0,1); // put wind correction rotation here
+	  
+	  // TRIANGLE ON TOP OF THE MAP MARKS THE WIND CORRECTION!
+	  glColor3ub(COLOR_WHITE);
+	  glBegin(GL_LINE_LOOP);
+	  glVertex2f(0.0,map_size);
+	  glVertex2f(0.02*m_PhysicalSize.x,map_size*1.045);
+	  glVertex2f(-0.02*m_PhysicalSize.x,map_size*1.045);
+	  glEnd();
+	  glPopMatrix();
+
 	}
-
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	glRotatef(*track_mag - *heading_mag,0,0,1); // put wind correction rotation here
-	
-	// TRIANGLE ON TOP OF THE MAP MARKS THE WIND CORRECTION!
-	glColor3ub(COLOR_WHITE);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(0.0,map_size);
-	glVertex2f(0.02*m_PhysicalSize.x,map_size*1.045);
-	glVertex2f(-0.02*m_PhysicalSize.x,map_size*1.045);
-	glEnd();
-	glPopMatrix();
 	
       }
       

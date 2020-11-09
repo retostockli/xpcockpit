@@ -59,6 +59,7 @@ namespace OpenGC
     // bool mapCenter = m_NAVGauge->GetMapCenter();
     int mapMode = m_NAVGauge->GetMapMode();
     // float mapRange = m_NAVGauge->GetMapRange();
+    float heading_map =  m_NAVGauge->GetMapHeading();
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
@@ -128,10 +129,12 @@ namespace OpenGC
 
       /* print small font stuff */
       if (mapMode != 3) {
-	m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-	glColor3ub(COLOR_GREEN);
-	m_pFontManager->Print( m_PhysicalSize.x*0.355, m_PhysicalSize.y*0.932, "TRK", m_Font);
-	m_pFontManager->Print( m_PhysicalSize.x*0.571, m_PhysicalSize.y*0.932, "MAG", m_Font);
+	if (heading_map != FLT_MISS) {
+	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
+	  glColor3ub(COLOR_GREEN);
+	  m_pFontManager->Print( m_PhysicalSize.x*0.355, m_PhysicalSize.y*0.932, "TRK", m_Font);
+	  m_pFontManager->Print( m_PhysicalSize.x*0.571, m_PhysicalSize.y*0.932, "MAG", m_Font);
+	}
       }
 	
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
@@ -151,17 +154,23 @@ namespace OpenGC
       }
 
       /* put all the dynamic data fields that appear on all NAV display modes */
-      glColor3ub( COLOR_WHITE );
 
       if (mapMode != 3) {
 	/* big heading number on top of NAV display */
 	if (*track_mag != FLT_MISS) {
 	  m_pFontManager->SetSize( m_Font, 1.30*fontSize, 1.30*fontSize );
-	  snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*track_mag));
+	  if (heading_map != FLT_MISS) {
+	    glColor3ub( COLOR_WHITE );
+	    snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*track_mag));
+	  } else {
+	    glColor3ub( COLOR_ORANGE );
+	    snprintf(buffer, sizeof(buffer), "TRK");	    
+	  }
 	  m_pFontManager->Print( m_PhysicalSize.x*0.452, m_PhysicalSize.y*0.93, &buffer[0], m_Font);
 	}
       }
       
+      glColor3ub( COLOR_WHITE );
       m_pFontManager->SetSize( m_Font, fontSize, fontSize );
 
       /* plot ground speed and air speed in knots (convert from m/s) */
@@ -175,7 +184,7 @@ namespace OpenGC
       }
 
       /* plot wind speed and direction and draw wind arrow */
-      if (*wind_direction_mag != FLT_MISS) {
+      if ((*wind_direction_mag != FLT_MISS) && (heading_map != FLT_MISS)) {
 	snprintf(buffer, sizeof(buffer), "%03d°", (int) lroundf(*wind_direction_mag));
 	m_pFontManager->Print( m_PhysicalSize.x*0.014, m_PhysicalSize.y*0.919 , buffer, m_Font );
   
