@@ -117,15 +117,15 @@ namespace OpenGC
       float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
       float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
 
-      int *has_heading_bug;
+      int *has_heading_ap_line;
       float *heading_mag_ap;
       if ((acf_type == 2) || (acf_type == 3)) {
-	has_heading_bug = link_dataref_int("laminar/B738/nd/hdg_bug_line");
+	has_heading_ap_line = link_dataref_int("laminar/B738/nd/hdg_bug_line");
 	heading_mag_ap = link_dataref_flt("laminar/B738/autopilot/mcp_hdg_dial",0);
       } else {
-	has_heading_bug = link_dataref_int("xpserver/has_hdg_bug");
+	has_heading_ap_line = link_dataref_int("xpserver/has_hdg_bug");
 	heading_mag_ap = link_dataref_flt("sim/cockpit2/autopilot/heading_dial_deg_mag_pilot",0);
-	*has_heading_bug = 1;
+	*has_heading_ap_line = 1;
       }
 
       if ((*heading_mag != FLT_MISS) && (*track_mag != FLT_MISS)) {
@@ -247,20 +247,22 @@ namespace OpenGC
     
 	/* MCP selected Heading bug */
 	if ((*heading_mag_ap != FLT_MISS) && (*magnetic_variation != FLT_MISS) &&
-	    (*has_heading_bug == 1) && (heading_map != FLT_MISS)) {
+	    (heading_map != FLT_MISS)) {
 
 	  glPushMatrix();     
 
 	  glRotatef(-*heading_mag_ap, 0, 0, 1);
 	  glColor3ub(COLOR_MAGENTA);
 	  glLineWidth(lineWidth);
-	  glEnable(GL_LINE_STIPPLE);
-	  glLineStipple( 4, 0x0F0F );
-	  glBegin(GL_LINES);
-	  glVertex2f(0.0,0.0);
-	  glVertex2f(0.0,map_size);
-	  glEnd();
-	  glDisable(GL_LINE_STIPPLE);
+	  if (*has_heading_ap_line == 1) {
+	    glEnable(GL_LINE_STIPPLE);
+	    glLineStipple( 4, 0x0F0F );
+	    glBegin(GL_LINES);
+	    glVertex2f(0.0,0.0);
+	    glVertex2f(0.0,map_size);
+	    glEnd();
+	    glDisable(GL_LINE_STIPPLE);
+	  }
 	  glBegin(GL_LINE_STRIP);
 	  glVertex2f(m_PhysicalSize.x * -0.020,map_size);
 	  glVertex2f(m_PhysicalSize.x * -0.020,map_size+m_PhysicalSize.y * 0.020);

@@ -52,9 +52,10 @@ namespace OpenGC
   {
     GaugeComponent::Render();
 
-    // int acf_type = m_pDataSource->GetAcfType();
+    int acf_type = m_pDataSource->GetAcfType();
   
-    // bool is_captain = (this->GetArg() == 1);
+    bool is_captain = (this->GetArg() == 1);
+    bool is_copilot = (this->GetArg() == 2);
 
     // bool mapCenter = m_NAVGauge->GetMapCenter();
     int mapMode = m_NAVGauge->GetMapMode();
@@ -100,10 +101,26 @@ namespace OpenGC
     // float *wind_direction_mag = link_dataref_flt("sim/weather/wind_direction_degt",0);
     float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
 
-    int *efis1_selector_pilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
-    //  int *efis1_selector_copilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
-    int *efis2_selector_pilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
-    //  int *efis2_selector_copilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_copilot");
+    int *efis1_selector;
+    int *efis2_selector;
+
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if (is_captain) {
+	efis1_selector = link_dataref_int("laminar/B738/EFIS_control/capt/vor1_off_pos");
+	efis2_selector = link_dataref_int("laminar/B738/EFIS_control/capt/vor2_off_pos");
+      } else {
+	efis1_selector = link_dataref_int("laminar/B738/EFIS_control/fo/vor1_off_pos");
+	efis2_selector = link_dataref_int("laminar/B738/EFIS_control/fo/vor2_off_pos");
+      }
+    } else {
+      if (is_captain) {
+	efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
+	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
+      } else {
+	efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
+	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_copilot");
+      }
+    }
     //    unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",500,-1);
     //    unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",500,-1);
     //    unsigned char *adf1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf1_nav_id",500,-1);
@@ -214,10 +231,13 @@ namespace OpenGC
       if (mapMode != 3) {
       
 	/* plot NAVAID name and DME if available on the lower part of the NAV display */
-	//	if ((*efis1_selector_pilot == 0) || (*efis1_selector_pilot == 2)) {
+	if ((*efis1_selector == -1) || (*efis1_selector == 1) || (*efis1_selector == 2)) {
+	  
 	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
-    
-	  if ((*efis1_selector_pilot == 0) || (*efis1_selector_pilot == 1)) {
+	  
+	  if (((*efis1_selector == -1) && ((acf_type == 2) || (acf_type == 3))) ||
+	      ((*efis1_selector == 1) && ((acf_type != 2) && (acf_type != 3)))) {
+
 	    glColor3ub(COLOR_CYAN);
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "ADF 1", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", adf1_name );
@@ -251,12 +271,15 @@ namespace OpenGC
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  }
 
-	  //	}
+	}
 
-	  //	if ((*efis2_selector_pilot == 0) || (*efis2_selector_pilot == 2)) {
+	if ((*efis2_selector == -1) || (*efis2_selector == 1) || (*efis2_selector == 2)) {
+	  
 	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     
-	  if ((*efis2_selector_pilot == 0) || (*efis2_selector_pilot == 1)) {
+	  if (((*efis2_selector == -1) && ((acf_type == 2) || (acf_type == 3))) ||
+	      ((*efis2_selector == 1) && ((acf_type != 2) && (acf_type != 3)))) {
+
 	    glColor3ub(COLOR_CYAN);
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "ADF 2", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", adf2_name );
@@ -290,7 +313,7 @@ namespace OpenGC
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.012 , "DME", m_Font );
 	  }
 
-	  //	}
+	}
 	
       }
   

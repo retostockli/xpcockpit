@@ -124,9 +124,10 @@ void B737PFD::Render()
   //  printf("%i \n",this->GetArg());
   
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
-    if (*avionics_on == 1) {
-      Gauge::Render();
-    }
+  if (*avionics_on == 1) {
+    Gauge::Render();
+  }
+  
 }
 
 } // end namespace OpenGC

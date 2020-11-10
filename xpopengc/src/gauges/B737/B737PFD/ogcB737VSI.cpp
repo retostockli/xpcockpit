@@ -145,7 +145,39 @@ namespace OpenGC
       m_pFontManager->Print( 2.0, VSpeedToNeedle(-2000.0),"2-",m_Font);
       m_pFontManager->Print( 2.0, VSpeedToNeedle(-6000.0),"6-",m_Font);
 
-      glLineWidth(3.5);
+      float pos;
+      glLineWidth(1.5);
+      pos = 0.5*(VSpeedToNeedle(1000.0)) + 1.75;
+      glBegin(GL_LINES);
+      glVertex2f(6.0,pos);
+      glVertex2f(7.5,pos);
+      glEnd();
+      pos = 0.5*(VSpeedToNeedle(1000.0) + VSpeedToNeedle(2000.0)) + 1.75;
+      glBegin(GL_LINES);
+      glVertex2f(6.0,pos);
+      glVertex2f(7.5,pos);
+      glEnd();
+      pos = 0.5*(VSpeedToNeedle(2000.0) + VSpeedToNeedle(6000.0)) + 1.75;
+      glBegin(GL_LINES);
+      glVertex2f(6.0,pos);
+      glVertex2f(7.5,pos);
+      glEnd();
+      pos = 0.5*(VSpeedToNeedle(-1000.0)) + 1.75;
+      glBegin(GL_LINES);
+      glVertex2f(6.0,pos);
+      glVertex2f(7.5,pos);
+      glEnd();
+      pos = 0.5*(VSpeedToNeedle(-1000.0) + VSpeedToNeedle(-2000.0)) + 1.75;
+      glBegin(GL_LINES);
+      glVertex2f(6.0,pos);
+      glVertex2f(7.5,pos);
+      glEnd();
+       pos = 0.5*(VSpeedToNeedle(-2000.0) + VSpeedToNeedle(-6000.0)) + 1.75;
+      glBegin(GL_LINES);
+      glVertex2f(6.0,pos);
+      glVertex2f(7.5,pos);
+      glEnd();
+       
       glBegin(GL_LINES);
   
       // Horizontal center detent
@@ -172,21 +204,21 @@ namespace OpenGC
   {
     float needle;
   
-    if(vspd>=0)
+    if(vspd>=0.0)
       {
-	if(vspd>6000)
-	  vspd = 6000;
+	if(vspd>6000.0)
+	  vspd = 6000.0;
     
-	needle = (1-exp(-3*vspd/6000)) * m_MaxNeedleDeflection + m_NeedleCenter;
+	needle = (1.0-exp(-3.0*vspd/6000.0)) * m_MaxNeedleDeflection + m_NeedleCenter;
       }
     else
       {
 	vspd = fabs(vspd);
 
-	if(vspd>6000)
-	  vspd = 6000;
+	if(vspd>6000.0)
+	  vspd = 6000.0;
     
-	needle = m_NeedleCenter - (1-exp(-3*vspd/6000)) * m_MaxNeedleDeflection;
+	needle = m_NeedleCenter - (1.0-exp(-3.0*vspd/6000.0)) * m_MaxNeedleDeflection;
        }
 
     //    printf("%f %f\n",vspd,needle);

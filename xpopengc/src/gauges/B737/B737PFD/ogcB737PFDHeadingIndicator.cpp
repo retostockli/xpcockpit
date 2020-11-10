@@ -34,6 +34,7 @@
 
 #include "ogcGLHeaders.h"
 #include <stdio.h>
+#include <math.h>
 
 #include "ogcGaugeComponent.h"
 #include "ogcCircleEvaluator.h"
@@ -103,16 +104,14 @@ namespace OpenGC
     // What's the heading?
     float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
     //    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",0);
+    float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
+    float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
-    int *has_heading_bug;
     float *heading_mag_ap;
     if ((acf_type == 2) || (acf_type == 3)) {
-      has_heading_bug = link_dataref_int("laminar/B738/nd/hdg_bug_line");
       heading_mag_ap = link_dataref_flt("laminar/B738/autopilot/mcp_hdg_dial",0);
     } else {
-      has_heading_bug = link_dataref_int("xpserver/has_hdg_bug");
       heading_mag_ap = link_dataref_flt("sim/cockpit2/autopilot/heading_dial_deg_mag_pilot",0);
-      *has_heading_bug = 1;
     }
 
     float *ap_course1 = link_dataref_flt("sim/cockpit/radios/nav1_obs_degm",0);    // NAV autopilot course1     
@@ -120,9 +119,18 @@ namespace OpenGC
     //    float *ap_course1_copilot = link_dataref_flt("sim/cockpit/radios/nav1_obs_degm2",0);    // NAV autopilot course1     
     //    float *ap_course2_copilot = link_dataref_flt("sim/cockpit/radios/nav2_obs_degm2",0);    // NAV autopilot course2    
 
+    int *irs_mode;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      irs_mode = link_dataref_int("laminar/B738/irs/irs_mode");
+    } else {
+      irs_mode = link_dataref_int("xpserver/irs_mode");
+      *irs_mode = 2;
+    }
+
     /* Draw integerized heading above center detent */
     // Convert the display heading to a string
-    if (*heading_mag != FLT_MISS) {
+    if ((*heading_mag != FLT_MISS) && (*track_mag != FLT_MISS) &&
+	(*magnetic_variation != FLT_MISS) && (*irs_mode == 2)) {
 
       glPushMatrix();
       
@@ -153,12 +161,20 @@ namespace OpenGC
       glVertex2f(3.0f,radius+5.0);
       glEnd();
 
-      snprintf( buffer, sizeof(buffer), "%d", (int) *heading_mag );
+      // Draw Track line
+      glColor3ub(COLOR_WHITE);
+      glBegin(GL_LINES);
+      glVertex2f(0.0,0.0);
+      glVertex2f(0.0,radius);
+      glEnd();
+      glBegin(GL_LINES);
+      glVertex2f(-0.025*radius,0.7*radius);
+      glVertex2f(0.025*radius,0.7*radius);
+      glEnd();
+      
 
-      if((int) *heading_mag>=100)
-	fontx = -bigFontSize*1.5;
-      else
-	fontx = -bigFontSize/2;
+      snprintf( buffer, sizeof(buffer), "%03d", (int) lroundf(*track_mag) );
+      fontx = -bigFontSize*1.5;
   
       m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
       m_pFontManager->Print( fontx, radius+6.0,&buffer[0], m_Font ); 
@@ -167,7 +183,7 @@ namespace OpenGC
       float nearestTen = (float)( (int) *heading_mag - (int) *heading_mag % 10);
 
       // Derotate by this offset
-      glRotatef( -1.0*(*heading_mag - nearestTen) * indicatorDegreesPerTrueDegrees,0,0,-1);
+      glRotatef( -1.0*(*track_mag - nearestTen) * indicatorDegreesPerTrueDegrees,0,0,-1);
 
       // Now derotate by 40 "virtual" degrees
       glRotatef(-40*indicatorDegreesPerTrueDegrees,0,0,-1);
@@ -227,7 +243,7 @@ namespace OpenGC
 
       // draw magenta AP Heading
 
-      if ((*heading_mag_ap != FLT_MISS) && (*has_heading_bug)) {
+      if (*heading_mag_ap != FLT_MISS) {
 	
 	glPushMatrix();
 	
@@ -254,18 +270,18 @@ namespace OpenGC
 
 	glPushMatrix();
 
-	snprintf( buffer, sizeof(buffer), "%d", (int) *heading_mag_ap );
+	snprintf( buffer, sizeof(buffer), "%03d", (int) *heading_mag_ap );
   
 	m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
-	m_pFontManager->Print(30, 1 ,&buffer[0], m_Font ); 
+	m_pFontManager->Print(33, 1 ,&buffer[0], m_Font ); 
 
 
 	m_pFontManager->SetSize(m_Font, littleFontSize, littleFontSize );
-	m_pFontManager->Print(45, 1 ,"H", m_Font ); 
+	m_pFontManager->Print(48, 1 ,"H", m_Font ); 
 
 	glColor3ub(COLOR_GREEN);
   
-	m_pFontManager->SetSize(m_Font, littleFontSize, littleFontSize );
+	m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
 	m_pFontManager->Print(70, 1 ,"MAG", m_Font ); 
 
 	glPopMatrix();

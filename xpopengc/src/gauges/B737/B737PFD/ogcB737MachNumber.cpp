@@ -653,8 +653,8 @@ namespace OpenGC
     // Draw the glideslope and localizer displays to the right and bottom of the ADI
 
     // Draw glide slope to the right of the ADI
-    if ( ((*nav1_vertical == 1) && (*nav1_CDI == 1)) || 
-	 ((*nav2_vertical == 1) && (*nav2_CDI == 1)) ) 
+    if ( ((*nav1_vertical == 1) && (*nav1_CDI == 1) && (is_captain)) || 
+	 ((*nav2_vertical == 1) && (*nav2_CDI == 1) && (is_copilot)) ) 
       {
 	if (*nav1_vertical == 1) {
 	  rawGlideslope = *nav1_vdef;
@@ -666,11 +666,11 @@ namespace OpenGC
 	if (rawGlideslope >   2.5) rawGlideslope = 2.5;
 
 	// Where is the center of the ADI?
-	float ADICenterX = (94/2) + 42;
+	float ADICenterX = (94/2) + 38;
 	float ADICenterY = (98/2) + 52;
     
 	// The height of the glideslope markers above and below center (+/- 1 and 2 degrees deflection)
-	float glideslopeHeight = 20;
+	float glideslopeHeight = 17;
     
 	// The vertical offset of the glideslope bug
 	float glideslopePosition = ADICenterY - rawGlideslope * glideslopeHeight;
@@ -732,7 +732,8 @@ namespace OpenGC
       }
 
     // Draw the localizer
-    if ( (*nav1_horizontal == 1) || (*nav2_horizontal == 1) ) 
+    if ( ((*nav1_horizontal == 1) && (is_captain)) ||
+	 ((*nav2_horizontal == 1) && (is_copilot)) ) 
       {
 	if (*nav1_horizontal == 1) {
 	  rawLocalizer = *nav1_hdef;
@@ -747,7 +748,7 @@ namespace OpenGC
 	float localizerHeight = 48.0;
     
 	// Overall localizer width
-	float localizerWidth = 20.0;
+	float localizerWidth = 17.0;
     
 	// The horizontal offset of the localizer bug
 	float localizerPosition = ADICenterX + rawLocalizer * localizerWidth;
@@ -922,6 +923,7 @@ namespace OpenGC
       unsigned char *text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",20,-1);
       unsigned char *text2 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt2",20,-1);
       int *lnav_engaged = link_dataref_int("laminar/B738/autopilot/lnav_engaged");
+      int *ils_active = link_dataref_int("laminar/B738/ap/ils_active");
       m_pFontManager->SetSize(m_Font, 4, 4.5);
       glColor3ub(COLOR_WHITE);
       snprintf( buffer, sizeof(buffer), "%s", text1 );
@@ -930,6 +932,9 @@ namespace OpenGC
       m_pFontManager->Print(42,162,buffer, m_Font);
       if (*lnav_engaged == 1) {
 	strcpy( buffer, "LNAV/VNAV");
+	m_pFontManager->Print(42,154,buffer, m_Font);
+      } else if (*ils_active == 1) {
+	strcpy( buffer, "ILS");
 	m_pFontManager->Print(42,154,buffer, m_Font);
       }
     }
