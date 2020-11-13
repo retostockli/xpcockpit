@@ -46,6 +46,8 @@
 #include "common.h"
 
 /* global variable allocation */
+int verbose;
+
 char server_ip[30];
 short int server_port;
 

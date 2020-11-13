@@ -67,6 +67,7 @@ else
 fi
 
 CXXFLAGS="$CXXFLAGS -fno-common"
+CFLAGS="$CFLAGS -fno-common"
 
 # Checks for libraries and headers.
 

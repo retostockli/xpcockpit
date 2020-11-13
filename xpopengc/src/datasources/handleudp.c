@@ -42,6 +42,12 @@
 #include "handleudp.h"
 #include "udpdata.h"
 
+/* allocation of global variables from handleudp.h */
+char udpServerIP[30];
+int udpServerPort;
+int udpSocket;
+struct sockaddr_in udpServAddr;     /* Server address structure */
+
 /* set up udp socket with given server address and port */
 int init_udp(void)
 {

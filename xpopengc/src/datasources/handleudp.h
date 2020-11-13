@@ -21,11 +21,11 @@
 #endif
 
 /* UDP CLIENT PARAMETERS */
-char udpServerIP[30];
-int udpServerPort;
-int udpSocket;
+extern char udpServerIP[30];
+extern int udpServerPort;
+extern int udpSocket;
 
-struct sockaddr_in udpServAddr;     /* Server address structure */
+extern struct sockaddr_in udpServAddr;     /* Server address structure */
 
 /* Prototype functions for Network communication */
 int init_udp(void);
