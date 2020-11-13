@@ -58,6 +58,9 @@ else
     CFLAGS="$CFLAGS -O2"
 fi
 
+# do not allow multiple definitions
+CFLAGS="$CFLAGS -fno-common"
+
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
 if test "x$os" = xwin; then

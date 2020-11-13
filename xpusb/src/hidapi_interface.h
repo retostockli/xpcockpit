@@ -35,7 +35,7 @@ typedef struct {
   int poll_thread_exit_code;            /* read thread exit code */
 } device_struct;
 
-device_struct device[MAXDEVICES];
+extern device_struct device[MAXDEVICES];
 
 /* prototype functions */
 int init_usb(void);

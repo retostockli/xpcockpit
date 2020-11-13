@@ -103,9 +103,9 @@ typedef struct {
 
 } iocard_struct;
 
-iocard_struct iocard[MAXDEVICES];
+extern iocard_struct iocard[MAXDEVICES];
 
-int initial; /* initialization status: */
+extern int initial; /* initialization status: */
 
 /* Prototypes */
 

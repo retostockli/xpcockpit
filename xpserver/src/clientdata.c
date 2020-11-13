@@ -35,6 +35,13 @@
 
 #include "clientdata.h"   
 
+/* allocation of global variables defined in clientdata.h */
+clientdata_struct *clientdata; /* pointer to dynamically allocatable xp data structure */
+
+int numalloc; /* number of clientdata elements allocated */
+int numlink; /* number of clientdata elements linked */
+char clientname[100]; /* name of x-plane client application */
+
 int allocate_clientdata(int offset, int type, int nelements, int index, int precision, char datarefname[]) {
 
   int found = 0;

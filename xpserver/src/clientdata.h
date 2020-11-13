@@ -52,11 +52,11 @@ typedef struct {
   int write;              /* dataref has read/write access (1) or only read access (0) in x-plane */
 } clientdata_struct;
 
-clientdata_struct *clientdata; /* pointer to dynamically allocatable xp data structure */
+extern clientdata_struct *clientdata; /* pointer to dynamically allocatable xp data structure */
 
-int numalloc; /* number of clientdata elements allocated */
-int numlink; /* number of clientdata elements linked */
-char clientname[100]; /* name of x-plane client application */
+extern int numalloc; /* number of clientdata elements allocated */
+extern int numlink; /* number of clientdata elements linked */
+extern char clientname[100]; /* name of x-plane client application */
 
 /* Prototypes */
 int allocate_clientdata(int offset, int type, int nelements, int index, int precision, char datarefname[]);

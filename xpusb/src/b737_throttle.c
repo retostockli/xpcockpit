@@ -31,6 +31,11 @@
 #define max(A,B) ((A)>(B) ? (A) : (B)) 
 #define min(A,B) ((A)<(B) ? (A) : (B)) 
 
+/* allocation of global variables defined in b737_throttle.h */
+int speedbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
+int parkbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
+int stabilizer_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
+
 void b737_throttle(void)
 {
 

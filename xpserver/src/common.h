@@ -5,10 +5,10 @@
 
 /* print messages to log file in X-Plane root path: xpserver.log */
 /* 0 (no output), 1 (some output) or 2 (pretty much output) */
-int verbose;
+extern int verbose;
 
 /* log file descriptor */
-FILE *logfileptr;     
+extern FILE *logfileptr;     
 
 
 /* missing values: UCHAR has no missing value. FLT and DBL are the same */

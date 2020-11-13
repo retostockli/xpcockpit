@@ -47,6 +47,9 @@
 #include "customdata.h"
 #include "handleclient.h"
 
+/* allocation of global variables defined in handleclient.h */
+int socketStatus;
+
 void htonf (float *src, float *dst)
 /* transfer floating point values from host to network byte order */
 {

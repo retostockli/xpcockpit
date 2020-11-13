@@ -116,7 +116,7 @@ namespace OpenGC
 	negativeoffset= min*-1.0F;
 
       float xcircle, ycircle, radians;
-      char buf[10];
+      char buf[12];
       GLUquadric *qobj;
 
       glMatrixMode(GL_MODELVIEW);

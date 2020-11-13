@@ -44,6 +44,10 @@
 
 extern float roundf(float);
 
+/* allocation of global variables from libiocards.h */
+iocard_struct iocard[MAXDEVICES];
+int initial; 
+
 /* this routine prints the GNU license information */
 void print_license(void)
 {

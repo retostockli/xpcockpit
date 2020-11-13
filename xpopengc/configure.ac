@@ -66,6 +66,8 @@ else
     CXXFLAGS="$CXXFLAGS -O2"
 fi
 
+CXXFLAGS="$CXXFLAGS -fno-common"
+
 # Checks for libraries and headers.
 
 # check for OpenGL libraries and headers

@@ -42,7 +42,7 @@
 #define MARK_EOT        4000000
 #define MARK_DISCONNECT 5000000
 
-int socketStatus;
+extern int socketStatus;
 
 /* prototype functions */
 void htonf (float *src, float *dst);

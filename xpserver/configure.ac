@@ -59,6 +59,8 @@ else
     CFLAGS="$CFLAGS -O3"
 fi
 
+CFLAGS="$CFLAGS -fno-common"
+
 # Compile a 32 bit plugin instead of 64 bit
 AC_MSG_CHECKING([whether to compile a 32 bit plugin instead of 64 bit])
 AC_ARG_ENABLE([32],

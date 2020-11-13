@@ -45,6 +45,18 @@
 #include "serverdata.h"
 #include "common.h"
 
+/* global variable allocation */
+char server_ip[30];
+short int server_port;
+
+char recvBuffer[TCPBUFSIZE];        /* Buffer for receive string */
+char sendBuffer[TCPBUFSIZE];        /* Buffer for send string */
+
+struct sockaddr_in ServAddr;     /* Server address structure */
+int socketStatus;                /* Socket status 1-5 */
+int clntSock;                    /* client socket descriptor */
+int check_tcpip_counter;  /* only check for server every x calls to check_server */
+
 /* transfer floating point values from host to network byte order */
 void htonf (float *src, float *dst)
 {
@@ -601,6 +613,7 @@ int receive_server(void) {
 
       if (first == MARK_DISCONNECT) {
 	if (verbose > 0) printf("HANDLESERVER: Received Disconnect Marker \n");
+	    
 	socketStatus = status_Disconnected;
 	disconnected = 1;
       }

@@ -30,7 +30,7 @@ typedef struct {
   void *data;             /* pointer to current data values */
 } customdata_struct;
 
-customdata_struct *customdata; /* pointer to dynamically allocatable custom dataref structure */
+extern customdata_struct *customdata; /* pointer to dynamically allocatable custom dataref structure */
 
 /* function prototypes */
 int allocate_customdata(int type, int nelements, char datarefname[]);

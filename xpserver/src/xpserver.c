@@ -53,6 +53,10 @@
 #include "handleclient.h"
 #include "xpserver.h"   
 
+/* allocate global variables defined in common.h */
+int verbose;
+FILE *logfileptr;     
+
 /* prototype functions */
 
 void	xpserverMenuHandlerCallback(

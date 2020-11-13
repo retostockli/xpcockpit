@@ -13,6 +13,9 @@
 
 #include <hidapi_interface.h>
 
+/* allocation of global variables defined in hidapi_interface.h */
+device_struct device[MAXDEVICES];
+
 /* thread parameters */
 pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 

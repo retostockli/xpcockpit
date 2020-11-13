@@ -35,6 +35,9 @@
 
 #include "customdata.h"
 
+/* allocation of global variables defined in customdata.h */
+customdata_struct *customdata; /* pointer to dynamically allocatable custom dataref structure */
+
 int allocate_customdata(int type, int nelements, char datarefname[]) {
 
   int offset;

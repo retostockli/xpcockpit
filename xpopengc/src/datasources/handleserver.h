@@ -48,16 +48,17 @@
 #define status_Error 5
 
 /* TCP/IP CLIENT PARAMETERS */
-char server_ip[30];
-short int server_port;
+/* Global variable declaration */
+extern char server_ip[30];
+extern short int server_port;
 
-char recvBuffer[TCPBUFSIZE];        /* Buffer for receive string */
-char sendBuffer[TCPBUFSIZE];        /* Buffer for send string */
+extern char recvBuffer[TCPBUFSIZE];        /* Buffer for receive string */
+extern char sendBuffer[TCPBUFSIZE];        /* Buffer for send string */
 
-struct sockaddr_in ServAddr;     /* Server address structure */
-int socketStatus;                /* Socket status 1-5 */
-int clntSock;                    /* client socket descriptor */
-int check_tcpip_counter;  /* only check for server every x calls to check_server */
+extern struct sockaddr_in ServAddr;     /* Server address structure */
+extern int socketStatus;                /* Socket status 1-5 */
+extern int clntSock;                    /* client socket descriptor */
+extern int check_tcpip_counter;  /* only check for server every x calls to check_server */
 
 
 /* TCP/IP PROTOTYPE FUNCTIONS */

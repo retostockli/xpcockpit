@@ -59,7 +59,6 @@
 
 void a320_chrono (void);
 
-
 /* Main program for data exchange between X-Plane and the OpenCockpits IOCARDS */
 /* All input/output/motor/server addresses are zero-based (e.g. range from 0..ninputs-1) */
 int main (int argc, char **argv)
