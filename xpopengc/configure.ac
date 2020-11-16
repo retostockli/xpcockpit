@@ -23,7 +23,7 @@ mingw*)
     os=win
     AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
     LDFLAGS="$LDFLAGS -static"
-    LIBS="$LIBS -mwindows -lws2_32 -lsetupapi -lole32 -luuid -lcomctl32"
+    LIBS="$LIBS -mconsole -mwindows -lws2_32 -lsetupapi -lole32 -luuid -lcomctl32"
     ;;
 **)
         AC_MSG_ERROR([Unsupported operating system $host_os. Currently only Linux, OSX and MinGW are supported.])
@@ -182,6 +182,7 @@ else
     CPPFLAGS="$CPPFLAGS -I$FREETYPEDIR/include/freetype2" 
 fi
 
+AC_CHECK_LIB(z, main)
 AC_CHECK_LIB(freetype, main, , unset HAVE_FREETYPE)
 AC_CHECK_HEADER(ft2build.h, , unset HAVE_FREETYPE)
 #AC_CHECK_HEADER(freetype.h, , unset HAVE_FREETYPE,
@@ -218,8 +219,6 @@ if test -z "$HAVE_FTGL"; then
     AC_MSG_ERROR([Can't find ftgl library, or can't link a program to it.
 please use --with-ftgl=<directory> to specify a custom installation directory for ftgl.])
 fi
-
-AC_CHECK_LIB(z, main)
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
