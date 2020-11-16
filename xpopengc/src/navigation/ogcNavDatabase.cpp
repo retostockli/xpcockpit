@@ -59,7 +59,7 @@ NavDatabase
     delete m_AirportHash;
 }
 
-void NavDatabase
+bool NavDatabase
 ::InitDatabase(string pathToNav, int customdata)
 {
   printf("NavDatabase::InitDatabase() - Loading geographic data...\n");
@@ -104,6 +104,21 @@ void NavDatabase
   printf("The navaid list contains %i items\n", (int) m_NavaidList->size() );
   printf("The fix list contains %i items\n", (int) m_FixList->size() );
   printf("The airport list contains %i items\n", (int) m_AirportList->size() );
+
+  if ( (int) m_NavaidList->size() == 0 ) {
+    printf("Navaid File earth_nav.dat not found\n");
+    return false;
+  }
+  if ( (int) m_FixList->size() == 0 ) {
+    printf("Fix File earth_fix.dat not found\n");
+    return false;
+  }
+  if ( (int) m_AirportList->size() == 0 ) {
+    printf("Airport File apt.dat not found\n");
+    return false;
+  }
+  
+  return true;
 }
 
 } // end namespace OpenGC

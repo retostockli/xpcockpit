@@ -46,7 +46,7 @@ public:
   virtual ~NavDatabase();
   
   /** Load the nav data */
-  void InitDatabase(string pathToNav, int customdata);
+  bool InitDatabase(string pathToNav, int customdata);
   
   /** Get the navaid list */
   NavaidList* GetNavaidList() {return m_NavaidList;}

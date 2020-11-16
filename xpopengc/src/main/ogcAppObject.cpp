@@ -191,13 +191,6 @@ bool AppObject::IntermediateInitialization()
   
   if (verbosity > 1) printf("AppObject - Finished creating the dummy render object\n");
 
-  // Flightgear needs some special initialization
-  if(m_DataSourceIsFlightGear)
-  {   
-    // Let's open the network sockets
-    m_pDataSource->Open();
-  }
-
   return true;
 }
 
@@ -279,7 +272,7 @@ bool AppObject::DoFileInitialization(char* iniFile)
     // Initialize the nav database
     if (verbosity > 0) printf("AppObject - Initializing the navigation database in %s\n", m_XPlanePath);
     m_pNavDatabase = new NavDatabase;
-    m_pNavDatabase->InitDatabase(m_XPlanePath,m_customdata);
+    if (!m_pNavDatabase->InitDatabase(m_XPlanePath,m_customdata)) return false;
 
     // Set up font manager
     m_pFontManager = new FontManager();
