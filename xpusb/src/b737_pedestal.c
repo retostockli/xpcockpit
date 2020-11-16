@@ -55,18 +55,20 @@ void b737_pedestal(void)
   //  int *dme_freq_stdby = link_dataref_int("sim/cockpit/radios/dme_stdby_freq_hz");
 
   int *transponder_code = link_dataref_int("sim/cockpit/radios/transponder_code");
-  int *transponder_mode = link_dataref_int("sim/cockpit/radios/transponder_mode");
   int *transponder_fail = link_dataref_int("sim/operation/failures/rel_xpndr");
   int *transponder_ident = link_dataref_int("sim/cockpit/radios/transponder_id");
 
+  float *transponder_mode_f;
   int *transponder_mode_up;
   int *transponder_mode_dn;
   if ((acf_type == 2) || (acf_type == 3)) {
+    transponder_mode_f = link_dataref_flt("laminar/B738/knob/transponder_pos",0);
     transponder_mode_up = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_up");
     transponder_mode_dn = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_dn");
     *transponder_mode_up = 0;
     *transponder_mode_dn = 0;
   }
+  int *transponder_mode = link_dataref_int("sim/cockpit/radios/transponder_mode");
     
   float *rudder_trim = link_dataref_flt("sim/flightmodel/controls/rud_trim",-3);
   float *aileron_trim = link_dataref_flt("sim/flightmodel/controls/ail_trim",-4);
@@ -470,33 +472,24 @@ void b737_pedestal(void)
 
   /* TRANSPONDER */
 
-
+  /* Transponder Mode Stdby not napped */
   ret = digital_input(device,card,67,&test,0);
-  if (ret == 1) {
-    if ((acf_type == 2) || (acf_type == 3)) {
-      if (*transponder_mode > test) {
-	*transponder_mode_dn = 1;
-      } else if (*transponder_mode < test) {
-	*transponder_mode_up = 1;
-      }
-    } else {
-      *transponder_mode = test;
-    }
-    printf("TRANSPONDER MODE: %i \n",test);
-  }
 
+
+  /* mapped to XPNDR Squawk Mode Charlie */
+  /* set to TA/RA including TCAS */
   ret = digital_input(device,card,68,&test,0);
   if (ret == 1) {
-    if ((acf_type == 2) || (acf_type == 3)) {
-      if (*transponder_mode > test*2) {
-	*transponder_mode_dn = 1;
-      } else if (*transponder_mode < test*2) {
-	*transponder_mode_up = 1;
-      }
-    } else {
-      *transponder_mode = test*2;
+    printf("TRANSPONDER MODE TA/RA: %i \n",test);
+  }
+  if ((acf_type == 2) || (acf_type == 3)) {
+    if (*transponder_mode_f > (test*4+1)) {
+      *transponder_mode_dn = 1;
+    } else if (*transponder_mode_f < (test*4+1)) {
+      *transponder_mode_up = 1;
     }
-    printf("TRANSPONDER MODE: %i \n",test*2);
+  } else {
+    *transponder_mode = test*2;
   }
 
   ret = digital_input(device,card,70,&test,0);
