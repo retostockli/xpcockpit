@@ -13,14 +13,14 @@ else
 endif
 if OS_WIN
 if XPL32
-	cp -f $(srcdir)/src/@os@.xpl.exe $(DESTDIR)plugins/$(PACKAGE_NAME)/32/@os@.xpl
+	mv -f $(DESTDIR)plugins/$(PACKAGE_NAME)/@os@.xpl.exe $(DESTDIR)plugins/$(PACKAGE_NAME)/32/@os@.xpl
 else
-	cp -f $(srcdir)/src/@os@.xpl.exe $(DESTDIR)plugins/$(PACKAGE_NAME)/64/@os@.xpl
+	mv -f $(DESTDIR)plugins/$(PACKAGE_NAME)/@os@.xpl.exe $(DESTDIR)plugins/$(PACKAGE_NAME)/64/@os@.xpl
 endif
 else
 if XPL32
-	cp -f $(srcdir)/src/@os@.xpl $(DESTDIR)plugins/$(PACKAGE_NAME)/32/@os@.xpl
+	mv -f $(DESTDIR)plugins/$(PACKAGE_NAME)/@os@.xpl $(DESTDIR)plugins/$(PACKAGE_NAME)/32/@os@.xpl
 else
-	cp -f $(srcdir)/src/@os@.xpl $(DESTDIR)plugins/$(PACKAGE_NAME)/64/@os@.xpl
+	mv -f $(DESTDIR)plugins/$(PACKAGE_NAME)/@os@.xpl $(DESTDIR)plugins/$(PACKAGE_NAME)/64/@os@.xpl
 endif
 endif

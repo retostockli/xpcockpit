@@ -13,7 +13,7 @@ xpusb: the actual client which interacts with OpenCockpits/Leo Bodnar's Hardware
 xpopengc: the glass cockpit software client that simulates B737/A320 Gauges
 
 The project is aimed at the following crowd:
-- X-Plane users working on Linux or OSX
+- X-Plane users working on Linux or OSX and now also on Windows
 - People who want to build their own home cockpits
 - People with some programming exercise
 - Friends of good wine and cheese

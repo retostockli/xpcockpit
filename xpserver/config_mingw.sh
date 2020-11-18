@@ -1,3 +1,5 @@
+# Configure script for compiling with minGW on Linux
+# For compiling with minGW on Windows please use the regular configure)
 #!/bin/sh
 
 # 64 bit

@@ -45,7 +45,7 @@ in order to set up all automake/autoconf files. Then do:
 make
 make install
 
-This will generate a directory dist/xpserver.
+This will generate a directory plugins/xpserver.
 Copy the xpserver subdirectory to your X-Plane directory under Resources/plugins/
 
 You're all set. Once launching X-Plane you should have the xpserver plugin 
