@@ -72,6 +72,8 @@ namespace OpenGC
     CircleEvaluator aCircle;
     char buffer[8];
 
+    float bigFontSize = 5.0;
+
     // First, store the "root" position of the gauge component
     glMatrixMode(GL_MODELVIEW);
 
@@ -120,176 +122,211 @@ namespace OpenGC
     //    float *nav2_hdef = link_dataref_flt("sim/cockpit/radios/nav2_hdef_dot",-2);
     //    float *nav2_vdef = link_dataref_flt("sim/cockpit/radios/nav2_vdef_dot",-2);
    
+    int *irs_mode;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      irs_mode = link_dataref_int("laminar/B738/irs/irs_mode");
+    } else {
+      irs_mode = link_dataref_int("xpserver/irs_mode");
+      *irs_mode = 2;
+    }
+
     if ((*roll != FLT_MISS) && (*pitch != FLT_MISS)) {
 
-      glPushMatrix();
+      if (*irs_mode == 2) {
 
-      // Move to the center of the window
-      glTranslatef(47,49,0);
+	glPushMatrix();
+      
+	// Move to the center of the window
+	glTranslatef(47,49,0);
 
-      // Rotate based on the bank
-      glRotatef(*roll, 0, 0, 1);
+	// Rotate based on the bank
+	glRotatef(*roll, 0, 0, 1);
 
-      // Translate in the direction of the rotation based
-      // on the pitch. On the 737, a pitch of 1 degree = 2 mm
-      glTranslatef(0, *pitch * -2.0, 0);
+	// Translate in the direction of the rotation based
+	// on the pitch. On the 737, a pitch of 1 degree = 2 mm
+	glTranslatef(0, *pitch * -2.0, 0);
 
-      //-------------------Gauge Background------------------
-      // It's drawn oversize to allow for pitch and bank
+	//-------------------Gauge Background------------------
+	// It's drawn oversize to allow for pitch and bank
 
-      // The "ground" rectangle
-      // Remember, the coordinate system is now centered in the gauge component
-      glColor3ub(COLOR_GROUND);
+	// The "ground" rectangle
+	// Remember, the coordinate system is now centered in the gauge component
+	glColor3ub(COLOR_GROUND);
 
-      glBegin(GL_POLYGON);
-      glVertex2f(-300,-300);
-      glVertex2f(-300,0);
-      glVertex2f(300,0);
-      glVertex2f(300,-300);
-      glVertex2f(-300,-300);
-      glEnd();
+	glBegin(GL_POLYGON);
+	glVertex2f(-300,-300);
+	glVertex2f(-300,0);
+	glVertex2f(300,0);
+	glVertex2f(300,-300);
+	glVertex2f(-300,-300);
+	glEnd();
 
-      // The "sky" rectangle
-      // Remember, the coordinate system is now centered in the gauge component
-      glColor3ub(COLOR_SKY);
+	// The "sky" rectangle
+	// Remember, the coordinate system is now centered in the gauge component
+	glColor3ub(COLOR_SKY);
   
-      glBegin(GL_POLYGON);
-      glVertex2f(-300,0);
-      glVertex2f(-300,300);
-      glVertex2f(300,300);
-      glVertex2f(300,0);
-      glVertex2f(-300,0);
-      glEnd();
+	glBegin(GL_POLYGON);
+	glVertex2f(-300,0);
+	glVertex2f(-300,300);
+	glVertex2f(300,300);
+	glVertex2f(300,0);
+	glVertex2f(-300,0);
+	glEnd();
 
 
-      //------------Draw the pitch markings--------------
+	//------------Draw the pitch markings--------------
 
-      // Draw in white
-      glColor3ub(COLOR_WHITE);
-      // Specify line width
-      glLineWidth(1.0);
-      // The size for all pitch text
-      m_pFontManager->SetSize(m_Font,4.0, 4.0);
+	// Draw in white
+	glColor3ub(COLOR_WHITE);
+	// Specify line width
+	glLineWidth(1.0);
+	// The size for all pitch text
+	m_pFontManager->SetSize(m_Font,4.0, 4.0);
 
-      glBegin(GL_LINES);
+	glBegin(GL_LINES);
 
-      // The dividing line between sky and ground
-      glVertex2f(-100,0);
-      glVertex2f(100,0);
+	// The dividing line between sky and ground
+	glVertex2f(-100,0);
+	glVertex2f(100,0);
 
-      // +2.5 degrees
-      glVertex2f(-5,5);
-      glVertex2f(5,5);
+	// +2.5 degrees
+	glVertex2f(-5,5);
+	glVertex2f(5,5);
 
-      // +5.0 degrees
-      glVertex2f(-10,10);
-      glVertex2f(10,10);
+	// +5.0 degrees
+	glVertex2f(-10,10);
+	glVertex2f(10,10);
 
-      // +7.5 degrees
-      glVertex2f(-5,15);
-      glVertex2f(5,15);
+	// +7.5 degrees
+	glVertex2f(-5,15);
+	glVertex2f(5,15);
 
-      // +10.0 degrees
-      glVertex2f(-20,20);
-      glVertex2f(20,20);
+	// +10.0 degrees
+	glVertex2f(-20,20);
+	glVertex2f(20,20);
 
-      // +12.5 degrees
-      glVertex2f(-5,25);
-      glVertex2f(5,25);
+	// +12.5 degrees
+	glVertex2f(-5,25);
+	glVertex2f(5,25);
 
-      // +15.0 degrees
-      glVertex2f(-10,30);
-      glVertex2f(10,30);
+	// +15.0 degrees
+	glVertex2f(-10,30);
+	glVertex2f(10,30);
 
-      // +17.5 degrees
-      glVertex2f(-5,35);
-      glVertex2f(5,35);
+	// +17.5 degrees
+	glVertex2f(-5,35);
+	glVertex2f(5,35);
 
-      // +20.0 degrees
-      glVertex2f(-20,40);
-      glVertex2f(20,40);
+	// +20.0 degrees
+	glVertex2f(-20,40);
+	glVertex2f(20,40);
 
-      // -2.5 degrees
-      glVertex2f(-5,-5);
-      glVertex2f(5,-5);
+	// -2.5 degrees
+	glVertex2f(-5,-5);
+	glVertex2f(5,-5);
 
-      // -5.0 degrees
-      glVertex2f(-10,-10);
-      glVertex2f(10,-10);
+	// -5.0 degrees
+	glVertex2f(-10,-10);
+	glVertex2f(10,-10);
 
-      // -7.5 degrees
-      glVertex2f(-5,-15);
-      glVertex2f(5,-15);
+	// -7.5 degrees
+	glVertex2f(-5,-15);
+	glVertex2f(5,-15);
 
-      // -10.0 degrees
-      glVertex2f(-20,-20);
-      glVertex2f(20,-20);
+	// -10.0 degrees
+	glVertex2f(-20,-20);
+	glVertex2f(20,-20);
 
-      // -12.5 degrees
-      glVertex2f(-5,-25);
-      glVertex2f(5,-25);
+	// -12.5 degrees
+	glVertex2f(-5,-25);
+	glVertex2f(5,-25);
 
-      // -15.0 degrees
-      glVertex2f(-10,-30);
-      glVertex2f(10,-30);
+	// -15.0 degrees
+	glVertex2f(-10,-30);
+	glVertex2f(10,-30);
 
-      // -17.5 degrees
-      glVertex2f(-5,-35);
-      glVertex2f(5,-35);
+	// -17.5 degrees
+	glVertex2f(-5,-35);
+	glVertex2f(5,-35);
 
-      // -20.0 degrees
-      glVertex2f(-20,-40);
-      glVertex2f(20,-40);
+	// -20.0 degrees
+	glVertex2f(-20,-40);
+	glVertex2f(20,-40);
 
-      glEnd();
+	glEnd();
 
-      // +10
-      m_pFontManager->Print(-27.5,18.0,"10",m_Font);
-      m_pFontManager->Print(21.0,18.0,"10",m_Font);
+	// +10
+	m_pFontManager->Print(-27.5,18.0,"10",m_Font);
+	m_pFontManager->Print(21.0,18.0,"10",m_Font);
 
-      // -10
-      m_pFontManager->Print(-27.5,-22.0,"10",m_Font);
-      m_pFontManager->Print(21.0,-22.0,"10",m_Font);
+	// -10
+	m_pFontManager->Print(-27.5,-22.0,"10",m_Font);
+	m_pFontManager->Print(21.0,-22.0,"10",m_Font);
 
-      // +20
-      m_pFontManager->Print(-27.5,38.0,"20",m_Font);
-      m_pFontManager->Print(21.0,38.0,"20",m_Font);
+	// +20
+	m_pFontManager->Print(-27.5,38.0,"20",m_Font);
+	m_pFontManager->Print(21.0,38.0,"20",m_Font);
 
-      // -20
-      m_pFontManager->Print(-27.5,-42.0,"20",m_Font);
-      m_pFontManager->Print(21.0,-42.0,"20",m_Font);
+	// -20
+	m_pFontManager->Print(-27.5,-42.0,"20",m_Font);
+	m_pFontManager->Print(21.0,-42.0,"20",m_Font);
 
-      glPopMatrix();
+	glPopMatrix();
 
-      //-----The background behind the bank angle markings-------
-      // Reset the modelview matrix
-      glPushMatrix();
+	//-----The background behind the bank angle markings-------
+	// Reset the modelview matrix
+	glPushMatrix();
+	
+	// Draw in the sky color
+	glColor3ub(COLOR_SKY);
+	
+	aCircle.SetOrigin(47,49);
+	aCircle.SetRadius(46);
+	aCircle.SetDegreesPerPoint(5);
+	aCircle.SetArcStartEnd(300.0,360.0);
+	
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2f(0,98);
+	glVertex2f(0,72);
+	aCircle.Evaluate();
+	glVertex2f(47,98);
+	glEnd();
+	
+	aCircle.SetArcStartEnd(0.0,60.0);
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2f(94,98);
+	glVertex2f(47,98);
+	aCircle.Evaluate();
+	glVertex2f(94,72);
+	glEnd();
+	
+	glPopMatrix();
+	
+      } else {
 
-      // Draw in the sky color
-      glColor3ub(COLOR_SKY);
-
-      aCircle.SetOrigin(47,49);
-      aCircle.SetRadius(46);
-      aCircle.SetDegreesPerPoint(5);
-      aCircle.SetArcStartEnd(300.0,360.0);
-
-      glBegin(GL_TRIANGLE_FAN);
-      glVertex2f(0,98);
-      glVertex2f(0,72);
-      aCircle.Evaluate();
-      glVertex2f(47,98);
-      glEnd();
-
-      aCircle.SetArcStartEnd(0.0,60.0);
-      glBegin(GL_TRIANGLE_FAN);
-      glVertex2f(94,98);
-      glVertex2f(47,98);
-      aCircle.Evaluate();
-      glVertex2f(94,72);
-      glEnd();
-
-      glPopMatrix();
-
+	/* no data available */
+	
+	glPushMatrix();
+	
+	glColor3ub(COLOR_ORANGE);
+	
+	glTranslatef(m_PhysicalSize.x/2.0, m_PhysicalSize.y/2.0+2.0*bigFontSize, 0);
+	
+	m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
+	m_pFontManager->Print(-1.5*bigFontSize, -0.5*bigFontSize ,"ATT", m_Font ); 
+	
+	float ss = bigFontSize;
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(-2.0*ss,-ss);
+	glVertex2f(2.0*ss,-ss);
+	glVertex2f(2.0*ss,ss);
+	glVertex2f(-2.0*ss,ss);
+	glEnd();
+	
+	glPopMatrix();
+	
+      }
+	
       //----------------The bank angle markings----------------
 
       // Left side bank markings

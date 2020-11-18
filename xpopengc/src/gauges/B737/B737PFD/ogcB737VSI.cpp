@@ -73,55 +73,66 @@ namespace OpenGC
   {
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
- 
+
+    int acf_type = m_pDataSource->GetAcfType();
+
     // Save matrix
     glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-  
-    m_pFontManager->SetSize(m_Font,4.0, 4.0);
+      
+    char buffer[6];
+    float bigFontSize = 5.0;
+    float fontSize = 4.0;
 
-    // Draw in gray-blue
-    glColor3ub(COLOR_GRAYBLUE);
-
-    // Bottom angular part
-    glBegin(GL_POLYGON);
-    glVertex2f(0.0, 10.0);
-    glVertex2f(0.0, 40.0);
-    glVertex2f(4.5, 44.0);
-    glVertex2f(16.0, 44.0);
-    glVertex2f(16.0, 27.0);
-    glVertex2f(7.0, 10.0);
-    glEnd();
-
-    // Center rectangle
-    glBegin(GL_POLYGON);
-    glVertex2f(4.5, 44.0);
-    glVertex2f(4.5, 66.0);
-    glVertex2f(16.0, 66.0);
-    glVertex2f(16.0, 44.0);
-    glEnd();
-
-    // Top angular part
-    glBegin(GL_POLYGON);
-    glVertex2f(4.5, 66.0);
-    glVertex2f(0.0, 70.0);
-    glVertex2f(0.0, 100.0);
-    glVertex2f(7.0, 100.0);
-    glVertex2f(16.0, 83.0);
-    glVertex2f(16.0, 66.0);
-    glEnd();
-  
-    glColor3ub(COLOR_WHITE);
- 
     // float *vertical_speed = link_dataref_flt("sim/flightmodel/position/vh_ind_fpm",1);
     float *vertical_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/vvi_fpm_pilot",1);
-
     float temp = *vertical_speed;
-    
-    if (*vertical_speed != FLT_MISS) {
 
+    int *irs_mode;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      irs_mode = link_dataref_int("laminar/B738/irs/irs_mode");
+    } else {
+      irs_mode = link_dataref_int("xpserver/irs_mode");
+      *irs_mode = 2;
+    }
+    
+    if ((*vertical_speed != FLT_MISS) && (*irs_mode == 2)) {
+
+      glPushMatrix();
       
-      char buffer[6];
+      m_pFontManager->SetSize(m_Font,fontSize, fontSize);
+      
+      // Draw in gray-blue
+      glColor3ub(COLOR_GRAYBLUE);
+      
+      // Bottom angular part
+      glBegin(GL_POLYGON);
+      glVertex2f(0.0, 10.0);
+      glVertex2f(0.0, 40.0);
+      glVertex2f(4.5, 44.0);
+      glVertex2f(16.0, 44.0);
+      glVertex2f(16.0, 27.0);
+      glVertex2f(7.0, 10.0);
+      glEnd();
+      
+      // Center rectangle
+      glBegin(GL_POLYGON);
+      glVertex2f(4.5, 44.0);
+      glVertex2f(4.5, 66.0);
+      glVertex2f(16.0, 66.0);
+      glVertex2f(16.0, 44.0);
+      glEnd();
+      
+      // Top angular part
+      glBegin(GL_POLYGON);
+      glVertex2f(4.5, 66.0);
+      glVertex2f(0.0, 70.0);
+      glVertex2f(0.0, 100.0);
+      glVertex2f(7.0, 100.0);
+      glVertex2f(16.0, 83.0);
+      glVertex2f(16.0, 66.0);
+      glEnd();
+      
+      glColor3ub(COLOR_WHITE);
 
       // if vertical +- 200 fpm display digital readout
       if ( (*vertical_speed < -199.0) && (*vertical_speed > -9999.0) )
@@ -195,9 +206,36 @@ namespace OpenGC
       glVertex2f( 30.0, m_NeedleCenter + 1.75);
       glEnd();
 
+      glPopMatrix();
+      
+    } else {
+      
+      /* no data available */
+      
+      glPushMatrix();
+      
+      glColor3ub(COLOR_ORANGE);
+      
+      glTranslatef(m_PhysicalSize.x*0.5, m_PhysicalSize.y/2.0+1.0*bigFontSize, 0);
+      
+      m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
+      m_pFontManager->Print(-0.5*bigFontSize, bigFontSize ,"V", m_Font ); 
+      m_pFontManager->Print(-0.5*bigFontSize, -0.5*bigFontSize ,"E", m_Font ); 
+      m_pFontManager->Print(-0.5*bigFontSize, -2.0*bigFontSize ,"R", m_Font ); 
+      m_pFontManager->Print(-0.5*bigFontSize, -3.5*bigFontSize ,"T", m_Font ); 
+      
+      float ss = bigFontSize;
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(-0.8*ss,+2.5*ss);
+      glVertex2f(-0.8*ss,-4.0*ss);
+      glVertex2f(0.8*ss,-4.0*ss);
+      glVertex2f(0.8*ss,2.5*ss);
+      glEnd();
+      
+      glPopMatrix();
+	
     }
-
-    glPopMatrix();
+      
   }
 
   float B737VSI::VSpeedToNeedle(float vspd)
