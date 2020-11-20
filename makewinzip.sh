@@ -17,3 +17,5 @@ cp -a xpopengc/bin ${zipdir}/xpopengc/
 cp -a xpopengc/share ${zipdir}/xpopengc/
 
 cp README_WINDOWS ${zipdir}
+
+zip -r xpcockpit-windows.zip xpcockpit-windows

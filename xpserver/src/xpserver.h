@@ -14,6 +14,14 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#ifndef XPSERVER_EXPORT
+#ifdef WIN
+#define XPSERVER_EXPORT __declspec(dllexport)
+#else
+#define XPSERVER_EXPORT __attribute__((visibility("default")))
+#endif
+#endif
+
 /* TCP/IP Server Definitions */
 #define MAXPENDING 5         /* Maximum outstanding connection requests */
 #define BLOCKING 0
