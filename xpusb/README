@@ -62,13 +62,20 @@ Then type:
 ./configure
 make
 cd src
-./usbiocards test
+./xpusb test
 
 This will run usbiocards with the inidata/test.ini settings file operating a single mastercard on a USB expansion card
 
+If you work on linux and your OpenCockpits usb expansion card or
+Leo Bodnar card is not found, then you may have a HIDRAW permission
+problem. Please copy the file in doc/99-hidraw-permissions.rules
+to /dev/udev/rules.d and restart your system. This file directs
+the system's HIDRAW kernel driver to give R/W permission to all HID
+devices.
+
 Please look at the following files for how to change to different settings:
 - other settings files in inidata/
-- other sample hardware codes visible from src/usbiocards.c
+- other sample hardware codes visible from src/xpusb.c
 
 
 CODE STRUCTURE
