@@ -55,7 +55,8 @@ int init_udp(void)
     /* Construct the server address structure */
     memset(&udpServerAddr, 0, sizeof(udpServerAddr));           /* Zero out structure */
     udpServerAddr.sin_family      = AF_INET;                  /* Internet address family */
-    udpServerAddr.sin_addr.s_addr = inet_addr(udpServerIP);   /* Server IP address */
+    //udpServerAddr.sin_addr.s_addr = inet_addr(udpServerIP);   /* Server IP address */
+    udpServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);   /* Server IP address */
     udpServerAddr.sin_port        = htons(udpServerPort);     /* Server port */
 
     if (bind(serverSocket, (struct sockaddr *) &udpServerAddr, sizeof(udpServerAddr)) < 0)

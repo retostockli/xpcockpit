@@ -1,9 +1,8 @@
 # The Program name to build
-bin_PROGRAMS=udpclient sismoclient
+bin_PROGRAMS=xpsismo
 
 # The Sources needed to build the programs
-udpclient_SOURCES = udpclient.c handleudp.c
-sismoclient_SOURCES = sismoclient.c handleudp.c
+xpsismo_SOURCES = xpsismo.c libsismo.c handleudp.c iniparser.c dictionary.c
 
 # The Headers needs to build the programs
-noinst_HEADERS= udpclient.h handleudp.h
+noinst_HEADERS= xpsismo.h libsismo.h handleudp.h iniparser.h dictionary.h

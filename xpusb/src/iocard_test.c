@@ -41,11 +41,13 @@ void iocard_test(void)
   int card = 0;
   int device = 0;
 
-  int intensitycommand;
-  int intensity;
-  int value;
-  float axisval;
- 
+  
+  // int intensitycommand;
+  // int intensity;
+  // int value;
+  // float axisval;
+
+  
   // test integer array data
   // int *digitalinput = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
@@ -56,9 +58,23 @@ void iocard_test(void)
   //float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, 0);
   //float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 1, 0);
 
-  int *digitalinput = link_dataref_int("AirbusFBW/ENG2MasterSwitch"); // hans
-  int *digitaloutput = link_dataref_int("AirbusFBW/ENG1MasterSwitch"); // hans
+  //int *digitalinput = link_dataref_int("AirbusFBW/ENG2MasterSwitch"); // hans
+  //int *digitaloutput = link_dataref_int("AirbusFBW/ENG1MasterSwitch"); // hans
 
+  /* link floating point dataref with precision 10e-1 to local variable. This means
+     that we only transfer the variable if changed by 0.1 or more */
+  float *parkbrake = link_dataref_flt("sim/flightmodel/controls/parkbrake",-1);
+  // float *parkbrake = link_dataref_flt("laminar/B738/parking_brake_pos",-1);
+  
+  /* digital input onto a x-plane floating point variable */
+  /* thus transform binary 0/1 input to dataref state 0.0 and 1.0 */
+  ret = digital_inputf(device,card,0,parkbrake,0);
+  if (ret == 1) {
+    printf("Digital Input #0 has value: %f \n",*parkbrake);
+  }
+  /* transform floating point dataref variable onto a binary 0/1 LED output */
+  ret = digital_outputf(device,card,15,parkbrake);
+  
   // mastercard 1, input board # 1 (0-35)
   // mastercard 1, input board # 2 (36-71)
 
@@ -88,11 +104,8 @@ void iocard_test(void)
 
   /* read digital input #0 on mastercard 1 */
   // ret = digital_input(device,card,2,digitalinput,0); // reto
-  ret = digital_input(device,card,9,digitalinput,0); // hans
-  if (ret == 1) {
-    printf("Digital Input #0 has value: %i \n",*digitalinput);
-  }
-
+  // ret = digital_input(device,card,9,digitalinput,0); // hans
+ 
   /* read axis on usb expansion card */
   /*
   ret = axis_input(device,0,&axisval,0.0,100.0);
@@ -103,9 +116,9 @@ void iocard_test(void)
   // mastercard 1, output board (11-55)
 
   /* update output value (connect a LED to output #11) */
-    if (*digitaloutput != INT_MISS) // hans
-      printf("Digital Output #11 has value: %i \n",*digitaloutput); // hans
-  ret = digital_output(device,card,11,digitaloutput);
+  //if (*digitaloutput != FLT_MISS) 
+  //     printf("Digital Output #15 has value: %i \n",*digitaloutput); // hans
+  //ret = digital_output(device,card,11,digitaloutput);
 
 /*
   float updn = 0.;
@@ -123,6 +136,6 @@ void iocard_test(void)
   // mastercard 1, display II card (max 64 displays)
   
   /* update 1 displays with display value */
-  ret = mastercard_display(device,card,0,1,digitalinput,0);
+  //ret = mastercard_display(device,card,0,1,digitalinput,0);
   
 }

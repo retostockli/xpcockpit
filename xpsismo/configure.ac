@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([udpclient], [0.01], [stockli@users.sourceforge.net])
-AC_CONFIG_SRCDIR([src/udpclient.c])
+AC_INIT([xpsismo], [0.01], [Reto Stockli])
+AC_CONFIG_SRCDIR([src/xpsismo.c])
 
 # produce makefiles (turn on warnings on automake!)
 AM_INIT_AUTOMAKE([-Wall -Werror])
@@ -51,7 +51,7 @@ else
 fi
 
 # Checks for header files.
-AC_CHECK_HEADERS([stdio.h stdlib.h string.h unistd.h signal.h sys/ioctl.h sys/socket.h arpa/inet.h netinet.h])
+AC_CHECK_HEADERS([stdio.h stdlib.h string.h unistd.h signal.h sys/ioctl.h sys/socket.h arpa/inet.h netinet.h sys/time.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SSIZE_T
