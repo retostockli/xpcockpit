@@ -21,7 +21,6 @@ char udpClientIP[30];
 short int udpClientPort;
 char udpServerIP[30];
 short int udpServerPort;
-int udpSocket;
 int clientSocket;
 int serverSocket;
 
@@ -34,7 +33,7 @@ unsigned char *udpSendBuffer;
 unsigned char *udpRecvBuffer;
 
 /* Prototype functions for Network communication */
-int init_udp(void);
+int init_udp_server(char server_ip[],int server_port);
 void exit_udp(void);
-int send_udp(void);
+int send_udp(char client_ip[],int client_port,unsigned char data[], int len);
 int recv_udp(void);

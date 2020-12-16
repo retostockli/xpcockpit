@@ -36,8 +36,8 @@
 
 #include "handleudp.h"
 
-/* set up udp socket with given server address and port */
-int init_udp(void)
+/* set up udp server socket with given server address and port */
+int init_udp_server(char server_ip[],int server_port)
 {
 
   /* Create a UDP socket */
@@ -46,18 +46,15 @@ int init_udp(void)
     return -1; 
   } else {
 
-    /* Construct the client address structure */
-    memset(&udpClientAddr, 0, sizeof(udpClientAddr));           /* Zero out structure */
-    udpClientAddr.sin_family      = AF_INET;                  /* Internet address family */
-    udpClientAddr.sin_addr.s_addr = inet_addr(udpClientIP);   /* Server IP address */
-    udpClientAddr.sin_port        = htons(udpClientPort);     /* Server port */
-
     /* Construct the server address structure */
     memset(&udpServerAddr, 0, sizeof(udpServerAddr));           /* Zero out structure */
     udpServerAddr.sin_family      = AF_INET;                  /* Internet address family */
-    //udpServerAddr.sin_addr.s_addr = inet_addr(udpServerIP);   /* Server IP address */
-    udpServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);   /* Server IP address */
-    udpServerAddr.sin_port        = htons(udpServerPort);     /* Server port */
+    if (!strcmp(server_ip,"ANY")) {
+      udpServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);   /* Bind to any local interface */
+    } else {
+      udpServerAddr.sin_addr.s_addr = inet_addr(server_ip); /* Bind to specific IP address */
+    }      
+    udpServerAddr.sin_port        = htons(server_port);     /* Server port */
 
     if (bind(serverSocket, (struct sockaddr *) &udpServerAddr, sizeof(udpServerAddr)) < 0)
       {
@@ -82,6 +79,12 @@ int init_udp(void)
   return 0;
 }
 
+int init_udp_read_thread() {
+
+  return 0;
+}
+
+
 /* end udp connection */
 void exit_udp(void)
 {
@@ -90,16 +93,16 @@ void exit_udp(void)
 
 
 /* send datagram to X-Plane UDP server */
-int send_udp(void) {
+int send_udp(char client_ip[],int client_port,unsigned char data[], int len) {
 
   int n;
 
   /* Construct the client address structure */
  
-  //memset(&udpClientAddr, 0, sizeof(udpClientAddr));           /* Zero out structure */
-  //udpClientAddr.sin_family      = AF_INET;                  /* Internet address family */
-  //udpClientAddr.sin_addr.s_addr = inet_addr(udpClientIP);   /* Server IP address */
-  //udpClientAddr.sin_port        = htons(udpClientPort);     /* Server port */
+  memset(&udpClientAddr, 0, sizeof(udpClientAddr));       /* Zero out structure */
+  udpClientAddr.sin_family      = AF_INET;                /* Internet address family */
+  udpClientAddr.sin_addr.s_addr = inet_addr(client_ip);   /* Server IP address */
+  udpClientAddr.sin_port        = htons(client_port);     /* Server port */
  
   /*
   printf("%i \n",udpClientAddr.sin_family);
@@ -108,7 +111,7 @@ int send_udp(void) {
   printf("%s \n",udpClientAddr.sin_zero);
   */
   
-  n = sendto(serverSocket, udpSendBuffer, udpSendBufferLen, 
+  n = sendto(serverSocket, data, len, 
 	     MSG_CONFIRM, (struct sockaddr *) &udpClientAddr, 
 	     sizeof(udpClientAddr));
 
@@ -120,7 +123,7 @@ int recv_udp() {
 
   int n; 
 
-  unsigned int len = sizeof(udpClientAddr);
+  // unsigned int len = sizeof(udpClientAddr);
 
   /* Nonblocking */
   /*

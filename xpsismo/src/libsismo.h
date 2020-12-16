@@ -16,3 +16,33 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. */
 
+#define MAXCARDS 10
+#define RECVMSGLEN 28
+#define SENDMSGLEN 30
+#define RECVBUFLEN RECVMSGLEN*100
+#define SENDBUFLEN RECVMSGLEN
+
+extern char xpserver_ip[30];
+extern int xpserver_port;
+extern char clientname[100];
+
+extern char sismoserver_ip[30];
+extern int sismoserver_port;
+
+extern unsigned char recvBuffer[RECVBUFLEN];
+extern unsigned char sendBuffer[SENDBUFLEN];
+
+extern int ncards;
+
+typedef struct {
+  int connected;
+  char ip[30];
+  int port;
+  char mac[5];
+} sismocard_struct;
+
+extern sismocard_struct sismocard[MAXCARDS];
+
+/* Prototype Functions */
+
+void test(void);
