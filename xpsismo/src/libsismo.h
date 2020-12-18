@@ -17,10 +17,8 @@
    If not, see <http://www.gnu.org/licenses/>. */
 
 #define MAXCARDS 10
-#define RECVMSGLEN 28
-#define SENDMSGLEN 30
-#define RECVBUFLEN RECVMSGLEN*100
-#define SENDBUFLEN RECVMSGLEN
+#define RECVMSGLEN 30
+#define SENDMSGLEN 28
 
 extern char xpserver_ip[30];
 extern int xpserver_port;
@@ -29,8 +27,8 @@ extern char clientname[100];
 extern char sismoserver_ip[30];
 extern int sismoserver_port;
 
-extern unsigned char recvBuffer[RECVBUFLEN];
-extern unsigned char sendBuffer[SENDBUFLEN];
+extern unsigned char recvBuffer[RECVMSGLEN];
+extern unsigned char sendBuffer[SENDMSGLEN];
 
 extern int ncards;
 
@@ -46,3 +44,5 @@ extern sismocard_struct sismocard[MAXCARDS];
 /* Prototype Functions */
 
 void test(void);
+int read_sismo(void);
+int write_sismo(void);

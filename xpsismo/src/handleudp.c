@@ -4,8 +4,7 @@
    Copyright (C) 2009 - 2014  Reto Stockli
    Adaptation to Linux compilation by Hans Jansen
 
-   This program is free software: you can redistribute it and/or modify it under the 
-   terms of the GNU General Public License as published by the Free Software Foundation, 
+   This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, 
    either version 3 of the License, or (at your option) any later version.
 
    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
@@ -35,6 +34,11 @@
 #include <netinet/ip.h>
 
 #include "handleudp.h"
+#include "common.h"
+
+pthread_t poll_thread;                /* read thread */
+int poll_thread_exit_code;            /* read thread exit code */
+pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* set up udp server socket with given server address and port */
 int init_udp_server(char server_ip[],int server_port)
@@ -62,8 +66,8 @@ int init_udp_server(char server_ip[],int server_port)
 	return -1;
       }
 
-    //set to blocking (0) or Non-blocking (1).
-    unsigned long nSetSocketType = 0;
+    // set to blocking (0) or Non-blocking (1).
+    unsigned long nSetSocketType = 1;
     if (ioctl(serverSocket,FIONBIO,&nSetSocketType) < 0) {
       printf("HANDLEUDP: Server set to non-blocking failed\n");
       return -1;
@@ -72,22 +76,92 @@ int init_udp_server(char server_ip[],int server_port)
     }
   }
 
-  // initialize udp buffers
-  udpSendBuffer=malloc(udpSendBufferLen);
-  udpRecvBuffer=malloc(udpRecvBufferLen);
+  // set a 100 ms timeout (for threaded reading)
+  struct timeval tv;
+  tv.tv_sec = 0;
+  tv.tv_usec = 100000;
+  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+ 
+  return 0;
+}
+
+void *poll_thread_main()
+/* thread handles udp receive on the server socket by use of blocking read and a read buffer */
+{
+  int ret = 0;
+  unsigned char buffer[UDPRECVBUFLEN];
+
+  printf("HANDLEUDP: Receive thread running \n");
+
+  while (!poll_thread_exit_code) {
+
+    /* read call goes here (100 ms timeout for blocking operation) */
+    ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
+
+    if (ret == -1) {
+      if (errno == EWOULDBLOCK) { // just no data yet ...
+	if (verbose > 2) printf("HANDLEUDP: No data yet. \n");
+      } else {
+	printf("HANDLEUDP: Receive Error. \n");
+	poll_thread_exit_code = 1;
+	break;
+      } 
+    } else if ((ret > 0) && (ret <= UDPRECVBUFLEN)) {
+      /* read is ok */
+      
+      /* does it fit into read buffer? */
+      if (ret <= (UDPRECVBUFLEN - udpReadLeft)) {
+	pthread_mutex_lock(&exit_cond_lock);	
+	memcpy(&udpRecvBuffer[udpReadLeft],buffer,ret);
+	udpReadLeft += ret;	
+	pthread_mutex_unlock(&exit_cond_lock);
+	
+	if (verbose > 0) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
+      } else {
+	if (verbose > 0) printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
+      }
+    } else if ((ret > 0) && (ret > UDPRECVBUFLEN)) {
+      /* too many bytes were read */
+      printf("HANDLEUDP: too big udp packet of %i bytes does not fit in read buffer \n",ret);
+    } else {
+      /* nothing read */
+    }
+  } /* while loop */
   
-  return 0;
-}
-
-int init_udp_read_thread() {
+  /* thread was killed */
+  if (verbose > 0) printf("HANDLEUDP: Asynchronous receive thread shutting down \n");
 
   return 0;
 }
 
+
+int init_udp_receive() {
+
+  int ret;
+  
+  // initialize udp buffers
+  udpSendBuffer=malloc(UDPSENDBUFLEN);
+  udpRecvBuffer=malloc(UDPRECVBUFLEN);
+  memset(udpSendBuffer,0,UDPSENDBUFLEN);
+  memset(udpRecvBuffer,0,UDPRECVBUFLEN);
+
+  udpReadLeft=0;
+ 
+  poll_thread_exit_code = 0;
+  ret = pthread_create(&poll_thread, NULL, &poll_thread_main, NULL);
+  if (ret>0) {
+    printf("HANDLEUDP: poll thread could not be created.\n");
+    return -1;
+  }
+
+  return 0;
+}
 
 /* end udp connection */
 void exit_udp(void)
 {
+  poll_thread_exit_code = 1;
+  pthread_join(poll_thread, NULL);
   close(serverSocket);
 }
 
@@ -137,7 +211,7 @@ int recv_udp() {
 	       0, (struct sockaddr *) &udpClientAddr, 
 	       &len);
   */
-  n = recv(serverSocket, udpRecvBuffer, udpRecvBufferLen, 0);
+  n = recv(serverSocket, udpRecvBuffer, UDPRECVBUFLEN, 0);
 
   return n;
 }

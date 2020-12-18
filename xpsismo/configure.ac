@@ -50,6 +50,9 @@ else
     CFLAGS="$CFLAGS -O2"
 fi
 
+# Enable Threading support
+CFLAGS="$CFLAGS -pthread"
+
 # Checks for header files.
 AC_CHECK_HEADERS([stdio.h stdlib.h string.h unistd.h signal.h sys/ioctl.h sys/socket.h arpa/inet.h netinet.h sys/time.h])
 

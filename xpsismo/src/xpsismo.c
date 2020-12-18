@@ -34,6 +34,7 @@
 #include <sys/time.h>
 
 /* xpsismo headers */
+#include "common.h"
 #include "xpsismo.h"
 #include "ini.h"
 #include "libsismo.h"
@@ -41,7 +42,6 @@
 
 // Driver code 
 int main(int argc, char **argv) {
-  int ret;
  
   /* evaluate command line arguments */
   argv++; 
@@ -57,11 +57,18 @@ int main(int argc, char **argv) {
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (initialize_signal_handler()<0) exit_xpsismo(-3);
 
-  if (init_udp_server(sismoserver_ip,sismoserver_port) < 0) {
-    return(-1);
-  }
+  /* initialize UDP server */
+  if (init_udp_server(sismoserver_ip,sismoserver_port) < 0) exit_xpsismo(-4);
 
-  test();
+  /* initialize UDP read thread */
+  if (init_udp_receive() < 0) exit_xpsismo(-5);
+
+  while (1) {
+
+    if (read_sismo() < 0) exit_xpsismo(-6);
+
+    usleep(INTERVAL*1000);
+  }
   
   exit_udp();
   
@@ -86,7 +93,7 @@ void exit_xpsismo(int ret)
 int initialize_signal_handler(void)
 {
   int ret = 0;
-
+  
   if (signal(SIGINT, exit_xpsismo) == SIG_ERR) {
     printf("Could not establish new signal handler.\n");
     ret = -1;

@@ -16,6 +16,13 @@
 
 #include <arpa/inet.h>
 
+/* posix tread headers */
+#include <assert.h>
+#include <pthread.h>
+
+#define UDPRECVBUFLEN 30*100
+#define UDPSENDBUFLEN 28
+
 /* UDP CLIENT PARAMETERS */
 char udpClientIP[30];
 short int udpClientPort;
@@ -27,13 +34,18 @@ int serverSocket;
 struct sockaddr_in udpServerAddr;     /* Server address structure */
 struct sockaddr_in udpClientAddr;     /* Client address structure */
 
-int udpSendBufferLen;
-int udpRecvBufferLen;
-unsigned char *udpSendBuffer;
-unsigned char *udpRecvBuffer;
+unsigned char *udpSendBuffer;         /* buffer containing data to send to udp */
+unsigned char *udpRecvBuffer;         /* buffer containing data that was read from udp */
+int udpReadLeft;                      /* counter of bytes to read from receive thread */
+
+/* thread parameters */
+extern pthread_t poll_thread;                /* read thread */
+extern int poll_thread_exit_code;            /* read thread exit code */
+extern pthread_mutex_t exit_cond_lock;
 
 /* Prototype functions for Network communication */
 int init_udp_server(char server_ip[],int server_port);
+int init_udp_receive(void);
 void exit_udp(void);
 int send_udp(char client_ip[],int client_port,unsigned char data[], int len);
 int recv_udp(void);

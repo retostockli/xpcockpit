@@ -41,8 +41,8 @@ char clientname[100];
 char sismoserver_ip[30];
 int sismoserver_port;
 
-unsigned char recvBuffer[RECVBUFLEN];
-unsigned char sendBuffer[SENDBUFLEN];
+unsigned char recvBuffer[RECVMSGLEN];
+unsigned char sendBuffer[SENDMSGLEN];
 
 int ncards;
 sismocard_struct sismocard[MAXCARDS];
@@ -121,6 +121,42 @@ void set_7segment(unsigned char *byte, int val, int dp)
 
 }
 
+int read_sismo() {
+
+  while (udpReadLeft >= RECVMSGLEN) {
+
+    /* empty UDP receive buffer instead of directly accessing the device */
+
+    pthread_mutex_lock(&exit_cond_lock);    
+    /* read from start of receive buffer */
+    memcpy(recvBuffer,&udpRecvBuffer[0],RECVMSGLEN);
+    /* shift remaining read buffer to the left */
+    memmove(&udpRecvBuffer[0],&udpRecvBuffer[RECVMSGLEN],udpReadLeft-RECVMSGLEN);    
+    /* decrease read buffer position and counter */
+    udpReadLeft -= RECVMSGLEN;
+    pthread_mutex_unlock(&exit_cond_lock);
+
+    /* decode message */
+    
+    printf("INIT: %c %c \n",recvBuffer[0],recvBuffer[1]);
+    printf("MAC %02x:%02x\n",recvBuffer[2],recvBuffer[3]);
+    printf("Inputs Type: %02x \n",recvBuffer[4]);
+    printf("Activated Daughters: %02x \n",recvBuffer[5]);
+    int port = recvBuffer[6] + 256 * recvBuffer[7];
+    printf("UDP Port of Card: %i \n",port);
+    printf("Left to Read: %i \n",udpReadLeft);
+
+
+  }
+
+  return 0;
+}
+
+int write_sismo() {
+
+  return 0;
+}
+
 void test() {
   int i,b;
   int val;
@@ -142,7 +178,7 @@ void test() {
   struct timeval tval_before, tval_after, tval_result;
 
   /* Send Outputs */
-  memset(sendBuffer,0,SENDBUFLEN);
+  memset(sendBuffer,0,SENDMSGLEN);
 
   sendBuffer[0] = initstring[0];
   sendBuffer[1] = initstring[1];
@@ -195,7 +231,7 @@ void test() {
     
     /* Send Displays */
     
-    memset(sendBuffer,0,SENDBUFLEN);
+    memset(sendBuffer,0,SENDMSGLEN);
     
     sendBuffer[0] = initstring[0];
     sendBuffer[1] = initstring[1];
@@ -206,7 +242,7 @@ void test() {
     for (i=0;i<5;i++) {
       set_7segment(&sendBuffer[5+i%8],get_digit(ana[0],i),0);
     }
-    ret = send_udp(sismocard[0].ip,sismocard[0].port,sendBuffer,SENDBUFLEN);
+    ret = send_udp(sismocard[0].ip,sismocard[0].port,sendBuffer,SENDMSGLEN);
     
     printf("Sent %i bytes \n", ret);
     
