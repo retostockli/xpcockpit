@@ -24,13 +24,15 @@
 #include <unistd.h>
 #include <float.h>
 #include <sys/types.h>
+#include <signal.h>
 
 #include "common.h"
 #include "iniparser.h"
 #include "libsismo.h"
+#include "ini.h"
 
 /* this routine parses the usbiocards.ini file and reads its values */
-int read_ini(char ininame[])
+int ini_read(char ininame[])
 {
   int ret = 0;
  dictionary *ini;
@@ -54,8 +56,7 @@ int read_ini(char ininame[])
   /* sismo cards */
   char default_sismocard_ip[] = "NA";
   int default_sismocard_port = 0;
-  char default_sismocard_mac[] = "00:00";
-  int default_sismocard_daughter = 0;
+  int default_sismocard_mac = 0;
  
 
   /* check if we are in the source code directory or in the binary installation path */
@@ -90,27 +91,113 @@ int read_ini(char ininame[])
     ncards = 0;
     for(i=0;i<MAXCARDS;i++) {
       sprintf(tmp,"card%i:Address",i);
-      strcpy(sismocard[i].ip,iniparser_getstring(ini,tmp, default_sismocard_ip));
+      strcpy(sismo[i].ip,iniparser_getstring(ini,tmp, default_sismocard_ip));
       sprintf(tmp,"card%i:Port",i);
-      sismocard[i].port = iniparser_getint(ini,tmp, default_sismocard_port);
-      sprintf(tmp,"card%i:Mac",i);
-      strcpy(sismocard[i].mac,iniparser_getstring(ini,tmp, default_sismocard_mac));
-      if (sismocard[i].port == default_sismocard_port) {
+      sismo[i].port = iniparser_getint(ini,tmp, default_sismocard_port);
+      sprintf(tmp,"card%i:Mac1",i);
+      sismo[i].mac[0] = iniparser_getint(ini,tmp, default_sismocard_mac);
+      sprintf(tmp,"card%i:Mac2",i);
+      sismo[i].mac[1] = iniparser_getint(ini,tmp, default_sismocard_mac);
+      printf("%02x:%02x \n",sismo[i].mac[0],sismo[i].mac[1]);
+      if (sismo[i].port == default_sismocard_port) {
 	printf("SISMOCARD %i NA \n",i);
-	sismocard[i].connected = 0;
+	sismo[i].connected = 0;
       } else {
-	printf("SISMOCARD %i Address %s Port %i Mac %s \n",i,sismocard[i].ip, sismocard[i].port, sismocard[i].mac);
+	printf("SISMOCARD %i Address %s Port %i Mac %02x:%02x \n",i,sismo[i].ip, sismo[i].port,
+	       sismo[i].mac[0],sismo[i].mac[1]);
 	ncards++;
-	sismocard[i].connected = 1;
+	sismo[i].connected = 1;
       }
     }
     
     printf("\n");
     iniparser_freedict(ini);
-
+    
   } else {    
     ret = -1;
   }
 
   return ret;
+}
+
+int ini_sismodata()
+{
+  int i,j,k;
+  
+  for(i=0;i<MAXCARDS;i++) {
+    for(j=0;j<MAXAXES;j++) {
+      sismo[i].axes[j] = INITVAL;
+      sismo[i].axes_changed[j] = UNCHANGED;
+    }
+    for(j=0;j<MAXINPUTS;j++) {
+      for(k=0;k<MAXSAVE;k++) {
+	sismo[i].inputs[j][k] = INITVAL;
+      }
+      sismo[i].inputs_changed[j] = UNCHANGED;
+    }
+    for(j=0;j<MAXOUTPUTS;j++) {
+      sismo[i].outputs[j] = INITVAL;
+      sismo[i].outputs_changed[j] = UNCHANGED;
+    }
+    for(j=0;j<MAXDISPLAYS;j++) {
+      sismo[i].displays[j] = INITVAL;
+      sismo[i].displays_changed[j] = UNCHANGED;
+    }
+    for(j=0;j<MAXSERVOS;j++) {
+      sismo[i].servos[j] = INITVAL;
+      sismo[i].servos_changed[j] = UNCHANGED;
+    }
+ }
+
+  return 0;
+}
+
+int reset_sismodata()
+{
+
+  int i,j;
+  
+  for(i=0;i<MAXCARDS;i++) {
+    for(j=0;j<MAXAXES;j++) {
+      sismo[i].axes_changed[j] = UNCHANGED;
+    }
+    for(j=0;j<MAXINPUTS;j++) {
+      sismo[i].inputs_changed[j] = UNCHANGED;
+    }
+    for(j=0;j<MAXOUTPUTS;j++) {
+      sismo[i].outputs_changed[j] = UNCHANGED;
+    }
+    for(j=0;j<MAXDISPLAYS;j++) {
+      sismo[i].displays_changed[j] = UNCHANGED;
+    }
+    for(j=0;j<MAXSERVOS;j++) {
+      sismo[i].servos_changed[j] = UNCHANGED;
+    }
+  }
+  return 0;
+}
+
+/* signal handler in order to clean up when we're interrupted */
+/* from the command line (ctrl-c) */
+int ini_signal_handler(void)
+{
+  int ret = 0;
+  
+  if (signal(SIGINT, exit_sismo) == SIG_ERR) {
+    printf("Could not establish new signal handler.\n");
+    ret = -1;
+  }
+  return ret;
+}
+
+/* Exiting */
+void exit_sismo(int ret)
+{
+  if (ret != 2) {
+    printf("Exiting with status %i \n",ret);
+    exit(ret);
+  } else {
+    /* A signal 2 means CTRL-C by user. All is fine */
+    exit(0);
+  }
 }

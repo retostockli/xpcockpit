@@ -30,7 +30,6 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h> 
 #include <netinet/in.h> 
-#include <signal.h>
 #include <sys/time.h>
 
 /* xpsismo headers */
@@ -42,31 +41,43 @@
 
 // Driver code 
 int main(int argc, char **argv) {
- 
+
+  int card = 0;
+  
   /* evaluate command line arguments */
   argv++; 
   argc--;
   if (argc != 1) {
     printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
-    exit_xpsismo(-1);
+    exit_sismo(-1);
   }
 
   /* parse the xpusb.ini file */
-  if (read_ini(*argv)<0) exit_xpsismo(-2);
+  if (ini_read(*argv)<0) exit_sismo(-2);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
-  if (initialize_signal_handler()<0) exit_xpsismo(-3);
+  if (ini_signal_handler()<0) exit_sismo(-3);
 
+  /* initialize sismo I/O data structure */
+  if (ini_sismodata()<0) exit_sismo(-4);
+  
   /* initialize UDP server */
-  if (init_udp_server(sismoserver_ip,sismoserver_port) < 0) exit_xpsismo(-4);
+  if (init_udp_server(sismoserver_ip,sismoserver_port) < 0) exit_sismo(-5);
 
   /* initialize UDP read thread */
-  if (init_udp_receive() < 0) exit_xpsismo(-5);
+  if (init_udp_receive() < 0) exit_sismo(-6);
 
   while (1) {
 
-    if (read_sismo() < 0) exit_xpsismo(-6);
+    if (read_sismo() < 0) exit_sismo(-7);
 
+
+	  if (sismo[card].inputs_changed[13] || sismo[card].inputs_changed[15]) {
+	    printf("%i %i changed: %i %i \n",sismo[card].inputs[13][0],sismo[card].inputs[15][0],
+		   sismo[card].inputs_changed[13],sismo[card].inputs_changed[15]);
+	  }
+
+    if (reset_sismodata() < 0) exit_sismo(-10);
     usleep(INTERVAL*1000);
   }
   
@@ -74,29 +85,3 @@ int main(int argc, char **argv) {
   
   return 0; 
 } 
-
-/* Exiting */
-void exit_xpsismo(int ret)
-{
-  if (ret != 2) {
-    printf("Exiting with status %i \n",ret);
-    exit(ret);
-  } else {
-    /* A signal 2 means CTRL-C by user. All is fine */
-    exit(0);
-  }
-}
-
-
-/* signal handler in order to clean up when we're interrupted */
-/* from the command line (ctrl-c) */
-int initialize_signal_handler(void)
-{
-  int ret = 0;
-  
-  if (signal(SIGINT, exit_xpsismo) == SIG_ERR) {
-    printf("Could not establish new signal handler.\n");
-    ret = -1;
-  }
-  return ret;
-}

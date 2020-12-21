@@ -45,7 +45,7 @@ unsigned char recvBuffer[RECVMSGLEN];
 unsigned char sendBuffer[SENDMSGLEN];
 
 int ncards;
-sismocard_struct sismocard[MAXCARDS];
+sismo_struct sismo[MAXCARDS];
 
 
 /*Function to return the digit of n-th position of num. Position starts from 0*/
@@ -57,7 +57,7 @@ int get_digit(int num, int n)
     return r;
 }
 
-/* Function to set a specific bit of a byte with a value 0 or 1 */
+/* Function to set a specific bit (0-7) of a byte with a value 0 or 1 */
 void set_bit(unsigned char *byte, int bit, int val)
 {
   unsigned char mask = 1 << bit; // make sure bit n is 1
@@ -69,7 +69,7 @@ void set_bit(unsigned char *byte, int bit, int val)
   }
 }
 
-/* Function to get value of bit i from byte */
+/* Function to get value of bit i (0-7) from byte */
 int get_bit(unsigned char byte, int bit)
 {
   return ((byte >> bit) & 0x01);
@@ -122,9 +122,17 @@ void set_7segment(unsigned char *byte, int val, int dp)
 }
 
 int read_sismo() {
-
+  
+  int card;
+  int i,b,s;
+  int val;
+  int input;
+  int any;
+  
   while (udpReadLeft >= RECVMSGLEN) {
-
+    
+    card = -1;
+    
     /* empty UDP receive buffer instead of directly accessing the device */
 
     pthread_mutex_lock(&exit_cond_lock);    
@@ -137,17 +145,97 @@ int read_sismo() {
     pthread_mutex_unlock(&exit_cond_lock);
 
     /* decode message */
-    
-    printf("INIT: %c %c \n",recvBuffer[0],recvBuffer[1]);
-    printf("MAC %02x:%02x\n",recvBuffer[2],recvBuffer[3]);
-    printf("Inputs Type: %02x \n",recvBuffer[4]);
-    printf("Activated Daughters: %02x \n",recvBuffer[5]);
-    int port = recvBuffer[6] + 256 * recvBuffer[7];
-    printf("UDP Port of Card: %i \n",port);
-    printf("Left to Read: %i \n",udpReadLeft);
 
+    /* check init string */
+    if ((recvBuffer[0] == 0x53) && (recvBuffer[1] == 0x43)) {
+      /* check MAC Address and Port of Card which did send the message */
+      
+      for (i=0;i<MAXCARDS;i++) {
+	if ((sismo[i].mac[0] == recvBuffer[2]) && (sismo[i].mac[1] == recvBuffer[3]) &&
+	    (sismo[i].port == recvBuffer[6] + 256 * recvBuffer[7])) card = i;
+      }
+      
+      /* card found */
+      if (card >= 0) {
+	/* set # of inputs/outputs depending on activated daughters */
+	sismo[card].noutputs = 64 + get_bit(recvBuffer[5],0)*64 + get_bit(recvBuffer[5],1)*64;
+	sismo[card].nservos = get_bit(recvBuffer[5],2)*14;
+	sismo[card].ndisplays = 32 + get_bit(recvBuffer[5],3)*32 + get_bit(recvBuffer[5],6)*32;
+	sismo[card].naxes = 5 + get_bit(recvBuffer[5],4)*10;
+	// sismo[card].analogoutputs = get_bit(recvBuffer[5],5)*XXX; /* Planned, but not available */
+	  
+	/* check type of input */
+	if (recvBuffer[4] == 0x00) {
+	  /* Input from Master */
 
-  }
+	  /* Digital Inputs are ordered in 8 bytes with 8 bits each = 64 inputs */
+	  /* Located in Bytes 8-15 */
+
+	  /* check if any input has changed */
+	  any = 0;
+	  for (b=0;b<8;b++) {
+	    for (i=0;i<8;i++) {
+	      input = b*8+i;
+	      val = get_bit(recvBuffer[8+b],i);
+	      if (val != sismo[card].inputs[input][0]) any = 1;
+	    }
+	  }
+	  /* if any input changed make sure we capture the whole history of changed
+	     inputs, since during a single reception we can have several state changes */
+	  if (any) {
+	    for (b=0;b<8;b++) {
+	      for (i=0;i<8;i++) {
+		input = b*8+i;
+		/* shift all inputs in history array by one */
+		for (s=MAXSAVE-2;s>=0;s--) {
+		  sismo[card].inputs[input][s+1] = sismo[card].inputs[input][s];
+		}
+		val = get_bit(recvBuffer[8+b],i);
+		/* update changed flag for changed inputs */
+		if (val != sismo[card].inputs[input][0]) {
+		  sismo[card].inputs_changed[input] += 1;
+		  if (verbose > 0) printf("Card %i Input %i Changed from %i to: %i \n",card,
+					  input,sismo[card].inputs[input][1],sismo[card].inputs[input][0]);
+		}
+		/* update all inputs */
+		sismo[card].inputs[input][0] = val; 
+	      }
+	    }
+	  }
+
+	  /* Analog Inputs are ordered in 10 bytes with 2 bytes per input */
+	  /* Located in bytes 16-25 */
+	  for (i=0;i<5;i++) {
+	    val = recvBuffer[16+i*2] + 256 * recvBuffer[17+i*2];
+	    if (val != sismo[card].axes[i]) {
+	      sismo[card].axes[i] = val;
+	      sismo[card].axes_changed[i] += 1;
+	      if (verbose > 2) printf("Card %i Analog Input %i Changed to %i \n",card,i,sismo[card].axes[i]);
+	    }				      
+	  }
+	  
+	} else if (recvBuffer[4] == 0x01) {
+	  /* Input from Daughter Digital Inputs 1 */
+	} else if (recvBuffer[4] == 0x02) {
+	  /* Input from Daughter Digital Inputs 2 */
+	} else if (recvBuffer[4] == 0x03) {
+	  /* Inputs from Daughter Analog Inputs */
+	} else {
+	  printf("Unknown Inputs Type: %02x \n",recvBuffer[4]);
+	}
+	  
+	
+	//printf("Left to Read: %i \n",udpReadLeft);
+	
+      } else {
+	printf("Card with MAC %02x:%02x or Port %i is not defined in ini file \n",
+	       recvBuffer[2],recvBuffer[3],recvBuffer[6] + 256 * recvBuffer[7]);
+      }
+    } else {
+      printf("Received wrong Init String: %02x %02x \n",recvBuffer[0],recvBuffer[1]);
+    }
+
+  } /* while UDP data present in receive buffer */
 
   return 0;
 }
@@ -196,38 +284,7 @@ void test() {
 
   gettimeofday(&tval_before, NULL);
   
-  // ret = recv_udp();
-  
-  //if (ret > 0) {
-    
-  //printf("%i \n",ret);
-    
-    /*
-      printf("N: %i INIT: %c %c \n",ret,recvBuffer[0],recvBuffer[1]);
-      printf("MAC %02x:%02x\n",recvBuffer[2],recvBuffer[3]);
-      printf("Inputs Type: %02x \n",recvBuffer[4]);
-      printf("Activated Daughters: %02x \n",recvBuffer[5]);
-      int port = recvBuffer[6] + 256 * recvBuffer[7];
-      printf("UDP Port of Card: %i \n",port);
-    */
-    for (b=0;b<num_inp/8;b++) {
-      for (i=0;i<8;i++) {
-	inp[b*8+i] = get_bit(recvBuffer[8+b],i);
-	//printf("%02x \n",recvBuffer[8+b]);
-      }
-    }
-    
-    //printf("Digital Input 1: %i 2: %i 3: %i 4: %i \n",inp[0],inp[1],inp[2],inp[3]);
-    //printf("Digital Input 14: %i 16: %i \n",inp[13],inp[15]);
 
-    /*
-    for (i=0;i<num_ana;i++) {
-      ana[i]= recvBuffer[16+i*2] + 256 * recvBuffer[17+i*2];
-    }
-    */
-    //printf("Analog Input 1: %i \n",ana[0]);
-
-    ana[0]=98765;
     
     /* Send Displays */
     
@@ -242,7 +299,7 @@ void test() {
     for (i=0;i<5;i++) {
       set_7segment(&sendBuffer[5+i%8],get_digit(ana[0],i),0);
     }
-    ret = send_udp(sismocard[0].ip,sismocard[0].port,sendBuffer,SENDMSGLEN);
+    ret = send_udp(sismo[0].ip,sismo[0].port,sendBuffer,SENDMSGLEN);
     
     printf("Sent %i bytes \n", ret);
     

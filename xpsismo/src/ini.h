@@ -16,4 +16,8 @@
    If not, see <http://www.gnu.org/licenses/>. */
 
 /* Prototype Functions */
-int read_ini(char ininame[]);
+int ini_read(char ininame[]);
+int ini_sismodata();
+int reset_sismodata();
+int ini_signal_handler(void);
+void exit_sismo(int ret);

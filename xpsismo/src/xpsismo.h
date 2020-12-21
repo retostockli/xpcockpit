@@ -15,5 +15,3 @@
 */
 
 /* Prototype functions */
-int initialize_signal_handler(void);
-void exit_xpsismo(int ret);
