@@ -101,13 +101,28 @@ int ini_read(char ininame[])
       printf("%02x:%02x \n",sismo[i].mac[0],sismo[i].mac[1]);
       if (sismo[i].port == default_sismocard_port) {
 	printf("SISMOCARD %i NA \n",i);
-	sismo[i].connected = 0;
       } else {
 	printf("SISMOCARD %i Address %s Port %i Mac %02x:%02x \n",i,sismo[i].ip, sismo[i].port,
 	       sismo[i].mac[0],sismo[i].mac[1]);
 	ncards++;
-	sismo[i].connected = 1;
       }
+
+      /* only mark as connected once we receive the first packet */
+      sismo[i].connected = 0;
+
+      /* assume that no daughter card is attached */
+      sismo[i].daughter_output1 = 0;
+      sismo[i].daughter_output2 = 0;
+      sismo[i].daughter_servo = 0;
+      sismo[i].daughter_analogoutput = 0;
+      sismo[i].daughter_display1 = 0;
+      sismo[i].daughter_display2 = 0;
+      sismo[i].ninputs = MAXINPUTS;
+      sismo[i].nanaloginputs = 5;
+      sismo[i].noutputs = 64;  
+      sismo[i].ndisplays = 32;
+      sismo[i].nservos = 0;
+      sismo[i].nanalogoutputs = 0;
     }
     
     printf("\n");
@@ -125,9 +140,9 @@ int ini_sismodata()
   int i,j,k;
   
   for(i=0;i<MAXCARDS;i++) {
-    for(j=0;j<MAXAXES;j++) {
-      sismo[i].axes[j] = INITVAL;
-      sismo[i].axes_changed[j] = UNCHANGED;
+    for(j=0;j<MAXANALOGINPUTS;j++) {
+      sismo[i].analoginputs[j] = INITVAL;
+      sismo[i].analoginputs_changed[j] = UNCHANGED;
     }
     for(j=0;j<MAXINPUTS;j++) {
       for(k=0;k<MAXSAVE;k++) {
@@ -158,8 +173,8 @@ int reset_sismodata()
   int i,j;
   
   for(i=0;i<MAXCARDS;i++) {
-    for(j=0;j<MAXAXES;j++) {
-      sismo[i].axes_changed[j] = UNCHANGED;
+    for(j=0;j<MAXANALOGINPUTS;j++) {
+      sismo[i].analoginputs_changed[j] = UNCHANGED;
     }
     for(j=0;j<MAXINPUTS;j++) {
       sismo[i].inputs_changed[j] = UNCHANGED;

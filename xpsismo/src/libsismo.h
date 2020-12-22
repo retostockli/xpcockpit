@@ -3,8 +3,6 @@
 
    Copyright (C) 2020 Reto Stockli
 
-   Additions for analog axes treatment by Hans Jansen 2011
-   Also several cosmetic changes and changes for Linux compilation
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
    either version 3 of the License, or (at your option) any later version.
@@ -19,7 +17,7 @@
 #define MAXCARDS 5           /* maximum number of cards that we expect */
 #define RECVMSGLEN 30        /* number of bytes in received UDP packet */
 #define SENDMSGLEN 28        /* number of bytes in sent UDP packet */
-#define MAXAXES 5+10         /* 5 on master and 10 on daughter */
+#define MAXANALOGINPUTS 5+10         /* 5 on master and 10 on daughter */
 #define MAXINPUTS 64+64+64   /* 64 on master and 2x64 on daughters */
 #define MAXOUTPUTS 64+64+64  /* 64 on master and 2x64 on daughters */
 #define MAXDISPLAYS 32+32+32 /* 32 on master and 2x32 on daughters */
@@ -49,13 +47,21 @@ typedef struct {
   char ip[30];           /* IP address of card */
   int port;              /* UDP port card is listening */
   unsigned char mac[2];  /* last two bytes of MAC address */
-  int naxes;             /* actual number of activated analog inputs */
+  int daughter_output1;       /* connected daughter card outputs 1 (outputs 65-128) */
+  int daughter_output2;       /* connected daughter card outputs 2 (outputs 129-192) */
+  int daughter_servo;         /* connected daughter card with servos (servos 1-14) */
+  int daughter_display1;      /* connected daughter card with displays 1 (displays 33-64) */
+  int daughter_display2;      /* connected daughter card with displays 2 (displays 65-92) */
+  int daughter_analoginput;   /* connected daughter card with analog inputs (analoginputs 6-15) */
+  int daughter_analogoutput;  /* connected daughter card with analog outputs (Not documented yet) */
   int ninputs;           /* actual number of activated inputs */
+  int nanaloginputs;     /* actual number of activated analoginputs */
+  int nanalogoutputs;    /* actual number of activated analog outputs (INOP) */
   int noutputs;          /* actual number of activated outputs */
   int ndisplays;         /* actual number of activated displays */
   int nservos;           /* actual number of activated servos */
-  int axes[MAXAXES];
-  unsigned char axes_changed[MAXAXES]; /* unchanged = 0, changed >= 1 */
+  int analoginputs[MAXANALOGINPUTS];
+  unsigned char analoginputs_changed[MAXANALOGINPUTS]; /* unchanged = 0, changed >= 1 */
   int inputs[MAXINPUTS][MAXSAVE];
   unsigned char inputs_changed[MAXINPUTS]; /* unchanged = 0, changed >= 1 */
   int outputs[MAXOUTPUTS];

@@ -157,12 +157,26 @@ int read_sismo() {
       
       /* card found */
       if (card >= 0) {
-	/* set # of inputs/outputs depending on activated daughters */
-	sismo[card].noutputs = 64 + get_bit(recvBuffer[5],0)*64 + get_bit(recvBuffer[5],1)*64;
-	sismo[card].nservos = get_bit(recvBuffer[5],2)*14;
-	sismo[card].ndisplays = 32 + get_bit(recvBuffer[5],3)*32 + get_bit(recvBuffer[5],6)*32;
-	sismo[card].naxes = 5 + get_bit(recvBuffer[5],4)*10;
-	// sismo[card].analogoutputs = get_bit(recvBuffer[5],5)*XXX; /* Planned, but not available */
+
+	if (sismo[card].connected == 0) {
+	  /* initialize card configuration status with information we read from the UDP packet */
+	  sismo[card].connected = 1;
+	  
+	  /* set # of inputs/outputs depending on activated daughters */
+	  sismo[card].daughter_output1 = get_bit(recvBuffer[5],0);
+	  sismo[card].daughter_output2 = get_bit(recvBuffer[5],1);
+	  sismo[card].daughter_servo = get_bit(recvBuffer[5],2);
+	  sismo[card].daughter_display1 = get_bit(recvBuffer[5],3);
+	  sismo[card].daughter_analogoutput = get_bit(recvBuffer[5],4);
+	  sismo[card].daughter_analoginput = get_bit(recvBuffer[5],5);
+	  sismo[card].daughter_display2 = get_bit(recvBuffer[5],6);
+	  
+	  sismo[card].noutputs = 64 + 64*sismo[card].daughter_output1 + 64*sismo[card].daughter_output2;
+	  sismo[card].nservos = 14*sismo[card].daughter_servo;
+	  sismo[card].ndisplays = 32 + 32*sismo[card].daughter_display1 + 32*sismo[card].daughter_display2;
+	  sismo[card].nanaloginputs = 5 + 10*sismo[card].daughter_analoginput;
+	  sismo[card].nanalogoutputs = 0*sismo[card].daughter_analogoutput; /* Planned, but not available */
+	}
 	  
 	/* check type of input */
 	if (recvBuffer[4] == 0x00) {
@@ -194,8 +208,7 @@ int read_sismo() {
 		/* update changed flag for changed inputs */
 		if (val != sismo[card].inputs[input][0]) {
 		  sismo[card].inputs_changed[input] += 1;
-		  if (verbose > 0) printf("Card %i Input %i Changed from %i to: %i \n",card,
-					  input,sismo[card].inputs[input][1],sismo[card].inputs[input][0]);
+		  if (verbose > 0) printf("Card %i Input %i Changed to: %i \n",card,input,val);
 		}
 		/* update all inputs */
 		sismo[card].inputs[input][0] = val; 
@@ -207,10 +220,10 @@ int read_sismo() {
 	  /* Located in bytes 16-25 */
 	  for (i=0;i<5;i++) {
 	    val = recvBuffer[16+i*2] + 256 * recvBuffer[17+i*2];
-	    if (val != sismo[card].axes[i]) {
-	      sismo[card].axes[i] = val;
-	      sismo[card].axes_changed[i] += 1;
-	      if (verbose > 2) printf("Card %i Analog Input %i Changed to %i \n",card,i,sismo[card].axes[i]);
+	    if (val != sismo[card].analoginputs[i]) {
+	      sismo[card].analoginputs[i] = val;
+	      sismo[card].analoginputs_changed[i] += 1;
+	      if (verbose > 0) printf("Card %i Analog Input %i Changed to %i \n",card,i,sismo[card].analoginputs[i]);
 	    }				      
 	  }
 	  
@@ -242,6 +255,49 @@ int read_sismo() {
 
 int write_sismo() {
 
+  int ret;
+  int card;
+  int output;
+  int anychanged;
+
+  for (card=0;card<MAXCARDS;card++) {
+    if (sismo[card].connected == 1) {
+      
+      /* check if master outputs have changed */
+      anychanged = 0;
+      memset(sendBuffer,0,SENDMSGLEN);
+      sendBuffer[0] = 0x53;
+      sendBuffer[1] = 0x43;
+      sendBuffer[2] = 0x00;
+      sendBuffer[3] = 0x00;
+      for (output=0;output<64;output++) {
+	set_bit(&sendBuffer[4+output/8],output%8,sismo[card].outputs[output]);
+	if (sismo[card].outputs_changed[output] == 1) {
+	  if (verbose > 0) printf("Card %i Output %i changed to: %i \n",card,output,sismo[card].outputs[output]);
+	  anychanged = 1;
+	}
+      }
+      if (anychanged) {
+	ret = send_udp(sismo[card].ip,sismo[card].port,sendBuffer,SENDMSGLEN);
+	printf("Sent %i bytes to card %i \n", ret,card);
+      }
+     
+      
+      /* check if master displays have changed */
+
+      /* check if daughter outputs1 have changed */
+
+      /* check if daughter outputs2 have changed */
+
+      /* check if daughter servos have changed */
+
+      /* check if daughter displays1 have changed */
+
+      /* check if daughter displays2 have changed */
+      
+    }
+  }
+  
   return 0;
 }
 

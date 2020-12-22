@@ -116,7 +116,7 @@ void *poll_thread_main()
 	udpReadLeft += ret;	
 	pthread_mutex_unlock(&exit_cond_lock);
 	
-	if (verbose > 1) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
+	if (verbose > 2) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
       } else {
 	if (verbose > 0) printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
       }
@@ -127,7 +127,7 @@ void *poll_thread_main()
       /* nothing read */
     }
     
-    usleep(1000);
+    usleep(500);
 
   } /* while loop */
   
