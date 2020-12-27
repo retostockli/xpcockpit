@@ -21,9 +21,13 @@
 #define MAXINPUTS 64+64+64   /* 64 on master and 2x64 on daughters */
 #define MAXOUTPUTS 64+64+64  /* 64 on master and 2x64 on daughters */
 #define MAXDISPLAYS 32+32+32 /* 32 on master and 2x32 on daughters */
+#define DISPLAYBRIGHTNESS 15 /* 0-15 Brightness of 7 segment displays */
 #define MAXSERVOS 14         /* 14 on daughter */
 #define MAXSAVE 20           /* maximum number of history values in data structure */
-#define INITVAL -1           /* initial value of data structures upon startup */
+#define INPUTINITVAL -1      /* initial value of inputs upon startup */
+#define DISPLAYSINITVAL -1   /* initial value of displays upon startup (BLANK) */
+#define OUTPUTSINITVAL 0     /* initial value of outputs upon startup (OFF) */
+#define SERVOSINITVAL 1023   /* initial value of servos upon startup (PARK) */
 #define UNCHANGED 0          /* flag for unchanged input / output */
 #define CHANGED 1            /* flag for changed input / output. 
 				Can actually also be > 1 for e.g. analog inputs that change faster than xpsismo cycle */

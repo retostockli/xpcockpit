@@ -141,25 +141,25 @@ int ini_sismodata()
   
   for(i=0;i<MAXCARDS;i++) {
     for(j=0;j<MAXANALOGINPUTS;j++) {
-      sismo[i].analoginputs[j] = INITVAL;
+      sismo[i].analoginputs[j] = INPUTINITVAL;
       sismo[i].analoginputs_changed[j] = UNCHANGED;
     }
     for(j=0;j<MAXINPUTS;j++) {
       for(k=0;k<MAXSAVE;k++) {
-	sismo[i].inputs[j][k] = INITVAL;
+	sismo[i].inputs[j][k] = INPUTINITVAL;
       }
       sismo[i].inputs_changed[j] = UNCHANGED;
     }
     for(j=0;j<MAXOUTPUTS;j++) {
-      sismo[i].outputs[j] = INITVAL;
-      sismo[i].outputs_changed[j] = UNCHANGED;
+      sismo[i].outputs[j] = OUTPUTSINITVAL;
+      sismo[i].outputs_changed[j] = CHANGED;
     }
     for(j=0;j<MAXDISPLAYS;j++) {
-      sismo[i].displays[j] = INITVAL;
-      sismo[i].displays_changed[j] = UNCHANGED;
+      sismo[i].displays[j] = DISPLAYSINITVAL;
+      sismo[i].displays_changed[j] = CHANGED;
     }
     for(j=0;j<MAXSERVOS;j++) {
-      sismo[i].servos[j] = INITVAL;
+      sismo[i].servos[j] = SERVOSINITVAL;
       sismo[i].servos_changed[j] = UNCHANGED;
     }
  }
@@ -173,20 +173,23 @@ int reset_sismodata()
   int i,j;
   
   for(i=0;i<MAXCARDS;i++) {
-    for(j=0;j<MAXANALOGINPUTS;j++) {
-      sismo[i].analoginputs_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXINPUTS;j++) {
-      sismo[i].inputs_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXOUTPUTS;j++) {
-      sismo[i].outputs_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXDISPLAYS;j++) {
-      sismo[i].displays_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXSERVOS;j++) {
-      sismo[i].servos_changed[j] = UNCHANGED;
+
+    if (sismo[i].connected == 1) {
+      for(j=0;j<MAXANALOGINPUTS;j++) {
+	sismo[i].analoginputs_changed[j] = UNCHANGED;
+      }
+      for(j=0;j<MAXINPUTS;j++) {
+	sismo[i].inputs_changed[j] = UNCHANGED;
+      }
+      for(j=0;j<MAXOUTPUTS;j++) {
+	sismo[i].outputs_changed[j] = UNCHANGED;
+      }
+      for(j=0;j<MAXDISPLAYS;j++) {
+	sismo[i].displays_changed[j] = UNCHANGED;
+      }
+      for(j=0;j<MAXSERVOS;j++) {
+	sismo[i].servos_changed[j] = UNCHANGED;
+      }
     }
   }
   return 0;

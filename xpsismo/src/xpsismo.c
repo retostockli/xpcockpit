@@ -75,8 +75,8 @@ int main(int argc, char **argv) {
     if (sismo[card].inputs_changed[13] || sismo[card].inputs_changed[15]) {
       printf("%i %i changed: %i %i \n",sismo[card].inputs[13][0],sismo[card].inputs[15][0],
 	     sismo[card].inputs_changed[13],sismo[card].inputs_changed[15]);
-      sismo[card].outputs[1] = sismo[card].inputs[13][0];
-      sismo[card].outputs_changed[1] = 1;
+      //sismo[card].outputs[1] = sismo[card].inputs[13][0];
+      //sismo[card].outputs_changed[1] = 1;
     }
 
     

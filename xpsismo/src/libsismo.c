@@ -77,9 +77,20 @@ int get_bit(unsigned char byte, int bit)
 
 /* Function to set the 7 segments of a display where
    the segments are ordered in 8 bits of a byte and 
-   the last bit is the decimal point */
-void set_7segment(unsigned char *byte, int val, int dp)
+   the last bit is the decimal point
+
+   0..9 are printing those values 
+   -10 is printing the minus sign
+   10's values (10-19) have a decimal point with the value 0..9
+   any other value is setting the display to blank */
+void set_7segment(unsigned char *byte, int val)
 {
+  int dp = 0;
+  if (val > 10) {
+    dp = 1;
+    val -=10;
+  }
+  
   switch(val) {
   case 0:
     *byte = 0x7E;
@@ -111,7 +122,7 @@ void set_7segment(unsigned char *byte, int val, int dp)
   case 9:
     *byte = 0x7B;
     break;
-  case -1:
+  case -10:
     *byte = 0x01; /* minus sign */
     break;
   default:
@@ -176,6 +187,27 @@ int read_sismo() {
 	  sismo[card].ndisplays = 32 + 32*sismo[card].daughter_display1 + 32*sismo[card].daughter_display2;
 	  sismo[card].nanaloginputs = 5 + 10*sismo[card].daughter_analoginput;
 	  sismo[card].nanalogoutputs = 0*sismo[card].daughter_analogoutput; /* Planned, but not available */
+
+	  if (verbose > 0) {
+	    printf("SISMO Card %i is connected with the following features: \n",card);
+	    printf("Daughter Outputs 1:     %i\n",sismo[card].daughter_output1);
+	    printf("Daughter Outputs 2:     %i\n",sismo[card].daughter_output2);
+	    printf("Daughter Displays 1:    %i\n",sismo[card].daughter_display1);
+	    printf("Daughter Displays 2:    %i\n",sismo[card].daughter_display2);
+	    printf("Daughter Servo:         %i\n",sismo[card].daughter_servo);
+	    printf("Daughter Analog Input:  %i\n",sismo[card].daughter_analoginput);
+	    printf("Daughter Analog Output: %i\n",sismo[card].daughter_analogoutput);
+	    printf("\n");
+	    printf("This card thus has the following capabilities: \n");
+	    printf("Number of Inputs:     64..%i\n",sismo[card].ninputs);
+	    printf("Number of Outputs:        %i\n",sismo[card].noutputs);
+	    printf("Number of Displays:       %i\n",sismo[card].ndisplays);
+	    printf("Number of Servos:         %i\n",sismo[card].nservos);
+	    printf("Number of Analog Inputs:  %i\n",sismo[card].nanaloginputs);
+	    printf("Number of Analog Outputs: %i\n",sismo[card].nanalogoutputs);
+	    printf("\n");
+	  }
+	  
 	}
 	  
 	/* check type of input */
@@ -258,6 +290,8 @@ int write_sismo() {
   int ret;
   int card;
   int output;
+  int group;
+  int display;
   int anychanged;
 
   for (card=0;card<MAXCARDS;card++) {
@@ -284,6 +318,28 @@ int write_sismo() {
      
       
       /* check if master displays have changed */
+      for (group=0;group<4;group++) {
+	anychanged = 0;
+	memset(sendBuffer,0,SENDMSGLEN);
+	sendBuffer[0] = 0x53;
+	sendBuffer[1] = 0x43;
+	sendBuffer[2] = 0x00;
+	sendBuffer[3] = 0x01;
+	sendBuffer[4] = group;
+	sendBuffer[13] = DISPLAYBRIGHTNESS;
+	for (display=0;display<8;display++) {
+	  set_7segment(&sendBuffer[5+display],sismo[card].displays[display+group*8]);
+	  if (sismo[card].displays_changed[display+group*8] == 1) {
+	    if (verbose > 0) printf("Card %i Display %i changed to: %i \n",card,display+group*8,
+				    sismo[card].displays[display+group*8]);
+	    anychanged = 1;
+	  }
+	}
+	if (anychanged) {
+	  ret = send_udp(sismo[card].ip,sismo[card].port,sendBuffer,SENDMSGLEN);
+	  printf("Sent %i bytes to card %i \n", ret,card);
+	}
+      }
 
       /* check if daughter outputs1 have changed */
 
@@ -299,71 +355,4 @@ int write_sismo() {
   }
   
   return 0;
-}
-
-void test() {
-  int i,b;
-  int val;
-  int ret;
-  
-  unsigned char initstring[2] = "SC";
-  unsigned char sendto_mb = 0x00; // Mother Board
-  unsigned char outstype_out = 0x00; // Digital Outputs
-  unsigned char outstype_dis = 0x01; // 7 Segment Displays
-  int num_ana = 5;
-  int num_inp = 64;
-  int num_out = 64;
-  int num_dis = 32;
-  int ana[num_ana];
-  int inp[num_inp];
-  int out[num_out];
-  int dis[num_dis];
-  
-  struct timeval tval_before, tval_after, tval_result;
-
-  /* Send Outputs */
-  memset(sendBuffer,0,SENDMSGLEN);
-
-  sendBuffer[0] = initstring[0];
-  sendBuffer[1] = initstring[1];
-  sendBuffer[2] = sendto_mb;
-  sendBuffer[3] = outstype_out;
-
-
-  i=2; // set output number
-  val=1; // set output value
-  //  sendBuffer[4+(i-1)/8] = 0xff;
-  set_bit(&sendBuffer[4+(i-1)/8],(i-1)%8,val);
-  //  ret = send_udp();
-
-  printf("Sent %i bytes \n", ret);
-
-  gettimeofday(&tval_before, NULL);
-  
-
-    
-    /* Send Displays */
-    
-    memset(sendBuffer,0,SENDMSGLEN);
-    
-    sendBuffer[0] = initstring[0];
-    sendBuffer[1] = initstring[1];
-    sendBuffer[2] = sendto_mb;
-    sendBuffer[3] = outstype_dis;      
-    sendBuffer[4] = 1; // Display Group 1-4 (each display group has 8 displays)
-    sendBuffer[13] = 0x0f; // brightness (0-15 or 0x00 - 0x0f)
-    for (i=0;i<5;i++) {
-      set_7segment(&sendBuffer[5+i%8],get_digit(ana[0],i),0);
-    }
-    ret = send_udp(sismo[0].ip,sismo[0].port,sendBuffer,SENDMSGLEN);
-    
-    printf("Sent %i bytes \n", ret);
-    
-    usleep(1000);
-    gettimeofday(&tval_after, NULL);
-    timersub(&tval_after, &tval_before, &tval_result);
-    printf("Time elapsed: %ld.%06ld\n",
-	   (long int)tval_result.tv_sec, (long int)tval_result.tv_usec);
-    //}
-
 }
