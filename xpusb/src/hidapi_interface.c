@@ -114,6 +114,7 @@ int read_usb (int number, unsigned char *bytes, int size)
 	/* empty read buffer instead of directly accessing the device */
 	
 	if (device[number].readLeft > 0) {
+	  pthread_mutex_lock(&exit_cond_lock);
 	  /* read from start of read buffer */
 	  memcpy(bytes,&device[number].readBuffer[0],device[number].inBufferSize);
 	  /* shift remaining read buffer to the left */
@@ -124,6 +125,7 @@ int read_usb (int number, unsigned char *bytes, int size)
 	  }
 	  /* decrease read buffer position and counter */
 	  device[number].readLeft -= device[number].inBufferSize;
+	  pthread_mutex_unlock(&exit_cond_lock);
       
 	  if (HID_DEBUG > 1) {
 	    printf("HIDAPI_INTERFACE: read buffer %02x %02x %02x %02x %02x %02x %02x %02x \n",
