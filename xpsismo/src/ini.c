@@ -29,6 +29,7 @@
 #include "common.h"
 #include "iniparser.h"
 #include "libsismo.h"
+#include "handleudp.h"
 #include "ini.h"
 
 /* this routine parses the usbiocards.ini file and reads its values */
@@ -169,7 +170,10 @@ int ini_sismodata()
 
 int reset_sismodata()
 {
-
+  /* The changed flag is modified by the read function that first reads the input 
+     or writes the output etc. */
+  
+  /*
   int i,j;
   
   for(i=0;i<MAXCARDS;i++) {
@@ -192,6 +196,7 @@ int reset_sismodata()
       }
     }
   }
+  */
   return 0;
 }
 
@@ -211,6 +216,10 @@ int ini_signal_handler(void)
 /* Exiting */
 void exit_sismo(int ret)
 {
+
+  /* Terminated UDP read thread */
+  exit_udp();
+
   if (ret != 2) {
     printf("Exiting with status %i \n",ret);
     exit(ret);

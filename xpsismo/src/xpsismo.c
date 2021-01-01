@@ -1,4 +1,4 @@
-/* This is the xpsismo.c code. It is the main wrapper to the libsismo.c framework
+/* This is the xpsismo.c code. It is the main wrapper to libsismo.c, serverdata.c and handleserver.c
    which communicates flight data to/from the X-Plane flight simulator via TCP/IP interface 
    and connects to the SISMO SOLUCIONES hardware via UDP.
 
@@ -38,11 +38,12 @@
 #include "ini.h"
 #include "libsismo.h"
 #include "handleudp.h"
+#include "handleserver.h"
+#include "serverdata.h"
+#include "test.h"
 
 // Driver code 
 int main(int argc, char **argv) {
-
-  int card = 0;
   
   /* evaluate command line arguments */
   argv++; 
@@ -71,22 +72,20 @@ int main(int argc, char **argv) {
 
     if (read_sismo() < 0) exit_sismo(-7);
 
-    
-    if (sismo[card].inputs_changed[13] || sismo[card].inputs_changed[15]) {
-      printf("%i %i changed: %i %i \n",sismo[card].inputs[13][0],sismo[card].inputs[15][0],
-	     sismo[card].inputs_changed[13],sismo[card].inputs_changed[15]);
-      //sismo[card].outputs[1] = sismo[card].inputs[13][0];
-      //sismo[card].outputs_changed[1] = 1;
-    }
 
+    /**** User Modules Follow Here ****/
+
+    test();
+
+
+    /**** User Modules End Here ****/
+    
     
     if (write_sismo() < 0) exit_sismo(-9);
 	  
     if (reset_sismodata() < 0) exit_sismo(-10);
     usleep(INTERVAL*1000);
   }
-  
-  exit_udp();
   
   return 0; 
 } 

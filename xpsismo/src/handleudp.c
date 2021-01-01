@@ -66,8 +66,8 @@ int init_udp_server(char server_ip[],int server_port)
 	return -1;
       }
 
-    // set to blocking (0) or Non-blocking (1).
-    unsigned long nSetSocketType = 1;
+    /* set to blocking (0). Non-blocking (1) is not suitable for the threaded reading */
+    unsigned long nSetSocketType = 0;
     if (ioctl(serverSocket,FIONBIO,&nSetSocketType) < 0) {
       printf("HANDLEUDP: Server set to non-blocking failed\n");
       return -1;
@@ -76,10 +76,10 @@ int init_udp_server(char server_ip[],int server_port)
     }
   }
 
-  // set a 100 ms timeout (for threaded reading)
+  /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
   struct timeval tv;
-  tv.tv_sec = 0;
-  tv.tv_usec = 100000;
+  tv.tv_sec = 1;
+  tv.tv_usec = 0;
   setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
  
   return 0;
@@ -100,7 +100,7 @@ void *poll_thread_main()
 
     if (ret == -1) {
       if (errno == EWOULDBLOCK) { // just no data yet ...
-	if (verbose > 2) printf("HANDLEUDP: No data yet. \n");
+	if (verbose > 3) printf("HANDLEUDP: No data yet. \n");
       } else {
 	printf("HANDLEUDP: Receive Error. \n");
 	poll_thread_exit_code = 1;
@@ -116,7 +116,7 @@ void *poll_thread_main()
 	udpReadLeft += ret;	
 	pthread_mutex_unlock(&exit_cond_lock);
 	
-	if (verbose > 2) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
+	if (verbose > 3) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
       } else {
 	if (verbose > 0) printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
       }
@@ -126,8 +126,9 @@ void *poll_thread_main()
     } else {
       /* nothing read */
     }
-    
-    usleep(500);
+
+    /* wait loop not needed since we have a timeout */
+    //usleep(500);
 
   } /* while loop */
   

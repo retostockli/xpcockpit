@@ -40,8 +40,8 @@ extern char clientname[100];
 /* SISMO UDP SERVER (this code here) */
 extern char sismoserver_ip[30];
 extern int sismoserver_port;
-extern unsigned char recvBuffer[RECVMSGLEN];
-extern unsigned char sendBuffer[SENDMSGLEN];
+extern unsigned char sismoRecvBuffer[RECVMSGLEN];
+extern unsigned char sismoSendBuffer[SENDMSGLEN];
 
 /* SISMO data structure */
 extern int ncards;
@@ -79,6 +79,9 @@ typedef struct {
 extern sismo_struct sismo[MAXCARDS];
 
 /* Prototype Functions */
-void test(void);
 int read_sismo(void);
 int write_sismo(void);
+int digital_inputf(int card, int input, float *fvalue, int type);
+int digital_input(int card, int input, int *value, int type);
+int digital_outputf(int card, int output, float *fvalue);
+int digital_output(int card, int output, int *value);
