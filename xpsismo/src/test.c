@@ -41,15 +41,21 @@ void test(void)
   int card = 0;
   int input = 1;
   int output = 1;
+  int displayvalue = 4;
 
   if ((value != 0) && (value != 1)) value = 0;
-  
-  ret = digital_input(card, input, &value, 1);
+
+  /* read second input (1) */
+  ret = digital_input(card, input, &value, 0);
   if (ret == 1) {
+    /* ret is 1 only if input has changed */
     printf("Input %i changed to: %i \n",input,value);
   }
 
+  /* set LED connected to second output (1) to value of above input */
   ret = digital_output(card, output, &value);
 
+  /* set 7 segment displays 0-5 to the 5 digit value with a decimal point at digit 2 */
+  ret = display_output(card, 0, 5, &displayvalue, 2, 0);
 
 }
