@@ -15,7 +15,7 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#define INTERVAL 500
+#define INTERVAL 10
 
 /* verbosity of usbiocards (0-4) */
 extern int verbose;

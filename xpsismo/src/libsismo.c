@@ -35,9 +35,9 @@
 
 int verbose;
 
-char xpserver_ip[30];
-int xpserver_port;
-char clientname[100];
+//char xpserver_ip[30];
+//int xpserver_port;
+//char clientname[100];
 
 char sismoserver_ip[30];
 int sismoserver_port;
@@ -139,7 +139,10 @@ int read_sismo() {
   int i,b,s;
   int val;
   int input;
-  int any;
+  char any;
+  int bank;
+
+  //printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
   
   while (udpReadLeft >= RECVMSGLEN) {
     
@@ -218,6 +221,7 @@ int read_sismo() {
 	/* check type of input */
 	if (sismoRecvBuffer[4] == 0x00) {
 	  /* Input from Master */
+	  bank = 0;
 
 	  /* Digital Inputs are ordered in 8 bytes with 8 bits each = 64 inputs */
 	  /* Located in Bytes 8-15 */
@@ -241,18 +245,24 @@ int read_sismo() {
 		for (s=MAXSAVE-2;s>=0;s--) {
 		  sismo[card].inputs[input][s+1] = sismo[card].inputs[input][s];
 		}
+		/* update input if changed */
 		val = get_bit(sismoRecvBuffer[8+b],i);
-		/* update changed flag for changed inputs */
 		if (val != sismo[card].inputs[input][0]) {
-		  if (sismo[card].inputs_changed[input] < MAXSAVE) {
-		    sismo[card].inputs_changed[input] += 1;
-		  }
+		  sismo[card].inputs[input][0] = val; 
 		  if (verbose > 2) printf("Card %i Input %i Changed to: %i \n",card,input,val);
 		}
-		/* update all inputs */
-		sismo[card].inputs[input][0] = val; 
 	      }
 	    }
+	    /* update number of history values per input bank */
+	    if (sismo[card].inputs_nsave[bank] < MAXSAVE) {
+	      sismo[card].inputs_nsave[bank] += 1;
+	      if (verbose > 2) printf("Card %i Input Bank %i # of History Values %i \n",
+				      card,bank,sismo[card].inputs_nsave[bank]);
+	    } else {
+	      if (verbose > 0) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
+				      card,bank,MAXSAVE);
+	    }
+	      
 	  }
 
 	  /* Analog Inputs are ordered in 10 bytes with 2 bytes per input */
@@ -391,16 +401,18 @@ int digital_input(int card, int input, int *value, int type)
   int retval = 0; /* returns 1 if something changed, and 0 if nothing changed, 
 		     and -1 if something went wrong */
 
-  unsigned char s;
+  int s;
+  int bank;
 
   if (value != NULL) {
 
     if (card < MAXCARDS) {
       if (sismo[card].connected) {
 	if ((input >= 0) && (input < sismo[card].ninputs)) {
-
-	  if (sismo[card].inputs_changed[input] != 0) {
-	    s = sismo[card].inputs_changed[input] - 1; /* history slot to read */
+	  bank = input/64;
+	  
+	  if (sismo[card].inputs_nsave[bank] != 0) {
+	    s = sismo[card].inputs_nsave[bank] - 1; /* history slot to read */
 	    if (type == 0) {
 	      /* simple pushbutton / switch */
 	      if (*value != sismo[card].inputs[input][s]) {
@@ -414,8 +426,6 @@ int digital_input(int card, int input, int *value, int type)
 	      /* toggle state everytime you press button */
 	      if (s < (MAXSAVE-1)) {
 		/* check if the switch state changed from 0 -> 1 */
-		//		printf("%i %i %i \n",sismo[card].inputs[input][s],sismo[card].inputs[input][s+1],
-		//		       sismo[card].inputs_changed[input]);
 		if ((sismo[card].inputs[input][s] == 1) && (sismo[card].inputs[input][s+1] == 0)) {
 		  /* toggle */
 		  if (*value != INT_MISS) {
@@ -433,9 +443,6 @@ int digital_input(int card, int input, int *value, int type)
 		}
 	      }
 	    }
-	    
-	    /* decrease history pointer since we did read the input */
-	    sismo[card].inputs_changed[input] -= 1; 
 
 	  }
 	} else {
@@ -536,9 +543,7 @@ int display_output(int card, int pos, int n, int *value, int dp, int blank)
   int tempval;
   int negative;
   int count;
-  int power;
   int single;
-
   
   if (value != NULL) {
 
@@ -548,14 +553,14 @@ int display_output(int card, int pos, int n, int *value, int dp, int blank)
 	if ((n>0) && (pos>=0) && ((pos+n-1)<sismo[card].ndisplays)) {
 
 	  if (blank == 1) {
+	    /* blank all values in range */
 	    for (count=0;count<n;count++) {
 	      if (sismo[card].displays[pos+count] != -1) {
 		sismo[card].displays[pos+count] = -1;
 		sismo[card].displays_changed[pos+count] = CHANGED;
 	      }
 	    }
-	  } else {
-	  
+	  } else {	  
 	    /* generate temporary storage of input value */
 	    tempval = *value;
 
@@ -568,16 +573,10 @@ int display_output(int card, int pos, int n, int *value, int dp, int blank)
 	      negative = 0;
 	    }
 
-	    /*remove too high values exceeding n displays */
-	    power = roundf(pow(10,n));
-	    if (tempval >= power) {
-	      tempval = tempval - (tempval / power) * power;
-	    }
-
 	    /* read individual digits from integer */
 	    /* blank leftmost 0 values except if it is the first one */ 
 	    count = 0;
-	    while (tempval)
+	    while ((tempval) && (count<n))
 	      {
 		single = tempval % 10;
 		if (dp == count) single += 10;
@@ -591,14 +590,18 @@ int display_output(int card, int pos, int n, int *value, int dp, int blank)
 	    while (count<n)
 	      {
 		if (negative) {
-		  if (sismo[card].displays[pos+count] != -10) {
-		    sismo[card].displays[pos+count] = -10;
-		    sismo[card].displays_changed[pos+count] = CHANGED;
+		  if (count > dp) {
+		    single = -10;
+		    if (sismo[card].displays[pos+count] != single) {
+		      sismo[card].displays[pos+count] = single;
+		      sismo[card].displays_changed[pos+count] = CHANGED;
+		    }
+		    negative = 0;
 		  }
-		  negative = 0;
 		} else {
 		  if ((count == 0) || (dp >= count)) {
 		    /* do not blank leftmost 0 display or if it has a decimal point */
+		    /* this allows to display for instance 0.04 */
 		    single = 0;
 		    if (dp == count) single += 10;
 		    if (sismo[card].displays[pos+count] != single) {
@@ -606,8 +609,10 @@ int display_output(int card, int pos, int n, int *value, int dp, int blank)
 		      sismo[card].displays_changed[pos+count] = CHANGED;
 		    }
 		  } else {
-		    if (sismo[card].displays[pos+count] != -1) {
-		      sismo[card].displays[pos+count] = -1;
+		    /* blank all other displays in front of number */
+		    single = -1;
+		    if (sismo[card].displays[pos+count] != single) {
+		      sismo[card].displays[pos+count] = single;
 		      sismo[card].displays_changed[pos+count] = CHANGED;
 		    }
 		  }
@@ -634,6 +639,184 @@ int display_output(int card, int pos, int n, int *value, int dp, int blank)
       retval = -1;
     }
 
+  }
+
+  return retval;
+}
+
+/* retrieve value from given analog input between the range minval and maxval */
+int analog_input(int card, int input, float *value, float minval, float maxval)
+{
+
+  int retval = 0; /* returns 1 if something changed, and 0 if nothing changed, 
+		     and -1 if something went wrong */
+
+  if (value != NULL) {
+
+    if (card < MAXCARDS) {
+      if (sismo[card].connected) {
+	if ((input >= 0) && (input < sismo[card].nanaloginputs)) {
+
+	  if (sismo[card].analoginputs_changed[input] == 1) {
+	    *value = ((float) sismo[card].analoginputs[input]) / (float) pow(2,ANALOGINPUTNBITS) * 
+	    (maxval - minval) + minval;
+	    retval = 1;
+	  }
+	  
+	} else {
+	  if (verbose > 0) printf("Analog Input %i above maximum # of analog inputs %i of card %i \n",
+				  input,sismo[card].nanaloginputs,card);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 2) printf("Analog Input %i cannot be read. Card %i not connected \n",
+				input,card);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Analog Input %i cannot be read. Card %i >= MAXCARDS\n",input,card);
+      retval = -1;
+    }
+    
+  }
+
+  return retval;
+}
+
+
+/* wrapper for encoder_input using integer values and multiplier */
+int encoder_input(int card, int input1,  int input2, int *value, int multiplier, int type)
+{
+  float fvalue = FLT_MISS;
+  if (*value != INT_MISS) fvalue = (float) *value;
+  int ret = encoder_inputf(card, input1, input2, &fvalue, (float) multiplier, type);
+  if (fvalue != FLT_MISS) *value = (int) lroundf(fvalue);
+  return ret;
+    
+}
+
+/* retrieve encoder value and for given encoder type connected to inputs 1 and 2
+   inputs 1 and 2 need to be on the same input bank (each bank has 64 inputs).
+   Note that even though we try to capture every bit that changes, turning an 
+   optical encoder too fast will result in loss of states since the SISMO card
+   will not capture every state change correctly */
+/* two types of encoders: */
+/* 1: 2 bit optical rotary encoder (type 3 in xpusb) */
+/* 2: 2 bit gray type mechanical encoder */
+int encoder_inputf(int card, int input1, int input2, float *value, float multiplier, int type)
+{
+
+  int retval = 0; /* returns 1 if something changed, and 0 if nothing changed, 
+		     and -1 if something went wrong */
+
+  char oldcount, newcount; /* encoder integer counters */
+  char updown = 0; /* encoder direction */
+  char obits[2]; /* bit arrays for 2 bit encoder */
+  char nbits[2]; /* bit arrays for 2 bit encoder */
+  int s;
+  int bank;
+
+  if (value != NULL) {
+
+    if (card < MAXCARDS) {
+      if (sismo[card].connected) {
+	if ((input1 >= 0) && (input1 < sismo[card].ninputs) &&
+	    (input2 >= 0) && (input2 < sismo[card].ninputs)) {
+	  if (input1/64 == input2/64) {
+	    bank = input1/64;
+	    if (sismo[card].inputs_nsave[bank] != 0) {
+	      s = sismo[card].inputs_nsave[bank] - 1; /* history slot to read */
+	      if (s < (MAXSAVE-1)) {
+		/* if not first read, and if any of the inputs have changed then the encoder was moved */
+		if (((sismo[card].inputs[input1][s] != sismo[card].inputs[input1][s+1]) ||
+		     (sismo[card].inputs[input2][s] != sismo[card].inputs[input2][s+1])) &&
+		    (sismo[card].inputs[input1][s+1] != INPUTINITVAL) &&
+		     (sismo[card].inputs[input2][s+1] != INPUTINITVAL)) {
+		  
+		  if (type == 1) {
+		    /* 2 bit optical encoder */
+
+		    /* derive last encoder bit state */
+		    obits[0] = sismo[card].inputs[input1][s+1];
+		    obits[1] = sismo[card].inputs[input2][s+1];
+		    /* derive new encoder bit state */
+		    nbits[0] = sismo[card].inputs[input1][s];
+		    nbits[1] = sismo[card].inputs[input2][s];
+	  
+		    if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		      updown = -1;
+		    } else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
+		      updown = 1;
+		    } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
+		      updown = -1;
+		    } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		      updown = 1;
+		    }
+	  
+		    if (updown != 0) {
+		      *value = *value + ((float) updown)  * multiplier;
+		      retval = 1;
+		    }		    
+		  } else if (type == 2) {
+		    /* 2 bit gray type mechanical encoder */
+
+		    /* derive last encoder count */
+		    oldcount = sismo[card].inputs[input1][s+1]+2*sismo[card].inputs[input2][s+1];
+	  
+		    /* derive new encoder count */
+		    newcount = sismo[card].inputs[input1][s]+2*sismo[card].inputs[input2][s];
+
+		    /* forward */
+		    if (((oldcount == 0) && (newcount == 1)) ||
+			((oldcount == 1) && (newcount == 3)) ||
+			((oldcount == 3) && (newcount == 2)) ||
+			((oldcount == 2) && (newcount == 0))) {
+		      updown = 1;
+		    }
+		    
+		    /* backward */
+		    if (((oldcount == 2) && (newcount == 3)) ||
+			((oldcount == 3) && (newcount == 1)) ||
+			((oldcount == 1) && (newcount == 0)) ||
+			((oldcount == 0) && (newcount == 2))) {
+		      updown = -1;
+		    }
+		    
+		    if (updown != 0) {
+		      *value = *value + ((float) updown) * multiplier;
+		      retval = 1;
+		    }		    
+		  } else {
+		    if (verbose > 0) printf("Encoder with Input %i,%i of card %i need to be of type 1 or 2 \n",
+					    input1,input2,card);
+		    retval = -1;
+		  }
+		}
+	      }
+	    }
+	    if ((retval == 1) && (verbose > 2)) printf("Encoder with Input %i,%i of card %i changed to %f \n",
+						       input1,input2,card,*value);
+
+	  } else {
+	    if (verbose > 0) printf("Encoder with Input %i,%i need to be on same input bank of card %i \n",
+				    input1,input2,card);
+	    retval = -1;
+	  }
+	} else {
+	  if (verbose > 0) printf("Encoder with Input %i,%i above maximum # of digital inputs %i of card %i \n",
+				  input1,input2,sismo[card].ninputs,card);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 2) printf("Encoder with Input %i,%i cannot be read. Card %i not connected \n",
+				input1,input2,card);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Encoder with Input %i,%i cannot be read. Card %i >= MAXCARDS\n",input1,input2,card);
+      retval = -1;
+    }
+    
   }
 
   return retval;

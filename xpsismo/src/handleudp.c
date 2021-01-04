@@ -97,7 +97,6 @@ void *poll_thread_main()
 
     /* read call goes here (100 ms timeout for blocking operation) */
     ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
-
     if (ret == -1) {
       if (errno == EWOULDBLOCK) { // just no data yet ...
 	if (verbose > 3) printf("HANDLEUDP: No data yet. \n");
@@ -111,9 +110,9 @@ void *poll_thread_main()
       
       /* does it fit into read buffer? */
       if (ret <= (UDPRECVBUFLEN - udpReadLeft)) {
-	pthread_mutex_lock(&exit_cond_lock);	
+	pthread_mutex_lock(&exit_cond_lock);
 	memcpy(&udpRecvBuffer[udpReadLeft],buffer,ret);
-	udpReadLeft += ret;	
+	udpReadLeft += ret;
 	pthread_mutex_unlock(&exit_cond_lock);
 	
 	if (verbose > 3) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);

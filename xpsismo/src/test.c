@@ -32,30 +32,49 @@
 #include "libsismo.h"
 #include "serverdata.h"
 
-int value;
+int encodervalue;
 
 void test(void)
 {
 
   int ret;
   int card = 0;
-  int input = 1;
-  int output = 1;
-  int displayvalue = 4;
 
-  if ((value != 0) && (value != 1)) value = 0;
+  /* link integer data like a switch in the cockpit */
+  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
-  /* read second input (1) */
-  ret = digital_input(card, input, &value, 0);
+  /* link floating point dataref with precision 10e-1 to local variable. This means
+     that we only transfer the variable if changed by 0.1 or more */
+  float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
+
+  /* link NAV1 Frequency to encoder value */
+  int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
+
+  /* read second digital input (#1) */
+  ret = digital_input(card, 1, value, 0);
   if (ret == 1) {
     /* ret is 1 only if input has changed */
-    printf("Input %i changed to: %i \n",input,value);
+    printf("Digital Input changed to: %i \n",*value);
   }
 
-  /* set LED connected to second output (1) to value of above input */
-  ret = digital_output(card, output, &value);
+  /* read first analog input (#0) */
+  ret = analog_input(card,0,fvalue,0.0,1.0);
+  if (ret == 1) {
+    /* ret is 1 only if analog input has changed */
+    printf("Analog Input changed to: %f \n",*fvalue);
+  }
 
-  /* set 7 segment displays 0-5 to the 5 digit value with a decimal point at digit 2 */
-  ret = display_output(card, 0, 5, &displayvalue, 2, 0);
+  /* read encoder at inputs 13 and 15 */
+  ret = encoder_input(card, 13, 15, encodervalue, 5, 1);
+  if (ret == 1) {
+    /* ret is 1 only if encoder has been turned */
+    printf("Encoder changed to: %i \n",*encodervalue);
+  }
+  
+  /* set LED connected to second output (#1) to value of above input */
+  ret = digital_output(card, 1, value);
+
+  /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
+  ret = display_output(card, 0, 5, encodervalue, 2, 0);
 
 }

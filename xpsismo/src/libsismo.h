@@ -23,19 +23,20 @@
 #define MAXDISPLAYS 32+32+32 /* 32 on master and 2x32 on daughters */
 #define DISPLAYBRIGHTNESS 15 /* 0-15 Brightness of 7 segment displays */
 #define MAXSERVOS 14         /* 14 on daughter */
-#define MAXSAVE 20           /* maximum number of history values in data structure */
+#define MAXSAVE 30           /* maximum number of history values in data structure */
 #define INPUTINITVAL -1      /* initial value of inputs upon startup */
 #define DISPLAYSINITVAL -1   /* initial value of displays upon startup (BLANK) */
 #define OUTPUTSINITVAL 0     /* initial value of outputs upon startup (OFF) */
 #define SERVOSINITVAL 1023   /* initial value of servos upon startup (PARK) */
+#define ANALOGINPUTNBITS 10  /* number of bits of analog inputs */
 #define UNCHANGED 0          /* flag for unchanged input / output */
 #define CHANGED 1            /* flag for changed input / output. 
 				Can actually also be > 1 for e.g. analog inputs that change faster than xpsismo cycle */
 
 /* XPSERVER */
-extern char xpserver_ip[30];
-extern int xpserver_port;
-extern char clientname[100];
+//extern char xpserver_ip[30];
+//extern int xpserver_port;
+//extern char clientname[100];
 
 /* SISMO UDP SERVER (this code here) */
 extern char sismoserver_ip[30];
@@ -51,13 +52,13 @@ typedef struct {
   char ip[30];           /* IP address of card */
   int port;              /* UDP port card is listening */
   unsigned char mac[2];  /* last two bytes of MAC address */
-  int daughter_output1;       /* connected daughter card outputs 1 (outputs 65-128) */
-  int daughter_output2;       /* connected daughter card outputs 2 (outputs 129-192) */
-  int daughter_servo;         /* connected daughter card with servos (servos 1-14) */
-  int daughter_display1;      /* connected daughter card with displays 1 (displays 33-64) */
-  int daughter_display2;      /* connected daughter card with displays 2 (displays 65-92) */
-  int daughter_analoginput;   /* connected daughter card with analog inputs (analoginputs 6-15) */
-  int daughter_analogoutput;  /* connected daughter card with analog outputs (Not documented yet) */
+  char daughter_output1;       /* connected daughter card outputs 1 (outputs 65-128) */
+  char daughter_output2;       /* connected daughter card outputs 2 (outputs 129-192) */
+  char daughter_servo;         /* connected daughter card with servos (servos 1-14) */
+  char daughter_display1;      /* connected daughter card with displays 1 (displays 33-64) */
+  char daughter_display2;      /* connected daughter card with displays 2 (displays 65-92) */
+  char daughter_analoginput;   /* connected daughter card with analog inputs (analoginputs 6-15) */
+  char daughter_analogoutput;  /* connected daughter card with analog outputs (Not documented yet) */
   int ninputs;           /* actual number of activated inputs */
   int nanaloginputs;     /* actual number of activated analoginputs */
   int nanalogoutputs;    /* actual number of activated analog outputs (INOP) */
@@ -65,15 +66,15 @@ typedef struct {
   int ndisplays;         /* actual number of activated displays */
   int nservos;           /* actual number of activated servos */
   int analoginputs[MAXANALOGINPUTS];
-  unsigned char analoginputs_changed[MAXANALOGINPUTS]; /* unchanged = 0, changed >= 1 */
-  int inputs[MAXINPUTS][MAXSAVE];
-  unsigned char inputs_changed[MAXINPUTS]; /* unchanged = 0, changed >= 1 */
-  int outputs[MAXOUTPUTS];
-  unsigned char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
-  int displays[MAXDISPLAYS];
-  unsigned char displays_changed[MAXDISPLAYS]; /* unchanged = 0, changed = 1 */
+  char analoginputs_changed[MAXANALOGINPUTS]; /* unchanged = 0, changed >= 1 */
+  char inputs[MAXINPUTS][MAXSAVE];
+  char inputs_nsave[MAXINPUTS/64]; /* number of history saves per input bank. Each bank has 64 inputs */
+  char outputs[MAXOUTPUTS];
+  char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
+  char displays[MAXDISPLAYS];
+  char displays_changed[MAXDISPLAYS]; /* unchanged = 0, changed = 1 */
   int servos[MAXSERVOS];
-  unsigned char servos_changed[MAXSERVOS]; /* unchanged = 0, changed = 1 */
+  char servos_changed[MAXSERVOS]; /* unchanged = 0, changed = 1 */
 } sismo_struct;
 
 extern sismo_struct sismo[MAXCARDS];
@@ -87,3 +88,6 @@ int digital_outputf(int card, int output, float *fvalue);
 int digital_output(int card, int output, int *value);
 int display_outputf(int card, int pos, int n, float *fvalue, int dp, int blank);
 int display_output(int card, int pos, int n, int *value, int dp, int blank);
+int analog_input(int card, int input, float *value, float minval, float maxval);
+int encoder_input(int card, int input1, int input2, int *value, int multiplier, int type);
+int encoder_inputf(int card, int input1, int input2, float *value, float multiplier, int type);
