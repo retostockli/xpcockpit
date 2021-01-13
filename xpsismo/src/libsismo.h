@@ -65,8 +65,7 @@ typedef struct {
   int noutputs;          /* actual number of activated outputs */
   int ndisplays;         /* actual number of activated displays */
   int nservos;           /* actual number of activated servos */
-  int analoginputs[MAXANALOGINPUTS];
-  char analoginputs_changed[MAXANALOGINPUTS]; /* unchanged = 0, changed >= 1 */
+  int analoginputs[MAXANALOGINPUTS][MAXSAVE];
   char inputs[MAXINPUTS][MAXSAVE];
   char inputs_nsave[MAXINPUTS/64]; /* number of history saves per input bank. Each bank has 64 inputs */
   char outputs[MAXOUTPUTS];

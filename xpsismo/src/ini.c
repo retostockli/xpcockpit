@@ -144,8 +144,9 @@ int ini_sismodata()
 
   for(i=0;i<MAXCARDS;i++) {
     for(j=0;j<MAXANALOGINPUTS;j++) {
-      sismo[i].analoginputs[j] = INPUTINITVAL;
-      sismo[i].analoginputs_changed[j] = UNCHANGED;
+      for(k=0;k<MAXSAVE;k++) {
+	sismo[i].analoginputs[j][k]= INPUTINITVAL;
+      }
     }
     for(j=0;j<MAXINPUTS/64;j++) {
       sismo[i].inputs_nsave[j] = 0;
@@ -182,9 +183,6 @@ int reset_sismodata()
   for(i=0;i<MAXCARDS;i++) {
 
     if (sismo[i].connected == 1) {
-      for(j=0;j<MAXANALOGINPUTS;j++) {
-	sismo[i].analoginputs_changed[j] = UNCHANGED;
-      }
       for(j=0;j<(MAXINPUTS/64);j++) {
 	if (sismo[i].inputs_nsave[j] > 0) sismo[i].inputs_nsave[j] -= 1;
       }
