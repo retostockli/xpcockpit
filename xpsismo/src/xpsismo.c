@@ -1,4 +1,4 @@
-/* This is the xpsismo.c code. It is the main wrapper to the libsismo.c framework
+/* This is the xpsismo.c code. It is the main wrapper to libsismo.c, serverdata.c and handleserver.c
    which communicates flight data to/from the X-Plane flight simulator via TCP/IP interface 
    and connects to the SISMO SOLUCIONES hardware via UDP.
 
@@ -38,11 +38,15 @@
 #include "ini.h"
 #include "libsismo.h"
 #include "handleudp.h"
+#include "handleserver.h"
+#include "serverdata.h"
+#include "check_aircraft.h"
+#include "test.h"
+
+int acf_type;
 
 // Driver code 
 int main(int argc, char **argv) {
-
-  int card = 0;
   
   /* evaluate command line arguments */
   argv++; 
@@ -52,41 +56,58 @@ int main(int argc, char **argv) {
     exit_sismo(-1);
   }
 
-  /* parse the xpusb.ini file */
+  /* initialize local dataref structure */
+  if (initialize_dataref()<0) exit_sismo(-1);
+
+  /* parse the selected ini file */
   if (ini_read(*argv)<0) exit_sismo(-2);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (ini_signal_handler()<0) exit_sismo(-3);
 
+  /* initialize TCP/IP interface */
+  if (initialize_tcpip()<0) exit_sismo(-4);
+
   /* initialize sismo I/O data structure */
-  if (ini_sismodata()<0) exit_sismo(-4);
+  if (ini_sismodata()<0) exit_sismo(-5);
   
   /* initialize UDP server */
-  if (init_udp_server(sismoserver_ip,sismoserver_port) < 0) exit_sismo(-5);
+  if (init_udp_server(sismoserver_ip,sismoserver_port) < 0) exit_sismo(-6);
 
   /* initialize UDP read thread */
-  if (init_udp_receive() < 0) exit_sismo(-6);
+  if (init_udp_receive() < 0) exit_sismo(-7);
 
   while (1) {
 
-    if (read_sismo() < 0) exit_sismo(-7);
-
+    /* receive data from SISMO cards */
+    if (read_sismo() < 0) exit_sismo(-8);
+      
+    /* check for TCP/IP connection to X-Plane */
+    if (check_server()<0) exit_sismo(-9);
+ 
+    /* receive data from X-Plane via TCP/IP */
+    if (receive_server()<0) exit_sismo(-10);
     
-    if (sismo[card].inputs_changed[13] || sismo[card].inputs_changed[15]) {
-      printf("%i %i changed: %i %i \n",sismo[card].inputs[13][0],sismo[card].inputs[15][0],
-	     sismo[card].inputs_changed[13],sismo[card].inputs_changed[15]);
-      sismo[card].outputs[1] = sismo[card].inputs[13][0];
-      sismo[card].outputs_changed[1] = 1;
-    }
+    check_aircraft();
+ 
+    /**** User Modules Follow Here ****/
 
+    test();
+
+
+    /**** User Modules End Here ****/
     
-    if (write_sismo() < 0) exit_sismo(-9);
-	  
-    if (reset_sismodata() < 0) exit_sismo(-10);
+    /* send data to SISMO cards */
+    if (write_sismo() < 0) exit_sismo(-11);
+
+    /* send data to X-Plane via TCP/IP */
+    if (send_server()<0) exit_sismo(-12);
+    
+      /* reset counters and such */
+    if (reset_sismodata() < 0) exit_sismo(-13);
+    
     usleep(INTERVAL*1000);
   }
-  
-  exit_udp();
   
   return 0; 
 } 

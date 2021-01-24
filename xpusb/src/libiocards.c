@@ -496,10 +496,15 @@ int digital_input(int device, int card, int input, int *value, int type)
 	    if ((iocard[device].inputs_old[card][input] == 0) && (iocard[device].inputs[card][input] == 1)) {
 	      /* toggle */
 	      if (*value != INT_MISS) {
-		*value = 1 - (*value);
-		retval = 1;
-		if (verbose > 1) {
-		  printf("LIBIOCARDS: Toggle Switch               :  device=%i card=%i input=%i value=%i \n",
+		if ((*value == 0) || (*value == 1)) {
+		  *value = 1 - (*value);
+		  retval = 1;
+		  if (verbose > 1) {
+		    printf("LIBIOCARDS: Toggle Switch               :  device=%i card=%i input=%i value=%i \n",
+			   device, card, input, *value);
+		  }
+		} else {
+		  printf("LIBIOCARDS: Toggle Switch Needs to have 0 or 1  :  device=%i card=%i input=%i value=%i \n",
 			 device, card, input, *value);
 		}
 	      }

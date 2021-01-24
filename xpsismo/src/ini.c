@@ -29,7 +29,10 @@
 #include "common.h"
 #include "iniparser.h"
 #include "libsismo.h"
+#include "handleudp.h"
 #include "ini.h"
+#include "handleserver.h"
+#include "serverdata.h"
 
 /* this routine parses the usbiocards.ini file and reads its values */
 int ini_read(char ininame[])
@@ -80,9 +83,9 @@ int ini_read(char ininame[])
     strncpy(clientname,iniparser_getstring(ini,"xpserver:Name", ""),sizeof(clientname));
     if (! strcmp(clientname,"")) strncpy(clientname,PACKAGE_NAME,sizeof(clientname));
     printf("XPSERVER Client name: %s\n", clientname);
-    strcpy(xpserver_ip,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
-    xpserver_port = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
-    printf("XPSERVER Address %s Port %i \n",xpserver_ip, xpserver_port);
+    strcpy(server_ip,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
+    server_port = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
+    printf("XPSERVER Address %s Port %i \n",server_ip, server_port);
 
     strcpy(sismoserver_ip,iniparser_getstring(ini,"sismoserver:Address", default_sismoserver_ip));
     sismoserver_port = iniparser_getint(ini,"sismoserver:Port", default_sismoserver_port);
@@ -138,28 +141,31 @@ int ini_read(char ininame[])
 int ini_sismodata()
 {
   int i,j,k;
-  
+
   for(i=0;i<MAXCARDS;i++) {
     for(j=0;j<MAXANALOGINPUTS;j++) {
-      sismo[i].analoginputs[j] = INITVAL;
-      sismo[i].analoginputs_changed[j] = UNCHANGED;
+      for(k=0;k<MAXSAVE;k++) {
+	sismo[i].analoginputs[j][k]= INPUTINITVAL;
+      }
+    }
+    for(j=0;j<MAXINPUTS/64;j++) {
+      sismo[i].inputs_nsave[j] = 0;
     }
     for(j=0;j<MAXINPUTS;j++) {
       for(k=0;k<MAXSAVE;k++) {
-	sismo[i].inputs[j][k] = INITVAL;
+	sismo[i].inputs[j][k] = INPUTINITVAL;
       }
-      sismo[i].inputs_changed[j] = UNCHANGED;
     }
     for(j=0;j<MAXOUTPUTS;j++) {
-      sismo[i].outputs[j] = INITVAL;
-      sismo[i].outputs_changed[j] = UNCHANGED;
+      sismo[i].outputs[j] = OUTPUTSINITVAL;
+      sismo[i].outputs_changed[j] = CHANGED;
     }
     for(j=0;j<MAXDISPLAYS;j++) {
-      sismo[i].displays[j] = INITVAL;
-      sismo[i].displays_changed[j] = UNCHANGED;
+      sismo[i].displays[j] = DISPLAYSINITVAL;
+      sismo[i].displays_changed[j] = CHANGED;
     }
     for(j=0;j<MAXSERVOS;j++) {
-      sismo[i].servos[j] = INITVAL;
+      sismo[i].servos[j] = SERVOSINITVAL;
       sismo[i].servos_changed[j] = UNCHANGED;
     }
  }
@@ -169,24 +175,30 @@ int ini_sismodata()
 
 int reset_sismodata()
 {
-
+  /* The changed flag is modified by the read function that first reads the input 
+     or writes the output etc. */
+  
   int i,j;
   
   for(i=0;i<MAXCARDS;i++) {
-    for(j=0;j<MAXANALOGINPUTS;j++) {
-      sismo[i].analoginputs_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXINPUTS;j++) {
-      sismo[i].inputs_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXOUTPUTS;j++) {
-      sismo[i].outputs_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXDISPLAYS;j++) {
-      sismo[i].displays_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXSERVOS;j++) {
-      sismo[i].servos_changed[j] = UNCHANGED;
+
+    if (sismo[i].connected == 1) {
+      for(j=0;j<(MAXINPUTS/64);j++) {
+	if (sismo[i].inputs_nsave[j] > 0) sismo[i].inputs_nsave[j] -= 1;
+      }
+
+      /* not needed since these flags are reset during send */
+      /*
+      for(j=0;j<MAXOUTPUTS;j++) {
+	sismo[i].outputs_changed[j] = UNCHANGED;
+      }
+      for(j=0;j<MAXDISPLAYS;j++) {
+	sismo[i].displays_changed[j] = UNCHANGED;
+      }
+      for(j=0;j<MAXSERVOS;j++) {
+	sismo[i].servos_changed[j] = UNCHANGED;
+      }
+      */
     }
   }
   return 0;
@@ -208,6 +220,16 @@ int ini_signal_handler(void)
 /* Exiting */
 void exit_sismo(int ret)
 {
+
+  /* Terminated UDP read thread */
+  exit_udp();
+
+  /* cancel tcp/ip connection */
+  exit_tcpip();
+
+  /* free local dataref structure */
+  clear_dataref();
+
   if (ret != 2) {
     printf("Exiting with status %i \n",ret);
     exit(ret);
