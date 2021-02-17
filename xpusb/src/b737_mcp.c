@@ -765,10 +765,10 @@ void b737_mcp(void)
   temp = (int) *ap_altitude;
   ret = mastercard_display(device,card,10,5, &temp, 0);
 
-  /* vspeed display is blank if we don't have v/s engaged */
-  //  if ((*ap_vs_arm == 0) && (*ap_vs_engage == 0)) {
-  /* Changed: only blank if no vspeed is selected */
-  if (*ap_vspeed == 0.0) {
+  /* vspeed display is blank if we don't have v/s engaged
+     and if we have vnav or app mode */
+  
+  if ((*ap_vspeed == 0.0) || (*ap_vnav_led == 1) || (*ap_app_led == 1)) {
     ret = mastercard_display(device,card,16,5, &ten, 1);
   } else {
     temp = (int) *ap_vspeed;

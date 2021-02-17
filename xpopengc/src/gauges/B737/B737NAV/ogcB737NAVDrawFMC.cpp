@@ -484,7 +484,7 @@ namespace OpenGC
 	    
 	    
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
-	    //for (int i=3;i<6;i++) {
+	    //for (int i=4;i<6;i++) {
 
 	      /*
 	      printf("%i %s %s / %f %f / %f %f \n",i,wpt[i].name,wpt[i].pth,
@@ -565,7 +565,7 @@ namespace OpenGC
 		glColor3ub(COLOR_RED);
 		glPointSize(10.0);
 		glBegin(GL_POINTS);
-		glVertex2f(xPos2, yPos2);
+		glVertex2f(xPos2-1, yPos2-1);
 		glEnd();		    
 		glPopMatrix();
 		*/
@@ -651,7 +651,7 @@ namespace OpenGC
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
 		  /*
-		  printf("%i %s %i / %f %f %f / %f %f \n",i,wpt[i].name,wpt[max(i-1,0)].turn,
+		  printf("Type 1: %i %s %i / %f %f %f / %f %f \n",i,wpt[i].name,wpt[max(i-1,0)].turn,
 			 wpt[max(i-1,0)].radii_ctr_lon,wpt[max(i-1,0)].lon,wpt[max(i-1,0)].radii_lon,
 			 wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14);
 		  */
@@ -670,9 +670,10 @@ namespace OpenGC
 		     from legs magnetic bearing and waypoint turn direction */
 		  float ang = wpt[max(i-1,0)].brg*180./3.14 - *magnetic_variation;
 		  float ang2 = wpt[i].brg*180./3.14 - *magnetic_variation;
-		  float relbrg = fmod(180./3.14*(wpt[i].brg-wpt[max(i-1,0)].brg) + 360.0, 360.0);
 		  float radius = pow(pow(xPos-xPosC,2) + pow(yPos-yPosC,2),0.5);
-		  if (relbrg > 180.0) relbrg -= 360.0;
+
+		  //float relbrg = fmodf(180./3.14*(wpt[i].brg-wpt[max(i-1,0)].brg) + 360.0, 360.0);
+		  //if (relbrg > 180.0) relbrg -= 360.0;
 		 		  
 		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
 		    /* left turn */
@@ -686,11 +687,20 @@ namespace OpenGC
 		  
 		  ang = fmodf(ang + 360.0,360.0);
 		  ang2 = fmodf(ang2 + 360.0,360.0);
-		  //printf("%i %f %f %f \n",i,ang,ang2,relbrg);
+
+		  float relbrg;
+		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
+		    relbrg = fmodf(ang-ang2 + 360.0,360.0);
+		  } else {
+		    relbrg = fmodf(ang2-ang + 360.0,360.0);
+		  }
 		    
-		  if (fabs(relbrg) > 5.0) {
+		  //printf("%i %f %f %f \n",i,ang,ang2,relbrg);
+		  
+		  if ((fabs(relbrg) > 5.0) && (fabs(relbrg) < 300.0)) {
 		    // Only draw circles for large enough change in direction
 		    // There are occasions where this curved legs do not work
+		    // Also omit almost full circles: bogus ones?
 		    
 		    // draw curved leg (partial circle)
 		    aCircle.SetDegreesPerPoint(2);
@@ -729,6 +739,7 @@ namespace OpenGC
 		    glVertex2f(xPosT,yPosT);
 		    glVertex2f(xPos2,yPos2);
 		    glEnd();
+		   
 		  }
 		
 		// draw curved track type 2 (rad type variables) from waypoint i-1 to waypoint i
@@ -744,7 +755,7 @@ namespace OpenGC
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
 		  /*
-		  printf("%i %s %s %i / %f %f / %f %f \n",i,wpt[max(i-1,0)].name,wpt[i].name,
+		  printf("Type 2: %i %s %s %i / %f %f / %f %f \n",i,wpt[max(i-1,0)].name,wpt[i].name,
 			 wpt[i].rad_turn,
 			 wpt[max(i-1,0)].rad_lon,wpt[i].rad_lon,
 			 wpt[max(i-2,0)].brg*180./3.14,wpt[i].brg*180./3.14);
@@ -764,9 +775,9 @@ namespace OpenGC
 		     from legs magnetic bearing and waypoint turn direction */
 		  float ang = wpt[max(i-1,0)].brg*180./3.14 - *magnetic_variation;
 		  float ang2 = wpt[i+1].brg*180./3.14 - *magnetic_variation;
-		  float relbrg = fmod(180./3.14*(wpt[i].brg-wpt[max(i-2,0)].brg) + 360.0, 360.0);
 		  float radius = pow(pow(xPos-xPosC,2) + pow(yPos-yPosC,2),0.5);
-		  if (relbrg > 180.0) relbrg -= 360.0;
+		  // float relbrg = fmod(180./3.14*(wpt[i].brg-wpt[max(i-2,0)].brg) + 360.0, 360.0);
+		  // if (relbrg > 180.0) relbrg -= 360.0;
 		 		  
 		  if ((wpt[i].rad_turn == 0) || (wpt[i].rad_turn == 2)) {
 		    /* left turn */
@@ -781,10 +792,17 @@ namespace OpenGC
 		  //		  ang = fmodf(ang + 360.0,360.0);
 		  //ang2 = fmodf(ang2 + 360.0,360.0);
 		  //printf("%i %f %f %f %f \n",i,ang,ang2,relbrg,radius);
+		  float relbrg;
+		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
+		    relbrg = fmodf(ang-ang2 + 360.0,360.0);
+		  } else {
+		    relbrg = fmodf(ang2-ang + 360.0,360.0);
+		  }
 		    
-		  if (fabs(relbrg) > 5.0) {
+		  if ((fabs(relbrg) > 5.0) && (fabs(relbrg) < 300.0)) {
 		    // Only draw circles for large enough change in direction
 		    // There are occasions where this curved legs do not work
+		    // Also omit almost full circles: bogus ones?
 		    
 		    // draw curved leg (partial circle)
 		    aCircle.SetDegreesPerPoint(2);
@@ -817,13 +835,13 @@ namespace OpenGC
 		    glVertex2f(xPosT, yPosT);
 		    glEnd();		    
 		    glPopMatrix();
-		    
+		    */
 		    
 		    glBegin(GL_LINES);
 		    glVertex2f(xPosT,yPosT);
 		    glVertex2f(xPos2,yPos2);
 		    glEnd();
-		    */
+		  
 		  }
 		
 		} else {

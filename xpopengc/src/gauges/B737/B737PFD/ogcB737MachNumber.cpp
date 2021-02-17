@@ -427,6 +427,10 @@ namespace OpenGC
 	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer, "FMC SPD");
 	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
+	} else if (*ap_spd_mode == 5) {
+	  glColor3ub(COLOR_GREEN);
+	  strcpy(buffer, "SPD 5");
+	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 6) {
 	  glColor3ub(COLOR_GREEN);
 	  strcpy(buffer, "THR HLD");
@@ -501,8 +505,14 @@ namespace OpenGC
 	} else if (*ap_alt_mode == 4) {
 	  strcpy(buffer, "ALT HOLD");
 	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode == 5) {
+	  strcpy(buffer, "ALT 5");
+	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 6) {
 	  strcpy(buffer, "FLARE");
+	  m_pFontManager->Print(114,183+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode == 7) {
+	  strcpy(buffer, "ALT 7");
 	  m_pFontManager->Print(114,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 8) {
 	  strcpy(buffer, "VNAV SPD");
@@ -589,6 +599,9 @@ namespace OpenGC
 	  m_pFontManager->Print(119,172+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode_arm == 3) {
 	  strcpy(buffer, "FLARE");
+	  m_pFontManager->Print(114,172+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode_arm == 4) {
+	  strcpy(buffer, "ALT 4");
 	  m_pFontManager->Print(114,172+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode_arm == 5) {
 	  strcpy(buffer, "VNAV");
