@@ -267,7 +267,7 @@ int read_sismo() {
 		val = get_bit(sismoRecvBuffer[8+b],i);
 		if (val != sismo[card].inputs[input][0]) {
 		  sismo[card].inputs[input][0] = val; 
-		  if (verbose > 2) printf("Card %i Input %i Changed to: %i \n",card,input,val);
+		  if (verbose > 0) printf("Card %i Input %i Changed to: %i \n",card,input,val);
 		}
 	      }
 	    }
@@ -857,7 +857,8 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		      }
 	  
 		      if (updown != 0) {
-			*value = *value + ((float) updown)  * multiplier;
+			/* add accelerator by using s as number of queued encoder changes */
+			*value = *value + ((float) updown)  * multiplier * (float) (s+1);
 			retval = 1;
 		      }		    
 		    } else if (type == 2) {
@@ -886,7 +887,8 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		      }
 		    
 		      if (updown != 0) {
-			*value = *value + ((float) updown) * multiplier;
+			/* add accelerator by using s as number of queued encoder changes */
+			*value = *value + ((float) updown) * multiplier * (float) (s+1);
 			retval = 1;
 		      }		    
 		    } else {

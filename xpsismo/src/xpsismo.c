@@ -42,6 +42,7 @@
 #include "serverdata.h"
 #include "check_aircraft.h"
 #include "test.h"
+#include "b737_mcp.h"
 
 int acf_type;
 
@@ -92,8 +93,12 @@ int main(int argc, char **argv) {
  
     /**** User Modules Follow Here ****/
 
-    test();
-
+    if (strcmp(*argv,"test") == 0) {
+      test();
+    }
+    if (strcmp("boeing737mcp",*argv) == 0) {
+      b737_mcp();
+    }
 
     /**** User Modules End Here ****/
     
