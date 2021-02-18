@@ -48,7 +48,7 @@ namespace OpenGC
       mp_alive[i] = 0;
     }
     count = 0;
-    maxcount = 150; // the OpenGC updates 50x per second, so check for plane movement every second
+    maxcount = 50; // the OpenGC updates 50x per second, so check for plane movement every X seconds
 
   }
 
@@ -95,6 +95,7 @@ namespace OpenGC
     double aircraftLon = m_NAVGauge->GetMapCtrLon();
     double aircraftLat = m_NAVGauge->GetMapCtrLat();
     float *aircraftAlt = link_dataref_flt("sim/flightmodel/position/elevation",0); // meters
+    float *altitude_agl = link_dataref_flt("sim/flightmodel/position/y_agl",0);
     
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
@@ -121,6 +122,7 @@ namespace OpenGC
       if ((*plon != 0.0) && (*plon != FLT_MISS) &&
 	  (*plat != 0.0) && (*plat != FLT_MISS) &&
 	  (*palt != 0.0) && (*palt != FLT_MISS) &&
+	  (*palt < 1e6) &&   // we had some infinite altitudes around
 	  (*px != 0.0) && (*px != FLT_MISS)) {
 
 	int jmin = -1;
@@ -147,10 +149,10 @@ namespace OpenGC
 	  mp_lat[j] = *plat;
 	  mp_alt[j] = *palt;
 	} else if (count == 0) {
-	  // Start of check for alive period (count 0)
+	  /* Start of check for alive period (count 0) */
 	  j = javail; // first available (empty) TCAS index
-	  // save new TCAS blib
-	  //printf("New: %i %f %f %f \n",j,*plon,*plat,minval);
+	  /* save new TCAS blib */
+	  //	  printf("New: %i %f %f %f %f \n",j,*plon,*plat,*palt,minval);
 	  mp_x[j] = *px;
 	  mp_x_save[j] = *px;
 	  mp_lon[j] = *plon;
@@ -166,20 +168,23 @@ namespace OpenGC
 
       int number = 0;
       for (j=0;j<MAXMP;j++) {
-	if (mp_x_save[j] == mp_x[j]) {
-	  mp_alive[j] = 0;
-	  mp_x[j] = FLT_MISS;
-	  mp_x_save[j] = FLT_MISS;
-	  mp_lon[j] = FLT_MISS;
-	  mp_lat[j] = FLT_MISS;
-	  mp_alt[j] = FLT_MISS;
-	} else {
-	  mp_alive[j] = 1;
-	  number++;
+	if (mp_x[j] != FLT_MISS) {
+	  if (mp_x_save[j] == mp_x[j]) {
+	    //	    printf("Remove: %i %f %f %f \n",j,mp_lon[j],mp_lat[j],mp_alt[j]);
+	    mp_alive[j] = 0;
+	    mp_x[j] = FLT_MISS;
+	    mp_x_save[j] = FLT_MISS;
+	    mp_lon[j] = FLT_MISS;
+	    mp_lat[j] = FLT_MISS;
+	    mp_alt[j] = FLT_MISS;
+	  } else {
+	    mp_alive[j] = 1;
+	    number++;
+	  }
+	  mp_x_save[j] = mp_x[j];
 	}
-	mp_x_save[j] = mp_x[j];
       }
-      //printf("TCAS ALIVE : %i \n",number);
+      //      printf("TCAS ALIVE : %i \n",number);
       count = 0;
     } else {
       count ++;
@@ -249,7 +254,11 @@ namespace OpenGC
 	    // printf("%i %f %f %f %f %f \n",j,xPos,yPos,zPos,mp_alt[i]*3.28084,*aircraftAlt*3.28084);
 	  }
 
-	  if ((xPos != FLT_MISS) && (yPos != FLT_MISS) && (zPos != FLT_MISS)) {	    
+	  /* plot all traffic in the air (not the one on the ground) */
+	  if ((xPos != FLT_MISS) && (yPos != FLT_MISS) && (zPos != FLT_MISS) &&
+	      (((fabs(zPos) > 10.) && (*altitude_agl < 10.)) || (*altitude_agl >= 10.))) {	    
+
+	    //printf("%i %f \n",i,mp_alt[i]-*aircraftAlt);
 
 	    glPushMatrix();
 

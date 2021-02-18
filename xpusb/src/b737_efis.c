@@ -296,7 +296,7 @@ void b737_efis(void)
 
 
   if (*altimeter_minimum != FLT_MISS) {
-
+    if (*altimeter_minimum < 0.0) *altimeter_minimum = 0.0;
     ret = mastercard_encoder(device, card, 68, altimeter_minimum, -10.0, 1.0,2);
     if (ret == 1) {
       printf("Radio Altimeter Minimum: %f \n",*altimeter_minimum);
