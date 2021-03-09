@@ -354,6 +354,7 @@ void b737_mcp(void)
   /* INPUTS */
 
   /* ENCODERS */
+  if (*ap_course1 == FLT_MISS) *ap_course1 = 0.0;
   ret = encoder_inputf(card, 1, 0, ap_course1, 1.0, 1);
   if ((ret==1) && (*ap_course1 != FLT_MISS)) {
     if (*ap_course1 < 0.0) *ap_course1 = 359.0;
