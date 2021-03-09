@@ -54,7 +54,7 @@ int ini_read(char ininame[])
 
   /* arduino server */
   char default_arduinoserver_ip[] = "ANY";
-  int default_arduinoserver_port = 1026;
+  int default_arduinoserver_port = 1032;
 
   /* arduino ards */
   char default_arduinoard_ip[] = "NA";
@@ -92,40 +92,31 @@ int ini_read(char ininame[])
     printf("SISMOSERVER Address %s Port %i \n",arduinoserver_ip, arduinoserver_port);
 
     nards = 0;
-    for(i=0;i<MAXCARDS;i++) {
-      sprintf(tmp,"ard%i:Address",i);
+    for(i=0;i<MAXARDS;i++) {
+      sprintf(tmp,"arduino%i:Address",i);
       strcpy(arduino[i].ip,iniparser_getstring(ini,tmp, default_arduinoard_ip));
-      sprintf(tmp,"ard%i:Port",i);
+      sprintf(tmp,"arduino%i:Port",i);
       arduino[i].port = iniparser_getint(ini,tmp, default_arduinoard_port);
-      sprintf(tmp,"ard%i:Mac1",i);
+      sprintf(tmp,"arduino%i:Mac1",i);
       arduino[i].mac[0] = iniparser_getint(ini,tmp, default_arduinoard_mac);
-      sprintf(tmp,"ard%i:Mac2",i);
+      sprintf(tmp,"arduino%i:Mac2",i);
       arduino[i].mac[1] = iniparser_getint(ini,tmp, default_arduinoard_mac);
       printf("%02x:%02x \n",arduino[i].mac[0],arduino[i].mac[1]);
       if (arduino[i].port == default_arduinoard_port) {
-	printf("SISMOCARD %i NA \n",i);
+	printf("Arduino %i NA \n",i);
+	arduino[i].connected = 0;
       } else {
-	printf("SISMOCARD %i Address %s Port %i Mac %02x:%02x \n",i,arduino[i].ip, arduino[i].port,
+	printf("Arduino %i Address %s Port %i Mac %02x:%02x \n",i,arduino[i].ip, arduino[i].port,
 	       arduino[i].mac[0],arduino[i].mac[1]);
 	nards++;
+	arduino[i].connected = 1;
       }
 
-      /* only mark as connected once we receive the first packet */
-      arduino[i].connected = 0;
-
       /* assume that no daughter ard is attached */
-      arduino[i].daughter_output1 = 0;
-      arduino[i].daughter_output2 = 0;
-      arduino[i].daughter_servo = 0;
-      arduino[i].daughter_analogoutput = 0;
-      arduino[i].daughter_display1 = 0;
-      arduino[i].daughter_display2 = 0;
       arduino[i].ninputs = MAXINPUTS;
-      arduino[i].nanaloginputs = 5;
-      arduino[i].noutputs = 64;  
-      arduino[i].ndisplays = 32;
-      arduino[i].nservos = 0;
-      arduino[i].nanalogoutputs = 0;
+      arduino[i].nanaloginputs = MAXANALOGINPUTS;
+      arduino[i].noutputs = MAXOUTPUTS;  
+      arduino[i].nanalogoutputs = MAXANALOGOUTPUTS;
     }
     
     printf("\n");
@@ -142,7 +133,7 @@ int ini_arduinodata()
 {
   int i,j,k;
 
-  for(i=0;i<MAXCARDS;i++) {
+  for(i=0;i<MAXARDS;i++) {
     for(j=0;j<MAXANALOGINPUTS;j++) {
       for(k=0;k<MAXSAVE;k++) {
 	arduino[i].analoginputs[j][k]= INPUTINITVAL;
@@ -158,16 +149,13 @@ int ini_arduinodata()
     }
     for(j=0;j<MAXOUTPUTS;j++) {
       arduino[i].outputs[j] = OUTPUTSINITVAL;
-      arduino[i].outputs_changed[j] = CHANGED;
+      arduino[i].outputs_changed[j] = UNCHANGED;
     }
-    for(j=0;j<MAXDISPLAYS;j++) {
-      arduino[i].displays[j] = DISPLAYSINITVAL;
-      arduino[i].displays_changed[j] = CHANGED;
+    for(j=0;j<MAXANALOGOUTPUTS;j++) {
+      arduino[i].analogoutputs[j] = OUTPUTSINITVAL;
+      arduino[i].analogoutputs_changed[j] = UNCHANGED;
     }
-    for(j=0;j<MAXSERVOS;j++) {
-      arduino[i].servos[j] = SERVOSINITVAL;
-      arduino[i].servos_changed[j] = UNCHANGED;
-    }
+
  }
 
   return 0;
@@ -180,25 +168,12 @@ int reset_arduinodata()
   
   int i,j;
   
-  for(i=0;i<MAXCARDS;i++) {
+  for(i=0;i<MAXARDS;i++) {
 
     if (arduino[i].connected == 1) {
       for(j=0;j<(MAXINPUTS/64);j++) {
 	if (arduino[i].inputs_nsave[j] > 0) arduino[i].inputs_nsave[j] -= 1;
       }
-
-      /* not needed since these flags are reset during send */
-      /*
-      for(j=0;j<MAXOUTPUTS;j++) {
-	arduino[i].outputs_changed[j] = UNCHANGED;
-      }
-      for(j=0;j<MAXDISPLAYS;j++) {
-	arduino[i].displays_changed[j] = UNCHANGED;
-      }
-      for(j=0;j<MAXSERVOS;j++) {
-	arduino[i].servos_changed[j] = UNCHANGED;
-      }
-      */
     }
   }
   return 0;

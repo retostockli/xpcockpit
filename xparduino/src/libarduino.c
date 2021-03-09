@@ -1,5 +1,5 @@
 /* This is the libarduino.c code which contains all functions to interact with
-   the SISMO SOLUCIONES hardware
+   Arduinos via the Ethernet Shield and the UDP protcol
 
    Copyright (C) 2020 Reto Stockli
 
@@ -46,105 +46,23 @@ unsigned char arduinoRecvBuffer[RECVMSGLEN];
 unsigned char arduinoSendBuffer[SENDMSGLEN];
 
 int nards;
-arduino_struct arduino[MAXCARDS];
-
-
-/*Function to return the digit of n-th position of num. Position starts from 0*/
-int get_digit(int num, int n)
-{
-    int r;
-    r = num / pow(10, n);
-    r = r % 10; 
-    return r;
-}
-
-/* Function to set a specific bit (0-7) of a byte with a value 0 or 1 */
-void set_bit(unsigned char *byte, int bit, int val)
-{
-  unsigned char mask = 1 << bit; // make sure bit n is 1
-  if (val == 0) {
-    mask ^= 0xff; // xor mask (only set bit n to 0
-    *byte = *byte & mask;
-  } else {
-    *byte = *byte | mask;
-  }
-}
-
-/* Function to get value of bit i (0-7) from byte */
-int get_bit(unsigned char byte, int bit)
-{
-  return ((byte >> bit) & 0x01);
-}
-
-/* Function to set the 7 segments of a display where
-   the segments are ordered in 8 bits of a byte and 
-   the last bit is the decimal point
-
-   0..9 are printing those values 
-   -10 is printing the minus sign
-   10's values (10-19) have a decimal point with the value 0..9
-   any other value is setting the display to blank */
-void set_7segment(unsigned char *byte, int val)
-{
-  int dp = 0;
-  if (val >= 10) {
-    dp = 1;
-    val -=10;
-  }
-  
-  switch(val) {
-  case 0:
-    *byte = 0x7E;
-    break;
-  case 1:
-    *byte = 0x30;
-    break;
-  case 2:
-    *byte = 0x6D;
-    break;
-  case 3:
-    *byte = 0x79;
-    break;
-  case 4:
-    *byte = 0x33;
-    break;
-  case 5:
-    *byte = 0x5B;
-    break;
-  case 6:
-    *byte = 0x5F;
-    break;
-  case 7:
-    *byte = 0x70;
-    break;
-  case 8:
-    *byte = 0x7F;
-    break;
-  case 9:
-    *byte = 0x7B;
-    break;
-  case -10:
-    *byte = 0x01; /* minus sign */
-    break;
-  default:
-    *byte = 0x00; /* all other: display off */
-  }
-  if (dp == 1) *byte = *byte | 0x80;
-
-}
+arduino_struct arduino[MAXARDS];
 
 int read_arduino() {
-  
-  int ard;
-  int i,b,s;
-  int val;
-  int input;
-  char any;
-  int bank;
-  int firstinput;
-  int ninputs;
-  int firstbyte;
 
+  /* PROTOCOL: 8 Bytes on send and receive
+     BYTE | MEANING
+     0-1  | Identifier (Characters AR for Arduino)
+     2-3  | Last two Bytes of MAC address
+     4    | Input / Output Number (0-13)
+     5    | Input / Output Type (0: digital, 1: analog)
+     6-7  | Value (16 bit signed Integer Value) */
+    
+  int ard;
+  short int val;
+  int input;
+  int i,s;
+ 
   //printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
   
   while (udpReadLeft >= RECVMSGLEN) {
@@ -164,165 +82,67 @@ int read_arduino() {
 
     /* decode message */
 
-    /* check init string */
-    if ((arduinoRecvBuffer[0] == 0x53) && (arduinoRecvBuffer[1] == 0x43)) {
-      /* check MAC Address and Port of Card which did send the message */
+    /* check init string AR */
+    if ((arduinoRecvBuffer[0] == 0x41) && (arduinoRecvBuffer[1] == 0x52)) {
+      /* check MAC Address of Arduino which did send the message */
       
-      for (i=0;i<MAXCARDS;i++) {
+      for (i=0;i<MAXARDS;i++) {
 	if ((arduino[i].mac[0] == arduinoRecvBuffer[2]) && (arduino[i].mac[1] == arduinoRecvBuffer[3]) &&
-	    (arduino[i].port == arduinoRecvBuffer[6] + 256 * arduinoRecvBuffer[7])) ard = i;
+	    (arduino[i].connected == 1)) ard = i;
       }
       
       /* ard found */
       if (ard >= 0) {
 
-	if (arduino[ard].connected == 0) {
-	  /* initialize ard configuration status with information we read from the UDP packet */
-	  arduino[ard].connected = 1;
-	  
-	  /* set # of inputs/outputs depending on activated daughters */
-	  arduino[ard].daughter_output1 = get_bit(arduinoRecvBuffer[5],0);
-	  arduino[ard].daughter_output2 = get_bit(arduinoRecvBuffer[5],1);
-	  arduino[ard].daughter_servo = get_bit(arduinoRecvBuffer[5],2);
-	  arduino[ard].daughter_display1 = get_bit(arduinoRecvBuffer[5],3);
-	  arduino[ard].daughter_analogoutput = get_bit(arduinoRecvBuffer[5],4);
-	  arduino[ard].daughter_analoginput = get_bit(arduinoRecvBuffer[5],5);
-	  arduino[ard].daughter_display2 = get_bit(arduinoRecvBuffer[5],6);
-	  
-	  arduino[ard].noutputs = 64 + 64*arduino[ard].daughter_output1 + 64*arduino[ard].daughter_output2;
-	  arduino[ard].nservos = 14*arduino[ard].daughter_servo;
-	  arduino[ard].ndisplays = 32 + 32*arduino[ard].daughter_display1 + 32*arduino[ard].daughter_display2;
-	  arduino[ard].nanaloginputs = 5 + 10*arduino[ard].daughter_analoginput;
-	  arduino[ard].nanalogoutputs = 0*arduino[ard].daughter_analogoutput; /* Planned, but not available */
+	if (verbose > 3) printf("Read %i bytes from Arduino %i \n",RECVMSGLEN,ard);
+	
+	/* Copy payload 16 bit Integer into variable */
+	memcpy(&val,&arduinoRecvBuffer[6],sizeof(val));
 
-	  if (verbose > 0) {
-	    printf("\n");
-	    printf("SISMO Card %i is connected with the following features: \n",ard);
-	    printf("Daughter Outputs 1:     %i\n",arduino[ard].daughter_output1);
-	    printf("Daughter Outputs 2:     %i\n",arduino[ard].daughter_output2);
-	    printf("Daughter Displays 1:    %i\n",arduino[ard].daughter_display1);
-	    printf("Daughter Displays 2:    %i\n",arduino[ard].daughter_display2);
-	    printf("Daughter Servo:         %i\n",arduino[ard].daughter_servo);
-	    printf("Daughter Analog Input:  %i\n",arduino[ard].daughter_analoginput);
-	    printf("Daughter Analog Output: %i\n",arduino[ard].daughter_analogoutput);
-	    printf("\n");
-	    printf("This ard thus has the following capabilities: \n");
-	    printf("Number of Inputs:     64..%i\n",arduino[ard].ninputs);
-	    printf("Number of Outputs:        %i\n",arduino[ard].noutputs);
-	    printf("Number of Displays:       %i\n",arduino[ard].ndisplays);
-	    printf("Number of Servos:         %i\n",arduino[ard].nservos);
-	    printf("Number of Analog Inputs:  %i\n",arduino[ard].nanaloginputs);
-	    printf("Number of Analog Outputs: %i\n",arduino[ard].nanalogoutputs);
-	    printf("\n");
-	    printf("\n");
-	  }
-	  
-	}
-
-	if (verbose > 3) printf("Read %i bytes from SISMO Card %i \n",RECVMSGLEN,ard);
+	input = arduinoRecvBuffer[4];
 	
 	/* check type of input */
-	if ((arduinoRecvBuffer[4] == 0x00) || (arduinoRecvBuffer[4] == 0x01) ||
-	    (arduinoRecvBuffer[4] == 0x02)) {
-
-	  /* Digital Input from Master (Inputs 0-63) */
-	  if (arduinoRecvBuffer[4] == 0x00) {
-	    bank = 0;
-	    firstinput = 0;
-	  }
-	  /* Digital Input from Daughter Digital Input 1 (Inputs 64-127) */
-	  if (arduinoRecvBuffer[4] == 0x01) {
-	    bank = 1;
-	    firstinput = 64;
-	  }
-	  /* Digital Input from Daughter Digital Input 2 (Inputs 128-191) */
-	  if (arduinoRecvBuffer[4] == 0x02) {
-	    bank = 2;
-	    firstinput = 128;
-	  }
-
-	  /* Digital Inputs are ordered in 8 bytes with 8 bits each = 64 inputs */
-	  /* Located in Bytes 8-15 */
-
-	  /* check if any input has changed */
-	  any = 0;
-	  for (b=0;b<8;b++) {
-	    for (i=0;i<8;i++) {
-	      input = b*8+i + firstinput;
-	      val = get_bit(arduinoRecvBuffer[8+b],i);
-	      if (val != arduino[ard].inputs[input][0]) any = 1;
-	    }
-	  }
-	  /* if any input changed make sure we capture the whole history of changed
-	     inputs, since during a single reception we can have several state changes */
-	  if (any) {
-	    //	    printf("%i %i \n",get_bit(arduinoRecvBuffer[8+0],0),get_bit(arduinoRecvBuffer[8+0],1));
-	    for (b=0;b<8;b++) {
-	      for (i=0;i<8;i++) {
-		input = b*8+i + firstinput;
-		/* shift all inputs in history array by one */
-		for (s=MAXSAVE-2;s>=0;s--) {
-		  arduino[ard].inputs[input][s+1] = arduino[ard].inputs[input][s];
-		}
-		/* update input if changed */
-		val = get_bit(arduinoRecvBuffer[8+b],i);
-		if (val != arduino[ard].inputs[input][0]) {
-		  arduino[ard].inputs[input][0] = val; 
-		  if (verbose > 2) printf("Card %i Input %i Changed to: %i \n",ard,input,val);
-		}
-	      }
-	    }
-	    /* update number of history values per input bank */
-	    if (arduino[ard].inputs_nsave[bank] < MAXSAVE) {
-	      arduino[ard].inputs_nsave[bank] += 1;
-	      if (verbose > 2) printf("Card %i Input Bank %i # of History Values %i \n",
-				      ard,bank,arduino[ard].inputs_nsave[bank]);
-	    } else {
-	      if (verbose > 0) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
-				      ard,bank,MAXSAVE);
-	    }
-	      
-	  }
-
-	}
+	if (arduinoRecvBuffer[5] == 0x0) {
+	  /* Digital Input */
 	  
-	if ((arduinoRecvBuffer[4] == 0x00) || (arduinoRecvBuffer[4] == 0x03)) {
-
-	  /* Analog Input from Master (Inputs 0-4) */
-	  if (arduinoRecvBuffer[4] == 0x00) {
-	    firstinput = 0;
-	    ninputs = 5;
-	    firstbyte = 16;
-	  }
-	  /* Analog Inputs from Analog Input Daughter (Inputs 5-15) */
-	  if (arduinoRecvBuffer[4] == 0x03) {
-	    firstinput = 5;
-	    ninputs = 11;
-	    firstbyte = 8;
-	  }
-
-	  /* Analog Inputs are ordered in 10 bytes with 2 bytes per input */
-	  /* Located in bytes 16-25 */
-	  for (input=0;input<ninputs;input++) {
-	    val = arduinoRecvBuffer[firstbyte+input*2] + 256 * arduinoRecvBuffer[firstbyte+1+input*2];
+	  if (val != arduino[ard].inputs[input][0]) {
 	    /* shift all inputs in history array by one */
 	    for (s=MAXSAVE-2;s>=0;s--) {
-	      arduino[ard].analoginputs[input+firstinput][s+1] = arduino[ard].analoginputs[input+firstinput][s];
+	      arduino[ard].inputs[input][s+1] = arduino[ard].inputs[input][s];
 	    }
-	    if (val != arduino[ard].analoginputs[input+firstinput][0]) {
-	      if (verbose > 2) printf("Card %i Analog Input %i Changed to %i \n",
-				      ard,input+firstinput,arduino[ard].analoginputs[input+firstinput][0]);
-	    }
-	    arduino[ard].analoginputs[input+firstinput][0] = val;			      
+	    arduino[ard].inputs[input][0] = val; 
+	    if (verbose > 0) printf("Arduino %i Input %i Changed to: %i \n",ard,input,val);
+
+	    /* update number of history values per input */
+	    if (arduino[ard].inputs_nsave[input] < MAXSAVE) {
+	      arduino[ard].inputs_nsave[input] += 1;
+	      if (verbose > 0) printf("Arduino %i Input %i # of History Values %i \n",
+				      ard,input,arduino[ard].inputs_nsave[input]);
+	    } else {
+	      if (verbose > 0) printf("Arduino %i Input %i Maximum # of History Values %i Reached \n",
+				      ard,input,MAXSAVE);
+	    }	      
 	  }
+
+	} else {
+	  /* Analog Input */
 	  
+	  /* shift all inputs in history array by one */
+	  for (s=MAXSAVE-2;s>=0;s--) {
+	    arduino[ard].analoginputs[input][s+1] = arduino[ard].analoginputs[input][s];
+	  }
+	  if (val != arduino[ard].analoginputs[input][0]) {
+	    if (verbose > 0) printf("Arduino %i Analog Input %i Changed to %i \n",
+				    ard,input,val);
+	  }
+	  arduino[ard].analoginputs[input][0] = val;	  
 	}
 	
 	//printf("Left to Read: %i \n",udpReadLeft);
 	
       } else {
-	printf("Card with MAC %02x:%02x or Port %i is not defined in ini file \n",
-	       arduinoRecvBuffer[2],arduinoRecvBuffer[3],arduinoRecvBuffer[6] + 256 * arduinoRecvBuffer[7]);
+	printf("Arduino with MAC %02x:%02x is not defined in ini file \n",
+	       arduinoRecvBuffer[2],arduinoRecvBuffer[3]);
       }
     } else {
       printf("Received wrong Init String: %02x %02x \n",arduinoRecvBuffer[0],arduinoRecvBuffer[1]);
@@ -334,121 +154,55 @@ int read_arduino() {
 }
 
 int write_arduino() {
-
+  
   int ret;
   int ard;
   int output;
-  int group;
-  int display;
-  int anychanged;
-  int bank; /* outputs bank: 0: master, 1: daughter 1, 2: daughter 2 */
-  int firstoutput;
-  int firstdisplay;
+  int analogoutput;
   int connected;
-  char sendto;
+  short int val;
 
-  for (ard=0;ard<MAXCARDS;ard++) {
+  for (ard=0;ard<MAXARDS;ard++) {
     if (arduino[ard].connected == 1) {
+
+      memset(arduinoSendBuffer,0,SENDMSGLEN);
+      arduinoSendBuffer[0] = 0x41;
+      arduinoSendBuffer[1] = 0x52;
+      arduinoSendBuffer[2] = 0x00;
+      arduinoSendBuffer[3] = 0x00;
+
+      /* Check Digital Outputs for Changes and Send them */
+      arduinoSendBuffer[5] = 0x00;
       
-      /* check if any outputs have changed and send them to master or daughters */
-      for (bank=0;bank<=2;bank++) {
-
-	if (bank==0) {
-	  /* master */
-	  connected = 1;
-	  firstoutput = 0;
-	  sendto = 0;
-	}
-	if (bank==1) {
-	  /* daughter 1 */
-	  connected = arduino[ard].daughter_output1;
-	  firstoutput = 64;
-	  sendto = 1;
-	}
-	if (bank==2) {
-	  /* daughter 2 */
-	  connected = arduino[ard].daughter_output2;
-	  firstoutput = 192;
-	  sendto = 2;
-	}
-
-	if (connected) {
-	  anychanged = 0;
-	  memset(arduinoSendBuffer,0,SENDMSGLEN);
-	  arduinoSendBuffer[0] = 0x53;
-	  arduinoSendBuffer[1] = 0x43;
-	  arduinoSendBuffer[2] = sendto;
-	  arduinoSendBuffer[3] = 0x00;
-	  for (output=0;output<64;output++) {
-	    set_bit(&arduinoSendBuffer[4+output/8],output%8,arduino[ard].outputs[output+firstoutput]);
-	    if (arduino[ard].outputs_changed[output+firstoutput] == CHANGED) {
-	      if (verbose > 2) printf("Card %i Output %i changed to: %i \n",
-				      ard,output,arduino[ard].outputs[output+firstoutput]);
-	      anychanged = 1;
-	      /* reset changed state since data will be sent to SISMO ard */
-	      arduino[ard].outputs_changed[output+firstoutput] = UNCHANGED;
-	    }
-	  }
-	  if (anychanged) {
-	    ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
-	    if (verbose > 1) printf("Sent %i bytes to ard %i \n", ret,ard);
-	  }
+      for (output=0;output<arduino[ard].noutputs;output++) {
+	if (arduino[ard].outputs_changed[output] == CHANGED) {
+	  if (verbose > 0) printf("Arduino %i Output %i changed to: %i \n",
+				  ard,output,arduino[ard].outputs[output]);
+	  arduinoSendBuffer[4] = output;
+	  val = arduino[ard].outputs[output];
+	  memcpy(&arduinoSendBuffer[6],&val,sizeof(val));
+	  ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
+	  if (verbose > 0) printf("Sent %i bytes to ard %i \n", ret,ard);
+	  arduino[ard].outputs_changed[output] = UNCHANGED;
 	}
       }
-     
-      /* check if any displays have changed and send them to master or daughters */
-      for (bank=0;bank<=2;bank++) {
-
-	if (bank==0) {
-	  /* master */
-	  connected = 1;
-	  firstdisplay = 0;
-	  sendto = 0;
-	}
-	if (bank==1) {
-	  /* daughter 1 */
-	  connected = arduino[ard].daughter_display1;
-	  firstdisplay = 32;
-	  sendto = 4;
-	}
-	if (bank==2) {
-	  /* daughter 2 */
-	  connected = arduino[ard].daughter_display2;
-	  firstdisplay = 64;
-	  sendto = 5;
-	}
-
-	if (connected) {
-	  for (group=0;group<4;group++) {
-	    anychanged = 0;
-	    memset(arduinoSendBuffer,0,SENDMSGLEN);
-	    arduinoSendBuffer[0] = 0x53;
-	    arduinoSendBuffer[1] = 0x43;
-	    arduinoSendBuffer[2] = sendto;
-	    arduinoSendBuffer[3] = 0x01;
-	    arduinoSendBuffer[4] = group+1;
-	    arduinoSendBuffer[13] = DISPLAYBRIGHTNESS; /* Todo: make user-adjustable */
-	    for (display=0;display<8;display++) {
-	      set_7segment(&arduinoSendBuffer[5+display],arduino[ard].displays[display+group*8]);
-	      if (arduino[ard].displays_changed[display+group*8+firstdisplay] == CHANGED) {
-		if (verbose > 2) printf("Card %i Display %i changed to: %i \n",ard,display+group*8,
-					arduino[ard].displays[display+group*8+firstdisplay]);
-		anychanged = 1;
-		/* reset changed state since data will be sent to SISMO ard */
-		arduino[ard].displays_changed[display+group*8+firstdisplay] = UNCHANGED;
-	      }
-	    }
-	    if (anychanged) {
-	      ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
-	      if (verbose > 1) printf("Sent %i bytes to ard %i \n", ret,ard);
-	    }
-	  }
-
+      
+      /* Check Analog Outputs (PWM) for Changes and Send them */
+      arduinoSendBuffer[5] = 0x01;
+      
+      for (analogoutput=0;analogoutput<arduino[ard].nanalogoutputs;analogoutput++) {
+	if (arduino[ard].analogoutputs_changed[analogoutput] == CHANGED) {
+	  if (verbose > 0) printf("Arduino %i Analogoutput %i changed to: %i \n",
+				  ard,analogoutput,arduino[ard].analogoutputs[analogoutput]);
+	  arduinoSendBuffer[4] = analogoutput;
+	  val = arduino[ard].analogoutputs[analogoutput];
+	  memcpy(&arduinoSendBuffer[6],&val,sizeof(val));
+	  ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
+	  if (verbose > 0) printf("Sent %i bytes to ard %i \n", ret,ard);
+	  arduino[ard].analogoutputs_changed[analogoutput] = UNCHANGED;
 	}
       }
 
-      /* check if daughter servos have changed */
-     
     }
   }
   
@@ -480,23 +234,21 @@ int digital_input(int ard, int input, int *value, int type)
 		     and -1 if something went wrong */
 
   int s;
-  int bank;
 
   if (value != NULL) {
 
-    if (ard < MAXCARDS) {
+    if (ard < MAXARDS) {
       if (arduino[ard].connected) {
 	if ((input >= 0) && (input < arduino[ard].ninputs)) {
-	  bank = input/64;
 	  
-	  if (arduino[ard].inputs_nsave[bank] != 0) {
-	    s = arduino[ard].inputs_nsave[bank] - 1; /* history slot to read */
+	  if (arduino[ard].inputs_nsave[input] != 0) {
+	    s = arduino[ard].inputs_nsave[input] - 1; /* history slot to read */
 	    if (type == 0) {
 	      /* simple pushbutton / switch */
 	      if (*value != arduino[ard].inputs[input][s]) {
 		*value = arduino[ard].inputs[input][s];
 		retval = 1;
-		if (verbose > 1) printf("Pushbutton: Card %i Input %i Changed to %i \n",
+		if (verbose > 1) printf("Pushbutton: Arduino %i Input %i Changed to %i \n",
 					ard, input, *value);
 	      }
 
@@ -510,10 +262,10 @@ int digital_input(int ard, int input, int *value, int type)
 		    if ((*value == 0) || (*value == 1)) {
 		      *value = 1 - (*value);
 		      retval = 1;
-		      if (verbose > 1) printf("Toogle Switch: Card %i Input %i Changed to %i \n",
+		      if (verbose > 1) printf("Toogle Switch: Arduino %i Input %i Changed to %i \n",
 					      ard, input, *value);
 		    } else {
-		      printf("Toogle Switch: Card %i Input %i Needs to be 0 or 1, but has value %i \n",
+		      printf("Toogle Switch: Arduino %i Input %i Needs to be 0 or 1, but has value %i \n",
 					      ard, input, *value);
 		      retval = -1;
 		    }
@@ -524,17 +276,17 @@ int digital_input(int ard, int input, int *value, int type)
 
 	  }
 	} else {
-	  if (verbose > 0) printf("Digital Input %i above maximum # of inputs %i of ard %i \n",
+	  if (verbose > 0) printf("Digital Input %i above maximum # of inputs %i of Arduino %i \n",
 				  input,arduino[ard].ninputs,ard);
 	  retval = -1;
 	}
       } else {
-	if (verbose > 2) printf("Digital Input %i cannot be read. Card %i not connected \n",
+	if (verbose > 2) printf("Digital Input %i cannot be read. Arduino %i not connected \n",
 				input,ard);
 	retval = -1;
       }
     } else {
-      if (verbose > 0) printf("Digital Input %i cannot be read. Card %i >= MAXCARDS\n",input,ard);
+      if (verbose > 0) printf("Digital Input %i cannot be read. Arduino %i >= MAXARDS\n",input,ard);
       retval = -1;
     }
     
@@ -566,7 +318,7 @@ int digital_output(int ard, int output, int *value)
 
   if (value != NULL) {
 
-    if (ard < MAXCARDS) {
+    if (ard < MAXARDS) {
       if (arduino[ard].connected) {
 	if ((output >= 0) && (output < arduino[ard].noutputs)) {
 
@@ -575,27 +327,27 @@ int digital_output(int ard, int output, int *value)
 	      if (*value != arduino[ard].outputs[output]) {
 		arduino[ard].outputs[output] = *value;
 		arduino[ard].outputs_changed[output] = CHANGED;
-		if (verbose > 2) printf("Digital Output %i of ard %i changed to %i \n",
+		if (verbose > 2) printf("Digital Output %i of Arduino %i changed to %i \n",
 					output,ard,*value);
 	      }
 	    } else {
-	      printf("Digital Output %i of ard %i should be 0 or 1, but is %i \n",
+	      printf("Digital Output %i of Arduino %i should be 0 or 1, but is %i \n",
 		     output,ard,*value);
 	      retval = -1;
 	    }
 	  }
 	} else {
-	  if (verbose > 0) printf("Digital Output %i above maximum # of outputs %i of ard %i \n",
+	  if (verbose > 0) printf("Digital Output %i above maximum # of outputs %i of Arduino %i \n",
 				  output,arduino[ard].noutputs,ard);
 	  retval = -1;
 	}
       } else {
-	if (verbose > 2) printf("Digital Output %i cannot be written. Card %i not connected \n",
+	if (verbose > 2) printf("Digital Output %i cannot be written. Arduino %i not connected \n",
 				output,ard);
 	retval = -1;
       }
     } else {
-      if (verbose > 0) printf("Digital Ouputt %i cannot be written. Card %i >= MAXCARDS\n",output,ard);
+      if (verbose > 0) printf("Digital Ouputt %i cannot be written. Arduino %i >= MAXARDS\n",output,ard);
       retval = -1;
     }
 
@@ -604,121 +356,42 @@ int digital_output(int ard, int output, int *value)
   return retval;
 }
 
-
-/* wrapper for floating point output to display */
-int display_outputf(int ard, int pos, int n, float *fvalue, int dp, int blank)
-{
-
-  int value = INT_MISS;
-  if (*fvalue != FLT_MISS) value = (int) lroundf(*fvalue);
-  return display_output(ard, pos, n, &value, dp, blank);
-}
-
-/* fill 7 segment displays starting from display position pos and the next n displays  */
-/* put a decimal point at position dp (or set dp < 0 for no decimal point */
-/* set blank to 1 if you want to blank the range pos to pos+n-1 */
-int display_output(int ard, int pos, int n, int *value, int dp, int blank)
+int analog_output(int ard, int analogoutput, int *value)
 {
   int retval = 0;
-  int tempval;
-  int negative;
-  int count;
-  int single;
-  
+
   if (value != NULL) {
 
-    if (ard < MAXCARDS) {
+    if (ard < MAXARDS) {
       if (arduino[ard].connected) {
-
-	if ((n>0) && (pos>=0) && ((pos+n-1)<arduino[ard].ndisplays)) {
+	if ((analogoutput >= 0) && (analogoutput < arduino[ard].nanalogoutputs)) {
 
 	  if (*value != INT_MISS) {
-	  
-	    if (blank == 1) {
-	      /* blank all values in range */
-	      for (count=0;count<n;count++) {
-		if (arduino[ard].displays[pos+count] != -1) {
-		  arduino[ard].displays[pos+count] = -1;
-		  arduino[ard].displays_changed[pos+count] = CHANGED;
-		}
+	    if ((*value >= 0) && (*value < (int) pow(2,ANALOGOUTPUTNBITS))) {
+	      if (*value != arduino[ard].analogoutputs[analogoutput]) {
+		arduino[ard].analogoutputs[analogoutput] = *value;
+		arduino[ard].analogoutputs_changed[analogoutput] = CHANGED;
+		if (verbose > 2) printf("Analog Output %i of Arduino %i changed to %i \n",
+					analogoutput,ard,*value);
 	      }
 	    } else {
-	      /* generate temporary storage of input value */
-	      tempval = *value;
-
-	      /* reverse negative numbers: find treatment for - sign */
-	      /* use first digit for negative sign */
-	      if (tempval < 0) {
-		tempval = -tempval;
-		negative = 1;
-	      } else {
-		negative = 0;
-	      }
-
-	      /* read individual digits from integer */
-	      /* blank leftmost 0 values except if it is the first one */ 
-	      count = 0;
-	      while ((tempval) && (count<n))
-		{
-		  single = tempval % 10;
-		  if (dp == count) single += 10;
-		  if (arduino[ard].displays[pos+count] != single) {
-		    arduino[ard].displays[pos+count] = single;
-		    arduino[ard].displays_changed[pos+count] = CHANGED;
-		  }
-		  tempval /= 10;
-		  count++;
-		}
-	      while (count<n)
-		{
-		  if (negative) {
-		    if (count > dp) {
-		      single = -10;
-		      if (arduino[ard].displays[pos+count] != single) {
-			arduino[ard].displays[pos+count] = single;
-			arduino[ard].displays_changed[pos+count] = CHANGED;
-		      }
-		      negative = 0;
-		    }
-		  } else {
-		    if ((count == 0) || (dp >= count)) {
-		      /* do not blank leftmost 0 display or if it has a decimal point */
-		      /* this allows to display for instance 0.04 */
-		      single = 0;
-		      if (dp == count) single += 10;
-		      if (arduino[ard].displays[pos+count] != single) {
-			arduino[ard].displays[pos+count] = single;
-			arduino[ard].displays_changed[pos+count] = CHANGED;
-		      }
-		    } else {
-		      /* blank all other displays in front of number */
-		      single = -1;
-		      if (arduino[ard].displays[pos+count] != single) {
-			arduino[ard].displays[pos+count] = single;
-			arduino[ard].displays_changed[pos+count] = CHANGED;
-		      }
-		    }
-		  }
-		  count++;
-		}
-
-	    } /* do not blank, but print values */
-
+	      printf("Analog Output %i of Arduino %i should be between 0 and %i, but is %i \n",
+		     analogoutput,ard,(int) pow(2,ANALOGOUTPUTNBITS)-1,*value);
+	      retval = -1;
+	    }
 	  }
 	} else {
-	  if (verbose > 0) printf("Displays %i-%i beyond range of 0-%i of ard %i \n",
-				  pos,pos+n-1,arduino[ard].ndisplays-1,ard);
+	  if (verbose > 0) printf("Analog Output %i above maximum # of outputs %i of Arduino %i \n",
+				  analogoutput,arduino[ard].nanalogoutputs,ard);
 	  retval = -1;
-
 	}
-	
       } else {
-	if (verbose > 2) printf("Displays %i-%i cannot be written. Card %i not connected \n",
-				pos,pos+n-1,ard);
+	if (verbose > 2) printf("Analog Output %i cannot be written. Arduino %i not connected \n",
+				analogoutput,ard);
 	retval = -1;
       }
     } else {
-      if (verbose > 0) printf("Displays %i-%i cannot be written. Card %i >= MAXCARDS\n",pos,pos+n-1,ard);
+      if (verbose > 0) printf("Analog Ouput %i cannot be written. Arduino %i >= MAXARDS\n",analogoutput,ard);
       retval = -1;
     }
 
@@ -737,7 +410,7 @@ int analog_input(int ard, int input, float *value, float minval, float maxval)
 
   if (value != NULL) {
 
-    if (ard < MAXCARDS) {
+    if (ard < MAXARDS) {
       if (arduino[ard].connected) {
 	if ((input >= 0) && (input < arduino[ard].nanaloginputs)) {
 
@@ -756,8 +429,8 @@ int analog_input(int ard, int input, float *value, float minval, float maxval)
 		 arduino[ard].analoginputs[input][1],arduino[ard].analoginputs[input][2],
 		 arduino[ard].analoginputs[input][3],arduino[ard].analoginputs[input][4],
 		 arduino[ard].analoginputs[input][5],arduino[ard].analoginputs[input][6]
-		 ); */
-	  
+		 ); 
+	  */
 	  if (!found) {
 	    *value = ((float) arduino[ard].analoginputs[input][0]) / (float) pow(2,ANALOGINPUTNBITS) * 
 	    (maxval - minval) + minval;
@@ -765,17 +438,17 @@ int analog_input(int ard, int input, float *value, float minval, float maxval)
 	  }
 	  
 	} else {
-	  if (verbose > 0) printf("Analog Input %i above maximum # of analog inputs %i of ard %i \n",
+	  if (verbose > 0) printf("Analog Input %i above maximum # of analog inputs %i of Arduino %i \n",
 				  input,arduino[ard].nanaloginputs,ard);
 	  retval = -1;
 	}
       } else {
-	if (verbose > 2) printf("Analog Input %i cannot be read. Card %i not connected \n",
+	if (verbose > 2) printf("Analog Input %i cannot be read. Arduino %i not connected \n",
 				input,ard);
 	retval = -1;
       }
     } else {
-      if (verbose > 0) printf("Analog Input %i cannot be read. Card %i >= MAXCARDS\n",input,ard);
+      if (verbose > 0) printf("Analog Input %i cannot be read. Arduino %i >= MAXARDS\n",input,ard);
       retval = -1;
     }
     
@@ -819,7 +492,7 @@ int encoder_inputf(int ard, int input1, int input2, float *value, float multipli
 
   if (value != NULL) {
 
-    if (ard < MAXCARDS) {
+    if (ard < MAXARDS) {
       if (arduino[ard].connected) {
 	if ((input1 >= 0) && (input1 < arduino[ard].ninputs) &&
 	    (input2 >= 0) && (input2 < arduino[ard].ninputs)) {
@@ -900,27 +573,27 @@ int encoder_inputf(int ard, int input1, int input2, float *value, float multipli
 		  }
 		}
 	      }
-	      if ((retval == 1) && (verbose > 2)) printf("Encoder with Input %i,%i of ard %i changed to %f \n",
+	      if ((retval == 1) && (verbose > 2)) printf("Encoder with Input %i,%i of Arduino %i changed to %f \n",
 							 input1,input2,ard,*value);
 	    }
 	    
 	  } else {
-	    if (verbose > 0) printf("Encoder with Input %i,%i need to be on same input bank of ard %i \n",
+	    if (verbose > 0) printf("Encoder with Input %i,%i need to be on same input bank of Arduino %i \n",
 				    input1,input2,ard);
 	    retval = -1;
 	  }
 	} else {
-	  if (verbose > 0) printf("Encoder with Input %i,%i above maximum # of digital inputs %i of ard %i \n",
+	  if (verbose > 0) printf("Encoder with Input %i,%i above maximum # of digital inputs %i of Arduino %i \n",
 				  input1,input2,arduino[ard].ninputs,ard);
 	  retval = -1;
 	}
       } else {
-	if (verbose > 2) printf("Encoder with Input %i,%i cannot be read. Card %i not connected \n",
+	if (verbose > 2) printf("Encoder with Input %i,%i cannot be read. Arduino %i not connected \n",
 				input1,input2,ard);
 	retval = -1;
       }
     } else {
-      if (verbose > 0) printf("Encoder with Input %i,%i cannot be read. Card %i >= MAXCARDS\n",input1,input2,ard);
+      if (verbose > 0) printf("Encoder with Input %i,%i cannot be read. Arduino %i >= MAXARDS\n",input1,input2,ard);
       retval = -1;
     }
     

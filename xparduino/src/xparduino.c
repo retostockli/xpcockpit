@@ -1,6 +1,6 @@
 /* This is the xparduino.c code. It is the main wrapper to libarduino.c, serverdata.c and handleserver.c
    which communicates flight data to/from the X-Plane flight simulator via TCP/IP interface 
-   and connects to the SISMO SOLUCIONES hardware via UDP.
+   and connects to Arduino Boards with an Ethernet Shield via UDP.
 
    Copyright (C) 2021  Reto Stockli
 
@@ -42,7 +42,6 @@
 #include "serverdata.h"
 #include "check_aircraft.h"
 #include "test.h"
-#include "b737_mcp.h"
 
 int acf_type;
 
@@ -96,9 +95,9 @@ int main(int argc, char **argv) {
     if (strcmp(*argv,"test") == 0) {
       test();
     }
-    if (strcmp("boeing737mcp",*argv) == 0) {
-      b737_mcp();
-    }
+    /*    if (strcmp(*argv,"compass") == 0) {
+      compass();
+      }*/
 
     /**** User Modules End Here ****/
     

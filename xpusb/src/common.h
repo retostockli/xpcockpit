@@ -17,7 +17,7 @@
 
 #define INTERVAL 5
 
-/* verbosity of usbiocards (0-4) */
+/* verbosity of xpusb (0-4) */
 extern int verbose;
 
 extern int acf_type; /* aircraft type: 

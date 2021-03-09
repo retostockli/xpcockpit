@@ -18,12 +18,12 @@
 #include <EthernetUdp.h>
 
 #define DEBUG 1
-#define BUFFERSIZE 6
+#define BUFFERSIZE 8
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
 byte mac[] = {
-  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+  0x00, 0x00, 0x00, 0x00, 0x12, 0xFE
 };
 IPAddress ip(192, 168, 1, 152);
 
@@ -104,7 +104,7 @@ void loop() {
     Udp.read(recvBuffer, BUFFERSIZE);
 
     /* Copy payload 16 bit Integer into variable */
-    memcpy(&ivalue,&recvBuffer[4],2);
+    memcpy(&ivalue,&recvBuffer[6],2);
 
     if (DEBUG) {
       Serial.print("Content: ");
@@ -112,7 +112,7 @@ void loop() {
        Serial.print(recvBuffer[i]);
        Serial.print(" ");
       }
-      for (int i=2; i < 4; i++) {
+      for (int i=4; i < 6; i++) {
        Serial.print(recvBuffer[i],DEC);
        Serial.print(" ");
       }
@@ -120,13 +120,13 @@ void loop() {
     }
 
     if ((recvBuffer[0]==0x41) && (recvBuffer[1]==0x52)) {
-      pinMode(recvBuffer[2], OUTPUT );
-      if (recvBuffer[3] == 0) {
+      pinMode(recvBuffer[4], OUTPUT );
+      if (recvBuffer[5] == 0) {
         /* Digital Output */
-        digitalWrite(recvBuffer[2],ivalue);
+        digitalWrite(recvBuffer[4],ivalue);
       } else {
         /* Analog Output */
-        analogWrite(recvBuffer[2],ivalue);
+        analogWrite(recvBuffer[4],ivalue);
       }      
     }
 
@@ -137,14 +137,16 @@ void loop() {
 
     // Read Analog input and send it to host
     ivalue = analogRead(A0);
-    Serial.println(ivalue);
+ //   Serial.println(ivalue);
 
    
     sendBuffer[0] = 0x41;
     sendBuffer[1] = 0x52;
-    sendBuffer[2] = 0;
-    sendBuffer[3] = 1;
-    memcpy(&sendBuffer[4],&ivalue,sizeof(ivalue));
+    sendBuffer[2] = mac[4];
+    sendBuffer[3] = mac[5];
+    sendBuffer[4] = 0;
+    sendBuffer[5] = 1;
+    memcpy(&sendBuffer[6],&ivalue,sizeof(ivalue));
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     int ret = Udp.write(sendBuffer,BUFFERSIZE);
     Udp.endPacket();

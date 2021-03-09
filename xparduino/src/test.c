@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
 #include <float.h>
@@ -42,7 +43,7 @@ void test(void)
 
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
-
+  
   /* link floating point dataref with precision 10e-1 to local variable. This means
      that we only transfer the variable if changed by 0.1 or more */
   float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
@@ -50,6 +51,8 @@ void test(void)
   /* link NAV1 Frequency to encoder value */
   int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
 
+  if (*fvalue == FLT_MISS) *fvalue = 0.0;
+  
   /* read second digital input (#1) */
   ret = digital_input(ard, 1, value, 0);
   if (ret == 1) {
@@ -64,20 +67,45 @@ void test(void)
     //    printf("Analog Input changed to: %f \n",*fvalue);
   }
 
+  float degrees = *fvalue * 360.0;
+  int y = (int) 255.0 * cos(degrees*3.14/180.0);
+  int x = (int) 255.0 * sin(degrees*3.14/180.0);
+  int absx = abs(x);
+  int absy = abs(y);
+  int revabsx = 255-abs(x);
+  int revabsy = 255-abs(y);
+  int zero = 0;
+  int one = 1;
+  printf("%f %i %i \n",degrees,x,y);
+
+  if (x > 0) {
+    ret = analog_output(ard,5,&absx);
+    ret = digital_output(ard,3,&zero);
+  } else {
+    ret = analog_output(ard,5,&revabsx);
+    ret = digital_output(ard,3,&one);
+  }
+  
+  if (y > 0) {
+    ret = analog_output(ard,6,&absy);
+    ret = digital_output(ard,7,&zero);
+  } else {
+    ret = analog_output(ard,6,&revabsy);
+    ret = digital_output(ard,7,&one);
+  }
+  
   /* read encoder at inputs 13 and 15 */
+  /*
   ret = encoder_input(ard, 13, 15, encodervalue, 5, 1);
   if (ret == 1) {
-    /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
-  }
+    }*/
   
   /* set LED connected to second output (#1) to value of above input */
   *value = 1;
-  for (int i=0;i<64;i++) {
-    ret = digital_output(ard, i, value);
-  }
-  
-  /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  ret = display_output(ard, 0, 5, encodervalue, 2, 0);
-
+  ret = digital_output(ard, 2, value);
+ 
+  *value = 200;
+  ret = analog_output(ard, 3, value);
+ 
 }
