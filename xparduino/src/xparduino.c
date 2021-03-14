@@ -77,6 +77,9 @@ int main(int argc, char **argv) {
   /* initialize UDP read thread */
   if (init_udp_receive() < 0) exit_arduino(-7);
 
+  /* initialize arduino input pins */
+  if (init_arduino()<0) exit_arduino(-7);
+
   while (1) {
 
     /* receive data from SISMO ards */

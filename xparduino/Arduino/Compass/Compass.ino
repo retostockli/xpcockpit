@@ -19,6 +19,9 @@
 
 #define DEBUG 1
 #define BUFFERSIZE 8
+#define INITVAL -1
+#define NINPUTS 14
+#define NANALOGINPUTS 2
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
@@ -36,8 +39,13 @@ char sendBuffer[BUFFERSIZE];  // buffer to hold send packet
 // An EthernetUDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
 
-void setup() {
+/* storage for inputs */
+int isinput[NINPUTS];
+int input[NINPUTS];
+int analoginput[NANALOGINPUTS];
 
+void setup() {
+ 
   // You can use Ethernet.init(pin) to configure the CS pin
   Ethernet.init(10);  // Most Arduino shields
 
@@ -64,18 +72,19 @@ void setup() {
   Udp.begin(localPort);
   if (DEBUG) Serial.println("UDP initialized.");
 
-  /*
-  pinMode(2, OUTPUT );
-  pinMode(3, OUTPUT );
-  pinMode(5, OUTPUT );
-  pinMode(6, OUTPUT );
-  pinMode(7, OUTPUT );
-  digitalWrite(2, HIGH );
-  digitalWrite(3, LOW );
-  digitalWrite(5, LOW );
-  digitalWrite(6, LOW );
-  digitalWrite(7, LOW );
-  */
+  /* assume no pins are selected as inputs, will be
+   *  changed during initialization
+   */
+   for (int i=0;i<NINPUTS;i++) {
+     isinput[i] = 0;
+   }
+  
+   /* Put all analog inputs to ground if not used in order to avoid
+      just garbage transfers */
+   for (int i=0;i<NANALOGINPUTS;i++) {
+     analoginput[i] = INITVAL;
+   }
+  
 }
 
 void loop() {
@@ -120,37 +129,107 @@ void loop() {
     }
 
     if ((recvBuffer[0]==0x41) && (recvBuffer[1]==0x52)) {
-      pinMode(recvBuffer[4], OUTPUT );
       if (recvBuffer[5] == 0) {
         /* Digital Output */
+        pinMode(recvBuffer[4], OUTPUT );
         digitalWrite(recvBuffer[4],ivalue);
-      } else {
+      } else if (recvBuffer[5] == 1) {
         /* Analog Output */
+        pinMode(recvBuffer[4], OUTPUT );
         analogWrite(recvBuffer[4],ivalue);
-      }      
-    }
+      } else if (recvBuffer[5] == 2) { 
+        /* define pin mode and initialize input if a pin is requested as input */ 
+        isinput[recvBuffer[4]]=1;
+        pinMode(recvBuffer[4], INPUT_PULLUP);
+        input[recvBuffer[4]] = INITVAL;
+      } else if (recvBuffer[5] == 3) { 
+        /* Compass output of degrees */ 
+        int y = 255.0 * cos(((float) ivalue)/10.0*3.14/180.0);
+        int x = 255.0 * sin(((float) ivalue)/10.0*3.14/180.0);
+        pinMode(3, OUTPUT );
+        pinMode(5, OUTPUT );
+        pinMode(6, OUTPUT );
+        pinMode(7, OUTPUT );
+        if (x > 0) {
+          analogWrite(5,abs(x));
+          digitalWrite(3,LOW);
+        } else {
+          analogWrite(5,255-abs(x));
+          digitalWrite(3,HIGH);
+        }
 
+        if (y < 0) {
+          analogWrite(6,abs(y));
+          digitalWrite(7,LOW);
+        } else {
+          analogWrite(6,255-abs(y));
+          digitalWrite(7,HIGH);
+        }      
+      }
+      
+    }
   } /* Packet was received */
 
   /* We can only send something if we have previously received something */
   if (Udp.remotePort() != 0) {
 
-    // Read Analog input and send it to host
-    ivalue = analogRead(A0);
- //   Serial.println(ivalue);
+    // Read Analog inputs and send changed ones to host
+    for (int i=0;i<NANALOGINPUTS;i++) {
+      ivalue = analogRead(NINPUTS+i);
+ 
+      if (ivalue != analoginput[i]) {
+        analoginput[i] = ivalue;
 
+//        if (DEBUG) {
+        if (0) {
+          Serial.print("Analog Input ");
+          Serial.print(i);
+          Serial.print(" changed to: ");
+          Serial.println(ivalue);
+        }
    
-    sendBuffer[0] = 0x41;
-    sendBuffer[1] = 0x52;
-    sendBuffer[2] = mac[4];
-    sendBuffer[3] = mac[5];
-    sendBuffer[4] = 0;
-    sendBuffer[5] = 1;
-    memcpy(&sendBuffer[6],&ivalue,sizeof(ivalue));
-    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-    int ret = Udp.write(sendBuffer,BUFFERSIZE);
-    Udp.endPacket();
+        sendBuffer[0] = 0x41;
+        sendBuffer[1] = 0x52;
+        sendBuffer[2] = mac[4];
+        sendBuffer[3] = mac[5];
+        sendBuffer[4] = i;
+        sendBuffer[5] = 1;
+        memcpy(&sendBuffer[6],&ivalue,sizeof(ivalue));
+        Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+        int ret = Udp.write(sendBuffer,BUFFERSIZE);
+        Udp.endPacket();
+      }
+    }
+    
+    // Read selected digital inputs and send changed ones to host
+    for (int i=0;i<NINPUTS;i++) {
+      if (isinput[i]) {
+        ivalue = digitalRead(i);
+ 
+        if (ivalue != input[i]) {
+          input[i] = ivalue;
+
+          if (DEBUG) {
+            Serial.print("Digital Input ");
+            Serial.print(i);
+            Serial.print(" changed to: ");
+            Serial.println(ivalue);
+          }
+   
+          sendBuffer[0] = 0x41;
+          sendBuffer[1] = 0x52;
+          sendBuffer[2] = mac[4];
+          sendBuffer[3] = mac[5];
+          sendBuffer[4] = i;
+          sendBuffer[5] = 0;
+          memcpy(&sendBuffer[6],&ivalue,sizeof(ivalue));
+          Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+          int ret = Udp.write(sendBuffer,BUFFERSIZE);
+          Udp.endPacket();
+        }
+      }
+    }
+
   }
-  
-  delay(100);
+  delay(10);
 }

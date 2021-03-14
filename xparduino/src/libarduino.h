@@ -23,7 +23,7 @@
 #define MAXOUTPUTS 14        /* All inputs can be used as outputs. Some are reserved */
 #define MAXSAVE 30           /* maximum number of history values in data structure */
 #define INPUTINITVAL -1      /* initial value of inputs upon startup */
-#define OUTPUTSINITVAL 0     /* initial value of outputs upon startup (OFF) */
+#define OUTPUTINITVAL -1     /* initial value of outputs upon startup (OFF) */
 #define ANALOGINPUTNBITS 10  /* number of bits of analog inputs */
 #define ANALOGOUTPUTNBITS 8  /* number of bits of analog outputs */
 #define UNCHANGED 0          /* flag for unchanged input / output */
@@ -49,12 +49,17 @@ typedef struct {
   int noutputs;          /* actual number of activated outputs */
   int nanalogoutputs;    /* actual number of activated analog outputs (INOP) */
   char inputs[MAXINPUTS][MAXSAVE];
-  char inputs_nsave[MAXINPUTS]; /* number of history saves per input */
+  char inputs_nsave; /* number of history saves for inputs */
+  char inputs_isinput[MAXINPUTS];  /* which of the arduino pins is an input? */
   int analoginputs[MAXANALOGINPUTS][MAXSAVE];
   char outputs[MAXOUTPUTS];
   char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
   int analogoutputs[MAXOUTPUTS];
   int analogoutputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
+  int compass;
+  int compass_changed; /* unchanged = 0, changed = 1 */
+
+  
 } arduino_struct;
 
 extern arduino_struct arduino[MAXARDS];
@@ -62,11 +67,13 @@ extern arduino_struct arduino[MAXARDS];
 /* Prototype Functions */
 int read_arduino(void);
 int write_arduino(void);
+int init_arduino(void);
 int digital_inputf(int ard, int input, float *fvalue, int type);
 int digital_input(int ard, int input, int *value, int type);
 int digital_outputf(int ard, int output, float *fvalue);
 int digital_output(int ard, int output, int *value);
 int analog_output(int ard, int analogoutput, int *value);
+int compass_output(int ard, float *fvalue);
 int analog_input(int ard, int input, float *value, float minval, float maxval);
 int encoder_input(int ard, int input1, int input2, int *value, int multiplier, int type);
 int encoder_inputf(int ard, int input1, int input2, float *value, float multiplier, int type);

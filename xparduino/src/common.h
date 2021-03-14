@@ -15,7 +15,7 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#define INTERVAL 100
+#define INTERVAL 10
 
 /* verbosity of xpsismo (0-4) */
 extern int verbose;

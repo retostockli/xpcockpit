@@ -38,13 +38,16 @@
 int ini_read(char ininame[])
 {
   int ret = 0;
- dictionary *ini;
+  dictionary *ini;
   char filename[255];
   char cwd[200];
   char *pch;
-  int i;
+  int i,j;
   char tmp[50];
-
+  char sinput[50];
+  const char s[2] = ",";
+  char *token;
+ 
   /* general */
   int default_verbose = 0;
 
@@ -56,10 +59,11 @@ int ini_read(char ininame[])
   char default_arduinoserver_ip[] = "ANY";
   int default_arduinoserver_port = 1032;
 
-  /* arduino ards */
-  char default_arduinoard_ip[] = "NA";
-  int default_arduinoard_port = 0;
-  int default_arduinoard_mac = 0;
+  /* arduinos */
+  char default_arduino_ip[] = "NA";
+  int default_arduino_port = 0;
+  int default_arduino_mac = 0;
+  char default_arduino_input[] = " ";
  
 
   /* check if we are in the source code directory or in the binary installation path */
@@ -94,22 +98,39 @@ int ini_read(char ininame[])
     nards = 0;
     for(i=0;i<MAXARDS;i++) {
       sprintf(tmp,"arduino%i:Address",i);
-      strcpy(arduino[i].ip,iniparser_getstring(ini,tmp, default_arduinoard_ip));
+      strcpy(arduino[i].ip,iniparser_getstring(ini,tmp, default_arduino_ip));
       sprintf(tmp,"arduino%i:Port",i);
-      arduino[i].port = iniparser_getint(ini,tmp, default_arduinoard_port);
+      arduino[i].port = iniparser_getint(ini,tmp, default_arduino_port);
       sprintf(tmp,"arduino%i:Mac1",i);
-      arduino[i].mac[0] = iniparser_getint(ini,tmp, default_arduinoard_mac);
+      arduino[i].mac[0] = iniparser_getint(ini,tmp, default_arduino_mac);
       sprintf(tmp,"arduino%i:Mac2",i);
-      arduino[i].mac[1] = iniparser_getint(ini,tmp, default_arduinoard_mac);
-      printf("%02x:%02x \n",arduino[i].mac[0],arduino[i].mac[1]);
-      if (arduino[i].port == default_arduinoard_port) {
+      arduino[i].mac[1] = iniparser_getint(ini,tmp, default_arduino_mac);
+      sprintf(tmp,"arduino%i:Inputs",i);
+      strcpy(sinput,iniparser_getstring(ini,tmp, default_arduino_input));
+      
+      if (arduino[i].port == default_arduino_port) {
 	printf("Arduino %i NA \n",i);
 	arduino[i].connected = 0;
       } else {
+	  
 	printf("Arduino %i Address %s Port %i Mac %02x:%02x \n",i,arduino[i].ip, arduino[i].port,
 	       arduino[i].mac[0],arduino[i].mac[1]);
 	nards++;
 	arduino[i].connected = 1;
+
+	/* evaluate pins selected for input */
+	for (j=0;j<MAXINPUTS;j++) {
+	  arduino[i].inputs_isinput[j] = 0;
+	}
+	token = strtok(sinput, s);
+        while (token) {
+	  j = atoi(token);
+	  if (j < MAXINPUTS) {
+	    printf("Pin %i selected as Input\n",j);
+	    arduino[i].inputs_isinput[j] = 1;
+	  }
+	  token=strtok(NULL,","); 
+	}
       }
 
       /* assume that no daughter ard is attached */
@@ -117,8 +138,10 @@ int ini_read(char ininame[])
       arduino[i].nanaloginputs = MAXANALOGINPUTS;
       arduino[i].noutputs = MAXOUTPUTS;  
       arduino[i].nanalogoutputs = MAXANALOGOUTPUTS;
+      printf("\n");
     }
     
+    printf("\n");
     printf("\n");
     iniparser_freedict(ini);
     
@@ -139,23 +162,26 @@ int ini_arduinodata()
 	arduino[i].analoginputs[j][k]= INPUTINITVAL;
       }
     }
-    for(j=0;j<MAXINPUTS/64;j++) {
-      arduino[i].inputs_nsave[j] = 0;
-    }
+    
+    arduino[i].inputs_nsave = 0;
+
     for(j=0;j<MAXINPUTS;j++) {
       for(k=0;k<MAXSAVE;k++) {
 	arduino[i].inputs[j][k] = INPUTINITVAL;
       }
     }
     for(j=0;j<MAXOUTPUTS;j++) {
-      arduino[i].outputs[j] = OUTPUTSINITVAL;
+      arduino[i].outputs[j] = OUTPUTINITVAL;
       arduino[i].outputs_changed[j] = UNCHANGED;
     }
     for(j=0;j<MAXANALOGOUTPUTS;j++) {
-      arduino[i].analogoutputs[j] = OUTPUTSINITVAL;
+      arduino[i].analogoutputs[j] = OUTPUTINITVAL;
       arduino[i].analogoutputs_changed[j] = UNCHANGED;
     }
 
+    arduino[i].compass = OUTPUTINITVAL;
+    arduino[i].compass_changed = UNCHANGED;
+    
  }
 
   return 0;
@@ -171,9 +197,7 @@ int reset_arduinodata()
   for(i=0;i<MAXARDS;i++) {
 
     if (arduino[i].connected == 1) {
-      for(j=0;j<(MAXINPUTS/64);j++) {
-	if (arduino[i].inputs_nsave[j] > 0) arduino[i].inputs_nsave[j] -= 1;
-      }
+      if (arduino[i].inputs_nsave > 0) arduino[i].inputs_nsave -= 1;
     }
   }
   return 0;

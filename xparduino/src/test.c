@@ -33,13 +33,47 @@
 #include "libarduino.h"
 #include "serverdata.h"
 
-int encodervalue;
+int digitalvalue;
+
+static float y[5] = {  0.0, 25.0, 35.0, 40.0, 45.0}; /* Input Degrees */
+static float x[5] = { 37.5, 60.0, 75.0, 87.5,106.0}; /* Degrees displayed on Compass */
+
+float interpolate(float xval)
+{
+  int left;
+  int right;
+  float val;
+  int n=sizeof(x)/sizeof(float);
+
+  left = n-2;
+  right = n-1;
+  for (int i=1;i<(n-1);i++) {
+    if (xval < x[i]) {
+      left = i-1;
+      right = i;
+      break;
+    }
+  }
+
+  if (xval < x[0]) {
+    val = y[0];
+  } else if (xval > x[n-1]) {
+    val = y[n-1];
+  } else {
+    val = ((x[right] - xval) * y[left] + (xval - x[left]) * y[right]) / (x[right] - x[left]);
+  }
+  
+  //  printf("%f %i %i %f \n",xval,left,right,val);
+
+  return val;
+}
 
 void test(void)
 {
 
   int ret;
   int ard = 0;
+  int input;
 
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -51,14 +85,25 @@ void test(void)
   /* link NAV1 Frequency to encoder value */
   int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
 
+  if (*encodervalue == INT_MISS) *encodervalue = 0;
   if (*fvalue == FLT_MISS) *fvalue = 0.0;
   
-  /* read second digital input (#1) */
-  ret = digital_input(ard, 1, value, 0);
+  /* read encoder at inputs 13 and 15 */
+  ret = encoder_input(ard, 8, 9, encodervalue, 5, 2);
   if (ret == 1) {
-    /* ret is 1 only if input has changed */
-    printf("Digital Input changed to: %i \n",*value);
+    if (*encodervalue > 360) *encodervalue -= 360;
+    if (*encodervalue < 0) *encodervalue += 360;
+    printf("Encoder changed to: %i \n",*encodervalue);
   }
+  
+  /* read digital input (#8) */
+  /*
+  input = 8;
+  ret = digital_input(ard, input, &digitalvalue, 0);
+  if (ret == 1) {
+    printf("Digital Input %i changed to: %i \n",input,digitalvalue);
+    } */
+
 
   /* read first analog input (#0) */
   ret = analog_input(ard,0,fvalue,0.0,1.0);
@@ -67,7 +112,8 @@ void test(void)
     //    printf("Analog Input changed to: %f \n",*fvalue);
   }
 
-  float degrees = *fvalue * 360.0;
+  float degrees=interpolate((float) *encodervalue);
+  //  float degrees = (float) *encodervalue;
   int y = (int) 255.0 * cos(degrees*3.14/180.0);
   int x = (int) 255.0 * sin(degrees*3.14/180.0);
   int absx = abs(x);
@@ -76,8 +122,12 @@ void test(void)
   int revabsy = 255-abs(y);
   int zero = 0;
   int one = 1;
-  printf("%f %i %i \n",degrees,x,y);
 
+  ret = compass_output(ard,&degrees);
+  
+  // printf("%f %i %i \n",degrees,x,y);
+
+  /*
   if (x > 0) {
     ret = analog_output(ard,5,&absx);
     ret = digital_output(ard,3,&zero);
@@ -93,19 +143,10 @@ void test(void)
     ret = analog_output(ard,6,&revabsy);
     ret = digital_output(ard,7,&one);
   }
-  
-  /* read encoder at inputs 13 and 15 */
-  /*
-  ret = encoder_input(ard, 13, 15, encodervalue, 5, 1);
-  if (ret == 1) {
-    printf("Encoder changed to: %i \n",*encodervalue);
-    }*/
+  */
   
   /* set LED connected to second output (#1) to value of above input */
   *value = 1;
   ret = digital_output(ard, 2, value);
- 
-  *value = 200;
-  ret = analog_output(ard, 3, value);
- 
+  
 }

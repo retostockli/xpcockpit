@@ -55,9 +55,22 @@ int read_arduino() {
      0-1  | Identifier (Characters AR for Arduino)
      2-3  | Last two Bytes of MAC address
      4    | Input / Output Number (0-13)
-     5    | Input / Output Type (0: digital, 1: analog)
-     6-7  | Value (16 bit signed Integer Value) */
-    
+     5    | Input / Output Type (0: digital, 1: analog, 2: initialize as input, 3: compass)
+     6-7  | Value (16 bit signed Integer Value)
+  */
+
+  /* In case the server sends an initialization as input (2) to a specific pin
+     Arduino will send back the current pin value. This is important to get
+     initial states after every new connect */
+
+  /* We have a special Output Type: compass, where we send degrees and the arduino
+     converts it to PWM signals of specific PWM and digital outputs. Why can't we do
+     that by changing outputs regularly? The time difference between UDP packets
+     has strange effects on the compass magnet when changing one pin 10 ms later than the other. */
+  
+  /* Not needed for analog inputs since they fire anyway after every little change
+     of the potentiometer, respectively even after no change due to noise in the system */
+  
   int ard;
   short int val;
   int input;
@@ -107,17 +120,19 @@ int read_arduino() {
 	  
 	  if (val != arduino[ard].inputs[input][0]) {
 	    /* shift all inputs in history array by one */
-	    for (s=MAXSAVE-2;s>=0;s--) {
-	      arduino[ard].inputs[input][s+1] = arduino[ard].inputs[input][s];
+	    for (i=0;i<arduino[ard].ninputs;i++) {
+	      for (s=MAXSAVE-2;s>=0;s--) {
+		arduino[ard].inputs[i][s+1] = arduino[ard].inputs[i][s];
+	      }
 	    }
 	    arduino[ard].inputs[input][0] = val; 
-	    if (verbose > 0) printf("Arduino %i Input %i Changed to: %i \n",ard,input,val);
+	    if (verbose > 2) printf("Arduino %i Input %i Changed to: %i \n",ard,input,val);
 
 	    /* update number of history values per input */
-	    if (arduino[ard].inputs_nsave[input] < MAXSAVE) {
-	      arduino[ard].inputs_nsave[input] += 1;
-	      if (verbose > 0) printf("Arduino %i Input %i # of History Values %i \n",
-				      ard,input,arduino[ard].inputs_nsave[input]);
+	    if (arduino[ard].inputs_nsave < MAXSAVE) {
+	      arduino[ard].inputs_nsave += 1;
+	      if (verbose > 2) printf("Arduino %i Input %i # of History Values %i \n",
+				      ard,input,arduino[ard].inputs_nsave);
 	    } else {
 	      if (verbose > 0) printf("Arduino %i Input %i Maximum # of History Values %i Reached \n",
 				      ard,input,MAXSAVE);
@@ -132,7 +147,7 @@ int read_arduino() {
 	    arduino[ard].analoginputs[input][s+1] = arduino[ard].analoginputs[input][s];
 	  }
 	  if (val != arduino[ard].analoginputs[input][0]) {
-	    if (verbose > 0) printf("Arduino %i Analog Input %i Changed to %i \n",
+	    if (verbose > 2) printf("Arduino %i Analog Input %i Changed to %i \n",
 				    ard,input,val);
 	  }
 	  arduino[ard].analoginputs[input][0] = val;	  
@@ -176,13 +191,13 @@ int write_arduino() {
       
       for (output=0;output<arduino[ard].noutputs;output++) {
 	if (arduino[ard].outputs_changed[output] == CHANGED) {
-	  if (verbose > 0) printf("Arduino %i Output %i changed to: %i \n",
+	  if (verbose > 2) printf("Arduino %i Output %i changed to: %i \n",
 				  ard,output,arduino[ard].outputs[output]);
 	  arduinoSendBuffer[4] = output;
 	  val = arduino[ard].outputs[output];
 	  memcpy(&arduinoSendBuffer[6],&val,sizeof(val));
 	  ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
-	  if (verbose > 0) printf("Sent %i bytes to ard %i \n", ret,ard);
+	  if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);
 	  arduino[ard].outputs_changed[output] = UNCHANGED;
 	}
       }
@@ -192,21 +207,73 @@ int write_arduino() {
       
       for (analogoutput=0;analogoutput<arduino[ard].nanalogoutputs;analogoutput++) {
 	if (arduino[ard].analogoutputs_changed[analogoutput] == CHANGED) {
-	  if (verbose > 0) printf("Arduino %i Analogoutput %i changed to: %i \n",
+	  if (verbose > 2) printf("Arduino %i Analogoutput %i changed to: %i \n",
 				  ard,analogoutput,arduino[ard].analogoutputs[analogoutput]);
 	  arduinoSendBuffer[4] = analogoutput;
 	  val = arduino[ard].analogoutputs[analogoutput];
 	  memcpy(&arduinoSendBuffer[6],&val,sizeof(val));
 	  ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
-	  if (verbose > 0) printf("Sent %i bytes to ard %i \n", ret,ard);
+	  if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);
 	  arduino[ard].analogoutputs_changed[analogoutput] = UNCHANGED;
 	}
+      }
+
+      /* Check Compass for changes and Send them */
+      arduinoSendBuffer[4] = 0x00;
+      arduinoSendBuffer[5] = 0x03;
+      
+      if (arduino[ard].compass_changed == CHANGED) {
+	if (verbose > 2) printf("Arduino %i Compass Value changed to: %i \n",
+				  ard,arduino[ard].compass);
+	val = arduino[ard].compass;
+	memcpy(&arduinoSendBuffer[6],&val,sizeof(val));
+	ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
+	if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);
+	arduino[ard].compass_changed = UNCHANGED;
       }
 
     }
   }
   
   return 0;
+}
+
+int init_arduino() {
+  
+  int ret;
+  int ard;
+  int input;
+  int connected;
+
+  for (ard=0;ard<MAXARDS;ard++) {
+    if (arduino[ard].connected == 1) {
+
+      memset(arduinoSendBuffer,0,SENDMSGLEN);
+      arduinoSendBuffer[0] = 0x41;
+      arduinoSendBuffer[1] = 0x52;
+      arduinoSendBuffer[2] = 0x00;
+      arduinoSendBuffer[3] = 0x00;
+
+      /* Initialize command */
+      arduinoSendBuffer[5] = 0x02;
+
+      /* No Values */
+      arduinoSendBuffer[6] = 0x00;
+      arduinoSendBuffer[7] = 0x00;
+
+      /* initialize pins selected for input */      
+      for (input=0;input<arduino[ard].ninputs;input++) {
+	if (arduino[ard].inputs_isinput[input] == 1) {
+	  if (verbose > 0) printf("Arduino %i Pin %i Initialized as Input \n",
+				  ard,input);
+	  arduinoSendBuffer[4] = input;
+	  ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
+	  if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);
+	}
+      }
+
+    }
+  }
 }
 
 
@@ -221,9 +288,7 @@ int digital_inputf(int ard, int input, float *fvalue, int type)
     
 }
 
-/* retrieve input value from given input position of SISMO ard */
-/* master ard has 64 inputs (0..63)
-   daughter ard 1 and 2 have another 64 inputs (64..127 and 128..191) */
+/* retrieve input value from given input of the arduino */
 /* Two types : */
 /* 0: pushbutton */
 /* 1: toggle switch */
@@ -240,16 +305,15 @@ int digital_input(int ard, int input, int *value, int type)
     if (ard < MAXARDS) {
       if (arduino[ard].connected) {
 	if ((input >= 0) && (input < arduino[ard].ninputs)) {
-	  
-	  if (arduino[ard].inputs_nsave[input] != 0) {
-	    s = arduino[ard].inputs_nsave[input] - 1; /* history slot to read */
+	  if (arduino[ard].inputs_nsave != 0) {
+	    s = arduino[ard].inputs_nsave - 1; /* history slot to read */
 	    if (type == 0) {
 	      /* simple pushbutton / switch */
 	      if (*value != arduino[ard].inputs[input][s]) {
+		if (verbose > 1) printf("Pushbutton: Arduino %i Input %i Changed to %i %i \n",
+					ard, input, *value,arduino[ard].inputs[input][s]);
 		*value = arduino[ard].inputs[input][s];
 		retval = 1;
-		if (verbose > 1) printf("Pushbutton: Arduino %i Input %i Changed to %i \n",
-					ard, input, *value);
 	      }
 
 	    } else {
@@ -294,6 +358,7 @@ int digital_input(int ard, int input, int *value, int type)
 
   return retval;
 }
+
 
 /* wrapper for digital_output when supplying floating point value 
    Values < 0.5 are set to 0 output and values >= 0.5 are set to 1 output */
@@ -355,6 +420,46 @@ int digital_output(int ard, int output, int *value)
 
   return retval;
 }
+
+int compass_output(int ard, float *fvalue)
+{
+  int retval = 0;
+  int value;
+
+  if (fvalue != NULL) {
+
+    if (ard < MAXARDS) {
+      if (arduino[ard].connected) {
+	if (*fvalue != FLT_MISS) {
+	  if ((*fvalue >= 0.0) && (*fvalue <= 360.0)) {
+
+	    value = (int) *fvalue * 10.0;
+
+	    if (value != arduino[ard].compass) {
+	      arduino[ard].compass = value;
+	      arduino[ard].compass_changed = CHANGED;
+	    }
+	    
+	  } else {
+	    if (verbose > 0) printf("Compass Output of Arduino %i should be between 0 and 360, but is %f \n",ard,*fvalue);
+	    retval = -1;
+	  }
+	}
+      } else {
+	if (verbose > 2) printf("Compass value cannot be written. Arduino %i not connected \n",ard);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Compass value cannot be written. Arduino %i >= MAXARDS\n",ard);
+      retval = -1;
+    }
+
+  }
+
+  return retval;
+}
+
+
 
 int analog_output(int ard, int analogoutput, int *value)
 {
@@ -470,10 +575,9 @@ int encoder_input(int ard, int input1,  int input2, int *value, int multiplier, 
 }
 
 /* retrieve encoder value and for given encoder type connected to inputs 1 and 2
-   inputs 1 and 2 need to be on the same input bank (each bank has 64 inputs).
    Note that even though we try to capture every bit that changes, turning an 
-   optical encoder too fast will result in loss of states since the SISMO ard
-   will not capture every state change correctly */
+   optical encoder too fast will result in loss of states since the Arduino
+   will not capture every state change due to its polling interval */
 /* two types of encoders: */
 /* 1: 2 bit optical rotary encoder (type 3 in xpusb) */
 /* 2: 2 bit gray type mechanical encoder */
@@ -488,7 +592,6 @@ int encoder_inputf(int ard, int input1, int input2, float *value, float multipli
   char obits[2]; /* bit arrays for 2 bit encoder */
   char nbits[2]; /* bit arrays for 2 bit encoder */
   int s;
-  int bank;
 
   if (value != NULL) {
 
@@ -496,92 +599,95 @@ int encoder_inputf(int ard, int input1, int input2, float *value, float multipli
       if (arduino[ard].connected) {
 	if ((input1 >= 0) && (input1 < arduino[ard].ninputs) &&
 	    (input2 >= 0) && (input2 < arduino[ard].ninputs)) {
-	  if (input1/64 == input2/64) {
+	  if (*value != FLT_MISS) {
 
-	    if (*value != FLT_MISS) {
+	    //	    printf("%i %i %i %i \n",arduino[ard].inputs[input1][s],arduino[ard].inputs[input2][s],
+	    //		   arduino[ard].inputs[input1][s+1], arduino[ard].inputs[input2][s+1]);
 	    
-	      bank = input1/64;
-	      if (arduino[ard].inputs_nsave[bank] != 0) {
-		s = arduino[ard].inputs_nsave[bank] - 1; /* history slot to read */
-		if (s < (MAXSAVE-1)) {
-		  /* if not first read, and if any of the inputs have changed then the encoder was moved */
-		  if (((arduino[ard].inputs[input1][s] != arduino[ard].inputs[input1][s+1]) ||
-		       (arduino[ard].inputs[input2][s] != arduino[ard].inputs[input2][s+1])) &&
-		      (arduino[ard].inputs[input1][s+1] != INPUTINITVAL) &&
-		      (arduino[ard].inputs[input2][s+1] != INPUTINITVAL)) {
+	    if (arduino[ard].inputs_nsave != 0) {
+	      s = arduino[ard].inputs_nsave - 1; /* history slot to read */
+	      if (s < (MAXSAVE-1)) {
+		/* if not first read, and if any of the inputs have changed then the encoder was moved */
+		if ((((arduino[ard].inputs[input1][s] != arduino[ard].inputs[input1][s+1]) &&
+		      (arduino[ard].inputs[input1][s+1] != INPUTINITVAL)) ||
+		     ((arduino[ard].inputs[input2][s] != arduino[ard].inputs[input2][s+1]) &&
+		      (arduino[ard].inputs[input2][s+1] != INPUTINITVAL))) &&
+		    (arduino[ard].inputs[input1][s] != INPUTINITVAL) &&
+		    (arduino[ard].inputs[input2][s] != INPUTINITVAL)) {
+
+		  /* derive last encoder bit state */
+		  obits[0] = arduino[ard].inputs[input1][s+1];
+		  obits[1] = arduino[ard].inputs[input2][s+1];
 		  
-		    if (type == 1) {
-		      /* 2 bit optical encoder */
+		  /* derive new encoder bit state */
+		  nbits[0] = arduino[ard].inputs[input1][s];
+		  nbits[1] = arduino[ard].inputs[input2][s];
+		  
+		  if (obits[0] == INPUTINITVAL) obits[0] = nbits[0];
+		  if (obits[1] == INPUTINITVAL) obits[1] = nbits[1];
 
-		      /* derive last encoder bit state */
-		      obits[0] = arduino[ard].inputs[input1][s+1];
-		      obits[1] = arduino[ard].inputs[input2][s+1];
-		      /* derive new encoder bit state */
-		      nbits[0] = arduino[ard].inputs[input1][s];
-		      nbits[1] = arduino[ard].inputs[input2][s];
-		      
-		      if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			updown = -1;
-		      } else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			updown = 1;
-		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			updown = -1;
-		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			updown = 1;
-		      }
-	  
-		      if (updown != 0) {
-			/* add accelerator by using s as number of queued encoder changes */
-			*value = *value + ((float) updown)  * multiplier * (float) (s*2+1);
-			retval = 1;
-		      }		    
-		    } else if (type == 2) {
-		      /* 2 bit gray type mechanical encoder */
-
-		      /* derive last encoder count */
-		      oldcount = arduino[ard].inputs[input1][s+1]+2*arduino[ard].inputs[input2][s+1];
-	  
-		      /* derive new encoder count */
-		      newcount = arduino[ard].inputs[input1][s]+2*arduino[ard].inputs[input2][s];
-
-		      /* forward */
-		      if (((oldcount == 0) && (newcount == 1)) ||
-			  ((oldcount == 1) && (newcount == 3)) ||
-			  ((oldcount == 3) && (newcount == 2)) ||
-			  ((oldcount == 2) && (newcount == 0))) {
-			updown = 1;
-		      }
+		  //		  printf("%i %i %i %i \n",nbits[0],nbits[1],obits[0],obits[1]);
+		  
+		  if (type == 1) {
+		    /* 2 bit optical encoder */
 		    
-		      /* backward */
-		      if (((oldcount == 2) && (newcount == 3)) ||
-			  ((oldcount == 3) && (newcount == 1)) ||
-			  ((oldcount == 1) && (newcount == 0)) ||
-			  ((oldcount == 0) && (newcount == 2))) {
-			updown = -1;
-		      }
-		    
-		      if (updown != 0) {
-			/* add accelerator by using s as number of queued encoder changes */
-			*value = *value + ((float) updown) * multiplier * (float) (s+1);
-			retval = 1;
-		      }		    
-		    } else {
-		      if (verbose > 0) printf("Encoder with Input %i,%i of ard %i need to be of type 1 or 2 \n",
-					      input1,input2,ard);
-		      retval = -1;
+		    if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		      updown = -1;
+		    } else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
+		      updown = 1;
+		    } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
+		      updown = -1;
+		    } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		      updown = 1;
 		    }
+	  
+		    if (updown != 0) {
+		      /* add accelerator by using s as number of queued encoder changes */
+		      *value = *value + ((float) updown)  * multiplier * (float) (s*2+1);
+		      retval = 1;
+		    }		    
+		  } else if (type == 2) {
+		    /* 2 bit gray type mechanical encoder */
+
+		    /* derive last encoder count */
+		    oldcount = obits[0]+2*obits[1];
+	  
+		    /* derive new encoder count */
+		    newcount = nbits[0]+2*nbits[1];
+
+		    /* forward */
+		    if (((oldcount == 0) && (newcount == 1)) ||
+			((oldcount == 1) && (newcount == 3)) ||
+			((oldcount == 3) && (newcount == 2)) ||
+			((oldcount == 2) && (newcount == 0))) {
+		      updown = 1;
+		    }
+		    
+		    /* backward */
+		    if (((oldcount == 2) && (newcount == 3)) ||
+			((oldcount == 3) && (newcount == 1)) ||
+			((oldcount == 1) && (newcount == 0)) ||
+			((oldcount == 0) && (newcount == 2))) {
+		      updown = -1;
+		    }
+		    
+		    if (updown != 0) {
+		      /* add accelerator by using s as number of queued encoder changes */
+		      *value = *value + ((float) updown) * multiplier * (float) (s+1);
+		      retval = 1;
+		    }		    
+		  } else {
+		    if (verbose > 0) printf("Encoder with Input %i,%i of ard %i need to be of type 1 or 2 \n",
+					    input1,input2,ard);
+		    retval = -1;
 		  }
 		}
 	      }
-	      if ((retval == 1) && (verbose > 2)) printf("Encoder with Input %i,%i of Arduino %i changed to %f \n",
-							 input1,input2,ard,*value);
 	    }
-	    
-	  } else {
-	    if (verbose > 0) printf("Encoder with Input %i,%i need to be on same input bank of Arduino %i \n",
-				    input1,input2,ard);
-	    retval = -1;
+	    if ((retval == 1) && (verbose > 2)) printf("Encoder with Input %i,%i of Arduino %i changed to %f \n",
+						       input1,input2,ard,*value);
 	  }
+	    
 	} else {
 	  if (verbose > 0) printf("Encoder with Input %i,%i above maximum # of digital inputs %i of Arduino %i \n",
 				  input1,input2,arduino[ard].ninputs,ard);
