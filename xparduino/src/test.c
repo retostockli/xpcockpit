@@ -35,8 +35,8 @@
 
 int digitalvalue;
 
-static float y[5] = {  0.0, 25.0, 35.0, 40.0, 45.0}; /* Input Degrees */
-static float x[5] = { 37.5, 60.0, 75.0, 87.5,106.0}; /* Degrees displayed on Compass */
+static float y[22] = {-70,-40,-15,  0, 25, 35, 40, 45, 60, 90,120,150,180,210,225,230,235,250,290,320,345,360}; /* Input Degrees */
+static float x[22] = {-10,  8, 26, 38, 60, 75, 85,100,125,150,170,180,205,230,250,267,295,317,350,368,386,398}; /* Degrees on Compass */
 
 float interpolate(float xval)
 {
@@ -73,7 +73,7 @@ void test(void)
 
   int ret;
   int ard = 0;
-  int input;
+  //  int input;
 
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -123,11 +123,10 @@ void test(void)
   int zero = 0;
   int one = 1;
 
-  ret = compass_output(ard,&degrees);
+  //ret = compass_output(ard,&degrees);
   
   // printf("%f %i %i \n",degrees,x,y);
 
-  /*
   if (x > 0) {
     ret = analog_output(ard,5,&absx);
     ret = digital_output(ard,3,&zero);
@@ -136,14 +135,15 @@ void test(void)
     ret = digital_output(ard,3,&one);
   }
   
-  if (y > 0) {
+  if (y < 0) {
     ret = analog_output(ard,6,&absy);
     ret = digital_output(ard,7,&zero);
   } else {
     ret = analog_output(ard,6,&revabsy);
     ret = digital_output(ard,7,&one);
   }
-  */
+  
+  
   
   /* set LED connected to second output (#1) to value of above input */
   *value = 1;

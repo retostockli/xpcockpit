@@ -51,12 +51,23 @@ arduino_struct arduino[MAXARDS];
 int read_arduino() {
 
   /* PROTOCOL: 8 Bytes on send and receive
-     BYTE | MEANING
-     0-1  | Identifier (Characters AR for Arduino)
-     2-3  | Last two Bytes of MAC address
-     4    | Input / Output Number (0-13)
-     5    | Input / Output Type (0: digital, 1: analog, 2: initialize as input, 3: compass)
-     6-7  | Value (16 bit signed Integer Value)
+     BYTE   | MEANING
+     0-1    | Identifier (Characters AR for Arduino)
+     2-3    | Last two Bytes of MAC address
+     --- FIRST DATA PACKET
+     4      | Input / Output Number (0-13)
+     5      | Input / Output Type (1: digital, 2: analog, 3: initialize as input, 4: compass)
+     6-7    | Value (16 bit signed Integer Value)
+     --- SECOND DATA PACKET
+     8      | Input / Output Number (0-13)
+     9      | Input / Output Type (1: digital, 2: analog, 3: initialize as input, 4: compass)
+     10-11  | Value (16 bit signed Integer Value)
+     --- THIRD DATA PACKET
+     12      | Input / Output Number (0-13)
+     13      | Input / Output Type (1: digital, 2: analog, 3: initialize as input, 4: compass)
+     14-15  | Value (16 bit signed Integer Value)
+     --- N-TH DATA PACKET (N=MAXPACKET)
+     
   */
 
   /* In case the server sends an initialization as input (2) to a specific pin
@@ -74,7 +85,7 @@ int read_arduino() {
   int ard;
   short int val;
   int input;
-  int i,s;
+  int i,s,p;
  
   //printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
   
@@ -108,50 +119,56 @@ int read_arduino() {
       if (ard >= 0) {
 
 	if (verbose > 3) printf("Read %i bytes from Arduino %i \n",RECVMSGLEN,ard);
-	
-	/* Copy payload 16 bit Integer into variable */
-	memcpy(&val,&arduinoRecvBuffer[6],sizeof(val));
 
-	input = arduinoRecvBuffer[4];
+	for (p=0;p<MAXPACKET;p++) {
 	
-	/* check type of input */
-	if (arduinoRecvBuffer[5] == 0x0) {
-	  /* Digital Input */
+	  /* Copy payload 16 bit Integer into variable */
+	  memcpy(&val,&arduinoRecvBuffer[p*4+6],sizeof(val));
+
+	  input = arduinoRecvBuffer[p*4+4];
+	
+	  /* check type of input */
+	  if (arduinoRecvBuffer[p*4+5] == 0x01) {
+	    /* Digital Input */
 	  
-	  if (val != arduino[ard].inputs[input][0]) {
-	    /* shift all inputs in history array by one */
-	    for (i=0;i<arduino[ard].ninputs;i++) {
-	      for (s=MAXSAVE-2;s>=0;s--) {
-		arduino[ard].inputs[i][s+1] = arduino[ard].inputs[i][s];
+	    if (val != arduino[ard].inputs[input][0]) {
+	      /* shift all inputs in history array by one */
+	      for (i=0;i<arduino[ard].ninputs;i++) {
+		for (s=MAXSAVE-2;s>=0;s--) {
+		  arduino[ard].inputs[i][s+1] = arduino[ard].inputs[i][s];
+		}
 	      }
+	      arduino[ard].inputs[input][0] = val; 
+	      if (verbose > 0) printf("Arduino %i Input %i Changed to: %i \n",ard,input,val);
+
+	      /* update number of history values per input */
+	      if (arduino[ard].inputs_nsave < MAXSAVE) {
+		arduino[ard].inputs_nsave += 1;
+		if (verbose > 2) printf("Arduino %i Input %i # of History Values %i \n",
+					ard,input,arduino[ard].inputs_nsave);
+	      } else {
+		if (verbose > 0) printf("Arduino %i Input %i Maximum # of History Values %i Reached \n",
+					ard,input,MAXSAVE);
+	      }	      
 	    }
-	    arduino[ard].inputs[input][0] = val; 
-	    if (verbose > 2) printf("Arduino %i Input %i Changed to: %i \n",ard,input,val);
 
-	    /* update number of history values per input */
-	    if (arduino[ard].inputs_nsave < MAXSAVE) {
-	      arduino[ard].inputs_nsave += 1;
-	      if (verbose > 2) printf("Arduino %i Input %i # of History Values %i \n",
-				      ard,input,arduino[ard].inputs_nsave);
-	    } else {
-	      if (verbose > 0) printf("Arduino %i Input %i Maximum # of History Values %i Reached \n",
-				      ard,input,MAXSAVE);
-	    }	      
-	  }
-
-	} else {
-	  /* Analog Input */
+	  } else if (arduinoRecvBuffer[p*4+5] == 0x02) {
+	    /* Analog Input */
 	  
-	  /* shift all inputs in history array by one */
-	  for (s=MAXSAVE-2;s>=0;s--) {
-	    arduino[ard].analoginputs[input][s+1] = arduino[ard].analoginputs[input][s];
+	    /* shift all inputs in history array by one */
+	    for (s=MAXSAVE-2;s>=0;s--) {
+	      arduino[ard].analoginputs[input][s+1] = arduino[ard].analoginputs[input][s];
+	    }
+	    if (val != arduino[ard].analoginputs[input][0]) {
+	      if (verbose > 2) printf("Arduino %i Analog Input %i Changed to %i \n",
+				      ard,input,val);
+	    }
+	    arduino[ard].analoginputs[input][0] = val;	  
+	  } else {
+	    /* ANY OTHER TYPE OF INPUT OR DATA PACKET: DO NOTHING */
 	  }
-	  if (val != arduino[ard].analoginputs[input][0]) {
-	    if (verbose > 2) printf("Arduino %i Analog Input %i Changed to %i \n",
-				    ard,input,val);
-	  }
-	  arduino[ard].analoginputs[input][0] = val;	  
-	}
+
+	} /* loop through data packets in message */
 	
 	//printf("Left to Read: %i \n",udpReadLeft);
 	
@@ -176,60 +193,82 @@ int write_arduino() {
   int analogoutput;
   int connected;
   short int val;
+  int p;
 
   for (ard=0;ard<MAXARDS;ard++) {
     if (arduino[ard].connected == 1) {
 
-      memset(arduinoSendBuffer,0,SENDMSGLEN);
-      arduinoSendBuffer[0] = 0x41;
-      arduinoSendBuffer[1] = 0x52;
-      arduinoSendBuffer[2] = 0x00;
-      arduinoSendBuffer[3] = 0x00;
-
-      /* Check Digital Outputs for Changes and Send them */
-      arduinoSendBuffer[5] = 0x00;
+      p = 0; /* start with first data packet */
       
+      /* Check Digital Outputs for Changes and Send them */      
+      memset(arduinoSendBuffer,0,SENDMSGLEN);
       for (output=0;output<arduino[ard].noutputs;output++) {
 	if (arduino[ard].outputs_changed[output] == CHANGED) {
 	  if (verbose > 2) printf("Arduino %i Output %i changed to: %i \n",
 				  ard,output,arduino[ard].outputs[output]);
-	  arduinoSendBuffer[4] = output;
+	  arduinoSendBuffer[p*4+4] = output;
+	  arduinoSendBuffer[p*4+5] = 0x01;
 	  val = arduino[ard].outputs[output];
-	  memcpy(&arduinoSendBuffer[6],&val,sizeof(val));
+	  memcpy(&arduinoSendBuffer[p*4+6],&val,sizeof(val));
+	  arduino[ard].outputs_changed[output] = UNCHANGED;
+	  p++;
+	}
+	if (p == MAXPACKET) {
+	  arduinoSendBuffer[0] = 0x41;
+	  arduinoSendBuffer[1] = 0x52;
+	  arduinoSendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
+	  arduinoSendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
 	  ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
 	  if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);
-	  arduino[ard].outputs_changed[output] = UNCHANGED;
+	  p=0;
+	  memset(arduinoSendBuffer,0,SENDMSGLEN);
 	}
       }
       
-      /* Check Analog Outputs (PWM) for Changes and Send them */
-      arduinoSendBuffer[5] = 0x01;
-      
+      /* Check Analog Outputs (PWM) for Changes and Send them */      
       for (analogoutput=0;analogoutput<arduino[ard].nanalogoutputs;analogoutput++) {
 	if (arduino[ard].analogoutputs_changed[analogoutput] == CHANGED) {
 	  if (verbose > 2) printf("Arduino %i Analogoutput %i changed to: %i \n",
 				  ard,analogoutput,arduino[ard].analogoutputs[analogoutput]);
-	  arduinoSendBuffer[4] = analogoutput;
+	  arduinoSendBuffer[p*4+4] = analogoutput;
+	  arduinoSendBuffer[p*4+5] = 0x02;
 	  val = arduino[ard].analogoutputs[analogoutput];
-	  memcpy(&arduinoSendBuffer[6],&val,sizeof(val));
+	  memcpy(&arduinoSendBuffer[p*4+6],&val,sizeof(val));
+	  arduino[ard].analogoutputs_changed[analogoutput] = UNCHANGED;
+	  p++;
+	}
+	if (p == MAXPACKET) {
+	  arduinoSendBuffer[0] = 0x41;
+	  arduinoSendBuffer[1] = 0x52;
+	  arduinoSendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
+	  arduinoSendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
 	  ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
 	  if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);
-	  arduino[ard].analogoutputs_changed[analogoutput] = UNCHANGED;
+	  p=0;
+	  memset(arduinoSendBuffer,0,SENDMSGLEN);
 	}
       }
 
       /* Check Compass for changes and Send them */
-      arduinoSendBuffer[4] = 0x00;
-      arduinoSendBuffer[5] = 0x03;
-      
       if (arduino[ard].compass_changed == CHANGED) {
 	if (verbose > 2) printf("Arduino %i Compass Value changed to: %i \n",
-				  ard,arduino[ard].compass);
+				ard,arduino[ard].compass);
+	arduinoSendBuffer[p*4+4] = 0x00;
+	arduinoSendBuffer[p*4+5] = 0x04;      
 	val = arduino[ard].compass;
-	memcpy(&arduinoSendBuffer[6],&val,sizeof(val));
-	ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
-	if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);
+	memcpy(&arduinoSendBuffer[p*4+6],&val,sizeof(val));
 	arduino[ard].compass_changed = UNCHANGED;
+	p++;
+      } /* pin selected as input */
+      
+      /* send leftover data from previous loops which did not complete the full send buffer */
+      if (p>0) {
+	arduinoSendBuffer[0] = 0x41;
+	arduinoSendBuffer[1] = 0x52;
+	arduinoSendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
+	arduinoSendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
+	ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
+	if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);	
       }
 
     }
@@ -244,36 +283,39 @@ int init_arduino() {
   int ard;
   int input;
   int connected;
+  int p;
 
   for (ard=0;ard<MAXARDS;ard++) {
     if (arduino[ard].connected == 1) {
 
-      memset(arduinoSendBuffer,0,SENDMSGLEN);
-      arduinoSendBuffer[0] = 0x41;
-      arduinoSendBuffer[1] = 0x52;
-      arduinoSendBuffer[2] = 0x00;
-      arduinoSendBuffer[3] = 0x00;
-
-      /* Initialize command */
-      arduinoSendBuffer[5] = 0x02;
-
-      /* No Values */
-      arduinoSendBuffer[6] = 0x00;
-      arduinoSendBuffer[7] = 0x00;
-
+      p = 0; /* start at first data packet */
+      
       /* initialize pins selected for input */      
+      memset(arduinoSendBuffer,0,SENDMSGLEN);
       for (input=0;input<arduino[ard].ninputs;input++) {
 	if (arduino[ard].inputs_isinput[input] == 1) {
 	  if (verbose > 0) printf("Arduino %i Pin %i Initialized as Input \n",
 				  ard,input);
-	  arduinoSendBuffer[4] = input;
+	  arduinoSendBuffer[p*4+5] = 0x03;
+	  arduinoSendBuffer[p*4+4] = input;
+	  arduinoSendBuffer[p*4+6] = 0x00;
+	  arduinoSendBuffer[p*4+7] = 0x00;
+	  p++;
+	} /* pin selected as input */
+	if ((p == MAXPACKET) || ((p>0)&&(input==arduino[ard].ninputs-1))) {
+	  arduinoSendBuffer[0] = 0x41;
+	  arduinoSendBuffer[1] = 0x52;
+	  arduinoSendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
+	  arduinoSendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
 	  ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN);
 	  if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);
-	}
-      }
+	  p=0;
+	  memset(arduinoSendBuffer,0,SENDMSGLEN);
+	}	
+      } /* loop over pins */
 
-    }
-  }
+    } /* arduino connected */
+  } /* loop over arduinos */
 }
 
 

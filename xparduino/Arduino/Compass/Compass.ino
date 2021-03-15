@@ -18,7 +18,8 @@
 #include <EthernetUdp.h>
 
 #define DEBUG 1
-#define BUFFERSIZE 8
+#define MAXPACKET 10
+#define BUFFERSIZE 4+4*MAXPACKET
 #define INITVAL -1
 #define NINPUTS 14
 #define NANALOGINPUTS 2
@@ -54,7 +55,7 @@ void setup() {
 
   // Open serial communications and wait for port to open:
   if (DEBUG) {
-    Serial.begin(9600);
+    Serial.begin(57600);
     while (!Serial) {
       ; // wait for serial port to connect. Needed for native USB port only
     }
@@ -90,14 +91,15 @@ void setup() {
 void loop() {
 
   int ivalue;
+  int p;
 
   // if there's data available, read a packet
   int packetSize = Udp.parsePacket();
   if (packetSize) {
     if (DEBUG) {
-      Serial.print("Received packet of size ");
+      Serial.print("Received UDP Packet with Size ");
       Serial.println(packetSize);
-      Serial.print("From ");
+      Serial.print("from ");
       IPAddress remote = Udp.remoteIP();
       for (int i=0; i < 4; i++) {
         Serial.print(remote[i], DEC);
@@ -106,7 +108,7 @@ void loop() {
         }
       }
       Serial.print(", port ");
-      Serial.println(Udp.remotePort());
+      Serial.print(Udp.remotePort());
     }
 
     // read the packet into packetBufffer
@@ -116,7 +118,7 @@ void loop() {
     memcpy(&ivalue,&recvBuffer[6],2);
 
     if (DEBUG) {
-      Serial.print("Content: ");
+      Serial.print(" with Content: ");
       for (int i=0; i < 2; i++) {
        Serial.print(recvBuffer[i]);
        Serial.print(" ");
@@ -129,75 +131,121 @@ void loop() {
     }
 
     if ((recvBuffer[0]==0x41) && (recvBuffer[1]==0x52)) {
-      if (recvBuffer[5] == 0) {
-        /* Digital Output */
-        pinMode(recvBuffer[4], OUTPUT );
-        digitalWrite(recvBuffer[4],ivalue);
-      } else if (recvBuffer[5] == 1) {
-        /* Analog Output */
-        pinMode(recvBuffer[4], OUTPUT );
-        analogWrite(recvBuffer[4],ivalue);
-      } else if (recvBuffer[5] == 2) { 
-        /* define pin mode and initialize input if a pin is requested as input */ 
-        isinput[recvBuffer[4]]=1;
-        pinMode(recvBuffer[4], INPUT_PULLUP);
-        input[recvBuffer[4]] = INITVAL;
-      } else if (recvBuffer[5] == 3) { 
-        /* Compass output of degrees */ 
-        int y = 255.0 * cos(((float) ivalue)/10.0*3.14/180.0);
-        int x = 255.0 * sin(((float) ivalue)/10.0*3.14/180.0);
-        pinMode(3, OUTPUT );
-        pinMode(5, OUTPUT );
-        pinMode(6, OUTPUT );
-        pinMode(7, OUTPUT );
-        if (x > 0) {
-          analogWrite(5,abs(x));
-          digitalWrite(3,LOW);
-        } else {
-          analogWrite(5,255-abs(x));
-          digitalWrite(3,HIGH);
-        }
 
-        if (y < 0) {
-          analogWrite(6,abs(y));
-          digitalWrite(7,LOW);
+      /* loop through data packets */
+      for (p=0;p<MAXPACKET;p++) {
+        
+        memcpy(&ivalue,&recvBuffer[p*4+6],2);
+
+        if (recvBuffer[p*4+5] == 0x01) {
+          /* Digital Output */
+          pinMode(recvBuffer[p*4+4], OUTPUT );
+          digitalWrite(recvBuffer[p*4+4],ivalue);
+          if (DEBUG) {
+            Serial.print(p,DEC);
+            Serial.print(" Digital Output ");
+            Serial.print(recvBuffer[p*4+4],DEC);
+            Serial.print(" received value: ");
+            Serial.println(ivalue,DEC);
+          }
+        } else if (recvBuffer[p*4+5] == 0x02) {
+          /* Analog Output */
+          pinMode(recvBuffer[p*4+4], OUTPUT );
+          analogWrite(recvBuffer[p*4+4],ivalue);
+          if (DEBUG) {
+            Serial.print(p,DEC);
+            Serial.print(" Analog Output ");
+            Serial.print(recvBuffer[p*4+4],DEC);
+            Serial.print(" received value: ");
+            Serial.println(ivalue,DEC);
+          }
+         } else if (recvBuffer[p*4+5] == 0x03) { 
+          /* define pin mode and initialize input if a pin is requested as input */ 
+          isinput[recvBuffer[p*4+4]]=1;
+          pinMode(recvBuffer[p*4+4], INPUT_PULLUP);
+          input[recvBuffer[p*4+4]] = INITVAL;
+          if (DEBUG) {
+            Serial.print(p,DEC);
+            Serial.print(" Initializing: Pin ");
+            Serial.print(recvBuffer[p*4+4],DEC);
+            Serial.println(" set as Input.");
+          }
+        } else if (recvBuffer[p*4+5] == 0x04) { 
+          /* Compass output of degrees */ 
+          if (DEBUG) {
+            Serial.print(p,DEC);
+            Serial.print(" Compass Value ");
+            Serial.println(ivalue/10,DEC);
+          }
+          if (1) {
+          int y = 255.0 * cos(((float) ivalue)/10.0*3.14/180.0);
+          int x = 255.0 * sin(((float) ivalue)/10.0*3.14/180.0);
+          pinMode(3, OUTPUT );
+          pinMode(5, OUTPUT );
+          pinMode(6, OUTPUT );
+          pinMode(7, OUTPUT );
+          if (x > 0) {
+            analogWrite(5,abs(x));
+            digitalWrite(3,LOW);
+          } else {
+            analogWrite(5,255-abs(x));
+            digitalWrite(3,HIGH);
+          }
+  
+          if (y < 0) {
+            analogWrite(6,abs(y));
+            digitalWrite(7,LOW);
+          } else {
+            analogWrite(6,255-abs(y));
+            digitalWrite(7,HIGH);
+          }      
+          }
         } else {
-          analogWrite(6,255-abs(y));
-          digitalWrite(7,HIGH);
-        }      
-      }
-      
-    }
+          /* Any other command: IGNORE */
+          if (p == 0) {
+            Serial.println("Transmission without content!!!");
+          }
+        }
+      } /* loop through data packets */
+    } /* Correct receive buffer initiator string */
   } /* Packet was received */
 
   /* We can only send something if we have previously received something */
   if (Udp.remotePort() != 0) {
 
     // Read Analog inputs and send changed ones to host
+    memset(sendBuffer,0,BUFFERSIZE);
+    p=0; /* start with first data packet */
     for (int i=0;i<NANALOGINPUTS;i++) {
       ivalue = analogRead(NINPUTS+i);
  
       if (ivalue != analoginput[i]) {
         analoginput[i] = ivalue;
 
-//        if (DEBUG) {
-        if (0) {
+        if (DEBUG) {
+//        if (0) {
           Serial.print("Analog Input ");
           Serial.print(i);
           Serial.print(" changed to: ");
           Serial.println(ivalue);
         }
    
+        sendBuffer[p*4+4] = i;
+        sendBuffer[p*4+5] = 0x02;
+        memcpy(&sendBuffer[6],&ivalue,sizeof(ivalue));
+        p++;
+        
+      }
+      if (p == MAXPACKET) {
         sendBuffer[0] = 0x41;
         sendBuffer[1] = 0x52;
         sendBuffer[2] = mac[4];
         sendBuffer[3] = mac[5];
-        sendBuffer[4] = i;
-        sendBuffer[5] = 1;
-        memcpy(&sendBuffer[6],&ivalue,sizeof(ivalue));
         Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
         int ret = Udp.write(sendBuffer,BUFFERSIZE);
         Udp.endPacket();
+        p=0;
+        memset(sendBuffer,0,BUFFERSIZE);
       }
     }
     
@@ -216,16 +264,21 @@ void loop() {
             Serial.println(ivalue);
           }
    
+          sendBuffer[4] = i;
+          sendBuffer[5] = 0x01;
+          memcpy(&sendBuffer[6],&ivalue,sizeof(ivalue));
+          p++;
+        }
+       if ((p == MAXPACKET) || ((p>0)&&(i=NINPUTS-1))) {
           sendBuffer[0] = 0x41;
           sendBuffer[1] = 0x52;
           sendBuffer[2] = mac[4];
           sendBuffer[3] = mac[5];
-          sendBuffer[4] = i;
-          sendBuffer[5] = 0;
-          memcpy(&sendBuffer[6],&ivalue,sizeof(ivalue));
           Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
           int ret = Udp.write(sendBuffer,BUFFERSIZE);
           Udp.endPacket();
+          p=0;
+          memset(sendBuffer,0,BUFFERSIZE);
         }
       }
     }

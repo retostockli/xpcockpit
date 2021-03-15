@@ -14,21 +14,22 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. */
 
-#define MAXARDS 5            /* maximum number of ards that we expect */
-#define RECVMSGLEN 8         /* number of bytes in received UDP packet */
-#define SENDMSGLEN 8         /* number of bytes in sent UDP packet */
-#define MAXANALOGINPUTS 5    /* 6 on Arduino  */
-#define MAXANALOGOUTPUTS 14  /* 14 on Arduino, not all can have PWM output though  */
-#define MAXINPUTS 14         /* All inputs can be used as outputs. Some are reserved */
-#define MAXOUTPUTS 14        /* All inputs can be used as outputs. Some are reserved */
-#define MAXSAVE 30           /* maximum number of history values in data structure */
-#define INPUTINITVAL -1      /* initial value of inputs upon startup */
-#define OUTPUTINITVAL -1     /* initial value of outputs upon startup (OFF) */
-#define ANALOGINPUTNBITS 10  /* number of bits of analog inputs */
-#define ANALOGOUTPUTNBITS 8  /* number of bits of analog outputs */
-#define UNCHANGED 0          /* flag for unchanged input / output */
-#define CHANGED 1            /* flag for changed input / output. 
-				Can actually also be > 1 for e.g. analog inputs that change faster than xparduino cycle */
+#define MAXARDS 5                /* maximum number of ards that we expect */
+#define MAXPACKET 10             /* maximum number of data points to send per packet */
+#define RECVMSGLEN 4+4*MAXPACKET /* number of bytes in received UDP packet */
+#define SENDMSGLEN 4+4*MAXPACKET /* number of bytes in sent UDP packet */
+#define MAXANALOGINPUTS 5        /* 6 on Arduino  */
+#define MAXANALOGOUTPUTS 14      /* 14 on Arduino, not all can have PWM output though  */
+#define MAXINPUTS 14             /* All inputs can be used as outputs. Some are reserved */
+#define MAXOUTPUTS 14            /* All inputs can be used as outputs. Some are reserved */
+#define MAXSAVE 30               /* maximum number of history values in data structure */
+#define INPUTINITVAL -1          /* initial value of inputs upon startup */
+#define OUTPUTINITVAL -1         /* initial value of outputs upon startup (OFF) */
+#define ANALOGINPUTNBITS 10      /* number of bits of analog inputs */
+#define ANALOGOUTPUTNBITS 8      /* number of bits of analog outputs */
+#define UNCHANGED 0              /* flag for unchanged input / output */
+#define CHANGED 1                /* flag for changed input / output. 
+				    Can actually also be > 1 for e.g. analog inputs that change faster than xparduino cycle */
 
 /* SISMO UDP SERVER (this code here) */
 extern char arduinoserver_ip[30];
