@@ -45,6 +45,7 @@ int ini_read(char ininame[])
   int i,j;
   char tmp[50];
   char sinput[50];
+  char sanaloginput[50];
   const char s[2] = ",";
   char *token;
  
@@ -63,7 +64,7 @@ int ini_read(char ininame[])
   char default_arduino_ip[] = "NA";
   int default_arduino_port = 0;
   int default_arduino_mac = 0;
-  char default_arduino_input[] = " ";
+  char default_arduino_input[] = "";
  
 
   /* check if we are in the source code directory or in the binary installation path */
@@ -107,6 +108,8 @@ int ini_read(char ininame[])
       arduino[i].mac[1] = iniparser_getint(ini,tmp, default_arduino_mac);
       sprintf(tmp,"arduino%i:Inputs",i);
       strcpy(sinput,iniparser_getstring(ini,tmp, default_arduino_input));
+      sprintf(tmp,"arduino%i:Analoginputs",i);
+      strcpy(sanaloginput,iniparser_getstring(ini,tmp, default_arduino_input));
       
       if (arduino[i].port == default_arduino_port) {
 	printf("Arduino %i NA \n",i);
@@ -118,7 +121,7 @@ int ini_read(char ininame[])
 	nards++;
 	arduino[i].connected = 1;
 
-	/* evaluate pins selected for input */
+	/* evaluate selected digital inputs */
 	for (j=0;j<MAXINPUTS;j++) {
 	  arduino[i].inputs_isinput[j] = 0;
 	}
@@ -126,11 +129,26 @@ int ini_read(char ininame[])
         while (token) {
 	  j = atoi(token);
 	  if (j < MAXINPUTS) {
-	    printf("Pin %i selected as Input\n",j);
+	    printf("Digital Input %i sends data to Server\n",j);
 	    arduino[i].inputs_isinput[j] = 1;
 	  }
 	  token=strtok(NULL,","); 
 	}
+	
+	/* evaluate selected analog inputs */
+	for (j=0;j<MAXANALOGINPUTS;j++) {
+	  arduino[i].analoginputs_isinput[j] = 0;
+	}
+	token = strtok(sanaloginput, s);
+        while (token) {
+	  j = atoi(token);
+	  if (j < MAXANALOGINPUTS) {
+	    printf("Analog Input %i sends data to Server\n",j);
+	    arduino[i].analoginputs_isinput[j] = 1;
+	  }
+	  token=strtok(NULL,","); 
+	}
+	
       }
 
       /* assume that no daughter ard is attached */
@@ -179,8 +197,8 @@ int ini_arduinodata()
       arduino[i].analogoutputs_changed[j] = UNCHANGED;
     }
 
-    arduino[i].compass = OUTPUTINITVAL;
-    arduino[i].compass_changed = UNCHANGED;
+    //    arduino[i].compass = OUTPUTINITVAL;
+    //    arduino[i].compass_changed = UNCHANGED;
     
  }
 
@@ -192,12 +210,19 @@ int reset_arduinodata()
   /* The changed flag is modified by the read function that first reads the input 
      or writes the output etc. */
   
-  int i,j;
+  int i,j,s;
   
   for(i=0;i<MAXARDS;i++) {
 
     if (arduino[i].connected == 1) {
       if (arduino[i].inputs_nsave > 0) arduino[i].inputs_nsave -= 1;
+    }
+
+    /* shift all analog inputs in history array by one */
+    for (j=0;j<arduino[i].nanaloginputs;j++) {
+      for (s=MAXSAVE-2;s>=0;s--) {
+	arduino[i].analoginputs[j][s+1] = arduino[i].analoginputs[j][s];
+      }
     }
   }
   return 0;

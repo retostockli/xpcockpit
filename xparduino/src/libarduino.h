@@ -18,7 +18,7 @@
 #define MAXPACKET 10             /* maximum number of data points to send per packet */
 #define RECVMSGLEN 4+4*MAXPACKET /* number of bytes in received UDP packet */
 #define SENDMSGLEN 4+4*MAXPACKET /* number of bytes in sent UDP packet */
-#define MAXANALOGINPUTS 5        /* 6 on Arduino  */
+#define MAXANALOGINPUTS 6        /* 6 on Arduino  */
 #define MAXANALOGOUTPUTS 14      /* 14 on Arduino, not all can have PWM output though  */
 #define MAXINPUTS 14             /* All inputs can be used as outputs. Some are reserved */
 #define MAXOUTPUTS 14            /* All inputs can be used as outputs. Some are reserved */
@@ -51,14 +51,15 @@ typedef struct {
   int nanalogoutputs;    /* actual number of activated analog outputs (INOP) */
   char inputs[MAXINPUTS][MAXSAVE];
   char inputs_nsave; /* number of history saves for inputs */
-  char inputs_isinput[MAXINPUTS];  /* which of the arduino pins is an input? */
+  char inputs_isinput[MAXINPUTS];  /* which of the pins is inialized as input sends input data back? */
   int analoginputs[MAXANALOGINPUTS][MAXSAVE];
+  char analoginputs_isinput[MAXANALOGINPUTS];  /* which of the analog inputs should send data back? */
   char outputs[MAXOUTPUTS];
   char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
   int analogoutputs[MAXOUTPUTS];
   int analogoutputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
-  int compass;
-  int compass_changed; /* unchanged = 0, changed = 1 */
+  //  int compass;
+  //  int compass_changed; /* unchanged = 0, changed = 1 */
 
   
 } arduino_struct;
@@ -74,7 +75,7 @@ int digital_input(int ard, int input, int *value, int type);
 int digital_outputf(int ard, int output, float *fvalue);
 int digital_output(int ard, int output, int *value);
 int analog_output(int ard, int analogoutput, int *value);
-int compass_output(int ard, float *fvalue);
+//int compass_output(int ard, float *fvalue);
 int analog_input(int ard, int input, float *value, float minval, float maxval);
 int encoder_input(int ard, int input1, int input2, int *value, int multiplier, int type);
 int encoder_inputf(int ard, int input1, int input2, float *value, float multiplier, int type);

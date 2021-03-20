@@ -109,7 +109,7 @@ void test(void)
   ret = analog_input(ard,0,fvalue,0.0,1.0);
   if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-    //    printf("Analog Input changed to: %f \n",*fvalue);
+    printf("Analog Input changed to: %f \n",*fvalue);
   }
 
   float degrees=interpolate((float) *encodervalue);
