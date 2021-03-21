@@ -60,34 +60,25 @@ int read_arduino() {
      6-7    | Value (16 bit signed Integer Value)
      --- SECOND DATA PACKET
      8      | Input / Output Number (0-13)
-     9      | Input / Output Type (1: digital, 2: analog, 3: initialize as input, 4: compass)
+     9      | Input / Output Type 
      10-11  | Value (16 bit signed Integer Value)
      --- THIRD DATA PACKET
      12      | Input / Output Number (0-13)
-     13      | Input / Output Type (1: digital, 2: analog, 3: initialize as input, 4: compass)
+     13      | Input / Output Type
      14-15  | Value (16 bit signed Integer Value)
      --- N-TH DATA PACKET (N=MAXPACKET)
 
-     Type of Input
+     Type of Input / Output
      1: digital
      2: analog
      3: initialize to send this digital input
      4: initialize to send this analog input
-     5: compass
   */
 
-  /* In case the server sends an initialization as input (2) to a specific pin
-     Arduino will send back the current pin value. This is important to get
+  /* In case the server sends an initialization as input (2 or 3) to a specific pin
+     Arduino will send back the current input value. This is important to get
      initial states after every new connect */
 
-  /* We have a special Output Type: compass, where we send degrees and the arduino
-     converts it to PWM signals of specific PWM and digital outputs. Why can't we do
-     that by changing outputs regularly? The time difference between UDP packets
-     has strange effects on the compass magnet when changing one pin 10 ms later than the other. */
-  
-  /* Not needed for analog inputs since they fire anyway after every little change
-     of the potentiometer, respectively even after no change due to noise in the system */
-  
   int ard;
   short int val;
   int input;
@@ -126,7 +117,7 @@ int read_arduino() {
 
 	if (verbose > 3) printf("Read %i bytes from Arduino %i \n",RECVMSGLEN,ard);
 
-	for (p=0;p<MAXPACKET;p++) {
+	for (p=0;p<MAXPACKETRECV;p++) {
 	
 	  /* Copy payload 16 bit Integer into variable */
 	  memcpy(&val,&arduinoRecvBuffer[p*4+6],sizeof(val));
@@ -145,7 +136,7 @@ int read_arduino() {
 		}
 	      }
 	      arduino[ard].inputs[input][0] = val; 
-	      if (verbose > 0) printf("Arduino %i Input %i Changed to: %i \n",ard,input,val);
+	      if (verbose > 2) printf("Arduino %i Input %i Changed to: %i \n",ard,input,val);
 
 	      /* update number of history values per input */
 	      if (arduino[ard].inputs_nsave < MAXSAVE) {
@@ -214,7 +205,7 @@ int write_arduino() {
 	  arduino[ard].outputs_changed[output] = UNCHANGED;
 	  p++;
 	}
-	if (p == MAXPACKET) {
+	if (p == MAXPACKETSEND) {
 	  arduinoSendBuffer[0] = 0x41;
 	  arduinoSendBuffer[1] = 0x52;
 	  arduinoSendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
@@ -238,7 +229,7 @@ int write_arduino() {
 	  arduino[ard].analogoutputs_changed[analogoutput] = UNCHANGED;
 	  p++;
 	}
-	if ((p == MAXPACKET) || ((p>0)&&(analogoutput==arduino[ard].nanalogoutputs-1))) {
+	if ((p == MAXPACKETSEND) || ((p>0)&&(analogoutput==arduino[ard].nanalogoutputs-1))) {
 	  arduinoSendBuffer[0] = 0x41;
 	  arduinoSendBuffer[1] = 0x52;
 	  arduinoSendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
@@ -249,30 +240,6 @@ int write_arduino() {
 	  memset(arduinoSendBuffer,0,SENDMSGLEN);
 	}
       }
-
- 
-      /* /\* Check Compass for changes and Send them *\/ */
-      /* if (arduino[ard].compass_changed == CHANGED) { */
-      /* 	if (verbose > 2) printf("Arduino %i Compass Value changed to: %i \n", */
-      /* 				ard,arduino[ard].compass); */
-      /* 	arduinoSendBuffer[p*4+4] = 0x00; */
-      /* 	arduinoSendBuffer[p*4+5] = 0x05;       */
-      /* 	val = arduino[ard].compass; */
-      /* 	memcpy(&arduinoSendBuffer[p*4+6],&val,sizeof(val)); */
-      /* 	arduino[ard].compass_changed = UNCHANGED; */
-      /* 	p++; */
-      /* } /\* pin selected as input *\/ */
-      
-      /* /\* send leftover data from previous loops which did not complete the full send buffer *\/ */
-      /* if (p>0) { */
-      /* 	arduinoSendBuffer[0] = 0x41; */
-      /* 	arduinoSendBuffer[1] = 0x52; */
-      /* 	arduinoSendBuffer[2] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by arduino *\/ */
-      /* 	arduinoSendBuffer[3] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by arduino *\/ */
-      /* 	ret = send_udp(arduino[ard].ip,arduino[ard].port,arduinoSendBuffer,SENDMSGLEN); */
-      /* 	if (verbose > 2) printf("Sent %i bytes to ard %i \n", ret,ard);	 */
-      /* } */
-
 
     }
   }
@@ -304,7 +271,7 @@ int init_arduino() {
 	  arduinoSendBuffer[p*4+7] = 0x00;
 	  p++;
 	} /* pin selected as input */
-	if (p == MAXPACKET) {
+	if (p == MAXPACKETSEND) {
 	  arduinoSendBuffer[0] = 0x41;
 	  arduinoSendBuffer[1] = 0x52;
 	  arduinoSendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
@@ -327,7 +294,7 @@ int init_arduino() {
 	  arduinoSendBuffer[p*4+7] = 0x00;
 	  p++;
 	} /* analog input pint selected */
-	if ((p == MAXPACKET) || ((p>0)&&(input==arduino[ard].nanaloginputs-1))) {
+	if ((p == MAXPACKETSEND) || ((p>0)&&(input==arduino[ard].nanaloginputs-1))) {
 	  arduinoSendBuffer[0] = 0x41;
 	  arduinoSendBuffer[1] = 0x52;
 	  arduinoSendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by arduino */
@@ -489,46 +456,6 @@ int digital_output(int ard, int output, int *value)
 
   return retval;
 }
-
-/* int compass_output(int ard, float *fvalue) */
-/* { */
-/*   int retval = 0; */
-/*   int value; */
-
-/*   if (fvalue != NULL) { */
-
-/*     if (ard < MAXARDS) { */
-/*       if (arduino[ard].connected) { */
-/* 	if (*fvalue != FLT_MISS) { */
-/* 	  if ((*fvalue >= 0.0) && (*fvalue <= 360.0)) { */
-
-/* 	    value = (int) *fvalue * 10.0; */
-
-/* 	    if (value != arduino[ard].compass) { */
-/* 	      arduino[ard].compass = value; */
-/* 	      arduino[ard].compass_changed = CHANGED; */
-/* 	    } */
-	    
-/* 	  } else { */
-/* 	    if (verbose > 0) printf("Compass Output of Arduino %i should be between 0 and 360, but is %f \n",ard,*fvalue); */
-/* 	    retval = -1; */
-/* 	  } */
-/* 	} */
-/*       } else { */
-/* 	if (verbose > 2) printf("Compass value cannot be written. Arduino %i not connected \n",ard); */
-/* 	retval = -1; */
-/*       } */
-/*     } else { */
-/*       if (verbose > 0) printf("Compass value cannot be written. Arduino %i >= MAXARDS\n",ard); */
-/*       retval = -1; */
-/*     } */
-
-/*   } */
-
-/*   return retval; */
-/* } */
-
-
 
 int analog_output(int ard, int analogoutput, int *value)
 {
@@ -703,7 +630,7 @@ int encoder_inputf(int ard, int input1, int input2, float *value, float multipli
 		  if (obits[0] == INPUTINITVAL) obits[0] = nbits[0];
 		  if (obits[1] == INPUTINITVAL) obits[1] = nbits[1];
 
-		  //		  printf("%i %i %i %i \n",nbits[0],nbits[1],obits[0],obits[1]);
+		  printf("%i %i %i %i \n",nbits[0],nbits[1],obits[0],obits[1]);
 		  
 		  if (type == 1) {
 		    /* 2 bit optical encoder */

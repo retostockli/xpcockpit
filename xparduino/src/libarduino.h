@@ -15,9 +15,10 @@
    If not, see <http://www.gnu.org/licenses/>. */
 
 #define MAXARDS 5                /* maximum number of ards that we expect */
-#define MAXPACKET 10             /* maximum number of data points to send per packet */
-#define RECVMSGLEN 4+4*MAXPACKET /* number of bytes in received UDP packet */
-#define SENDMSGLEN 4+4*MAXPACKET /* number of bytes in sent UDP packet */
+#define MAXPACKETRECV 1          /* maximum number of data points to receive per packet */
+#define MAXPACKETSEND 10         /* maximum number of data points to send per packet */
+#define RECVMSGLEN 4+4*MAXPACKETRECV /* number of bytes in received UDP packet */
+#define SENDMSGLEN 4+4*MAXPACKETSEND /* number of bytes in sent UDP packet */
 #define MAXANALOGINPUTS 6        /* 6 on Arduino  */
 #define MAXANALOGOUTPUTS 14      /* 14 on Arduino, not all can have PWM output though  */
 #define MAXINPUTS 14             /* All inputs can be used as outputs. Some are reserved */
@@ -58,8 +59,6 @@ typedef struct {
   char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
   int analogoutputs[MAXOUTPUTS];
   int analogoutputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
-  //  int compass;
-  //  int compass_changed; /* unchanged = 0, changed = 1 */
 
   
 } arduino_struct;
@@ -75,7 +74,6 @@ int digital_input(int ard, int input, int *value, int type);
 int digital_outputf(int ard, int output, float *fvalue);
 int digital_output(int ard, int output, int *value);
 int analog_output(int ard, int analogoutput, int *value);
-//int compass_output(int ard, float *fvalue);
 int analog_input(int ard, int input, float *value, float minval, float maxval);
 int encoder_input(int ard, int input1, int input2, int *value, int multiplier, int type);
 int encoder_inputf(int ard, int input1, int input2, float *value, float multiplier, int type);

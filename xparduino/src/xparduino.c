@@ -42,6 +42,7 @@
 #include "serverdata.h"
 #include "check_aircraft.h"
 #include "test.h"
+#include "compass.h"
 
 int acf_type;
 
@@ -98,9 +99,9 @@ int main(int argc, char **argv) {
     if (strcmp(*argv,"test") == 0) {
       test();
     }
-    /*    if (strcmp(*argv,"compass") == 0) {
+    if (strcmp(*argv,"compass") == 0) {
       compass();
-      }*/
+    }
 
     /**** User Modules End Here ****/
     

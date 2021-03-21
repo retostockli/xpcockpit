@@ -196,9 +196,6 @@ int ini_arduinodata()
       arduino[i].analogoutputs[j] = OUTPUTINITVAL;
       arduino[i].analogoutputs_changed[j] = UNCHANGED;
     }
-
-    //    arduino[i].compass = OUTPUTINITVAL;
-    //    arduino[i].compass_changed = UNCHANGED;
     
  }
 
