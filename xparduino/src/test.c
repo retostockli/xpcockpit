@@ -1,5 +1,4 @@
-/* This is the test.c code which can be used to test basic I/O of the SISMO Master and Daughter
-   ards
+/* This is the test.c code which can be used to test basic I/O of the Arduino
 
    Copyright (C) 2021 Reto Stockli
 
@@ -32,6 +31,7 @@
 #include "common.h"
 #include "libarduino.h"
 #include "serverdata.h"
+#include "test.h"
 
 int digitalvalue;
 
@@ -39,8 +39,7 @@ void test(void)
 {
 
   int ret;
-  int ard = 0;
-  int input;
+  int ard = 0; /* arduino number according to ini file */
 
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -52,22 +51,21 @@ void test(void)
   /* link NAV1 Frequency to encoder value */
   int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
 
+  /* not needed, only if you run without x-plane connection */
   if (*encodervalue == INT_MISS) *encodervalue = 0;
   if (*fvalue == FLT_MISS) *fvalue = 0.0;
-  
+  if (*value == INT_MISS) *fvalue = 1;
+
   /* read encoder at inputs 13 and 15 */
   ret = encoder_input(ard, 8, 9, encodervalue, 5, 1);
   if (ret == 1) {
-    if (*encodervalue > 360) *encodervalue -= 360;
-    if (*encodervalue < 0) *encodervalue += 360;
     printf("Encoder changed to: %i \n",*encodervalue);
   }
   
   /* read digital input (#8) */  
-  input = 8;
-  ret = digital_input(ard, input, &digitalvalue, 0);
+  ret = digital_input(ard, 8, &digitalvalue, 0);
   if (ret == 1) {
-    printf("Digital Input %i changed to: %i \n",input,digitalvalue);
+    printf("Digital Input changed to: %i \n",digitalvalue);
   } 
 
   /* read first analog input (#0) */
@@ -77,7 +75,7 @@ void test(void)
     printf("Analog Input changed to: %f \n",*fvalue);
   }
   
-  /* set LED connected to second output (#1) to value of above input */
-  ret = digital_output(ard, 2, value);
+  /* set LED connected to second output (#1) to value landing lights dataref */
+  ret = digital_output(ard, 1, value);
   
 }
