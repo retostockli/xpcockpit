@@ -268,7 +268,7 @@ int read_sismo() {
 		val = get_bit(sismoRecvBuffer[8+b],i);
 		if (val != sismo[card].inputs[input][0]) {
 		  sismo[card].inputs[input][0] = val; 
-		  if (verbose > 2) printf("Card %i Input %i Changed to: %i \n",card,input,val);
+		  if (verbose > 0) printf("Card %i Input %i Changed to: %i \n",card,input,val);
 		}
 	      }
 	    }
@@ -848,13 +848,13 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		      nbits[1] = sismo[card].inputs[input2][s];
 		      
 		      if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			updown = -1;
+			updown = 1;
 		      } else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			updown = 1;
-		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
 			updown = -1;
-		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
 			updown = 1;
+		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
+			updown = -1;
 		      }
 	  
 		      if (updown != 0) {
@@ -876,7 +876,7 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			  ((oldcount == 1) && (newcount == 3)) ||
 			  ((oldcount == 3) && (newcount == 2)) ||
 			  ((oldcount == 2) && (newcount == 0))) {
-			updown = 1;
+			updown = -1;
 		      }
 		    
 		      /* backward */
@@ -884,18 +884,18 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			  ((oldcount == 3) && (newcount == 1)) ||
 			  ((oldcount == 1) && (newcount == 0)) ||
 			  ((oldcount == 0) && (newcount == 2))) {
-			updown = -1;
+			updown = 1;
 		      }
 		    
 		      if (updown != 0) {
 			/* add accelerator by using s as number of queued encoder changes */
-			*value = *value + ((float) updown) * multiplier * (float) (s+1);
+			*value = *value + ((float) updown) * multiplier * (float) (s*2+1);
 			retval = 1;
 		      }		    
 		    } else {
 		      if (verbose > 0) printf("Encoder with Input %i,%i of card %i need to be of type 1 or 2 \n",
 					      input1,input2,card);
-		      retval = -1;
+		      retval = 1;
 		    }
 		  }
 		}

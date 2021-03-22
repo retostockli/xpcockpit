@@ -53,13 +53,13 @@ void b737_mcp(void)
   } else {
     ap_heading = link_dataref_flt("sim/cockpit/autopilot/heading_mag",0);
   }
-  float *ap_ias; // IAS autopilot
+  float *ap_speed; // IAS autopilot
   if ((acf_type == 2) || (acf_type == 3)) {
-    ap_ias = link_dataref_flt("laminar/B738/autopilot/mcp_speed_dial_kts_mach",-2);      
+    ap_speed = link_dataref_flt("laminar/B738/autopilot/mcp_speed_dial_kts_mach",-2);      
   } else if (acf_type == 1) {  
-    ap_ias = link_dataref_flt("x737/systems/athr/MCPSPD_spd",-2);           
+    ap_speed = link_dataref_flt("x737/systems/athr/MCPSPD_spd",-2);           
   } else {
-    ap_ias = link_dataref_flt("sim/cockpit/autopilot/airspeed",-2);
+    ap_speed = link_dataref_flt("sim/cockpit/autopilot/airspeed",-2);
   }
 
   float *ap_vspeed; // autopilot vertical speed
@@ -337,6 +337,10 @@ void b737_mcp(void)
   
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
+  /* blank displays if avionics are off */
+  int blank = 0;
+  if (*avionics_on != 1) blank = 1;
+  
   // gear handle (hooked up on MCP inputs temporarily)
   int *gear_handle_down;
   float *gear_handle_position;
@@ -354,20 +358,66 @@ void b737_mcp(void)
   /* INPUTS */
 
   /* ENCODERS */
-  if (*ap_course1 == FLT_MISS) *ap_course1 = 0.0;
-  ret = encoder_inputf(card, 1, 0, ap_course1, 1.0, 1);
+  ret = encoder_inputf(card, 0, 1, ap_course1, 1.0, 1);
   if ((ret==1) && (*ap_course1 != FLT_MISS)) {
     if (*ap_course1 < 0.0) *ap_course1 = 359.0;
     if (*ap_course1 > 359.0) *ap_course1 = 0.0;
-    printf("course1: %f \n",*ap_course1);
+    printf("NAV1 Course: %f \n",*ap_course1);
   }
+  
+  ret = encoder_inputf(card, 30, 31, ap_course2, 1.0, 1);
+  if ((ret==1) && (*ap_course2 != FLT_MISS)) {
+    if (*ap_course2 < 0.0) *ap_course2 = 359.0;
+    if (*ap_course2 > 359.0) *ap_course2 = 0.0;
+    printf("NAV2 Course: %f \n",*ap_course2);
+  }
+  
+  if (*ap_spd_is_mach == 1) {
+    ret = encoder_inputf(card,8,9,ap_speed,0.01,1);
+  } else {
+    ret = encoder_inputf(card,8,9,ap_speed,1.0,1);
+  }
+  
+  if (ret==1) printf("AP Speed: %f \n",*ap_speed);
+  ret = encoder_inputf(card, 13, 14, ap_heading, 1.0, 1);
+  if ((ret==1) && (*ap_heading != FLT_MISS)) {
+    if (*ap_heading < 0.0) *ap_heading = 359.0;
+    if (*ap_heading > 359.0) *ap_heading = 0.0;
+    printf("AP Heading: %f \n",*ap_heading);
+  }
+  
+  ret = encoder_inputf(card, 19, 20, ap_altitude, 100.0, 1);
+  if ((ret==1) && (*ap_altitude != FLT_MISS)) {
+    printf("AP Altitude: %f \n",*ap_altitude);
+  }
+  
+  if ((*ap_vspeed < 1000.) && (*ap_vspeed > -1000.)) {
+    ret = encoder_inputf(card, 21, 22, ap_vspeed, 50.0, 1);
+  } else {
+    ret = encoder_inputf(card, 21, 22, ap_vspeed, 100.0, 1);
+  }
+  if (ret==1) printf("AP Vertical Speed: %f \n",*ap_vspeed);
 
   /* OUTPUTS */
 
   /* DISPLAYS */
-  ret = display_outputf(card, 0, 3, ap_course1, -1, 0);
+  ret = display_outputf(card, 0, 3, ap_course1, -1, blank);
+  ret = display_outputf(card, 21, 3, ap_course2, -1, blank);
+  if (*ap_spd_is_mach == 1) {
+    float ftemp = *ap_speed * 100.0;
+    ret = display_outputf(card,3,4, ap_speed, -1, 1);  // clear all digits
+    ret = display_outputf(card,4,3, &ftemp, 2, blank); // mach spd in two first digits
+  } else {
+    ret = display_outputf(card,3,4, ap_speed, -1, blank);
+  }
+  ret = display_outputf(card, 8, 3, ap_heading, -1, blank);
+  ret = display_outputf(card, 11, 5, ap_altitude, -1, blank);
+  if ((*ap_vspeed == 0.0) || (*ap_vnav_led == 1) || (*ap_app_led == 1)) {
+    ret = display_outputf(card, 16, 5, ap_vspeed, -1, 1);
+  } else {
+    ret = display_outputf(card, 16, 5, ap_vspeed, -1, blank);
+  }
   
-
 
   if (0) {
   
