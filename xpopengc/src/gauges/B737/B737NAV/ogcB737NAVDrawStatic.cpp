@@ -54,8 +54,8 @@ namespace OpenGC
 
     int acf_type = m_pDataSource->GetAcfType();
   
-    bool is_captain = (this->GetArg() == 1);
-    bool is_copilot = (this->GetArg() == 2);
+    bool is_captain = (this->GetArg() == 0);
+    bool is_copilot = (this->GetArg() == 1);
 
     // bool mapCenter = m_NAVGauge->GetMapCenter();
     int mapMode = m_NAVGauge->GetMapMode();

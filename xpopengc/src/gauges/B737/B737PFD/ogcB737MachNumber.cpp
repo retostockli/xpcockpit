@@ -80,8 +80,8 @@ namespace OpenGC
     glPushMatrix();
 
     // retrieve data
-    bool is_captain = (this->GetArg() == 1);
-    bool is_copilot = (this->GetArg() == 2);
+    bool is_captain = (this->GetArg() == 0);
+    bool is_copilot = (this->GetArg() == 1);
 
     int acf_type = m_pDataSource->GetAcfType();
 

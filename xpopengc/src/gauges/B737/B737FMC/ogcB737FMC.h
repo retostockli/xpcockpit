@@ -50,7 +50,7 @@ class B737FMC : public Gauge
 {
 public:
 
-  B737FMC();
+  B737FMC(int arg);
   virtual ~B737FMC();
 
   void Render();

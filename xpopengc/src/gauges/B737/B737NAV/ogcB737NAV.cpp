@@ -167,7 +167,7 @@ void B737NAV::Render()
     float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
-    bool is_captain = (this->GetArg() == 1);
+    bool is_captain = (this->GetArg() == 0);
 
     // Get Map Mode (APP/VOR/MAP/PLN)
     int *map_mode;

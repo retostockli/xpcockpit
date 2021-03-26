@@ -270,10 +270,14 @@ bool AppObject::DoFileInitialization(char* iniFile)
     m_customdata = iniparser_getint(ini,"General:CustomData", default_customdata);
 
     // Initialize the nav database
-    if (verbosity > 0) printf("AppObject - Initializing the navigation database in %s\n", m_XPlanePath);
-    m_pNavDatabase = new NavDatabase;
-    if (!m_pNavDatabase->InitDatabase(m_XPlanePath,m_customdata)) return false;
-
+    if (strcmp(m_XPlanePath,"")) {
+      if (verbosity > 0) printf("AppObject - Initializing the navigation database in %s\n", m_XPlanePath);
+      m_pNavDatabase = new NavDatabase;
+      if (!m_pNavDatabase->InitDatabase(m_XPlanePath,m_customdata)) return false;
+    } else {
+      if (verbosity > 0) printf("AppObject - Not Loading navigation database since X-Plane path is empty.\n");
+    }
+    
     // Set up font manager
     m_pFontManager = new FontManager();
 
@@ -392,7 +396,7 @@ bool AppObject::DoFileInitialization(char* iniFile)
   else if (strcmp(name, "B737PFDSA")==0) pGauge = new B737PFDSA();
   else if (strcmp(name, "B737EICAS")==0) pGauge = new B737EICAS();
   else if (strcmp(name, "B737NAV")==0) pGauge = new B737NAV();
-  else if (strcmp(name, "B737FMC")==0) pGauge = new B737FMC();
+  else if (strcmp(name, "B737FMC")==0) pGauge = new B737FMC(arg);
   else if (strcmp(name, "B737MIP")==0) pGauge = new B737MIP();
   else if (strcmp(name, "B737CLOCK")==0) pGauge = new B737Clock();
 /*

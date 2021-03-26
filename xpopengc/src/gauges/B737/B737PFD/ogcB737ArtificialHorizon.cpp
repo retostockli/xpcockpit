@@ -77,7 +77,7 @@ namespace OpenGC
     // First, store the "root" position of the gauge component
     glMatrixMode(GL_MODELVIEW);
 
-    bool is_captain = (this->GetArg() == 1);
+    bool is_captain = (this->GetArg() == 0);
     
     int acf_type = m_pDataSource->GetAcfType();
     

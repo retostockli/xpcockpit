@@ -72,7 +72,9 @@ public:
 
   /** Provide Argument to Gauge **/
   void SetArg(int arg);
-  
+
+  int GetArg() { return m_Arg; }
+ 
   /** Recalculates placement of the gauge in the window */
   void RecalcWindowPlacement();
 
