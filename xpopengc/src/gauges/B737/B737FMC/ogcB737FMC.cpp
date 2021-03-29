@@ -71,23 +71,32 @@ B737FMC::B737FMC(int arg)
   m_PhysicalPosition.x = 0;
   m_PhysicalPosition.y = 0;
   
-  m_PhysicalSize.x = 110;
   if (with_keys) {
+    m_PhysicalSize.x = 110;
     m_PhysicalSize.y = 165;
   } else {
-    m_PhysicalSize.y = 85;
+    m_PhysicalSize.x = 82;
+    m_PhysicalSize.y = 76;
   }
   
   
   /* line spacing */
   float delta = (76.0-2.0)/14.0;
-  float linex0 = 15.0;
+  float linex0;
+  float liney0;
+  if (with_keys) {
+    linex0 = 15.0;
+    liney0 = 4.0;
+  } else {
+    linex0 = 2.0;
+    liney0 = 0.0;
+  }
   float keyx0 = 12.0;
   float mkeyx0 = 4.0;
   
   B737FMCLine* line_1 = new B737FMCLine();
   line_1->SetParentRenderObject(this);
-  line_1->SetPosition(linex0, m_PhysicalSize.y - 4 - delta);
+  line_1->SetPosition(linex0, m_PhysicalSize.y - liney0 - delta);
   line_1->setCurrentLine(1);
   line_1->setLineDataRef1((char*) "FJCC/UFMC/LINE_1");
   if (is_captain) {
@@ -99,7 +108,7 @@ B737FMC::B737FMC(int arg)
   
   B737FMCLine* line_1_small = new B737FMCLine();
   line_1_small->SetParentRenderObject(this);
-  line_1_small->SetPosition(linex0, m_PhysicalSize.y - 4 - delta);
+  line_1_small->SetPosition(linex0, m_PhysicalSize.y - liney0 - delta);
   line_1_small->setCurrentLine(1);
   line_1_small->setLineSizeY(0.6);
   if (is_captain) {
@@ -111,7 +120,7 @@ B737FMC::B737FMC(int arg)
   
   B737FMCLine* line_1_magenta = new B737FMCLine();
   line_1_magenta->SetParentRenderObject(this);
-  line_1_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - delta);
+  line_1_magenta->SetPosition(linex0, m_PhysicalSize.y - liney0 - delta);
   line_1_magenta->setCurrentLine(1);
   line_1_magenta->setLineColor(255,0,255);
   if (is_captain) {
@@ -123,7 +132,7 @@ B737FMC::B737FMC(int arg)
   
   B737FMCLine* line_2 = new B737FMCLine();
   line_2->SetParentRenderObject(this);
-  line_2->SetPosition(linex0, m_PhysicalSize.y - 4 - 2*delta);
+  line_2->SetPosition(linex0, m_PhysicalSize.y - liney0 - 2*delta);
   line_2->setCurrentLine(2);
   line_2->setLineSizeY(0.6);
   line_2->setLineDataRef1((char*) "FJCC/UFMC/LINE_2");
@@ -136,7 +145,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_3 = new B737FMCLine();
   line_3->SetParentRenderObject(this);
-  line_3->SetPosition(linex0, m_PhysicalSize.y - 4 - 3*delta);
+  line_3->SetPosition(linex0, m_PhysicalSize.y - liney0 - 3*delta);
   line_3->setCurrentLine(3);
   line_3->setLineDataRef1((char*) "FJCC/UFMC/LINE_3");
   if (is_captain) {
@@ -148,7 +157,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_3_small = new B737FMCLine();
   line_3_small->SetParentRenderObject(this);
-  line_3_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 3*delta);
+  line_3_small->SetPosition(linex0, m_PhysicalSize.y - liney0 - 3*delta);
   line_3_small->setCurrentLine(3);
   line_3_small->setLineSizeY(0.6);
   if (is_captain) {
@@ -160,7 +169,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_3_magenta = new B737FMCLine();
   line_3_magenta->SetParentRenderObject(this);
-  line_3_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 3*delta);
+  line_3_magenta->SetPosition(linex0, m_PhysicalSize.y - liney0 - 3*delta);
   line_3_magenta->setCurrentLine(3);
   line_3_magenta->setLineColor(255,0,255);
   if (is_captain) {
@@ -172,7 +181,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_4 = new B737FMCLine();
   line_4->SetParentRenderObject(this);
-  line_4->SetPosition(linex0, m_PhysicalSize.y - 4 - 4*delta);
+  line_4->SetPosition(linex0, m_PhysicalSize.y - liney0 - 4*delta);
   line_4->setCurrentLine(4);
   line_4->setLineSizeY(0.6);
   line_4->setLineDataRef1((char*) "FJCC/UFMC/LINE_4");
@@ -185,7 +194,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_5 = new B737FMCLine();
   line_5->SetParentRenderObject(this);
-  line_5->SetPosition(linex0, m_PhysicalSize.y - 4 - 5*delta);
+  line_5->SetPosition(linex0, m_PhysicalSize.y - liney0 - 5*delta);
   line_5->setCurrentLine(5);
   line_5->setLineDataRef1((char*) "FJCC/UFMC/LINE_5");
   if (is_captain) {
@@ -197,7 +206,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_5_small = new B737FMCLine();
   line_5_small->SetParentRenderObject(this);
-  line_5_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 5*delta);
+  line_5_small->SetPosition(linex0, m_PhysicalSize.y - liney0 - 5*delta);
   line_5_small->setCurrentLine(5);
   line_5_small->setLineSizeY(0.6);
   if (is_captain) {
@@ -209,7 +218,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_5_magenta = new B737FMCLine();
   line_5_magenta->SetParentRenderObject(this);
-  line_5_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 5*delta);
+  line_5_magenta->SetPosition(linex0, m_PhysicalSize.y - liney0 - 5*delta);
   line_5_magenta->setCurrentLine(5);
   line_5_magenta->setLineColor(255,0,255);
   if (is_captain) {
@@ -221,7 +230,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_6 = new B737FMCLine();
   line_6->SetParentRenderObject(this);
-  line_6->SetPosition(linex0, m_PhysicalSize.y - 4 - 6*delta);
+  line_6->SetPosition(linex0, m_PhysicalSize.y - liney0 - 6*delta);
   line_6->setCurrentLine(6);
   line_6->setLineSizeY(0.6);
   line_6->setLineDataRef1((char*) "FJCC/UFMC/LINE_6");
@@ -234,7 +243,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_7 = new B737FMCLine();
   line_7->SetParentRenderObject(this);
-  line_7->SetPosition(linex0, m_PhysicalSize.y - 4 - 7*delta);
+  line_7->SetPosition(linex0, m_PhysicalSize.y - liney0 - 7*delta);
   line_7->setCurrentLine(7);
   line_7->setLineDataRef1((char*) "FJCC/UFMC/LINE_7");
   if (is_captain) {
@@ -246,7 +255,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_7_small = new B737FMCLine();
   line_7_small->SetParentRenderObject(this);
-  line_7_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 7*delta);
+  line_7_small->SetPosition(linex0, m_PhysicalSize.y - liney0 - 7*delta);
   line_7_small->setCurrentLine(7);
   line_7_small->setLineSizeY(0.6);
   line_7_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line03_S");
@@ -254,7 +263,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_7_magenta = new B737FMCLine();
   line_7_magenta->SetParentRenderObject(this);
-  line_7_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 7*delta);
+  line_7_magenta->SetPosition(linex0, m_PhysicalSize.y - liney0 - 7*delta);
   line_7_magenta->setCurrentLine(7);
   line_7_magenta->setLineColor(255,0,255);
   if (is_captain) {
@@ -266,7 +275,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_8 = new B737FMCLine();
   line_8->SetParentRenderObject(this);
-  line_8->SetPosition(linex0, m_PhysicalSize.y - 4 - 8*delta);
+  line_8->SetPosition(linex0, m_PhysicalSize.y - liney0 - 8*delta);
   line_8->setCurrentLine(8);
   line_8->setLineSizeY(0.6);
   line_8->setLineDataRef1((char*) "FJCC/UFMC/LINE_8");
@@ -279,7 +288,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_9 = new B737FMCLine();
   line_9->SetParentRenderObject(this);
-  line_9->SetPosition(linex0, m_PhysicalSize.y - 4 - 9*delta);
+  line_9->SetPosition(linex0, m_PhysicalSize.y - liney0 - 9*delta);
   line_9->setCurrentLine(9);
   line_9->setLineDataRef1((char*) "FJCC/UFMC/LINE_9");
   if (is_captain) {
@@ -291,7 +300,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_9_small = new B737FMCLine();
   line_9_small->SetParentRenderObject(this);
-  line_9_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 9*delta);
+  line_9_small->SetPosition(linex0, m_PhysicalSize.y - liney0 - 9*delta);
   line_9_small->setCurrentLine(9);
   line_9_small->setLineSizeY(0.6);
   if (is_captain) {
@@ -303,7 +312,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_9_magenta = new B737FMCLine();
   line_9_magenta->SetParentRenderObject(this);
-  line_9_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 9*delta);
+  line_9_magenta->SetPosition(linex0, m_PhysicalSize.y - liney0 - 9*delta);
   line_9_magenta->setCurrentLine(9);
   line_9_magenta->setLineColor(255,0,255);
   if (is_captain) {
@@ -315,7 +324,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_10 = new B737FMCLine();
   line_10->SetParentRenderObject(this);
-  line_10->SetPosition(linex0, m_PhysicalSize.y - 4 - 10*delta);
+  line_10->SetPosition(linex0, m_PhysicalSize.y - liney0 - 10*delta);
   line_10->setCurrentLine(10);
   line_10->setLineSizeY(0.6);
   line_10->setLineDataRef1((char*) "FJCC/UFMC/LINE_10");
@@ -328,7 +337,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_11 = new B737FMCLine();
   line_11->SetParentRenderObject(this);
-  line_11->SetPosition(linex0, m_PhysicalSize.y - 4 - 11*delta);
+  line_11->SetPosition(linex0, m_PhysicalSize.y - liney0 - 11*delta);
   line_11->setCurrentLine(11);
   line_11->setLineDataRef1((char*) "FJCC/UFMC/LINE_11");
   if (is_captain) {
@@ -340,7 +349,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_11_small = new B737FMCLine();
   line_11_small->SetParentRenderObject(this);
-  line_11_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 11*delta);
+  line_11_small->SetPosition(linex0, m_PhysicalSize.y - liney0 - 11*delta);
   line_11_small->setCurrentLine(11);
   line_11_small->setLineSizeY(0.6);
   if (is_captain) {
@@ -352,7 +361,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_11_magenta = new B737FMCLine();
   line_11_magenta->SetParentRenderObject(this);
-  line_11_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 11*delta);
+  line_11_magenta->SetPosition(linex0, m_PhysicalSize.y - liney0 - 11*delta);
   line_11_magenta->setCurrentLine(11);
   line_11_magenta->setLineColor(255,0,255);
   if (is_captain) {
@@ -364,7 +373,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_12 = new B737FMCLine();
   line_12->SetParentRenderObject(this);
-  line_12->SetPosition(linex0, m_PhysicalSize.y - 4 - 12*delta);
+  line_12->SetPosition(linex0, m_PhysicalSize.y - liney0 - 12*delta);
   line_12->setCurrentLine(12);
   line_12->setLineSizeY(0.6);
   line_12->setLineDataRef1((char*) "FJCC/UFMC/LINE_12");
@@ -377,7 +386,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_13 = new B737FMCLine();
   line_13->SetParentRenderObject(this);
-  line_13->SetPosition(linex0, m_PhysicalSize.y - 4 - 13*delta);
+  line_13->SetPosition(linex0, m_PhysicalSize.y - liney0 - 13*delta);
   line_13->setCurrentLine(13);
   line_13->setLineDataRef1((char*) "FJCC/UFMC/LINE_13");
   line_13->setLineDataRef2((char*) "laminar/B738/fmc1/Line06_L");
@@ -385,7 +394,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_13_small = new B737FMCLine();
   line_13_small->SetParentRenderObject(this);
-  line_13_small->SetPosition(linex0, m_PhysicalSize.y - 4 - 13*delta);
+  line_13_small->SetPosition(linex0, m_PhysicalSize.y - liney0 - 13*delta);
   line_13_small->setCurrentLine(13);
   line_13_small->setLineSizeY(0.6);
   if (is_captain) {
@@ -397,7 +406,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_13_magenta = new B737FMCLine();
   line_13_magenta->SetParentRenderObject(this);
-  line_13_magenta->SetPosition(linex0, m_PhysicalSize.y - 4 - 13*delta);
+  line_13_magenta->SetPosition(linex0, m_PhysicalSize.y - liney0 - 13*delta);
   line_13_magenta->setCurrentLine(13);
   line_13_magenta->setLineColor(255,0,255);
   if (is_captain) {
@@ -409,7 +418,7 @@ B737FMC::B737FMC(int arg)
 
   B737FMCLine* line_14 = new B737FMCLine();
   line_14->SetParentRenderObject(this);
-  line_14->SetPosition(linex0, m_PhysicalSize.y - 4 - 14*delta);
+  line_14->SetPosition(linex0, m_PhysicalSize.y - liney0 - 14*delta);
   line_14->setCurrentLine(14);
   line_14->setLineDataRef1((char*) "FJCC/UFMC/LINE_14");
   if (is_captain) {
@@ -956,7 +965,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_lk1 = new B737FMCKey();
     key_lk1->SetParentRenderObject(this);
-    key_lk1->SetPosition(mkeyx0, m_PhysicalSize.y - 4 - 3*delta);
+    key_lk1->SetPosition(mkeyx0, m_PhysicalSize.y - liney0 - 3*delta);
     key_lk1->setKeyName((char*) "--");
     key_lk1->setKeyForm(4);
     key_lk1->setKeySizeX(8);
@@ -967,7 +976,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_lk2 = new B737FMCKey();
     key_lk2->SetParentRenderObject(this);
-    key_lk2->SetPosition(mkeyx0, m_PhysicalSize.y - 4 - 5*delta);
+    key_lk2->SetPosition(mkeyx0, m_PhysicalSize.y - liney0 - 5*delta);
     key_lk2->setKeyName((char*) "--");
     key_lk2->setKeyForm(4);
     key_lk2->setKeySizeX(8);
@@ -978,7 +987,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_lk3 = new B737FMCKey();
     key_lk3->SetParentRenderObject(this);
-    key_lk3->SetPosition(mkeyx0, m_PhysicalSize.y - 4 - 7*delta);
+    key_lk3->SetPosition(mkeyx0, m_PhysicalSize.y - liney0 - 7*delta);
     key_lk3->setKeyName((char*) "--");
     key_lk3->setKeyForm(4);
     key_lk3->setKeySizeX(8);
@@ -989,7 +998,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_lk4 = new B737FMCKey();
     key_lk4->SetParentRenderObject(this);
-    key_lk4->SetPosition(mkeyx0, m_PhysicalSize.y - 4 - 9*delta);
+    key_lk4->SetPosition(mkeyx0, m_PhysicalSize.y - liney0 - 9*delta);
     key_lk4->setKeyName((char*) "--");
     key_lk4->setKeyForm(4);
     key_lk4->setKeySizeX(8);
@@ -1000,7 +1009,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_lk5 = new B737FMCKey();
     key_lk5->SetParentRenderObject(this);
-    key_lk5->SetPosition(mkeyx0, m_PhysicalSize.y - 4 - 11*delta);
+    key_lk5->SetPosition(mkeyx0, m_PhysicalSize.y - liney0 - 11*delta);
     key_lk5->setKeyName((char*) "--");
     key_lk5->setKeyForm(4);
     key_lk5->setKeySizeX(8);
@@ -1011,7 +1020,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_lk6 = new B737FMCKey();
     key_lk6->SetParentRenderObject(this);
-    key_lk6->SetPosition(mkeyx0, m_PhysicalSize.y - 4 - 13*delta);
+    key_lk6->SetPosition(mkeyx0, m_PhysicalSize.y - liney0 - 13*delta);
     key_lk6->setKeyName((char*) "--");
     key_lk6->setKeyForm(4);
     key_lk6->setKeySizeX(8);
@@ -1022,7 +1031,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_rk1 = new B737FMCKey();
     key_rk1->SetParentRenderObject(this);
-    key_rk1->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - 4 - 3*delta);
+    key_rk1->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - liney0 - 3*delta);
     key_rk1->setKeyName((char*) "--");
     key_rk1->setKeyForm(4);
     key_rk1->setKeySizeX(8);
@@ -1033,7 +1042,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_rk2 = new B737FMCKey();
     key_rk2->SetParentRenderObject(this);
-    key_rk2->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - 4 - 5*delta);
+    key_rk2->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - liney0 - 5*delta);
     key_rk2->setKeyName((char*) "--");
     key_rk2->setKeyForm(4);
     key_rk2->setKeySizeX(8);
@@ -1044,7 +1053,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_rk3 = new B737FMCKey();
     key_rk3->SetParentRenderObject(this);
-    key_rk3->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - 4 - 7*delta);
+    key_rk3->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - liney0 - 7*delta);
     key_rk3->setKeyName((char*) "--");
     key_rk3->setKeyForm(4);
     key_rk3->setKeySizeX(8);
@@ -1055,7 +1064,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_rk4 = new B737FMCKey();
     key_rk4->SetParentRenderObject(this);
-    key_rk4->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - 4 - 9*delta);
+    key_rk4->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - liney0 - 9*delta);
     key_rk4->setKeyName((char*) "--");
     key_rk4->setKeyForm(4);
     key_rk4->setKeySizeX(8);
@@ -1066,7 +1075,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_rk5 = new B737FMCKey();
     key_rk5->SetParentRenderObject(this);
-    key_rk5->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - 4 - 11*delta);
+    key_rk5->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - liney0 - 11*delta);
     key_rk5->setKeyName((char*) "--");
     key_rk5->setKeyForm(4);
     key_rk5->setKeySizeX(8);
@@ -1077,7 +1086,7 @@ B737FMC::B737FMC(int arg)
 
     B737FMCKey* key_rk6 = new B737FMCKey();
     key_rk6->SetParentRenderObject(this);
-    key_rk6->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - 4 - 13*delta);
+    key_rk6->SetPosition(m_PhysicalSize.x-mkeyx0-8, m_PhysicalSize.y - liney0 - 13*delta);
     key_rk6->setKeyName((char*) "--");
     key_rk6->setKeyForm(4);
     key_rk6->setKeySizeX(8);
