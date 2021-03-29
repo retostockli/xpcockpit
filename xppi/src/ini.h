@@ -17,7 +17,6 @@
 
 /* Prototype Functions */
 int ini_read(char ininame[]);
-int ini_arduinodata();
-int reset_arduinodata();
 int ini_signal_handler(void);
-void exit_arduino(int ret);
+void init_pi();
+void exit_pi(int ret);

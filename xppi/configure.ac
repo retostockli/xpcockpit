@@ -67,6 +67,7 @@ AC_TYPE_UINT8_T
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol])
 AC_CHECK_LIB([m],[roundf])
+AC_CHECK_LIB([wiringPi],[wiringPiSetup])
 
 # set installation prefix to current directory if none was given
 if test "x$prefix" = xNONE; then
