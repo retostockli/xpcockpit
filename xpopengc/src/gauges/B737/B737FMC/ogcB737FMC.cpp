@@ -258,7 +258,11 @@ B737FMC::B737FMC(int arg)
   line_7_small->SetPosition(linex0, m_PhysicalSize.y - liney0 - 7*delta);
   line_7_small->setCurrentLine(7);
   line_7_small->setLineSizeY(0.6);
-  line_7_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line03_S");
+  if (is_captain) {
+    line_7_small->setLineDataRef2((char*) "laminar/B738/fmc1/Line03_S");
+  } else {
+    line_7_small->setLineDataRef2((char*) "laminar/B738/fmc2/Line03_S");
+  }
   this->AddGaugeComponent(line_7_small);
 
   B737FMCLine* line_7_magenta = new B737FMCLine();
