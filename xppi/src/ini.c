@@ -33,6 +33,7 @@
 #include "serverdata.h"
 
 int verbose;
+int is_copilot;
 
 /* this routine parses the usbioards.ini file and reads its values */
 int ini_read(char ininame[])
@@ -49,6 +50,9 @@ int ini_read(char ininame[])
   /* xpserver */
   char default_xpserver_ip[] = "127.0.0.1";
   int default_xpserver_port = 8091;
+
+  /* Captain / Copilot Panel */
+  int default_copilot = 0;
 
 
   /* check if we are in the source code directory or in the binary installation path */
@@ -75,6 +79,8 @@ int ini_read(char ininame[])
     strcpy(server_ip,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
     server_port = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
     printf("XPSERVER Address %s Port %i \n",server_ip, server_port);
+    is_copilot = iniparser_getint(ini,"panel:copilot", default_copilot);
+    printf("Hardware runs for Copilot: %i \n",is_copilot);
 
     printf("\n");
     iniparser_freedict(ini);
@@ -100,9 +106,10 @@ int ini_signal_handler(void)
 }
 
 /* Initializing wiringPi */
-void init_pi(void)
+int init_pi(void)
 {
   wiringPiSetup();
+  return 0;
 }
 
 /* Exiting */

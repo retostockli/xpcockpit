@@ -1,6 +1,6 @@
-/* This is the ini.h header to the ini.c code.
+/* This is the b737_fmc.h header to the b737_fmc.c code
 
-   Copyright (C) 2020 Reto Stockli
+   Copyright (C) 2021 Reto Stockli
 
    Additions for analog axes treatment by Hans Jansen 2011
    Also several cosmetic changes and changes for Linux compilation
@@ -15,8 +15,11 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. */
 
+
+
 /* Prototype Functions */
-int ini_read(char ininame[]);
-int ini_signal_handler(void);
-int init_pi(void);
-void exit_pi(int ret);
+void b737_fmc(void);
+
+int pressedRow;
+int pressedCol;
+int somethingPressed;

@@ -29,3 +29,5 @@ extern int acf_type; /* aircraft type:
 		 2: Laminar B737-800
 		 3: ZIBO MOD of Laminar B737-800
 	      */
+
+extern int is_copilot; /* 0: Captain, 1: Copilot */

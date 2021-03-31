@@ -32,26 +32,37 @@
 #include "serverdata.h"
 #include "test.h"
 
-int digitalvalue;
-
 void test(void)
 {
 
   int ret;
 
+  int LED_PIN = 22; /* GPIO 21, Physical Pin 31 */
+  int KEY_PIN = 24; /* GPIO 24, Physical Pin 35 */
+  
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
   
   /* link floating point dataref with precision 10e-1 to local variable. This means
      that we only transfer the variable if changed by 0.1 or more */
   float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
-
-  /* link NAV1 Frequency to encoder value */
-  int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
  
   /* not needed, only if you run without x-plane connection */
-  if (*encodervalue == INT_MISS) *encodervalue = 0;
   if (*fvalue == FLT_MISS) *fvalue = 0.0;
-  if (*value == INT_MISS) *fvalue = 1;
+  if (*value == INT_MISS) *value = 1;
 
+  pinMode(LED_PIN, OUTPUT);
+  if (*value != INT_MISS) digitalWrite(LED_PIN, *value);
+
+  pinMode(KEY_PIN, INPUT);
+  pullUpDnControl(KEY_PIN, PUD_UP);
+  ret = digitalRead(KEY_PIN);
+  if (ret == 0) {
+    printf("Key Pressed\n");
+    *fvalue = 1.0;
+  } else {
+    *fvalue = 0.0;
+  }
+
+  
 }

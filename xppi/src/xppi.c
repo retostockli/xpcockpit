@@ -40,6 +40,7 @@
 #include "serverdata.h"
 #include "check_aircraft.h"
 #include "test.h"
+#include "b737_fmc.h"
 
 int acf_type;
 
@@ -66,6 +67,9 @@ int main(int argc, char **argv) {
   /* initialize TCP/IP interface */
   if (initialize_tcpip()<0) exit_pi(-4);
 
+ /* initialize wiringPi Library */
+  if (init_pi()<0) exit_pi(-4);
+
   while (1) {
       
     /* check for TCP/IP connection to X-Plane */
@@ -80,6 +84,10 @@ int main(int argc, char **argv) {
 
     if (strcmp(*argv,"test") == 0) {
       test();
+    }
+
+    if (strcmp(*argv,"boeing737fmc") == 0) {
+      b737_fmc();
     }
 
     /**** User Modules End Here ****/
