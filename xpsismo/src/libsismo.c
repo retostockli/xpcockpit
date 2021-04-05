@@ -471,6 +471,7 @@ int digital_inputf(int card, int input, float *fvalue, int type)
 /* master card has 64 inputs (0..63)
    daughter card 1 and 2 have another 64 inputs (64..127 and 128..191) */
 /* Two types : */
+/* -1: pushbutton 1-value: 0 means pressed, 1 means unpressed */
 /* 0: pushbutton */
 /* 1: toggle switch */
 int digital_input(int card, int input, int *value, int type)
@@ -488,19 +489,36 @@ int digital_input(int card, int input, int *value, int type)
       if (sismo[card].connected) {
 	if ((input >= 0) && (input < sismo[card].ninputs)) {
 	  bank = input/64;
-	  
+	  /* history slot to read */
 	  if (sismo[card].inputs_nsave[bank] != 0) {
-	    s = sismo[card].inputs_nsave[bank] - 1; /* history slot to read */
-	    if (type == 0) {
-	      /* simple pushbutton / switch */
+	    s = sismo[card].inputs_nsave[bank] - 1;
+	  } else {
+	    s = 0;
+	  }
+	  if (type == -1) {
+	    /* simple pushbutton / switch INVERSE 1-value */
+	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
+	      if ((1-*value) != sismo[card].inputs[input][s]) {
+		*value = 1-sismo[card].inputs[input][s];
+		retval = 1;
+		if (verbose > 1) printf("Pushbutton INVERSE: Card %i Input %i Changed to %i \n",
+					card, input, *value);
+	      }
+	    }
+
+	  } else if (type == 0) {
+	    /* simple pushbutton / switch */
+	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
 	      if (*value != sismo[card].inputs[input][s]) {
 		*value = sismo[card].inputs[input][s];
 		retval = 1;
 		if (verbose > 1) printf("Pushbutton: Card %i Input %i Changed to %i \n",
 					card, input, *value);
 	      }
+	    }
 
-	    } else {
+	  } else {
+	    if (sismo[card].inputs_nsave[bank] != 0) {
 	      /* toggle state everytime you press button */
 	      if (s < (MAXSAVE-1)) {
 		/* check if the switch state changed from 0 -> 1 */

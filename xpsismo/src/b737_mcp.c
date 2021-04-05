@@ -35,7 +35,10 @@ void b737_mcp(void)
 {
 
   int ret;
+  int temp;
   int card = 0;
+  int one = 1;
+  int zero = 0;
 
   float *ap_altitude;  // autopilot altitude
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -244,118 +247,94 @@ void b737_mcp(void)
     ap_course2 = link_dataref_flt("sim/cockpit/radios/nav2_obs_degm",0);   
   }
 
-  int *master_caution_cp;
-  int *master_caution_fo;
-  int *fire_warn_cp;
-  int *fire_warn_fo;
-  float *master_caution_cp_f;
-  float *master_caution_fo_f;
-  float *fire_warn_cp_f;
-  float *fire_warn_fo_f;
-  int *master_caution_cp_light;
-  int *master_caution_fo_light;
-  float *master_caution_cp_light_f;
-  float *master_caution_fo_light_f;
-  int *fire_warn_cp_light;
-  int *fire_warn_fo_light;
-  float *fire_warn_cp_light_f;
-  float *fire_warn_fo_light_f;
-  
-  int *sixpack_flt_cont;
-  int *sixpack_irs;
-  int *sixpack_fuel;
-  int *sixpack_elec;
-  int *sixpack_apu;
-  int *sixpack_overheat;
-  float *sixpack_flt_cont_f;
-  float *sixpack_irs_f;
-  float *sixpack_fuel_f;
-  float *sixpack_elec_f;
-  float *sixpack_apu_f;
-  float *sixpack_overheat_f;
-  
-  int *sixpack_anti_ice;
-  int *sixpack_hyd;
-  int *sixpack_doors;
-  int *sixpack_eng;
-  int *sixpack_overhead;
-  int *sixpack_air_cond;
-  float *sixpack_anti_ice_f;
-  float *sixpack_hyd_f;
-  float *sixpack_doors_f;
-  float *sixpack_eng_f;
-  float *sixpack_overhead_f;
-  float *sixpack_air_cond_f;
-  if ((acf_type == 2) || (acf_type == 3)) {
-    master_caution_cp = link_dataref_cmd_hold("laminar/B738/push_button/master_caution1");
-    master_caution_fo = link_dataref_cmd_hold("laminar/B738/push_button/master_caution2");
-    fire_warn_cp = link_dataref_cmd_hold("laminar/B738/push_button/fire_bell_light1");
-    fire_warn_fo = link_dataref_cmd_hold("laminar/B738/push_button/fire_bell_light2");
-    master_caution_cp_light_f = link_dataref_flt("laminar/B738/annunciator/master_caution_light",0);
-    master_caution_fo_light_f = link_dataref_flt("laminar/B738/annunciator/master_caution_light",0);
-    fire_warn_cp_light_f = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",0);
-    fire_warn_fo_light_f = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",0);
-    
-    sixpack_flt_cont_f = link_dataref_flt("laminar/B738/annunciator/six_pack_flt_cont",0);
-    sixpack_irs_f = link_dataref_flt("laminar/B738/annunciator/six_pack_irs",0);
-    sixpack_fuel_f = link_dataref_flt("laminar/B738/annunciator/six_pack_fuel",0);
-    sixpack_elec_f = link_dataref_flt("laminar/B738/annunciator/six_pack_elec",0);
-    sixpack_apu_f = link_dataref_flt("laminar/B738/annunciator/six_pack_apu",0);
-    sixpack_overheat_f = link_dataref_flt("laminar/B738/annunciator/six_pack_fire",0);
-    
-    sixpack_anti_ice_f = link_dataref_flt("laminar/B738/annunciator/six_pack_ice",0);
-    sixpack_hyd_f = link_dataref_flt("laminar/B738/annunciator/six_pack_hyd",0);
-    sixpack_doors_f = link_dataref_flt("laminar/B738/annunciator/six_pack_doors",0);
-    sixpack_eng_f = link_dataref_flt("laminar/B738/annunciator/six_pack_eng",0);
-    sixpack_overhead_f = link_dataref_flt("laminar/B738/annunciator/six_pack_overhead",0);
-    sixpack_air_cond_f = link_dataref_flt("laminar/B738/annunciator/six_pack_air_cond",0);
-    
-  } else if (acf_type == 1) {
-    master_caution_cp_f = link_dataref_flt("x737/cockpit/warningSys/MASTER_CAUTION_capt",0);
-    master_caution_fo_f = link_dataref_flt("x737/cockpit/warningSys/MASTER_CAUTION_fo",0);
-    fire_warn_cp_f = link_dataref_flt("x737/cockpit/warningSys/FIRE_WARN_capt",0);
-    fire_warn_fo_f = link_dataref_flt("x737/cockpit/warningSys/FIRE_WARN_fo",0);
-    master_caution_cp_light = link_dataref_int("x737/cockpit/warningSys/MASTER_CAUTION_capt_on");
-    master_caution_fo_light = link_dataref_int("x737/cockpit/warningSys/MASTER_CAUTION_fo_on");
-    fire_warn_cp_light = link_dataref_int("x737/cockpit/warningSys/FIRE_WARN_capt_on");
-    fire_warn_fo_light = link_dataref_int("x737/cockpit/warningSys/FIRE_WARN_fo_on");
-    
-    sixpack_flt_cont = link_dataref_int("x737/cockpit/warningSys/sysAnnFLT_CONT");
-    sixpack_irs = link_dataref_int("x737/cockpit/warningSys/sysAnnIRS");
-    sixpack_fuel = link_dataref_int("x737/cockpit/warningSys/sysAnnFUEL");
-    sixpack_elec = link_dataref_int("x737/cockpit/warningSys/sysAnnELEC");
-    sixpack_apu = link_dataref_int("x737/cockpit/warningSys/sysAnnAPU");
-    sixpack_overheat = link_dataref_int("x737/cockpit/warningSys/sysAnnOVHT_DET");
-    
-    sixpack_anti_ice = link_dataref_int("x737/cockpit/warningSys/sysAnnANTI_ICE");
-    sixpack_hyd = link_dataref_int("x737/cockpit/warningSys/sysAnnHYD");
-    sixpack_doors = link_dataref_int("x737/cockpit/warningSys/sysAnnDOORS");
-    sixpack_eng = link_dataref_int("x737/cockpit/warningSys/sysAnnENG");
-    sixpack_overhead = link_dataref_int("x737/cockpit/warningSys/sysAnnOVERHEAD");
-    sixpack_air_cond = link_dataref_int("x737/cockpit/warningSys/sysAnnAIR_COND");
-  }
-  
+
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
   /* blank displays if avionics are off */
   int blank = 0;
   if (*avionics_on != 1) blank = 1;
-  
-  // gear handle (hooked up on MCP inputs temporarily)
-  int *gear_handle_down;
-  float *gear_handle_position;
-  if ((acf_type == 2) || (acf_type == 3)) {
-    gear_handle_down = link_dataref_int("xpserver/gear_handle");
-    gear_handle_position = link_dataref_flt("laminar/B738/controls/gear_handle_down",-1);
-  } else if (acf_type == 1) {
-    gear_handle_down = link_dataref_int("xpserver/gear_handle");
-    gear_handle_position = link_dataref_flt("x737/systems/landinggear/landingGearLever",-1);
-  } else {
-    gear_handle_down = link_dataref_int("sim/cockpit2/controls/gear_handle_down");
-    gear_handle_position = link_dataref_flt("xpserver/gear_handle_position",-1);
-  }
 
   /* INPUTS */
+  ret = digital_input(card,2,ap_fdir_a,-1);
+  if (ret) {
+    printf("Flight Director Captain: %i \n",*ap_fdir_a);
+  }
+  if (acf_type == 0) {
+    *ap_fdir_a = 2* *ap_fdir_a;
+  }
+
+  ret = digital_input(card,29,ap_fdir_b,-1);
+  if (ret) {
+    printf("Flight Director First Officer: %i \n",*ap_fdir_b);
+  }
+
+
+  /* AT ARM SWITCH */
+  /* only change at_arm if switch has changed */
+  /* safe algorithm for solenoid relais in pedestal code */
+  ret = digital_input(card,3,&temp,-1);
+  if (ret==1) {
+    if ((acf_type == 2) || (acf_type == 3)) {
+      *ap_at_arm = 0;
+      if ((*ap_at_arm_status == 0) && (temp == 1)) {
+	*ap_at_arm = 1;
+	printf("ARMING AT\n");
+      }
+      if ((*ap_at_arm_status == 1) && (temp == 0)) {
+	*ap_at_arm = 1;
+	printf("DISARMING AT\n");
+      }
+    } else {
+      *ap_at_arm = temp;
+    }
+  } else {
+    /* trigger AT solenoid to disarm AT if software AT status changes to off 
+       and if switch is still in on position (temp==1).
+       Only trigger after command has been executed, means
+       that after *ap_at_arm is back to 0 */
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if ((*ap_at_arm_status == 0) && (temp == 1) && (*ap_at_arm == 0)) {
+	ret = digital_output(card, 21, &one);
+      } else {
+	ret = digital_output(card, 21, &zero);
+      }
+    }
+  }
+
+  /* AP ENGAGE SWITCH */
+  if ((acf_type == 2) || (acf_type == 3)) {
+    /* with ZIBO we can only toggle the switch, so check status as well */
+    *ap_engage = 0;
+    ret = digital_input(card,24,ap_disengage_status,-1);
+    if (ret == 1) {
+      if (*ap_disengage_status == 0) {
+	printf("AP Engaged \n");
+	*ap_engage = 1;
+      }
+      if (*ap_disengage_status == 1) {
+	printf("AP Disengaged \n");
+	*ap_engage = 1;
+      }
+    }
+  } else if (acf_type == 1) {
+    ret = digital_input(card,24,&temp,0);
+    if (ret == 1) {
+      *ap_engage = temp;
+    }
+  } else {
+    ret = digital_input(card,24,&temp,0);
+    if (ret == 1) {
+      if (temp == 1) {
+	if (*ap_engage == 0) {
+	  *ap_engage = 2;
+	}
+      } else {
+	if (*ap_engage >= 1) {
+	  *ap_engage = 0;
+	}
+      }   
+    } 
+  }
 
   /* ENCODERS */
   ret = encoder_inputf(card, 0, 1, ap_course1, 1.0, 1);
@@ -399,6 +378,7 @@ void b737_mcp(void)
   if (ret==1) printf("AP Vertical Speed: %f \n",*ap_vspeed);
 
   /* OUTPUTS */
+ 
 
   /* DISPLAYS */
   ret = display_outputf(card, 0, 3, ap_course1, -1, blank);
@@ -418,7 +398,7 @@ void b737_mcp(void)
     ret = display_outputf(card, 16, 5, ap_vspeed, -1, blank);
   }
   
-
+ 
   if (0) {
   
   /* link integer data like a switch in the cockpit */
