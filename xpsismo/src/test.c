@@ -49,7 +49,7 @@ void test(void)
 
   /* link NAV1 Frequency to encoder value */
   int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
-
+  
   /* read second digital input (#1) */
   ret = digital_input(card, 1, value, 0);
   if (ret == 1) {

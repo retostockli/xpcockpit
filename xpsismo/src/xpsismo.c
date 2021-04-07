@@ -94,10 +94,14 @@ int main(int argc, char **argv) {
     /**** User Modules Follow Here ****/
 
     if (strcmp(*argv,"test") == 0) {
-      test();
+      if (acf_type >= 0) {
+	test();
+      }
     }
     if (strcmp("boeing737mcp",*argv) == 0) {
-      b737_mcp();
+      if (acf_type >= 0) {
+	b737_mcp();
+      }
     }
 
     /**** User Modules End Here ****/

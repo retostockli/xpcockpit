@@ -19,3 +19,9 @@
 
 /* Prototype Functions */
 void b737_mcp(void);
+
+extern int bank10;
+extern int bank15;
+extern int bank20;
+extern int bank25;
+extern int bank30;
