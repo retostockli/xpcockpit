@@ -38,6 +38,7 @@
 #include "common.h"
 #include "serverdata.h"
 #include "b737_fmc.h"
+#include <softPwm.h>
 
 // columns are outputs. All are set to HIGH except the column being scanned.
 const int colPins[] = { 
@@ -82,18 +83,38 @@ void b737_fmc(void)
     int ofst_led_pin = 22; 	// p.31 bcm.6
     int fail_led_pin = 23;	// p.33 bcm.13
     
+    
     pinMode(exec_led_pin, OUTPUT);
     pinMode(msg_led_pin, OUTPUT);
     pinMode(dspy_led_pin, OUTPUT);
     pinMode(ofst_led_pin, OUTPUT);
     pinMode(fail_led_pin, OUTPUT);
     
+    // ab hier die FMC Tasten Brightness
+    //per SoftPwm zu gesteuern
+    //
+    int key_led_pin = 19;
+    pinMode(key_led_pin, OUTPUT);
+    
+    int x = softPwmCreate(key_led_pin,50,100); //Pin,initalValue,pwmRange
+    
+    
+    int *key_brightness = link_dataref_int("laminar/B738/electric/panel_brightness[3]");
+    
+    int bright = (int) (*key_brightness * 100); //map from 0.01 - 1.0 to 0-100
+    
+    if (*key_brightness != INT_MISS) softPwmWrite(key_led_pin, bright);
+    // Tasten Brightness End
     
     int *exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
     int *msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
     
+    
+    
+    
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
     if (*msg_led != INT_MISS) digitalWrite(msg_led_pin, *msg_led);
+    
     
     /* the following datarefs are, at least to me,  unknown yet
     int *dspy_led = link_dataref_int("");

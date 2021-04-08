@@ -30,6 +30,7 @@
 #include "common.h"
 #include "libsismo.h"
 #include "serverdata.h"
+#include "b737_mcp.h"
 
 int bank10;
 int bank15;
