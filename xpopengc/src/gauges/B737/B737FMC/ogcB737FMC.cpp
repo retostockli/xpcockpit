@@ -56,7 +56,7 @@ B737FMC::B737FMC(int arg)
   printf("B737PFD constructed %i\n",arg);
 	
   // We want to draw an outline
-  this->SetGaugeOutline(true);
+  this->SetGaugeOutline(false);
 
   /* Captain or copilot */
   bool is_captain = (arg == 0) || (arg == 2);
@@ -93,6 +93,7 @@ B737FMC::B737FMC(int arg)
   }
   float keyx0 = 12.0;
   float mkeyx0 = 4.0;
+
   
   B737FMCLine* line_1 = new B737FMCLine();
   line_1->SetParentRenderObject(this);
@@ -105,6 +106,7 @@ B737FMC::B737FMC(int arg)
     line_1->setLineDataRef2((char*) "laminar/B738/fmc2/Line00_L");
   }
   this->AddGaugeComponent(line_1);
+  //  if (0) {
   
   B737FMCLine* line_1_small = new B737FMCLine();
   line_1_small->SetParentRenderObject(this);
@@ -432,6 +434,7 @@ B737FMC::B737FMC(int arg)
   }
   this->AddGaugeComponent(line_14);
 
+  //  }
 
   if (with_keys) {
 

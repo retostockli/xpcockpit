@@ -39,25 +39,26 @@ namespace OpenGC
 class B737FMCLine : public GaugeComponent  
 {
 public:
-	B737FMCLine();
-	virtual ~B737FMCLine();
-	void Render();
-
-	void setCurrentLine(int line) {m_Line = line;}
-	void setLineDataRef1(char* lineDataRef) {strcpy(m_LineDataRef1,lineDataRef);}
-	void setLineDataRef2(char* lineDataRef) {strcpy(m_LineDataRef2,lineDataRef);}
-	void setLineSizeX(float lineSizeX) {m_LineSizeX = lineSizeX;}
-	void setLineSizeY(float lineSizeY) {m_LineSizeY = lineSizeY;}
-	void setLineColor(int R, int G, int B) {m_LineColor[0]=R; m_LineColor[1]=G; m_LineColor[2]=B;}
-
+  B737FMCLine();
+  virtual ~B737FMCLine();
+  void Render();
+  
+  void setCurrentLine(int line) {m_Line = line;}
+  void setLineDataRef1(char* lineDataRef) {strcpy(m_LineDataRef1,lineDataRef);}
+  void setLineDataRef2(char* lineDataRef) {strcpy(m_LineDataRef2,lineDataRef);}
+  void setLineSizeX(float lineSizeX) {m_LineSizeX = lineSizeX;}
+  void setLineSizeY(float lineSizeY) {m_LineSizeY = lineSizeY;}
+  void setLineColor(int R, int G, int B) {m_LineColor[0]=R; m_LineColor[1]=G; m_LineColor[2]=B;}
+  
 protected:
-	int m_Font;
-	int m_Line;
-	char m_LineDataRef1[50];
-	char m_LineDataRef2[50];
-	float m_LineSizeX;
-	float m_LineSizeY;
-	int m_LineColor[3];
+  int m_Font;
+  int m_Line;
+  char m_LineDataRef1[50];
+  char m_LineDataRef2[50];
+  float m_LineSizeX;
+  float m_LineSizeY;
+  int m_LineColor[3];
+  
 };
 
 } // end namespace OpenGC

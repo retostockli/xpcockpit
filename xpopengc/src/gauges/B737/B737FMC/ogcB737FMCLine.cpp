@@ -82,7 +82,9 @@ namespace OpenGC
   void B737FMCLine::Render()
   {
     GaugeComponent::Render();
-
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+ 
     int nb = 40; // buffer length
     //    int nc = 24; // characters per line
     //    int nl = 14; // number of lines
@@ -90,10 +92,7 @@ namespace OpenGC
     float fontSize = m_PhysicalSize.y;
 
     int acf_type = m_pDataSource->GetAcfType();
-    
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-
+   
     unsigned char *line = NULL; // pointer to line dataref
 
     if (acf_type == 1) {
@@ -118,11 +117,12 @@ namespace OpenGC
       char buffer[nb];
       memset(buffer,0,sizeof(buffer));
       snprintf( buffer, nb, "%s", line );
-
+      
       /*
-	if (m_Line == 3) {
-	printf("%i \n",(int) buffer[2]);
-	} */
+      if (m_Line == 1) {
+	printf("Line 1: %s \n",buffer);
+      } 
+      */
       
       //      if ((m_Line != 1) && (m_Line != nl)) {
       if (1 == 1) {
@@ -172,10 +172,12 @@ namespace OpenGC
 	
       }
       //      printf("%s \n",buffer);
+  
       m_pFontManager->SetSize( m_Font, xFontSize, yFontSize );
       m_pFontManager->Print( 0, 0, buffer, m_Font);
+
     } /* line dataref valid */
-    
+
     glPopMatrix();
     
   }

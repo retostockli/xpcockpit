@@ -39,6 +39,7 @@ Font
   m_Spacing = 1.0;
 
   m_PolygonFont = 0;
+  m_TextureFont = 0;
   m_OutlineFont = 0;
 
   m_Name = new char[512];
@@ -53,6 +54,12 @@ Font
     delete m_PolygonFont;
   }
   m_PolygonFont = 0;
+
+  if(m_TextureFont != 0)
+  {
+    delete m_TextureFont;
+  }
+  m_TextureFont = 0;
 
   if(m_OutlineFont != 0)
   {
@@ -84,7 +91,8 @@ Font
   glScaled(0.0135*m_Size.x, 0.0135*m_Size.y, 1);
   
   // Draw using the triangulated font
-  m_PolygonFont->Render(string);
+  //m_PolygonFont->Render(string);
+  m_TextureFont->Render(string);
   
   // Restore modelview matrix
   glPopMatrix();
@@ -94,17 +102,17 @@ Font
   {
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-
+    
     glTranslated(x,y,0);
     glScaled(0.0135*m_Size.x, 0.0135*m_Size.y, 1);
-
+    
     glLineWidth(0.3);
     m_OutlineFont->Render(string);
     glLineWidth(1.0);
-
+    
     glPopMatrix();
   }
-  
+ 
 }
 
 bool
@@ -115,12 +123,16 @@ Font
 
   // Open the the font in both polygon and outline mode
   m_PolygonFont = new FTGLPolygonFont(name);
-  m_OutlineFont = new FTGLOutlineFont(name);
+  m_TextureFont = new FTGLTextureFont(name);
+  if(m_Smooth == true)
+    m_OutlineFont = new FTGLOutlineFont(name);
 
   // The initial face size is large so that font sizing
   // will work correctly later on
   m_PolygonFont->FaceSize(100);
-  m_OutlineFont->FaceSize(100);
+  m_TextureFont->FaceSize(100);
+  if(m_Smooth == true)
+    m_OutlineFont->FaceSize(100);
  
   // We succeeded at opening the fonts
   return true;

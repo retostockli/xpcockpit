@@ -189,7 +189,7 @@ RenderWindow
   this->RenderGauges();
 //  glPopMatrix();	// hj ?
 
-////  if(m_FrameTest) // NOTE: m_FrameTest not known outside ogcAppObject.cpp!
+//  if(m_FrameTest) // NOTE: m_FrameTest not known outside ogcAppObject.cpp!
 //    this->ShowFrameRate();
 
   // Clean up the rendering
