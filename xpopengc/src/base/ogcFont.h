@@ -86,10 +86,11 @@ protected:
   bool m_Smooth;
 
   /** The triangulated FTGL font object */
-  FTGLPolygonFont* m_PolygonFont;
+  FTPolygonFont* m_PolygonFont;
+  FTTextureFont* m_TextureFont;
 
   /** The outline FTGL font object used for smoothing */
-  FTGLOutlineFont* m_OutlineFont;
+  FTOutlineFont* m_OutlineFont;
 
 };
 

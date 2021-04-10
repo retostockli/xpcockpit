@@ -93,15 +93,19 @@ int main(int argc, char* argv[])
   /* evaluate command line arguments */
   argv++;
   argc--;
-  if (argc != 1) {
-    printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names \"*.ini\" found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
+  if (argc < 1) {
+    printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names \"*.ini\" found in the source subdirectory inidata/ or in the installation subdirectory share/. You can optionally give a second argument with the frame rate (per second).\n");
     exit (-1);
   }
 
   printf ("=========== OpenGC - Starting up ==========\n");
 
   // Set the update rate in nominal seconds per frame
-  appUpdateRate = 1.0 / 50.0;
+  if (argc == 1) {
+    appUpdateRate = 1.0 / 50.0;
+  } else {
+    appUpdateRate = 1.0 / (float) atoi(argv[1]);
+  }
 
   // Register the idle function (which is a timeout to
   // avoid saturating the processor)
