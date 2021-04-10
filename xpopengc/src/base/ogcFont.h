@@ -87,7 +87,7 @@ protected:
 
   /** The triangulated FTGL font object */
   FTPolygonFont* m_PolygonFont;
-  FTTextureFont* m_TextureFont;
+  //  FTTextureFont* m_TextureFont;
 
   /** The outline FTGL font object used for smoothing */
   FTOutlineFont* m_OutlineFont;
