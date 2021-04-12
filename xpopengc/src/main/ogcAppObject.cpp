@@ -291,6 +291,7 @@ bool AppObject::DoFileInitialization(char* iniFile)
 
     // Specify smoothed fonts
     m_pFontManager->SetSmooth(true);
+    //m_pFontManager->SetSmooth(false);
     
     if (verbosity > 0) printf("AppObject - Font path %s\n", m_FontPath);
     m_pFontManager->SetFontPath(m_FontPath);
@@ -323,6 +324,8 @@ bool AppObject::DoFileInitialization(char* iniFile)
     m_pRenderWindow = new FLTKRenderWindow(initX, initY, width, height, "The Open Glass Cockpit Project");
     m_pRenderWindow->resizable(m_pRenderWindow);
     m_pRenderWindow->mode(FL_RGB | FL_DOUBLE | FL_MULTISAMPLE);
+    //m_pRenderWindow->mode(FL_RGB | FL_MULTISAMPLE);
+    //m_pRenderWindow->mode(FL_RGB | FL_DOUBLE);
     m_pRenderWindow->border(!decoration);
 //==================================================================================================//
 //  Temporary solution to produce a borderless (undecorated) window                               ==//
