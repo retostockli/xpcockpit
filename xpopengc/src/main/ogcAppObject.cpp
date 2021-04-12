@@ -112,6 +112,8 @@ AppObject::AppObject()
   m_pNavDatabase = 0;
   verbosity = 0;
 
+  m_InitState = 0;
+  
   m_DataSourceIsFlightGear = false;
   
   // Run a frame-rate test when loading OpenGC?
@@ -159,6 +161,8 @@ int AppObject::Go(char* iniFileName)
   printf ("AppObject - Initialization complete. Starting main loop.\n");
   if (verbosity > 0) printf ("====================\n");
 
+  m_InitState = 1;
+  
   // First, check the frame rate if the user wants to
   if(m_FrameTest)
     this->CheckFrameRate();
@@ -177,8 +181,12 @@ AppObject
     
   // Every time we loop we grab some new data and re-render the window
   m_pDataSource->OnIdle();
-  m_pRenderWindow->redraw();
-  Fl::flush();
+  if ((numreceived > 0) || (m_InitState <= 1)) {
+  //printf("%i %i \n",numreceived,m_InitState);
+    m_pRenderWindow->redraw();
+    Fl::flush();
+  }
+  if (m_InitState == 1) m_InitState++;
 }
 
 bool AppObject::IntermediateInitialization()

@@ -132,8 +132,8 @@ protected:
     SERVER_PORT_STATE,
   };
 
-  /** The current intialization state */
-  InitStateTable m_InitState;
+  /** The current intialization state: 0: prior to initialization, 1: after initialization, 2: after first loop  */
+  int m_InitState;
 
   /** True if we're connected to FlightGear, which requires some extra setup */
   bool m_DataSourceIsFlightGear;

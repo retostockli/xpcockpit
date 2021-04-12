@@ -1120,6 +1120,7 @@ void B737FMC::Render()
   int acf_type = m_pDataSource->GetAcfType();
   
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
+  printf("Avionics %i ACF_TYPE %i\n",*avionics_on,acf_type);
   if ((*avionics_on == 1) && (acf_type >= 1)) {
 
     // after drawing the background, draw components

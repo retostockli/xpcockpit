@@ -155,11 +155,17 @@ void XPlaneDataSource::OnIdle()
 {
 
   int ret;
+  
+  /* check for TCP/IP connection to X-Plane */
+  if (check_server()<0) exit(-9);
+  
+  /* receive data from X-Plane via TCP/IP */
+  if (receive_server()<0) exit(-10);
  
   /* determine Aircraft type based on Tail Number */
   unsigned char *tailnum = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum",  40, -1);
   if (tailnum) {
-    // printf("ACF_TAILNUM: %s \n",tailnum);
+    //printf("ACF_TAILNUM: %s \n",tailnum);
     if (strcmp((const char*) tailnum,"ZB738")==0) {
       SetAcfType(3); // ZIBO
     } else if (strcmp((const char*) tailnum,"NN816N")==0) {
@@ -175,12 +181,6 @@ void XPlaneDataSource::OnIdle()
     SetAcfType(0);
   }
   
-  /* check for TCP/IP connection to X-Plane */
-  if (check_server()<0) exit(-9);
-  
-  /* receive data from X-Plane via TCP/IP */
-  if (receive_server()<0) exit(-10);
-
   /* send data to X-Plane via TCP/IP */
   if (send_server()<0) exit(-11);
 

@@ -40,6 +40,7 @@ int numalloc; /* number of serverdata elements allocated */
 int numlink; /* number of serverdata elements linked */
 char clientname[100]; /* name of x-plane client package */
 int lastindex; /* stores the index of the last Dataref called */
+int numreceived; /* stores number of received datarefs in this loop */
 struct timeval time_start; /* stores the time when we initialized the dataref structure */
 
 int time_subtract (struct timeval *x, struct timeval *y, struct timeval *result) {
@@ -70,6 +71,7 @@ int initialize_dataref() {
   serverdata = NULL;
   numalloc = 0;
   numlink = 0;
+  numreceived = 0;
   
   gettimeofday(&time_start, NULL);
 
@@ -128,6 +130,7 @@ void clear_dataref() {
       serverdata = NULL;
       numalloc = 0;
       numlink = 0;
+      numreceived = 0;
 
       printf("serverdata structure deallocated\n");
     }
@@ -146,6 +149,39 @@ void count_dataref() {
 	if (serverdata[i].status == XPSTATUS_VALID) {
 	  numlink++;
 	}
+      }
+    }
+  }
+
+}
+
+/* update count of freshly received datarefs */
+void count_received() {
+
+  int i;
+
+  numreceived = 0;
+  if (serverdata != NULL) {    
+    if (numalloc > 0) {
+      for (i=0;i<numalloc;i++) {
+	if (serverdata[i].received == 1) {
+	  numreceived++;
+	}
+      }
+    }
+  }
+
+}
+
+/* reset received flag of datarefs */
+void reset_received() {
+
+  int i;
+
+  if (serverdata != NULL) {    
+    if (numalloc > 0) {
+      for (i=0;i<numalloc;i++) {
+	serverdata[i].received = 0;
       }
     }
   }
@@ -417,6 +453,7 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
       serverdata[i].nextindex = INT_MISS;
       serverdata[i].nsend = 0;
       serverdata[i].nrecv = 0;
+      serverdata[i].received = 0;
       if (type >= XPTYPE_CMD_ONCE) {
 	printf("Created commandref %s \n",datarefname);
       } else {
@@ -463,6 +500,7 @@ int unlink_dataref(const char datarefname[]) {
 	serverdata[i].nextindex = INT_MISS;
 	serverdata[i].nsend = INT_MISS;
 	serverdata[i].nrecv = INT_MISS;
+	serverdata[i].received = INT_MISS;
 	
 	printf("Unlink: Deallocated dataref: %s \n",datarefname);
       }

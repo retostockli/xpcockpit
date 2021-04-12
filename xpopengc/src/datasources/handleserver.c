@@ -258,6 +258,9 @@ int receive_server(void) {
   recvBuffer[recvMsgSize] = 0;
   message_ptr = recvBuffer;
 
+  /* reset received flag of datarefs */
+  reset_received();
+  
   while (socketStatus == status_Connected) {
     
     /* Check for new data from server */
@@ -356,6 +359,7 @@ int receive_server(void) {
 	      nelements = 1;
 	    }
 
+	    serverdata[offset].received = 1;
 	    serverdata[offset].nrecv++;
 	    
 	    switch (serverdata[offset].type) {
@@ -570,6 +574,7 @@ int receive_server(void) {
 				    offset, serverdata[offset].datarefname);
 
 	    serverdata[offset].status = XPSTATUS_VALID;
+	    serverdata[offset].received = 1;
 	    count_dataref();
 	  }
 
@@ -597,6 +602,7 @@ int receive_server(void) {
 	    memset(serverdata[offset].datarefname,0,sizeof(serverdata[offset].datarefname));
 
 	    serverdata[offset].status = XPSTATUS_UNINITIALIZED;
+	    serverdata[offset].received = 1;
 	    count_dataref();
 	  }
 
@@ -648,6 +654,9 @@ int receive_server(void) {
     
   } 
 
+  /* count number of received datarefs */
+  count_received();
+  
   return recvMsgSize;
 }
 
