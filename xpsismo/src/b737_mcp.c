@@ -54,7 +54,8 @@ void b737_mcp(void)
   float *ap_ias; // IAS autopilot
   float *ap_vspeed; // autopilot vertical speed
   int *ap_banklimit;  // bank limit
-  int *ap_spd_is_mach; 
+  int *ap_spd_is_mach;
+  int *ap_vspeed_show;
   
   if ((acf_type == 2) || (acf_type == 3)) {
     ap_altitude = link_dataref_flt("laminar/B738/autopilot/mcp_alt_dial",0); 
@@ -79,11 +80,14 @@ void b737_mcp(void)
   }
 
   if ((acf_type == 2) || (acf_type == 3)) {
+    ap_vspeed_show = link_dataref_int("laminar/B738/autopilot/vvi_dial_show");
     ap_vspeed = link_dataref_flt("sim/cockpit2/autopilot/vvi_dial_fpm",0);             
   } else if (acf_type == 1) {  
     ap_vspeed = link_dataref_flt("x737/systems/afds/VS_vvi",0);             
+    ap_vspeed_show = link_dataref_int("sim/cockpit2/autopilot/vvi_status");
   } else {
     ap_vspeed = link_dataref_flt("sim/cockpit/autopilot/vertical_velocity",0);
+    ap_vspeed_show = link_dataref_int("sim/cockpit2/autopilot/vvi_status");
   }
   
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -178,9 +182,9 @@ void b737_mcp(void)
     ap_speed_interv = link_dataref_cmd_hold("laminar/B738/autopilot/spd_interv");
     ap_alt_interv = link_dataref_cmd_hold("laminar/B738/autopilot/alt_interv");
   } else if (acf_type == 1) {
-    ap_cmd_a = link_dataref_cmd_once("x737/mcp/CMDA_TOGGLE");     // MCP CMD A mode
+    ap_cmd_a = link_dataref_cmd_hold("x737/mcp/CMDA_TOGGLE");     // MCP CMD A mode
     ap_cmd_a_led = link_dataref_int("x737/systems/MCP/LED_CMDA_on");
-    ap_cmd_b = link_dataref_cmd_once("x737/mcp/CMDB_TOGGLE");     // MCP CMD B mode
+    ap_cmd_b = link_dataref_cmd_hold("x737/mcp/CMDB_TOGGLE");     // MCP CMD B mode
     ap_cmd_b_led = link_dataref_int("x737/systems/MCP/LED_CMDB_on");
     ap_cws_a = link_dataref_int("xpserver/ap_cws_a");     // MCP CWS A mode
     ap_cws_a_led = link_dataref_int("xpserver/ap_cws_a_led");     // MCP CWS A mode
@@ -193,24 +197,24 @@ void b737_mcp(void)
     ap_engage = link_dataref_int("x737/systems/afds/APengaged");    // AP engage/disengage mode
     ap_vs_arm = link_dataref_int("x737/systems/afds/VS_arm");   // VS hold MODE (orange)
     ap_vs_engage = link_dataref_int("x737/systems/afds/VS");  // VS hold MODE (green)
-    ap_alt_hld = link_dataref_cmd_once("x737/mcp/ALTHLD_TOGGLE");  // ALT HOLD MODE
+    ap_alt_hld = link_dataref_cmd_hold("x737/mcp/ALTHLD_TOGGLE");  // ALT HOLD MODE
     ap_alt_hld_led = link_dataref_int("x737/systems/MCP/LED_ALTHLD_on");
-    ap_lnav = link_dataref_cmd_once("x737/mcp/LNAV_TOGGLE");      // AP lateral NAV button
+    ap_lnav = link_dataref_cmd_hold("x737/mcp/LNAV_TOGGLE");      // AP lateral NAV button
     ap_lnav_led = link_dataref_int("x737/systems/MCP/LED_LNAV_on");
-    ap_vor_loc = link_dataref_cmd_once("x737/mcp/VORLOC_TOGGLE");   // AP VOR LOC button
+    ap_vor_loc = link_dataref_cmd_hold("x737/mcp/VORLOC_TOGGLE");   // AP VOR LOC button
     ap_vor_loc_led = link_dataref_int("x737/systems/MCP/LED_VORLOC_on");
-    ap_app = link_dataref_cmd_once("x737/mcp/APP_TOGGLE");       // AP APP button
+    ap_app = link_dataref_cmd_hold("x737/mcp/APP_TOGGLE");       // AP APP button
     ap_app_led = link_dataref_int("x737/systems/MCP/LED_APP_on");
-    ap_hdg_sel = link_dataref_cmd_once("x737/mcp/HDGSEL_TOGGLE");
+    ap_hdg_sel = link_dataref_cmd_hold("x737/mcp/HDGSEL_TOGGLE");
     ap_hdg_sel_led = link_dataref_int("x737/systems/MCP/LED_HDG_on");
-    ap_lvl_chg = link_dataref_cmd_once("x737/mcp/LVLCHANGE_TOGGLE");   // AP LVL CHG button
+    ap_lvl_chg = link_dataref_cmd_hold("x737/mcp/LVLCHANGE_TOGGLE");   // AP LVL CHG button
     ap_lvl_chg_led = link_dataref_int("x737/systems/MCP/LED_LVLCHG_on");
-    ap_vnav = link_dataref_cmd_once("x737/mcp/VNAV_TOGGLE");      // AP vertical NAV button
+    ap_vnav = link_dataref_cmd_hold("x737/mcp/VNAV_TOGGLE");      // AP vertical NAV button
     ap_vnav_led = link_dataref_int("x737/systems/MCP/LED_VNAV_on");
-    ap_n1 = link_dataref_cmd_once("x737/mcp/N1_MODE_TOGGLE");        // AP speed N1 button
+    ap_n1 = link_dataref_cmd_hold("x737/mcp/N1_MODE_TOGGLE");        // AP speed N1 button
     ap_n1_led = link_dataref_int("x737/systems/MCP/LED_N1_on");
     ap_at_arm = link_dataref_int("x737/systems/athr/athr_armed");    // AP Autothrottle arm
-    ap_speed = link_dataref_cmd_once("x737/mcp/MCPSPD_MODE_TOGGLE");     // AP mcpspd select switch
+    ap_speed = link_dataref_cmd_hold("x737/mcp/MCPSPD_MODE_TOGGLE");     // AP mcpspd select switch
     ap_speed_led = link_dataref_int("x737/systems/MCP/LED_MCPSPD_on");
     ap_speed_co = link_dataref_int("xpserver/change_over_press");
     ap_speed_interv = link_dataref_int("xpserver/spd_interv");
@@ -229,21 +233,21 @@ void b737_mcp(void)
     ap_fdir_b = link_dataref_int("xpserver/fdB_status");    // Flight Director mode FO (B)
     ap_fdir_b_led = link_dataref_int("xpserver/LED_FDB_MA_on");
     ap_engage = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");    // AP engage/disengage mode
-    ap_vs_arm = link_dataref_cmd_once("sim/autopilot/vertical_speed");   // VS hold MODE (orange)
+    ap_vs_arm = link_dataref_cmd_hold("sim/autopilot/vertical_speed");   // VS hold MODE (orange)
     ap_vs_engage = link_dataref_int("sim/cockpit2/autopilot/vvi_status");  // VS hold MODE (green)
-    ap_alt_hld = link_dataref_cmd_once("sim/autopilot/altitude_hold");  // ALT HOLD MODE
+    ap_alt_hld = link_dataref_cmd_hold("sim/autopilot/altitude_hold");  // ALT HOLD MODE
     ap_alt_hld_led = link_dataref_int("sim/cockpit2/autopilot/altitude_hold_armed");
     ap_lnav = link_dataref_int("xpserver/LNAV_arm");      // AP lateral NAV button
     ap_lnav_led = link_dataref_int("xpserver/LED_LNAV_on");
-    ap_vor_loc = link_dataref_cmd_once("sim/autopilot/NAV");   // AP VOR LOC button
+    ap_vor_loc = link_dataref_cmd_hold("sim/autopilot/NAV");   // AP VOR LOC button
     ap_vor_loc_led = link_dataref_int("sim/cockpit2/autopilot/hnav_armed");
-    ap_app = link_dataref_cmd_once("sim/autopilot/approach");       // AP APP button
+    ap_app = link_dataref_cmd_hold("sim/autopilot/approach");       // AP APP button
     ap_app_led = link_dataref_int("sim/cockpit2/autopilot/approach_status");
-    ap_hdg_sel = link_dataref_cmd_once("sim/autopilot/heading");   // AP HDG SEL button
+    ap_hdg_sel = link_dataref_cmd_hold("sim/autopilot/heading");   // AP HDG SEL button
     ap_hdg_sel_led = link_dataref_int("sim/cockpit2/autopilot/heading_mode");
-    ap_lvl_chg = link_dataref_cmd_once("sim/autopilot/level_change");   // AP LVL CHG button
+    ap_lvl_chg = link_dataref_cmd_hold("sim/autopilot/level_change");   // AP LVL CHG button
     ap_lvl_chg_led = link_dataref_int("xpserver/LED_LVLCHG_on"); 
-    ap_vnav = link_dataref_cmd_once("sim/autopilot/FMS");      // AP vertical NAV button
+    ap_vnav = link_dataref_cmd_hold("sim/autopilot/FMS");      // AP vertical NAV button
     ap_vnav_led = link_dataref_int("sim/cockpit2/autopilot/vnav_armed");
     ap_n1 = link_dataref_int("xpserver/N1_mode");        // AP speed N1 button
     ap_n1_led = link_dataref_int("xpserver/LED_N1_on"); // 0: off, 1: armed, 2: captured
@@ -555,10 +559,12 @@ void b737_mcp(void)
   }
   ret = display_outputf(card, 8, 3, ap_heading, -1, blank);
   ret = display_outputf(card, 11, 5, ap_altitude, -1, blank);
-  if ((*ap_vspeed == 0.0) || (*ap_vnav_led == 1) || (*ap_app_led == 1)) {
-    ret = display_outputf(card, 16, 5, ap_vspeed, -1, 1);
-  } else {
+
+  //  if ((*ap_vspeed == 0.0) || (*ap_vnav_led == 1) || (*ap_app_led == 1)) {
+  if (*ap_vspeed_show >= 1) {
     ret = display_outputf(card, 16, 5, ap_vspeed, -1, blank);
+  } else {
+    ret = display_outputf(card, 16, 5, ap_vspeed, -1, one);
   }
   
 }
