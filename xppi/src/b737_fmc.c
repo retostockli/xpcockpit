@@ -38,50 +38,64 @@
 #include "common.h"
 #include "serverdata.h"
 #include "b737_fmc.h"
-#include <softPwm.h>
+
+/* WIRING PI PIN NUMBERS USED */
 
 // columns are outputs. All are set to HIGH except the column being scanned.
 const int colPins[] = { 
-		15, // p.8  BCM.14 	BLACK UART TX
-		16, // p.10 BCM.15 	WHITE UART RX
-		1, 	// p.12 BCM.18 	GRAY  PWM0
-		4, 	// p.16 BCM.23 	PURPLE
-		5, 	// p.18 BCM.24 	BLUE
-		6,	// p.22 BCM.25 	GREEN
-		10,	// p.24	BCM.8	YELLOW CE0
-		11,	// p.26 BCM.7	ORANGE CE1
-		27	// p.36 BCM.16	RED
+		15,     // p.8  BCM.14 	UART TX Pi3 OK
+		16,     // p.10 BCM.15 	UART RX Pi3 OK
+		1, 	// p.12 BCM.18 	PWM0 Pi3 OK
+		4, 	// p.16 BCM.23 	Pi3 OK
+		5, 	// p.18 BCM.24 	Pi3 OK
+		6,	// p.22 BCM.25 	Pi3 OK
+		10,	// p.24	BCM.8   CE0 Pi3 OK
+		11,	// p.26 BCM.7	CE1 Pi3 OK
+		27	// p.36 BCM.16  Pi3 OK
 		};
 // 	// rows are inputs.
 const int rowPins[] = { 
-		29,	//	p.40 BCM.21	GRAY SCLK
-		8,	//	p.3	BCM.2 PURPLE I2C SDA (fixed pull-up)
-		9,	// 	p.5	BCM.3 BLUE I2C SCL (fixed pull-up)
-		7,	// 	p.7 BCM.4 GREEN GPCLK0
-		0,	//	p.11 BCM.17 YELLOW
-		2, 	// 	p.13 BCM.27 ORANGE
-		3,	//	p.15 BCM.22 RED
-		12	// 	p.19 BCM.10 BROWN MOSI
+		29,	// p.40 BCM.21	SCLK Pi3 OK
+		8,	// p.3  BCM.2   I2C SDA Pi3 OK
+		9,	// p.5  BCM.3   I2C SCL Pi3 OK
+		7,	// p.7  BCM.4   GPCLK0 Pi3 OK
+		0,	// p.11 BCM.17  Pi3 OK
+		2, 	// p.13 BCM.27  Pi3 OK
+		3,	// p.15 BCM.22  Pi3 OK
+		12	// p.19 BCM.10  MOSI Pi3 OK
 		};
 
+const int exec_led_pin = 13; // p. 21 BCM 9  Pi3 OK
+const int msg_led_pin = 14;  // p. 23 BCM 11 Pi3 OK
+const int dspy_led_pin = 21; // p. 29 BCM 5  Pi3 OK
+const int ofst_led_pin = 22; // p. 31 BCM 6  Pi3 OK
+const int fail_led_pin = 23; // p. 33 BCM 13 Pi3 OK
+const int key_led_pin = 24;  // p. 35 BCM 19 Pi3 OK
+
+float key_brightness_save;
+ 
 void b737_fmc(void)
 {
 
   /* only run for ZIBO 737 */
-  if (acf_type == 3) {
+  //  if (acf_type == 3) {
+  if (1) {
 
-    int ret;
     int pin;
     int nRows = sizeof(rowPins)/sizeof(int);
     int nCols = sizeof(colPins)/sizeof(int);
     int nowCol;
     int nowRow;
-
-    int exec_led_pin = 13; /* GPIO 9, Physical Pin 21 */
-    int msg_led_pin = 14; 	// p.3 bcm.11 
-    int dspy_led_pin = 21;	// p.29 bcm.5
-    int ofst_led_pin = 22; 	// p.31 bcm.6
-    int fail_led_pin = 23;	// p.33 bcm.13
+   
+    float *key_brightness = link_dataref_flt("laminar/B738/electric/panel_brightness",-2);
+    
+    int *exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
+    int *msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
+    /*
+    int *dspy_led = link_dataref_int("");
+    int *ofst_led = link_dataref_int("");
+    int *fail_led = link_dataref_int("");
+    */
     
     
     pinMode(exec_led_pin, OUTPUT);
@@ -89,46 +103,28 @@ void b737_fmc(void)
     pinMode(dspy_led_pin, OUTPUT);
     pinMode(ofst_led_pin, OUTPUT);
     pinMode(fail_led_pin, OUTPUT);
+
+    // Testing Outputs (uncomment if needed)
+    *key_brightness = 1.0;
+    *exec_led = 1;
+    *msg_led = 1;
     
-    // ab hier die FMC Tasten Brightness
-    //per SoftPwm zu gesteuern
-    //
-    int key_led_pin = 19;
-    pinMode(key_led_pin, OUTPUT);
-    
-    int x = softPwmCreate(key_led_pin,50,100); //Pin,initalValue,pwmRange
-    
-    
-    int *key_brightness = link_dataref_int("laminar/B738/electric/panel_brightness[3]");
-    
-    int bright = (int) (*key_brightness * 100); //map from 0.01 - 1.0 to 0-100
-    
-    if (*key_brightness != INT_MISS) softPwmWrite(key_led_pin, bright);
-    // Tasten Brightness End
-    
-    int *exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
-    int *msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
-    
-    
-    
+    // Only update key brightness PWM if it has changed
+    if ((*key_brightness != key_brightness_save) &&
+	(*key_brightness != FLT_MISS)) {
+      pinMode(key_led_pin, OUTPUT);
+      key_brightness_save = *key_brightness;
+      softPwmCreate(key_led_pin,50,100); //Pin,initalValue,pwmRange    
+      softPwmWrite(key_led_pin, (int) (*key_brightness * 100.0));
+    }
     
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
-    if (*msg_led != INT_MISS) digitalWrite(msg_led_pin, *msg_led);
-    
-    
-    /* the following datarefs are, at least to me,  unknown yet
-    int *dspy_led = link_dataref_int("");
-    int *ofst_led = link_dataref_int("");
-    int *fail_led = link_dataref_int("");
-  
+    if (*msg_led != INT_MISS) digitalWrite(msg_led_pin, *msg_led);  
+    /*
     if (*dspy_led != INT_MISS) digitalWrite(exec_led_pin, *dspy_led);
     if (*ofst_led != INT_MISS) digitalWrite(exec_led_pin, *ofst_led);
     if (*fail_led != INT_MISS) digitalWrite(exec_led_pin, *fail_led);
-*/
-
-    /* link key datarefs */
-    
-//Piki   //int *key_dot; now  renamed to key_period, like the datarefs 
+    */
     
     int *key_1L;	
     int *key_2L;	
