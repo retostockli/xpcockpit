@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
     }
     if (strcmp("boeing737mcp",*argv) == 0) {
       if (acf_type >= 0) {
-	//b737_mcp();
+	b737_mcp();
 	b737_efis(0); /* captain */
 	b737_efis(1); /* copilot */
       }
