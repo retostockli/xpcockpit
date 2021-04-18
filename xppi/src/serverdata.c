@@ -392,8 +392,8 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
     case XPTYPE_CMD_HOLD:
 	serverdata[i].data = malloc(sizeof(int));
 	serverdata[i].data_old = malloc(sizeof(int));
-	*((int*) serverdata[i].data) = INT_MISS;
-	*((int*) serverdata[i].data_old) = INT_MISS;
+	*((int*) serverdata[i].data) = 0;
+	*((int*) serverdata[i].data_old) = 0;
       break;
     default:
       printf("Unknown data type for dataref %s \n",datarefname);

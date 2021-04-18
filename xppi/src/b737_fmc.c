@@ -72,6 +72,8 @@ const int ofst_led_pin = 22; // p. 31 BCM 6  Pi3 OK
 const int fail_led_pin = 23; // p. 33 BCM 13 Pi3 OK
 const int key_led_pin = 24;  // p. 35 BCM 19 Pi3 OK
 
+const char b[2][3][10] = {{"_1L","_2L","_3L"},{"_1R","_2R","_3R"}};
+
 float key_brightness_save;
  
 void b737_fmc(void)
@@ -86,6 +88,11 @@ void b737_fmc(void)
     int nCols = sizeof(colPins)/sizeof(int);
     int nowCol;
     int nowRow;
+    int i,j;
+    char datarefname[100];
+    int *datarefptr[2][3];
+
+    
    
     float *key_brightness = link_dataref_flt("laminar/B738/electric/panel_brightness",-2);
     
@@ -96,7 +103,15 @@ void b737_fmc(void)
     int *ofst_led = link_dataref_int("");
     int *fail_led = link_dataref_int("");
     */
-    
+
+    for (j=0;j<2;j++) {
+      for (i=0;i<3;i++) {
+	strncpy(datarefname,"laminar/B738/button/fmc2",sizeof(datarefname));
+	strcat(datarefname,b[j][i]);
+	//printf("%s\n",datarefname);
+	datarefptr[j][i] = link_dataref_cmd_once(datarefname);
+      }
+    }
     
     pinMode(exec_led_pin, OUTPUT);
     pinMode(msg_led_pin, OUTPUT);
@@ -342,7 +357,7 @@ void b737_fmc(void)
       key_3		=link_dataref_cmd_once("laminar/B738/button/fmc1_3");		// sw-69      
     }
     
-    
+    /*
     *key_0 = 0;
     *key_1L = 0;	
     *key_2L = 0;	
@@ -413,6 +428,7 @@ void b737_fmc(void)
     *key_1 = 0;		
     *key_2 = 0;		
     *key_3 = 0;		    
+    */
 
     /* Scan Keyboard Matrix */
 
