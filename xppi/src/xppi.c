@@ -67,8 +67,13 @@ int main(int argc, char **argv) {
   /* initialize TCP/IP interface */
   if (initialize_tcpip()<0) exit_pi(-4);
 
- /* initialize wiringPi Library */
+  /* initialize wiringPi Library */
   if (init_pi()<0) exit_pi(-4);
+
+  /* initialize modules */
+  if (strcmp(*argv,"boeing737fmc") == 0) {
+    b737_fmc_init();
+  }
 
   while (1) {
       

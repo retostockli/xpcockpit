@@ -41,6 +41,9 @@
 
 /* WIRING PI PIN NUMBERS USED */
 
+#define nCols 9
+#define nRows 8
+
 // columns are outputs. All are set to HIGH except the column being scanned.
 const int colPins[] = { 
 		15,     // p.8  BCM.14 	UART TX Pi3 OK
@@ -53,7 +56,7 @@ const int colPins[] = {
 		11,	// p.26 BCM.7	CE1 Pi3 OK
 		27	// p.36 BCM.16  Pi3 OK
 		};
-// 	// rows are inputs.
+// rows are inputs.
 const int rowPins[] = { 
 		29,	// p.40 BCM.21	SCLK Pi3 OK
 		8,	// p.3  BCM.2   I2C SDA Pi3 OK
@@ -72,29 +75,63 @@ const int ofst_led_pin = 22; // p. 31 BCM 6  Pi3 OK
 const int fail_led_pin = 23; // p. 33 BCM 13 Pi3 OK
 const int key_led_pin = 24;  // p. 35 BCM 19 Pi3 OK
 
-const char b[2][3][10] = {{"_1L","_2L","_3L"},{"_1R","_2R","_3R"}};
+/* 3D array with 9 Columns x 8 Rows x 10 Chars */
+const char zibo[nCols][nRows][12] = {{"_1L","_2L","_3L","_4L","_5L","_6L","_1R","_2R"},
+				     {"_3R","_4R","_5R","_6R","_init_ref","_rte","_clb","_crz"},
+				     {"_des","_menu","_legs","_dep_app","_hold","_prog","_exec","_n1_lim"},
+				     {"_fix","_prev_page","_next_page","_A","_B","_C","_D","_E"},
+				     {"_F","_G","_H","_I","_J","_K","_L","_M"},
+				     {"_N","_O","_P","_Q","_R","_S","_T","_U"},
+				     {"_V","_W","_X","_Y","_Z","_SP","_del","_slash"},
+				     {"_clr","_period","_0","_minus","_7","_8","_9","_4"},
+				     {"_5","_6","_1","_2","_3","","",""}};
+
 
 float key_brightness_save;
+
+void b737_fmc_init()
+{
+  int pin;
+  
+  /* Initialize pins */
+  pinMode(exec_led_pin, OUTPUT);
+  pinMode(msg_led_pin,  OUTPUT);
+  pinMode(dspy_led_pin, OUTPUT);
+  pinMode(ofst_led_pin, OUTPUT);
+  pinMode(fail_led_pin, OUTPUT);
+  pinMode(key_led_pin,  OUTPUT);
+  softPwmCreate(key_led_pin,0,100); //Pin,initalValue,pwmRange    
+  
+  /* set columns as outputs, HIGH by default */
+  for (pin = 0; pin < nCols; pin++) {
+    digitalWrite(colPins[pin], HIGH);
+    pinMode(colPins[pin], OUTPUT);
+  }
+  
+  /* set rows as inputs, with Pull-UP enabled. */
+  for (pin = 0; pin < nRows; pin++) {
+    pinMode(rowPins[pin], INPUT);
+    pullUpDnControl(rowPins[pin], PUD_UP);
+  }
  
-void b737_fmc(void)
+}
+
+void b737_fmc()
 {
 
   /* only run for ZIBO 737 */
-  //  if (acf_type == 3) {
-  if (1) {
+  if (acf_type == 3) {
+    //if (1) {
 
-    int pin;
-    int nRows = sizeof(rowPins)/sizeof(int);
-    int nCols = sizeof(colPins)/sizeof(int);
     int nowCol;
     int nowRow;
     int i,j;
     char datarefname[100];
-    int *datarefptr[2][3];
+    int *datarefptr[nCols][nRows];
 
     
    
-    float *key_brightness = link_dataref_flt("laminar/B738/electric/panel_brightness",-2);
+    float *key_brightness = link_dataref_flt_arr("laminar/B738/electric/panel_brightness",4,3,-2);
     
     int *exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
     int *msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
@@ -104,33 +141,31 @@ void b737_fmc(void)
     int *fail_led = link_dataref_int("");
     */
 
-    for (j=0;j<2;j++) {
-      for (i=0;i<3;i++) {
-	strncpy(datarefname,"laminar/B738/button/fmc2",sizeof(datarefname));
-	strcat(datarefname,b[j][i]);
-	//printf("%s\n",datarefname);
-	datarefptr[j][i] = link_dataref_cmd_once(datarefname);
+    for (j=0;j<nCols;j++) {
+      for (i=0;i<nRows;i++) {
+	if (strcmp(zibo[j][i],"")) {
+	  if (is_copilot) {
+	    strncpy(datarefname,"laminar/B738/button/fmc2",sizeof(datarefname));
+	  } else {
+	    strncpy(datarefname,"laminar/B738/button/fmc1",sizeof(datarefname));
+	  }
+	  strcat(datarefname,zibo[j][i]);
+	  //printf("%s\n",datarefname);
+	  datarefptr[j][i] = link_dataref_cmd_once(datarefname);
+	}
       }
     }
-    
-    pinMode(exec_led_pin, OUTPUT);
-    pinMode(msg_led_pin, OUTPUT);
-    pinMode(dspy_led_pin, OUTPUT);
-    pinMode(ofst_led_pin, OUTPUT);
-    pinMode(fail_led_pin, OUTPUT);
 
     // Testing Outputs (uncomment if needed)
-    *key_brightness = 1.0;
-    *exec_led = 1;
-    *msg_led = 1;
+    //*key_brightness = 0.2;
+    //*exec_led = 1;
+    //*msg_led = 1;
     
     // Only update key brightness PWM if it has changed
     if ((*key_brightness != key_brightness_save) &&
 	(*key_brightness != FLT_MISS)) {
-      pinMode(key_led_pin, OUTPUT);
       key_brightness_save = *key_brightness;
-      softPwmCreate(key_led_pin,50,100); //Pin,initalValue,pwmRange    
-      softPwmWrite(key_led_pin, (int) (*key_brightness * 100.0));
+     softPwmWrite(key_led_pin, (int) (*key_brightness * 100.0));
     }
     
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
@@ -140,309 +175,8 @@ void b737_fmc(void)
     if (*ofst_led != INT_MISS) digitalWrite(exec_led_pin, *ofst_led);
     if (*fail_led != INT_MISS) digitalWrite(exec_led_pin, *fail_led);
     */
-    
-    int *key_1L;	
-    int *key_2L;	
-    int *key_3L;	
-    int *key_4L;	
-    int *key_5L;	
-    int *key_6L;	
-    int *key_1R;	
-    int *key_2R;	
-    int *key_3R;	
-    int *key_4R;	
-    int *key_5R;	
-    int *key_6R;	
-    int *key_init_ref;   
-    int *key_rte;		
-    int *key_clb;		
-    int *key_crz;		
-    int *key_des;		
-    int *key_menu;		
-    int *key_legs;		
-    int *key_dep_app;
-    int *key_hold;		
-    int *key_prog;		
-    int *key_exec;		
-    int *key_n1_lim;	
-    int *key_fix;		    
-    int *key_prev_page;
-    int *key_next_page;   
-    int *key_A;		
-    int *key_B;		
-    int *key_C;		
-    int *key_D;		
-    int *key_E;		
-    int *key_F;		
-    int *key_G;		
-    int *key_H;		
-    int *key_I;		
-    int *key_J;		
-    int *key_K;		
-    int *key_L;		
-    int *key_M;		
-    int *key_N;		
-    int *key_O;		
-    int *key_P;		
-    int *key_Q;		
-    int *key_R;		
-    int *key_S;		
-    int *key_T;		
-    int *key_U;		
-    int *key_V;		
-    int *key_W;		
-    int *key_X;		
-    int *key_Y;		
-    int *key_Z;		
-    int *key_SP;		
-    int *key_del;	
-    int *key_slash;
-    int *key_clr;	
-    int *key_period;
-    int *key_0;		
-    int *key_minus;
-    int *key_7;		
-    int *key_8;		
-    int *key_9;		
-    int *key_4;		
-    int *key_5;		
-    int *key_6;		
-    int *key_1;		
-    int *key_2;		
-    int *key_3;		    
-    
-    if (is_copilot) 
-    {// keyname			dataref							Hardwareswitch-Nr.
-      key_1L		=link_dataref_cmd_once("laminar/B738/button/fmc2_1L");		// sw-1
-      key_2L		=link_dataref_cmd_once("laminar/B738/button/fmc2_2L");		// sw-2
-      key_3L		=link_dataref_cmd_once("laminar/B738/button/fmc2_3L");   	// sw-3
-      key_4L		=link_dataref_cmd_once("laminar/B738/button/fmc2_4L"); 		// sw-4
-      key_5L		=link_dataref_cmd_once("laminar/B738/button/fmc2_5L"); 		// sw-5
-      key_6L		=link_dataref_cmd_once("laminar/B738/button/fmc2_6L"); 		// sw-6
-      key_1R		=link_dataref_cmd_once("laminar/B738/button/fmc2_1R"); 		// sw-7
-      key_2R		=link_dataref_cmd_once("laminar/B738/button/fmc2_2R"); 		// sw-8
-      key_3R		=link_dataref_cmd_once("laminar/B738/button/fmc2_3R"); 		// sw-9
-      key_4R		=link_dataref_cmd_once("laminar/B738/button/fmc2_4R");		// sw-10
-      key_5R		=link_dataref_cmd_once("laminar/B738/button/fmc2_5R"); 		// sw-11
-      key_6R		=link_dataref_cmd_once("laminar/B738/button/fmc2_6R"); 		// sw-12
-      key_init_ref	=link_dataref_cmd_once("laminar/B738/button/fmc2_init_ref"); 	// sw-13
-      key_rte		=link_dataref_cmd_once("laminar/B738/button/fmc2_rte");		// sw-14
-      key_clb		=link_dataref_cmd_once("laminar/B738/button/fmc2_clb"); 	// sw-15
-      key_crz		=link_dataref_cmd_once("laminar/B738/button/fmc2_crz");		// sw-16
-      key_des		=link_dataref_cmd_once("laminar/B738/button/fmc2_des");		// sw-17
-      key_menu		=link_dataref_cmd_once("laminar/B738/button/fmc2_menu");	// sw-18
-      key_legs		=link_dataref_cmd_once("laminar/B738/button/fmc2_legs"); 	// sw-19
-      key_dep_app	=link_dataref_cmd_once("laminar/B738/button/fmc2_dep_app");	// sw-20
-      key_hold		=link_dataref_cmd_once("laminar/B738/button/fmc2_hold");	// sw-21
-      key_prog		=link_dataref_cmd_once("laminar/B738/button/fmc2_prog");	// sw-22
-      key_exec		=link_dataref_cmd_once("laminar/B738/button/fmc2_exec");	// sw-23
-      key_n1_lim	=link_dataref_cmd_once("laminar/B738/button/fmc2_n1_lim"); 	// sw-24
-      key_fix		=link_dataref_cmd_once("laminar/B738/button/fmc2_fix");		// sw-25
-      key_prev_page	=link_dataref_cmd_once("laminar/B738/button/fmc2_prev_page");	// sw-26
-      key_next_page	=link_dataref_cmd_once("laminar/B738/button/fmc2_next_page");	// sw-27
-      key_A		=link_dataref_cmd_once("laminar/B738/button/fmc2_A");		// sw-28
-      key_B		=link_dataref_cmd_once("laminar/B738/button/fmc2_B");		// sw-29
-      key_C		=link_dataref_cmd_once("laminar/B738/button/fmc2_C");		// sw-30
-      key_D		=link_dataref_cmd_once("laminar/B738/button/fmc2_D");		// sw-31
-      key_E		=link_dataref_cmd_once("laminar/B738/button/fmc2_E");		// sw-32
-      key_F		=link_dataref_cmd_once("laminar/B738/button/fmc2_F");		// sw-33
-      key_G		=link_dataref_cmd_once("laminar/B738/button/fmc2_G");		// sw-34
-      key_H		=link_dataref_cmd_once("laminar/B738/button/fmc2_H");		// sw-35
-      key_I		=link_dataref_cmd_once("laminar/B738/button/fmc2_I");		// sw-36
-      key_J		=link_dataref_cmd_once("laminar/B738/button/fmc2_J");		// sw-37
-      key_K		=link_dataref_cmd_once("laminar/B738/button/fmc2_K");		// sw-38
-      key_L		=link_dataref_cmd_once("laminar/B738/button/fmc2_L");		// sw-39
-      key_M		=link_dataref_cmd_once("laminar/B738/button/fmc2_M");		// sw-40
-      key_N		=link_dataref_cmd_once("laminar/B738/button/fmc2_N");		// sw-41
-      key_O		=link_dataref_cmd_once("laminar/B738/button/fmc2_O");		// sw-42
-      key_P		=link_dataref_cmd_once("laminar/B738/button/fmc2_P");		// sw-43
-      key_Q		=link_dataref_cmd_once("laminar/B738/button/fmc2_Q");		// sw-44
-      key_R		=link_dataref_cmd_once("laminar/B738/button/fmc2_R");		// sw-45
-      key_S		=link_dataref_cmd_once("laminar/B738/button/fmc2_S");		// sw-46
-      key_T		=link_dataref_cmd_once("laminar/B738/button/fmc2_T");		// sw-47
-      key_U		=link_dataref_cmd_once("laminar/B738/button/fmc2_U");		// sw-48
-      key_V		=link_dataref_cmd_once("laminar/B738/button/fmc2_V");		// sw-49
-      key_W		=link_dataref_cmd_once("laminar/B738/button/fmc2_W");		// sw-50
-      key_X		=link_dataref_cmd_once("laminar/B738/button/fmc2_X");		// sw-51
-      key_Y		=link_dataref_cmd_once("laminar/B738/button/fmc2_Y");		// sw-52
-      key_Z		=link_dataref_cmd_once("laminar/B738/button/fmc2_Z");		// sw-53
-      key_SP		=link_dataref_cmd_once("laminar/B738/button/fmc2_SP");		// sw-54
-      key_del		=link_dataref_cmd_once("laminar/B738/button/fmc2_del");		// sw-55
-      key_slash		=link_dataref_cmd_once("laminar/B738/button/fmc2_slash");	// sw-56
-      key_clr		=link_dataref_cmd_once("laminar/B738/button/fmc2_clr");		// sw-57
-      key_period	=link_dataref_cmd_once("laminar/B738/button/fmc2_period");	// sw-58
-      key_0		=link_dataref_cmd_once("laminar/B738/button/fmc2_0");		// sw-59
-      key_minus		=link_dataref_cmd_once("laminar/B738/button/fmc2_minus");	// sw-60
-      key_7		=link_dataref_cmd_once("laminar/B738/button/fmc2_7"); 		// sw-61
-      key_8		=link_dataref_cmd_once("laminar/B738/button/fmc2_8");		// sw-62
-      key_9		=link_dataref_cmd_once("laminar/B738/button/fmc2_9");		// sw-63
-      key_4		=link_dataref_cmd_once("laminar/B738/button/fmc2_4");		// sw-64
-      key_5		=link_dataref_cmd_once("laminar/B738/button/fmc2_5");		// sw-65
-      key_6		=link_dataref_cmd_once("laminar/B738/button/fmc2_6");		// sw-66
-      key_1		=link_dataref_cmd_once("laminar/B738/button/fmc2_1");		// sw-67
-      key_2		=link_dataref_cmd_once("laminar/B738/button/fmc2_2");		// sw-68
-      key_3		=link_dataref_cmd_once("laminar/B738/button/fmc2_3");		// sw-69
-    }
- else 
-    {
-
-      key_1L		=link_dataref_cmd_once("laminar/B738/button/fmc1_1L");		// sw-1
-      key_2L		=link_dataref_cmd_once("laminar/B738/button/fmc1_2L");		// sw-2
-      key_3L		=link_dataref_cmd_once("laminar/B738/button/fmc1_3L");   	// sw-3
-      key_4L		=link_dataref_cmd_once("laminar/B738/button/fmc1_4L"); 		// sw-4
-      key_5L		=link_dataref_cmd_once("laminar/B738/button/fmc1_5L"); 		// sw-5
-      key_6L		=link_dataref_cmd_once("laminar/B738/button/fmc1_6L"); 		// sw-6
-      key_1R		=link_dataref_cmd_once("laminar/B738/button/fmc1_1R"); 		// sw-7
-      key_2R		=link_dataref_cmd_once("laminar/B738/button/fmc1_2R"); 		// sw-8
-      key_3R		=link_dataref_cmd_once("laminar/B738/button/fmc1_3R"); 		// sw-9
-      key_4R		=link_dataref_cmd_once("laminar/B738/button/fmc1_4R");		// sw-10
-      key_5R		=link_dataref_cmd_once("laminar/B738/button/fmc1_5R"); 		// sw-11
-      key_6R		=link_dataref_cmd_once("laminar/B738/button/fmc1_6R"); 		// sw-12
-      key_init_ref	=link_dataref_cmd_once("laminar/B738/button/fmc1_init_ref"); 	// sw-13
-      key_rte		=link_dataref_cmd_once("laminar/B738/button/fmc1_rte");		// sw-14
-      key_clb		=link_dataref_cmd_once("laminar/B738/button/fmc1_clb"); 	// sw-15
-      key_crz		=link_dataref_cmd_once("laminar/B738/button/fmc1_crz");		// sw-16
-      key_des		=link_dataref_cmd_once("laminar/B738/button/fmc1_des");		// sw-17
-      key_menu		=link_dataref_cmd_once("laminar/B738/button/fmc1_menu");	// sw-18
-      key_legs		=link_dataref_cmd_once("laminar/B738/button/fmc1_legs"); 	// sw-19
-      key_dep_app	=link_dataref_cmd_once("laminar/B738/button/fmc1_dep_app");	// sw-20
-      key_hold		=link_dataref_cmd_once("laminar/B738/button/fmc1_hold");		// sw-21
-      key_prog		=link_dataref_cmd_once("laminar/B738/button/fmc1_prog");		// sw-22
-      key_exec		=link_dataref_cmd_once("laminar/B738/button/fmc1_exec");		// sw-23
-      key_n1_lim	=link_dataref_cmd_once("laminar/B738/button/fmc1_n1_lim"); 	// sw-24
-      key_fix		=link_dataref_cmd_once("laminar/B738/button/fmc1_fix");		// sw-25
-      key_prev_page	=link_dataref_cmd_once("laminar/B738/button/fmc1_prev_page");	// sw-26
-      key_next_page	=link_dataref_cmd_once("laminar/B738/button/fmc1_next_page");	// sw-27
-      key_A		=link_dataref_cmd_once("laminar/B738/button/fmc1_A");		// sw-28
-      key_B		=link_dataref_cmd_once("laminar/B738/button/fmc1_B");		// sw-29
-      key_C		=link_dataref_cmd_once("laminar/B738/button/fmc1_C");		// sw-30
-      key_D		=link_dataref_cmd_once("laminar/B738/button/fmc1_D");		// sw-31
-      key_E		=link_dataref_cmd_once("laminar/B738/button/fmc1_E");		// sw-32
-      key_F		=link_dataref_cmd_once("laminar/B738/button/fmc1_F");		// sw-33
-      key_G		=link_dataref_cmd_once("laminar/B738/button/fmc1_G");		// sw-34
-      key_H		=link_dataref_cmd_once("laminar/B738/button/fmc1_H");		// sw-35
-      key_I		=link_dataref_cmd_once("laminar/B738/button/fmc1_I");		// sw-36
-      key_J		=link_dataref_cmd_once("laminar/B738/button/fmc1_J");		// sw-37
-      key_K		=link_dataref_cmd_once("laminar/B738/button/fmc1_K");		// sw-38
-      key_L		=link_dataref_cmd_once("laminar/B738/button/fmc1_L");		// sw-39
-      key_M		=link_dataref_cmd_once("laminar/B738/button/fmc1_M");		// sw-40
-      key_N		=link_dataref_cmd_once("laminar/B738/button/fmc1_N");		// sw-41
-      key_O		=link_dataref_cmd_once("laminar/B738/button/fmc1_O");		// sw-42
-      key_P		=link_dataref_cmd_once("laminar/B738/button/fmc1_P");		// sw-43
-      key_Q		=link_dataref_cmd_once("laminar/B738/button/fmc1_Q");		// sw-44
-      key_R		=link_dataref_cmd_once("laminar/B738/button/fmc1_R");		// sw-45
-      key_S		=link_dataref_cmd_once("laminar/B738/button/fmc1_S");		// sw-46
-      key_T		=link_dataref_cmd_once("laminar/B738/button/fmc1_T");		// sw-47
-      key_U		=link_dataref_cmd_once("laminar/B738/button/fmc1_U");		// sw-48
-      key_V		=link_dataref_cmd_once("laminar/B738/button/fmc1_V");		// sw-49
-      key_W		=link_dataref_cmd_once("laminar/B738/button/fmc1_W");		// sw-50
-      key_X		=link_dataref_cmd_once("laminar/B738/button/fmc1_X");		// sw-51
-      key_Y		=link_dataref_cmd_once("laminar/B738/button/fmc1_Y");		// sw-52
-      key_Z		=link_dataref_cmd_once("laminar/B738/button/fmc1_Z");		// sw-53
-      key_SP		=link_dataref_cmd_once("laminar/B738/button/fmc1_SP");		// sw-54
-      key_del		=link_dataref_cmd_once("laminar/B738/button/fmc1_del");		// sw-55
-      key_slash		=link_dataref_cmd_once("laminar/B738/button/fmc1_slash");	// sw-56
-      key_clr		=link_dataref_cmd_once("laminar/B738/button/fmc1_clr");		// sw-57
-      key_period	=link_dataref_cmd_once("laminar/B738/button/fmc1_period");	// sw-58
-      key_0		=link_dataref_cmd_once("laminar/B738/button/fmc1_0");		// sw-59
-      key_minus		=link_dataref_cmd_once("laminar/B738/button/fmc1_minus");	// sw-60
-      key_7		=link_dataref_cmd_once("laminar/B738/button/fmc1_7"); 		// sw-61
-      key_8		=link_dataref_cmd_once("laminar/B738/button/fmc1_8");		// sw-62
-      key_9		=link_dataref_cmd_once("laminar/B738/button/fmc1_9");		// sw-63
-      key_4		=link_dataref_cmd_once("laminar/B738/button/fmc1_4");		// sw-64
-      key_5		=link_dataref_cmd_once("laminar/B738/button/fmc1_5");		// sw-65
-      key_6		=link_dataref_cmd_once("laminar/B738/button/fmc1_6");		// sw-66
-      key_1		=link_dataref_cmd_once("laminar/B738/button/fmc1_1");		// sw-67
-      key_2		=link_dataref_cmd_once("laminar/B738/button/fmc1_2");		// sw-68
-      key_3		=link_dataref_cmd_once("laminar/B738/button/fmc1_3");		// sw-69      
-    }
-    
-    /*
-    *key_0 = 0;
-    *key_1L = 0;	
-    *key_2L = 0;	
-    *key_3L = 0;	
-    *key_4L = 0;	
-    *key_5L = 0;	
-    *key_6L = 0;	
-    *key_1R = 0;	
-    *key_2R = 0;	
-    *key_3R = 0;	
-    *key_4R = 0;	
-    *key_5R = 0;	
-    *key_6R = 0;	
-    *key_init_ref = 0;   
-    *key_rte = 0;		
-    *key_clb = 0;		
-    *key_crz = 0;		
-    *key_des = 0;		
-    *key_menu = 0;		
-    *key_legs = 0;		
-    *key_dep_app = 0;
-    *key_hold = 0;		
-    *key_prog = 0;		
-    *key_exec = 0;		
-    *key_n1_lim = 0;	
-    *key_fix = 0;		    
-    *key_prev_page = 0;
-    *key_next_page = 0;   
-    *key_A = 0;		
-    *key_B = 0;		
-    *key_C = 0;		
-    *key_D = 0;		
-    *key_E = 0;		
-    *key_F = 0;		
-    *key_G = 0;		
-    *key_H = 0;		
-    *key_I = 0;		
-    *key_J = 0;		
-    *key_K = 0;		
-    *key_L = 0;		
-    *key_M = 0;		
-    *key_N = 0;		
-    *key_O = 0;		
-    *key_P = 0;		
-    *key_Q = 0;		
-    *key_R = 0;		
-    *key_S = 0;		
-    *key_T = 0;		
-    *key_U = 0;		
-    *key_V = 0;		
-    *key_W = 0;		
-    *key_X = 0;		
-    *key_Y = 0;		
-    *key_Z = 0;		
-    *key_SP = 0;		
-    *key_del = 0;	
-    *key_slash = 0;
-    *key_clr = 0;	
-    *key_period = 0;
-    *key_0 = 0;		
-    *key_minus = 0;
-    *key_7 = 0;		
-    *key_8 = 0;		
-    *key_9 = 0;		
-    *key_4 = 0;		
-    *key_5 = 0;		
-    *key_6 = 0;		
-    *key_1 = 0;		
-    *key_2 = 0;		
-    *key_3 = 0;		    
-    */
 
     /* Scan Keyboard Matrix */
-
-    /* set columns as outputs, HIGH by default */
-    for (pin = 0; pin < nCols; pin++) {
-      digitalWrite(colPins[pin], HIGH);
-      pinMode(colPins[pin], OUTPUT);
-    }
-  
-    /* set rows as inputs, with Pull-UP enabled. */
-    for (pin = 0; pin < nRows; pin++) {
-      pinMode(rowPins[pin], INPUT);
-      pullUpDnControl(rowPins[pin], PUD_UP);
-    }
 
     /* iterate through the columns */
     int gotPress = 0;
@@ -479,184 +213,15 @@ void b737_fmc(void)
 	    pressedRow = nowRow;
 	    pressedCol = nowCol;
 	    somethingPressed = 1;
-// Piki;  i have changed nowRow with nowCol, because it represents the Logic of the Hardware-Keybord better; 	  
+	    // Piki;  i have changed nowRow with nowCol, because it
+	    // represents the Logic of the Hardware-Keybord better; 	  
 	    printf("KEY PRESS   col=%02d row=%02d\n", nowCol,nowRow);
 
-	    if (nowCol==0) 
-	    {	
-		if (nowRow==0) {
-		  *key_1L = 1;
-		} else if (nowRow==1) {
-		  *key_2L = 1;
-		} else if (nowRow==2) {
-		  *key_3L = 1;
-		} else if (nowRow==3) {
-		  *key_4L = 1;
-		} else if (nowRow==4) {
-		  *key_5L = 1;
-		} else if (nowRow==5) {
-		  *key_6L = 1;
-		} else if (nowRow==6) {
-		  *key_1R = 1;
-		} else if (nowRow==7) {	
-		      *key_2R  = 1;
-		} 
-	    } 
-	    else if (nowCol==1) 
-	    {
-		if (nowRow==0) {
-		  *key_3R = 1;
-		} else if (nowRow==1) {
-		   *key_4R = 1;
-		} else if (nowRow==2) {
-		  *key_5R = 1;
-		} else if (nowRow==3) {
-		  *key_6R = 1;
-		} else if (nowRow==4) {
-		  *key_init_ref = 1;
-		} else if (nowRow==5) {
-		  *key_rte = 1;
-		} else if (nowRow==6) {
-		  *key_clb = 1;
-		} else if (nowRow==7) {	
-		       *key_crz =1;
-		} 
-	    } 
-	    else if (nowCol==2) 
-	    {
-		if (nowRow==0) {
-		  *key_des = 1; 
-		} else if (nowRow==1) {
-		  *key_menu = 1;
-		} else if (nowRow==2) {
-		  *key_legs = 1;
-		} else if (nowRow==3) {
-		  *key_dep_app = 1;
-		} else if (nowRow==4) {
-		  *key_hold = 1;
-		} else if (nowRow==5) {
-		  *key_prog = 1;
-		} else if (nowRow==6) {
-		  *key_exec = 1;
-		} else if (nowRow==7) {	 
-		  *key_n1_lim = 1;     
-		} 
-	    } 
-	    else if (nowCol==3) 
-	      {
-		if (nowRow==0) {
-		  *key_fix = 1;
-		} else if (nowRow==1) {
-		  *key_prev_page = 1;
-		} else if (nowRow==2) {
-		  *key_next_page = 1;
-		} else if (nowRow==3) {
-		  *key_A = 1;
-		} else if (nowRow==4) {
-		  *key_B = 1;
-		} else if (nowRow==5) {
-		  *key_C = 1;
-		} else if (nowRow==6) {
-		  *key_D = 1;
-		} else if (nowRow==7) {	 
-		  *key_E = 1;     
-		} 
-	      } 
-	    else if (nowCol==4) 
-	    {
-		if (nowRow==0) {
-		  *key_F = 1;
-		} else if (nowRow==1) {
-		  *key_G = 1;
-		} else if (nowRow==2) {
-		  *key_H = 1;
-		} else if (nowRow==3) {
-		  *key_I = 1;
-		} else if (nowRow==4) {
-		  *key_J = 1;
-		} else if (nowRow==5) {
-		  *key_K = 1;
-		} else if (nowRow==6) {
-		  *key_L = 1;
-		} else if (nowRow==7) {
-		  *key_M = 1;	      
-		} 
-	    } 
-	    else if (nowCol==5) 
-	    {
-		if (nowRow==0) {
-		  *key_N = 1;
-		} else if (nowRow==1) {
-		  *key_O = 1;
-		} else if (nowRow==2) {
-		  *key_P = 1;
-		} else if (nowRow==3) {
-		  *key_Q = 1;
-		} else if (nowRow==4) {
-		  *key_R = 1;
-		} else if (nowRow==5) {
-		  *key_S = 1;
-		} else if (nowRow==6) {
-		  *key_T = 1;
-		} else if (nowRow==7) {	
-		  *key_U = 1;      
-		} 
-	    } 
-	    else if (nowCol==6) 
-	    {
-		if (nowRow==0) {
-		  *key_V = 1;
-		} else if (nowRow==1) {
-		  *key_W = 1;
-		} else if (nowRow==2) {
-		  *key_X = 1;
-		} else if (nowRow==3) {
-		  *key_Y = 1;
-		} else if (nowRow==4) {
-		  *key_Z = 1;
-		} else if (nowRow==5) {
-		  *key_SP = 1;
-		} else if (nowRow==6) {
-		  *key_del = 1;
-		} else if (nowRow==7) {	
-		  *key_slash = 1;
-		} 
-	    } 
-	    else if (nowCol==7) 
-	    {
-		if (nowRow==0) {
-		  *key_clr = 1;
-		} else if (nowRow==1) {
-		  *key_period = 1;
-		} else if (nowRow==2) {
-		  *key_0 = 1;
-		} else if (nowRow==3) {
-		  *key_minus = 1;
-		} else if (nowRow==4) {
-		  *key_7 = 1;
-		} else if (nowRow==5) {
-		  *key_8 = 1;
-		} else if (nowRow==6) {
-		  *key_9 = 1;
-		} else if (nowRow==7) {	
-		  *key_4 = 1;      
-		}
-	  }
-	    else if (nowCol==8) 
-	    {
-		if (nowRow==0) {
-		  *key_5 = 1; 
-		} else if (nowRow==1) {
-		  *key_6 = 1;
-		} else if (nowRow==2) {
-		  *key_1 = 1;
-		} else if (nowRow==3) {
-		  *key_2 = 1;
-		} else if (nowRow==4) {
-		  *key_3 = 1;
-		} 
+	    if (datarefptr[nowCol][nowRow]) {
+	      *datarefptr[nowCol][nowRow] = 1;
 	    }
-	  
+	    
+	    
 	    // quick and dirty delay for 5ms to debounce
 	    usleep(5000);
 	  }
