@@ -74,6 +74,9 @@ const int dspy_led_pin = 21; // p. 29 BCM 5  Pi3 OK
 const int ofst_led_pin = 22; // p. 31 BCM 6  Pi3 OK
 const int fail_led_pin = 23; // p. 33 BCM 13 Pi3 OK
 const int key_led_pin = 24;  // p. 35 BCM 19 Pi3 OK
+const int rot_sw_pin = 26;   // p. 32 BCM 12
+const int rot_a_pin = 25;    // p. 37 BCM 26
+const int rot_b_pin = 28;    // p. 38 BCM 20
 
 /* 3D array with 9 Columns x 8 Rows x 10 Chars */
 const char zibo[nCols][nRows][12] = {{"_1L","_2L","_3L","_4L","_5L","_6L","_1R","_2R"},
@@ -89,9 +92,19 @@ const char zibo[nCols][nRows][12] = {{"_1L","_2L","_3L","_4L","_5L","_6L","_1R",
 
 float key_brightness_save;
 
+int rot_sw_save;
+int rot_a_save;
+int rot_b_save;
+
 void b737_fmc_init()
 {
   int pin;
+
+  /* Initialize Values */
+  key_brightness_save = 0.0;
+  rot_sw_save = 0;
+  rot_a_save = 0;
+  rot_b_save = 0;
   
   /* Initialize pins */
   pinMode(exec_led_pin, OUTPUT);
@@ -101,6 +114,13 @@ void b737_fmc_init()
   pinMode(fail_led_pin, OUTPUT);
   pinMode(key_led_pin,  OUTPUT);
   softPwmCreate(key_led_pin,0,100); //Pin,initalValue,pwmRange    
+
+  pinMode(rot_a_pin,  INPUT);
+  pinMode(rot_a_pin,  INPUT);
+  pinMode(rot_b_pin,  INPUT);
+  pullUpDnControl(rot_sw_pin, PUD_UP);
+  pullUpDnControl(rot_a_pin, PUD_UP);
+  pullUpDnControl(rot_b_pin, PUD_UP);
   
   /* set columns as outputs, HIGH by default */
   for (pin = 0; pin < nCols; pin++) {
@@ -123,6 +143,7 @@ void b737_fmc()
   if (acf_type == 3) {
     //if (1) {
 
+    int status;
     int nowCol;
     int nowRow;
     int i,j;
@@ -171,11 +192,31 @@ void b737_fmc()
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
     if (*msg_led != INT_MISS) digitalWrite(msg_led_pin, *msg_led);  
     /*
-    if (*dspy_led != INT_MISS) digitalWrite(exec_led_pin, *dspy_led);
-    if (*ofst_led != INT_MISS) digitalWrite(exec_led_pin, *ofst_led);
-    if (*fail_led != INT_MISS) digitalWrite(exec_led_pin, *fail_led);
+    if (*dspy_led != INT_MISS) digitalWrite(dspy_led_pin, *dspy_led);
+    if (*ofst_led != INT_MISS) digitalWrite(ofst_led_pin, *ofst_led);
+    if (*fail_led != INT_MISS) digitalWrite(fail_led_pin, *fail_led);
     */
 
+    /* fetch rotary encoder */
+    status = digitalRead(rot_sw_pin);
+    if (status != rot_sw_save) {
+      printf("Rotary Switch: %i\n",status);
+      rot_sw_save = status;
+    }
+    status = digitalRead(rot_a_pin);
+    if (status != rot_a_save) {
+      printf("Rotary A: %i\n",status);
+      rot_a_save = status;
+    }
+    status = digitalRead(rot_b_pin);
+    if (status != rot_b_save) {
+      printf("Rotary B: %i\n",status);
+      rot_b_save = status;
+    }
+    //    printf("bla\n");
+
+    digitalWrite(dspy_led_pin, 0);
+    
     /* Scan Keyboard Matrix */
 
     /* iterate through the columns */
@@ -221,6 +262,8 @@ void b737_fmc()
 	      *datarefptr[nowCol][nowRow] = 1;
 	    }
 	    
+	    digitalWrite(dspy_led_pin, 1);
+
 	    
 	    // quick and dirty delay for 5ms to debounce
 	    usleep(5000);
