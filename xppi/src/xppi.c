@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
   /* initialize modules */
   if (strcmp(*argv,"boeing737fmc") == 0) {
-    b737_fmc_init();
+    if (b737_fmc_init()<0) exit_pi(-5);
   }
 
   while (1) {

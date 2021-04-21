@@ -34,6 +34,7 @@
 #include <float.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <pthread.h>
 
 #include "common.h"
 #include "serverdata.h"
@@ -95,8 +96,60 @@ float key_brightness_save;
 int rot_sw_save;
 int rot_a_save;
 int rot_b_save;
+int rot_direction;
 
-void b737_fmc_init()
+pthread_t poll_thread;      /* read thread */
+int poll_thread_exit_code;  /* read thread exit code */
+
+void *poll_thread_main()
+/* thread handles inputs which change faster than xppi cycle */
+{
+
+  int changed;
+  int rot_a = 0;
+  int rot_b = 0;
+  
+  printf("Input thread running \n");
+
+  while (!poll_thread_exit_code) {
+    /* Put code here to asynchronously do operations from main thread */
+
+    rot_a = digitalRead(rot_a_pin);
+    if (rot_a != rot_a_save) changed = 1;
+
+    rot_b = digitalRead(rot_b_pin);
+    if (rot_b != rot_b_save) changed = 1;
+      
+    if (changed) {
+      /* We have a rotary encoder which does a 2 x 2 byte change with each detent */ 
+      if ((rot_a_save==0) && (rot_b_save==1) && (rot_a==0) && (rot_b==0)) {
+	rot_direction = -1;
+      } else if ((rot_a_save==0) && (rot_b_save==1) && (rot_a==1) && (rot_b==1)) {
+	rot_direction = 1;
+      } else if ((rot_a_save==1) && (rot_b_save==0) && (rot_a==1) && (rot_b==1)) {
+	rot_direction = -1;
+      } else if ((rot_a_save==1) && (rot_b_save==0) && (rot_a==0) && (rot_b==0)) {
+	rot_direction = 1;
+      }
+      
+      //printf("Rotary A/B/DIR: %i %i %i\n",rot_a,rot_b,rot_direction);
+
+      /* update saved states */
+      rot_a_save = rot_a;
+      rot_b_save = rot_b;
+      changed = 0;
+    }
+   
+    usleep(1000);
+  } /* while loop */
+  
+  /* thread was killed */
+  printf("Input thread shutting down \n");
+
+  return 0;
+}
+
+int b737_fmc_init()
 {
   int pin;
 
@@ -105,6 +158,7 @@ void b737_fmc_init()
   rot_sw_save = 0;
   rot_a_save = 0;
   rot_b_save = 0;
+  rot_direction = 0;
   
   /* Initialize pins */
   pinMode(exec_led_pin, OUTPUT);
@@ -133,24 +187,38 @@ void b737_fmc_init()
     pinMode(rowPins[pin], INPUT);
     pullUpDnControl(rowPins[pin], PUD_UP);
   }
- 
+
+  /* init thread to read encoder since encoder changes are too fast
+     for repeat cycle of xppi */
+  poll_thread_exit_code = 0;
+  if (pthread_create(&poll_thread, NULL, &poll_thread_main, NULL)>0) {
+    printf("Poll thread could not be created.\n");
+    return -1;
+  }
+
+  return 0;
+}
+
+void b737_fmc_exit(void)
+{
+  /* shut down read thread */
+  poll_thread_exit_code = 1;
+  pthread_join(poll_thread, NULL);
 }
 
 void b737_fmc()
 {
 
-  /* only run for ZIBO 737 */
+  /* only run for ZIBO 737 for now */
   if (acf_type == 3) {
-    //if (1) {
 
-    int status;
     int nowCol;
     int nowRow;
     int i,j;
     char datarefname[100];
     int *datarefptr[nCols][nRows];
 
-    
+    /* Link Datarefs */
    
     float *key_brightness = link_dataref_flt_arr("laminar/B738/electric/panel_brightness",4,3,-2);
     
@@ -176,17 +244,13 @@ void b737_fmc()
 	}
       }
     }
-
-    // Testing Outputs (uncomment if needed)
-    //*key_brightness = 0.2;
-    //*exec_led = 1;
-    //*msg_led = 1;
     
     // Only update key brightness PWM if it has changed
     if ((*key_brightness != key_brightness_save) &&
 	(*key_brightness != FLT_MISS)) {
+      printf("New Key Brightness: %f \n",*key_brightness);
       key_brightness_save = *key_brightness;
-     softPwmWrite(key_led_pin, (int) (*key_brightness * 100.0));
+      softPwmWrite(key_led_pin, (int) (*key_brightness * 100.0));
     }
     
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
@@ -197,27 +261,38 @@ void b737_fmc()
     if (*fail_led != INT_MISS) digitalWrite(fail_led_pin, *fail_led);
     */
 
-    /* fetch rotary encoder */
+    /* fetch rotary encoder switch: not needed since switch 
+       is directly connected to the MENU key of the display */
+    /*
     status = digitalRead(rot_sw_pin);
     if (status != rot_sw_save) {
       printf("Rotary Switch: %i\n",status);
       rot_sw_save = status;
     }
-    status = digitalRead(rot_a_pin);
-    if (status != rot_a_save) {
-      printf("Rotary A: %i\n",status);
-      rot_a_save = status;
-    }
-    status = digitalRead(rot_b_pin);
-    if (status != rot_b_save) {
-      printf("Rotary B: %i\n",status);
-      rot_b_save = status;
-    }
-    //    printf("bla\n");
+    */
 
-    digitalWrite(dspy_led_pin, 0);
-    
+    /* DSPY_LED connected to DOWN key of the display */
+    if (rot_direction == -1) {
+      printf("Rotary DOWN: \n");
+      digitalWrite(dspy_led_pin, 1);
+      rot_direction = 0;
+    } else {
+      digitalWrite(dspy_led_pin, 0);
+    }
+      
+    /* FAIL_LED connected to UP key of the display */
+    if (rot_direction == 1) {
+      printf("Rotary UP: \n");
+      digitalWrite(fail_led_pin, 1);
+      rot_direction = 0;
+    } else {
+      digitalWrite(fail_led_pin, 0);
+    }
+
+
+    /* -------------------- */
     /* Scan Keyboard Matrix */
+    /* -------------------- */
 
     /* iterate through the columns */
     int gotPress = 0;
@@ -262,9 +337,6 @@ void b737_fmc()
 	      *datarefptr[nowCol][nowRow] = 1;
 	    }
 	    
-	    digitalWrite(dspy_led_pin, 1);
-
-	    
 	    // quick and dirty delay for 5ms to debounce
 	    usleep(5000);
 	  }
@@ -289,6 +361,6 @@ void b737_fmc()
       }
     }
 
-  } /* only run for ZIBO B737 */
+  } /* only run for ZIBO B737 for now */
   
 }

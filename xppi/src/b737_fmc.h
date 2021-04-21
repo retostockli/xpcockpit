@@ -18,7 +18,8 @@
 
 
 /* Prototype Functions */
-void b737_fmc_init(void);
+int b737_fmc_init(void);
+void b737_fmc_exit(void);
 void b737_fmc(void);
 
 int pressedRow;
