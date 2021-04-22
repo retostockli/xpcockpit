@@ -260,7 +260,6 @@ void b737_fmc()
     if (*ofst_led != INT_MISS) digitalWrite(ofst_led_pin, *ofst_led);
     if (*fail_led != INT_MISS) digitalWrite(fail_led_pin, *fail_led);
     */
-
     /* fetch rotary encoder switch: not needed since switch 
        is directly connected to the MENU key of the display */
     /*
@@ -271,6 +270,7 @@ void b737_fmc()
     }
     */
 
+    
     /* DSPY_LED connected to DOWN key of the display */
     if (rot_direction == -1) {
       printf("Rotary DOWN: \n");
