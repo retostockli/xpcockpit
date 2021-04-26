@@ -18,7 +18,7 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 
-#define INTERVAL 50
+#define INTERVAL 10
 
 /* verbosity of xpsismo (0-4) */
 extern int verbose;

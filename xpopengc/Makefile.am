@@ -7,6 +7,8 @@ inidata/a320mip.ini \
 inidata/boeing737clock.ini \
 inidata/boeing737eicas.ini \
 inidata/boeing737fmc.ini \
+inidata/boeing737fmc1.ini \
+inidata/boeing737fmc2.ini \
 inidata/boeing737.ini \
 inidata/boeing737mip.ini \
 inidata/boeing737nav.ini \
