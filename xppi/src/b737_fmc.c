@@ -232,6 +232,7 @@ void b737_fmc()
 
     for (j=0;j<nCols;j++) {
       for (i=0;i<nRows;i++) {
+	datarefptr[j][i] = NULL;
 	if (strcmp(zibo[j][i],"")) {
 	  if (is_copilot) {
 	    strncpy(datarefname,"laminar/B738/button/fmc2",sizeof(datarefname));
@@ -305,7 +306,7 @@ void b737_fmc()
       // go through the rows, see who is low (pressed)
     
       for (nowRow = 0; nowRow < nRows; nowRow++) {
-      
+     
 	// delay a bit for the GPIO state to settle
 	usleep(5);
 	int status = digitalRead(rowPins[nowRow]);
