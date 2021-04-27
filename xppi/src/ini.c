@@ -36,7 +36,7 @@ int verbose;
 int is_copilot;
 
 /* this routine parses the usbioards.ini file and reads its values */
-int ini_read(char ininame[])
+int ini_read(char* programPath, char* iniName)
 {
   int ret = 0;
   dictionary *ini;
@@ -56,16 +56,37 @@ int ini_read(char ininame[])
 
 
   /* check if we are in the source code directory or in the binary installation path */
-  if (getcwd(cwd, sizeof(cwd)) == NULL) return -2;
+  if (strncmp("/",programPath,1)==0) {
+    /* we have full path starting code */
+    printf("Starting with full program path \n");
+    /* remove program name from path */
+    pch = strrchr(programPath,'/');
+    *pch = '\0';
+    printf("%s\n",programPath);
 #ifdef WIN
-  pch = strstr (cwd,"\\bin");
+    pch = strstr (programPath,"\\bin");
 #else
-  pch = strstr (cwd,"/bin");
+    pch = strstr (programPath,"/bin");
 #endif
-  if (pch == NULL) {
-    sprintf(filename,"../inidata/%s.ini",ininame);
+    if (pch == NULL) {
+      snprintf (filename, sizeof(filename), "%s/../../inidata/%s.ini",programPath,iniName);
+    } else {
+      snprintf (filename, sizeof(filename), "%s/../share/xppi/%s.ini",programPath,iniName);
+    }
   } else {
-    sprintf(filename,"../share/xparduino/%s.ini",ininame);
+    /* assume we start from source or bin dir */
+    printf("Starting from bin/ or src/ directory \n");
+    if (getcwd(cwd, sizeof(cwd)) == NULL) return -2;
+#ifdef WIN
+    pch = strstr (cwd,"\\bin");
+#else
+    pch = strstr (cwd,"/bin");
+#endif
+    if (pch == NULL) {
+      snprintf(filename, sizeof(filename),"../inidata/%s.ini",iniName);
+    } else {
+      snprintf(filename, sizeof(filename),"../share/xppi/%s.ini",iniName);
+    }
   }
 
   ini = iniparser_load(filename);
