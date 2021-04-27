@@ -41,6 +41,8 @@
  * the WM_QUIT message prior to posting it to the FLTK window.
  */
 
+#include <signal.h>
+#include <errno.h>
 #include <FL/Fl.H>
 #include "ogcObject.h"
 #include "ogcAppObject.h"
@@ -85,6 +87,12 @@ void print_license(void)
   printf("\n");
 }
 
+void signal_handler(int sigraised)
+{
+  printf("Interrupted ... exiting \n");
+  exit(0);
+}
+
 int main(int argc, char* argv[])
 {
   /* print License terms */
@@ -96,6 +104,14 @@ int main(int argc, char* argv[])
   if (argc < 1) {
     printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names \"*.ini\" found in the source subdirectory inidata/ or in the installation subdirectory share/. You can optionally give a second argument with the frame rate (per second).\n");
     exit (-1);
+  }
+
+  // Set up a signal handler so we can clean up when we're interrupted from the command line
+  if (signal(SIGINT, signal_handler) == SIG_ERR) {
+    printf("Could not establish new Interrupt signal handler.\n");
+  }
+  if (signal(SIGTERM, signal_handler) == SIG_ERR) {
+    printf("Could not establish new Termination signal handler.\n");
   }
 
   printf ("=========== OpenGC - Starting up ==========\n");

@@ -211,7 +211,11 @@ int ini_signal_handler(void)
   int ret = 0;
   
   if (signal(SIGINT, exit_sismo) == SIG_ERR) {
-    printf("Could not establish new signal handler.\n");
+    printf("Could not establish new Interrupt signal handler.\n");
+    ret = -1;
+  }
+  if (signal(SIGTERM, exit_sismo) == SIG_ERR) {
+    printf("Could not establish new Termination signal handler.\n");
     ret = -1;
   }
   return ret;

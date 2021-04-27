@@ -236,13 +236,17 @@ void exit_xpusb(int ret)
 
 
 /* signal handler in order to clean up when we're interrupted */
-/* from the command line (ctrl-c) */
+/* from the command line (ctrl-c) or from kill on command line */
 int initialize_signal_handler(void)
 {
   int ret = 0;
 
   if (signal(SIGINT, exit_xpusb) == SIG_ERR) {
-    printf("Could not establish new signal handler.\n");
+    printf("Could not establish new interrupt signal handler.\n");
+    ret = -1;
+  }
+  if (signal(SIGTERM, exit_xpusb) == SIG_ERR) {
+    printf("Could not establish new termination signal handler.\n");
     ret = -1;
   }
   return ret;

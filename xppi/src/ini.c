@@ -93,13 +93,17 @@ int ini_read(char ininame[])
 }
 
 /* signal handler in order to clean up when we're interrupted */
-/* from the command line (ctrl-c) */
+/* from the command line (ctrl-c) or by Kill from Terminal */
 int ini_signal_handler(void)
 {
   int ret = 0;
   
   if (signal(SIGINT, exit_pi) == SIG_ERR) {
-    printf("Could not establish new signal handler.\n");
+    printf("Could not establish new Interrupt signal handler.\n");
+    ret = -1;
+  }
+  if (signal(SIGTERM, exit_pi) == SIG_ERR) {
+    printf("Could not establish new Termination signal handler.\n");
     ret = -1;
   }
   return ret;
