@@ -130,16 +130,16 @@ int main (int argc, char **argv)
       check_aircraft();
       
       /*** user-space modules begin here ***/
-      if (strcmp(*argv,"a320chrono") == 0) {
+      if (strcmp(argv[1],"a320chrono") == 0) {
 	a320_chrono();
       }
-      if (strcmp(*argv,"a320usb") == 0) {
+      if (strcmp(argv[1],"a320usb") == 0) {
 	a320_overhead();
 	a320_pedestal_mip();
 	a320_chrono();
 	a320_mcdu_keys();
       }
-      if (strcmp("boeing737",*argv) == 0) {
+      if (strcmp("boeing737",argv[1]) == 0) {
 	if (acf_type >= 0) {
 	  b737_pedestal();
 	  b737_efis();
@@ -150,26 +150,26 @@ int main (int argc, char **argv)
 	  b737_overhead_fwd();
 	}
       }
-      if (strcmp("boeing737yokerudder",*argv) == 0) {
+      if (strcmp("boeing737yokerudder",argv[1]) == 0) {
 	b737_yokerudder();
       }
-      if (strcmp("boeing737throttle",*argv) == 0) {
+      if (strcmp("boeing737throttle",argv[1]) == 0) {
 	b737_throttle();
       }
-      if (strcmp("boeing737pedestal",*argv) == 0) {
+      if (strcmp("boeing737pedestal",argv[1]) == 0) {
 	b737_pedestal();
       }
-      if (strcmp("boeing737mcp",*argv) == 0) {
+      if (strcmp("boeing737mcp",argv[1]) == 0) {
 	b737_mcp();
 	b737_efis();
       }
-      if (strcmp("boeing737ovhfwd",*argv) == 0) {
+      if (strcmp("boeing737ovhfwd",argv[1]) == 0) {
 	b737_overhead_fwd();
       }
-      if (strcmp(*argv,"default") == 0) {
+      if (strcmp(argv[1],"default") == 0) {
 	iocard_test();
       }
-      if (strcmp(*argv,"test") == 0) {
+      if (strcmp(argv[1],"test") == 0) {
 	// iocard_test();
 	// usbkeys_test();
 	usbservos_test();
