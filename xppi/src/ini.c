@@ -65,7 +65,7 @@ int ini_read(char ininame[])
   if (pch == NULL) {
     sprintf(filename,"../inidata/%s.ini",ininame);
   } else {
-    sprintf(filename,"../share/xparduino/%s.ini",ininame);
+    sprintf(filename,"../share/xppi/%s.ini",ininame);
   }
 
   ini = iniparser_load(filename);
