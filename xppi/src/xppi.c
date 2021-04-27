@@ -70,9 +70,9 @@ int main(int argc, char **argv) {
   if (init_pi()<0) exit_pi(-4);
 
   /* initialize modules */
-  if ((strcmp(*argv,"boeing737fmc") == 0) ||
-      (strcmp(*argv,"boeing737fmc1") == 0) ||
-      (strcmp(*argv,"boeing737fmc2") == 0)) {
+  if ((strcmp(argv[1],"boeing737fmc") == 0) ||
+      (strcmp(argv[1],"boeing737fmc1") == 0) ||
+      (strcmp(argv[1],"boeing737fmc2") == 0)) {
     if (b737_fmc_init()<0) exit_pi(-5);
   }
 
@@ -88,13 +88,13 @@ int main(int argc, char **argv) {
  
     /**** User Modules Follow Here ****/
 
-    if (strcmp(*argv,"test") == 0) {
+    if (strcmp(argv[1],"test") == 0) {
       test();
     }
 
-    if ((strcmp(*argv,"boeing737fmc") == 0) ||
-        (strcmp(*argv,"boeing737fmc1") == 0) ||
-        (strcmp(*argv,"boeing737fmc2") == 0)) {
+    if ((strcmp(argv[1],"boeing737fmc") == 0) ||
+        (strcmp(argv[1],"boeing737fmc1") == 0) ||
+        (strcmp(argv[1],"boeing737fmc2") == 0)) {
       b737_fmc();
     }
 
