@@ -95,10 +95,10 @@ int main(int argc, char **argv) {
  
     /**** User Modules Follow Here ****/
 
-    if (strcmp(*argv,"test") == 0) {
+    if (strcmp(argv[1],"test") == 0) {
       test();
     }
-    if (strcmp(*argv,"compass") == 0) {
+    if (strcmp(argv[1],"compass") == 0) {
       compass();
     }
 
