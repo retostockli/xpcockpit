@@ -70,7 +70,6 @@ int main (int argc, char **argv)
   print_license();
   
   /* evaluate command line arguments */
-  argv++; 
   argc--;
   if (argc != 1) {
     printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
@@ -81,7 +80,7 @@ int main (int argc, char **argv)
   if (initialize_dataref()<0) exit_xpusb(-4);
 
   /* parse the xpusb.ini file */
-  if (read_ini(*argv)<0) exit_xpusb(-2);
+  if (read_ini(argv[0],argv[1])<0) exit_xpusb(-2);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (initialize_signal_handler()<0) exit_xpusb(-3);

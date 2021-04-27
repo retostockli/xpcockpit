@@ -48,7 +48,6 @@ int acf_type;
 int main(int argc, char **argv) {
   
   /* evaluate command line arguments */
-  argv++; 
   argc--;
   if (argc != 1) {
     printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
@@ -59,7 +58,7 @@ int main(int argc, char **argv) {
   if (initialize_dataref()<0) exit_pi(-1);
 
   /* parse the selected ini file */
-  if (ini_read(*argv)<0) exit_pi(-2);
+  if (ini_read(argv[0],argv[1])<0) exit_pi(-2);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (ini_signal_handler()<0) exit_pi(-3);
