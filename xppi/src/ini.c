@@ -60,7 +60,11 @@ int ini_read(char* programPath, char* iniName)
     /* we have full path starting code */
     printf("Starting with full program path \n");
     /* remove program name from path */
+#ifdef WIN
     pch = strrchr(programPath,'/');
+#else
+    pch = strrchr(programPath,'\\');
+#endif
     *pch = '\0';
     printf("%s\n",programPath);
 #ifdef WIN
@@ -147,7 +151,7 @@ void exit_pi(int ret)
   /* free local dataref structure */
   clear_dataref();
 
-  if (ret != 2) {
+  if ((ret != SIGINT) && (ret != SIGTERM)) {
     printf("Exiting with status %i \n",ret);
     exit(ret);
   } else {
