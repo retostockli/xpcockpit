@@ -61,9 +61,9 @@ int ini_read(char* programPath, char* iniName)
     printf("Starting with full program path \n");
     /* remove program name from path */
 #ifdef WIN
-    pch = strrchr(programPath,'/');
-#else
     pch = strrchr(programPath,'\\');
+#else
+    pch = strrchr(programPath,'/');
 #endif
     *pch = '\0';
     printf("%s\n",programPath);

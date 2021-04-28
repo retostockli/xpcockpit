@@ -140,7 +140,11 @@ namespace OpenGC
       /* we have full path starting code */
       printf("Starting with full program path \n");
       /* remove program name from path */
+#ifdef WIN
+      pch = strrchr(programPath,'\\');
+#else
       pch = strrchr(programPath,'/');
+#endif
       *pch = '\0';
       printf("%s\n",programPath);
 #ifdef WIN
