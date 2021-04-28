@@ -1,12 +1,11 @@
 #!/bin/sh
 
-# Autostart of FMC
-# Rename in .bash_profile and put in home directory
-
 if [[ -z $DISPLAY && $XDG_VTNR -eq 1 ]]
 then
-  cd ~/xpcockpit/xppi/src
-  ./xppi boeing737fmc &
-  cd ~/xpcockpit/xpopengc/src/main
-  startx ./xpopengc boeing737fmc -- -nocursor
+#  echo "BLA"
+  exec startx -- -nocursor xterm
+#  cd ~/xpcockpit/xppi/src
+#  ./xppi boeing737fmc1 &
+#  cd ~/xpcockpit/xpopengc/src/main
+#  startx ./xpopengc boeing737fmc1 -- -nocursor
 fi
