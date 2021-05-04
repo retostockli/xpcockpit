@@ -65,7 +65,7 @@ public:
   void Cleanup();
 
   /** Setup and run the glass cockpit - enters message loop */
-  int Go(char* iniFileName);
+  int Go(char* programPath, char* iniFileName);
 
   /** The idle function used to repeatedly update the display */
   void IdleFunction();

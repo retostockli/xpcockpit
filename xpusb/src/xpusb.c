@@ -70,7 +70,6 @@ int main (int argc, char **argv)
   print_license();
   
   /* evaluate command line arguments */
-  argv++; 
   argc--;
   if (argc != 1) {
     printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
@@ -81,7 +80,7 @@ int main (int argc, char **argv)
   if (initialize_dataref()<0) exit_xpusb(-4);
 
   /* parse the xpusb.ini file */
-  if (read_ini(*argv)<0) exit_xpusb(-2);
+  if (read_ini(argv[0],argv[1])<0) exit_xpusb(-2);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (initialize_signal_handler()<0) exit_xpusb(-3);
@@ -131,16 +130,16 @@ int main (int argc, char **argv)
       check_aircraft();
       
       /*** user-space modules begin here ***/
-      if (strcmp(*argv,"a320chrono") == 0) {
+      if (strcmp(argv[1],"a320chrono") == 0) {
 	a320_chrono();
       }
-      if (strcmp(*argv,"a320usb") == 0) {
+      if (strcmp(argv[1],"a320usb") == 0) {
 	a320_overhead();
 	a320_pedestal_mip();
 	a320_chrono();
 	a320_mcdu_keys();
       }
-      if (strcmp("boeing737",*argv) == 0) {
+      if (strcmp("boeing737",argv[1]) == 0) {
 	if (acf_type >= 0) {
 	  b737_pedestal();
 	  b737_efis();
@@ -151,26 +150,26 @@ int main (int argc, char **argv)
 	  b737_overhead_fwd();
 	}
       }
-      if (strcmp("boeing737yokerudder",*argv) == 0) {
+      if (strcmp("boeing737yokerudder",argv[1]) == 0) {
 	b737_yokerudder();
       }
-      if (strcmp("boeing737throttle",*argv) == 0) {
+      if (strcmp("boeing737throttle",argv[1]) == 0) {
 	b737_throttle();
       }
-      if (strcmp("boeing737pedestal",*argv) == 0) {
+      if (strcmp("boeing737pedestal",argv[1]) == 0) {
 	b737_pedestal();
       }
-      if (strcmp("boeing737mcp",*argv) == 0) {
+      if (strcmp("boeing737mcp",argv[1]) == 0) {
 	b737_mcp();
 	b737_efis();
       }
-      if (strcmp("boeing737ovhfwd",*argv) == 0) {
+      if (strcmp("boeing737ovhfwd",argv[1]) == 0) {
 	b737_overhead_fwd();
       }
-      if (strcmp(*argv,"default") == 0) {
+      if (strcmp(argv[1],"default") == 0) {
 	iocard_test();
       }
-      if (strcmp(*argv,"test") == 0) {
+      if (strcmp(argv[1],"test") == 0) {
 	// iocard_test();
 	// usbkeys_test();
 	usbservos_test();
@@ -236,13 +235,17 @@ void exit_xpusb(int ret)
 
 
 /* signal handler in order to clean up when we're interrupted */
-/* from the command line (ctrl-c) */
+/* from the command line (ctrl-c) or from kill on command line */
 int initialize_signal_handler(void)
 {
   int ret = 0;
 
   if (signal(SIGINT, exit_xpusb) == SIG_ERR) {
-    printf("Could not establish new signal handler.\n");
+    printf("Could not establish new interrupt signal handler.\n");
+    ret = -1;
+  }
+  if (signal(SIGTERM, exit_xpusb) == SIG_ERR) {
+    printf("Could not establish new termination signal handler.\n");
     ret = -1;
   }
   return ret;

@@ -41,6 +41,10 @@
  * the WM_QUIT message prior to posting it to the FLTK window.
  */
 
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
 #include <FL/Fl.H>
 #include "ogcObject.h"
 #include "ogcAppObject.h"
@@ -85,21 +89,35 @@ void print_license(void)
   printf("\n");
 }
 
+void signal_handler(int sigraised)
+{
+  printf("Interrupted ... exiting \n");
+  exit(0);
+}
+
 int main(int argc, char* argv[])
 {
   /* print License terms */
   print_license();
 
   /* evaluate command line arguments */
-  argv++;
+  //  argv++;
   argc--;
   if (argc < 1) {
     printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names \"*.ini\" found in the source subdirectory inidata/ or in the installation subdirectory share/. You can optionally give a second argument with the frame rate (per second).\n");
     exit (-1);
   }
 
-  printf ("=========== OpenGC - Starting up ==========\n");
+  // Set up a signal handler so we can clean up when we're interrupted from the command line
+  if (signal(SIGINT, signal_handler) == SIG_ERR) {
+    printf("Could not establish new Interrupt signal handler.\n");
+  }
+  if (signal(SIGTERM, signal_handler) == SIG_ERR) {
+    printf("Could not establish new Termination signal handler.\n");
+  }
 
+  printf ("=========== OpenGC - Starting up ==========\n");
+    
   // Set the update rate in nominal seconds per frame
   if (argc == 1) {
     appUpdateRate = 1.0 / 50.0;
@@ -112,7 +130,7 @@ int main(int argc, char* argv[])
   Fl::add_timeout(appUpdateRate, GlobalIdle);
 
   // Start up the OGC application
-  theApp.Go(argv[0]);
+  theApp.Go(argv[0],argv[1]);
 
   printf ("=========== OpenGC  -  Finished  ==========\n");
   return 0;

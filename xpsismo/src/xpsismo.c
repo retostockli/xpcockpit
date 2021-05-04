@@ -51,7 +51,6 @@ int acf_type;
 int main(int argc, char **argv) {
   
   /* evaluate command line arguments */
-  argv++; 
   argc--;
   if (argc != 1) {
     printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
@@ -62,7 +61,7 @@ int main(int argc, char **argv) {
   if (initialize_dataref()<0) exit_sismo(-1);
 
   /* parse the selected ini file */
-  if (ini_read(*argv)<0) exit_sismo(-2);
+  if (ini_read(argv[0],argv[1])<0) exit_sismo(-2);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (ini_signal_handler()<0) exit_sismo(-3);
@@ -94,12 +93,12 @@ int main(int argc, char **argv) {
  
     /**** User Modules Follow Here ****/
 
-    if (strcmp(*argv,"test") == 0) {
+    if (strcmp(argv[1],"test") == 0) {
       if (acf_type >= 0) {
 	test();
       }
     }
-    if (strcmp("boeing737mcp",*argv) == 0) {
+    if (strcmp("boeing737mcp",argv[1]) == 0) {
       if (acf_type >= 0) {
 	b737_mcp();
 	b737_efis(0); /* captain */

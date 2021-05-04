@@ -16,7 +16,7 @@
    If not, see <http://www.gnu.org/licenses/>. */
 
 /* Prototype Functions */
-int ini_read(char ininame[]);
+int ini_read(char* programPath, char* iniName);
 int ini_arduinodata();
 int reset_arduinodata();
 int ini_signal_handler(void);

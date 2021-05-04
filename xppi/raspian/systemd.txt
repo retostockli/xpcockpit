@@ -1,0 +1,7 @@
+copy service scripts to:
+/etc/systemd/system
+
+sudo systemctl start xpopengc.service
+sudo systemctl enable xpopengc.service
+sudo systemctl stop xpopengc.service
+sudo systemctl disable xpopengc.service

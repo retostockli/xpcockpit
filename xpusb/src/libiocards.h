@@ -140,7 +140,7 @@ int send_motors(void);
 
 /* Prototype functions for general purposes */
 void print_license(void);
-int read_ini(char ininame[]);
+int read_ini(char* programPath, char* iniName);
 
 /* Prototype functions for initializations and exiting */
 int initialize_iocards(void);

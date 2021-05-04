@@ -70,12 +70,6 @@ namespace OpenGC
 {
 
 extern FLTKRenderWindow* m_pRenderWindow;
-
-void signal_handler(int sigraised)
-{
-  printf("Interrupted ... exiting \n");
-  exit(0);
-}
   
 void XPlaneDataSource::define_server(int port, string ip_address, int maxradar)
 {
@@ -120,11 +114,6 @@ XPlaneDataSource::XPlaneDataSource()
 
   /* initialize local dataref structure */
   if (initialize_dataref() < 0) exit(-8);
-
-  // Set up a signal handler so we can clean up when we're interrupted from the command line
-  if (signal(SIGINT, signal_handler) == SIG_ERR) {
-    printf("Could not establish new signal handler.\n");
-  }
   
   // initialize with default ACF
   SetAcfType(0);

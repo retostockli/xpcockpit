@@ -1,0 +1,11 @@
+[Unit]
+Description=Systemd service to start and stop xpopengc with user stockli
+
+[Service]
+User=stockli
+Environment=DISPLAY=:0
+ExecStart=/home/stockli/xpcockpit/xpopengc/bin/xpopengc boeing737fmc1 
+
+[Install]
+WantedBy=default.target
+#WantedBy=graphical.target

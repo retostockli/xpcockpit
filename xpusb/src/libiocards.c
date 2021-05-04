@@ -66,7 +66,7 @@ void print_license(void)
 }
 
 /* this routine parses the usbiocards.ini file and reads its values */
-int read_ini(char ininame[])
+int read_ini(char* programPath, char* iniName)
 {
   int ret = 0;
   int device;
@@ -100,16 +100,37 @@ int read_ini(char ininame[])
   memset(server_ip,0,sizeof(server_ip));
 
   /* check if we are in the source code directory or in the binary installation path */
-  if (getcwd(cwd, sizeof(cwd)) == NULL) return -2;
+  if (strncmp("/",programPath,1)==0) {
+    /* we have full path starting code */
+    printf("Starting with full program path \n");
+    /* remove program name from path */
+    pch = strrchr(programPath,'/');
+    *pch = '\0';
+    printf("%s\n",programPath);
 #ifdef WIN
-  pch = strstr (cwd,"\\bin");
+    pch = strstr (programPath,"\\bin");
 #else
-  pch = strstr (cwd,"/bin");
+    pch = strstr (programPath,"/bin");
 #endif
-  if (pch == NULL) {
-    sprintf(filename,"../inidata/%s.ini",ininame);
+    if (pch == NULL) {
+      snprintf (filename, sizeof(filename), "%s/../../inidata/%s.ini",programPath,iniName);
+    } else {
+      snprintf (filename, sizeof(filename), "%s/../share/xpusb/%s.ini",programPath,iniName);
+    }
   } else {
-    sprintf(filename,"../share/xpusb/%s.ini",ininame);
+    /* assume we start from source or bin dir */
+    printf("Starting from bin/ or src/ directory \n");
+    if (getcwd(cwd, sizeof(cwd)) == NULL) return -2;
+#ifdef WIN
+    pch = strstr (cwd,"\\bin");
+#else
+    pch = strstr (cwd,"/bin");
+#endif
+    if (pch == NULL) {
+      snprintf(filename, sizeof(filename),"../inidata/%s.ini",iniName);
+    } else {
+      snprintf(filename, sizeof(filename),"../share/xpusb/%s.ini",iniName);
+    }
   }
 
   ini = iniparser_load(filename);
