@@ -71,7 +71,8 @@ protected:
     int rad_turn;
     float rad_radius;
     int turn;
-    int hold_time;
+    float hold_time;
+    float hold_dist;
     float brg;
     float crs;
   };

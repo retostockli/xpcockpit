@@ -99,6 +99,9 @@ namespace OpenGC
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
+
+    // What's the ground speed
+    float *ground_speed = link_dataref_flt("sim/flightmodel/position/groundspeed",0);
      
     float *fmc_ok;
     float *fmc_lon;
@@ -106,7 +109,8 @@ namespace OpenGC
     int *fmc_turn;
     int *fmc_alt;
     int *fmc_type;
-    int *fmc_hold_time;
+    float *fmc_hold_time;
+    float *fmc_hold_dist;
     float *fmc_dist;
     float *fmc_eta;
     float *fmc_radii_ctr_lon;
@@ -148,7 +152,8 @@ namespace OpenGC
       fmc_cur = link_dataref_int("laminar/B738/fms/vnav_idx"); 
       fmc_turn = link_dataref_int_arr("laminar/B738/fms/legs_turn",128,-1);
       fmc_type = link_dataref_int_arr("laminar/B738/fms/legs_type",128,-1);
-      fmc_hold_time = link_dataref_int_arr("laminar/B738/fms/legs_hold_time",128,-1);
+      fmc_hold_time = link_dataref_flt_arr("laminar/B738/fms/legs_hold_time",128,-1,-1);
+      fmc_hold_dist = link_dataref_flt_arr("laminar/B738/fms/legs_hold_dist",128,-1,-1);
       fmc_dist = link_dataref_flt_arr("laminar/B738/fms/legs_dist",128,-1,-2);
       fmc_eta = link_dataref_flt_arr("laminar/B738/fms/legs_eta",128,-1,-2);
       fmc_radii_ctr_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lon",128,-1,-4);
@@ -415,6 +420,7 @@ namespace OpenGC
 		  wpt[i].crs = fmc_crs[i]; // degrees mag
 		  wpt[i].turn = fmc_turn[i]; // 0,2: left. 3: right
 		  wpt[i].hold_time = fmc_hold_time[i]; // holding time in seconds
+		  wpt[i].hold_dist = fmc_hold_dist[i]; // holding distance in nm
 
 		  /*
 		    printf("%s %s %i %f %f %f %f %f\n",wpt[i].name,wpt[i].pth,fmc_turn[i],
@@ -522,7 +528,7 @@ namespace OpenGC
 		if ((wpt[max(i-1,0)].radii_lon != 0.0) && (wpt[max(i-1,0)].radii_lat != 0.0) &&
 		    (wpt[max(i-1,0)].radii_radius != 0.0) && 
 		    (wpt[max(i-1,0)].radii_lon != FLT_MISS) && (wpt[max(i-1,0)].radii_lat != FLT_MISS) &&
-		    (wpt[max(i-1,0)].radii_radius != FLT_MISS) &&
+		    (wpt[max(i-1,0)].radii_radius != FLT_MISS) &&	    
 		    (i > 0)) {
 		  //printf("Leg does not start at last waypoint \n");
 		  lon = (double) wpt[max(i-1,0)].radii_lon;
@@ -532,11 +538,14 @@ namespace OpenGC
 		  xPos = easting / 1852.0  / mapRange * map_size;
 		} 
 
-		// leg does not end at next waypoint
+		// leg does not end at next waypoint (NOT FOR HOLDING, ALWAYS GOES THROUGH WPT)
 		if ((wpt[i].radii_lon != 0.0) && (wpt[i].radii_lat != 0.0) &&
 		    (wpt[i].radii_radius != 0.0) && 
 		    (wpt[i].radii_lon != FLT_MISS) && (wpt[i].radii_lat != FLT_MISS) &&
 		    (wpt[i].radii_radius != FLT_MISS) &&
+		    (strcmp(wpt[i].pth,"HM") != 0) &&
+		    (strcmp(wpt[i].pth,"HF") != 0) &&
+		    (strcmp(wpt[i].pth,"HA") != 0) &&		    
 		    (i < (nwpt-1))) {
 		  //printf("Leg does not end at next waypoint \n");
 		  lon = (double) wpt[i].radii_lon;
@@ -595,8 +604,23 @@ namespace OpenGC
 		  // hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
 		  // hold length is 3.0 NM for a 60 second hold
 		  int holdtype = wpt[i].rad_turn * 2 - 1; // 1: Right -1: Left
-		  float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
-		  float holdlen = max(wpt[i].hold_time,60) / 60.0 * 3.0 / mapRange * map_size; // nm --> Pixels
+		  /* hold speed */
+		  float holdspeed = max(*ground_speed,165.f);
+		  /* 3deg/s curve (T=120s/360deg): r = v * T / 2pi */
+		  float holdrad = holdspeed * 3.5 * 120.0 / 2.0 / 3.14 / 3600.0 / mapRange * map_size; // nm --> pixels
+		  //float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
+		  float holdlen;
+		  if ((wpt[i].hold_dist == 0.0) || (wpt[i].hold_time == 0.0)) {
+		    /* seconds --> Pixels: 1 kt = 1.15 nm/h */
+		    if (wpt[i].hold_time == 0.0) {\
+		      /* default hold time per leg: 90 seconds */
+		      holdlen = holdspeed * 1.75 * 90.0 / 3600.0 / mapRange * map_size;
+		    } else {
+		      holdlen = holdspeed * 1.6 * wpt[i].hold_time / 3600.0 / mapRange * map_size;
+		    }
+		  } else {
+		    holdlen = wpt[i].hold_dist / mapRange * map_size; // nm --> Pixels
+		  }
 		  float gamma = (wpt[i].crs - *magnetic_variation)*3.14/180.; // inbound direction (radians)
 		  float xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course
 		  float yPos1 = cos(gamma-3.14)*holdlen + yPos2; // Pos2 is end of inbound course
@@ -641,7 +665,11 @@ namespace OpenGC
 		} else if ((wpt[max(i-1,0)].radii_ctr_lon != 0.0) &&
 			   (wpt[max(i-1,0)].radii_ctr_lat != 0.0) &&
 			   (wpt[max(i-1,0)].radii_radius != 0.0) &&
-			   ((wpt[max(i-1,0)].brg != 0.0) || (wpt[i].brg != 0.0))) { // &&
+			   ((wpt[max(i-1,0)].brg != 0.0) || (wpt[i].brg != 0.0)) &&
+			   (strcmp(wpt[i].pth,"HM") != 0) &&
+			   (strcmp(wpt[i].pth,"HF") != 0) &&
+			   (strcmp(wpt[i].pth,"HA") != 0)		    
+			   ) { // &&
 		  //			   (wpt[max(i-1,0)].turn != 3)) {
 
 		  lon = (double) wpt[max(i-1,0)].radii_ctr_lon;
@@ -746,7 +774,11 @@ namespace OpenGC
 		} else if ((wpt[i].rad_lon != 0.0) &&
 			   (wpt[i].rad_lat != 0.0) &&
 			   (wpt[i].rad_radius != 0.0) &&
-			   ((wpt[max(i-1,0)].brg != 0.0) || (wpt[i].brg != 0.0))) { 
+			   ((wpt[max(i-1,0)].brg != 0.0) || (wpt[i].brg != 0.0))  &&
+			   (strcmp(wpt[i].pth,"HM") != 0) &&
+			   (strcmp(wpt[i].pth,"HF") != 0) &&
+			   (strcmp(wpt[i].pth,"HA") != 0)		    
+			   ) { 
 
 		  lon = (double) wpt[i].rad_lon;
 		  lat = (double) wpt[i].rad_lat;
@@ -884,8 +916,13 @@ namespace OpenGC
 		  m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
 		  m_pFontManager->Print(4,-6, wpt[i].name, m_Font);
 		  if (wpt[i].alt > 0) {
-		    snprintf( buffer, sizeof(buffer), "%i", wpt[i].alt );
-		    m_pFontManager->Print(4,-11, buffer, m_Font);
+		    if (wpt[i].alt >= 10000) {
+		      snprintf( buffer, sizeof(buffer), "FL%i", wpt[i].alt/100 );
+		      m_pFontManager->Print(4,-11, buffer, m_Font);
+		    } else {
+		      snprintf( buffer, sizeof(buffer), "%i", wpt[i].alt );
+		      m_pFontManager->Print(4,-11, buffer, m_Font);
+		    }
 		  }
 		}
 
