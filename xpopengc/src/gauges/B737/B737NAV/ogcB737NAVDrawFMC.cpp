@@ -100,8 +100,9 @@ namespace OpenGC
     float heading_map =  m_NAVGauge->GetMapHeading();
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
-    // What's the ground speed
+    // What's the ground and air speed
     float *ground_speed = link_dataref_flt("sim/flightmodel/position/groundspeed",0);
+    float *true_air_speed = link_dataref_flt("sim/flightmodel/position/true_airspeed",0);
      
     float *fmc_ok;
     float *fmc_lon;
@@ -605,22 +606,21 @@ namespace OpenGC
 		  // hold length is 3.0 NM for a 60 second hold
 		  int holdtype = wpt[i].rad_turn * 2 - 1; // 1: Right -1: Left
 		  /* hold speed */
-		  float holdspeed = max(*ground_speed,165.f);
+		  float holdspeed = max(*ground_speed,210.f);
+		  /* standard hold radius is around 1.5 nm */
 		  /* 3deg/s curve (T=120s/360deg): r = v * T / 2pi */
-		  float holdrad = holdspeed * 3.5 * 120.0 / 2.0 / 3.14 / 3600.0 / mapRange * map_size; // nm --> pixels
+		  float holdrad = pow(max(*true_air_speed,210.f),2.0) / 29127.0 / mapRange * map_size; // nm --> pixels
 		  //float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
 		  float holdlen;
-		  if ((wpt[i].hold_dist == 0.0) || (wpt[i].hold_time == 0.0)) {
-		    /* seconds --> Pixels: 1 kt = 1.15 nm/h */
-		    if (wpt[i].hold_time == 0.0) {\
-		      /* default hold time per leg: 90 seconds */
-		      holdlen = holdspeed * 1.75 * 90.0 / 3600.0 / mapRange * map_size;
-		    } else {
-		      holdlen = holdspeed * 1.6 * wpt[i].hold_time / 3600.0 / mapRange * map_size;
-		    }
+		  if (wpt[i].hold_time != 0.0) {
+		    holdlen = holdspeed * wpt[i].hold_time / 3600.0 / mapRange * map_size;
+		  } else if (wpt[i].hold_dist != 0.0) {
+		      holdlen = wpt[i].hold_dist / mapRange * map_size;
 		  } else {
-		    holdlen = wpt[i].hold_dist / mapRange * map_size; // nm --> Pixels
+		    /* default hold time per leg: 90 seconds */
+		    holdlen = holdspeed * 90.0 / 3600.0 / mapRange * map_size;
 		  }
+	      
 		  float gamma = (wpt[i].crs - *magnetic_variation)*3.14/180.; // inbound direction (radians)
 		  float xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course
 		  float yPos1 = cos(gamma-3.14)*holdlen + yPos2; // Pos2 is end of inbound course
