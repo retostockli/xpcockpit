@@ -96,4 +96,49 @@ GeographicObject
      
   }
 
+  double heading_from_a_to_b(double *lon1, double *lat1, double *lon2, double *lat2)
+  {
+    /* Calculates heading in degrees wrt N from point 1 to point 2 on the globe */
+    
+    double dtor = 0.0174533; /* radians per degree */
+    
+    double angle = modulus(atan2(sin(dtor * (*lon2 - *lon1)) * cos(dtor * *lat2),
+				 cos(dtor * *lat1) * sin(dtor * *lat2) -
+				 sin(dtor * *lat1)*cos(dtor * *lat2)*cos(dtor * (*lon2 - *lon1))),
+			   2.0 * M_PI) * 180.0 / M_PI;
+    return angle;
+  }
+  
+  double modulus(double y, double x) {
+    return (y - x * floor(y / x));
+  }
+  
+  double distance_from_a_to_b(double *lon1, double *lat1, double *lon2, double *lat2)
+  {
+    /* calculates distance between two points on the globe in NM */
+    
+    double dtor = 0.0174533; /* radians per degree */
+    // why 3443.9f? Wikipedia says that the average radius of the earth is 3440.07NM
+    
+    double distance = acos( (cos(dtor * *lat1) * cos(dtor * *lon1) * cos(dtor * *lat2) * cos(dtor * *lon2)) +
+			    (cos(dtor * *lat1) * sin(dtor * *lon1) * cos(dtor * *lat2) * sin(dtor * *lon2)) +
+			    (sin(dtor * *lat1) * sin(dtor * *lat2)) ) * 3443.9;
+    
+    return distance;
+  }
+
+  void latlon_at_dist_heading(double *lon, double *lat, double *dist, double *track, double *lon2, double *lat2)
+  {
+
+    double dtor = 0.0174533; /* radians per degree */
+    double radeg = 57.2958;  /* degree per radians */
+    double earthRadius = 6378.1; /* earth radius in km */
+    
+    *lat2 = radeg * asin( sin(*lat * dtor) * cos(*dist * 1.852 / earthRadius) +
+			  cos(*lat * dtor) * sin(*dist * 1.852 / earthRadius) * cos(*track * dtor));
+    *lon2 = radeg * (*lon * dtor + atan2(sin(*track * dtor) * sin(*dist * 1.852 / earthRadius) * cos(*lat * dtor),
+					 cos(*dist * 1.852 / earthRadius) - sin(*lat * dtor) * sin(*lat2 * dtor)));
+    
+  }
+ 
 } // end namespace OpenGC

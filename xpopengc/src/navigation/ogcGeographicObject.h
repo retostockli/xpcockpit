@@ -96,8 +96,12 @@ protected:
 
 };
 
- void lonlat2azeq(double *lon, double *lat, double *x_meters, double *y_meters, double *lon0, double *lat0);
- void lonlat2gnomonic(double *lon, double *lat, double *x_meters, double *y_meters, double *lon0, double *lat0);
+  void lonlat2azeq(double *lon, double *lat, double *x_meters, double *y_meters, double *lon0, double *lat0);
+  void lonlat2gnomonic(double *lon, double *lat, double *x_meters, double *y_meters, double *lon0, double *lat0);
+  double heading_from_a_to_b(double *lon1, double *lat1, double *lon2, double *lat2);
+  double modulus(double y, double x);
+  double distance_from_a_to_b(double *lon1, double *lat1, double *lon2, double *lat2);
+  void latlon_at_dist_heading(double *lon, double *lat, double *dist, double *track, double *lon2, double *lat2);
 
 } // end namespace OpenGC
 

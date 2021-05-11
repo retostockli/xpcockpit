@@ -61,6 +61,8 @@ protected:
     int alt;
     float dist;
     float eta;
+    float af_beg;
+    float af_end;
     float radii_ctr_lon;
     float radii_ctr_lat;
     float radii_lon;
@@ -69,7 +71,7 @@ protected:
     float rad_lon;
     float rad_lat;
     int rad_turn;
-    float rad_radius;
+    float radius;
     int turn;
     float hold_time;
     float hold_dist;
