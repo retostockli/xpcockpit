@@ -666,6 +666,57 @@ namespace OpenGC
     // Draw the glideslope and localizer displays to the right and bottom of the ADI
 
     // Draw glide slope to the right of the ADI
+
+    // Where is the center of the ADI?
+    
+    // Where is the center of the ADI?
+    float ADICenterX = (94/2) + 42;
+    float ADICenterY = (98/2) + 52;
+    
+    // The height of the glideslope markers above and below center (+/- 1 and 2 degrees deflection)
+    float glideslopeHeight = 17;
+    
+    // Horizontal position of the dots relative to the ADI center
+    float dotsHoriz = ADICenterX + 51;
+    
+    // Horizontal center line
+    glColor3ub(COLOR_WHITE);
+    glBegin(GL_LINES);
+    glVertex2f( dotsHoriz - 4, ADICenterY );
+    glVertex2f( dotsHoriz + 4, ADICenterY );
+    glEnd();
+    
+    // Draw the glideslope dots
+    
+    // Set up the circle
+    CircleEvaluator aCircle;
+    aCircle.SetRadius(2.0);
+    aCircle.SetArcStartEnd(0,360);
+    aCircle.SetDegreesPerPoint(10);
+    
+    glLineWidth(2.0);
+    
+    aCircle.SetOrigin(dotsHoriz, ADICenterY + glideslopeHeight * 2);
+    glBegin(GL_LINE_LOOP);
+    aCircle.Evaluate();
+    glEnd();
+    
+    aCircle.SetOrigin(dotsHoriz, ADICenterY + glideslopeHeight);
+    glBegin(GL_LINE_LOOP);
+    aCircle.Evaluate();
+    glEnd();
+    
+    aCircle.SetOrigin(dotsHoriz, ADICenterY + -1 * glideslopeHeight);
+    glBegin(GL_LINE_LOOP);
+    aCircle.Evaluate();
+    glEnd();
+    
+    aCircle.SetOrigin(dotsHoriz, ADICenterY + -1 * glideslopeHeight * 2);
+    glBegin(GL_LINE_LOOP);
+    aCircle.Evaluate();
+    glEnd();
+    
+    // This is the glideslope bug
     if ( ((*nav1_vertical == 1) && (*nav1_CDI == 1) && (is_captain)) || 
 	 ((*nav2_vertical == 1) && (*nav2_CDI == 1) && (is_copilot)) ) 
       {
@@ -677,58 +728,10 @@ namespace OpenGC
 
 	if (rawGlideslope < - 2.5) rawGlideslope = -2.5;
 	if (rawGlideslope >   2.5) rawGlideslope = 2.5;
-
-	// Where is the center of the ADI?
-	float ADICenterX = (94/2) + 38;
-	float ADICenterY = (98/2) + 52;
-    
-	// The height of the glideslope markers above and below center (+/- 1 and 2 degrees deflection)
-	float glideslopeHeight = 17;
     
 	// The vertical offset of the glideslope bug
 	float glideslopePosition = ADICenterY - rawGlideslope * glideslopeHeight;
-    
-	// Horizontal position of the dots relative to the ADI center
-	float dotsHoriz = ADICenterX + 55;
-    
-	// Horizontal center line
-	glColor3ub(COLOR_WHITE);
-	glBegin(GL_LINES);
-	glVertex2f( dotsHoriz - 4, ADICenterY );
-	glVertex2f( dotsHoriz + 4, ADICenterY );
-	glEnd();
-    
-	// Draw the glideslope dots
-    
-	// Set up the circle
-	CircleEvaluator aCircle;
-	aCircle.SetRadius(2.0);
-	aCircle.SetArcStartEnd(0,360);
-	aCircle.SetDegreesPerPoint(10);
-    
-	glLineWidth(2.0);
-    
-	aCircle.SetOrigin(dotsHoriz, ADICenterY + glideslopeHeight * 2);
-	glBegin(GL_LINE_LOOP);
-	aCircle.Evaluate();
-	glEnd();
-    
-	aCircle.SetOrigin(dotsHoriz, ADICenterY + glideslopeHeight);
-	glBegin(GL_LINE_LOOP);
-	aCircle.Evaluate();
-	glEnd();
-    
-	aCircle.SetOrigin(dotsHoriz, ADICenterY + -1 * glideslopeHeight);
-	glBegin(GL_LINE_LOOP);
-	aCircle.Evaluate();
-	glEnd();
-    
-	aCircle.SetOrigin(dotsHoriz, ADICenterY + -1 * glideslopeHeight * 2);
-	glBegin(GL_LINE_LOOP);
-	aCircle.Evaluate();
-	glEnd();
-		
-	// This is the glideslope bug
+
 	// Todo: fill the glideslope bug when we are in glide slope
 	// color is magenta
 	glColor3ub(COLOR_VIOLET);
@@ -744,7 +747,51 @@ namespace OpenGC
 	glEnd();	
       }
 
+    
     // Draw the localizer
+    
+    // Height of localizer center in the PFD
+    float localizerHeight = 48.0;
+    
+    // Overall localizer width
+    float localizerWidth = 17.0;
+    		
+    // Verticalal center line
+    glColor3ub(COLOR_WHITE);
+    glBegin(GL_LINES);
+    glVertex2f( ADICenterX, localizerHeight + 4 );
+    glVertex2f( ADICenterX, localizerHeight - 4 );
+    glEnd();
+    
+    // Draw the localizer dots
+    
+    // Set up the circle
+    aCircle.SetRadius(2.0);
+    aCircle.SetArcStartEnd(0,360);
+    aCircle.SetDegreesPerPoint(10);
+    
+    glLineWidth(2.0);
+    
+    aCircle.SetOrigin(ADICenterX + localizerWidth * 2, localizerHeight);
+    glBegin(GL_LINE_LOOP);
+    aCircle.Evaluate();
+    glEnd();
+    
+    aCircle.SetOrigin(ADICenterX + localizerWidth, localizerHeight);
+    glBegin(GL_LINE_LOOP);
+    aCircle.Evaluate();
+    glEnd();
+    
+    aCircle.SetOrigin(ADICenterX + -1 * localizerWidth, localizerHeight);
+    glBegin(GL_LINE_LOOP);
+    aCircle.Evaluate();
+    glEnd();
+    
+    aCircle.SetOrigin(ADICenterX + -1 * localizerWidth * 2, localizerHeight);
+    glBegin(GL_LINE_LOOP);
+    aCircle.Evaluate();
+    glEnd();
+	
     if ( ((*nav1_horizontal == 1) && (is_captain)) ||
 	 ((*nav2_horizontal == 1) && (is_copilot)) ) 
       {
@@ -753,57 +800,10 @@ namespace OpenGC
 	} else {
 	  rawLocalizer = *nav2_hdef;
 	}
-    
-	// Where is the center of the ADI?
-	float ADICenterX = (94/2) + 42;
-    
-	// Height of localizer center in the PFD
-	float localizerHeight = 48.0;
-    
-	// Overall localizer width
-	float localizerWidth = 17.0;
-    
+
 	// The horizontal offset of the localizer bug
 	float localizerPosition = ADICenterX + rawLocalizer * localizerWidth;
-		
-	// Verticalal center line
-	glColor3ub(COLOR_WHITE);
-	glBegin(GL_LINES);
-	glVertex2f( ADICenterX, localizerHeight + 4 );
-	glVertex2f( ADICenterX, localizerHeight - 4 );
-	glEnd();
-    
-	// Draw the localizer dots
-    
-	// Set up the circle
-	CircleEvaluator aCircle;
-	aCircle.SetRadius(2.0);
-	aCircle.SetArcStartEnd(0,360);
-	aCircle.SetDegreesPerPoint(10);
-    
-	glLineWidth(2.0);
-    
-	aCircle.SetOrigin(ADICenterX + localizerWidth * 2, localizerHeight);
-	glBegin(GL_LINE_LOOP);
-	aCircle.Evaluate();
-	glEnd();
-    
-	aCircle.SetOrigin(ADICenterX + localizerWidth, localizerHeight);
-	glBegin(GL_LINE_LOOP);
-	aCircle.Evaluate();
-	glEnd();
-    
-	aCircle.SetOrigin(ADICenterX + -1 * localizerWidth, localizerHeight);
-	glBegin(GL_LINE_LOOP);
-	aCircle.Evaluate();
-	glEnd();
-    
-	aCircle.SetOrigin(ADICenterX + -1 * localizerWidth * 2, localizerHeight);
-	glBegin(GL_LINE_LOOP);
-	aCircle.Evaluate();
-	glEnd();
-		
-	// This is the localizer bug
+ 	// This is the localizer bug
 	glColor3ub(COLOR_VIOLET);
 	if (fabs(rawLocalizer) < 2.0) {
 	  glBegin(GL_POLYGON);
@@ -838,7 +838,7 @@ namespace OpenGC
     }
 
     // draw minimum altitude (feet)
-    if (*altimeter_minimum != FLT_MISS) {
+    if ((*altimeter_minimum != FLT_MISS) && (*altimeter_minimum > 0.0)) {
       m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
       glColor3ub(COLOR_GREEN);
       if ((acf_type == 2) || (acf_type == 3)) {
@@ -940,6 +940,11 @@ namespace OpenGC
       m_pFontManager->SetSize(m_Font, 4, 4.5);
       glColor3ub(COLOR_WHITE);
       snprintf( buffer, sizeof(buffer), "%s", text1 );
+      /* fix degree sign */
+      for (int i=0; i<sizeof(buffer); i++) {
+	if (((int) buffer[i]) == 61) buffer[i] = (char) 176; // X737
+	if (((int) buffer[i]) == 96) buffer[i] = (char) 176; // ZIBO
+      }
       m_pFontManager->Print(42,170,buffer, m_Font); 
       snprintf( buffer, sizeof(buffer), "%s", text2 );
       m_pFontManager->Print(42,162,buffer, m_Font);

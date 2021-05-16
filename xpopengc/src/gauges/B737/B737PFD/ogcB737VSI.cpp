@@ -149,61 +149,59 @@ namespace OpenGC
 	    }
 	}
       
-      m_pFontManager->Print( 2.0, VSpeedToNeedle(6000.0),"6-",m_Font);
-      m_pFontManager->Print( 2.0, VSpeedToNeedle(2000.0),"2-",m_Font);
-      m_pFontManager->Print( 2.0, VSpeedToNeedle(1000.0),"1-",m_Font);
-      m_pFontManager->Print( 2.0, VSpeedToNeedle(-1000.0),"1-",m_Font);
-      m_pFontManager->Print( 2.0, VSpeedToNeedle(-2000.0),"2-",m_Font);
-      m_pFontManager->Print( 2.0, VSpeedToNeedle(-6000.0),"6-",m_Font);
+      m_pFontManager->Print( 2.0, VSpeedToNeedle(6000.0)-1.5,"6-",m_Font);
+      m_pFontManager->Print( 2.0, VSpeedToNeedle(2000.0)-1.5,"2-",m_Font);
+      m_pFontManager->Print( 2.0, VSpeedToNeedle(1000.0)-1.5,"1-",m_Font);
+      m_pFontManager->Print( 2.0, VSpeedToNeedle(-1000.0)-1.5,"1-",m_Font);
+      m_pFontManager->Print( 2.0, VSpeedToNeedle(-2000.0)-1.5,"2-",m_Font);
+      m_pFontManager->Print( 2.0, VSpeedToNeedle(-6000.0)-1.5,"6-",m_Font);
 
       float pos;
       glLineWidth(1.5);
-      pos = 0.5*(VSpeedToNeedle(1000.0)) + 1.75;
+      pos = 0.5*(VSpeedToNeedle(0.0) + VSpeedToNeedle(1000.0));
       glBegin(GL_LINES);
       glVertex2f(6.0,pos);
       glVertex2f(7.5,pos);
       glEnd();
-      pos = 0.5*(VSpeedToNeedle(1000.0) + VSpeedToNeedle(2000.0)) + 1.75;
+      pos = 0.5*(VSpeedToNeedle(1000.0) + VSpeedToNeedle(2000.0));
       glBegin(GL_LINES);
       glVertex2f(6.0,pos);
       glVertex2f(7.5,pos);
       glEnd();
-      pos = 0.5*(VSpeedToNeedle(2000.0) + VSpeedToNeedle(6000.0)) + 1.75;
+      pos = 0.5*(VSpeedToNeedle(2000.0) + VSpeedToNeedle(6000.0));
       glBegin(GL_LINES);
       glVertex2f(6.0,pos);
       glVertex2f(7.5,pos);
       glEnd();
-      pos = 0.5*(VSpeedToNeedle(-1000.0)) + 1.75;
+
+      pos = 0.5*(VSpeedToNeedle(0.0) + VSpeedToNeedle(-1000.0));
       glBegin(GL_LINES);
       glVertex2f(6.0,pos);
       glVertex2f(7.5,pos);
       glEnd();
-      pos = 0.5*(VSpeedToNeedle(-1000.0) + VSpeedToNeedle(-2000.0)) + 1.75;
+      pos = 0.5*(VSpeedToNeedle(-1000.0) + VSpeedToNeedle(-2000.0));
       glBegin(GL_LINES);
       glVertex2f(6.0,pos);
       glVertex2f(7.5,pos);
       glEnd();
-       pos = 0.5*(VSpeedToNeedle(-2000.0) + VSpeedToNeedle(-6000.0)) + 1.75;
+      pos = 0.5*(VSpeedToNeedle(-2000.0) + VSpeedToNeedle(-6000.0));
       glBegin(GL_LINES);
       glVertex2f(6.0,pos);
       glVertex2f(7.5,pos);
       glEnd();
-       
-      glBegin(GL_LINES);
   
       // Horizontal center detent
-      glVertex2f(5.0, VSpeedToNeedle(0.0) + 1.75);
-      glVertex2f(10.0, VSpeedToNeedle(0.0) + 1.75);
+      glBegin(GL_LINES);
+      glVertex2f(5.0, VSpeedToNeedle(0.0));
+      glVertex2f(10.0, VSpeedToNeedle(0.0));
 
       //      printf("%f \n",temp);
 
       // Next draw the angled line that indicates climb rate
-      // We need to add 1.75 to the calculated needle position because of how
-      // GL interprets the line width
-      // glVertex2f( 5.0, VSpeedToNeedle(*vertical_speed) + 1.75);
       // FIX for strange behavior below -1000 fpm
-      glVertex2f( 5.0, VSpeedToNeedle(temp) + 1.75);
-      glVertex2f( 30.0, m_NeedleCenter + 1.75);
+      glVertex2f( 5.0, VSpeedToNeedle(*vertical_speed));
+      //      glVertex2f( 5.0, VSpeedToNeedle(temp));
+      glVertex2f( 30.0, m_NeedleCenter);
       glEnd();
 
       glPopMatrix();
@@ -241,24 +239,24 @@ namespace OpenGC
   float B737VSI::VSpeedToNeedle(float vspd)
   {
     float needle;
-  
-    if(vspd>=0.0)
-      {
-	if(vspd>6000.0)
-	  vspd = 6000.0;
-    
-	needle = (1.0-exp(-3.0*vspd/6000.0)) * m_MaxNeedleDeflection + m_NeedleCenter;
-      }
-    else
-      {
-	vspd = fabs(vspd);
+    float avspd = fabs(vspd);
 
-	if(vspd>6000.0)
-	  vspd = 6000.0;
+    if (avspd < 1000.0) {
+      needle = avspd/1000.0 * 10./22. * m_MaxNeedleDeflection;
+    } else if (avspd < 2000.0) {
+      needle = ((avspd-1000.)/1000.0 * 7./22. + 10./22.) * m_MaxNeedleDeflection;
+    } else if (avspd < 6000.0) {
+      needle = ((avspd-2000.)/4000.0 * 5./22. + 17./22.) * m_MaxNeedleDeflection;
+    } else {
+      needle = m_MaxNeedleDeflection;
+    }
     
-	needle = m_NeedleCenter - (1.0-exp(-3.0*vspd/6000.0)) * m_MaxNeedleDeflection;
-       }
-
+    if(vspd>=0.0) {
+      needle = m_NeedleCenter + needle;
+    } else {
+      needle = m_NeedleCenter - needle;
+    }
+    
     //    printf("%f %f\n",vspd,needle);
 
     return needle;

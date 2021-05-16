@@ -502,7 +502,7 @@ namespace OpenGC
 	    
 	    
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
-	    //for (int i=4;i<6;i++) {
+	    //for (int i=4;i<5;i++) {
 
 	      int im1 = max(i-1,0);
 
@@ -519,7 +519,11 @@ namespace OpenGC
 		/* end of leg may also be start of next radii arc */
 		if ((wpt[i].radii_ctr_lon != 0.0) &&
 		    (wpt[i].radii_ctr_lat != 0.0) &&
+		    (wpt[i].radii_lon != 0.0) &&
+		    (wpt[i].radii_lat != 0.0) &&
 		    (wpt[i].radii_radius != 0.0) &&
+		    (wpt[i].radii_ctr_lon != FLT_MISS) &&
+		    (wpt[i].radii_ctr_lat != FLT_MISS) &&
 		    (wpt[i].radii_lon != FLT_MISS) &&
 		    (wpt[i].radii_lat != FLT_MISS) &&
 		    (wpt[i].radii_radius != FLT_MISS)) {
@@ -668,7 +672,14 @@ namespace OpenGC
 		  double start_angle = heading_from_a_to_b(&lon,&lat,&lon1,&lat1);
 		  /* End of Arc */
 		  double end_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
-		  double tangent_course =  acos(wpt[im1].radii_radius / distance_from_a_to_b(&lon,&lat,&lon2,&lat2)) * 180.0 / M_PI;
+		  double distance = distance_from_a_to_b(&lon,&lat,&lon2,&lat2);
+		  /* Tangent from End of Arc to next Waypoint */
+		  double tangent_course;
+		  if (distance > wpt[im1].radii_radius) {
+		    tangent_course = acos(wpt[im1].radii_radius / distance) * 180.0 / M_PI;
+		  } else {
+		    tangent_course = 0.0;
+		  }
 
 		  double old_course = start_angle - 90.0;
 		  if (old_course < 0.0) old_course += 360.0;
@@ -731,7 +742,7 @@ namespace OpenGC
 		  */
 
 		  // calculate tangent point at end of arc
-		  double distance = (double) wpt[im1].radii_radius;
+		  distance = (double) wpt[im1].radii_radius;
 		  latlon_at_dist_heading(&lon, &lat, &distance, &end_angle, &lon2, &lat2);
 
 		  lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
