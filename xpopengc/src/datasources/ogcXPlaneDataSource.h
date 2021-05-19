@@ -59,7 +59,6 @@ public:
   
 protected:
 
-  int m_maxradar;
   bool m_sent;
   
 };

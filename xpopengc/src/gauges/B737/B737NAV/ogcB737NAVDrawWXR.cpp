@@ -31,6 +31,7 @@
 #include "B737/B737NAV/ogcB737NAVDrawWXR.h"
 extern "C" {
 #include "udpdata.h"
+#include "handleudp.h"
 }
 
 namespace OpenGC
@@ -60,6 +61,10 @@ namespace OpenGC
 	*/
       }
     }
+
+
+    wxrnlon = 5;
+    wxrnlat = 3;
     
   }
 
@@ -72,6 +77,9 @@ namespace OpenGC
   {
     GaugeComponent::Render();
 
+    char *wxrBuffer;
+    int wxrBufferLen;
+    
     int acf_type = m_pDataSource->GetAcfType();
   
     bool is_captain = (this->GetArg() == 0);
@@ -149,12 +157,30 @@ namespace OpenGC
 	double dlat;
 	int x;
 	int y;
+
+	if (m_pDataSource->GetMaxRadar() > 0) {
+	  wxrBufferLen = 5+13*m_pDataSource->GetMaxRadar();
+	} else {
+	  wxrBufferLen = 81;
+	}
+	wxrBuffer=(char*) malloc(wxrBufferLen);
+
+	while (udpReadLeft > 0) {
+
+	  pthread_mutex_lock(&exit_cond_lock);    
+	  /* read from start of receive buffer */
+	  memcpy(wxrBuffer,&udpRecvBuffer[0],wxrBufferLen);
+	  /* shift remaining read buffer to the left */
+	  memmove(&udpRecvBuffer[0],&udpRecvBuffer[wxrBufferLen],udpReadLeft-wxrBufferLen);    
+	  /* decrease read buffer position and counter */
+	  udpReadLeft -= wxrBufferLen;
+	  pthread_mutex_unlock(&exit_cond_lock);
 	
 	/* check if we have new Radar data */
-	if (strncmp(udpRecvBuffer,"RADR5",5)==0) {
+	if (strncmp(wxrBuffer,"RADR5",5)==0) {
 	  
 	  int i;
-	  int nrad = (udpRecvBufferLen-5)/13;
+	  int nrad = (wxrBufferLen-5)/13;
 	  
 	  float lon;
 	  float lat;
@@ -162,10 +188,10 @@ namespace OpenGC
 	  char lev;
 	  
 	  for (i=0;i<nrad;i++) {
-	    memcpy(&lon,&udpRecvBuffer[5+i*13+0],sizeof(lon));
-	    memcpy(&lat,&udpRecvBuffer[5+i*13+4],sizeof(lat));
-	    memcpy(&lev,&udpRecvBuffer[5+i*13+8],sizeof(lev));
-	    memcpy(&hgt,&udpRecvBuffer[5+i*13+9],sizeof(hgt));
+	    memcpy(&lon,&wxrBuffer[5+i*13+0],sizeof(lon));
+	    memcpy(&lat,&wxrBuffer[5+i*13+4],sizeof(lat));
+	    memcpy(&lev,&wxrBuffer[5+i*13+8],sizeof(lev));
+	    memcpy(&hgt,&wxrBuffer[5+i*13+9],sizeof(hgt));
 
 	    dlon = (double) lon;
 	    dlat = (double) lat;
@@ -173,7 +199,7 @@ namespace OpenGC
 	    // convert to azimuthal equidistant coordinates with acf in center
 	    lonlat2gnomonic(&dlon, &dlat, &easting, &northing, &aircraftLon, &aircraftLat);
 	    
-	    //	    printf("%i lon %f lat %f hgt %f lev %d \n",i,lon,lat,hgt,lev);
+	    printf("%i lon %f lat %f hgt %f lev %d \n",i,lon,lat,hgt,lev);
 	    
 	    // Compute physical position relative to acf center on screen in texture coordinates
 	    y = (int) (-northing / 1852.0 / MPP * 0.5 + 0.5 * (float) TEX_HEIGHT); 
@@ -209,8 +235,33 @@ namespace OpenGC
 	  }
 	  
 	}
-	  
 	
+	/* check if we have new Radar data from CONTROL PAD Stream (Enable CONTROL PAD in the Net Ouput Screen) */
+	if (strncmp(wxrBuffer,"xRAD",4)==0) {
+	  
+	  int i;
+	  
+	  int lon_deg_west;
+	  int lat_deg_south;
+	  int lat_min_south;
+	  char rad;
+
+	  memcpy(&lon_deg_west,&wxrBuffer[5],sizeof(lon_deg_west));
+	  memcpy(&lat_deg_south,&wxrBuffer[5+4],sizeof(lat_deg_south));
+	  memcpy(&lat_min_south,&wxrBuffer[5+4+4],sizeof(lat_min_south));
+	  
+	  printf("%.*s %i %i %i \n",4,wxrBuffer,lon_deg_west,lat_deg_south,lat_min_south);
+	  
+	  for (i=0;i<TEX_WIDTH;i++) {
+	  }
+	  
+
+	}
+
+	} /* read left ? */
+
+	free(wxrBuffer);
+
 	// render the Radar texture
 	//	glPushMatrix();
 	// GLuint texture_map;
@@ -253,7 +304,7 @@ namespace OpenGC
 	glDisable (GL_TEXTURE_2D);
 	glFlush();
 //	glPopMatrix();
-		
+	
       } // valid acf coordinates
 
       /* end of down-shifted and rotated coordinate system */

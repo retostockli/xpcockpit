@@ -80,30 +80,47 @@ void XPlaneDataSource::define_server(int port, string ip_address, int maxradar)
   strncpy(server_ip,ip_address.c_str(),ip_address.length()); 
   server_port = port;
 
-  // UDP Server (native X-Plane UDP server)
   strcpy(udpServerIP,ip_address.c_str());
-  udpServerPort = 49000;
-  m_maxradar = maxradar;
+  if (maxradar > 0) {
+    // UDP Server Port (X-Plane acts as UDP server)
+    udpServerPort = 49000;
+  } else {
+    // UDP Server Port (OpenGC acts as UDP server for X-Plane Control Pad)
+    udpServerPort = 48003;
+  }
+
+  SetMaxRadar(maxradar);
 
   /* initialize TCP/IP interface */
   if (initialize_tcpip() < 0) exit(-8);
 
   /* initialize UDP socket if needed for WXR data from X-Plane*/
-  if (m_maxradar > 0 ) {
-    n = (int) log10(m_maxradar) + 1; // number of characters of MAXRADAR
+  if (maxradar > 0 ) {
+    /* sign up for RADR message */
+    n = (int) log10(m_MaxRadar) + 1; // number of characters of MAXRADAR
     
     int sendlen = 7+n; // RADR plus \0 plus the # of radar returns plus \0
-    int recvlen = 5+13*m_maxradar+1; // RADR plux 13 bytes * # of radar returns plus \0
+    int recvlen = (5+13*maxradar+1)*10; // RADR plus 13 bytes * # of radar returns plus \0
+    //int recvlen = 5+13*maxradar+1; // RADR plus 13 bytes * # of radar returns plus \0
     
     allocate_udpdata(sendlen,recvlen);
     
     if (init_udp() < 0) exit(-8);
+    if (init_udp_receive() < 0) exit(-9);
 
     /* generate send message */
-    snprintf(udpSendBuffer, sendlen,"RADR %i",m_maxradar);
+    snprintf(udpSendBuffer, sendlen,"RADR %i",maxradar);
     udpSendBuffer[4]='\0';
     udpSendBuffer[6+n]='\0';
 
+  } else {
+    /* use control pad xRAD UDP stream */
+    int sendlen = 0; /* no sending */
+    int recvlen = 8100; // 'xRAD' plus '\0' (5 bytes) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0    
+    allocate_udpdata(sendlen,recvlen);
+    
+    if (init_udp_server() < 0) exit(-8);
+    if (init_udp_receive() < 0) exit(-9);
   }
 }
 
@@ -174,28 +191,60 @@ void XPlaneDataSource::OnIdle()
   if (send_server()<0) exit(-11);
 
   /* request WXR data if needed */
-  if (m_maxradar > 0) {
-
-    
+  if (GetMaxRadar() > 0) {
+  
     if (!m_sent) {
       // request radar only once at start, you will then get the data forever
-      ret = send_udp();
+      ret = send_udp_to_server();
       printf("Sent Request for WXR Data to X-Plane: %i \n",ret);
       m_sent = true;
     }
-   
+
+    /*
     if (m_sent) {
-      ret = recv_udp();
+      ret = recv_udp_from_server();
 
       if (ret > 0) {
 	// READING DONE IN NAV GAUGE
       } else {
 	//printf("No WXR return %i \n",ret);
 	memset(udpRecvBuffer,0,udpRecvBufferLen);
+      } 
+    }
+    */
+
+  } else {
+    /* use xRAD message from CONTROL PAD */
+
+    if (0) {
+    ret = recv_udp_from_client();
+
+    if (ret == 81) {
+      // xRAD (4 char) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0
+      // READING DONE IN NAV GAUGE
+      //printf("UDP Receive # bytes: %i \n",ret);
+      if (strncmp(udpRecvBuffer,"xRAD",4)==0) {
+	  
+	  int i;
+	  
+	  int lon_deg_west;
+	  int lat_deg_south;
+	  int lat_min_south;
+	  char rad;
+
+	  memcpy(&lon_deg_west,&udpRecvBuffer[5],sizeof(lon_deg_west));
+	  memcpy(&lat_deg_south,&udpRecvBuffer[5+4],sizeof(lat_deg_south));
+	  memcpy(&lat_min_south,&udpRecvBuffer[5+4+4],sizeof(lat_min_south));
+	  
+	  printf("%.*s %i %i %i \n",4,udpRecvBuffer,lon_deg_west,lat_deg_south,lat_min_south);
       }
-      
+    } else {
+      //printf("No WXR return (or other data) %i \n",ret);
+      //memset(udpRecvBuffer,0,udpRecvBufferLen);
     }
 
+    }
+    
   }
   
 } // end "OnIdle()"
