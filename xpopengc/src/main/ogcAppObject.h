@@ -111,9 +111,6 @@ protected:
   /** Server Port number */
   int m_port;
 
-  /** Maximum # of Radar Returns per Cycle **/
-  int m_maxradar;
-
   /** whether to read from X-Plane's Custom Data path **/
   int m_customdata;
 

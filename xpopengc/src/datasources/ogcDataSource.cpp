@@ -50,7 +50,7 @@ void DataSource::OnIdle()
   // The default version does nothing
 }
 
-  void DataSource::define_server(int port, string ip_address, int maxradar)
+  void DataSource::define_server(int port, string ip_address)
 {
   printf("WRONG SOURCE");
   // The default version does nothing

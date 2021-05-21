@@ -182,9 +182,11 @@ void *poll_thread_main()
 
     /* read call goes here (1 s timeout for blocking operation) */
     int addrlen = sizeof(udpServerAddr);
-    ret = recvfrom(udpSocket, buffer, udpRecvBufferLen, 
-	       0, (struct sockaddr *) &udpServerAddr, &addrlen);
-    //ret = recv(udpSocket, buffer, udpRecvBufferLen, 0);
+    /* We are the Client */
+    //ret = recvfrom(udpSocket, buffer, udpRecvBufferLen, 
+    //       0, (struct sockaddr *) &udpServerAddr, &addrlen);
+    /* We are the Server */
+    ret = recv(udpSocket, buffer, udpRecvBufferLen, 0);
     if (ret == -1) {
       if (errno == EWOULDBLOCK) { // just no data yet ...
       } else {
@@ -196,8 +198,7 @@ void *poll_thread_main()
       /* read is ok */
       
       /* are we reading WXR data ? */
-      if ((strncmp(buffer,"xRAD",4)==0) ||
-	  (strncmp(buffer,"RADR5",5)==0)) {
+      if (strncmp(buffer,"xRAD",4)==0) {
 	  
 	/* does it fit into read buffer? */
 	if (ret <= (udpRecvBufferLen - udpReadLeft)) {
@@ -206,7 +207,7 @@ void *poll_thread_main()
 	  udpReadLeft += ret;
 	  pthread_mutex_unlock(&exit_cond_lock);
 	  
-	  printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
+	  //printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
 	} else {
 	  printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
 	}

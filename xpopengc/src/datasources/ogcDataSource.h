@@ -43,7 +43,7 @@ public:
   virtual ~DataSource();
 
   // transfer TCP/IP address and port from namelist
-  virtual void define_server(int port, string ip, int maxradar);
+  virtual void define_server(int port, string ip);
 
   /** Initialize the data to a default value*/
   void InitializeData();
@@ -65,10 +65,6 @@ public:
   /* Determine Aircraft type */
   virtual void SetAcfType(int acfType) { m_AcfType = acfType; }
   virtual int GetAcfType() { return m_AcfType; }
-
-  /* Determine # of Radar Blips per UDP Transmission */
-  virtual void SetMaxRadar(int maxRadar) { m_MaxRadar = maxRadar; }
-  virtual int GetMaxRadar() { return m_MaxRadar; }
   
 protected:
 
@@ -76,8 +72,6 @@ protected:
   //  AirframeDataContainer* m_Airframe;
 
   int m_AcfType;
-
-  int m_MaxRadar;
   
 };
 

@@ -48,18 +48,12 @@ public:
   virtual ~XPlaneDataSource();
 
   // transfer TCP/IP address and port from namelist
-  void define_server(int port, string ip_address, int maxradar);
+  void define_server(int port, string ip_address);
 
   // The "money" function
   void OnIdle();
-
-  /* Determine Aircraft type */
-  virtual void SetAcfType(int acfType) { m_AcfType = acfType; }
-  virtual int GetAcfType() { return m_AcfType; }
-  
+ 
 protected:
-
-  bool m_sent;
   
 };
 

@@ -279,7 +279,6 @@ namespace OpenGC
     char default_data_source[] = "X-Plane";
     char default_xplane_path[] = "NONE";
     char default_client_name[] = "xpopengc";
-    int default_maxradar = 0; // do not query RADAR from X-Plane
     int default_customdata = 0; // do not read from X-Plane's "Custom Data" directory
 
     printf("AppObject - Starting initialization with %s\n", iniFile);
@@ -324,7 +323,6 @@ namespace OpenGC
       // Set up the network data
       strcpy(m_ip_address,iniparser_getstring(ini,"network:ServerIP", default_server_ip));
       m_port = iniparser_getint(ini,"network:ServerPort", default_server_port);
-      m_maxradar = iniparser_getint(ini,"network:MaxRadar", default_maxradar);
 
       // Set up the data source
       if (verbosity > 2) printf("AppObject - Setting up the Data Source\n");
@@ -334,7 +332,7 @@ namespace OpenGC
 	m_pDataSource = new XPlaneDataSource();
 
       // Now initialize the data source
-      m_pDataSource->define_server(m_port,m_ip_address,m_maxradar);
+      m_pDataSource->define_server(m_port,m_ip_address);
 
       // Setup the render window
       int initX = iniparser_getint(ini,"Window:xpos", 0);

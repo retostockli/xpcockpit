@@ -24,7 +24,6 @@
  * Test gauge component for nav stuff
  */
 
-#define NEWWXR
 
 #ifndef ogcB737NAVDrawWXR_h
 #define ogcB737NAVDrawWXR_h
@@ -32,15 +31,14 @@
 #include "ogcGauge.h"
 #include "ogcB737NAV.h"
 
-#ifdef NEWWXR
-#define TEX_WIDTH 61 // total radar pixels in horizontal direction
-#define TEX_HEIGHT 61 // total radar pixels in vertical direction
-#define MPP 0.5   // miles per radar pixel
-#else
-#define TEX_WIDTH 256 // total radar pixels in horizontal direction
-#define TEX_HEIGHT 256 // total radar pixels in vertical direction
-#define MPP 0.5   // miles per radar pixel
-#endif
+  /* number of longitudes and latitudes of weather radar to store */
+#define NLON 7
+#define NLAT 5
+#define MINPERLON 60
+#define MINPERLAT 60
+#define TEX_WIDTH MINPERLON * NLON + 1  // total radar pixels in horizontal direction
+#define TEX_HEIGHT MINPERLAT * NLAT + 1 // total radar pixels in vertical direction
+#define MPP 69.0/60.0   // miles per radar pixel latitude. Each pixel is one arc minute. Each degree lat is 69 miles apart
 namespace OpenGC
 {
 
@@ -63,12 +61,16 @@ protected:
   /* Pointer to the calling Navigation Gauge */
   B737NAV* m_NAVGauge;
 
-  /* number of longitudes and latitudes of weather radar to store */
-  int wxrnlon;
-  int wxrnlat;
+  GLubyte lltexture[TEX_HEIGHT][TEX_WIDTH];
   
   GLubyte texture[TEX_HEIGHT][TEX_WIDTH][4];             
   // float texture[TEX_HEIGHT][TEX_WIDTH][4];             
+  
+  int m_OldLat;
+  int m_CenterLon;
+  int m_CenterLat;
+  int m_TextureCenterLon;
+  int m_TextureCenterLat;
   
   
 };
