@@ -60,8 +60,8 @@ namespace OpenGC
     m_OldLat = INT_MISS;
     m_CenterLon = INT_MISS;
     m_CenterLat = INT_MISS;
-    m_TextureCenterLon = INT_MISS;
-    m_TextureCenterLat = INT_MISS;
+    m_TextureCenterLon = FLT_MISS;
+    m_TextureCenterLat = FLT_MISS;
     
   }
 
@@ -159,7 +159,6 @@ namespace OpenGC
       if (strncmp(wxrBuffer,"xRAD",4)==0) {
 	
 	int i,j;
-	int k,l;
 	
 	int lon_deg_west;
 	int lat_deg_south;
@@ -232,8 +231,9 @@ namespace OpenGC
 	      }   
 
 	      /* Store Current Center Lon/Lat as new Texture Center coordinates */
-	      m_TextureCenterLon = m_CenterLon;
-	      m_TextureCenterLat = m_CenterLat;
+	      /* Need to add 0.5 lon/lat since radar data specifies ll edge of center pixel */
+	      m_TextureCenterLon = ((float) m_CenterLon) + 0.5;
+	      m_TextureCenterLat = ((float) m_CenterLat) + 0.5;
 	      
 	      /* Update Center Longitude/Latitude of texture to new Lon/Lat of acf */
 	      m_CenterLon = (int) aircraftLon;
@@ -246,7 +246,7 @@ namespace OpenGC
 	    i = (lon_deg_west - (m_CenterLon-(NLON-1)/2))*MINPERLON;
 	    j = (lat_deg_south - (m_CenterLat-(NLAT-1)/2))*MINPERLAT + lat_min_south;
 	  
-	    //printf("%i %i %i %i %i %i %i \n",m_centerLon,m_centerLat,lon_deg_west,lat_deg_south,lat_min_south,i,j);
+	    //printf("%i %i %i %i %i %i %i \n",m_CenterLon,m_CenterLat,lon_deg_west,lat_deg_south,lat_min_south,i,j);
 
 	    /* Store 61 bytes of 61 minutes west-east to current degree line */
 	    memcpy(&lltexture[j][i],&wxrBuffer[5+4+4+4],MINPERLON+1);
@@ -269,14 +269,16 @@ namespace OpenGC
 	    
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-
-      glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-      glRotatef(heading_map, 0, 0, 1);
 
       /* valid coordinates ? */
-      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
+      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0) &&
+      	  (m_TextureCenterLon != FLT_MISS) && (m_TextureCenterLat != FLT_MISS)) {
+	//if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
 
+	glPushMatrix();
+	
+	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
+	glRotatef(heading_map, 0, 0, 1);
 
 
 	// render the Radar texture
@@ -287,41 +289,56 @@ namespace OpenGC
 
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
 		      TEX_WIDTH,  TEX_HEIGHT, 0, GL_RGBA,
 		      GL_UNSIGNED_BYTE, texture);
 
-	float scx = 0.5 * (float) TEX_WIDTH * MPP / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
-	float scy = 0.5 * (float) TEX_HEIGHT * MPP / mapRange * map_size;
-
+	float scx = 0.5 * ((float) TEX_WIDTH) * MPP / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
+	float scy = 0.5 * ((float) TEX_HEIGHT) * MPP / mapRange * map_size;
+	float tx = (m_TextureCenterLon - aircraftLon) * ((float) MINPERLON) * MPP / mapRange * map_size *
+	  cos(M_PI / 180.0 * aircraftLat);
+	float ty = (m_TextureCenterLat - aircraftLat) * ((float) MINPERLAT) * MPP / mapRange * map_size;
+	
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 	//glBindTexture(GL_TEXTURE_2D, texture_map);	  
 
-	glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx, -scy);
-        glTexCoord2f(1.0f, 0.0f); glVertex2f( scx, -scy);
-        glTexCoord2f(1.0f, 1.0f); glVertex2f( scx,  scy);
-        glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx,  scy);
+	glBegin(GL_TRIANGLES);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
 	glEnd();
+
+	/*
+	glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
+	glEnd();
+	*/
 
 	glDisable (GL_TEXTURE_2D);
 	glFlush();
-//	glPopMatrix();
-	
-      } // valid acf coordinates
 
-      /* end of down-shifted and rotated coordinate system */
-      glPopMatrix();
-    
+	/* end of down-shifted and rotated coordinate system */
+	glPopMatrix();
+ 	
+      } // valid acf coordinates
+   
       // plot map options
       glPushMatrix();
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );

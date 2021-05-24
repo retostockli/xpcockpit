@@ -190,7 +190,7 @@ void *poll_thread_main()
     if (ret == -1) {
       if (errno == EWOULDBLOCK) { // just no data yet ...
       } else {
-	printf("HANDLEUDP: Receive Error. \n");
+	printf("HANDLEUDP: Receive Error %i %i %i %i %i %i %i\n",errno,EAGAIN,EBADF,EFAULT,EINTR,EINVAL,ENOMEM);
 	//poll_thread_exit_code = 1;
 	//break;
       } 

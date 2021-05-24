@@ -32,13 +32,13 @@
 #include "ogcB737NAV.h"
 
   /* number of longitudes and latitudes of weather radar to store */
-#define NLON 7
+#define NLON 5
 #define NLAT 5
 #define MINPERLON 60
 #define MINPERLAT 60
 #define TEX_WIDTH MINPERLON * NLON + 1  // total radar pixels in horizontal direction
 #define TEX_HEIGHT MINPERLAT * NLAT + 1 // total radar pixels in vertical direction
-#define MPP 69.0/60.0   // miles per radar pixel latitude. Each pixel is one arc minute. Each degree lat is 69 miles apart
+#define MPP 111.0 / 60.0 / 1.852 // miles per radar pixel. Each pixel is one arc minute. Each degree lat is 111 km apart and each mile is 1.852 km
 namespace OpenGC
 {
 
@@ -66,11 +66,11 @@ protected:
   GLubyte texture[TEX_HEIGHT][TEX_WIDTH][4];             
   // float texture[TEX_HEIGHT][TEX_WIDTH][4];             
   
-  int m_OldLat;
-  int m_CenterLon;
-  int m_CenterLat;
-  int m_TextureCenterLon;
-  int m_TextureCenterLat;
+  int m_OldLat;     /* check if incoming southern latitude starts from scratch in southern edge of radar image */
+  int m_CenterLon;  /* western edge of center pixel of radar image */
+  int m_CenterLat;  /* southern edge of center pixel of radar image */
+  float m_TextureCenterLon; /* exact center lon of radar image */
+  float m_TextureCenterLat; /* exact center lat of radar image */
   
   
 };
