@@ -93,6 +93,27 @@ B737NAV::B737NAV()
   pDrawWXR->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawWXR);
 
+  B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
+  pDrawStat->SetParentRenderObject(this);
+  pDrawStat->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawStat->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawStat->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawStat);
+
+  B737NAVDrawFMC* pDrawFMC = new B737NAVDrawFMC();
+  pDrawFMC->SetParentRenderObject(this);
+  pDrawFMC->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawFMC->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawFMC->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawFMC);
+  
+  B737NAVDrawTCAS* pDrawTCAS = new B737NAVDrawTCAS();
+  pDrawTCAS->SetParentRenderObject(this);
+  pDrawTCAS->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawTCAS->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawTCAS->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawTCAS);
+
   B737NAVDrawStatic* pDrawStatic = new B737NAVDrawStatic();
   pDrawStatic->SetParentRenderObject(this);
   pDrawStatic->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -114,26 +135,6 @@ B737NAV::B737NAV()
   pMapPlan->SetNAVGauge(this);
   this->AddGaugeComponent(pMapPlan);
 
-  B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
-  pDrawStat->SetParentRenderObject(this);
-  pDrawStat->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pDrawStat->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pDrawStat->SetNAVGauge(this);
-  this->AddGaugeComponent(pDrawStat);
-
-  B737NAVDrawFMC* pDrawFMC = new B737NAVDrawFMC();
-  pDrawFMC->SetParentRenderObject(this);
-  pDrawFMC->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pDrawFMC->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pDrawFMC->SetNAVGauge(this);
-  this->AddGaugeComponent(pDrawFMC);
-  
-  B737NAVDrawTCAS* pDrawTCAS = new B737NAVDrawTCAS();
-  pDrawTCAS->SetParentRenderObject(this);
-  pDrawTCAS->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pDrawTCAS->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pDrawTCAS->SetNAVGauge(this);
-  this->AddGaugeComponent(pDrawTCAS);
 }
 
 B737NAV::~B737NAV()

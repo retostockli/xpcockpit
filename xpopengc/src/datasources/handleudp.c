@@ -188,9 +188,9 @@ void *poll_thread_main()
     /* We are the Server */
     ret = recv(udpSocket, buffer, udpRecvBufferLen, 0);
     if (ret == -1) {
-      if (errno == EWOULDBLOCK) { // just no data yet ...
+      if ((errno == EWOULDBLOCK) || (errno == EINTR)) { // just no data yet or our own timeout ;-)
       } else {
-	printf("HANDLEUDP: Receive Error %i %i %i %i %i %i %i\n",errno,EAGAIN,EBADF,EFAULT,EINTR,EINVAL,ENOMEM);
+	printf("HANDLEUDP: Receive Error %i \n",errno);
 	//poll_thread_exit_code = 1;
 	//break;
       } 

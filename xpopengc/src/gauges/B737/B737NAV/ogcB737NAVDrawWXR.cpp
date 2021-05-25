@@ -192,40 +192,40 @@ namespace OpenGC
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else if (lltexture[y][x] == 1) {
 		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 5;
+		    texture[y][x][1] = (GLubyte) 0;
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else if (lltexture[y][x] == 2) {
 		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 40;
+		    texture[y][x][1] = (GLubyte) 0;
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else if (lltexture[y][x] == 3) {
 		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 100;
+		    texture[y][x][1] = (GLubyte) 0;
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else if (lltexture[y][x] == 4) {
 		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 120;
+		    texture[y][x][1] = (GLubyte) 100;
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else if (lltexture[y][x] == 5) {
-		    texture[y][x][0] = (GLubyte) 120;
-		    texture[y][x][1] = (GLubyte) 120;
+		    texture[y][x][0] = (GLubyte) 0;
+		    texture[y][x][1] = (GLubyte) 140;
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else if (lltexture[y][x] == 6) {
-		    texture[y][x][0] = (GLubyte) 140;
+		    texture[y][x][0] = (GLubyte) 100;
 		    texture[y][x][1] = (GLubyte) 140;
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else if (lltexture[y][x] == 7) {
 		    texture[y][x][0] = (GLubyte) 140;
-		    texture[y][x][1] = (GLubyte) 0;
+		    texture[y][x][1] = (GLubyte) 140;
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else if (lltexture[y][x] == 8) {
-		    texture[y][x][0] = (GLubyte) 160;
-		    texture[y][x][1] = (GLubyte) 0;
+		    texture[y][x][0] = (GLubyte) 150;
+		    texture[y][x][1] = (GLubyte) 100;
 		    texture[y][x][2] = (GLubyte) 0;
 		  } else {
-		    texture[y][x][0] = (GLubyte) 160;
+		    texture[y][x][0] = (GLubyte) 150;
 		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 160;
+		    texture[y][x][2] = (GLubyte) 0;
 		  }
 		}
 	      }   
@@ -264,16 +264,16 @@ namespace OpenGC
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((heading_map != FLT_MISS) && (*nav_shows_wxr == 1) &&
-	(udpRecvBuffer != NULL) && (mapMode != 3)) {
+	(udpRecvBuffer != NULL) && (mapMode != 3) && (!mapCenter)) {
 
 	    
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
 
-      /* valid coordinates ? */
+      /* valid coordinates and full radar image received */
       if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0) &&
-      	  (m_TextureCenterLon != FLT_MISS) && (m_TextureCenterLat != FLT_MISS)) {
-	//if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
+	  (m_TextureCenterLon != FLT_MISS) && (m_TextureCenterLat != FLT_MISS)) {
+      //	if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
 
 	glPushMatrix();
 	
@@ -293,10 +293,14 @@ namespace OpenGC
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	/* Remove border line */
+	GLfloat color[4]={0,0,0,1};
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
 		      TEX_WIDTH,  TEX_HEIGHT, 0, GL_RGBA,
@@ -323,6 +327,7 @@ namespace OpenGC
 	glEnd();
 
 	/*
+	// DEPRECATED Do not use any more
 	glBegin(GL_QUADS);
         glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
         glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
@@ -335,6 +340,53 @@ namespace OpenGC
 	glFlush();
 
 	/* end of down-shifted and rotated coordinate system */
+	glPopMatrix();
+
+	/* Delete radar image behind aircraft and beyond range of 60 NM*/
+	glPushMatrix();
+
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(0,0);
+	glVertex2f(0,m_PhysicalSize.y*acf_y);
+	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*acf_y);
+	glVertex2f(m_PhysicalSize.x,0);
+	glEnd();
+	
+	glBegin(GL_POLYGON);
+	glVertex2f(0,m_PhysicalSize.y);
+	glVertex2f(0,m_PhysicalSize.y*map_y_max);
+	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*map_y_max);
+	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y);
+	glEnd();
+	
+	//-------------------Rounded NAV Gauge WXR Limit ------------------
+	// The WXR image is blacked off on the top of the NAV gauge
+	// The overlays are essentially the
+	// remainder of a circle subtracted from a square, and are formed
+	// by fanning out triangles from a point just off each corner
+	// to an arc descrbing the curved portion of the art. horiz.
+	CircleEvaluator aCircle;
+	aCircle.SetRadius(m_PhysicalSize.y*(map_y_max-acf_y));
+	
+	// Upper Left quarter
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2f(0.0,m_PhysicalSize.y*map_y_max);
+	aCircle.SetOrigin(m_PhysicalSize.x*acf_x,m_PhysicalSize.y*acf_y);
+	aCircle.SetArcStartEnd(270,360);
+	aCircle.SetDegreesPerPoint(10);
+	aCircle.Evaluate();
+	glEnd();
+
+	// Upper Right quarter
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*map_y_max);
+	aCircle.SetOrigin(m_PhysicalSize.x*acf_x,m_PhysicalSize.y*acf_y);
+	aCircle.SetArcStartEnd(0,90);
+	aCircle.SetDegreesPerPoint(10);
+	aCircle.Evaluate();
+	glEnd();
+       
 	glPopMatrix();
  	
       } // valid acf coordinates

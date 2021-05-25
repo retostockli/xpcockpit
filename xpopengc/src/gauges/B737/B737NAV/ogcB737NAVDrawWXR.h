@@ -32,7 +32,7 @@
 #include "ogcB737NAV.h"
 
   /* number of longitudes and latitudes of weather radar to store */
-#define NLON 5
+#define NLON 7
 #define NLAT 5
 #define MINPERLON 60
 #define MINPERLAT 60
@@ -64,7 +64,6 @@ protected:
   GLubyte lltexture[TEX_HEIGHT][TEX_WIDTH];
   
   GLubyte texture[TEX_HEIGHT][TEX_WIDTH][4];             
-  // float texture[TEX_HEIGHT][TEX_WIDTH][4];             
   
   int m_OldLat;     /* check if incoming southern latitude starts from scratch in southern edge of radar image */
   int m_CenterLon;  /* western edge of center pixel of radar image */
