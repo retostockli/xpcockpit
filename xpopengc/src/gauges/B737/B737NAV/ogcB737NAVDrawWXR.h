@@ -48,7 +48,7 @@ public:
 
   B737NAVDrawWXR();
   virtual ~B737NAVDrawWXR();
-
+  
   void Render();
   
   void SetNAVGauge(B737NAV* NAVGauge) {m_NAVGauge = NAVGauge;}

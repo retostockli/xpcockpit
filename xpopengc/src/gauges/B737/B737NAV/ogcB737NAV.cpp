@@ -155,12 +155,8 @@ void B737NAV::Render()
     irs_mode = link_dataref_int("xpserver/irs_mode");
     *irs_mode = 2;
   }
-
   
   if (*avionics_on == 1) {
-
-    // First thing to do is call base class setup
-    Gauge::Render();
      
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
@@ -236,7 +232,7 @@ void B737NAV::Render()
       rangesel = link_dataref_int("sim/cockpit2/EFIS/map_range");
     }
 
-    //   printf("%i \n",*rangesel);
+    //printf("%i \n",*rangesel);
      
     if (*rangesel == 0) {
       m_MapRange = 5.0;
@@ -262,6 +258,9 @@ void B737NAV::Render()
     if ((m_MapCenter) && (m_MapMode != 3)) {
       m_MapRange /= 2;
     }
+
+    // Call base class Render once all the new NAV states have been set
+    Gauge::Render();
 
   } // Display powered?
   

@@ -209,7 +209,7 @@ void *poll_thread_main()
 	  
 	  //printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
 	} else {
-	  printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
+	  // printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
 	}
       }
     } else if ((ret > 0) && (ret > udpRecvBufferLen)) {

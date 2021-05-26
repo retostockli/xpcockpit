@@ -210,7 +210,7 @@ namespace OpenGC
       //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
       Fl::flush();
-    }
+      }
     if (m_InitState == 1) m_InitState++;
   }
 

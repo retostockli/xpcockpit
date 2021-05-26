@@ -70,6 +70,7 @@ namespace OpenGC
     // Destruction handled by base class
   }
 
+ 
   void B737NAVDrawWXR::Render()
   {
     GaugeComponent::Render();
@@ -140,6 +141,7 @@ namespace OpenGC
     } else {
       nav_shows_wxr = link_dataref_int("sim/cockpit2/EFIS/EFIS_weather_on");
     }
+
 
     // read buffer and fill it into regular lon/lat array with 60 minutes per lon/lat
     //printf("%i \n ",udpReadLeft);

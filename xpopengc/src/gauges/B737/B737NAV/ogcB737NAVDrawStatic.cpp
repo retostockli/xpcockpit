@@ -206,7 +206,7 @@ namespace OpenGC
       m_pFontManager->Print( m_PhysicalSize.x*0.210, m_PhysicalSize.y*0.957 , buffer, m_Font );
 
       /* plot wind speed and direction and draw wind arrow */
-      if ((*wind_direction_mag != FLT_MISS) && (*wind_speed != FLT_MISS) && (*wind_speed > 1.0)) {
+      if ((*wind_direction_mag != FLT_MISS) && (*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
 	snprintf(buffer, sizeof(buffer), "%03d°", (int) lroundf(*wind_direction_mag));
       } else {
 	snprintf(buffer, sizeof(buffer), "---°");
@@ -214,7 +214,7 @@ namespace OpenGC
       m_pFontManager->Print( m_PhysicalSize.x*0.014, m_PhysicalSize.y*0.919 , buffer, m_Font );
   
       if ((*wind_direction_mag != FLT_MISS) && (heading_map != FLT_MISS) &&
-	  (*wind_speed != FLT_MISS) && (*wind_speed > 1.0)) {
+	  (*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
 	glPushMatrix();
 	glTranslatef(m_PhysicalSize.x*0.055, m_PhysicalSize.y*0.878, 0);
 	glRotatef(180.0 - (*wind_direction_mag - *track_mag),0,0,1);
@@ -232,7 +232,7 @@ namespace OpenGC
       }
 
       m_pFontManager->Print( m_PhysicalSize.x*0.090, m_PhysicalSize.y*0.919 , " /", m_Font );
-      if ((*wind_speed != FLT_MISS) && (*wind_speed > 1.0)) {
+      if ((*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
 	snprintf(buffer, sizeof(buffer), "%d", (int) *wind_speed);
       } else {
 	snprintf(buffer, sizeof(buffer), "---");
