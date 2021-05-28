@@ -266,7 +266,7 @@ int setbuffer_usb(int number, int bufferSize)
 /* or set path to "" to open any device with given product / vendor # combination */
 /* please supply Product name as first argument to perform a suitable matching */
 int check_usb (const char *name, int number, uint16_t vendor, uint16_t product,
-	       uint8_t bus, uint8_t address, const char *path)
+	       uint8_t bus, uint8_t address, const char *path, const char *serial)
 {
   int result = 0;
   int ret;
@@ -275,7 +275,7 @@ int check_usb (const char *name, int number, uint16_t vendor, uint16_t product,
 #define MAX_STR 255
   hid_device *handle;
   wchar_t wstr[MAX_STR];
-  char str[MAX_STR];
+  char str[10*MAX_STR];
 
   // Open the device using the VID, PID,
   // and optionally, if available by the Device Path
@@ -284,7 +284,12 @@ int check_usb (const char *name, int number, uint16_t vendor, uint16_t product,
   // address the correct one
 
    if (strcmp(path,"") == 0) {
-     handle = hid_open(vendor,product, NULL);
+     if (strcmp(serial,"") == 0) {
+       handle = hid_open(vendor,product, NULL);
+     } else {
+       swprintf(wstr,MAX_STR,L"%hs",serial);
+       handle = hid_open(vendor,product, wstr);
+     }
    } else {
      handle = hid_open_path(path);
    }

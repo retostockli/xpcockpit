@@ -82,6 +82,7 @@ int read_ini(char* programPath, char* iniName)
 
   /* default IOCard values (not connected) */
   char default_name[] = "none";
+  char default_serial[] = "";
   uint16_t default_vendor = 0xFFFF;
   uint16_t default_product = 0xFFFF;
   uint8_t default_bus = 0xFF;
@@ -172,6 +173,9 @@ int read_ini(char* programPath, char* iniName)
       sprintf(sdevice,"iocard:device%i:Path",device);
       strcpy(iocard[device].path,iniparser_getstring(ini,sdevice, default_path));
       memset(sdevice,0,sizeof(sdevice));
+      sprintf(sdevice,"iocard:device%i:Serial",device);
+      strcpy(iocard[device].serial,iniparser_getstring(ini,sdevice, default_serial));
+      memset(sdevice,0,sizeof(sdevice));
       sprintf(sdevice,"iocard:device%i:Ncards",device);
       iocard[device].ncards = iniparser_getint(ini,sdevice, default_ncards);
       memset(sdevice,0,sizeof(sdevice));
@@ -202,6 +206,7 @@ int read_ini(char* programPath, char* iniName)
 	printf("Name %s \n",iocard[device].name);
 	printf("Vendor ID %i Product ID %i \n",iocard[device].vendor,iocard[device].product);
 	//	printf("USB Bus %i USB Address %i \n",iocard[device].bus,iocard[device].address);
+	printf("Serial No. %s \n",iocard[device].serial);
 	printf("USB Path %s \n",iocard[device].path);
 	printf("\n");
       }
@@ -2356,7 +2361,8 @@ int initialize_iocards(void)
       }
 	
       ret = check_usb(iocard[device].name,device,iocard[device].vendor,iocard[device].product,
-		      iocard[device].bus, iocard[device].address, iocard[device].path);
+		      iocard[device].bus, iocard[device].address,
+		      iocard[device].path, iocard[device].serial);
 
       if (ret<0) {
 	result = ret;

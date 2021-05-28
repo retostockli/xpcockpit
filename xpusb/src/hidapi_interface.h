@@ -42,6 +42,6 @@ int init_usb(void);
 void exit_usb(void);
 int setbuffer_usb(int number, int bufferSize);
 int check_usb(const char *name, int number, uint16_t vendor, uint16_t product,
-	      uint8_t bus, uint8_t address, const char *path);
+	      uint8_t bus, uint8_t address, const char *path, const char *serial);
 int write_usb(int number, unsigned char *bytes, int size);
 int read_usb(int number, unsigned char *bytes, int size);

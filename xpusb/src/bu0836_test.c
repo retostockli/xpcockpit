@@ -32,7 +32,8 @@ void bu0836_test(void)
 {
 
   int ret = 0;
-  int device = 5;
+  //  int device = 5;
+  int device = 3;
   int card = 0;
   int axis    ;
   int input    ;
