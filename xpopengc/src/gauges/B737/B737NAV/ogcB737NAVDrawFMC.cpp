@@ -417,8 +417,9 @@ namespace OpenGC
 		  wpt[i].alt = fmc_alt[i];
 		  wpt[i].dist = fmc_dist[i];
 		  wpt[i].eta = fmc_eta[i];
-		  wpt[i].af_beg = fmc_af_beg[i];
-		  wpt[i].af_end = fmc_af_end[i];
+		  /* creates segfault from time to time */
+		  //wpt[i].af_beg = fmc_af_beg[i];
+		  //wpt[i].af_end = fmc_af_end[i];
 		  wpt[i].radii_ctr_lon = fmc_radii_ctr_lon[i];
 		  wpt[i].radii_ctr_lat = fmc_radii_ctr_lat[i];
 		  wpt[i].radii_lon = fmc_radii_lon[i];
@@ -891,7 +892,7 @@ namespace OpenGC
 	      glColor3ub(COLOR_WHITE);
 	      int hour=wpt[wpt_current].eta;
 	      float minute=(wpt[wpt_current].eta - (float) hour)*60.0;
-	      snprintf( buffer, sizeof(buffer), "%02d%2.1fz", hour, minute );
+	      snprintf( buffer, sizeof(buffer), "%02d%04.1f z", hour, minute );
 	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
 	      
 	      lon = (double) wpt[wpt_current].lon;
