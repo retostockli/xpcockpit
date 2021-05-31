@@ -122,7 +122,6 @@ namespace OpenGC
       if(fabs(ias_flt)>=100.0)
 	{
 	  // 100's
-	  //_itoa( ias_int / 100, buffer, 10);
 	  snprintf(buffer, sizeof(buffer), "%i", abs(ias_int)/100);
 	  m_pFontManager->Print(2.0, texty, &buffer[0], m_Font);
 	  ias_int = ias_int-100*(int)(ias_int/100);
@@ -131,7 +130,6 @@ namespace OpenGC
       if(fabs(ias_flt)>10.0)
 	{
 	  // 10's
-	  //_itoa( ias_int / 10, buffer, 10);
 	  snprintf(buffer, sizeof(buffer), "%i", abs(ias_int)/10);
 	  m_pFontManager->Print(6.5, texty, &buffer[0], m_Font);
 	  ias_int = ias_int-10*(int)(ias_int/10);
@@ -150,23 +148,18 @@ namespace OpenGC
       glTranslated(0, -1*(fabs(ias_flt) - (int)fabs(ias_flt))*fontHeight, 0);
   
       // Display all of the digits
-      //_itoa( five_one, buffer, 10);
       snprintf(buffer, sizeof(buffer), "%i", five_one);
       m_pFontManager->Print(11.0, texty+fontHeight*2+fontHeight/5, &buffer[0], m_Font);
 
-      // _itoa( four_one, buffer, 10);
       snprintf(buffer, sizeof(buffer), "%i", four_one);
       m_pFontManager->Print(11.0, texty+fontHeight+fontHeight/10, &buffer[0], m_Font);
 
-      //_itoa( three_one, buffer, 10);
       snprintf(buffer, sizeof(buffer), "%i", three_one);
       m_pFontManager->Print(11.0, texty, &buffer[0], m_Font);
 
-      //_itoa( two_one, buffer, 10);
       snprintf(buffer, sizeof(buffer), "%i", two_one);
       m_pFontManager->Print(11.0, texty-fontHeight-fontHeight/10, &buffer[0], m_Font);
 
-      //_itoa( one_one, buffer, 10);
       snprintf(buffer, sizeof(buffer), "%i", one_one);
       m_pFontManager->Print(11.0, texty-fontHeight*2-fontHeight/5, &buffer[0], m_Font);
 

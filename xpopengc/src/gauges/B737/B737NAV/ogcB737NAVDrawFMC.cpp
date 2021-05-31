@@ -319,6 +319,8 @@ namespace OpenGC
 	float yPosC;
 	float xPosT;
 	float yPosT;
+	float xPosL;
+	float yPosL;
 
 	// define overall symbol size (for DME, FIX, VOR, APT etc.)
 	// this scale gives the radius of the symbol in physical units
@@ -503,7 +505,7 @@ namespace OpenGC
 	    
 	    
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
-	    //for (int i=4;i<5;i++) {
+	    //for (int i=12;i<nwpt;i++) {
 
 	      int im1 = max(i-1,0);
 
@@ -512,12 +514,23 @@ namespace OpenGC
 		  (wpt[i].lon != FLT_MISS) && (wpt[i].lat != FLT_MISS)) {
 
 		
-		// convert to azimuthal equidistant coordinates with acf in center
+		/* convert all lonlat to azimuthal equidistant coordinates with acf in center */
+
+		/* Start of Leg */
 		lon = (double) wpt[im1].lon;
 		lat = (double) wpt[im1].lat;
 		lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		yPos = -northing / 1852.0 / mapRange * map_size; 
+		xPos = easting / 1852.0  / mapRange * map_size;
 
-		/* end of leg may also be start of next radii arc */
+		/* End of Leg: Label Position */
+		lon2 = (double) wpt[i].lon;
+		lat2 = (double) wpt[i].lat;
+		lonlat2gnomonic(&lon2, &lat2, &easting2, &northing2, &MapCenterLon, &MapCenterLat);
+		yPosL = -northing2 / 1852.0 / mapRange * map_size; 
+		xPosL = easting2 / 1852.0  / mapRange * map_size;
+		
+		/* End of leg may also be start of next radii arc except for last wpt */
 		if ((wpt[i].radii_ctr_lon != 0.0) &&
 		    (wpt[i].radii_ctr_lat != 0.0) &&
 		    (wpt[i].radii_lon != 0.0) &&
@@ -527,24 +540,14 @@ namespace OpenGC
 		    (wpt[i].radii_ctr_lat != FLT_MISS) &&
 		    (wpt[i].radii_lon != FLT_MISS) &&
 		    (wpt[i].radii_lat != FLT_MISS) &&
-		    (wpt[i].radii_radius != FLT_MISS)) {
+		    (wpt[i].radii_radius != FLT_MISS) &&
+		    i < (nwpt-1)) {
 		  lon2 = (double) wpt[i].radii_lon;
 		  lat2 = (double) wpt[i].radii_lat;
-		} else {
-		  lon2 = (double) wpt[i].lon;
-		  lat2 = (double) wpt[i].lat;
 		}
 		lonlat2gnomonic(&lon2, &lat2, &easting2, &northing2, &MapCenterLon, &MapCenterLat);
-	      
-		// Compute physical position relative to acf center on screen
-		yPos = -northing / 1852.0 / mapRange * map_size; 
-		xPos = easting / 1852.0  / mapRange * map_size;
 		yPos2 = -northing2 / 1852.0 / mapRange * map_size; 
 		xPos2 = easting2 / 1852.0  / mapRange * map_size;
-
-		/* Label Position */
-		float xPosL = xPos2;
-		float yPosL = yPos2;
 
 		// Only draw the waypoint if it's visible within the rendering area
 		//if (( sqrt(xPos*xPos + yPos*yPos) < map_size) ||
@@ -705,18 +708,21 @@ namespace OpenGC
 		    /* right turn */
 		    end_angle += arc_angle;
 		  }
-		  if (end_angle >= 360.0) end_angle -= 360.0;
-		  if (end_angle < 0.0) end_angle += 360.0;
+		  //if (end_angle >= 360.0) end_angle -= 360.0;
+		  //if (end_angle < 0.0) end_angle += 360.0;
 		  
 		  // draw curved leg (partial circle)
 		  aCircle.SetDegreesPerPoint(2);
 		  //if (((wpt[im1].turn == 2) && (end_angle > start_angle)) ||
 		  //    ((wpt[im1].turn == 3) && (end_angle < start_angle))) {
-		  if ((abs(end_angle-start_angle) > 1.1*arc_angle) ||
-		      (end_angle < start_angle)) {
+		  //		  if ((abs(end_angle-start_angle) > 1.1*arc_angle) ||
+		  //     (end_angle < start_angle)) {
 		    /* turn over 0/360: reverse angle order to choose shorter arc */
+		  if (wpt[im1].turn == 2) {
+		    /* left turn */
 		    aCircle.SetArcStartEnd(end_angle,start_angle);
 		  } else {
+		    /* right turn */
 		    aCircle.SetArcStartEnd(start_angle,end_angle);
 		  }
 		  aCircle.SetRadius(wpt[im1].radii_radius / mapRange * map_size);
@@ -726,13 +732,14 @@ namespace OpenGC
 		  glEnd();
 
 		  /*
-		  printf("%f %f %f / %f %f %f \n",start_angle, end_angle, arc_angle, old_course,new_course,tangent_course);		  
-		  printf("RADII ARC: %i %s %i / %f %f %f / %f %f \n",i,wpt[i].name,wpt[im1].turn,
-			 wpt[im1].radii_ctr_lon,wpt[im1].lon,wpt[im1].radii_lon,
-			 wpt[im1].brg*180./3.14,wpt[i].brg*180./3.14);
-		  */
+		  printf("%f %f %f / %f %f %f \n",start_angle, end_angle, arc_angle, old_course,new_course,tangent_course);
+
 		  
-		  /*
+		  printf("RADII ARC: %i %s %i / %f %f %f / %f %f \n",i,wpt[i].name,wpt[im1].turn,
+		  	 wpt[im1].radii_ctr_lon,wpt[im1].lon,wpt[im1].radii_lon,
+		  	 wpt[im1].brg*180./3.14,wpt[i].brg*180./3.14);
+		  */
+	       /*
 		  glPushMatrix();
 		  glColor3ub(COLOR_BLUE);
 		  glPointSize(8.0);
@@ -797,11 +804,14 @@ namespace OpenGC
 		  aCircle.SetDegreesPerPoint(2);
 		  //if (((wpt[i].rad_turn == 2) && (end_angle > start_angle)) ||
 		  //    ((wpt[i].rad_turn == 3) && (end_angle < start_angle))) {
-		  if ((abs(end_angle-start_angle) > 1.1*arc_angle) ||
-		      (end_angle < start_angle)) {
+		  //if ((abs(end_angle-start_angle) > 1.1*arc_angle) ||
+		  //    (end_angle < start_angle)) {
 		    /* turn over 0/360: reverse angle order to choose shorter arc */
+		  if (wpt[i].rad_turn == 2) {
+		    /* left turn */
 		    aCircle.SetArcStartEnd(end_angle,start_angle);
 		  } else {
+		    /* right turn */
 		    aCircle.SetArcStartEnd(start_angle,end_angle);
 		  }
 		  aCircle.SetRadius(wpt[i].radius / mapRange * map_size);
@@ -810,11 +820,11 @@ namespace OpenGC
 		  aCircle.Evaluate();
 		  glEnd();
 
-		  /*
+		  
 		  printf("RAD ARC: %i %s %s %i / %f %f / %f %f %f \n",i,wpt[im1].name,wpt[i].name,
 			 wpt[i].rad_turn, wpt[i].rad_lon,wpt[i].rad_lat,start_angle,end_angle,
 			 arc_angle);
-		  */
+		  
 		 
 		  glPushMatrix();
 		  glColor3ub(COLOR_YELLOW);
@@ -860,13 +870,13 @@ namespace OpenGC
 		glVertex2f(-0.15*ss, 0.15*ss);
 		glVertex2f( 0.0, 1.0*ss);
 		glEnd();
-
+		
 		if (strcmp(wpt[i].name,"DISCONTINUITY") != 0) {
 		  m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
 		  m_pFontManager->Print(4,-6, wpt[i].name, m_Font);
 		  if (wpt[i].alt > 0) {
-		    if (wpt[i].alt >= 10000) {
-		      snprintf( buffer, sizeof(buffer), "FL%i", wpt[i].alt/100 );
+		    if (wpt[i].alt >= 8000) {
+		      snprintf( buffer, sizeof(buffer), "FL%03i", wpt[i].alt/100 );
 		      m_pFontManager->Print(4,-11, buffer, m_Font);
 		    } else {
 		      snprintf( buffer, sizeof(buffer), "%i", wpt[i].alt );
