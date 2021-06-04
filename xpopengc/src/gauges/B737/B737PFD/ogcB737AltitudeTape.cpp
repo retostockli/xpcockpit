@@ -94,7 +94,7 @@ namespace OpenGC
     if (*pressure_altitude != FLT_MISS) {
 
       int alt = (int) *pressure_altitude;
-
+      
       // Save matrix
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
