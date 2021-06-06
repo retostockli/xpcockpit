@@ -69,9 +69,15 @@ namespace OpenGC
     GaugeComponent::Render();
 
     int acf_type = m_pDataSource->GetAcfType();
+    bool is_captain = (this->GetArg() == 0);
 
     // Get the barometric altitude (feet)
-    float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+    float *pressure_altitude;
+    if (is_captain) {
+      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+    } else {
+      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind_copilot",0);
+    }
 
     // Runway Altitude
     float *rwy_altitude;
@@ -91,6 +97,11 @@ namespace OpenGC
       ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0); 
     }
     
+    int *alt_disagree;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      alt_disagree = link_dataref_int("laminar/B738/autopilot/alt_disagree");
+    }
+
     if (*pressure_altitude != FLT_MISS) {
 
       int alt = (int) *pressure_altitude;
@@ -120,7 +131,7 @@ namespace OpenGC
       float fontWidth = 3.5;
       float fontIndent = 4.5;
 
-      m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
+      m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
 
       char buffer[10];
       memset(buffer,0,sizeof(buffer));
@@ -414,6 +425,17 @@ namespace OpenGC
 	}
       } 
       */
+
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if (*alt_disagree == 1) {
+	  glColor3ub(COLOR_ORANGE);
+	  m_pFontManager->SetSize(m_Font, 0.95*fontWidth, fontHeight);
+	  snprintf(buffer, sizeof(buffer), "ALT");
+	  m_pFontManager->Print(0.0,2.5*fontHeight, &buffer[0], m_Font);
+	  snprintf(buffer, sizeof(buffer), "DISAGREE");
+	  m_pFontManager->Print(0.0,1.0*fontHeight, &buffer[0], m_Font);
+	}
+      }
       
       glPopMatrix();
 

@@ -72,12 +72,23 @@ namespace OpenGC
     GaugeComponent::Render();
 
     int acf_type = m_pDataSource->GetAcfType();
-    
+    bool is_captain = (this->GetArg() == 0);
+   
     // indicated air speed (knots)
-    float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
+    float *speed_knots;
+    if (is_captain) {
+      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
+    } else {
+      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed2",-1);
+    }
 
     // change of airspeed (knots / second)
-    float *speed_acceleration = link_dataref_flt("sim/cockpit2/gauges/indicators/airspeed_acceleration_kts_sec_pilot",-1);
+    float *speed_acceleration;
+    if (is_captain) {
+      speed_acceleration = link_dataref_flt("sim/cockpit2/gauges/indicators/airspeed_acceleration_kts_sec_pilot",-1);
+    } else {
+      speed_acceleration = link_dataref_flt("sim/cockpit2/gauges/indicators/airspeed_acceleration_kts_sec_copilot",-1);
+    }
     
     // Autopilot speed (knots)
     float *ap_speed;
@@ -89,11 +100,8 @@ namespace OpenGC
       ap_speed = link_dataref_flt("sim/cockpit/autopilot/airspeed",0);
       ap_speed_is_mach = link_dataref_int("sim/cockpit/autopilot/airspeed_is_mach");
     }
-
+    
     // minimum and maximum speeds
-    float *vfe;
-    float *vle;
-    float *vne;
     float *min_speed;
     float *min_speed_show;
     float *max_speed;
@@ -138,14 +146,7 @@ namespace OpenGC
       flap_show_5 = link_dataref_int("laminar/B738/pfd/flaps_5_show");
       flap_show_10 = link_dataref_int("laminar/B738/pfd/flaps_10_show");
       flap_show_15 = link_dataref_int("laminar/B738/pfd/flaps_15_show");
-      flap_show_25 = link_dataref_int("laminar/B738/pfd/flaps_25_show");
-      
-    } else {
-      //    float *vs = link_dataref_flt("sim/aircraft/view/acf_Vs",0);
-      vfe = link_dataref_flt("sim/aircraft/view/acf_Vfe",0);
-      vle = link_dataref_flt("sim/aircraft/overflow/acf_Vle",0);
-      //    float *vno = link_dataref_flt("sim/aircraft/view/acf_Vno",0);
-      vne = link_dataref_flt("sim/aircraft/view/acf_Vne",0);
+      flap_show_25 = link_dataref_int("laminar/B738/pfd/flaps_25_show");      
     }
     
     // other speeds (only currently for x737)
@@ -181,12 +182,7 @@ namespace OpenGC
       vr = link_dataref_flt("xpserver/vr",0);
       vref = link_dataref_flt("xpserver/vref",0);
     }
-      
-    int *gear_handle = link_dataref_int("sim/cockpit2/controls/gear_handle_down");
-    float *flap_ratio = link_dataref_flt("sim/flightmodel/controls/flaprat",-2);
-    
-    //printf("%f %f %f %f \n",*v1,*v2,*vr,*vref);
-    
+          
     if (*speed_knots != FLT_MISS) {
 
       // Speed for integer calculations
@@ -663,7 +659,7 @@ namespace OpenGC
       }
       
     }
-
+      
     glPopMatrix();
   }
   

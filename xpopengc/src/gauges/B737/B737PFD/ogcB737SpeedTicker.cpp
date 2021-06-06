@@ -67,6 +67,8 @@ namespace OpenGC
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
 
+    bool is_captain = (this->GetArg() == 0);
+
     // Draw black background
     glColor3ub(COLOR_BLACK);
     // Rectangular part
@@ -92,8 +94,13 @@ namespace OpenGC
     glEnd();
 
     // indicated air speed (knots)
-    float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
-
+    float *speed_knots;
+    if (is_captain) {
+      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
+    } else {
+      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed2",-1);
+    }
+    
     if (*speed_knots != FLT_MISS) {
 
       float vtrans;
@@ -166,7 +173,7 @@ namespace OpenGC
 	  // Figure vertical translation factor for the tens place based on 1s position
 	  vtrans = -max(ias1 - 9.0,0.0)/1.0 * 2.0 * fontHeight;
 
-	  printf("%i %i %i %i %f \n",ias_int,ten,tenup,tendown,vtrans);
+	  //printf("%i %i %i %i %f \n",ias_int,ten,tenup,tendown,vtrans);
 	  
 	  snprintf(buffer, sizeof(buffer), "%i", ten);
 	  m_pFontManager->Print(6.5, texty + vtrans, &buffer[0], m_Font);
