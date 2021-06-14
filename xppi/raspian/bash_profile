@@ -1,11 +1,14 @@
 #!/bin/sh
 
+if [ -f ~/.bashrc ]; then
+  . ~/.bashrc
+fi
+
 if [[ -z $DISPLAY && $XDG_VTNR -eq 1 ]]
 then
-#  echo "BLA"
-  exec startx -- -nocursor xterm
-#  cd ~/xpcockpit/xppi/src
-#  ./xppi boeing737fmc1 &
-#  cd ~/xpcockpit/xpopengc/src/main
-#  startx ./xpopengc boeing737fmc1 -- -nocursor
+  sleep 10s
+  systemctl --user start xppi
+  systemctl --user start xpopengc
 fi
+
+

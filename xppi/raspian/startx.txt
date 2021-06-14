@@ -1,2 +1,0 @@
-Add user to tty group:
-sudo gpasswd -a stockli tty

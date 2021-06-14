@@ -31,6 +31,20 @@
 #define min(A,B) ((A)<(B) ? (A) : (B))
 
 
+/* Yoke Buttons
+   0: Stab Trim down
+   1: Stab Trim up
+   2: INT MIC
+   3: MIC
+   4: AP Disconnect
+   5:
+   6: HAT Up
+   7: HAT Down
+   8: HAT Left
+   9: HAT Right
+   10: HAT Pushbutton
+*/
+
 
 void b737_yokerudder(void)
 {
