@@ -2049,7 +2049,7 @@ int receive_bu0836(void)
 	  for (button=0;button<nbutton;button++) {
 	    if (!strcmp(iocard[device].name,device_name1)) {
 	      // BU0836X Interface: a byte between axes and buttons (maybe it is the # of bytes to reach max 8 inputs) 
-	      byte = 2*iocard[device].naxes + 1 + button/8;
+	      byte = 2*iocard[device].naxes + button/8;
 	    } else {
 	      // BU0836A Interface
 	      byte = 2*iocard[device].naxes + button/8;
@@ -2286,8 +2286,7 @@ int initialize_bu0836(int device)
     result = setbuffer_usb(device,buffersize);
 
     iocard[device].ncards = 1;
-    iocard[device].naxes = 7; // Be Careful here: We might need to be prepared to have
-    // a variable number of axes depending on BU0836 configuration.
+    // iocard[device].naxes = 2; // given in ini file
     iocard[device].noutputs = 0;
     iocard[device].ninputs = 32;
     iocard[device].nservos = 0;
@@ -2295,8 +2294,8 @@ int initialize_bu0836(int device)
     iocard[device].ndisplays = 0;
     iocard[device].nbits = 12;
 
-    if (verbose > 0) printf("LIBIOCARDS: Initialized BU0836X/A Interface (device %i) \n",
-			    device );
+    if (verbose > 0) printf("LIBIOCARDS: Initialized BU0836X/A Interface (device %i) with %i axes \n",
+			    device, iocard[device].naxes);
 
     result = 1;
 
