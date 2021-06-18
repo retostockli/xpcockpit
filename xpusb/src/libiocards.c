@@ -2048,8 +2048,14 @@ int receive_bu0836(void)
 	  }
 	  for (button=0;button<nbutton;button++) {
 	    if (!strcmp(iocard[device].name,device_name1)) {
-	      // BU0836X Interface: a byte between axes and buttons (maybe it is the # of bytes to reach max 8 inputs) 
-	      byte = 2*iocard[device].naxes + button/8;
+	      // BU0836X Interface: a byte between axes and buttons (maybe it is the # of bytes to reach max 8 inputs)
+	      if (iocard[device].naxes%2 == 0) {
+		/* even number of axes */
+		byte = 2*iocard[device].naxes + button/8;
+	      } else {
+		/* odd number of axes */
+		byte = 2*iocard[device].naxes + 1 + button/8;
+	      }
 	    } else {
 	      // BU0836A Interface
 	      byte = 2*iocard[device].naxes + button/8;
