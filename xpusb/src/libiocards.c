@@ -2047,17 +2047,11 @@ int receive_bu0836(void)
 	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i Value %i \n",device,axis,iocard[device].axes[axis]);
 	  }
 	  for (button=0;button<nbutton;button++) {
-	    if (!strcmp(iocard[device].name,device_name1)) {
-	      // BU0836X Interface: a byte between axes and buttons (maybe it is the # of bytes to reach max 8 inputs)
-	      if (iocard[device].naxes%2 == 0) {
-		/* even number of axes */
-		byte = 2*iocard[device].naxes + button/8;
-	      } else {
-		/* odd number of axes */
-		byte = 2*iocard[device].naxes + 1 + button/8;
-	      }
+	    if (strcmp(iocard[device].serial,"B37271")==0) {
+	      /* BU0836X card in my CFY TQ */
+	      byte = 2*iocard[device].naxes + 1 + button/8;
 	    } else {
-	      // BU0836A Interface
+	      /* All other BU0836X/A */
 	      byte = 2*iocard[device].naxes + button/8;
 	    }
 	    bit = button - (button/8)*8;
