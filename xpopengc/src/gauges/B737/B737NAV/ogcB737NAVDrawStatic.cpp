@@ -91,9 +91,14 @@ namespace OpenGC
      
     // What's the heading?
     //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
-    //float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
-    float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
-
+    float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *track_mag;
+    if (is_captain) {
+      track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
+    } else {
+      track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
+    }
+    
     /* link x-plane datarefs needed for NAV display */
     float *ground_speed = link_dataref_flt("sim/flightmodel/position/groundspeed",0);
     float *air_speed = link_dataref_flt("sim/flightmodel/position/true_airspeed",0);
@@ -138,7 +143,7 @@ namespace OpenGC
     float *adf1_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf1_dme_distance_nm",-1);
     float *adf2_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_dme_distance_nm",-1);
 
-    if (*track_mag != FLT_MISS) {
+    if ((*track_mag != FLT_MISS) && (*heading_mag != FLT_MISS)) {
       
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -217,7 +222,7 @@ namespace OpenGC
 	  (*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
 	glPushMatrix();
 	glTranslatef(m_PhysicalSize.x*0.055, m_PhysicalSize.y*0.878, 0);
-	glRotatef(180.0 - (*wind_direction_mag - *track_mag),0,0,1);
+	glRotatef(180.0 - (*wind_direction_mag - *heading_mag),0,0,1);
 	glLineWidth( lineWidth );
 	glBegin(GL_LINE_STRIP);
 	glVertex2f( m_PhysicalSize.x*0.0, -m_PhysicalSize.y*0.035);

@@ -50,6 +50,9 @@ namespace OpenGC
   {
     GaugeComponent::Render();
 
+    bool is_captain = (this->GetArg() == 0);
+    bool is_copilot = (this->GetArg() == 1);
+
     int mapMode = m_NAVGauge->GetMapMode();
  
     if (mapMode != 3) {
@@ -92,7 +95,13 @@ namespace OpenGC
       float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
       //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
       float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
-      float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
+
+      float *track_mag;
+      if (is_captain) {
+	track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
+      } else {
+	track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
+      }
       
       int *efis1_selector_pilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
       //  int *efis1_selector_copilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
@@ -145,7 +154,8 @@ namespace OpenGC
     
 	// Shift center and rotate about heading
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-	glRotatef(*track_mag, 0, 0, 1);
+	//glRotatef(*track_mag, 0, 0, 1);
+	glRotatef(*heading_mag, 0, 0, 1);
 
 	// plot ADF / VOR 1/2 heading arrows
 	// TODO: extend to co-pilot EFIS selector
@@ -393,7 +403,8 @@ namespace OpenGC
 	  glColor3ub(COLOR_WHITE);
 	  glPushMatrix();
 	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	  glRotatef(*track_mag,0,0,1);
+	  //	  glRotatef(*track_mag,0,0,1);
+	  glRotatef(*heading_mag,0,0,1);
 	  for ( int i=0; i<=71; i++ ) {
 	    float ticklen;
 	    if ( i % 2 == 0 ) {
