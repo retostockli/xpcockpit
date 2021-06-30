@@ -1,0 +1,57 @@
+Inputs to BU0836X Box
+
+INPUT 1
+
+9 Pin DSUB, 6 Wires
+1 white		GND
+3 rose		5V
+2 green		Brake 1 Left
+5 yellow	Brake 1 Right
+8 brown		Yaw
+gray		NC
+
+INPUT 2
+
+9 Pin DSUB, 6 Wires
+1 white		GND
+3 rose		5V
+2 green		Brake 2 Left
+5 yellow	Brake 2 Right
+8 brown		NC
+gray		NC
+
+INPUT 3
+
+9 Pin DSUB, 6 Wires
+1 white		GND
+3 rose		5V
+2 green		Pitch
+5 yellow	Roll
+8 brown		NC
+gray		NC
+
+INPUT 4
+
+9 Pin DSUB, 3 Wires
+1 white		GND
+3 brown		5V
+2 green		Captain Nose Wheel Tiller
+5 green		OPTIONAL: Copilot Nose Wheel Tiller
+
+BUTTON 1 and 2
+1 rose
+2 gray
+3 green
+4 yellow
+5 brown
+6 violet
+7 blue
+8 red
+9 red/blue
+10 green/white
+11 rose/gray
+12 brown/green
+13 brown/yellow
+14 yellow/white
+15 black
+
