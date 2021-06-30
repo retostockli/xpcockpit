@@ -202,10 +202,10 @@ void b737_pedestal(void)
   int *vhf1 = link_dataref_cmd_once("BetterPushback/start");
   int *vhf2 = link_dataref_cmd_once("BetterPushback/stop");
   int *vhf3 = link_dataref_cmd_once("BetterPushback/disconnect");
+  int *hf1 = link_dataref_cmd_once("BetterPushback/connect_first");
+  int *hf2 = link_dataref_cmd_once("BetterPushback/cab_camera");
   
   /* unimplemented datarefs (not available in X-Plane and not in x737) */
-  int *hf1 = link_dataref_int("xpserver/selcal/hf1");
-  int *hf2 = link_dataref_int("xpserver/selcal/hf2");
   int *wxsel = link_dataref_int("xpserver/wxradar/sel");
   int *cargofire_fwd_select = link_dataref_int("xpserver/cargofire_fwd_select");
   int *cargofire_fwd_armed = link_dataref_int("xpserver/cargofire_fwd_armed");
@@ -339,18 +339,14 @@ void b737_pedestal(void)
   }
 
   /* SELCAL */
-  ret = digital_input(device,card,56,hf2,0);
+  ret = digital_input(device,card,56,hf2,2);
   if (ret == 1) {
     printf("SELCAL HF2 button: %i \n",*hf2);
-  }
-  if ((acf_type == 2) || (acf_type == 3)) {
-  }
-  
-  ret = digital_input(device,card,57,hf1,0);
+  }  
+  ret = digital_input(device,card,57,hf1,2);
   if (ret == 1) {
     printf("SELCAL HF1 button: %i \n",*hf1);
   }
-
   ret = digital_input(device,card,58,vhf3,2);
   if (ret == 1) {
     printf("SELCAL VHF3 button: %i \n",*vhf3);
