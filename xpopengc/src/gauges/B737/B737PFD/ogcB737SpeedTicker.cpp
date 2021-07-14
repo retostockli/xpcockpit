@@ -67,6 +67,8 @@ namespace OpenGC
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
 
+    bool is_captain = (this->GetArg() == 0);
+
     // Draw black background
     glColor3ub(COLOR_BLACK);
     // Rectangular part
@@ -92,16 +94,30 @@ namespace OpenGC
     glEnd();
 
     // indicated air speed (knots)
-    float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
-
+    float *speed_knots;
+    if (is_captain) {
+      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
+    } else {
+      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed2",-1);
+    }
+    
     if (*speed_knots != FLT_MISS) {
 
+      float vtrans;
       char buffer[12];
       memset(buffer,0,sizeof(buffer));
 
       // Speed for integer calculations
       int ias_int = (int) *speed_knots;
       float ias_flt = *speed_knots;
+
+      float ias1 = ias_flt;  // IAS last digit and floating point
+      if (fabs(ias1)>=100.0) {
+	ias1 = ias1 - (float) (100*(int)(ias1/100.0));
+      }
+      if (fabs(ias1)>=10.0) {
+	ias1 = ias1 - (float) (10*(int)(ias1/10.0)); 
+      }
 
       // The speed ticker doesn't display speeds < 30
       /*  if(ias_flt<30.0)
@@ -122,18 +138,52 @@ namespace OpenGC
       if(fabs(ias_flt)>=100.0)
 	{
 	  // 100's
-	  //_itoa( ias_int / 100, buffer, 10);
-	  snprintf(buffer, sizeof(buffer), "%i", abs(ias_int)/100);
-	  m_pFontManager->Print(2.0, texty, &buffer[0], m_Font);
+	  int hundred = abs(ias_int)/100;
+	  int hundredup;
+	  int hundreddown;
+	  hundredup = (hundred+1)%10;
+	  hundreddown = (hundred-1+10)%10;
+	  // Figure vertical translation factor for the hundreds place based on 1s position
+	  if ((ias_int-100*(int)(ias_int/100)) > 90) {
+	    vtrans = -max(ias1 - 9.0,0.0)/1.0 * 2.0 * fontHeight;
+	  } else {
+	    vtrans = 0.0;
+	  }
+	    
+	  snprintf(buffer, sizeof(buffer), "%i", hundred);
+	  m_pFontManager->Print(2.0, texty + vtrans, &buffer[0], m_Font);
+
+	  snprintf(buffer, sizeof(buffer), "%i", hundredup);
+	  m_pFontManager->Print(2.0, texty + vtrans + fontHeight + fontHeight, &buffer[0], m_Font);
+
+	  snprintf(buffer, sizeof(buffer), "%i", hundreddown);
+	  m_pFontManager->Print(2.0, texty + vtrans - fontHeight - fontHeight, &buffer[0], m_Font);
+	  
 	  ias_int = ias_int-100*(int)(ias_int/100);
 	}
 
       if(fabs(ias_flt)>10.0)
 	{
 	  // 10's
-	  //_itoa( ias_int / 10, buffer, 10);
-	  snprintf(buffer, sizeof(buffer), "%i", abs(ias_int)/10);
-	  m_pFontManager->Print(6.5, texty, &buffer[0], m_Font);
+	  int ten = abs(ias_int)/10;
+	  int tenup;
+	  int tendown;
+	  tenup = (ten+1)%10;
+	  tendown = (ten-1+10)%10;
+	  // Figure vertical translation factor for the tens place based on 1s position
+	  vtrans = -max(ias1 - 9.0,0.0)/1.0 * 2.0 * fontHeight;
+
+	  //printf("%i %i %i %i %f \n",ias_int,ten,tenup,tendown,vtrans);
+	  
+	  snprintf(buffer, sizeof(buffer), "%i", ten);
+	  m_pFontManager->Print(6.5, texty + vtrans, &buffer[0], m_Font);
+
+	  snprintf(buffer, sizeof(buffer), "%i", tenup);
+	  m_pFontManager->Print(6.5, texty + vtrans + fontHeight + fontHeight, &buffer[0], m_Font);
+
+	  snprintf(buffer, sizeof(buffer), "%i", tendown);
+	  m_pFontManager->Print(6.5, texty + vtrans - fontHeight - fontHeight, &buffer[0], m_Font);
+
 	  ias_int = ias_int-10*(int)(ias_int/10);
 	}
  
@@ -150,26 +200,23 @@ namespace OpenGC
       glTranslated(0, -1*(fabs(ias_flt) - (int)fabs(ias_flt))*fontHeight, 0);
   
       // Display all of the digits
-      //_itoa( five_one, buffer, 10);
       snprintf(buffer, sizeof(buffer), "%i", five_one);
       m_pFontManager->Print(11.0, texty+fontHeight*2+fontHeight/5, &buffer[0], m_Font);
-
-      // _itoa( four_one, buffer, 10);
+      
       snprintf(buffer, sizeof(buffer), "%i", four_one);
       m_pFontManager->Print(11.0, texty+fontHeight+fontHeight/10, &buffer[0], m_Font);
-
-      //_itoa( three_one, buffer, 10);
+      
       snprintf(buffer, sizeof(buffer), "%i", three_one);
       m_pFontManager->Print(11.0, texty, &buffer[0], m_Font);
-
-      //_itoa( two_one, buffer, 10);
-      snprintf(buffer, sizeof(buffer), "%i", two_one);
-      m_pFontManager->Print(11.0, texty-fontHeight-fontHeight/10, &buffer[0], m_Font);
-
-      //_itoa( one_one, buffer, 10);
-      snprintf(buffer, sizeof(buffer), "%i", one_one);
-      m_pFontManager->Print(11.0, texty-fontHeight*2-fontHeight/5, &buffer[0], m_Font);
-
+      
+      if (ias_flt >= 1.0) {
+	snprintf(buffer, sizeof(buffer), "%i", two_one);
+	m_pFontManager->Print(11.0, texty-fontHeight-fontHeight/10, &buffer[0], m_Font);
+	
+	snprintf(buffer, sizeof(buffer), "%i", one_one);
+	m_pFontManager->Print(11.0, texty-fontHeight*2-fontHeight/5, &buffer[0], m_Font);
+      }
+      
     }
   }
 

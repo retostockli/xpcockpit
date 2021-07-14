@@ -5,6 +5,7 @@ char *udpSendBuffer;
 char *udpRecvBuffer;
 int udpSendBufferLen;
 int udpRecvBufferLen;
+int udpReadLeft;                      /* counter of bytes to read from receive thread */
 
 void allocate_udpdata(int sendlen, int recvlen) {
 

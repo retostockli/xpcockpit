@@ -24,10 +24,10 @@ int main(int argc, char* argv[])
     printf("Use Decimal (DEC) numbers for VID/PID in ini files!\n");
     printf("  Vendor id:     HEX: %04hx DEC: %d\n",
 	   cur_dev->vendor_id,cur_dev->vendor_id);
-    printf("  Prouct id:     HEX: %04hx DEC: %d\n",
+    printf("  Product id:     HEX: %04hx DEC: %d\n",
 	   cur_dev->product_id,cur_dev->product_id);
     printf("  Device path:   %s\n",cur_dev->path);
-    //    printf("  Serial_number: %ls\n",cur_dev->serial_number);
+    printf("  Serial_number: %ls\n",cur_dev->serial_number);
     printf("  Manufacturer:  %ls\n", cur_dev->manufacturer_string);
     printf("  Product:       %ls\n", cur_dev->product_string);
     printf("\n");

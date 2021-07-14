@@ -93,6 +93,27 @@ B737NAV::B737NAV()
   pDrawWXR->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawWXR);
 
+  B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
+  pDrawStat->SetParentRenderObject(this);
+  pDrawStat->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawStat->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawStat->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawStat);
+
+  B737NAVDrawFMC* pDrawFMC = new B737NAVDrawFMC();
+  pDrawFMC->SetParentRenderObject(this);
+  pDrawFMC->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawFMC->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawFMC->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawFMC);
+  
+  B737NAVDrawTCAS* pDrawTCAS = new B737NAVDrawTCAS();
+  pDrawTCAS->SetParentRenderObject(this);
+  pDrawTCAS->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawTCAS->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawTCAS->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawTCAS);
+
   B737NAVDrawStatic* pDrawStatic = new B737NAVDrawStatic();
   pDrawStatic->SetParentRenderObject(this);
   pDrawStatic->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -114,26 +135,6 @@ B737NAV::B737NAV()
   pMapPlan->SetNAVGauge(this);
   this->AddGaugeComponent(pMapPlan);
 
-  B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
-  pDrawStat->SetParentRenderObject(this);
-  pDrawStat->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pDrawStat->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pDrawStat->SetNAVGauge(this);
-  this->AddGaugeComponent(pDrawStat);
-
-  B737NAVDrawFMC* pDrawFMC = new B737NAVDrawFMC();
-  pDrawFMC->SetParentRenderObject(this);
-  pDrawFMC->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pDrawFMC->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pDrawFMC->SetNAVGauge(this);
-  this->AddGaugeComponent(pDrawFMC);
-  
-  B737NAVDrawTCAS* pDrawTCAS = new B737NAVDrawTCAS();
-  pDrawTCAS->SetParentRenderObject(this);
-  pDrawTCAS->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pDrawTCAS->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pDrawTCAS->SetNAVGauge(this);
-  this->AddGaugeComponent(pDrawTCAS);
 }
 
 B737NAV::~B737NAV()
@@ -154,16 +155,12 @@ void B737NAV::Render()
     irs_mode = link_dataref_int("xpserver/irs_mode");
     *irs_mode = 2;
   }
-
   
   if (*avionics_on == 1) {
-
-    // First thing to do is call base class setup
-    Gauge::Render();
      
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
-    //float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
     float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
@@ -188,7 +185,8 @@ void B737NAV::Render()
     if (m_MapMode != 3) {
       SetMapCtrLon(*aircraftLon);
       SetMapCtrLat(*aircraftLat);
-      m_MapHeading = *track_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols are on TRACK TRUE
+      //      m_MapHeading = *track_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols are on TRACK TRUE
+      m_MapHeading = *heading_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols are on TRACK TRUE
     } else {
       // set throught DrawFMC gauge component when reading center FMS waypoint
       m_MapHeading = 0.0;
@@ -235,7 +233,7 @@ void B737NAV::Render()
       rangesel = link_dataref_int("sim/cockpit2/EFIS/map_range");
     }
 
-    //   printf("%i \n",*rangesel);
+    //printf("%i \n",*rangesel);
      
     if (*rangesel == 0) {
       m_MapRange = 5.0;
@@ -261,6 +259,9 @@ void B737NAV::Render()
     if ((m_MapCenter) && (m_MapMode != 3)) {
       m_MapRange /= 2;
     }
+
+    // Call base class Render once all the new NAV states have been set
+    Gauge::Render();
 
   } // Display powered?
   

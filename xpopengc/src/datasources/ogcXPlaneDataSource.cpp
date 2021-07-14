@@ -71,7 +71,7 @@ namespace OpenGC
 
 extern FLTKRenderWindow* m_pRenderWindow;
   
-void XPlaneDataSource::define_server(int port, string ip_address, int maxradar)
+void XPlaneDataSource::define_server(int port, string ip_address)
 {
   int n;
 
@@ -80,31 +80,22 @@ void XPlaneDataSource::define_server(int port, string ip_address, int maxradar)
   strncpy(server_ip,ip_address.c_str(),ip_address.length()); 
   server_port = port;
 
-  // UDP Server (native X-Plane UDP server)
   strcpy(udpServerIP,ip_address.c_str());
-  udpServerPort = 49000;
-  m_maxradar = maxradar;
+  // UDP Server Port (OpenGC acts as UDP server for X-Plane Control Pad)
+  udpServerPort = 48003;
 
   /* initialize TCP/IP interface */
   if (initialize_tcpip() < 0) exit(-8);
 
   /* initialize UDP socket if needed for WXR data from X-Plane*/
-  if (m_maxradar > 0 ) {
-    n = (int) log10(m_maxradar) + 1; // number of characters of MAXRADAR
-    
-    int sendlen = 7+n; // RADR plus \0 plus the # of radar returns plus \0
-    int recvlen = 5+13*m_maxradar+1; // RADR plux 13 bytes * # of radar returns plus \0
-    
-    allocate_udpdata(sendlen,recvlen);
-    
-    if (init_udp() < 0) exit(-8);
 
-    /* generate send message */
-    snprintf(udpSendBuffer, sendlen,"RADR %i",m_maxradar);
-    udpSendBuffer[4]='\0';
-    udpSendBuffer[6+n]='\0';
-
-  }
+  /* use control pad xRAD UDP stream */
+  int sendlen = 0; /* no sending */
+  int recvlen = 8100; // 'xRAD' plus '\0' (5 bytes) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0    
+  allocate_udpdata(sendlen,recvlen);
+    
+  if (init_udp_server() < 0) exit(-8);
+  if (init_udp_receive() < 0) exit(-9);
 }
 
 XPlaneDataSource::XPlaneDataSource()
@@ -117,9 +108,6 @@ XPlaneDataSource::XPlaneDataSource()
   
   // initialize with default ACF
   SetAcfType(0);
-
-  // No UDP request sent yet
-  m_sent = false;
 
   verbose = verbosity;
   
@@ -173,30 +161,7 @@ void XPlaneDataSource::OnIdle()
   /* send data to X-Plane via TCP/IP */
   if (send_server()<0) exit(-11);
 
-  /* request WXR data if needed */
-  if (m_maxradar > 0) {
-
-    
-    if (!m_sent) {
-      // request radar only once at start, you will then get the data forever
-      ret = send_udp();
-      printf("Sent Request for WXR Data to X-Plane: %i \n",ret);
-      m_sent = true;
-    }
-   
-    if (m_sent) {
-      ret = recv_udp();
-
-      if (ret > 0) {
-	// READING DONE IN NAV GAUGE
-      } else {
-	//printf("No WXR return %i \n",ret);
-	memset(udpRecvBuffer,0,udpRecvBufferLen);
-      }
-      
-    }
-
-  }
+  // WXR Data Reading is done asynchronously with read thread initialized above and data is read in NAV Gauge
   
 } // end "OnIdle()"
 

@@ -18,6 +18,7 @@ extern int udpSendBufferLen;
 extern int udpRecvBufferLen;
 extern char *udpSendBuffer;
 extern char *udpRecvBuffer;
+extern int udpReadLeft;                      /* counter of bytes to read from receive thread */
 
 /* prototype functions */
 

@@ -1,7 +1,8 @@
-copy service scripts to:
-/etc/systemd/system
+# remove all window managers like lx** openbox etc.
 
-sudo systemctl start xpopengc.service
-sudo systemctl enable xpopengc.service
-sudo systemctl stop xpopengc.service
-sudo systemctl disable xpopengc.service
+user systemd service scripts go into:
+~/.config/systemd/user
+
+systemd --user enable SCRIPTNAME
+sudo systemctl daemon-reload
+

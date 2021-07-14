@@ -1,3 +1,0 @@
-Add user to tty group:
-sudo gpasswd -a stockli tty
-sudo update-alternatives --config x-session-manager

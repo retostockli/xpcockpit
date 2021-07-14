@@ -69,6 +69,9 @@ fi
 CXXFLAGS="$CXXFLAGS -fno-common"
 CFLAGS="$CFLAGS -fno-common"
 
+# Enable Threading support
+CXXFLAGS="$CXXFLAGS -pthread"
+
 # Checks for libraries and headers.
 
 # check for OpenGL libraries and headers

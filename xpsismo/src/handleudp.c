@@ -169,7 +169,7 @@ void exit_udp(void)
 }
 
 
-/* send datagram to X-Plane UDP server */
+/* send datagram to UDP client */
 int send_udp(char client_ip[],int client_port,unsigned char data[], int len) {
 
   int n;
@@ -195,7 +195,7 @@ int send_udp(char client_ip[],int client_port,unsigned char data[], int len) {
   return n;
 }
 
-/* receive datagram from X-Plane UDP server */
+/* receive datagram client */
 int recv_udp() {
 
   int n; 

@@ -91,9 +91,14 @@ namespace OpenGC
      
     // What's the heading?
     //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
-    //float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
-    float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
-
+    float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *track_mag;
+    if (is_captain) {
+      track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
+    } else {
+      track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
+    }
+    
     /* link x-plane datarefs needed for NAV display */
     float *ground_speed = link_dataref_flt("sim/flightmodel/position/groundspeed",0);
     float *air_speed = link_dataref_flt("sim/flightmodel/position/true_airspeed",0);
@@ -138,7 +143,7 @@ namespace OpenGC
     float *adf1_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf1_dme_distance_nm",-1);
     float *adf2_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_dme_distance_nm",-1);
 
-    if (*track_mag != FLT_MISS) {
+    if ((*track_mag != FLT_MISS) && (*heading_mag != FLT_MISS)) {
       
       // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -193,21 +198,31 @@ namespace OpenGC
       /* plot ground speed and air speed in knots (convert from m/s) */
       if (*ground_speed != FLT_MISS) {
 	snprintf(buffer, sizeof(buffer), "%d", (int) lroundf(*ground_speed * 1.943844));
-	m_pFontManager->Print( m_PhysicalSize.x*0.060, m_PhysicalSize.y*0.957 , buffer, m_Font );
-      }
+      } else {
+	snprintf(buffer, sizeof(buffer), "---");
+      }	
+      m_pFontManager->Print( m_PhysicalSize.x*0.060, m_PhysicalSize.y*0.957 , buffer, m_Font );
+
       if (*air_speed != FLT_MISS) {
 	snprintf(buffer, sizeof(buffer), "%d", (int) lroundf(*air_speed * 1.943844));
-	m_pFontManager->Print( m_PhysicalSize.x*0.210, m_PhysicalSize.y*0.957 , buffer, m_Font );
+      } else {
+	snprintf(buffer, sizeof(buffer), "---");
       }
+      m_pFontManager->Print( m_PhysicalSize.x*0.210, m_PhysicalSize.y*0.957 , buffer, m_Font );
 
       /* plot wind speed and direction and draw wind arrow */
-      if ((*wind_direction_mag != FLT_MISS) && (heading_map != FLT_MISS)) {
+      if ((*wind_direction_mag != FLT_MISS) && (*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
 	snprintf(buffer, sizeof(buffer), "%03d°", (int) lroundf(*wind_direction_mag));
-	m_pFontManager->Print( m_PhysicalSize.x*0.014, m_PhysicalSize.y*0.919 , buffer, m_Font );
+      } else {
+	snprintf(buffer, sizeof(buffer), "---°");
+      }
+      m_pFontManager->Print( m_PhysicalSize.x*0.014, m_PhysicalSize.y*0.919 , buffer, m_Font );
   
+      if ((*wind_direction_mag != FLT_MISS) && (heading_map != FLT_MISS) &&
+	  (*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
 	glPushMatrix();
 	glTranslatef(m_PhysicalSize.x*0.055, m_PhysicalSize.y*0.878, 0);
-	glRotatef(180.0 - (*wind_direction_mag - *track_mag),0,0,1);
+	glRotatef(180.0 - (*wind_direction_mag - *heading_mag),0,0,1);
 	glLineWidth( lineWidth );
 	glBegin(GL_LINE_STRIP);
 	glVertex2f( m_PhysicalSize.x*0.0, -m_PhysicalSize.y*0.035);
@@ -218,20 +233,30 @@ namespace OpenGC
 	glVertex2f( m_PhysicalSize.x*0.0, m_PhysicalSize.y*0.035);
 	glVertex2f( -m_PhysicalSize.x*0.01, m_PhysicalSize.y*0.025);
 	glEnd();
-	glPopMatrix();
-    
+	glPopMatrix();    
       }
 
       m_pFontManager->Print( m_PhysicalSize.x*0.090, m_PhysicalSize.y*0.919 , " /", m_Font );
-      if (*wind_speed != FLT_MISS) {
+      if ((*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
 	snprintf(buffer, sizeof(buffer), "%d", (int) *wind_speed);
-	m_pFontManager->Print( m_PhysicalSize.x*0.128, m_PhysicalSize.y*0.919 , buffer, m_Font );
+      } else {
+	snprintf(buffer, sizeof(buffer), "---");
       }
+      m_pFontManager->Print( m_PhysicalSize.x*0.128, m_PhysicalSize.y*0.919 , buffer, m_Font );
 
       if (mapMode != 3) {
       
 	/* plot NAVAID name and DME if available on the lower part of the NAV display */
 	if ((*efis1_selector == -1) || (*efis1_selector == 1) || (*efis1_selector == 2)) {
+
+	  /* Draw black background to obscure station / tcas symbols */
+	  glColor3ub(COLOR_BLACK);
+	  glBegin(GL_POLYGON);
+	  glVertex2f(0,0);
+	  glVertex2f(0,m_PhysicalSize.y*0.15);
+	  glVertex2f(m_PhysicalSize.x*0.2,m_PhysicalSize.y*0.15);
+	  glVertex2f(m_PhysicalSize.x*0.2,0);
+	  glEnd();
 	  
 	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
 	  
@@ -274,6 +299,15 @@ namespace OpenGC
 	}
 
 	if ((*efis2_selector == -1) || (*efis2_selector == 1) || (*efis2_selector == 2)) {
+
+	  /* Draw black background to obscure station / tcas symbols */
+	  glColor3ub(COLOR_BLACK);
+	  glBegin(GL_POLYGON);
+	  glVertex2f(m_PhysicalSize.x,0);
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*0.15);
+	  glVertex2f(m_PhysicalSize.x*0.8,m_PhysicalSize.y*0.15);
+	  glVertex2f(m_PhysicalSize.x*0.8,0);
+	  glEnd();
 	  
 	  m_pFontManager->SetSize( m_Font, fontSize, fontSize );
     

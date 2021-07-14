@@ -411,6 +411,11 @@ void b737_mcp(void)
     }
   }
 
+  /* Stick Shaker (temporarily connected to MCP) */
+  /* relais #4 */
+  int *stall_warning = link_dataref_int("sim/cockpit2/annunciators/stall_warning");
+  ret = digital_output(device,card,52,stall_warning);
+  
   ret = digital_input(device,card,3,&bank10,0);
   if (ret == 1) {
     printf("Bank Limit 10\n");

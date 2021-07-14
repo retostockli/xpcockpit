@@ -103,13 +103,19 @@ AirportList
     int surfacetype, shouldertype, centerlights, edgelights, signs, markings, approachlights, touchdownlights, endlights;
     string id, runwaynumber;
     
-    // Temp airport storage
-    GeographicObject* pAirport;
-    
     // Input stream for parsing
     std::istringstream inputStream(lineData);
       
     inputStream >> airportHeader >> elev >> hasControlTower >> inop >> id;
+
+    // Only use 4 letter ICAO airport codes
+    // we found some XLF007... codes
+    if (id.length() != 4)
+      continue;
+    
+    // Temp airport storage
+    GeographicObject* pAirport;
+    
     pAirport = new GeographicObject();
     pAirport->SetAltitudeMeters(elev/3.28084);
     pAirport->SetIdentification(id);

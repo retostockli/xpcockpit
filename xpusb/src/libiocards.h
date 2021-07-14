@@ -55,6 +55,7 @@ typedef struct {
   char path[255];        /* Platform specific device / USB connector path:
                             Changes when you plug device to different USB port
 			    May also change when you unplug an upstream device (TBD) */
+  char serial[50];        /* Serial Number (Optional) */
   /* the numbers below should be determined either automatically */
   /* or from the initialization script for each card */
   /* memory for input/outputs/servos etc. should then be dynamically allocated */

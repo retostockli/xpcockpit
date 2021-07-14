@@ -82,6 +82,7 @@ int read_ini(char* programPath, char* iniName)
 
   /* default IOCard values (not connected) */
   char default_name[] = "none";
+  char default_serial[] = "";
   uint16_t default_vendor = 0xFFFF;
   uint16_t default_product = 0xFFFF;
   uint8_t default_bus = 0xFF;
@@ -172,6 +173,9 @@ int read_ini(char* programPath, char* iniName)
       sprintf(sdevice,"iocard:device%i:Path",device);
       strcpy(iocard[device].path,iniparser_getstring(ini,sdevice, default_path));
       memset(sdevice,0,sizeof(sdevice));
+      sprintf(sdevice,"iocard:device%i:Serial",device);
+      strcpy(iocard[device].serial,iniparser_getstring(ini,sdevice, default_serial));
+      memset(sdevice,0,sizeof(sdevice));
       sprintf(sdevice,"iocard:device%i:Ncards",device);
       iocard[device].ncards = iniparser_getint(ini,sdevice, default_ncards);
       memset(sdevice,0,sizeof(sdevice));
@@ -202,6 +206,7 @@ int read_ini(char* programPath, char* iniName)
 	printf("Name %s \n",iocard[device].name);
 	printf("Vendor ID %i Product ID %i \n",iocard[device].vendor,iocard[device].product);
 	//	printf("USB Bus %i USB Address %i \n",iocard[device].bus,iocard[device].address);
+	printf("Serial No. %s \n",iocard[device].serial);
 	printf("USB Path %s \n",iocard[device].path);
 	printf("\n");
       }
@@ -2042,11 +2047,11 @@ int receive_bu0836(void)
 	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i Value %i \n",device,axis,iocard[device].axes[axis]);
 	  }
 	  for (button=0;button<nbutton;button++) {
-	    if (!strcmp(iocard[device].name,device_name1)) {
-	      // BU0836X Interface: a byte between axes and buttons (maybe it is the # of bytes to reach max 8 inputs) 
+	    if (strcmp(iocard[device].serial,"B37271")==0) {
+	      /* BU0836X card in my CFY TQ */
 	      byte = 2*iocard[device].naxes + 1 + button/8;
 	    } else {
-	      // BU0836A Interface
+	      /* All other BU0836X/A */
 	      byte = 2*iocard[device].naxes + button/8;
 	    }
 	    bit = button - (button/8)*8;
@@ -2281,8 +2286,7 @@ int initialize_bu0836(int device)
     result = setbuffer_usb(device,buffersize);
 
     iocard[device].ncards = 1;
-    iocard[device].naxes = 7; // Be Careful here: We might need to be prepared to have
-    // a variable number of axes depending on BU0836 configuration.
+    // iocard[device].naxes = 2; // given in ini file
     iocard[device].noutputs = 0;
     iocard[device].ninputs = 32;
     iocard[device].nservos = 0;
@@ -2290,8 +2294,8 @@ int initialize_bu0836(int device)
     iocard[device].ndisplays = 0;
     iocard[device].nbits = 12;
 
-    if (verbose > 0) printf("LIBIOCARDS: Initialized BU0836X/A Interface (device %i) \n",
-			    device );
+    if (verbose > 0) printf("LIBIOCARDS: Initialized BU0836X/A Interface (device %i) with %i axes \n",
+			    device, iocard[device].naxes);
 
     result = 1;
 
@@ -2356,7 +2360,8 @@ int initialize_iocards(void)
       }
 	
       ret = check_usb(iocard[device].name,device,iocard[device].vendor,iocard[device].product,
-		      iocard[device].bus, iocard[device].address, iocard[device].path);
+		      iocard[device].bus, iocard[device].address,
+		      iocard[device].path, iocard[device].serial);
 
       if (ret<0) {
 	result = ret;

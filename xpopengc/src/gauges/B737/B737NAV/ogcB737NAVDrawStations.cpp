@@ -93,7 +93,6 @@ namespace OpenGC
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
    
-    // int *nav_shows_wxr;
     // int *nav_shows_data;
     // int *nav_shows_pos;
     int *nav_shows_apt;
@@ -102,22 +101,17 @@ namespace OpenGC
     int *nav_shows_ndb;
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
-	//    nav_shows_wxr = link_dataref_int("laminar/B738/EFIS/EFIS_wx_on");
-	//    nav_shows_acf = link_dataref_int("laminar/B738/EFIS/EFIS_tcas_on");
 	nav_shows_fix = link_dataref_int("laminar/B738/EFIS/EFIS_fix_on");
 	nav_shows_apt = link_dataref_int("laminar/B738/EFIS/EFIS_airport_on");
 	nav_shows_vor = link_dataref_int("laminar/B738/EFIS/EFIS_vor_on");
 	nav_shows_ndb = link_dataref_int("laminar/B738/EFIS/EFIS_vor_on");
       } else {
-	//    nav_shows_wxr = link_dataref_int("laminar/B738/EFIS/fo/EFIS_wx_on");
-	//    nav_shows_acf = link_dataref_int("laminar/B738/EFIS/EFIS_tcas_on");
 	nav_shows_fix = link_dataref_int("laminar/B738/EFIS/fo/EFIS_fix_on");
 	nav_shows_apt = link_dataref_int("laminar/B738/EFIS/fo/EFIS_airport_on");
 	nav_shows_vor = link_dataref_int("laminar/B738/EFIS/fo/EFIS_vor_on");
 	nav_shows_ndb = link_dataref_int("laminar/B738/EFIS/fo/EFIS_vor_on");
       }
     } else if (acf_type == 1) {
-      // nav_shows_wxr = link_dataref_int("x737/cockpit/EFISCTRL_0/WXR_on");
       nav_shows_vor = link_dataref_int("x737/cockpit/EFISCTRL_0/STA_on");
       nav_shows_ndb = link_dataref_int("x737/cockpit/EFISCTRL_0/STA_on");
       nav_shows_fix = link_dataref_int("x737/cockpit/EFISCTRL_0/WPT_on");
@@ -125,8 +119,6 @@ namespace OpenGC
       // nav_shows_data = link_dataref_int("x737/cockpit/EFISCTRL_0/DATA_on");
       // nav_shows_pos = link_dataref_int("x737/cockpit/EFISCTRL_0/POS_on");
     } else {
-      //    nav_shows_wxr = link_dataref_int("sim/cockpit2/EFIS/EFIS_weather_on");
-      //    nav_shows_acf = link_dataref_int("sim/cockpit2/EFIS/EFIS_tcas_on");
       nav_shows_fix = link_dataref_int("sim/cockpit2/EFIS/EFIS_fix_on");
       nav_shows_apt = link_dataref_int("sim/cockpit2/EFIS/EFIS_airport_on");
       nav_shows_vor = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on");

@@ -28,6 +28,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <pthread.h>
 
 #ifdef WIN
 #include <winsock2.h>
@@ -43,10 +44,57 @@
 #include "udpdata.h"
 
 /* allocation of global variables from handleudp.h */
+
+pthread_t poll_thread;                /* read thread */
+int poll_thread_exit_code;            /* read thread exit code */
+pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
+
 char udpServerIP[30];
 int udpServerPort;
 int udpSocket;
-struct sockaddr_in udpServAddr;     /* Server address structure */
+struct sockaddr_in udpServerAddr;     /* Server address structure */
+struct sockaddr_in udpClientAddr;     /* Client address structure */
+
+/* set up udp server socket with given server address and port */
+int init_udp_server()
+{
+
+  /* Create a UDP socket */
+  if ((udpSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+    printf("HANDLEUDP: Cannot initialize Server UDP socket \n");
+    return -1; 
+  } else {
+
+    /* Construct the server address structure */
+    memset(&udpServerAddr, 0, sizeof(udpServerAddr));           /* Zero out structure */
+    udpServerAddr.sin_family    = AF_INET;                  /* Internet address family */
+    udpServerAddr.sin_addr.s_addr = inet_addr(udpServerIP);   /* Server IP address */
+    udpServerAddr.sin_port        = htons(udpServerPort);     /* Server port */
+
+    if (bind(udpSocket, (struct sockaddr *) &udpServerAddr, sizeof(udpServerAddr)) < 0)
+      {
+	printf("bind() failed\n");
+	return -1;
+      }
+
+    /* set to blocking (0). Non-blocking (1) is not suitable for the threaded reading */
+    unsigned long nSetSocketType = 0;
+    if (ioctl(udpSocket,FIONBIO,&nSetSocketType) < 0) {
+      printf("HANDLEUDP: Server set to non-blocking failed\n");
+      return -1;
+    } else {
+      printf("HANDLEUDP: Server Socket ready\n");
+    }
+  }
+
+  /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
+  struct timeval tv;
+  tv.tv_sec = 1;
+  tv.tv_usec = 0;
+  setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+  
+  return 0;
+}
 
 /* set up udp socket with given server address and port */
 int init_udp(void)
@@ -60,14 +108,15 @@ int init_udp(void)
   } else {
     
     /* Construct the server address structure */
-    memset(&udpServAddr, 0, sizeof(udpServAddr));           /* Zero out structure */
-    udpServAddr.sin_family      = AF_INET;                  /* Internet address family */
-    udpServAddr.sin_addr.s_addr = inet_addr(udpServerIP);   /* Server IP address */
-    udpServAddr.sin_port        = htons(udpServerPort);     /* Server port */
+    memset(&udpServerAddr, 0, sizeof(udpServerAddr));           /* Zero out structure */
+    udpServerAddr.sin_family      = AF_INET;                  /* Internet address family */
+    udpServerAddr.sin_addr.s_addr = inet_addr(udpServerIP);   /* Server IP address */
+    udpServerAddr.sin_port        = htons(udpServerPort);     /* Server port */
 
 
-    //set to non-blocking
-    unsigned long nSetSocketType = 1;
+    //set to non-blocking (1) for direct read
+    //set to blocking (0) for asynchronous read
+    unsigned long nSetSocketType = 0;
 #ifdef WIN
     if (ioctlsocket(udpSocket,FIONBIO,&nSetSocketType) < 0) {
 #else
@@ -79,13 +128,40 @@ int init_udp(void)
       printf("HANDLEUDP: Client Socket ready\n");
     }
   }
- 
+
+  /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
+  struct timeval tv;
+  tv.tv_sec = 1;
+  tv.tv_usec = 0;
+  setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+   
   return ret;
+}
+
+
+int init_udp_receive() {
+
+  int ret;
+
+  udpReadLeft=0;
+ 
+  poll_thread_exit_code = 0;
+  ret = pthread_create(&poll_thread, NULL, &poll_thread_main, NULL);
+  if (ret>0) {
+    printf("HANDLEUDP: poll thread could not be created.\n");
+    return -1;
+  }
+
+  return 0;
 }
 
 /* end udp connection */
 void exit_udp(void)
 {
+
+  poll_thread_exit_code = 1;
+  pthread_join(poll_thread, NULL);
+
 #ifdef WIN
   closesocket(udpSocket);
 #else
@@ -94,39 +170,139 @@ void exit_udp(void)
 }
 
 
-/* send datagram to X-Plane UDP server */
-int send_udp(void) {
+void *poll_thread_main()
+/* thread handles udp receive on the server socket by use of blocking read and a read buffer */
+{
+  int ret = 0;
+  unsigned char buffer[udpRecvBufferLen];
+
+  printf("HANDLEUDP: Receive thread running \n");
+
+  while (!poll_thread_exit_code) {
+
+    /* read call goes here (1 s timeout for blocking operation) */
+    int addrlen = sizeof(udpServerAddr);
+    /* We are the Client */
+    //ret = recvfrom(udpSocket, buffer, udpRecvBufferLen, 
+    //       0, (struct sockaddr *) &udpServerAddr, &addrlen);
+    /* We are the Server */
+    ret = recv(udpSocket, buffer, udpRecvBufferLen, 0);
+    if (ret == -1) {
+      if ((errno == EWOULDBLOCK) || (errno == EINTR)) { // just no data yet or our own timeout ;-)
+      } else {
+	printf("HANDLEUDP: Receive Error %i \n",errno);
+	//poll_thread_exit_code = 1;
+	//break;
+      } 
+    } else if ((ret > 0) && (ret <= udpRecvBufferLen)) {
+      /* read is ok */
+      
+      /* are we reading WXR data ? */
+      if (strncmp(buffer,"xRAD",4)==0) {
+	  
+	/* does it fit into read buffer? */
+	if (ret <= (udpRecvBufferLen - udpReadLeft)) {
+	  pthread_mutex_lock(&exit_cond_lock);
+	  memcpy(&udpRecvBuffer[udpReadLeft],buffer,ret);
+	  udpReadLeft += ret;
+	  pthread_mutex_unlock(&exit_cond_lock);
+	  
+	  //printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
+	} else {
+	  // printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
+	}
+      }
+    } else if ((ret > 0) && (ret > udpRecvBufferLen)) {
+      /* too many bytes were read */
+      printf("HANDLEUDP: too big UDP packet of %i bytes does not fit in read buffer \n",ret);
+    } else {
+      /* nothing read */
+    }
+
+    /* wait loop not needed since we have a timeout */
+    //usleep(500);
+
+  } /* while loop */
+  
+  /* thread was killed */
+  printf("HANDLEUDP: Asynchronous UDP receive thread shutting down \n");
+
+  return 0;
+}
+
+
+/* send datagram to UDP server */
+int send_udp_to_server(void) {
 
   int n;
 
   /*
   n = sendto(udpSocket, udpSendBuffer, udpSendBufferLen, 
-	 MSG_CONFIRM, (const struct sockaddr *) &udpServAddr, 
-	 sizeof(udpServAddr));
+	 MSG_CONFIRM, (const struct sockaddr *) &udpServerAddr, 
+	 sizeof(udpServerAddr));
   */
   n = sendto(udpSocket, udpSendBuffer, udpSendBufferLen, 
-	 0, (const struct sockaddr *) &udpServAddr, sizeof(udpServAddr));
+	 0, (const struct sockaddr *) &udpServerAddr, sizeof(udpServerAddr));
   
   //  printf("Sent to X-Plane: %i \n",n); 
 
   return n;
 }
 
-/* receive datagram from X-Plane UDP server */
-int recv_udp(void) {
+/* receive datagram from UDP server */
+int recv_udp_from_server(void) {
 
   int n; 
   
-  int addrlen = sizeof(udpServAddr);
+  int addrlen = sizeof(udpServerAddr);
   /*
   n = recvfrom(udpSocket, udpRecvBuffer, udpRecvBufferLen, 
-	       MSG_DONTWAIT, (struct sockaddr *) &udpServAddr, 
+	       MSG_DONTWAIT, (struct sockaddr *) &udpServerAddr, 
 	       &addrlen);
   */
   n = recvfrom(udpSocket, udpRecvBuffer, udpRecvBufferLen, 
-	       0, (struct sockaddr *) &udpServAddr, &addrlen);
+	       0, (struct sockaddr *) &udpServerAddr, &addrlen);
 
-  //  printf("Received from X-Plane: %i \n",n);
+  //printf("Received from X-Plane: %i \n",n);
+
+  return n;
+}
+
+/* receive datagram from UDP client */
+int recv_udp_from_client(void) {
+
+  int n; 
+
+  n = recv(udpSocket, udpRecvBuffer, udpRecvBufferLen, 0);
+
+  //printf("Received from X-Plane: %i \n",n);
+
+  return n;
+}
+
+
+/* send datagram to UDP client */
+int send_udp_to_client(char client_ip[],int client_port,unsigned char data[], int len) {
+
+  int n;
+
+  /* Construct the client address structure */
+ 
+  memset(&udpClientAddr, 0, sizeof(udpClientAddr));       /* Zero out structure */
+  udpClientAddr.sin_family      = AF_INET;                /* Internet address family */
+  udpClientAddr.sin_addr.s_addr = inet_addr(client_ip);   /* Server IP address */
+  udpClientAddr.sin_port        = htons(client_port);     /* Server port */
+ 
+  /*
+  printf("%i \n",udpClientAddr.sin_family);
+  printf("%i \n",udpClientAddr.sin_addr.s_addr);
+  printf("%i \n",ntohs(udpClientAddr.sin_port));
+  printf("%s \n",udpClientAddr.sin_zero);
+  */
+  
+  n = sendto(udpSocket, data, len, 
+	     MSG_CONFIRM, (struct sockaddr *) &udpClientAddr, 
+	     sizeof(udpClientAddr));
 
   return n;
 }

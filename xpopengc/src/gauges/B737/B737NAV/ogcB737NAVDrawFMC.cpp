@@ -99,6 +99,10 @@ namespace OpenGC
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
+
+    // What's the ground and air speed
+    float *ground_speed = link_dataref_flt("sim/flightmodel/position/groundspeed",0);
+    float *true_air_speed = link_dataref_flt("sim/flightmodel/position/true_airspeed",0);
      
     float *fmc_ok;
     float *fmc_lon;
@@ -106,9 +110,12 @@ namespace OpenGC
     int *fmc_turn;
     int *fmc_alt;
     int *fmc_type;
-    int *fmc_hold_time;
+    float *fmc_hold_time;
+    float *fmc_hold_dist;
     float *fmc_dist;
     float *fmc_eta;
+    float *fmc_af_beg;
+    float *fmc_af_end;
     float *fmc_radii_ctr_lon;
     float *fmc_radii_ctr_lat;
     float *fmc_radii_lon;
@@ -116,8 +123,8 @@ namespace OpenGC
     float *fmc_radii_radius;
     float *fmc_rad_lon;
     float *fmc_rad_lat;
-    float *fmc_rad_radius;
     int *fmc_rad_turn;
+    float *fmc_radius;
     float *fmc_brg;
     float *fmc_crs;
     int *fmc_miss1;
@@ -148,21 +155,23 @@ namespace OpenGC
       fmc_cur = link_dataref_int("laminar/B738/fms/vnav_idx"); 
       fmc_turn = link_dataref_int_arr("laminar/B738/fms/legs_turn",128,-1);
       fmc_type = link_dataref_int_arr("laminar/B738/fms/legs_type",128,-1);
-      fmc_hold_time = link_dataref_int_arr("laminar/B738/fms/legs_hold_time",128,-1);
+      fmc_hold_time = link_dataref_flt_arr("laminar/B738/fms/legs_hold_time",128,-1,-1);
+      fmc_hold_dist = link_dataref_flt_arr("laminar/B738/fms/legs_hold_dist",128,-1,-1);
       fmc_dist = link_dataref_flt_arr("laminar/B738/fms/legs_dist",128,-1,-2);
       fmc_eta = link_dataref_flt_arr("laminar/B738/fms/legs_eta",128,-1,-2);
+      fmc_af_beg = link_dataref_flt_arr("laminar/B738/fms/legs_af_beg",128,-1,-2);
+      fmc_af_beg = link_dataref_flt_arr("laminar/B738/fms/legs_af_beg",128,-1,-2);
       fmc_radii_ctr_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lon",128,-1,-4);
       fmc_radii_ctr_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lat",128,-1,-4);
+      fmc_radii_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lon2",128,-1,-4);
+      fmc_radii_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lat2",128,-1,-4);
+      fmc_radii_radius = link_dataref_flt_arr("laminar/B738/fms/legs_radii_radius",128,-1,-1);
       fmc_rad_lon = link_dataref_flt_arr("laminar/B738/fms/legs_rad_lon",128,-1,-4);
       fmc_rad_lat = link_dataref_flt_arr("laminar/B738/fms/legs_rad_lat",128,-1,-4);
       fmc_rad_turn = link_dataref_int_arr("laminar/B738/fms/legs_rad_turn",128,-1);
-      fmc_radii_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lon2",128,-1,-4);
-      fmc_radii_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lat2",128,-1,-4);
-      fmc_rad_radius = link_dataref_flt_arr("laminar/B738/fms/legs_radius",128,-1,-1);
-      fmc_radii_radius = link_dataref_flt_arr("laminar/B738/fms/legs_radii_radius",128,-1,-1);
+      fmc_radius = link_dataref_flt_arr("laminar/B738/fms/legs_radius",128,-1,-1);
       fmc_miss1 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx");
       fmc_miss2 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx2");
-      //      fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_true",128,-1,-5);
       fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_mag",128,-1,-5);
       fmc_crs = link_dataref_flt_arr("laminar/B738/fms/legs_crs_mag",128,-1,-5);
       fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
@@ -298,12 +307,20 @@ namespace OpenGC
 	double easting2;
 	double lon;
 	double lat;
+	double lon1;
+	double lat1;
+	double lon2;
+	double lat2;
 	float xPos;
 	float yPos;
 	float xPos2;
 	float yPos2;
 	float xPosC;
 	float yPosC;
+	float xPosT;
+	float yPosT;
+	float xPosL;
+	float yPosL;
 
 	// define overall symbol size (for DME, FIX, VOR, APT etc.)
 	// this scale gives the radius of the symbol in physical units
@@ -402,6 +419,9 @@ namespace OpenGC
 		  wpt[i].alt = fmc_alt[i];
 		  wpt[i].dist = fmc_dist[i];
 		  wpt[i].eta = fmc_eta[i];
+		  /* creates segfault from time to time */
+		  //wpt[i].af_beg = fmc_af_beg[i];
+		  //wpt[i].af_end = fmc_af_end[i];
 		  wpt[i].radii_ctr_lon = fmc_radii_ctr_lon[i];
 		  wpt[i].radii_ctr_lat = fmc_radii_ctr_lat[i];
 		  wpt[i].radii_lon = fmc_radii_lon[i];
@@ -410,11 +430,12 @@ namespace OpenGC
 		  wpt[i].rad_lon = fmc_rad_lon[i];
 		  wpt[i].rad_lat = fmc_rad_lat[i];
 		  wpt[i].rad_turn = fmc_rad_turn[i]; // HOLD: 0: left, 1: RIGHT
-		  wpt[i].rad_radius = fmc_rad_radius[i];
+		  wpt[i].radius = fmc_radius[i];
 		  wpt[i].brg = fmc_brg[i]; // radians mag
 		  wpt[i].crs = fmc_crs[i]; // degrees mag
 		  wpt[i].turn = fmc_turn[i]; // 0,2: left. 3: right
 		  wpt[i].hold_time = fmc_hold_time[i]; // holding time in seconds
+		  wpt[i].hold_dist = fmc_hold_dist[i]; // holding distance in nm
 
 		  /*
 		    printf("%s %s %i %f %f %f %f %f\n",wpt[i].name,wpt[i].pth,fmc_turn[i],
@@ -484,68 +505,50 @@ namespace OpenGC
 	    
 	    
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
-	    //for (int i=4;i<6;i++) {
+	    //for (int i=12;i<nwpt;i++) {
 
-	      /*
-	      printf("%i %s %s / %f %f / %f %f \n",i,wpt[i].name,wpt[i].pth,
-		     wpt[i].lon,wpt[i].lat,
-		     wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14);
-	      */
+	      int im1 = max(i-1,0);
 
 	      // convert to azimuthal equidistant coordinates with acf in center
-	      if ((wpt[max(i-1,0)].lon != FLT_MISS) && (wpt[max(i-1,0)].lat != FLT_MISS) &&
+	      if ((wpt[im1].lon != FLT_MISS) && (wpt[im1].lat != FLT_MISS) &&
 		  (wpt[i].lon != FLT_MISS) && (wpt[i].lat != FLT_MISS)) {
 
 		
-		// convert to azimuthal equidistant coordinates with acf in center
-		lon = (double) wpt[max(i-1,0)].lon;
-		lat = (double) wpt[max(i-1,0)].lat;
+		/* convert all lonlat to azimuthal equidistant coordinates with acf in center */
+
+		/* Start of Leg */
+		lon = (double) wpt[im1].lon;
+		lat = (double) wpt[im1].lat;
 		lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
-		
-		lon = (double) wpt[i].lon;
-		lat = (double) wpt[i].lat;
-		lonlat2gnomonic(&lon, &lat, &easting2, &northing2, &MapCenterLon, &MapCenterLat);
-	      
-		// Compute physical position relative to acf center on screen
 		yPos = -northing / 1852.0 / mapRange * map_size; 
 		xPos = easting / 1852.0  / mapRange * map_size;
+
+		/* End of Leg: Label Position */
+		lon2 = (double) wpt[i].lon;
+		lat2 = (double) wpt[i].lat;
+		lonlat2gnomonic(&lon2, &lat2, &easting2, &northing2, &MapCenterLon, &MapCenterLat);
+		yPosL = -northing2 / 1852.0 / mapRange * map_size; 
+		xPosL = easting2 / 1852.0  / mapRange * map_size;
+		
+		/* End of leg may also be start of next radii arc except for last wpt */
+		if ((wpt[i].radii_ctr_lon != 0.0) &&
+		    (wpt[i].radii_ctr_lat != 0.0) &&
+		    (wpt[i].radii_lon != 0.0) &&
+		    (wpt[i].radii_lat != 0.0) &&
+		    (wpt[i].radii_radius != 0.0) &&
+		    (wpt[i].radii_ctr_lon != FLT_MISS) &&
+		    (wpt[i].radii_ctr_lat != FLT_MISS) &&
+		    (wpt[i].radii_lon != FLT_MISS) &&
+		    (wpt[i].radii_lat != FLT_MISS) &&
+		    (wpt[i].radii_radius != FLT_MISS) &&
+		    i < (nwpt-1)) {
+		  lon2 = (double) wpt[i].radii_lon;
+		  lat2 = (double) wpt[i].radii_lat;
+		}
+		lonlat2gnomonic(&lon2, &lat2, &easting2, &northing2, &MapCenterLon, &MapCenterLat);
 		yPos2 = -northing2 / 1852.0 / mapRange * map_size; 
 		xPos2 = easting2 / 1852.0  / mapRange * map_size;
 
-		/* Label Position */
-		float xPosL = xPos2;
-		float yPosL = yPos2;
-
-		/* Special cases before or after curved routes */
-
-		// leg does not start at last waypoint
-		if ((wpt[max(i-1,0)].radii_lon != 0.0) && (wpt[max(i-1,0)].radii_lat != 0.0) &&
-		    (wpt[max(i-1,0)].radii_radius != 0.0) && 
-		    (wpt[max(i-1,0)].radii_lon != FLT_MISS) && (wpt[max(i-1,0)].radii_lat != FLT_MISS) &&
-		    (wpt[max(i-1,0)].radii_radius != FLT_MISS) &&
-		    (i > 0)) {
-		  //printf("Leg does not start at last waypoint \n");
-		  lon = (double) wpt[max(i-1,0)].radii_lon;
-		  lat = (double) wpt[max(i-1,0)].radii_lat;
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
-		  yPos = -northing / 1852.0 / mapRange * map_size; 
-		  xPos = easting / 1852.0  / mapRange * map_size;
-		} 
-
-		// leg does not end at next waypoint
-		if ((wpt[i].radii_lon != 0.0) && (wpt[i].radii_lat != 0.0) &&
-		    (wpt[i].radii_radius != 0.0) && 
-		    (wpt[i].radii_lon != FLT_MISS) && (wpt[i].radii_lat != FLT_MISS) &&
-		    (wpt[i].radii_radius != FLT_MISS) &&
-		    (i < (nwpt-1))) {
-		  //printf("Leg does not end at next waypoint \n");
-		  lon = (double) wpt[i].radii_lon;
-		  lat = (double) wpt[i].radii_lat;
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
-		  yPos2 = -northing / 1852.0 / mapRange * map_size; 
-		  xPos2 = easting / 1852.0  / mapRange * map_size;		    
-		}
-		
 		// Only draw the waypoint if it's visible within the rendering area
 		//if (( sqrt(xPos*xPos + yPos*yPos) < map_size) ||
 		//    ( sqrt(xPos2*xPos2 + yPos2*yPos2) < map_size)) {
@@ -571,7 +574,7 @@ namespace OpenGC
 		*/
 		
 		/* only draw leg if it is not a Discontinuity in flight plan */
-		if (strcmp(wpt[max(i-1,0)].name,"DISCONTINUITY") != 0) {
+		if (strcmp(wpt[im1].name,"DISCONTINUITY") != 0) {
 		  
 		glLineWidth(lineWidth);
 		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
@@ -595,8 +598,22 @@ namespace OpenGC
 		  // hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
 		  // hold length is 3.0 NM for a 60 second hold
 		  int holdtype = wpt[i].rad_turn * 2 - 1; // 1: Right -1: Left
-		  float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
-		  float holdlen = max(wpt[i].hold_time,60) / 60.0 * 3.0 / mapRange * map_size; // nm --> Pixels
+		  /* hold speed */
+		  float holdspeed = max(*ground_speed,210.f);
+		  /* standard hold radius is around 1.5 nm */
+		  /* 3deg/s curve (T=120s/360deg): r = v * T / 2pi */
+		  float holdrad = pow(max(*true_air_speed,210.f),2.0) / 29127.0 / mapRange * map_size; // nm --> pixels
+		  //float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
+		  float holdlen;
+		  if (wpt[i].hold_time != 0.0) {
+		    holdlen = holdspeed * wpt[i].hold_time / 3600.0 / mapRange * map_size;
+		  } else if (wpt[i].hold_dist != 0.0) {
+		      holdlen = wpt[i].hold_dist / mapRange * map_size;
+		  } else {
+		    /* default hold time per leg: 90 seconds */
+		    holdlen = holdspeed * 90.0 / 3600.0 / mapRange * map_size;
+		  }
+	      
 		  float gamma = (wpt[i].crs - *magnetic_variation)*3.14/180.; // inbound direction (radians)
 		  float xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course
 		  float yPos1 = cos(gamma-3.14)*holdlen + yPos2; // Pos2 is end of inbound course
@@ -638,25 +655,91 @@ namespace OpenGC
 		  glEnd();
 
 		// draw curved track type 1 (radii variables) from waypoint i-1 to waypoint i
-		} else if ((wpt[max(i-1,0)].radii_ctr_lon != 0.0) &&
-			   (wpt[max(i-1,0)].radii_ctr_lat != 0.0) &&
-			   (wpt[max(i-1,0)].radii_radius != 0.0) &&
-			   ((wpt[max(i-1,0)].brg != 0.0) || (wpt[i].brg != 0.0))) { // &&
-		  //			   (wpt[max(i-1,0)].turn != 3)) {
+		} else if ((wpt[im1].radii_ctr_lon != 0.0) &&
+			   (wpt[im1].radii_ctr_lat != 0.0) &&
+			   (wpt[im1].radii_radius != 0.0) &&
+			   (wpt[im1].radii_lon != FLT_MISS) &&
+			   (wpt[im1].radii_lat != FLT_MISS) &&
+			   (wpt[im1].radii_radius != FLT_MISS) &&	
+			   (i > 0)) {
 
-		  lon = (double) wpt[max(i-1,0)].radii_ctr_lon;
-		  lat = (double) wpt[max(i-1,0)].radii_ctr_lat;
+		  /* Center of Arc */
+		  lon = (double) wpt[im1].radii_ctr_lon;
+		  lat = (double) wpt[im1].radii_ctr_lat;
 		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
 		  yPosC = -northing / 1852.0 / mapRange * map_size; 
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
-		  /*
-		  printf("Type 1: %i %s %i / %f %f %f / %f %f \n",i,wpt[i].name,wpt[max(i-1,0)].turn,
-			 wpt[max(i-1,0)].radii_ctr_lon,wpt[max(i-1,0)].lon,wpt[max(i-1,0)].radii_lon,
-			 wpt[max(i-1,0)].brg*180./3.14,wpt[i].brg*180./3.14);
-		  */
+		  /* Start of Arc */
+		  lon1 = (double) wpt[im1].radii_lon;
+		  lat1 = (double) wpt[im1].radii_lat;
+		  double start_angle = heading_from_a_to_b(&lon,&lat,&lon1,&lat1);
+		  /* End of Arc */
+		  double end_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
+		  double distance = distance_from_a_to_b(&lon,&lat,&lon2,&lat2);
+		  /* Tangent from End of Arc to next Waypoint */
+		  double tangent_course;
+		  if (distance > wpt[im1].radii_radius) {
+		    tangent_course = acos(wpt[im1].radii_radius / distance) * 180.0 / M_PI;
+		  } else {
+		    tangent_course = 0.0;
+		  }
+
+		  double old_course = start_angle - 90.0;
+		  if (old_course < 0.0) old_course += 360.0;
+		  double new_course = end_angle - 90.0;
+		  if (new_course < 0.0) new_course += 360.0;
+
+		  double arc_angle;
+		  if (wpt[im1].turn == 2) {
+		    /* 2: left turn */
+		    arc_angle = old_course - new_course - tangent_course;
+		  } else {
+		    /* 3: right turn */
+		    arc_angle = new_course - old_course - tangent_course;
+		  }
+		  if (arc_angle < 0) arc_angle = arc_angle + 360;
+
+		  end_angle = start_angle;
+		  if (wpt[im1].turn == 2) {
+		    /* left turn */
+		    end_angle -= arc_angle;
+		  } else {
+		    /* right turn */
+		    end_angle += arc_angle;
+		  }
+		  //if (end_angle >= 360.0) end_angle -= 360.0;
+		  //if (end_angle < 0.0) end_angle += 360.0;
+		  
+		  // draw curved leg (partial circle)
+		  aCircle.SetDegreesPerPoint(2);
+		  //if (((wpt[im1].turn == 2) && (end_angle > start_angle)) ||
+		  //    ((wpt[im1].turn == 3) && (end_angle < start_angle))) {
+		  //		  if ((abs(end_angle-start_angle) > 1.1*arc_angle) ||
+		  //     (end_angle < start_angle)) {
+		    /* turn over 0/360: reverse angle order to choose shorter arc */
+		  if (wpt[im1].turn == 2) {
+		    /* left turn */
+		    aCircle.SetArcStartEnd(end_angle,start_angle);
+		  } else {
+		    /* right turn */
+		    aCircle.SetArcStartEnd(start_angle,end_angle);
+		  }
+		  aCircle.SetRadius(wpt[im1].radii_radius / mapRange * map_size);
+		  aCircle.SetOrigin(xPosC,yPosC);
+		  glBegin(GL_LINE_STRIP);
+		  aCircle.Evaluate();
+		  glEnd();
 
 		  /*
+		  printf("%f %f %f / %f %f %f \n",start_angle, end_angle, arc_angle, old_course,new_course,tangent_course);
+
+		  
+		  printf("RADII ARC: %i %s %i / %f %f %f / %f %f \n",i,wpt[i].name,wpt[im1].turn,
+		  	 wpt[im1].radii_ctr_lon,wpt[im1].lon,wpt[im1].radii_lon,
+		  	 wpt[im1].brg*180./3.14,wpt[i].brg*180./3.14);
+		  */
+	       /*
 		  glPushMatrix();
 		  glColor3ub(COLOR_BLUE);
 		  glPointSize(8.0);
@@ -666,87 +749,38 @@ namespace OpenGC
 		  glPopMatrix();
 		  */
 
-		  /* start and end angle of circle with center ctr calculated
-		     from legs magnetic bearing and waypoint turn direction */
-		  float ang = wpt[max(i-1,0)].brg*180./3.14 - *magnetic_variation;
-		  float ang2 = wpt[i].brg*180./3.14 - *magnetic_variation;
-		  float radius = pow(pow(xPos-xPosC,2) + pow(yPos-yPosC,2),0.5);
+		  // calculate tangent point at end of arc
+		  distance = (double) wpt[im1].radii_radius;
+		  latlon_at_dist_heading(&lon, &lat, &distance, &end_angle, &lon2, &lat2);
 
-		  //float relbrg = fmodf(180./3.14*(wpt[i].brg-wpt[max(i-1,0)].brg) + 360.0, 360.0);
-		  //if (relbrg > 180.0) relbrg -= 360.0;
-		 		  
-		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
-		    /* left turn */
-		    ang += 90.0;
-		    ang2 += 90.0;
-		  } else {
-		    /* right turn */
-		    ang += 270.0;
-		    ang2 += 270.0;
-		  }
-		  
-		  ang = fmodf(ang + 360.0,360.0);
-		  ang2 = fmodf(ang2 + 360.0,360.0);
+		  lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		  yPosT = -northing / 1852.0 / mapRange * map_size; 
+		  xPosT = easting / 1852.0  / mapRange * map_size;
 
-		  float relbrg;
-		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
-		    relbrg = fmodf(ang-ang2 + 360.0,360.0);
-		  } else {
-		    relbrg = fmodf(ang2-ang + 360.0,360.0);
-		  }
-		    
-		  //printf("%i %f %f %f \n",i,ang,ang2,relbrg);
+		  /*
+		  glPushMatrix();
+		  glColor3ub(COLOR_YELLOW);
+		  glPointSize(12.0);
+		  glBegin(GL_POINTS);
+		  glVertex2f(xPosT, yPosT);
+		  glEnd();		  
+		  glPopMatrix();
+		  */
 		  
-		  if ((fabs(relbrg) > 5.0) && (fabs(relbrg) < 300.0)) {
-		    // Only draw circles for large enough change in direction
-		    // There are occasions where this curved legs do not work
-		    // Also omit almost full circles: bogus ones?
-		    
-		    // draw curved leg (partial circle)
-		    aCircle.SetDegreesPerPoint(2);
-		    if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
-		      aCircle.SetArcStartEnd(ang2,ang);
-		    } else {
-		      aCircle.SetArcStartEnd(ang,ang2);
-		    }
-		    aCircle.SetRadius(radius);
-		    aCircle.SetOrigin(xPosC,yPosC);
-		    glBegin(GL_LINE_STRIP);
-		    aCircle.Evaluate();
-		    glEnd();
+		  glBegin(GL_LINES);
+		  glVertex2f(xPosT,yPosT);
+		  glVertex2f(xPos2,yPos2);
+		  glEnd();
 
-		  }
-		  
-		  // draw tangent
-		  /* Circle always starts from xPos/yPos, but may need to be extended
-		     by a line to xPos2/yPos2 */		
-		  float D = pow(pow(xPos2-xPosC,2) + pow(yPos2-yPosC,2),0.5);
-		  if (D > (radius+0.1)) {
-		    float xPosT = sin(ang2*3.14/180.)*radius + xPosC;
-		    float yPosT = cos(ang2*3.14/180.)*radius + yPosC;
-		    
-		    /*
-		    glPushMatrix();		    
-		    glColor3ub(COLOR_MAGENTA);
-		    glPointSize(10.0);
-		    glBegin(GL_POINTS);
-		    glVertex2f(xPosT, yPosT);
-		    glEnd();		    
-		    glPopMatrix();
-		    */
-		    
-		    glBegin(GL_LINES);
-		    glVertex2f(xPosT,yPosT);
-		    glVertex2f(xPos2,yPos2);
-		    glEnd();
-		   
-		  }
-		
 		// draw curved track type 2 (rad type variables) from waypoint i-1 to waypoint i
 		} else if ((wpt[i].rad_lon != 0.0) &&
 			   (wpt[i].rad_lat != 0.0) &&
-			   (wpt[i].rad_radius != 0.0) &&
-			   ((wpt[max(i-1,0)].brg != 0.0) || (wpt[i].brg != 0.0))) { 
+			   (wpt[i].radius != 0.0) &&
+			   (wpt[i].rad_turn != -1) &&
+			   (wpt[i].rad_lon != FLT_MISS) &&
+			   (wpt[i].rad_lat != FLT_MISS) &&
+			   (wpt[i].radius != FLT_MISS) &&
+			   (wpt[i].rad_turn != INT_MISS)) { 
 
 		  lon = (double) wpt[i].rad_lon;
 		  lat = (double) wpt[i].rad_lat;
@@ -754,96 +788,53 @@ namespace OpenGC
 		  yPosC = -northing / 1852.0 / mapRange * map_size; 
 		  xPosC = easting / 1852.0  / mapRange * map_size;		  
 
-		  /*
-		  printf("Type 2: %i %s %s %i / %f %f / %f %f \n",i,wpt[max(i-1,0)].name,wpt[i].name,
-			 wpt[i].rad_turn,
-			 wpt[max(i-1,0)].rad_lon,wpt[i].rad_lon,
-			 wpt[max(i-2,0)].brg*180./3.14,wpt[i].brg*180./3.14);
-		  */
+		  lon2 = (double) wpt[im1].lon;
+		  lat2 = (double) wpt[im1].lat;
 
-		  /*
+		  double start_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
+		  lon2 = (double) wpt[i].lon;
+		  lat2 = (double) wpt[i].lat;
+		  double end_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
+
+		  // calculate arc angle
+		  double phi = modulus(abs(start_angle - end_angle),360.0);
+		  double arc_angle = phi > 180 ? 360 - phi : phi;
+
+		  // draw curved leg (partial circle)
+		  aCircle.SetDegreesPerPoint(2);
+		  //if (((wpt[i].rad_turn == 2) && (end_angle > start_angle)) ||
+		  //    ((wpt[i].rad_turn == 3) && (end_angle < start_angle))) {
+		  //if ((abs(end_angle-start_angle) > 1.1*arc_angle) ||
+		  //    (end_angle < start_angle)) {
+		    /* turn over 0/360: reverse angle order to choose shorter arc */
+		  if (wpt[i].rad_turn == 2) {
+		    /* left turn */
+		    aCircle.SetArcStartEnd(end_angle,start_angle);
+		  } else {
+		    /* right turn */
+		    aCircle.SetArcStartEnd(start_angle,end_angle);
+		  }
+		  aCircle.SetRadius(wpt[i].radius / mapRange * map_size);
+		  aCircle.SetOrigin(xPosC,yPosC);
+		  glBegin(GL_LINE_STRIP);
+		  aCircle.Evaluate();
+		  glEnd();
+
+		  
+		  printf("RAD ARC: %i %s %s %i / %f %f / %f %f %f \n",i,wpt[im1].name,wpt[i].name,
+			 wpt[i].rad_turn, wpt[i].rad_lon,wpt[i].rad_lat,start_angle,end_angle,
+			 arc_angle);
+		  
+		 
 		  glPushMatrix();
-		  glColor3ub(COLOR_BLUE);
+		  glColor3ub(COLOR_YELLOW);
 		  glPointSize(8.0);
 		  glBegin(GL_POINTS);
 		  glVertex2f(xPosC, yPosC);
 		  glEnd();		  
 		  glPopMatrix();
-		  */
+		 
 
-		  /* start and end angle of circle with center ctr calculated
-		     from legs magnetic bearing and waypoint turn direction */
-		  float ang = wpt[max(i-1,0)].brg*180./3.14 - *magnetic_variation;
-		  float ang2 = wpt[i+1].brg*180./3.14 - *magnetic_variation;
-		  float radius = pow(pow(xPos-xPosC,2) + pow(yPos-yPosC,2),0.5);
-		  // float relbrg = fmod(180./3.14*(wpt[i].brg-wpt[max(i-2,0)].brg) + 360.0, 360.0);
-		  // if (relbrg > 180.0) relbrg -= 360.0;
-		 		  
-		  if ((wpt[i].rad_turn == 0) || (wpt[i].rad_turn == 2)) {
-		    /* left turn */
-		    ang += 90.0;
-		    ang2 += 90.0;
-		  } else {
-		    /* right turn */
-		    ang += 270.0;
-		    ang2 += 270.0;
-		  }
-		  
-		  //		  ang = fmodf(ang + 360.0,360.0);
-		  //ang2 = fmodf(ang2 + 360.0,360.0);
-		  //printf("%i %f %f %f %f \n",i,ang,ang2,relbrg,radius);
-		  float relbrg;
-		  if ((wpt[max(i-1,0)].turn == 0) || (wpt[max(i-1,0)].turn == 2)) {
-		    relbrg = fmodf(ang-ang2 + 360.0,360.0);
-		  } else {
-		    relbrg = fmodf(ang2-ang + 360.0,360.0);
-		  }
-		    
-		  if ((fabs(relbrg) > 5.0) && (fabs(relbrg) < 300.0)) {
-		    // Only draw circles for large enough change in direction
-		    // There are occasions where this curved legs do not work
-		    // Also omit almost full circles: bogus ones?
-		    
-		    // draw curved leg (partial circle)
-		    aCircle.SetDegreesPerPoint(2);
-		    if ((wpt[i].rad_turn == 0) || (wpt[i].rad_turn == 2)) {
-		      aCircle.SetArcStartEnd(ang2,ang);
-		    } else {
-		      aCircle.SetArcStartEnd(ang,ang2);
-		    }
-		    aCircle.SetRadius(radius);
-		    aCircle.SetOrigin(xPosC,yPosC);
-		    glBegin(GL_LINE_STRIP);
-		    aCircle.Evaluate();
-		    glEnd();
-
-		  }
-		  
-		  // draw tangent
-		  /* Circle always starts from xPos/yPos, but may need to be extended
-		     by a line to xPos2/yPos2 */		
-		  float D = pow(pow(xPos2-xPosC,2) + pow(yPos2-yPosC,2),0.5);
-		  if (D > (radius+0.1)) {
-		    float xPosT = sin(ang2*3.14/180.)*radius + xPosC;
-		    float yPosT = cos(ang2*3.14/180.)*radius + yPosC;
-		    
-		    /*
-		    glPushMatrix();		    
-		    glColor3ub(COLOR_MAGENTA);
-		    glPointSize(10.0);
-		    glBegin(GL_POINTS);
-		    glVertex2f(xPosT, yPosT);
-		    glEnd();		    
-		    glPopMatrix();
-		    */
-		    
-		    glBegin(GL_LINES);
-		    glVertex2f(xPosT,yPosT);
-		    glVertex2f(xPos2,yPos2);
-		    glEnd();
-		  
-		  }
-		
 		} else {
 		  // draw straight line
 
@@ -879,13 +870,18 @@ namespace OpenGC
 		glVertex2f(-0.15*ss, 0.15*ss);
 		glVertex2f( 0.0, 1.0*ss);
 		glEnd();
-
+		
 		if (strcmp(wpt[i].name,"DISCONTINUITY") != 0) {
 		  m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
 		  m_pFontManager->Print(4,-6, wpt[i].name, m_Font);
 		  if (wpt[i].alt > 0) {
-		    snprintf( buffer, sizeof(buffer), "%i", wpt[i].alt );
-		    m_pFontManager->Print(4,-11, buffer, m_Font);
+		    if (wpt[i].alt >= 8000) {
+		      snprintf( buffer, sizeof(buffer), "FL%03i", wpt[i].alt/100 );
+		      m_pFontManager->Print(4,-11, buffer, m_Font);
+		    } else {
+		      snprintf( buffer, sizeof(buffer), "%i", wpt[i].alt );
+		      m_pFontManager->Print(4,-11, buffer, m_Font);
+		    }
 		  }
 		}
 
@@ -906,7 +902,7 @@ namespace OpenGC
 	      glColor3ub(COLOR_WHITE);
 	      int hour=wpt[wpt_current].eta;
 	      float minute=(wpt[wpt_current].eta - (float) hour)*60.0;
-	      snprintf( buffer, sizeof(buffer), "%02d%2.1fz", hour, minute );
+	      snprintf( buffer, sizeof(buffer), "%02d%04.1f z", hour, minute );
 	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
 	      
 	      lon = (double) wpt[wpt_current].lon;

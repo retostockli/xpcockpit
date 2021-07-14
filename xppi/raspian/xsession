@@ -1,0 +1,4 @@
+# exec xeyes
+
+# while true; do sleep 10000; done
+sleep infinity
