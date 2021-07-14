@@ -71,7 +71,7 @@ namespace OpenGC
 
 extern FLTKRenderWindow* m_pRenderWindow;
   
-void XPlaneDataSource::define_server(int port, string ip_address)
+void XPlaneDataSource::define_server(int port, string ip_address, int radardata)
 {
   int n;
 
@@ -81,8 +81,6 @@ void XPlaneDataSource::define_server(int port, string ip_address)
   server_port = port;
 
   strcpy(udpServerIP,ip_address.c_str());
-  // UDP Server Port (OpenGC acts as UDP server for X-Plane Control Pad)
-  udpServerPort = 48003;
 
   /* initialize TCP/IP interface */
   if (initialize_tcpip() < 0) exit(-8);
@@ -90,12 +88,18 @@ void XPlaneDataSource::define_server(int port, string ip_address)
   /* initialize UDP socket if needed for WXR data from X-Plane*/
 
   /* use control pad xRAD UDP stream */
-  int sendlen = 0; /* no sending */
+  
+  // UDP Server Port (OpenGC acts as UDP server for X-Plane Control Pad)
+  udpServerPort = 48003;
+  udpReadLeft=0;
+   int sendlen = 0; /* no sending */
   int recvlen = 8100; // 'xRAD' plus '\0' (5 bytes) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0    
   allocate_udpdata(sendlen,recvlen);
-    
-  if (init_udp_server() < 0) exit(-8);
-  if (init_udp_receive() < 0) exit(-9);
+
+  if (radardata == 1) {
+    if (init_udp_server() < 0) exit(-8);
+    if (init_udp_receive() < 0) exit(-9);
+  }
 }
 
 XPlaneDataSource::XPlaneDataSource()

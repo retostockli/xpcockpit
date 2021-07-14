@@ -114,6 +114,9 @@ protected:
   /** whether to read from X-Plane's Custom Data path **/
   int m_customdata;
 
+  /** whether to read from X-Plane's UDP WXR radar data **/
+  int m_radardata;
+
   /**
    * We treat the file initialization process as a finite
    * state machine, where the current state is given below

@@ -43,7 +43,7 @@ public:
   virtual ~DataSource();
 
   // transfer TCP/IP address and port from namelist
-  virtual void define_server(int port, string ip);
+  virtual void define_server(int port, string ip, int radardata);
 
   /** Initialize the data to a default value*/
   void InitializeData();
