@@ -143,8 +143,6 @@ int init_udp_receive() {
 
   int ret;
 
-  udpReadLeft=0;
- 
   poll_thread_exit_code = 0;
   ret = pthread_create(&poll_thread, NULL, &poll_thread_main, NULL);
   if (ret>0) {

@@ -279,7 +279,8 @@ namespace OpenGC
     char default_data_source[] = "X-Plane";
     char default_xplane_path[] = "NONE";
     char default_client_name[] = "xpopengc";
-    int default_customdata = 0; // do not read from X-Plane's "Custom Data" directory
+    int default_customdata = 0; // do not read from X-Plane's "Custom Data" directory by default
+    int default_radardata = 0; // do not read from X-Plane's UDP radar data by default
 
     printf("AppObject - Starting initialization with %s\n", iniFile);
 
@@ -300,6 +301,10 @@ namespace OpenGC
 
       // whether to use X-Plane's Custom Data path
       m_customdata = iniparser_getint(ini,"General:CustomData", default_customdata);
+
+      // whether to use X-Plane's UDP-based WXR radar data
+      // (turn on control pad under network and put IP address of this computer here)
+      m_radardata = iniparser_getint(ini,"General:RadarData", default_radardata);
 
       // Initialize the nav database
       if (strcmp(m_XPlanePath,"")) {
@@ -332,7 +337,7 @@ namespace OpenGC
 	m_pDataSource = new XPlaneDataSource();
 
       // Now initialize the data source
-      m_pDataSource->define_server(m_port,m_ip_address);
+      m_pDataSource->define_server(m_port,m_ip_address,m_radardata);
 
       // Setup the render window
       int initX = iniparser_getint(ini,"Window:xpos", 0);
