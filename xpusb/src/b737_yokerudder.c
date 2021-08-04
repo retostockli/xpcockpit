@@ -55,7 +55,7 @@ void b737_yokerudder(void)
   float minval = 0.0;
   float maxval = 100.0;
 
-  float minbrake = 1.0;
+  float minbrake = 5.0;
   float maxbrake = 80.0;
 
   float brakescale;
@@ -129,7 +129,7 @@ void b737_yokerudder(void)
   value2 = min(max((value2 - minbrake) / (maxbrake - minbrake),0.0),1.0);
   *left_brake = brakescale * max(value1,value2);
   if ((ret1 == 1) || (ret2 == 1)) {
-    // printf("Left Brake has value: %f %f %f \n",value1,value2,*left_brake);
+    //    printf("Left Brake has value: %f %f %f \n",value1,value2,*left_brake);
   }
 
   ret1 = axis_input(device,4,&value1,minval,maxval);
