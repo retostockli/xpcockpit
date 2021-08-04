@@ -47,7 +47,7 @@ void bu0836_test(void)
   for (axis=0; axis<iocard[device].naxes; axis++) {
     //    axis = 0;
     ret = axis_input(device,axis,&value,minval,maxval);
-    if (ret == 1) {
+    if ((ret == 1) && (axis == 5)) {
       printf("Analog Input %i has value: %f \n",axis,value);
     }
   }
