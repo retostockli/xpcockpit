@@ -154,7 +154,7 @@ void b737_mcp(void)
     ap_n1 = link_dataref_cmd_hold("laminar/B738/autopilot/n1_press"); // AP speed N1 button
     ap_n1_led = link_dataref_int("laminar/B738/autopilot/n1_status"); // 0: off, 1: armed, 2: captured
     ap_at_arm = link_dataref_cmd_once("laminar/B738/autopilot/autothrottle_arm_toggle");    // AP Autothrottle arm
-    ap_at_arm_status = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
+    ap_at_arm_status = link_dataref_int("laminar/B738/autopilot/autothrottle_status1");
     ap_mcpspd = link_dataref_cmd_hold("laminar/B738/autopilot/speed_press");     // AP mcpspd select switch
     ap_mcpspd_led = link_dataref_int("laminar/B738/autopilot/speed_status1");
   } else if (acf_type == 1) {
