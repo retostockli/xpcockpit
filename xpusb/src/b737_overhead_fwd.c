@@ -54,6 +54,7 @@ void b737_overhead_fwd(void)
   float fval;
   int device;
   int card;
+  int one = 1;
 
   /* Switch Covers and related switch states*/
   char buffer[100];
@@ -111,12 +112,12 @@ void b737_overhead_fwd(void)
 
     device = mastercard;
    
-    /* Circuit Breaker Light Potentiometer: used to test Servos for now */
-    /* Panel Potentiometer is directly wired to the Overhead Backlighting */
+    /* CONT CABIN TEMP Potentiometer: used to test Servos */
+    /* Flood light and Panel Potentiometer are directly wired to the Overhead Backlighting */
     float servoval = 0.0;
     int *servotest = link_dataref_int("xpserver/servotest");
     if (*servotest == 1) {
-      ret = axis_input(device,3,&servoval,0.0,1.0);
+      ret = axis_input(device,0,&servoval,0.0,1.0);
       if (ret == 1) {
 	printf("SERVO TEST: %f \n",servoval);
       }
@@ -208,6 +209,11 @@ void b737_overhead_fwd(void)
     /* set relay 0 on output 49 on relay card through d-sub con */
     /* Backlighting Only when Battery is on */
     ret = digital_outputf(device,card,49,battery);
+
+    /* set relay 3 on output 52 on relay card through d-sub con */
+    /* Yaw Damper Solenoid driven by yaw damper position in X-Plane */
+    float *yaw_damper = link_dataref_flt("laminar/B738/toggle_switch/yaw_dumper_pos",0);
+    ret = digital_outputf(device,card,52,yaw_damper);
 
     /* Annunciators */
     float *bat_discharge = link_dataref_flt("laminar/B738/annunciator/bat_discharge",0);
@@ -478,9 +484,9 @@ void b737_overhead_fwd(void)
     device = servo2;
     float *outflow_valve = link_dataref_flt("laminar/B738/outflow_valve",-2);
     if (*servotest == 1) {
-      ret = servos_output(device,0,&servoval,0.0,1.0,500,900);
+      ret = servos_output(device,0,&servoval,0.0,1.0,550,930);
     } else {
-      ret = servos_output(device,0,outflow_valve,0.0,1.0,500,900);
+      ret = servos_output(device,0,outflow_valve,0.0,1.0,550,930);
     }
       
     
@@ -686,7 +692,6 @@ void b737_overhead_fwd(void)
     /* use for now for SERVO TEST */
     ret = digital_input(device,card,71,servotest,0);
     if (ret == 1) {
-      // printf("Cockpit Voice Recorder Test: %i \n",ival);
       printf("Servo Test: %i \n",*servotest);
     }
 
@@ -1397,9 +1402,14 @@ void b737_overhead_fwd(void)
       printf("ALTERNATE FLAPS %f \n",alt_flaps_pos);
     }
 
-    int *yaw_damper = link_dataref_cmd_hold("laminar/B738/toggle_switch/yaw_dumper");
+    int *yaw_damper_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/yaw_dumper");
+    float yaw_damper_pos = 0.0;
     ret = axis_input(device,1,&fval,0.0,1.0);
-    if (fval < 0.5) { *yaw_damper = 1; } else { *yaw_damper = 0; };
+    if (fval < 0.5) yaw_damper_pos = 1.0;
+    ret = set_state_togglef(&yaw_damper_pos,yaw_damper,yaw_damper_toggle);
+    if (ret != 0) {
+      printf("YAW DAMPER %f %f %i \n",yaw_damper_pos, *yaw_damper, *yaw_damper_toggle);
+    }
 
     int *spoiler_A_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_A");
     float *spoiler_A = link_dataref_flt("laminar/B738/switches/spoiler_A_pos",0);
