@@ -92,6 +92,10 @@ B737EICASEGT::~B737EICASEGT()
 
     if (value != FLT_MISS) {
 
+      float *egt_red_limit = link_dataref_flt("sim/aircraft/limits/red_hi_EGT",-2);
+      float *egt_yellow_limit = link_dataref_flt("sim/aircraft/limits/yellow_hi_EGT",-2);
+      float *egt_green_limit = link_dataref_flt("sim/aircraft/limits/green_hi_EGT",-2);
+
       float R = 16.0F;
       float min = 0.0F;
       float max = 1000.0F;
@@ -110,9 +114,9 @@ B737EICASEGT::~B737EICASEGT()
       glTranslatef(20, 20, 0);
 
       // gauge
-      if (value < 925)
+      if (value < *egt_yellow_limit)
 	glColor3ub(COLOR_GRAYBLUE);
-      else if(value < 950)
+      else if(value < *egt_red_limit)
 	glColor3ub(COLOR_YELLOW);
       else
 	glColor3ub(COLOR_RED);

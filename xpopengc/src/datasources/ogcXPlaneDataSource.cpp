@@ -92,7 +92,7 @@ void XPlaneDataSource::define_server(int port, string ip_address, int radardata)
   // UDP Server Port (OpenGC acts as UDP server for X-Plane Control Pad)
   udpServerPort = 48003;
   udpReadLeft=0;
-   int sendlen = 0; /* no sending */
+  int sendlen = 0; /* no sending */
   int recvlen = 8100; // 'xRAD' plus '\0' (5 bytes) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0    
   allocate_udpdata(sendlen,recvlen);
 
