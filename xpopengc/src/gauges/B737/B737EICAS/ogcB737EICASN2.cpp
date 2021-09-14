@@ -79,6 +79,8 @@ namespace OpenGC
 
     if (value != FLT_MISS) {
 
+      float *n2_red_limit = link_dataref_flt("sim/aircraft/limits/red_hi_N2",-2);
+
       float R = 16.0F;
       float min = 0.0F;
       float max = 105.0F;
@@ -97,7 +99,7 @@ namespace OpenGC
       glTranslatef(20, 20, 0);
 
       // gauge
-      if(value > 98)
+      if (value > *n2_red_limit)
 	glColor3ub(COLOR_RED);
       else
 	glColor3ub(COLOR_GRAYBLUE);
@@ -125,7 +127,7 @@ namespace OpenGC
       gluDeleteQuadric(qobj);
 
       // yellow stripe
-      float percentagey = 95 / (max - min) ;
+      float percentagey = 100 / (max - min) ;
       float degreeyellow = minDegrees + ((maxDegrees - minDegrees) * percentagey);
       glBegin(GL_LINE_STRIP);
       glColor3ub(COLOR_YELLOW);
@@ -139,7 +141,7 @@ namespace OpenGC
       glEnd();
 
       // red stripe
-      float percentager = 100 / (max - min) ;
+      float percentager = *n2_red_limit / (max - min);
       float degreered =  minDegrees + ((maxDegrees - minDegrees) * percentager);
       glBegin(GL_LINE_STRIP);
       glColor3ub(COLOR_RED);

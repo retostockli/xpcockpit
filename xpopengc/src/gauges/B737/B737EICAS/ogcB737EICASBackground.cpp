@@ -84,7 +84,12 @@ namespace OpenGC
       valve2 = link_dataref_flt("x737/ovh/fuelPanel/engValve2_annunc",-1);
       filter1 = link_dataref_flt("x737/ovh/fuelPanel/filterBypass1_annunc",-1);
       filter2 = link_dataref_flt("x737/ovh/fuelPanel/filterBypass2_annunc",-1);
-    } 
+    } else if (acf_type == 3) {
+      valve1 = link_dataref_flt("laminar/B738/engine/start_valve1",-1);
+      valve2 = link_dataref_flt("laminar/B738/engine/start_valve2",-1);
+      filter1 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_1",-1);
+      filter2 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_2",-1);
+    }
       
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -138,7 +143,7 @@ namespace OpenGC
     // warning annunciators
     m_pFontManager->SetSize(m_Font,3.0,3.0);
 
-    if (acf_type == 1) {
+    if ((acf_type == 1) || (acf_type == 3)) {
       if (*valve1 == 1.0) {
 	glColor3ub(COLOR_YELLOW);
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);

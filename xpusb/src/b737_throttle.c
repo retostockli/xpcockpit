@@ -372,6 +372,10 @@ void b737_throttle(void)
     /* Idle mode: H/W and X-Plane in same position */
     parkbrake_mode = 0;
   }
+
+  /* Parkbrake Servo is out of order, so set Parkbrake Mode to 1 */
+  parkbrake_mode = 1;
+  
   //printf("%i: HW %i XP %f \n",parkbrake_mode,parkbrake,*parkbrake_xplane);
   
   if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
@@ -656,7 +660,7 @@ void b737_throttle(void)
       ret = motors_output(device_dcmotor,3,&value,maxval);
     }
   }
-   
+  
   if (parkbrake_mode == 0) {
     /* disable Park Brake servo */
     value = -1.0;
@@ -677,7 +681,7 @@ void b737_throttle(void)
     if (*parkbrake_xplane != FLT_MISS) {
       value = (1.0-(*parkbrake_xplane))*(0.6-0.25)+0.25;
       //printf("A: %f %f \n",*parkbrake_xplane, value);
-      // IS MY SERVO OUT OF ORDER?
+      // MY SERVO IS OUT OF ORDER
       ret = servos_output(device_dcmotor,2,&value,minval,maxval,0,1023);
     }
   }

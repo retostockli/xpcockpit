@@ -96,13 +96,19 @@ namespace OpenGC
 
       int acf_type = m_pDataSource->GetAcfType();
 
-      float *n1_red_limit = link_dataref_flt("sim/aircraft/limits/red_hi_N1",INT_MISS);
+      float *n1_red_limit = link_dataref_flt("sim/aircraft/limits/red_hi_N1",-2);
 
       float *n1_green_limit;
       if (acf_type == 1) {
-	n1_green_limit = link_dataref_flt("x737/systems/eec/N1_limit",INT_MISS);
+	n1_green_limit = link_dataref_flt("x737/systems/eec/N1_limit",-2);
+      } else if (acf_type == 3) {
+	if (currentEngine == 1) {
+	  n1_green_limit = link_dataref_flt("laminar/B738/engine/eng1_N1_bug",-3);
+	} else {
+	  n1_green_limit = link_dataref_flt("laminar/B738/engine/eng2_N1_bug",-3);
+	}
       } else {
-	n1_green_limit = link_dataref_flt("sim/aircraft/limits/green_hi_N1",INT_MISS);
+	n1_green_limit = link_dataref_flt("sim/aircraft/limits/green_hi_N1",-2);
       }
 
       float R = 16.0F;
@@ -117,9 +123,13 @@ namespace OpenGC
 
       float max_green;
       if (*n1_green_limit != FLT_MISS) {
-	max_green = *n1_green_limit;
+	if (acf_type == 3) {
+	  max_green = 100.0 * *n1_green_limit;
+	} else {
+	  max_green = *n1_green_limit;
+	}
       } else {
-	max_green = 95.0F;
+	max_green = 98.0F;
       }
 
       float minDegrees = 90.0F;
@@ -137,7 +147,7 @@ namespace OpenGC
       glTranslatef(20, 20, 0);
 
       // gauge
-      if(value > 98)
+      if(value > max_green)
 	glColor3ub(COLOR_RED);
       else
 	glColor3ub(COLOR_GRAYBLUE);
