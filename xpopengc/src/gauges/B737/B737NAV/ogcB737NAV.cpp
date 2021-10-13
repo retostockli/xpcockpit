@@ -85,7 +85,7 @@ B737NAV::B737NAV()
   
   m_PhysicalSize.x = 200;
   m_PhysicalSize.y = 200;
-  
+
   B737NAVDrawWXR* pDrawWXR = new B737NAVDrawWXR();
   pDrawWXR->SetParentRenderObject(this);
   pDrawWXR->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -223,7 +223,7 @@ void B737NAV::Render()
     
     // Get Navigation Map Range Selector Position and determine maximum displayable range
     int *rangesel;
-    if ((acf_type == 2) || (acf_type == 3)) {
+    if (acf_type == 3) {
       if (is_captain) {
 	rangesel = link_dataref_int("laminar/B738/EFIS/capt/map_range");
       } else {
@@ -253,6 +253,10 @@ void B737NAV::Render()
       m_MapRange = 640.0;
     } else {
       m_MapRange = 40.0;
+    }
+    if (acf_type != 3) {
+      /* map range starts at 10 nm for regular ACF */
+      m_MapRange *= 2;
     }
 
     /* Centered Mode: forward range is only half of the selected range */

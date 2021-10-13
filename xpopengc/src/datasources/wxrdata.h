@@ -1,6 +1,6 @@
-/* This is the udpdata.h header to the udpdata.c code
+/* This is the wxrdata.h header to the wxrdata.c code
 
-   Copyright (C) 2009 - 2014  Reto Stockli
+   Copyright (C) 2021  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -14,13 +14,28 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-extern int udpSendBufferLen;
-extern int udpRecvBufferLen;
-extern char *udpSendBuffer;
-extern char *udpRecvBuffer;
-extern int udpReadLeft;                      /* counter of bytes to read from receive thread */
+#define WXR_MISS -9999.0
+
+extern int wxr_type;
+extern float wxr_lonmin;
+extern float wxr_lonmax;
+extern float wxr_latmin;
+extern float wxr_latmax;
+
+extern int wxr_nlon;
+extern int wxr_nlat;
+extern int wxr_pixperlon;
+extern int wxr_pixperlat;
+extern int wxr_ncol;
+extern int wxr_nlin;
+
+extern int wxr_phase; /* 0: getting bounds, 1: getting data */
+
+/* RGBA Array for later OpenGL Rendering */
+extern unsigned char ***wxr_image;
 
 /* prototype functions */
-void allocate_udpdata(int sendlen,int recvlen);
-void get_udpdata(char *data, int len);
-void deallocate_udpdata();
+
+void init_wxr(int type, char server_ip[]);
+void read_wxr(void);
+void exit_wxr(void);

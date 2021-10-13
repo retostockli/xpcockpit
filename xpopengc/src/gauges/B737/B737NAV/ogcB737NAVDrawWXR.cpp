@@ -30,8 +30,7 @@
 #include "B737/B737NAV/ogcB737NAV.h"
 #include "B737/B737NAV/ogcB737NAVDrawWXR.h"
 extern "C" {
-#include "udpdata.h"
-#include "handleudp.h"
+#include "wxrdata.h"
 }
 
 namespace OpenGC
@@ -44,25 +43,7 @@ namespace OpenGC
     m_Font = m_pFontManager->LoadDefaultFont();
     
     m_NAVGauge = NULL;
-
-    for (int i=0;i<TEX_HEIGHT;i++) {
-      for (int j=0;j<TEX_WIDTH;j++) {
-     
-	texture[i][j][0]=(GLubyte) 0;
-	texture[i][j][1]=(GLubyte) 0;
-	texture[i][j][2]=(GLubyte) 0;
-	texture[i][j][3]=(GLubyte) 255;
-
-	lltexture[i][j] = (GLubyte) 0;
-      }
-    }
-
-    m_OldLat = INT_MISS;
-    m_CenterLon = INT_MISS;
-    m_CenterLat = INT_MISS;
-    m_TextureCenterLon = FLT_MISS;
-    m_TextureCenterLat = FLT_MISS;
-    
+  
   }
 
   B737NAVDrawWXR::~B737NAVDrawWXR()
@@ -95,8 +76,9 @@ namespace OpenGC
     double easting;
     double dlon;
     double dlat;
-    int x;
-    int y;
+    int i;
+    int j;
+    int k;
     
     
     // double dtor = 0.0174533; /* radians per degree */
@@ -141,142 +123,38 @@ namespace OpenGC
     } else {
       nav_shows_wxr = link_dataref_int("sim/cockpit2/EFIS/EFIS_weather_on");
     }
-
-
-    // read buffer and fill it into regular lon/lat array with 60 minutes per lon/lat
-    //printf("%i \n ",udpReadLeft);
-	
-    while (udpReadLeft > 0) {
-      
-      pthread_mutex_lock(&exit_cond_lock);    
-      /* read from start of receive buffer */
-      memcpy(wxrBuffer,&udpRecvBuffer[0],wxrBufferLen);
-      /* shift remaining read buffer to the left */
-      memmove(&udpRecvBuffer[0],&udpRecvBuffer[wxrBufferLen],udpReadLeft-wxrBufferLen);    
-      /* decrease read buffer position and counter */
-      udpReadLeft -= wxrBufferLen;
-      pthread_mutex_unlock(&exit_cond_lock);
-	
-      /* check if we have new Radar data from CONTROL PAD Stream (Enable CONTROL PAD in the Net Ouput Screen) */
-      if (strncmp(wxrBuffer,"xRAD",4)==0) {
-	
-	int i,j;
-	
-	int lon_deg_west;
-	int lat_deg_south;
-	int lat_min_south;
-
-	/* valid coordinates ? */
-	if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
-
-
-	  if (m_CenterLon == INT_MISS) m_CenterLon = (int) aircraftLon;
-	  if (m_CenterLat == INT_MISS) m_CenterLat = (int) aircraftLat;
-	
-	  memcpy(&lon_deg_west,&wxrBuffer[5],sizeof(lon_deg_west));
-	  memcpy(&lat_deg_south,&wxrBuffer[5+4],sizeof(lat_deg_south));
-	  memcpy(&lat_min_south,&wxrBuffer[5+4+4],sizeof(lat_min_south));
-	  
-	  if ((lon_deg_west >= (m_CenterLon-(NLON-1)/2)) && (lon_deg_west <= (m_CenterLon+(NLON-1)/2)) &&
-	      (lat_deg_south >= (m_CenterLat-(NLAT-1)/2)) && (lat_deg_south <= (m_CenterLat+(NLAT-1)/2)) &&
-	      (lat_min_south != -1)) {
-
-	    if ((m_OldLat > lat_deg_south) && (m_OldLat != INT_MISS)) {
-	      /* scanning starts over from southern latitude, so put full scanned radar texture to GL */
-
-	      printf("Storing Radar Image \n");
-	      
-	      for (x=0;x<TEX_WIDTH;x++) {
-		for (y=0;y<TEX_HEIGHT;y++) {
-		  if (lltexture[y][x] == 0) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 1) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 2) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 3) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 4) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 100;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 5) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 140;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 6) {
-		    texture[y][x][0] = (GLubyte) 100;
-		    texture[y][x][1] = (GLubyte) 140;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 7) {
-		    texture[y][x][0] = (GLubyte) 140;
-		    texture[y][x][1] = (GLubyte) 140;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 8) {
-		    texture[y][x][0] = (GLubyte) 150;
-		    texture[y][x][1] = (GLubyte) 100;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else {
-		    texture[y][x][0] = (GLubyte) 150;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  }
-		}
-	      }   
-
-	      /* Store Current Center Lon/Lat as new Texture Center coordinates */
-	      /* Need to add 0.5 lon/lat since radar data specifies ll edge of center pixel */
-	      m_TextureCenterLon = ((float) m_CenterLon) + 0.5;
-	      m_TextureCenterLat = ((float) m_CenterLat) + 0.5;
-	      
-	      /* Update Center Longitude/Latitude of texture to new Lon/Lat of acf */
-	      m_CenterLon = (int) aircraftLon;
-	      m_CenterLat = (int) aircraftLat;
-	      
-	    }
-
-	    m_OldLat = lat_deg_south;
-	    
-	    i = (lon_deg_west - (m_CenterLon-(NLON-1)/2))*MINPERLON;
-	    j = (lat_deg_south - (m_CenterLat-(NLAT-1)/2))*MINPERLAT + lat_min_south;
-	  
-	    //printf("%i %i %i %i %i %i %i \n",m_CenterLon,m_CenterLat,lon_deg_west,lat_deg_south,lat_min_south,i,j);
-
-	    /* Store 61 bytes of 61 minutes west-east to current degree line */
-	    memcpy(&lltexture[j][i],&wxrBuffer[5+4+4+4],MINPERLON+1);
-
-	  }
-
-	}
-	
-      }
-      
-    } /* read left ? */
     
-    free(wxrBuffer);     
-
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((heading_map != FLT_MISS) && (*nav_shows_wxr == 1) &&
-	(udpRecvBuffer != NULL) && (mapMode != 3) && (!mapCenter)) {
-
-	    
-      // Shift center and rotate about heading
+	(wxr_image) && (mapMode != 3) && (!mapCenter)) {
+	        
+    // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
 
       /* valid coordinates and full radar image received */
-      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0) &&
-	  (m_TextureCenterLon != FLT_MISS) && (m_TextureCenterLat != FLT_MISS)) {
-      //	if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
+      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) &&
+	  (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
+	
+	/* Copy WXR data into GL Texture Array */
+	float textureCenterLon = (float) wxr_lonmin + (float) wxr_ncol / (float) wxr_pixperlon * 0.5;
+	float textureCenterLat = (float) wxr_latmin + (float) wxr_nlin / (float) wxr_pixperlat * 0.5;
 
+	/* miles per radar pixel. Each pixel .
+	   Each degree lat is 111 km apart and each mile is 1.852 km */
+	float mpplon =  111.0 / (float) wxr_pixperlon / 1.852;
+	float mpplat =  111.0 / (float) wxr_pixperlat / 1.852;
+
+	for (i = 0; i < wxr_nlin; i++) {
+	  for (j = 0; j < wxr_ncol; j++) {
+	    for (k = 0; k < 4; k++) {
+	      texture[i][j][k] = wxr_image[i][j][k];
+	    }
+	  }
+	}
+
+
+	
 	glPushMatrix();
 	
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
@@ -305,14 +183,14 @@ namespace OpenGC
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-		      TEX_WIDTH,  TEX_HEIGHT, 0, GL_RGBA,
+		      wxr_ncol,  wxr_nlin, 0, GL_RGBA,
 		      GL_UNSIGNED_BYTE, texture);
 
-	float scx = 0.5 * ((float) TEX_WIDTH) * MPP / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
-	float scy = 0.5 * ((float) TEX_HEIGHT) * MPP / mapRange * map_size;
-	float tx = (m_TextureCenterLon - aircraftLon) * ((float) MINPERLON) * MPP / mapRange * map_size *
+	float scx = 0.5 * ((float) wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
+	float scy = 0.5 * ((float) wxr_nlin) * mpplat / mapRange * map_size;
+	float tx = (textureCenterLon - aircraftLon) * ((float) wxr_pixperlon) * mpplon / mapRange * map_size *
 	  cos(M_PI / 180.0 * aircraftLat);
-	float ty = (m_TextureCenterLat - aircraftLat) * ((float) MINPERLAT) * MPP / mapRange * map_size;
+	float ty = (textureCenterLat - aircraftLat) * ((float) wxr_pixperlat) * mpplat / mapRange * map_size;
 	
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);

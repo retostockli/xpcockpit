@@ -15,7 +15,13 @@ void allocate_udpdata(int sendlen, int recvlen) {
   udpSendBuffer=malloc(udpSendBufferLen);
   udpRecvBuffer=malloc(udpRecvBufferLen);
 }
-  
+
+void deallocate_udpdata() {
+  free(udpSendBuffer);
+  free(udpRecvBuffer);
+}
+
+
 void get_udpdata(char *data, int len) {
 
   data = udpRecvBuffer;

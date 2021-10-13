@@ -1,0 +1,20 @@
+15 PIN Connector
+2	Continuous Horn		GND
+3	Intermittent Horn	GND
+4	AP Disconnect		GND
+5	Amplifier		28V	Fixed
+6	Amplifier		GND	Fixed
+7	Hi Chime		28V
+8	Hi/Low Chime		28V
+9	Low Chime		28V
+10	Clacker No 1		GND	Fixed
+11	Clacker No 1		28V
+12	Fire Bell		GND	Fixed
+13	Fire Bell		28V
+14 Not Known
+15	NA			GND	Fixed
+
+
+5 PIN Connector
+1	Clacker No 2		28V
+2	Clacker No 2		GND	Fixed

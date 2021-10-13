@@ -1,5 +1,5 @@
-/* This is the handleserver.c code which communicates flight data to/from the X-Plane 
-   flight simulator via TCP/IP interface
+/* This is the handleudp.c code which communicates flight data to/from the X-Plane 
+   flight simulator via UDP interface
 
    Copyright (C) 2009 - 2014  Reto Stockli
    Adaptation to Linux compilation by Hans Jansen
@@ -97,7 +97,7 @@ int init_udp_server()
 }
 
 /* set up udp socket with given server address and port */
-int init_udp(void)
+int init_udp_client(void)
 {
   int ret = 0;
 
@@ -153,12 +153,24 @@ int init_udp_receive() {
   return 0;
 }
 
-/* end udp connection */
-void exit_udp(void)
+/* end udp server connection and close down read thread */
+void exit_udp_server(void)
 {
 
   poll_thread_exit_code = 1;
   pthread_join(poll_thread, NULL);
+
+#ifdef WIN
+  closesocket(udpSocket);
+#else
+  close(udpSocket);
+#endif
+}
+
+
+/* end udp client connection */
+void exit_udp_client(void)
+{
 
 #ifdef WIN
   closesocket(udpSocket);
@@ -234,11 +246,9 @@ int send_udp_to_server(void) {
 
   int n;
 
-  /*
-  n = sendto(udpSocket, udpSendBuffer, udpSendBufferLen, 
-	 MSG_CONFIRM, (const struct sockaddr *) &udpServerAddr, 
-	 sizeof(udpServerAddr));
-  */
+  //  n = sendto(udpSocket, udpSendBuffer, udpSendBufferLen, 
+  //	 MSG_CONFIRM, (const struct sockaddr *) &udpServerAddr, sizeof(udpServerAddr));
+
   n = sendto(udpSocket, udpSendBuffer, udpSendBufferLen, 
 	 0, (const struct sockaddr *) &udpServerAddr, sizeof(udpServerAddr));
   
@@ -252,14 +262,22 @@ int recv_udp_from_server(void) {
 
   int n; 
   
-  int addrlen = sizeof(udpServerAddr);
-  /*
-  n = recvfrom(udpSocket, udpRecvBuffer, udpRecvBufferLen, 
-	       MSG_DONTWAIT, (struct sockaddr *) &udpServerAddr, 
-	       &addrlen);
-  */
-  n = recvfrom(udpSocket, udpRecvBuffer, udpRecvBufferLen, 
-	       0, (struct sockaddr *) &udpServerAddr, &addrlen);
+  //socklen_t addrlen = sizeof(udpServerAddr);
+
+  /* Non-Blocking */
+  //n = recvfrom(udpSocket, udpRecvBuffer, udpRecvBufferLen, 
+  //	       MSG_DONTWAIT, (struct sockaddr *) &udpServerAddr, &addrlen);
+
+  /* Blocking */ 
+  //n = recvfrom(udpSocket, udpRecvBuffer, udpRecvBufferLen, 
+  //	       0, (struct sockaddr *) &udpServerAddr, &addrlen);
+
+  /* Nonblocking */
+  n = recv(udpSocket, udpRecvBuffer, udpRecvBufferLen, MSG_DONTWAIT);
+
+  /* Blocking */
+  //n = recv(udpSocket, udpRecvBuffer, udpRecvBufferLen, 0);
+
 
   //printf("Received from X-Plane: %i \n",n);
 
