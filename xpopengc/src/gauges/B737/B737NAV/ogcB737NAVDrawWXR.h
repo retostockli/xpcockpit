@@ -52,8 +52,6 @@ protected:
 
   /* Pointer to the calling Navigation Gauge */
   B737NAV* m_NAVGauge;
-
-  GLubyte texture[300][420][4]; 
   
 };
 

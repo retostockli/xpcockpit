@@ -144,28 +144,12 @@ namespace OpenGC
 	   Each degree lat is 111 km apart and each mile is 1.852 km */
 	float mpplon =  111.0 / (float) wxr_pixperlon / 1.852;
 	float mpplat =  111.0 / (float) wxr_pixperlat / 1.852;
-
-	for (i = 0; i < wxr_nlin; i++) {
-	  for (j = 0; j < wxr_ncol; j++) {
-	    for (k = 0; k < 4; k++) {
-	      texture[i][j][k] = wxr_image[i][j][k];
-	    }
-	  }
-	}
-
-
 	
 	glPushMatrix();
 	
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
 	glRotatef(heading_map, 0, 0, 1);
 
-
-	// render the Radar texture
-	//	glPushMatrix();
-	// GLuint texture_map;
-	// glGenTextures(1, &texture_map);
-	// glBindTexture(GL_TEXTURE_2D, texture_map);
 
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -184,7 +168,7 @@ namespace OpenGC
 	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
 		      wxr_ncol,  wxr_nlin, 0, GL_RGBA,
-		      GL_UNSIGNED_BYTE, texture);
+		      GL_UNSIGNED_BYTE, wxr_image);
 
 	float scx = 0.5 * ((float) wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
 	float scy = 0.5 * ((float) wxr_nlin) * mpplat / mapRange * map_size;
@@ -192,10 +176,8 @@ namespace OpenGC
 	  cos(M_PI / 180.0 * aircraftLat);
 	float ty = (textureCenterLat - aircraftLat) * ((float) wxr_pixperlat) * mpplat / mapRange * map_size;
 	
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-	//glBindTexture(GL_TEXTURE_2D, texture_map);	  
 
 	glBegin(GL_TRIANGLES);
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
@@ -205,16 +187,6 @@ namespace OpenGC
         glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
         glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
 	glEnd();
-
-	/*
-	// DEPRECATED Do not use any more
-	glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
-        glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
-        glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
-        glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
-	glEnd();
-	*/
 
 	glDisable (GL_TEXTURE_2D);
 	glFlush();

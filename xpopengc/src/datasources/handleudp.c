@@ -79,7 +79,11 @@ int init_udp_server()
 
     /* set to blocking (0). Non-blocking (1) is not suitable for the threaded reading */
     unsigned long nSetSocketType = 0;
+#ifdef WIN
+    if (ioctlsocket(udpSocket,FIONBIO,&nSetSocketType) < 0) {
+#else
     if (ioctl(udpSocket,FIONBIO,&nSetSocketType) < 0) {
+#endif
       printf("HANDLEUDP: Server set to non-blocking failed\n");
       return -1;
     } else {
@@ -172,6 +176,9 @@ void exit_udp_server(void)
 void exit_udp_client(void)
 {
 
+  poll_thread_exit_code = 1;
+  pthread_join(poll_thread, NULL);
+
 #ifdef WIN
   closesocket(udpSocket);
 #else
@@ -206,9 +213,8 @@ void *poll_thread_main()
       } 
     } else if ((ret > 0) && (ret <= udpRecvBufferLen)) {
       /* read is ok */
-      
       /* are we reading WXR data ? */
-      if (strncmp(buffer,"xRAD",4)==0) {
+      if ((strncmp(buffer,"xRAD",4)==0) || (strncmp(buffer,"RADR",4)==0)) {
 	  
 	/* does it fit into read buffer? */
 	if (ret <= (udpRecvBufferLen - udpReadLeft)) {

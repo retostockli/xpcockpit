@@ -15,6 +15,7 @@
 */
 
 #define WXR_MISS -9999.0
+#define MAXRADAR 20 /* maximum number of WXR pixels to retrieve in Type 2 */
 
 extern int wxr_type;
 extern float wxr_lonmin;
@@ -22,8 +23,6 @@ extern float wxr_lonmax;
 extern float wxr_latmin;
 extern float wxr_latmax;
 
-extern int wxr_nlon;
-extern int wxr_nlat;
 extern int wxr_pixperlon;
 extern int wxr_pixperlat;
 extern int wxr_ncol;
@@ -31,8 +30,9 @@ extern int wxr_nlin;
 
 extern int wxr_phase; /* 0: getting bounds, 1: getting data */
 
-/* RGBA Array for later OpenGL Rendering */
-extern unsigned char ***wxr_image;
+/* RGBA Array for later OpenGL Rendering
+   Use single array instead of 3D array since it has to be contiguous memory */
+extern unsigned char *wxr_image;
 
 /* prototype functions */
 
