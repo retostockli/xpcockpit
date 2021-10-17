@@ -380,22 +380,23 @@ void exit_wxr() {
   }
   */
 
-  /* generate send message to terminate UDP transfer */
-  sprintf(udpSendBuffer,"RADR %i",0);
-  udpSendBuffer[4]='\0';
-  udpSendBuffer[7]='\0';
-  
-  int ret = send_udp_to_server();
-  printf("Sent UDP Exit String to X-Plane with Length: %i \n",ret);
-
   if (wxr_type == 1) {
       exit_udp_server();
       deallocate_udpdata();
   }
   
   if (wxr_type == 2) {
-      exit_udp_client();
-      deallocate_udpdata();
+
+    /* generate send message to terminate UDP transfer */
+    sprintf(udpSendBuffer,"RADR %i",0);
+    udpSendBuffer[4]='\0';
+    udpSendBuffer[7]='\0';
+    
+    int ret = send_udp_to_server();
+    printf("Sent UDP Exit String to X-Plane with Length: %i \n",ret);
+    
+    exit_udp_client();
+    deallocate_udpdata();
   }
   
 }
