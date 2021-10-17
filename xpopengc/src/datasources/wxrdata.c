@@ -42,7 +42,8 @@ int wxr_pixperlon_tmp;
 int wxr_pixperlat_tmp;
 int wxr_ncol_tmp;
 int wxr_nlin_tmp;
-char **wxr_data_tmp;
+unsigned char **wxr_data_tmp;
+int **wxr_height_tmp;
 
 
 int wxr_type;
@@ -59,7 +60,8 @@ int wxr_nlin;
 
 int wxr_phase;
 
-unsigned char *wxr_image;
+unsigned char **wxr_data;
+int**wxr_height;
 
 /* Type 1: WXR data from X-Plane's Control Pad: we act as server */
 /* Type 2: WXR data from X-Plane's regular UDP stream: we act as client */
@@ -193,7 +195,7 @@ void read_wxr() {
 	  //printf("%i lon %f lat %f hgt %f lev %d \n",r,lon,lat,hgt,lev);
 	}
 	  
-	if (wxr_phase == 0) {
+	if ((wxr_phase == 0) && (lon != 0.0) && (lat != 0.0)) {
 	  /* scanning starts from southern latitude and has an inner loop over longitudes from W->E */
 	  
 	  if (wxr_lonmax_tmp == WXR_MISS) {
@@ -227,15 +229,20 @@ void read_wxr() {
 	    printf("WXR Data size: %i x %i \n",wxr_ncol_tmp, wxr_nlin_tmp);
 	    
 	    /* allocate memory for temporary wxr data storage */
-	    wxr_data_tmp = (char**)malloc(wxr_nlin_tmp * sizeof(char*));
-	    for (i = 0; i < wxr_nlin_tmp; i++)
-	      wxr_data_tmp[i] = (char*)malloc(wxr_ncol_tmp * sizeof(char));
+	    wxr_data_tmp = (unsigned char**)malloc(wxr_nlin_tmp * sizeof(unsigned char*));
+	    wxr_height_tmp = (int**)malloc(wxr_nlin_tmp * sizeof(int*));
+	    for (i = 0; i < wxr_nlin_tmp; i++) {
+	      wxr_data_tmp[i] = (unsigned char*)malloc(wxr_ncol_tmp * sizeof(unsigned char));
+	      wxr_height_tmp[i] = (int*)malloc(wxr_ncol_tmp * sizeof(int));
+	    }
 	    
-	    /* Reset array entries to 0 */
-	    /* Note that wxr_data_tmp[i][j] is same as *(*(wxr_data_tmp+i)+j) */
+	    /* Reset WXR entries to 0 */
+	    /* Reset Height to 10'000 m */
 	    for (i = 0; i < wxr_nlin_tmp; i++)
-	      for (j = 0; j < wxr_ncol_tmp; j++)
-		wxr_data_tmp[i][j] = 0; 
+	      for (j = 0; j < wxr_ncol_tmp; j++) {
+		wxr_data_tmp[i][j] = 0;
+		wxr_height_tmp[i][j] = 0;
+	      }
 	    
 	    wxr_phase = 1;
 	    
@@ -247,7 +254,7 @@ void read_wxr() {
 	  } /* Bounds complete */
 	} /* Phase 0 */
 
-	if (wxr_phase == 1) {
+	if ((wxr_phase == 1) && (lon != 0.0) && (lat != 0.0)) {
 
 	  if (wxr_lonmax_tmp == WXR_MISS) {
 	    wxr_lonmax_tmp = lon;
@@ -258,9 +265,18 @@ void read_wxr() {
 	  if (lat > wxr_latmax_tmp) wxr_latmax_tmp = lat;
 	  if ((lon < wxr_lonmax_tmp) && (lat < wxr_latmax_tmp)) {
 	    printf("WXR Data reception complete \n");
-	    
+
 	    /* free WXR array and recreate it */
-	    if (wxr_image) free(wxr_image);
+	    if (wxr_data) {
+	      for (i = 0; i < wxr_nlin; i++)
+		free(wxr_data[i]);
+	      free(wxr_data);
+	    }
+	    if (wxr_height) {
+	      for (i = 0; i < wxr_nlin; i++)
+		free(wxr_height[i]);
+	      free(wxr_height);
+	    }
 	    
 	    wxr_pixperlon = wxr_pixperlon_tmp;
 	    wxr_pixperlat = wxr_pixperlat_tmp;
@@ -270,65 +286,28 @@ void read_wxr() {
 	    wxr_nlin = wxr_nlin_tmp;
 	    wxr_lonmax = wxr_lonmin + wxr_ncol / wxr_pixperlon;
 	    wxr_latmax = wxr_latmin + wxr_nlin / wxr_pixperlat;
-	    
-	    wxr_image = (unsigned char*)malloc(wxr_nlin * wxr_ncol * 4 * sizeof(unsigned char));
+
+	    wxr_data = (unsigned char**)malloc(wxr_nlin * sizeof(unsigned char*));
+	    wxr_height = (int**)malloc(wxr_nlin * sizeof(int*));
+	    for (i = 0; i < wxr_nlin; i++) {
+	      wxr_data[i] = (unsigned char*)malloc(wxr_ncol * sizeof(unsigned char));
+	      wxr_height[i] = (int*)malloc(wxr_ncol * sizeof(int));
+	    }
 	    
 	    /* copy temporary WXR array to WXR array */
 	    for (i = 0; i < wxr_nlin; i++) {
 	      for (j = 0; j < wxr_ncol; j++) {
-		if (wxr_data_tmp[i][j] == 0) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 0;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 0;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 0;
-		} else if (wxr_data_tmp[i][j] == 1) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 0;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 0;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 0;
-		} else if (wxr_data_tmp[i][j] == 2) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 0;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 0;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 0;
-		} else if (wxr_data_tmp[i][j] == 3) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 0;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 0;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 0;
-		} else if (wxr_data_tmp[i][j] == 4) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 81;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 225;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 41;
-		} else if (wxr_data_tmp[i][j] == 5) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 54;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 150;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 20;
-		} else if (wxr_data_tmp[i][j] == 6) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 54;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 150;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 20;
-		} else if (wxr_data_tmp[i][j] == 7) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 233;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 183;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 52;
-		} else if (wxr_data_tmp[i][j] == 8) {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 233;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 183;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 52;
-		} else {
-		  wxr_image[i*4*wxr_ncol+j*4+0] = 255;
-		  wxr_image[i*4*wxr_ncol+j*4+1] = 28;
-		  wxr_image[i*4*wxr_ncol+j*4+2] = 15;
-		  /* Magenta for Turbulence, however not implemented in X-Plane */
-		  //wxr_image[i*4*wxr_ncol+j*4+0] = 255;
-		  //wxr_image[i*4*wxr_ncol+j*4+1] = 45;
-		  //wxr_image[i*4*wxr_ncol+j*4+2] = 255;
-		}
-		wxr_image[i*4*wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+		wxr_data[i][j] = wxr_data_tmp[i][j];
+		wxr_height[i][j] = wxr_height_tmp[i][j];
 	      }
 	    }
 		
 	    /* Remove Temporary WXR Array */
-	    for (i = 0; i < wxr_nlin; i++)
+	    for (i = 0; i < wxr_nlin; i++) {
 	      free(wxr_data_tmp[i]);
-	    free(wxr_data_tmp);
+	      free(wxr_height_tmp[i]);
+	    }
+	    free(wxr_height_tmp);
 	    
 	    /* prepare for new scanning of bounds */
 	    wxr_lonmin_tmp = WXR_MISS;
@@ -342,7 +321,9 @@ void read_wxr() {
 	    /* Receiving domain to temporary array */
 
 	    if (wxr_type == 1) {
-	    
+	      /* WXR Levels from 0-9 and No Height Information */
+	      /* WXR every arc minute (60 per lon and 60 per lat */
+	      
 	      if ((lat_min_south != -1) && (lat_min_south != 60)) {
 		i = (lat - wxr_latmin_tmp)*wxr_pixperlat_tmp + lat_min_south;
 		j = (lon - wxr_lonmin_tmp)*wxr_pixperlon_tmp;
@@ -351,15 +332,19 @@ void read_wxr() {
 		//	     lon,lat,lat_min_south,j,i,wxrBuffer[5+4+4+4+10]);
 		
 		for (k = 0; k < wxr_pixperlon_tmp; k++) {
-		  wxr_data_tmp[i][j+k] = wxrBuffer[5+4+4+4+k];
+		  wxr_data_tmp[i][j+k] = wxrBuffer[5+4+4+4+k] * 10;
 		}
 	      }
 		
 	    } else {
+	      /* WXR Levels from 0-100 and Height Information */
+	      /* WXR every arc minute for lat, but thinning lon resolution with higher lats */
+	      
 	      i = (lat - wxr_latmin_tmp)*wxr_pixperlat_tmp;
 	      j = (lon - wxr_lonmin_tmp)*wxr_pixperlon_tmp;
 	      if ((i>=0)&&(i<wxr_nlin_tmp)&&(j>=0)&&(j<wxr_ncol_tmp)) {
-		wxr_data_tmp[i][j] = lev/10;
+		wxr_data_tmp[i][j] = 0.9 * lev;
+		wxr_height_tmp[i][j] = (int) hgt;
 	      }
 	    }
 	      
@@ -378,6 +363,22 @@ void read_wxr() {
 }
 
 void exit_wxr() {
+
+  int i;
+
+  /*
+  if (wxr_data) {
+    for (i = 0; i < wxr_nlin; i++)
+      free(wxr_data[i]);
+    free(wxr_data);
+  }
+
+  if (wxr_data_tmp) {
+    for (i = 0; i < wxr_nlin_tmp; i++)
+      free(wxr_data_tmp[i]);
+    free(wxr_data_tmp);
+  }
+  */
 
   /* generate send message to terminate UDP transfer */
   sprintf(udpSendBuffer,"RADR %i",0);

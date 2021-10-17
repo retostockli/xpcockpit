@@ -30,9 +30,8 @@ extern int wxr_nlin;
 
 extern int wxr_phase; /* 0: getting bounds, 1: getting data */
 
-/* RGBA Array for later OpenGL Rendering
-   Use single array instead of 3D array since it has to be contiguous memory */
-extern unsigned char *wxr_image;
+extern unsigned char **wxr_data;
+extern int **wxr_height;
 
 /* prototype functions */
 

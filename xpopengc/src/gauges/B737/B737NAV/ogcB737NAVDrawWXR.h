@@ -53,6 +53,13 @@ protected:
   /* Pointer to the calling Navigation Gauge */
   B737NAV* m_NAVGauge;
   
+  /* RGBA Array for later OpenGL Rendering
+     Use single array instead of 3D array since it has to be contiguous memory */
+  unsigned char *wxr_image;
+
+  int m_wxr_ncol;
+  int m_wxr_nlin;
+  
 };
 
 } // end namespace OpenGC

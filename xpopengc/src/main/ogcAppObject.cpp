@@ -201,11 +201,11 @@ namespace OpenGC
     
     // Every time we loop we grab some new data and re-render the window
     m_pDataSource->OnIdle();
-    //    if ((numreceived > 0) || (m_InitState <= 1)) {
+    if ((numreceived > 0) || (m_InitState <= 1)) {
       //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
       Fl::flush();
-      //      }
+    }
     if (m_InitState == 1) m_InitState++;
   }
 

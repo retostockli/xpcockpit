@@ -43,6 +43,9 @@ namespace OpenGC
     m_Font = m_pFontManager->LoadDefaultFont();
     
     m_NAVGauge = NULL;
+
+    m_wxr_ncol = 0;
+    m_wxr_nlin = 0;
   
   }
 
@@ -55,11 +58,7 @@ namespace OpenGC
   void B737NAVDrawWXR::Render()
   {
     GaugeComponent::Render();
-
-    char *wxrBuffer;
-    int wxrBufferLen = 81;
-    wxrBuffer=(char*) malloc(wxrBufferLen);
-    
+   
     int acf_type = m_pDataSource->GetAcfType();
   
     bool is_captain = (this->GetArg() == 0);
@@ -72,13 +71,8 @@ namespace OpenGC
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
     // float lineWidth = 3.0;
 
-    double northing;
-    double easting;
-    double dlon;
-    double dlat;
     int i;
     int j;
-    int k;
     
     
     // double dtor = 0.0174533; /* radians per degree */
@@ -123,11 +117,15 @@ namespace OpenGC
     } else {
       nav_shows_wxr = link_dataref_int("sim/cockpit2/EFIS/EFIS_weather_on");
     }
+
+    /* Sample Datarefs for controlling WXR gain and tilt */
+    float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2); /* Gain should go from 0.1 .. 2.0 */
+    float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2); /* Tilt in degrees up/down : not implemented yet */
     
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((heading_map != FLT_MISS) && (*nav_shows_wxr == 1) &&
-	(wxr_image) && (mapMode != 3) && (!mapCenter)) {
+	(wxr_data) && (mapMode != 3) && (!mapCenter)) {
 	        
     // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -144,6 +142,73 @@ namespace OpenGC
 	   Each degree lat is 111 km apart and each mile is 1.852 km */
 	float mpplon =  111.0 / (float) wxr_pixperlon / 1.852;
 	float mpplat =  111.0 / (float) wxr_pixperlat / 1.852;
+
+	/* free WXR array and recreate it if dimensions have changed */
+	if ((m_wxr_ncol != wxr_ncol) || (m_wxr_nlin != wxr_nlin)) {
+	  m_wxr_ncol = wxr_ncol;
+	  m_wxr_nlin = wxr_nlin;
+	  if (wxr_image) free(wxr_image);	    
+	  wxr_image = (unsigned char*)malloc(m_wxr_nlin * m_wxr_ncol * 4 * sizeof(unsigned char));
+	}
+
+	float gain = *wxr_gain;
+	if (gain == FLT_MISS) gain = 1.0;
+	if (gain < 0.1) gain = 0.1;
+	if (gain > 2.0) gain = 2.0;
+	
+	/* copy temporary WXR array to WXR array */
+	for (i = 0; i < m_wxr_nlin; i++) {
+	  for (j = 0; j < m_wxr_ncol; j++) {
+	    
+	    if (wxr_data[i][j]*gain == 0) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	    } else if (wxr_data[i][j]*gain <= 10) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	    } else if (wxr_data[i][j]*gain <= 20) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	    } else if (wxr_data[i][j]*gain <= 30) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	    } else if (wxr_data[i][j]*gain <= 40) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 81;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 225;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 41;
+	    } else if (wxr_data[i][j]*gain <= 50) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
+	    } else if (wxr_data[i][j]*gain <= 60) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
+	    } else if (wxr_data[i][j]*gain <= 70) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
+	    } else if (wxr_data[i][j]*gain <= 80) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
+	    } else if (wxr_data[i][j]*gain <= 90) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 255;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 28;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 15;
+	    } else {
+	      /* Magenta for Turbulence, not implemented in X-Plane, but take the highest level */
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 200;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 45;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 200;
+	    }
+	    wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	  }
+	}
 	
 	glPushMatrix();
 	
@@ -167,11 +232,11 @@ namespace OpenGC
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-		      wxr_ncol,  wxr_nlin, 0, GL_RGBA,
+		      m_wxr_ncol,  m_wxr_nlin, 0, GL_RGBA,
 		      GL_UNSIGNED_BYTE, wxr_image);
 
-	float scx = 0.5 * ((float) wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
-	float scy = 0.5 * ((float) wxr_nlin) * mpplat / mapRange * map_size;
+	float scx = 0.5 * ((float) m_wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
+	float scy = 0.5 * ((float) m_wxr_nlin) * mpplat / mapRange * map_size;
 	float tx = (textureCenterLon - aircraftLon) * ((float) wxr_pixperlon) * mpplon / mapRange * map_size *
 	  cos(M_PI / 180.0 * aircraftLat);
 	float ty = (textureCenterLat - aircraftLat) * ((float) wxr_pixperlat) * mpplat / mapRange * map_size;
@@ -242,14 +307,16 @@ namespace OpenGC
 	glPopMatrix();
  	
       } // valid acf coordinates
-   
+
+    }
+    
+    if ((*nav_shows_wxr == 1) && (mapMode != 3) && (!mapCenter)) {   
       // plot map options
       glPushMatrix();
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       glColor3ub(COLOR_LIGHTBLUE);
       m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"WXR",m_Font);
       glPopMatrix();
-
     }
     
   }

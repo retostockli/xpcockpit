@@ -26,7 +26,7 @@
 
 sudo apt install mc -y
 sudo apt install emacs -y
-sudo apt install fltk1.3-dev -y
+sudo apt install libfltk1.3-dev -y
 sudo apt install libftgl-dev -y
 sudo apt install libfreetype6-dev -y
 sudo apt install libudev-dev -y
