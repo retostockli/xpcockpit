@@ -1,0 +1,4 @@
+# found in: /etc/sudoers.d/010_pi-nopasswd
+# change to allow shutdown / restart etc without password
+
+stockli ALL=(ALL) NOPASSWD: ALL

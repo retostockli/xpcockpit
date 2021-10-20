@@ -60,7 +60,7 @@
 
 extern "C" {
 #include "handleserver.h"
-#include "handleudp.h"
+#include "wxrdata.h"
 #include "common.h"
 }
 
@@ -75,31 +75,17 @@ void XPlaneDataSource::define_server(int port, string ip_address, int radardata)
 {
   int n;
 
-  printf("Contacting xpserver plugin at IP %s Port %i \n",ip_address.c_str(), port);
+  printf("Contacting xpserver plugin at IP %s Port %i %i \n",ip_address.c_str(), port,radardata);
   // TCP Server (xpserver running as an X-Plane plugin)
   strncpy(server_ip,ip_address.c_str(),ip_address.length()); 
   server_port = port;
 
-  strcpy(udpServerIP,ip_address.c_str());
-
   /* initialize TCP/IP interface */
   if (initialize_tcpip() < 0) exit(-8);
 
-  /* initialize UDP socket if needed for WXR data from X-Plane*/
+  /* initialize UDP interface to read WXR data */
+  init_wxr(radardata,server_ip);
 
-  /* use control pad xRAD UDP stream */
-  
-  // UDP Server Port (OpenGC acts as UDP server for X-Plane Control Pad)
-  udpServerPort = 48003;
-  udpReadLeft=0;
-   int sendlen = 0; /* no sending */
-  int recvlen = 8100; // 'xRAD' plus '\0' (5 bytes) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0    
-  allocate_udpdata(sendlen,recvlen);
-
-  if (radardata == 1) {
-    if (init_udp_server() < 0) exit(-8);
-    if (init_udp_receive() < 0) exit(-9);
-  }
 }
 
 XPlaneDataSource::XPlaneDataSource()
@@ -124,8 +110,8 @@ XPlaneDataSource::~XPlaneDataSource()
   /* cancel tcp/ip connection */
   exit_tcpip();
 
-  /* cancel udp socket */
-  exit_udp();
+  /* cancel wxr udp socket */
+  exit_wxr();
   
   /* free local dataref structure */
   clear_dataref();
@@ -165,7 +151,8 @@ void XPlaneDataSource::OnIdle()
   /* send data to X-Plane via TCP/IP */
   if (send_server()<0) exit(-11);
 
-  // WXR Data Reading is done asynchronously with read thread initialized above and data is read in NAV Gauge
+  /* WXR Data Reading */
+  read_wxr();
   
 } // end "OnIdle()"
 

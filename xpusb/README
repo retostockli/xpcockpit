@@ -53,6 +53,15 @@ separately).
 HOW TO OPERATE
 ==============
 
+Install gcc and build essentials, autotools etc:
+sudo apt install build-essential -y
+sudo apt install autoconf -y
+
+Resolve dependencies: libudev
+Install with e.g. Debian/Ubuntu:
+sudo apt install libudev-dev -y
+
+
 If you cloned from git first run these in order to populate all needed automake/autoconf files:
 autoreconf
 automake --add-missing

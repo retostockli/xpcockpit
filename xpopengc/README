@@ -15,6 +15,7 @@ was removed (who cares about windows anyway ...).
 
 Installation Dependencies
 - gcc/g++ compiler
+- gnu Autotools / Autoconf
 - FTGL library (=2.1.2 stable release, 2.1.3 and above does not work yet)
 - FLTK library (>=1.1.7)
 - Freetype library (>=2.1.9)
@@ -22,7 +23,14 @@ Installation Dependencies
 - OpenGL library (GL and GLU)
 
 Installation How-to
-- resolve above depencies
+- resolve above depencies, for debian/ubuntu:
+
+sudo apt install libfltk1.3-dev -y
+sudo apt install libftgl-dev -y
+sudo apt install libfreetype6-dev -y
+sudo apt install build-essential -y
+sudo apt install autoconf -y
+
 
 In case you cloned from git, please first run these in order to complete automake/autoconf file structure:
 autoreconf

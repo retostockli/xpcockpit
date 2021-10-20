@@ -46,6 +46,7 @@
 extern "C" {
 #include "dictionary.h"
 #include "iniparser.h"
+#include "udpdata.h"
 }
 #include "ogcAppObject.h"
 #include "ogcRenderObject.h"
@@ -55,12 +56,6 @@ extern "C" {
 // but in the worst case all will at least default
 // to a basic data source
 #include "ogcXPlaneDataSource.h"
-
-/*
-  #include "ogcFSUIPCDerivedDataSource.h"
-  #include "ogcFGDataSource.h"
-  #include "ogcEGyroDataSource.h"
-*/
 
 //-----------Gauges------------
 #include "Dummy/ogcDummyGauge.h"
@@ -210,7 +205,7 @@ namespace OpenGC
       //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
       Fl::flush();
-      }
+    }
     if (m_InitState == 1) m_InitState++;
   }
 
@@ -303,7 +298,9 @@ namespace OpenGC
       m_customdata = iniparser_getint(ini,"General:CustomData", default_customdata);
 
       // whether to use X-Plane's UDP-based WXR radar data
-      // (turn on control pad under network and put IP address of this computer here)
+      // 0: do not receive WXR data
+      // 1: turn on control pad under network and put IP address of this computer here
+      // 2: use regular UDP data stream of x-plane
       m_radardata = iniparser_getint(ini,"General:RadarData", default_radardata);
 
       // Initialize the nav database

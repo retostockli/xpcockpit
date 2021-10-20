@@ -30,8 +30,7 @@
 #include "B737/B737NAV/ogcB737NAV.h"
 #include "B737/B737NAV/ogcB737NAVDrawWXR.h"
 extern "C" {
-#include "udpdata.h"
-#include "handleudp.h"
+#include "wxrdata.h"
 }
 
 namespace OpenGC
@@ -45,24 +44,9 @@ namespace OpenGC
     
     m_NAVGauge = NULL;
 
-    for (int i=0;i<TEX_HEIGHT;i++) {
-      for (int j=0;j<TEX_WIDTH;j++) {
-     
-	texture[i][j][0]=(GLubyte) 0;
-	texture[i][j][1]=(GLubyte) 0;
-	texture[i][j][2]=(GLubyte) 0;
-	texture[i][j][3]=(GLubyte) 255;
-
-	lltexture[i][j] = (GLubyte) 0;
-      }
-    }
-
-    m_OldLat = INT_MISS;
-    m_CenterLon = INT_MISS;
-    m_CenterLat = INT_MISS;
-    m_TextureCenterLon = FLT_MISS;
-    m_TextureCenterLat = FLT_MISS;
-    
+    m_wxr_ncol = 0;
+    m_wxr_nlin = 0;
+  
   }
 
   B737NAVDrawWXR::~B737NAVDrawWXR()
@@ -74,11 +58,7 @@ namespace OpenGC
   void B737NAVDrawWXR::Render()
   {
     GaugeComponent::Render();
-
-    char *wxrBuffer;
-    int wxrBufferLen = 81;
-    wxrBuffer=(char*) malloc(wxrBufferLen);
-    
+   
     int acf_type = m_pDataSource->GetAcfType();
   
     bool is_captain = (this->GetArg() == 0);
@@ -91,12 +71,8 @@ namespace OpenGC
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
     // float lineWidth = 3.0;
 
-    double northing;
-    double easting;
-    double dlon;
-    double dlat;
-    int x;
-    int y;
+    int i;
+    int j;
     
     
     // double dtor = 0.0174533; /* radians per degree */
@@ -142,152 +118,103 @@ namespace OpenGC
       nav_shows_wxr = link_dataref_int("sim/cockpit2/EFIS/EFIS_weather_on");
     }
 
-
-    // read buffer and fill it into regular lon/lat array with 60 minutes per lon/lat
-    //printf("%i \n ",udpReadLeft);
-	
-    while (udpReadLeft > 0) {
-      
-      pthread_mutex_lock(&exit_cond_lock);    
-      /* read from start of receive buffer */
-      memcpy(wxrBuffer,&udpRecvBuffer[0],wxrBufferLen);
-      /* shift remaining read buffer to the left */
-      memmove(&udpRecvBuffer[0],&udpRecvBuffer[wxrBufferLen],udpReadLeft-wxrBufferLen);    
-      /* decrease read buffer position and counter */
-      udpReadLeft -= wxrBufferLen;
-      pthread_mutex_unlock(&exit_cond_lock);
-	
-      /* check if we have new Radar data from CONTROL PAD Stream (Enable CONTROL PAD in the Net Ouput Screen) */
-      if (strncmp(wxrBuffer,"xRAD",4)==0) {
-	
-	int i,j;
-	
-	int lon_deg_west;
-	int lat_deg_south;
-	int lat_min_south;
-
-	/* valid coordinates ? */
-	if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
-
-
-	  if (m_CenterLon == INT_MISS) m_CenterLon = (int) aircraftLon;
-	  if (m_CenterLat == INT_MISS) m_CenterLat = (int) aircraftLat;
-	
-	  memcpy(&lon_deg_west,&wxrBuffer[5],sizeof(lon_deg_west));
-	  memcpy(&lat_deg_south,&wxrBuffer[5+4],sizeof(lat_deg_south));
-	  memcpy(&lat_min_south,&wxrBuffer[5+4+4],sizeof(lat_min_south));
-	  
-	  if ((lon_deg_west >= (m_CenterLon-(NLON-1)/2)) && (lon_deg_west <= (m_CenterLon+(NLON-1)/2)) &&
-	      (lat_deg_south >= (m_CenterLat-(NLAT-1)/2)) && (lat_deg_south <= (m_CenterLat+(NLAT-1)/2)) &&
-	      (lat_min_south != -1)) {
-
-	    if ((m_OldLat > lat_deg_south) && (m_OldLat != INT_MISS)) {
-	      /* scanning starts over from southern latitude, so put full scanned radar texture to GL */
-
-	      printf("Storing Radar Image \n");
-	      
-	      for (x=0;x<TEX_WIDTH;x++) {
-		for (y=0;y<TEX_HEIGHT;y++) {
-		  if (lltexture[y][x] == 0) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 1) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 2) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 3) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 4) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 100;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 5) {
-		    texture[y][x][0] = (GLubyte) 0;
-		    texture[y][x][1] = (GLubyte) 140;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 6) {
-		    texture[y][x][0] = (GLubyte) 100;
-		    texture[y][x][1] = (GLubyte) 140;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 7) {
-		    texture[y][x][0] = (GLubyte) 140;
-		    texture[y][x][1] = (GLubyte) 140;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else if (lltexture[y][x] == 8) {
-		    texture[y][x][0] = (GLubyte) 150;
-		    texture[y][x][1] = (GLubyte) 100;
-		    texture[y][x][2] = (GLubyte) 0;
-		  } else {
-		    texture[y][x][0] = (GLubyte) 150;
-		    texture[y][x][1] = (GLubyte) 0;
-		    texture[y][x][2] = (GLubyte) 0;
-		  }
-		}
-	      }   
-
-	      /* Store Current Center Lon/Lat as new Texture Center coordinates */
-	      /* Need to add 0.5 lon/lat since radar data specifies ll edge of center pixel */
-	      m_TextureCenterLon = ((float) m_CenterLon) + 0.5;
-	      m_TextureCenterLat = ((float) m_CenterLat) + 0.5;
-	      
-	      /* Update Center Longitude/Latitude of texture to new Lon/Lat of acf */
-	      m_CenterLon = (int) aircraftLon;
-	      m_CenterLat = (int) aircraftLat;
-	      
-	    }
-
-	    m_OldLat = lat_deg_south;
-	    
-	    i = (lon_deg_west - (m_CenterLon-(NLON-1)/2))*MINPERLON;
-	    j = (lat_deg_south - (m_CenterLat-(NLAT-1)/2))*MINPERLAT + lat_min_south;
-	  
-	    //printf("%i %i %i %i %i %i %i \n",m_CenterLon,m_CenterLat,lon_deg_west,lat_deg_south,lat_min_south,i,j);
-
-	    /* Store 61 bytes of 61 minutes west-east to current degree line */
-	    memcpy(&lltexture[j][i],&wxrBuffer[5+4+4+4],MINPERLON+1);
-
-	  }
-
-	}
-	
-      }
-      
-    } /* read left ? */
+    /* Sample Datarefs for controlling WXR gain and tilt */
+    float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2); /* Gain should go from 0.1 .. 2.0 */
+    float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2); /* Tilt in degrees up/down : not implemented yet */
     
-    free(wxrBuffer);     
-
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((heading_map != FLT_MISS) && (*nav_shows_wxr == 1) &&
-	(udpRecvBuffer != NULL) && (mapMode != 3) && (!mapCenter)) {
-
-	    
-      // Shift center and rotate about heading
+	(wxr_data) && (mapMode != 3) && (!mapCenter)) {
+	        
+    // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
 
       /* valid coordinates and full radar image received */
-      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0) &&
-	  (m_TextureCenterLon != FLT_MISS) && (m_TextureCenterLat != FLT_MISS)) {
-      //	if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
+      if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) &&
+	  (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
+	
+	/* Copy WXR data into GL Texture Array */
+	float textureCenterLon = (float) wxr_lonmin + (float) wxr_ncol / (float) wxr_pixperlon * 0.5;
+	float textureCenterLat = (float) wxr_latmin + (float) wxr_nlin / (float) wxr_pixperlat * 0.5;
 
+	/* miles per radar pixel. Each pixel .
+	   Each degree lat is 111 km apart and each mile is 1.852 km */
+	float mpplon =  111.0 / (float) wxr_pixperlon / 1.852;
+	float mpplat =  111.0 / (float) wxr_pixperlat / 1.852;
+
+	/* free WXR array and recreate it if dimensions have changed */
+	if ((m_wxr_ncol != wxr_ncol) || (m_wxr_nlin != wxr_nlin)) {
+	  m_wxr_ncol = wxr_ncol;
+	  m_wxr_nlin = wxr_nlin;
+	  if (wxr_image) free(wxr_image);	    
+	  wxr_image = (unsigned char*)malloc(m_wxr_nlin * m_wxr_ncol * 4 * sizeof(unsigned char));
+	}
+
+	float gain = *wxr_gain;
+	if (gain == FLT_MISS) gain = 1.0;
+	if (gain < 0.1) gain = 0.1;
+	if (gain > 2.0) gain = 2.0;
+	
+	/* copy temporary WXR array to WXR array */
+	for (i = 0; i < m_wxr_nlin; i++) {
+	  for (j = 0; j < m_wxr_ncol; j++) {
+	    
+	    if (wxr_data[i][j]*gain == 0) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	    } else if (wxr_data[i][j]*gain <= 10) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	    } else if (wxr_data[i][j]*gain <= 20) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	    } else if (wxr_data[i][j]*gain <= 30) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	    } else if (wxr_data[i][j]*gain <= 40) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 81;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 225;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 41;
+	    } else if (wxr_data[i][j]*gain <= 50) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
+	    } else if (wxr_data[i][j]*gain <= 60) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
+	    } else if (wxr_data[i][j]*gain <= 70) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
+	    } else if (wxr_data[i][j]*gain <= 80) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
+	    } else if (wxr_data[i][j]*gain <= 90) {
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 255;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 28;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 15;
+	    } else {
+	      /* Magenta for Turbulence, not implemented in X-Plane, but take the highest level */
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 200;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 45;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 200;
+	    }
+	    wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	  }
+	}
+	
 	glPushMatrix();
 	
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
 	glRotatef(heading_map, 0, 0, 1);
 
-
-	// render the Radar texture
-	//	glPushMatrix();
-	// GLuint texture_map;
-	// glGenTextures(1, &texture_map);
-	// glBindTexture(GL_TEXTURE_2D, texture_map);
 
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -305,19 +232,17 @@ namespace OpenGC
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-		      TEX_WIDTH,  TEX_HEIGHT, 0, GL_RGBA,
-		      GL_UNSIGNED_BYTE, texture);
+		      m_wxr_ncol,  m_wxr_nlin, 0, GL_RGBA,
+		      GL_UNSIGNED_BYTE, wxr_image);
 
-	float scx = 0.5 * ((float) TEX_WIDTH) * MPP / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
-	float scy = 0.5 * ((float) TEX_HEIGHT) * MPP / mapRange * map_size;
-	float tx = (m_TextureCenterLon - aircraftLon) * ((float) MINPERLON) * MPP / mapRange * map_size *
+	float scx = 0.5 * ((float) m_wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
+	float scy = 0.5 * ((float) m_wxr_nlin) * mpplat / mapRange * map_size;
+	float tx = (textureCenterLon - aircraftLon) * ((float) wxr_pixperlon) * mpplon / mapRange * map_size *
 	  cos(M_PI / 180.0 * aircraftLat);
-	float ty = (m_TextureCenterLat - aircraftLat) * ((float) MINPERLAT) * MPP / mapRange * map_size;
+	float ty = (textureCenterLat - aircraftLat) * ((float) wxr_pixperlat) * mpplat / mapRange * map_size;
 	
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-	//glBindTexture(GL_TEXTURE_2D, texture_map);	  
 
 	glBegin(GL_TRIANGLES);
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
@@ -327,16 +252,6 @@ namespace OpenGC
         glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
         glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
 	glEnd();
-
-	/*
-	// DEPRECATED Do not use any more
-	glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
-        glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
-        glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
-        glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
-	glEnd();
-	*/
 
 	glDisable (GL_TEXTURE_2D);
 	glFlush();
@@ -392,14 +307,16 @@ namespace OpenGC
 	glPopMatrix();
  	
       } // valid acf coordinates
-   
+
+    }
+    
+    if ((*nav_shows_wxr == 1) && (mapMode != 3) && (!mapCenter)) {   
       // plot map options
       glPushMatrix();
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       glColor3ub(COLOR_LIGHTBLUE);
       m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"WXR",m_Font);
       glPopMatrix();
-
     }
     
   }

@@ -1,4 +1,4 @@
-/* This is the handleserver.h header to the handleserver.c code
+/* This is the handleudp.h header to the handleudp.c code
 
    Copyright (C) 2009 - 2014  Reto Stockli
 
@@ -35,10 +35,11 @@ extern struct sockaddr_in udpClientAddr;     /* Client address structure */
 
 /* Prototype functions for Network communication */
 int init_udp_server(void);
-int init_udp(void);
+int init_udp_client(void);
 int init_udp_receive();
 void *poll_thread_main();
-void exit_udp(void);
+void exit_udp_server(void);
+void exit_udp_client(void);
 int send_udp_to_server(void);
 int recv_udp_from_server(void);
 int send_udp_to_client(char client_ip[],int client_port,unsigned char data[], int len);
