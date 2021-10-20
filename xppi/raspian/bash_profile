@@ -4,11 +4,11 @@ if [ -f ~/.bashrc ]; then
   . ~/.bashrc
 fi
 
-if [[ -z $DISPLAY && $XDG_VTNR -eq 1 ]]
-then
-  sleep 10s
-  systemctl --user start xppi
-  systemctl --user start xpopengc
-fi
+#if [[ -z $DISPLAY && $XDG_VTNR -eq 1 ]]
+#then
+#  sleep 10s
+#  systemctl --user start xppi
+#  systemctl --user start xpopengc
+#fi
 
 
