@@ -155,7 +155,12 @@ void B737NAV::Render()
     irs_mode = link_dataref_int("xpserver/irs_mode");
     *irs_mode = 2;
   }
-  
+
+  double lon = 7.5;
+  double lat = 47.5;
+  TerrainData* pTerrainData = m_pNavDatabase->GetTerrainData();
+  pTerrainData->SetCurrentLonLat(lon, lat);
+ 
   if (*avionics_on == 1) {
      
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);

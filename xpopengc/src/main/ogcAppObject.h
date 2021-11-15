@@ -117,6 +117,9 @@ protected:
   /** whether to read from X-Plane's UDP WXR radar data **/
   int m_radardata;
 
+  /** Path to Globe Project DEM Files */
+  char m_DEMPath[255];
+
   /**
    * We treat the file initialization process as a finite
    * state machine, where the current state is given below
@@ -134,9 +137,6 @@ protected:
 
   /** The current intialization state: 0: prior to initialization, 1: after initialization, 2: after first loop  */
   int m_InitState;
-
-  /** True if we're connected to FlightGear, which requires some extra setup */
-  bool m_DataSourceIsFlightGear;
 
   /** Whether or not to calculate frame rate */
   bool m_FrameTest;
