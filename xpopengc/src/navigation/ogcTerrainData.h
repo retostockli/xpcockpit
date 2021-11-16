@@ -43,13 +43,19 @@ public:
   /** Check if DEM Files are there, returns true if successful, else false */
   bool CheckFiles();
 
+  /* Set the bounds of the data to read from the current location */
   void SetCurrentLonLat(double lon, double lat);
+
+  /* Read 1x1 degree lon/lat square covering integer lon/lat */
+  bool ReadDEMLonLat(int lon, int lat);
 
 protected:
   string m_PathToDEM;
 
   int m_nlon; // number of longitudes to store. odd number: e.g. 5: will be current lon +/- 2 lon
   int m_nlat; // number of latitudes to store. odd number: e.g. 5: will be current lat +/- 2 lat
+  int m_pplon; // number of pixels per longitude
+  int m_pplat; // number of pixels per latitude
   int m_lonmin;
   int m_lonmax;
   int m_latmin;

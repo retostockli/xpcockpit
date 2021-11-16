@@ -125,6 +125,8 @@ bool NavDatabase
     if (!(m_TerrainData -> CheckFiles())) {
       return false;
     }
+
+    m_TerrainData -> ReadDEMLonLat(7,47);
   }
   
   return true;
