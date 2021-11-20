@@ -44,6 +44,7 @@ a slingle MAP mode (the MAP MODE EXPANDED) implemented.
 #include "ogcGaugeComponent.h"
 #include "B737/B737NAV/ogcB737NAV.h"
 #include "B737/B737NAV/ogcB737NAVDrawStatic.h"
+#include "B737/B737NAV/ogcB737NAVDrawDEM.h"
 #include "B737/B737NAV/ogcB737NAVDrawWXR.h"
 #include "B737/B737NAV/ogcB737NAVDrawStations.h"
 #include "B737/B737NAV/ogcB737NAVDrawFMC.h"
@@ -92,6 +93,13 @@ B737NAV::B737NAV()
   pDrawWXR->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pDrawWXR->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawWXR);
+
+  B737NAVDrawDEM* pDrawDEM = new B737NAVDrawDEM();
+  pDrawDEM->SetParentRenderObject(this);
+  pDrawDEM->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawDEM->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawDEM->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawDEM);
 
   B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
   pDrawStat->SetParentRenderObject(this);
@@ -155,11 +163,6 @@ void B737NAV::Render()
     irs_mode = link_dataref_int("xpserver/irs_mode");
     *irs_mode = 2;
   }
-
-  double lon = 7.5;
-  double lat = 47.5;
-  TerrainData* pTerrainData = m_pNavDatabase->GetTerrainData();
-  pTerrainData->SetCurrentLonLat(lon, lat);
  
   if (*avionics_on == 1) {
      

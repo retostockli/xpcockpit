@@ -28,36 +28,33 @@
 #include "ogcGaugeComponent.h"
 #include "ogcCircleEvaluator.h"
 #include "B737/B737NAV/ogcB737NAV.h"
-#include "B737/B737NAV/ogcB737NAVDrawWXR.h"
-extern "C" {
-#include "wxrdata.h"
-}
+#include "B737/B737NAV/ogcB737NAVDrawDEM.h"
 
 namespace OpenGC
 {
   
-  B737NAVDrawWXR::B737NAVDrawWXR()
+  B737NAVDrawDEM::B737NAVDrawDEM()
   {
-    printf("B737NAVDrawWXR constructed\n");
+    printf("B737NAVDrawDEM constructed\n");
     
     m_Font = m_pFontManager->LoadDefaultFont();
     
     m_NAVGauge = NULL;
 
-    m_wxr_ncol = 0;
-    m_wxr_nlin = 0;
+    m_dem_ncol = 0;
+    m_dem_nlin = 0;
 
-    wxr_image = NULL;
+    dem_image = NULL;
   
   }
 
-  B737NAVDrawWXR::~B737NAVDrawWXR()
+  B737NAVDrawDEM::~B737NAVDrawDEM()
   {
     // Destruction handled by base class
   }
 
  
-  void B737NAVDrawWXR::Render()
+  void B737NAVDrawDEM::Render()
   {
     GaugeComponent::Render();
    
@@ -75,6 +72,16 @@ namespace OpenGC
 
     int i;
     int j;
+
+    unsigned char bval;
+
+    int dem_lonmin, dem_lonmax, dem_latmin, dem_latmax;
+    int dem_pixperlon, dem_pixperlat;
+    int dem_ncol, dem_nlin;
+    short int dem_miss = -500;
+
+    /* Pointer to Terrain Database Object */
+    TerrainData* pTerrainData = m_pNavDatabase->GetTerrainData();
     
     
     // double dtor = 0.0174533; /* radians per degree */
@@ -107,27 +114,23 @@ namespace OpenGC
     // What's the altitude? (feet)
     //float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     
-    int *nav_shows_wxr;
+    int *nav_shows_dem;
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
-	nav_shows_wxr = link_dataref_int("laminar/B738/EFIS/EFIS_wx_on");
+	nav_shows_dem = link_dataref_int("laminar/B738/EFIS/EFIS_vor_on");
       } else {
-	nav_shows_wxr = link_dataref_int("laminar/B738/EFIS/fo/EFIS_wx_on");
+	nav_shows_dem = link_dataref_int("laminar/B738/EFIS/fo/EFIS_vor_on");
       }
     } else if (acf_type == 1) {
-      nav_shows_wxr = link_dataref_int("x737/cockpit/EFISCTRL_0/WXR_on");
+      nav_shows_dem = link_dataref_int("x737/cockpit/EFISCTRL_0/XXX_on");
     } else {
-      nav_shows_wxr = link_dataref_int("sim/cockpit2/EFIS/EFIS_weather_on");
+      nav_shows_dem = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on");
     }
-
-    /* Sample Datarefs for controlling WXR gain and tilt */
-    float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2); /* Gain should go from 0.1 .. 2.0 */
-    float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2); /* Tilt in degrees up/down : not implemented yet */
-    
+   
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if ((heading_map != FLT_MISS) && (*nav_shows_wxr == 1) &&
-	(wxr_data) && (mapMode != 3) && (!mapCenter)) {
+    if ((heading_map != FLT_MISS) && (*nav_shows_dem == 1) &&
+	(pTerrainData->dem_data_1deg) && (mapMode != 3) && (!mapCenter)) {
 	        
     // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -136,79 +139,55 @@ namespace OpenGC
       if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) &&
 	  (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
 	
-	/* Copy WXR data into GL Texture Array */
-	float textureCenterLon = (float) wxr_lonmin + (float) wxr_ncol / (float) wxr_pixperlon * 0.5;
-	float textureCenterLat = (float) wxr_latmin + (float) wxr_nlin / (float) wxr_pixperlat * 0.5;
+
+	pTerrainData->SetBounds(aircraftLon, aircraftLat);
+	
+	dem_lonmin = 7;
+	dem_lonmax = 8;
+	dem_latmin = 46;
+	dem_latmax = 47;
+	dem_pixperlon = 120;
+	dem_pixperlat = 120;
+
+	dem_ncol = (dem_lonmax - dem_lonmin)*dem_pixperlon;
+	dem_nlin = (dem_latmax - dem_latmin)*dem_pixperlat;
+	
+	/* Copy DEM data into GL Texture Array */
+	float textureCenterLon = (float) dem_lonmin + (float) dem_ncol / (float) dem_pixperlon * 0.5;
+	float textureCenterLat = (float) dem_latmin + (float) dem_nlin / (float) dem_pixperlat * 0.5;
 
 	/* miles per radar pixel. Each pixel .
 	   Each degree lat is 111 km apart and each mile is 1.852 km */
-	float mpplon =  111.0 / (float) wxr_pixperlon / 1.852;
-	float mpplat =  111.0 / (float) wxr_pixperlat / 1.852;
+	float mpplon =  111.0 / (float) dem_pixperlon / 1.852;
+	float mpplat =  111.0 / (float) dem_pixperlat / 1.852;
 
-	/* free WXR array and recreate it if dimensions have changed */
-	if ((m_wxr_ncol != wxr_ncol) || (m_wxr_nlin != wxr_nlin)) {
-	  m_wxr_ncol = wxr_ncol;
-	  m_wxr_nlin = wxr_nlin;
-	  if (wxr_image) free(wxr_image);	    
-	  wxr_image = (unsigned char*)malloc(m_wxr_nlin * m_wxr_ncol * 4 * sizeof(unsigned char));
+	
+	/* free DEM array and recreate it if dimensions have changed */
+	if ((m_dem_ncol != dem_ncol) || (m_dem_nlin != dem_nlin)) {
+
+	  pTerrainData->ReadDEMLonLat(dem_lonmin,dem_latmin);
+	  
+	  m_dem_ncol = dem_ncol;
+	  m_dem_nlin = dem_nlin;
+	  if (dem_image) free(dem_image);	    
+	  dem_image = (unsigned char*)malloc(m_dem_nlin * m_dem_ncol * 4 * sizeof(unsigned char));
 	}
 
-	float gain = *wxr_gain;
-	if (gain == FLT_MISS) gain = 1.0;
-	if (gain < 0.1) gain = 0.1;
-	if (gain > 2.0) gain = 2.0;
 	
-	/* copy temporary WXR array to WXR array */
-	for (i = 0; i < m_wxr_nlin; i++) {
-	  for (j = 0; j < m_wxr_ncol; j++) {
-	    
-	    if (wxr_data[i][j]*gain == 0) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-	    } else if (wxr_data[i][j]*gain <= 10) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-	    } else if (wxr_data[i][j]*gain <= 20) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-	    } else if (wxr_data[i][j]*gain <= 30) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-	    } else if (wxr_data[i][j]*gain <= 40) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 81;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 225;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 41;
-	    } else if (wxr_data[i][j]*gain <= 50) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
-	    } else if (wxr_data[i][j]*gain <= 60) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
-	    } else if (wxr_data[i][j]*gain <= 70) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
-	    } else if (wxr_data[i][j]*gain <= 80) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
-	    } else if (wxr_data[i][j]*gain <= 90) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 255;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 28;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 15;
+	/* copy temporary DEM array to DEM array */
+	for (j = 0; j < m_dem_nlin; j++) {
+	  for (i = 0; i < m_dem_ncol; i++) {
+
+	    if (pTerrainData->dem_data_1deg[j][i] == dem_miss) {
+	      bval = 0;
 	    } else {
-	      /* Magenta for Turbulence, not implemented in X-Plane, but take the highest level */
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 200;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 45;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 200;
+	      bval = min(max(pTerrainData->dem_data_1deg[j][i]/15,1),255);
 	    }
-	    wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+			     
+	    dem_image[j*4*m_dem_ncol+i*4+0] = pTerrainData->dem_colortable[bval][0];
+	    dem_image[j*4*m_dem_ncol+i*4+1] = pTerrainData->dem_colortable[bval][1];
+	    dem_image[j*4*m_dem_ncol+i*4+2] = pTerrainData->dem_colortable[bval][2];	    
+	    dem_image[j*4*m_dem_ncol+i*4+3] = 255; /* Non-Transparent */
 	  }
 	}
 	
@@ -234,14 +213,14 @@ namespace OpenGC
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-		      m_wxr_ncol,  m_wxr_nlin, 0, GL_RGBA,
-		      GL_UNSIGNED_BYTE, wxr_image);
+		      m_dem_ncol,  m_dem_nlin, 0, GL_RGBA,
+		      GL_UNSIGNED_BYTE, dem_image);
 
-	float scx = 0.5 * ((float) m_wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
-	float scy = 0.5 * ((float) m_wxr_nlin) * mpplat / mapRange * map_size;
-	float tx = (textureCenterLon - aircraftLon) * ((float) wxr_pixperlon) * mpplon / mapRange * map_size *
+	float scx = 0.5 * ((float) m_dem_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
+	float scy = 0.5 * ((float) m_dem_nlin) * mpplat / mapRange * map_size;
+	float tx = (textureCenterLon - aircraftLon) * ((float) dem_pixperlon) * mpplon / mapRange * map_size *
 	  cos(M_PI / 180.0 * aircraftLat);
-	float ty = (textureCenterLat - aircraftLat) * ((float) wxr_pixperlat) * mpplat / mapRange * map_size;
+	float ty = (textureCenterLat - aircraftLat) * ((float) dem_pixperlat) * mpplat / mapRange * map_size;
 	
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
@@ -279,8 +258,8 @@ namespace OpenGC
 	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y);
 	glEnd();
 	
-	//-------------------Rounded NAV Gauge WXR Limit ------------------
-	// The WXR image is blacked off on the top of the NAV gauge
+	//-------------------Rounded NAV Gauge DEM Limit ------------------
+	// The DEM image is blacked off on the top of the NAV gauge
 	// The overlays are essentially the
 	// remainder of a circle subtracted from a square, and are formed
 	// by fanning out triangles from a point just off each corner
@@ -312,12 +291,12 @@ namespace OpenGC
 
     }
     
-    if ((*nav_shows_wxr == 1) && (mapMode != 3) && (!mapCenter)) {   
+    if ((*nav_shows_dem == 1) && (mapMode != 3) && (!mapCenter)) {   
       // plot map options
       glPushMatrix();
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       glColor3ub(COLOR_LIGHTBLUE);
-      m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"WXR",m_Font);
+      m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"DEM",m_Font);
       glPopMatrix();
     }
     

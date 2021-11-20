@@ -40,15 +40,39 @@ public:
 
   void SetPathToDEM(string pathToDEM) { m_PathToDEM = pathToDEM;}
   
-  /** Check if DEM Files are there, returns true if successful, else false */
+  /* Check if DEM Files are there, returns true if successful, else false */
   bool CheckFiles();
 
+  /* Create the color table for terrain visualization */
+  void CreateColorTable();
+  
   /* Set the bounds of the data to read from the current location */
-  void SetCurrentLonLat(double lon, double lat);
+  void SetBounds(double lon, double lat);
+
+  /* Get the bounds of the dem data stored for the current location */
+  void GetBounds(int* lonmin, int* lonmax, int* latmin, int* latmax) {
+    *lonmin = m_lonmin;
+    *lonmax = m_lonmax;
+    *latmin = m_latmin;
+    *latmax = m_latmax;
+  }
+
+  void GetResolution(int* pplon, int *pplat) {
+    *pplon = m_pplon;
+    *pplat = m_pplat;
+  }
 
   /* Read 1x1 degree lon/lat square covering integer lon/lat */
   bool ReadDEMLonLat(int lon, int lat);
 
+  /* DEM is stored from S->N and W->E */
+  short int **dem_data;
+  short int **dem_data_1deg;
+
+  short int dem_miss;
+
+  unsigned char dem_colortable[256][3];
+  
 protected:
   string m_PathToDEM;
 

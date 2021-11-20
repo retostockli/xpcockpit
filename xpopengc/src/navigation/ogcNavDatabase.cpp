@@ -122,11 +122,11 @@ bool NavDatabase
   if (!pathToDEM.empty()) {
     m_TerrainData = new TerrainData;
     m_TerrainData -> SetPathToDEM(pathToDEM);
+    m_TerrainData -> CreateColorTable();
     if (!(m_TerrainData -> CheckFiles())) {
       return false;
     }
 
-    m_TerrainData -> ReadDEMLonLat(7,47);
   }
   
   return true;

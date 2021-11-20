@@ -62,8 +62,9 @@ namespace OpenGC
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-    float lineWidth = 1.5;
+    float lineWidth = 3.0;
 
+    int i;
     
     double dtor = 0.0174533; /* radians per degree */
     // double radeg = 57.2958;  /* degree per radians */
@@ -257,16 +258,26 @@ namespace OpenGC
 		  
 		    /* small triangle: white */
 		    float ss2 = 0.50*ss;
-		    glColor3ub(COLOR_LIGHTBLUE);
-		    glLineWidth(lineWidth);
-		    glBegin(GL_LINE_LOOP);
-		    glVertex2f(-ss2, -1.0*ss2);
-		    glVertex2f(ss2, -1.0*ss2);
-		    glVertex2f(0.0, 1.0*ss2);
-		    glEnd();
-		    // printf("%s %i %f %f \n",(*fixIt)->GetIdentification().c_str(),taken,(*fixIt)->GetDegreeLon(),(*fixIt)->GetDegreeLat());
-		    m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
-		    m_pFontManager->Print(1.25*ss2,-2.75*ss2, (*fixIt)->GetIdentification().c_str(), m_Font);
+		    for (i=0;i<2;i++) {
+		      if (i==0) {
+			glColor3ub(COLOR_BLACK);
+			glLineWidth(lineWidth*2.0);
+		      } else {
+			glColor3ub(COLOR_WHITE);
+			glLineWidth(lineWidth);
+		      }
+		      glBegin(GL_LINE_LOOP);
+		      glVertex2f(-ss2, -1.0*ss2);
+		      glVertex2f(ss2, -1.0*ss2);
+		      glVertex2f(0.0, 1.0*ss2);
+		      glEnd();
+		      m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
+		      if (i==0) {
+			m_pFontManager->Print(1.35*ss2,-2.85*ss2, (*fixIt)->GetIdentification().c_str(), m_Font);
+		      } else {
+			m_pFontManager->Print(1.25*ss2,-2.75*ss2, (*fixIt)->GetIdentification().c_str(), m_Font);
+		      }
+		    }
 		  
 		    glPopMatrix();
 
@@ -330,70 +341,93 @@ namespace OpenGC
 
 		    glTranslatef(xPos, yPos, 0.0);
 		    glRotatef(-1.0* heading_map, 0, 0, 1);
+
+		    for (i=0;i<2;i++) {
       
-		    if (type == 2) {
-		      /* NDB: two circles violet */
-		      glColor3ub(COLOR_VIOLET);
-		      glLineWidth(lineWidth);
-		      aCircle.SetRadius(ss);
-		      aCircle.SetOrigin(0.0, 0.0);
-		      glBegin(GL_LINE_LOOP);
-		      aCircle.Evaluate();
-		      glEnd();
+		      if (type == 2) {
+			/* NDB: two circles violet */
+			if (i==0) {
+			  glColor3ub(COLOR_BLACK);
+			  glLineWidth(lineWidth*2.0);
+			} else {
+			  glColor3ub(COLOR_VIOLET);
+			  glLineWidth(lineWidth);
+			}
+			aCircle.SetRadius(ss);
+			aCircle.SetOrigin(0.0, 0.0);
+			glBegin(GL_LINE_LOOP);
+			aCircle.Evaluate();
+			glEnd();
+			
+			aCircle.SetRadius(0.5*ss);
+			aCircle.SetOrigin(0.0,0.0);
+			glBegin(GL_LINE_LOOP);
+			aCircle.Evaluate();
+			glEnd();
+		      } else if (type == 3) {
+			// VOR: six point polygon light blue
+			float ss3 = 0.65*ss;
+			if (i==0) {
+			  glColor3ub(COLOR_BLACK);
+			  glLineWidth(lineWidth*2.0);
+			} else {
+			  glColor3ub(COLOR_LIGHTBLUE);
+			  glLineWidth(lineWidth);
+			}
+			glBegin(GL_LINE_LOOP);
+			glVertex2f(-0.5*ss3, -0.866*ss3);
+			glVertex2f(0.5*ss3, -0.866*ss3);
+			glVertex2f(ss3, 0.0);
+			glVertex2f(0.5*ss3, 0.866*ss3);
+			glVertex2f(-0.5*ss3, 0.866*ss3);
+			glVertex2f(-ss3, 0.0);
+			glEnd();
+		      } else {
+			// DME or DME part of VOR/VORTAC: add three radial boxes to VOR symbol
+			float ss4 = 0.65*ss;
+			if (i==0) {
+			  glColor3ub(COLOR_BLACK);
+			  glLineWidth(lineWidth*2.0);
+			} else {
+			  glColor3ub(COLOR_GREEN);
+			  glLineWidth(lineWidth);
+			}		       
+			glBegin(GL_LINE_LOOP);
+			glVertex2f(-0.5*ss4, -0.866*ss4);
+			glVertex2f(0.5*ss4, -0.866*ss4);
+			glVertex2f(ss4, 0.0);
+			glVertex2f(0.5*ss4, 0.866*ss4);
+			glVertex2f(-0.5*ss4, 0.866*ss4);
+			glVertex2f(-ss4, 0.0);
+			glEnd();
+			glBegin(GL_LINE_STRIP);
+			glVertex2f(-0.5*ss4, -0.866*ss4);
+			glVertex2f(-0.5*ss4, -1.732*ss4);
+			glVertex2f(0.5*ss4, -1.732*ss4);
+			glVertex2f(0.5*ss4, -0.866*ss4);
+			glEnd();
+			glBegin(GL_LINE_STRIP);
+			glVertex2f(ss4, 0.0);
+			glVertex2f(1.75*ss4, 0.433*ss4);
+			glVertex2f(1.25*ss4, 1.366*ss4);
+			glVertex2f(0.5*ss4, 0.866*ss4);
+			glEnd();
+			glBegin(GL_LINE_STRIP);
+			glVertex2f(-0.5*ss4, 0.866*ss4);
+			glVertex2f(-1.25*ss4, 1.366*ss4);
+			glVertex2f(-1.75*ss4, 0.433*ss4);
+			glVertex2f(-ss4, 0.0);
+			glEnd();
+		      }
 
-		      aCircle.SetRadius(0.5*ss);
-		      aCircle.SetOrigin(0.0,0.0);
-		      glBegin(GL_LINE_LOOP);
-		      aCircle.Evaluate();
-		      glEnd();
-		    } else if (type == 3) {
-		      // VOR: six point polygon light blue
-		      float ss3 = 0.65*ss;
-		      glColor3ub(COLOR_GREEN);
-		      glLineWidth(lineWidth);
-		      glBegin(GL_LINE_LOOP);
-		      glVertex2f(-0.5*ss3, -0.866*ss3);
-		      glVertex2f(0.5*ss3, -0.866*ss3);
-		      glVertex2f(ss3, 0.0);
-		      glVertex2f(0.5*ss3, 0.866*ss3);
-		      glVertex2f(-0.5*ss3, 0.866*ss3);
-		      glVertex2f(-ss3, 0.0);
-		      glEnd();
-		    } else {
-		      // DME or DME part of VOR/VORTAC: add three radial boxes to VOR symbol
-		      float ss4 = 0.65*ss;
-		      glColor3ub(COLOR_GREEN);
-		      glLineWidth(lineWidth);
-		      glBegin(GL_LINE_LOOP);
-		      glVertex2f(-0.5*ss4, -0.866*ss4);
-		      glVertex2f(0.5*ss4, -0.866*ss4);
-		      glVertex2f(ss4, 0.0);
-		      glVertex2f(0.5*ss4, 0.866*ss4);
-		      glVertex2f(-0.5*ss4, 0.866*ss4);
-		      glVertex2f(-ss4, 0.0);
-		      glEnd();
-		      glBegin(GL_LINE_STRIP);
-		      glVertex2f(-0.5*ss4, -0.866*ss4);
-		      glVertex2f(-0.5*ss4, -1.732*ss4);
-		      glVertex2f(0.5*ss4, -1.732*ss4);
-		      glVertex2f(0.5*ss4, -0.866*ss4);
-		      glEnd();
-		      glBegin(GL_LINE_STRIP);
-		      glVertex2f(ss4, 0.0);
-		      glVertex2f(1.75*ss4, 0.433*ss4);
-		      glVertex2f(1.25*ss4, 1.366*ss4);
-		      glVertex2f(0.5*ss4, 0.866*ss4);
-		      glEnd();
-		      glBegin(GL_LINE_STRIP);
-		      glVertex2f(-0.5*ss4, 0.866*ss4);
-		      glVertex2f(-1.25*ss4, 1.366*ss4);
-		      glVertex2f(-1.75*ss4, 0.433*ss4);
-		      glVertex2f(-ss4, 0.0);
-		      glEnd();
+		      m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
+		      if (i==0) {
+			m_pFontManager->Print(1.35*ss,-1.85*ss, (*navIt)->GetIdentification().c_str(), m_Font);
+		      } else {
+			m_pFontManager->Print(1.25*ss,-1.75*ss, (*navIt)->GetIdentification().c_str(), m_Font);
+		      }
+
 		    }
-
-		    m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
-		    m_pFontManager->Print(1.25*ss,-1.75*ss, (*navIt)->GetIdentification().c_str(), m_Font);
 	
 		    glPopMatrix();
 		  }
@@ -455,17 +489,27 @@ namespace OpenGC
 		    glRotatef(-1.0* heading_map, 0, 0, 1);
 
 		    // Airports are light blue 
-		    glColor3ub(COLOR_LIGHTBLUE);
-		    glLineWidth(lineWidth);
-		    aCircle.SetRadius(ss);
-		    aCircle.SetOrigin(0.0, 0.0);
-		    glBegin(GL_LINE_LOOP);
-		    aCircle.Evaluate();
-		    glEnd();
-
-		    m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
-		    m_pFontManager->Print(1.25*ss,-1.75*ss, (*aptIt)->GetIdentification().c_str(), m_Font);
-      
+		    for (i=0;i<2;i++) {
+		      if (i==0) {
+			glColor3ub(COLOR_BLACK);
+			glLineWidth(lineWidth*2.0);
+		      } else {
+			glColor3ub(COLOR_LIGHTBLUE);
+			glLineWidth(lineWidth);
+		      }		       
+		      aCircle.SetRadius(ss);
+		      aCircle.SetOrigin(0.0, 0.0);
+		      glBegin(GL_LINE_LOOP);
+		      aCircle.Evaluate();
+		      glEnd();
+		      m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
+		      if (i==0) {
+			m_pFontManager->Print(1.35*ss,-1.85*ss, (*aptIt)->GetIdentification().c_str(), m_Font);
+		      } else {
+			m_pFontManager->Print(1.25*ss,-1.75*ss, (*aptIt)->GetIdentification().c_str(), m_Font);
+		      }
+		    }
+		    
 		    glPopMatrix();
 
 		  }
