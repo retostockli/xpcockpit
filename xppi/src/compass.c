@@ -1,14 +1,5 @@
-/* This is the compass.c code which drives a wet compass attached with 2 coils through
-   a L9110 motor H-Bridge on the arduino pins 3,5,6,7
-
-   L9110 PIN   ARDUINO PIN
-   A-1A        5
-   A-1B        3
-   B-1A        6
-   B-1B        7
-
-   LED Arduino PIN 2
-
+/* This is the compass.c code which drives the analog compass by use of
+   a H-Bridge and 2 PWM signals
 
    Copyright (C) 2021 Reto Stockli
 
@@ -39,9 +30,14 @@
 #include <sys/types.h>
 
 #include "common.h"
-#include "libarduino.h"
 #include "serverdata.h"
-#include "compass.h"
+#include "test.h"
+
+int LIGHT_PIN = 8; /* GPIO 2, Physical Pin 3 */
+int A1A_PIN = 9;   /* GPIO 3, Physical Pin 5 */
+int A1B_PIN = 7;   /* GPIO 4, Physical Pin 7 */
+int B1A_PIN = 15;  /* GPIO 14, Physical Pin 8 */
+int B1B_PIN = 16;  /* GPIO 15, Physical Pin 10 */
 
 /* This is the translation table of magnetic deg input (x) to degees shown on compass (y) */
 /* Since the coils on the compass are not exactly orthogonal and the magnetic field is not perfect */
@@ -78,28 +74,42 @@ float interpolate(float xval)
   return val;
 }
 
+int compass_init(void) {
+
+  pinMode(LIGHT_PIN, OUTPUT);
+  pinMode(A1A_PIN, OUTPUT);
+  pinMode(A1B_PIN, OUTPUT);
+  pinMode(B1A_PIN, OUTPUT);
+  pinMode(B1B_PIN, OUTPUT);
+  softPwmCreate(A1A_PIN,0,255); //Pin,initalValue,pwmRange    
+  softPwmCreate(B1A_PIN,0,255); //Pin,initalValue,pwmRange    
+
+  return 0;
+  
+}
+
 void compass(void)
 {
 
-  int ret;
-  int ard = 0; /* set to arduino number in ini file */
   int calibrate = 0;  /* set to 1 in order to create a new x/y calibration table (see above) */
-
   float compassdegrees;
+ 
+  /* link integer data like a switch in the cockpit */
+  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
   
-  int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
+ 
+  /* not needed, only if you run without x-plane connection */
+  if (*value == INT_MISS) *value = 1;
+
+  if (*value != INT_MISS) {
+    digitalWrite(LIGHT_PIN, *value);
+  }
 
   //  float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
   float *heading_mag = link_dataref_flt("sim/cockpit/autopilot/heading_mag",0);      
   
   /* read encoder at inputs 13 and 15 */
   if (*heading_mag == FLT_MISS) *heading_mag = 0.0;
-  ret = encoder_inputf(ard, 8, 9, heading_mag, 5.0, 1);
-  if (ret == 1) {
-    if (*heading_mag > 360.) *heading_mag -= 360.0;
-    if (*heading_mag < 0.0) *heading_mag += 360.0;
-    printf("Heading (degrees): %f \n",*heading_mag);
-  }
 
   if (calibrate) {
     compassdegrees = *heading_mag;
@@ -116,23 +126,19 @@ void compass(void)
   int one = 1;
 
   if (x > 0) {
-    ret = analog_output(ard,5,&absx);
-    ret = digital_output(ard,3,&zero);
+    softPwmWrite(A1A_PIN, absx);
+    digitalWrite(A1B_PIN, zero);
   } else {
-    ret = analog_output(ard,5,&revabsx);
-    ret = digital_output(ard,3,&one);
+    softPwmWrite(A1A_PIN, revabsx);
+    digitalWrite(A1B_PIN, one);
   }
   
   if (y < 0) {
-    ret = analog_output(ard,6,&absy);
-    ret = digital_output(ard,7,&zero);
+    softPwmWrite(B1A_PIN, absy);
+    digitalWrite(B1B_PIN, zero);
   } else {
-    ret = analog_output(ard,6,&revabsy);
-    ret = digital_output(ard,7,&one);
+    softPwmWrite(B1A_PIN, revabsy);
+    digitalWrite(B1B_PIN, one);
   }
-  
-  /* turn on Compass light (LED) connected to second output (#1) if avionics are on */
-  if (*avionics_on == INT_MISS) *avionics_on = 1;
-  ret = digital_output(ard, 2, avionics_on);
-  
+    
 }
