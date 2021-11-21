@@ -1,5 +1,5 @@
-/* This is the compass.c code which drives the analog compass by use of
-   a H-Bridge and 2 PWM signals
+/* This is the compass.c code which drives a wet compass attached with 2 coils through
+   a L9110 motor H-Bridge and 2 PWM signals
 
    Copyright (C) 2021 Reto Stockli
 
@@ -33,6 +33,8 @@
 #include "serverdata.h"
 #include "test.h"
 
+int DOWN_PIN = 28;
+int UP_PIN = 29;
 int LIGHT_PIN = 8; /* GPIO 2, Physical Pin 3 */
 int A1A_PIN = 9;   /* GPIO 3, Physical Pin 5 */
 int A1B_PIN = 7;   /* GPIO 4, Physical Pin 7 */
@@ -41,8 +43,9 @@ int B1B_PIN = 16;  /* GPIO 15, Physical Pin 10 */
 
 /* This is the translation table of magnetic deg input (x) to degees shown on compass (y) */
 /* Since the coils on the compass are not exactly orthogonal and the magnetic field is not perfect */
-static float y[22] = {-70,-40,-15,  0, 25, 35, 40, 45, 60, 90,120,150,180,210,225,230,235,250,290,320,345,360}; /* Input Degrees */
-static float x[22] = {-10,  8, 26, 38, 60, 75, 85,100,125,150,170,180,205,230,250,267,295,317,350,368,386,398}; /* Degrees on Compass */
+
+static float y[17] = { 45, 60, 90,110,140,180,215,245,276,310,330,350,360,375,390,405,420}; /* Input Degrees */
+static float x[17] = { -2,  7, 25, 40, 75,150,177,192,225,277,312,328,335,345,350,358,367}; /* Degrees on Compass NEED TO COVER 0..360 degrees at least */
 
 float interpolate(float xval)
 {
@@ -76,6 +79,12 @@ float interpolate(float xval)
 
 int compass_init(void) {
 
+  pinMode(DOWN_PIN, INPUT);
+  pinMode(UP_PIN, INPUT);
+  pullUpDnControl(DOWN_PIN, PUD_DOWN);
+  pullUpDnControl(UP_PIN, PUD_DOWN);
+  
+  
   pinMode(LIGHT_PIN, OUTPUT);
   pinMode(A1A_PIN, OUTPUT);
   pinMode(A1B_PIN, OUTPUT);
@@ -93,7 +102,9 @@ void compass(void)
 
   int calibrate = 0;  /* set to 1 in order to create a new x/y calibration table (see above) */
   float compassdegrees;
- 
+
+  int ret;
+  
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
   
@@ -111,6 +122,19 @@ void compass(void)
   /* read encoder at inputs 13 and 15 */
   if (*heading_mag == FLT_MISS) *heading_mag = 0.0;
 
+  ret = digitalRead(UP_PIN);
+  if (ret == 1) {
+    *heading_mag += 1.0;
+    printf("HEADING: %f \n",*heading_mag);
+  }
+  ret = digitalRead(DOWN_PIN);
+  if (ret == 1) {
+    *heading_mag -= 1.0;
+    printf("HEADING: %f \n",*heading_mag);
+  }
+  if (*heading_mag > 360.0) *heading_mag = 0.0;
+  if (*heading_mag < 0.0) *heading_mag = 360.0;
+
   if (calibrate) {
     compassdegrees = *heading_mag;
   } else {
@@ -125,7 +149,7 @@ void compass(void)
   int zero = 0;
   int one = 1;
 
-  if (x > 0) {
+  if (x < 0) {
     softPwmWrite(A1A_PIN, absx);
     digitalWrite(A1B_PIN, zero);
   } else {
@@ -133,7 +157,7 @@ void compass(void)
     digitalWrite(A1B_PIN, one);
   }
   
-  if (y < 0) {
+  if (y > 0) {
     softPwmWrite(B1A_PIN, absy);
     digitalWrite(B1B_PIN, zero);
   } else {
