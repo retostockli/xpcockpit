@@ -354,6 +354,8 @@ namespace OpenGC
       m_pRenderWindow->mode(FL_RGB | FL_DOUBLE | FL_MULTISAMPLE);
       //m_pRenderWindow->mode(FL_RGB | FL_MULTISAMPLE);
       //m_pRenderWindow->mode(FL_RGB | FL_DOUBLE);
+
+      
       m_pRenderWindow->border(!decoration);
       //==================================================================================================//
       //  Temporary solution to produce a borderless (undecorated) window                               ==//

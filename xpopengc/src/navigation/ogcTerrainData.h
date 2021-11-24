@@ -47,7 +47,7 @@ public:
   void CreateColorTable();
   
   /* Set the bounds of the data to read from the current location */
-  void SetBounds(double lon, double lat);
+  void CalcBounds(double lon, double lat, int *lonmin, int *lonmax, int *latmin, int *latmax);
 
   /* Get the bounds of the dem data stored for the current location */
   void GetBounds(int* lonmin, int* lonmax, int* latmin, int* latmax) {
@@ -57,13 +57,24 @@ public:
     *latmax = m_latmax;
   }
 
+  /* Set the bounds of the dem data stored for the current location */
+  void SetBounds(int lonmin, int lonmax, int latmin, int latmax) {
+    m_lonmin = lonmin;
+    m_lonmax = lonmax;
+    m_latmin = latmin;
+    m_latmax = latmax;
+  }
+
   void GetResolution(int* pplon, int *pplat) {
     *pplon = m_pplon;
     *pplat = m_pplat;
   }
 
   /* Read 1x1 degree lon/lat square covering integer lon/lat */
-  bool ReadDEMLonLat(int lon, int lat);
+  void ReadDEMLonLat(int lon, int lat);
+
+  /* Read DEM covering integer lon/lat bounds */
+  void ReadDEM(int lonmin, int lonmax, int latmin, int latmax);
 
   /* DEM is stored from S->N and W->E */
   short int **dem_data;
@@ -84,8 +95,8 @@ protected:
   int m_lonmax;
   int m_latmin;
   int m_latmax;
-  int m_curlon;
-  int m_curlat;
+  int m_ncol;
+  int m_nlin;
 
 };
 

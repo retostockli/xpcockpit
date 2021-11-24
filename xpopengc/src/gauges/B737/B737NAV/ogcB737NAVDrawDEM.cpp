@@ -41,9 +41,6 @@ namespace OpenGC
     
     m_NAVGauge = NULL;
 
-    m_dem_ncol = 0;
-    m_dem_nlin = 0;
-
     dem_image = NULL;
   
   }
@@ -76,8 +73,8 @@ namespace OpenGC
     unsigned char bval;
 
     int dem_lonmin, dem_lonmax, dem_latmin, dem_latmax;
-    int dem_pixperlon, dem_pixperlat;
     int dem_ncol, dem_nlin;
+    int dem_pplon, dem_pplat;
     short int dem_miss = -500;
 
     /* Pointer to Terrain Database Object */
@@ -130,7 +127,7 @@ namespace OpenGC
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((heading_map != FLT_MISS) && (*nav_shows_dem == 1) &&
-	(pTerrainData->dem_data_1deg) && (mapMode != 3) && (!mapCenter)) {
+	(pTerrainData) && (mapMode != 3) && (!mapCenter)) {
 	        
     // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -138,58 +135,64 @@ namespace OpenGC
       /* valid coordinates and full radar image received */
       if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) &&
 	  (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
-	
 
-	pTerrainData->SetBounds(aircraftLon, aircraftLat);
-	
-	dem_lonmin = 7;
-	dem_lonmax = 8;
-	dem_latmin = 46;
-	dem_latmax = 47;
-	dem_pixperlon = 120;
-	dem_pixperlat = 120;
+	/* define currently needed DEM bounds based on acf pos */
+	pTerrainData->CalcBounds(aircraftLon, aircraftLat, &m_dem_lonmin, &m_dem_lonmax, &m_dem_latmin, &m_dem_latmax);
 
-	dem_ncol = (dem_lonmax - dem_lonmin)*dem_pixperlon;
-	dem_nlin = (dem_latmax - dem_latmin)*dem_pixperlat;
+	/* get currently already read DEM bounds */
+	pTerrainData->GetBounds(&dem_lonmin, &dem_lonmax, &dem_latmin, &dem_latmax);
+
+	/* get DEM resolution */
+	pTerrainData->GetResolution(&dem_pplon, &dem_pplat);
+
+	/* free DEM array and recreate it if bounds have changed */
+	if ((m_dem_lonmin != dem_lonmin) || (m_dem_lonmax != dem_lonmax) ||
+	    (m_dem_latmin != dem_latmin) || (m_dem_latmax != dem_latmax)) {
+
+	  pTerrainData->ReadDEM(m_dem_lonmin,m_dem_lonmax,m_dem_latmin,m_dem_latmax);
+
+	  dem_lonmin = m_dem_lonmin;
+	  dem_lonmax = m_dem_lonmax;
+	  dem_latmin = m_dem_latmin;
+	  dem_latmax = m_dem_latmax;
+	  dem_ncol = (dem_lonmax - dem_lonmin)*dem_pplon;
+	  dem_nlin = (dem_latmax - dem_latmin)*dem_pplat;
+
+	  
+	  if (dem_image) free(dem_image);	    
+	  dem_image = (unsigned char*)malloc(dem_nlin * dem_ncol * 4 * sizeof(unsigned char));
+	
+	  /* copy temporary DEM array to DEM array */
+	  for (j = 0; j < dem_nlin; j++) {
+	    for (i = 0; i < dem_ncol; i++) {
+	      
+	      if (pTerrainData->dem_data[j][i] == dem_miss) {
+		bval = 0;
+	      } else {
+		bval = min(max(pTerrainData->dem_data[j][i]/15,1),255);
+	      }
+	      
+	      dem_image[j*4*dem_ncol+i*4+0] = pTerrainData->dem_colortable[bval][0];
+	      dem_image[j*4*dem_ncol+i*4+1] = pTerrainData->dem_colortable[bval][1];
+	      dem_image[j*4*dem_ncol+i*4+2] = pTerrainData->dem_colortable[bval][2];	    
+	      dem_image[j*4*dem_ncol+i*4+3] = 255; /* Non-Transparent */
+	    }
+	  }
+	}
+
+	dem_ncol = (dem_lonmax - dem_lonmin)*dem_pplon;
+	dem_nlin = (dem_latmax - dem_latmin)*dem_pplat;
 	
 	/* Copy DEM data into GL Texture Array */
-	float textureCenterLon = (float) dem_lonmin + (float) dem_ncol / (float) dem_pixperlon * 0.5;
-	float textureCenterLat = (float) dem_latmin + (float) dem_nlin / (float) dem_pixperlat * 0.5;
+	float textureCenterLon = (float) dem_lonmin + (float) dem_ncol / (float) dem_pplon * 0.5;
+	float textureCenterLat = (float) dem_latmin + (float) dem_nlin / (float) dem_pplat * 0.5;
 
 	/* miles per radar pixel. Each pixel .
 	   Each degree lat is 111 km apart and each mile is 1.852 km */
-	float mpplon =  111.0 / (float) dem_pixperlon / 1.852;
-	float mpplat =  111.0 / (float) dem_pixperlat / 1.852;
+	float mpplon =  111.0 / (float) dem_pplon / 1.852;
+	float mpplat =  111.0 / (float) dem_pplat / 1.852;
 
-	
-	/* free DEM array and recreate it if dimensions have changed */
-	if ((m_dem_ncol != dem_ncol) || (m_dem_nlin != dem_nlin)) {
 
-	  pTerrainData->ReadDEMLonLat(dem_lonmin,dem_latmin);
-	  
-	  m_dem_ncol = dem_ncol;
-	  m_dem_nlin = dem_nlin;
-	  if (dem_image) free(dem_image);	    
-	  dem_image = (unsigned char*)malloc(m_dem_nlin * m_dem_ncol * 4 * sizeof(unsigned char));
-	}
-
-	
-	/* copy temporary DEM array to DEM array */
-	for (j = 0; j < m_dem_nlin; j++) {
-	  for (i = 0; i < m_dem_ncol; i++) {
-
-	    if (pTerrainData->dem_data_1deg[j][i] == dem_miss) {
-	      bval = 0;
-	    } else {
-	      bval = min(max(pTerrainData->dem_data_1deg[j][i]/15,1),255);
-	    }
-			     
-	    dem_image[j*4*m_dem_ncol+i*4+0] = pTerrainData->dem_colortable[bval][0];
-	    dem_image[j*4*m_dem_ncol+i*4+1] = pTerrainData->dem_colortable[bval][1];
-	    dem_image[j*4*m_dem_ncol+i*4+2] = pTerrainData->dem_colortable[bval][2];	    
-	    dem_image[j*4*m_dem_ncol+i*4+3] = 255; /* Non-Transparent */
-	  }
-	}
 	
 	glPushMatrix();
 	
@@ -208,19 +211,26 @@ namespace OpenGC
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+
 	/* Remove border line */
 	GLfloat color[4]={0,0,0,1};
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-		      m_dem_ncol,  m_dem_nlin, 0, GL_RGBA,
+		      dem_ncol,  dem_nlin, 0, GL_RGBA,
 		      GL_UNSIGNED_BYTE, dem_image);
 
-	float scx = 0.5 * ((float) m_dem_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
-	float scy = 0.5 * ((float) m_dem_nlin) * mpplat / mapRange * map_size;
-	float tx = (textureCenterLon - aircraftLon) * ((float) dem_pixperlon) * mpplon / mapRange * map_size *
+	float scx = 0.5 * ((float) dem_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
+	float scy = 0.5 * ((float) dem_nlin) * mpplat / mapRange * map_size;
+	float tx = (textureCenterLon - aircraftLon) * ((float) dem_pplon) * mpplon / mapRange * map_size *
 	  cos(M_PI / 180.0 * aircraftLat);
-	float ty = (textureCenterLat - aircraftLat) * ((float) dem_pixperlat) * mpplat / mapRange * map_size;
+	float ty = (textureCenterLat - aircraftLat) * ((float) dem_pplat) * mpplat / mapRange * map_size;
+
+	/*
+	glEnable(GL_BLEND);
+	glBlendEquation (GL_MAX);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	*/
 	
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
@@ -296,7 +306,7 @@ namespace OpenGC
       glPushMatrix();
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       glColor3ub(COLOR_LIGHTBLUE);
-      m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"DEM",m_Font);
+      m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.228 ,"TERR",m_Font);
       glPopMatrix();
     }
     

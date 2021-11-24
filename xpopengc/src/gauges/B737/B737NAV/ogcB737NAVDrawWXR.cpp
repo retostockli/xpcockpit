@@ -159,6 +159,8 @@ namespace OpenGC
 	if (gain > 2.0) gain = 2.0;
 	
 	/* copy temporary WXR array to WXR array */
+	/* TODO: OPENGL Transparency not working */
+	/* TODO: Only create image if data has changed */
 	for (i = 0; i < m_wxr_nlin; i++) {
 	  for (j = 0; j < m_wxr_ncol; j++) {
 	    
@@ -166,49 +168,59 @@ namespace OpenGC
 	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
 	    } else if (wxr_data[i][j]*gain <= 10) {
 	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
 	    } else if (wxr_data[i][j]*gain <= 20) {
 	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
 	    } else if (wxr_data[i][j]*gain <= 30) {
 	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
 	    } else if (wxr_data[i][j]*gain <= 40) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 81;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 225;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 41;
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	    } else if (wxr_data[i][j]*gain <= 50) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	    } else if (wxr_data[i][j]*gain <= 60) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	    } else if (wxr_data[i][j]*gain <= 70) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	    } else if (wxr_data[i][j]*gain <= 80) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	    } else if (wxr_data[i][j]*gain <= 90) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 255;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 28;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 15;
+	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
+	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	    } else {
 	      /* Magenta for Turbulence, not implemented in X-Plane, but take the highest level */
 	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 200;
 	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 45;
 	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 200;
+	      wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	    }
-	    wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	  }
 	}
 	

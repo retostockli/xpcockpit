@@ -57,8 +57,10 @@ protected:
      Use single array instead of 3D array since it has to be contiguous memory */
   unsigned char *dem_image;
 
-  int m_dem_ncol;
-  int m_dem_nlin;
+  int m_dem_lonmin;
+  int m_dem_lonmax;
+  int m_dem_latmin;
+  int m_dem_latmax;
   
 };
 

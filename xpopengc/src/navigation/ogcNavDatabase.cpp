@@ -36,6 +36,7 @@ NavDatabase
   m_FixHash = 0;  
   m_AirportList = 0;
   m_AirportHash = 0;
+  m_TerrainData = 0;
 }
 
 NavDatabase
