@@ -141,14 +141,15 @@ void b737_efis(void)
   int *efis_data_led;
   int *efis_pos_led;
   int *efis_terr_led;
+  /* TERR Button is not operative in TEMP MCP, so have POS Button for TERR */
   if ((acf_type == 2) || (acf_type == 3)) {
     efis_wxr = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/wxr_press");
     efis_sta = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/sta_press");
     efis_wpt = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/wpt_press");
     efis_apt = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/arpt_press");
     efis_data = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/data_press");
-    efis_pos = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/pos_press");
-    efis_terr = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/terr_press");
+    efis_terr = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/pos_press");
+    efis_pos = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/terr_press");
     *efis_wxr = 0;
     *efis_sta = 0;
     *efis_wpt = 0;
