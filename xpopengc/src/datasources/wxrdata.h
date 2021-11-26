@@ -32,6 +32,7 @@ extern int wxr_phase; /* 0: getting bounds, 1: getting data */
 
 extern unsigned char **wxr_data;
 extern int **wxr_height;
+extern int wxr_newdata;
 
 /* prototype functions */
 

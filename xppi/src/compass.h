@@ -1,4 +1,4 @@
-/* This is the test.h header to the test.c code
+/* This is the compass.h header to the compass.c code
 
    Copyright (C) 2021 Reto Stockli
 
@@ -18,5 +18,5 @@
 
 
 /* Prototype Functions */
-int test_init(void);
-void test(void);
+int compass_init(void);
+void compass(void);

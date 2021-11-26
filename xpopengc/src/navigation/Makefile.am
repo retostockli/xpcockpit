@@ -9,7 +9,8 @@ ogcGeographicObject.cpp \
 ogcGeographicObjectList.cpp \
 ogcNavDatabase.cpp \
 ogcNavaidList.cpp \
-ogcFixList.cpp
+ogcFixList.cpp \
+ogcTerrainData.cpp
 
 noinst_HEADERS = \
 ogcAirportList.h \
@@ -18,5 +19,6 @@ ogcGeographicObject.h \
 ogcGeographicObjectList.h \
 ogcNavDatabase.h \
 ogcNavaidList.h \
-ogcFixList.h
+ogcFixList.h \
+ogcTerrainData.h
 

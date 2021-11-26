@@ -66,7 +66,7 @@ namespace OpenGC
 
       // define geometric stuff
       float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-      float lineWidth = 1.0 * m_PhysicalSize.x / 100.0;
+      float lineWidth = 3.0;
 
       // double dtor = 0.0174533; /* radians per degree */
       // double radeg = 57.2958;  /* degree per radians */

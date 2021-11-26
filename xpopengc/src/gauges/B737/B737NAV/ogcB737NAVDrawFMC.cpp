@@ -255,7 +255,14 @@ namespace OpenGC
       glPushMatrix();
       if (mapMode != 3) {
 	// plot RNP/ANP
-	if ((acf_type == 2) || (acf_type == 3)) {
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(m_PhysicalSize.x*0.3,m_PhysicalSize.y*0.0);
+	glVertex2f(m_PhysicalSize.x*0.3,m_PhysicalSize.y*0.1);
+	glVertex2f(m_PhysicalSize.x*0.7,m_PhysicalSize.y*0.1);
+	glVertex2f(m_PhysicalSize.x*0.7,m_PhysicalSize.y*0.0);
+	glEnd();
+ 	if ((acf_type == 2) || (acf_type == 3)) {
 	  if (*fmc_rnp != FLT_MISS) {
 	    glColor3ub(COLOR_GREEN);
 	    m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
@@ -941,7 +948,7 @@ namespace OpenGC
 	      int hour=fmc_eta[wpt_current];
 	      float minute=(fmc_eta[wpt_current] - (float) hour)*60.0;
 	      snprintf( buffer, sizeof(buffer), "%02d%04.1f z", hour, minute );
-	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, buffer, m_Font);
 	      
 	      lon = (double) wpt[wpt_current].lon;
 	      lat = (double) wpt[wpt_current].lat;
@@ -951,7 +958,7 @@ namespace OpenGC
 	      float distance = sqrt(easting*easting + northing*northing);
 	      
 	      snprintf( buffer, sizeof(buffer), "%.1f NM", distance );
-	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
 	      glPopMatrix();
 	    } 
 	      
@@ -959,9 +966,9 @@ namespace OpenGC
 	    glPushMatrix();
 	    glColor3ub(COLOR_WHITE);
 	    snprintf( buffer, sizeof(buffer), "--------z");
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
+	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, buffer, m_Font);
 	    snprintf( buffer, sizeof(buffer), "----- NM");
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
+	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
 	    glPopMatrix();
 	  } /* has waypoints */
 	} /* we are on either UFMC or ZIBO FMC for 737 */

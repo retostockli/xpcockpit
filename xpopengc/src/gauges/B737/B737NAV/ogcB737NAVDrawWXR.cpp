@@ -46,6 +46,8 @@ namespace OpenGC
 
     m_wxr_ncol = 0;
     m_wxr_nlin = 0;
+
+    wxr_image = NULL;
   
   }
 
@@ -143,71 +145,84 @@ namespace OpenGC
 	float mpplon =  111.0 / (float) wxr_pixperlon / 1.852;
 	float mpplat =  111.0 / (float) wxr_pixperlat / 1.852;
 
-	/* free WXR array and recreate it if dimensions have changed */
-	if ((m_wxr_ncol != wxr_ncol) || (m_wxr_nlin != wxr_nlin)) {
+	/* free WXR array and recreate it if we have new WXR data */
+	if (wxr_newdata == 1) {
 	  m_wxr_ncol = wxr_ncol;
 	  m_wxr_nlin = wxr_nlin;
 	  if (wxr_image) free(wxr_image);	    
 	  wxr_image = (unsigned char*)malloc(m_wxr_nlin * m_wxr_ncol * 4 * sizeof(unsigned char));
-	}
 
-	float gain = *wxr_gain;
-	if (gain == FLT_MISS) gain = 1.0;
-	if (gain < 0.1) gain = 0.1;
-	if (gain > 2.0) gain = 2.0;
+	  float gain = *wxr_gain;
+	  if (gain == FLT_MISS) gain = 1.0;
+	  if (gain < 0.1) gain = 0.1;
+	  if (gain > 2.0) gain = 2.0;
 	
-	/* copy temporary WXR array to WXR array */
-	for (i = 0; i < m_wxr_nlin; i++) {
-	  for (j = 0; j < m_wxr_ncol; j++) {
+	  /* copy temporary WXR array to WXR array */
+	  /* TODO: OPENGL Transparency not working */
+	  /* TODO: Only create image if data has changed */
+	  for (i = 0; i < m_wxr_nlin; i++) {
+	    for (j = 0; j < m_wxr_ncol; j++) {
 	    
-	    if (wxr_data[i][j]*gain == 0) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-	    } else if (wxr_data[i][j]*gain <= 10) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-	    } else if (wxr_data[i][j]*gain <= 20) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-	    } else if (wxr_data[i][j]*gain <= 30) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-	    } else if (wxr_data[i][j]*gain <= 40) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 81;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 225;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 41;
-	    } else if (wxr_data[i][j]*gain <= 50) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
-	    } else if (wxr_data[i][j]*gain <= 60) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 54;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 20;
-	    } else if (wxr_data[i][j]*gain <= 70) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
-	    } else if (wxr_data[i][j]*gain <= 80) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 233;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 183;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 52;
-	    } else if (wxr_data[i][j]*gain <= 90) {
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 255;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 28;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 15;
-	    } else {
-	      /* Magenta for Turbulence, not implemented in X-Plane, but take the highest level */
-	      wxr_image[i*4*m_wxr_ncol+j*4+0] = 200;
-	      wxr_image[i*4*m_wxr_ncol+j*4+1] = 45;
-	      wxr_image[i*4*m_wxr_ncol+j*4+2] = 200;
+	      if (wxr_data[i][j]*gain == 0) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+	      } else if (wxr_data[i][j]*gain <= 10) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+	      } else if (wxr_data[i][j]*gain <= 20) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+	      } else if (wxr_data[i][j]*gain <= 30) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+	      } else if (wxr_data[i][j]*gain <= 40) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	      } else if (wxr_data[i][j]*gain <= 50) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	      } else if (wxr_data[i][j]*gain <= 60) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	      } else if (wxr_data[i][j]*gain <= 70) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	      } else if (wxr_data[i][j]*gain <= 80) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	      } else if (wxr_data[i][j]*gain <= 90) {
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	      } else {
+		/* Magenta for Turbulence, not implemented in X-Plane, but take the highest level */
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 200;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 45;
+		wxr_image[i*4*m_wxr_ncol+j*4+2] = 200;
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
+	      }
 	    }
-	    wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	  }
+	  wxr_newdata = 0;
 	}
 	
 	glPushMatrix();
@@ -313,9 +328,16 @@ namespace OpenGC
     if ((*nav_shows_wxr == 1) && (mapMode != 3) && (!mapCenter)) {   
       // plot map options
       glPushMatrix();
+      glColor3ub(COLOR_BLACK);
+      glBegin(GL_POLYGON);
+      glVertex2f(0,m_PhysicalSize.y*0.260);
+      glVertex2f(0,m_PhysicalSize.y*0.300);
+      glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.300);
+      glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.260);
+      glEnd();
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       glColor3ub(COLOR_LIGHTBLUE);
-      m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"WXR",m_Font);
+      m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.268 ,"WX-A",m_Font);
       glPopMatrix();
     }
     
