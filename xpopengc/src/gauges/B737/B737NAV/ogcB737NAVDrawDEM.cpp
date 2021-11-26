@@ -65,7 +65,7 @@ namespace OpenGC
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-    // float lineWidth = 3.0;
+    //float lineWidth = 3.0;
 
     int i;
     int j;
@@ -114,20 +114,20 @@ namespace OpenGC
     int *nav_shows_dem;
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
-	nav_shows_dem = link_dataref_int("laminar/B738/EFIS/EFIS_vor_on");
+	nav_shows_dem = link_dataref_int("laminar/B738/EFIS_control/capt/terr_on");
       } else {
-	nav_shows_dem = link_dataref_int("laminar/B738/EFIS/fo/EFIS_vor_on");
+	nav_shows_dem = link_dataref_int("laminar/B738/EFIS_control/fo/terr_on");
       }
     } else if (acf_type == 1) {
       nav_shows_dem = link_dataref_int("x737/cockpit/EFISCTRL_0/XXX_on");
     } else {
-      nav_shows_dem = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on");
+      nav_shows_dem = link_dataref_int("xpserver/EFIS_terr");
     }
    
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((heading_map != FLT_MISS) && (*nav_shows_dem == 1) &&
-	(pTerrainData) && (mapMode != 3) && (!mapCenter)) {
+	(pTerrainData) && (mapMode != 3)) {
 	        
     // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -254,19 +254,36 @@ namespace OpenGC
 	glPushMatrix();
 
 	glColor3ub(COLOR_BLACK);
-	glBegin(GL_POLYGON);
-	glVertex2f(0,0);
-	glVertex2f(0,m_PhysicalSize.y*acf_y);
-	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*acf_y);
-	glVertex2f(m_PhysicalSize.x,0);
-	glEnd();
-	
-	glBegin(GL_POLYGON);
-	glVertex2f(0,m_PhysicalSize.y);
-	glVertex2f(0,m_PhysicalSize.y*map_y_max);
-	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*map_y_max);
-	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y);
-	glEnd();
+	if (!mapCenter) {
+	  glBegin(GL_POLYGON);
+	  glVertex2f(0,0);
+	  glVertex2f(0,m_PhysicalSize.y*acf_y);
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*acf_y);
+	  glVertex2f(m_PhysicalSize.x,0);
+	  glEnd();
+	  
+	  glBegin(GL_POLYGON);
+	  glVertex2f(0,m_PhysicalSize.y);
+	  glVertex2f(0,m_PhysicalSize.y*map_y_max);
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*map_y_max);
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y);
+	  glEnd();
+	} else {
+	  glBegin(GL_POLYGON);
+	  glVertex2f(0,0);
+	  glVertex2f(0,m_PhysicalSize.y*(2*acf_y - map_y_max));
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*(2*acf_y - map_y_max));
+	  glVertex2f(m_PhysicalSize.x,0);
+	  glEnd();
+    float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
+
+	  glBegin(GL_POLYGON);
+	  glVertex2f(0,m_PhysicalSize.y);
+	  glVertex2f(0,m_PhysicalSize.y*map_y_max);
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*map_y_max);
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y);
+	  glEnd();
+	}
 	
 	//-------------------Rounded NAV Gauge DEM Limit ------------------
 	// The DEM image is blacked off on the top of the NAV gauge
@@ -274,26 +291,32 @@ namespace OpenGC
 	// remainder of a circle subtracted from a square, and are formed
 	// by fanning out triangles from a point just off each corner
 	// to an arc descrbing the curved portion of the art. horiz.
-	CircleEvaluator aCircle;
-	aCircle.SetRadius(m_PhysicalSize.y*(map_y_max-acf_y));
-	
-	// Upper Left quarter
-	glBegin(GL_TRIANGLE_FAN);
-	glVertex2f(0.0,m_PhysicalSize.y*map_y_max);
-	aCircle.SetOrigin(m_PhysicalSize.x*acf_x,m_PhysicalSize.y*acf_y);
-	aCircle.SetArcStartEnd(270,360);
-	aCircle.SetDegreesPerPoint(10);
-	aCircle.Evaluate();
-	glEnd();
 
-	// Upper Right quarter
-	glBegin(GL_TRIANGLE_FAN);
-	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*map_y_max);
-	aCircle.SetOrigin(m_PhysicalSize.x*acf_x,m_PhysicalSize.y*acf_y);
-	aCircle.SetArcStartEnd(0,90);
-	aCircle.SetDegreesPerPoint(10);
-	aCircle.Evaluate();
-	glEnd();
+	if (!mapCenter) {
+	  CircleEvaluator aCircle;
+	  aCircle.SetRadius(m_PhysicalSize.y*(map_y_max-acf_y));
+	  
+	  // Upper Left quarter
+	  glBegin(GL_TRIANGLE_FAN);
+	  glVertex2f(0.0,m_PhysicalSize.y*map_y_max);
+	  //glVertex2f(0.0,m_PhysicalSize.y*acf_y);
+	  aCircle.SetOrigin(m_PhysicalSize.x*acf_x,m_PhysicalSize.y*acf_y);
+	  aCircle.SetArcStartEnd(270,360);
+	  aCircle.SetDegreesPerPoint(10);
+	  aCircle.Evaluate();
+	  glEnd();
+	  
+	  // Upper Right quarter
+	  glBegin(GL_TRIANGLE_FAN);
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*map_y_max);
+	  //glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*acf_y);
+	  aCircle.SetOrigin(m_PhysicalSize.x*acf_x,m_PhysicalSize.y*acf_y);
+	  aCircle.SetArcStartEnd(0,90);
+	  aCircle.SetDegreesPerPoint(10);
+	  aCircle.Evaluate();
+	  glEnd();
+
+	}
        
 	glPopMatrix();
  	
@@ -304,6 +327,13 @@ namespace OpenGC
     if ((*nav_shows_dem == 1) && (mapMode != 3) && (!mapCenter)) {   
       // plot map options
       glPushMatrix();
+      glColor3ub(COLOR_BLACK);
+      glBegin(GL_POLYGON);
+      glVertex2f(0,m_PhysicalSize.y*0.220);
+      glVertex2f(0,m_PhysicalSize.y*0.260);
+      glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.260);
+      glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.220);
+      glEnd();
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       glColor3ub(COLOR_LIGHTBLUE);
       m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.228 ,"TERR",m_Font);

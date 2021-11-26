@@ -61,7 +61,8 @@ int wxr_nlin;
 int wxr_phase;
 
 unsigned char **wxr_data;
-int**wxr_height;
+int **wxr_height;
+int wxr_newdata;
 
 /* Type 1: WXR data from X-Plane's Control Pad: we act as server */
 /* Type 2: WXR data from X-Plane's regular UDP stream: we act as client */
@@ -78,6 +79,7 @@ void init_wxr(int type, char server_ip[]) {
   wxr_lonmax = WXR_MISS;
   wxr_latmin = WXR_MISS;
   wxr_latmax = WXR_MISS;
+  wxr_newdata = 0;
   
   if (wxr_type == 1) {
     /* initialize UDP socket if needed for WXR data from X-Plane*/
@@ -316,6 +318,8 @@ void read_wxr() {
 	    wxr_latmax_tmp = WXR_MISS;
 	    
 	    wxr_phase = 0;
+
+	    wxr_newdata = 1;
 	      
 	  } else {
 	    /* Receiving domain to temporary array */

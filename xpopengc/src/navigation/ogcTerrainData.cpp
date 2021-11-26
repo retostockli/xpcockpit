@@ -162,12 +162,12 @@ namespace OpenGC
       *latmin = max(min(curlat - (m_nlat-1)/2,89),-90);
       *latmax = max(min(curlat + (m_nlat-1)/2+1,90),-89);
 
-     
+      /*
       printf("Current lon/lat: %i %i \n",curlon,curlat);
       printf("Lonmin/Lonmax: %i %i \n",*lonmin,*lonmax);
       printf("Latmin/Latmax: %i %i \n",*latmin,*latmax);
       printf("nlon/nlat: %i %i \n",m_nlon,m_nlat);
-     
+      */
     }
       
   }

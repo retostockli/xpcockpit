@@ -136,15 +136,38 @@ namespace OpenGC
     
       // plot map options
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-      glColor3ub(COLOR_LIGHTBLUE);
       if (*nav_shows_apt == 1) {
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(0,m_PhysicalSize.y*0.380);
+	glVertex2f(0,m_PhysicalSize.y*0.420);
+	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.420);
+	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.380);
+	glEnd();
+	glColor3ub(COLOR_LIGHTBLUE);
 	m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.388 , "ARPT", m_Font );
       }
       if (*nav_shows_fix == 1) {
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(0,m_PhysicalSize.y*0.340);
+	glVertex2f(0,m_PhysicalSize.y*0.380);
+	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.380);
+	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.340);
+	glEnd();
+	glColor3ub(COLOR_LIGHTBLUE);
 	m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.348 , "WPT", m_Font );
       }
       if ((*nav_shows_vor == 1) || (*nav_shows_ndb == 1)) {
-	m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.308 , "STA", m_Font );
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(0,m_PhysicalSize.y*0.300);
+	glVertex2f(0,m_PhysicalSize.y*0.340);
+	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.340);
+	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.300);
+	glEnd();
+	glColor3ub(COLOR_LIGHTBLUE);
+ 	m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.308 , "STA", m_Font );
       }
 
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
