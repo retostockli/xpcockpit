@@ -44,8 +44,8 @@ int B1B_PIN = 16;  /* GPIO 15, Physical Pin 10 */
 /* This is the translation table of magnetic deg input (x) to degees shown on compass (y) */
 /* Since the coils on the compass are not exactly orthogonal and the magnetic field is not perfect */
 
-static float y[17] = { 45, 60, 90,110,140,180,215,245,276,310,330,350,360,375,390,405,420}; /* Input Degrees */
-static float x[17] = { -2,  7, 25, 40, 75,150,177,192,225,277,312,328,335,345,350,358,367}; /* Degrees on Compass NEED TO COVER 0..360 degrees at least */
+static float y[22] = { 45, 60, 90,110,140,146,148,153,161,171,180,215,245,276,310,330,350,360,375,390,405,420}; /* Input Degrees */
+static float x[22] = { -2,  7, 25, 40, 75,105,110,120,130,140,150,177,192,225,277,312,328,335,345,350,358,367}; /* Degrees on Compass NEED TO COVER 0..360 degrees at least */
 
 float interpolate(float xval)
 {
