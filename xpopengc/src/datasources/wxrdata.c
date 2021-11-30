@@ -34,6 +34,9 @@
 #include "udpdata.h"
 #include "wxrdata.h"
 
+#define min(a,b) (((a)<(b))?(a):(b))
+#define max(a,b) (((a)>(b))?(a):(b))
+
 float wxr_lonmin_tmp;
 float wxr_lonmax_tmp;
 float wxr_latmin_tmp;
@@ -240,10 +243,10 @@ void read_wxr() {
 	    
 	    /* Reset WXR entries to 0 */
 	    /* Reset Height to 10'000 m */
-	    for (i = 0; i < wxr_nlin_tmp; i++)
-	      for (j = 0; j < wxr_ncol_tmp; j++) {
-		wxr_data_tmp[i][j] = 0;
-		wxr_height_tmp[i][j] = 0;
+	    for (j = 0; j < wxr_nlin_tmp; j++)
+	      for (i = 0; i < wxr_ncol_tmp; i++) {
+		wxr_data_tmp[j][i] = 0;
+		wxr_height_tmp[j][i] = 0;
 	      }
 	    
 	    wxr_phase = 1;
@@ -270,44 +273,53 @@ void read_wxr() {
 
 	    /* free WXR array and recreate it */
 	    if (wxr_data) {
-	      for (i = 0; i < wxr_nlin; i++)
-		free(wxr_data[i]);
+	      for (j = 0; j < wxr_nlin; j++)
+		free(wxr_data[j]);
 	      free(wxr_data);
 	    }
 	    if (wxr_height) {
-	      for (i = 0; i < wxr_nlin; i++)
-		free(wxr_height[i]);
+	      for (j = 0; j < wxr_nlin; j++)
+		free(wxr_height[j]);
 	      free(wxr_height);
 	    }
 	    
-	    wxr_pixperlon = wxr_pixperlon_tmp;
-	    wxr_pixperlat = wxr_pixperlat_tmp;
+	    wxr_pixperlon = WXR_UPSCALE * wxr_pixperlon_tmp;
+	    wxr_pixperlat = WXR_UPSCALE * wxr_pixperlat_tmp;
 	    wxr_lonmin = wxr_lonmin_tmp;
 	    wxr_latmin = wxr_latmin_tmp;
-	    wxr_ncol = wxr_ncol_tmp;
-	    wxr_nlin = wxr_nlin_tmp;
+	    wxr_ncol = WXR_UPSCALE * wxr_ncol_tmp;
+	    wxr_nlin = WXR_UPSCALE * wxr_nlin_tmp;
 	    wxr_lonmax = wxr_lonmin + wxr_ncol / wxr_pixperlon;
 	    wxr_latmax = wxr_latmin + wxr_nlin / wxr_pixperlat;
 
 	    wxr_data = (unsigned char**)malloc(wxr_nlin * sizeof(unsigned char*));
 	    wxr_height = (int**)malloc(wxr_nlin * sizeof(int*));
-	    for (i = 0; i < wxr_nlin; i++) {
-	      wxr_data[i] = (unsigned char*)malloc(wxr_ncol * sizeof(unsigned char));
-	      wxr_height[i] = (int*)malloc(wxr_ncol * sizeof(int));
+	    for (j = 0; j < wxr_nlin; j++) {
+	      wxr_data[j] = (unsigned char*)malloc(wxr_ncol * sizeof(unsigned char));
+	      wxr_height[j] = (int*)malloc(wxr_ncol * sizeof(int));
 	    }
 	    
-	    /* copy temporary WXR array to WXR array */
-	    for (i = 0; i < wxr_nlin; i++) {
-	      for (j = 0; j < wxr_ncol; j++) {
-		wxr_data[i][j] = wxr_data_tmp[i][j];
-		wxr_height[i][j] = wxr_height_tmp[i][j];
+
+	    if (WXR_UPSCALE > 1) {
+	      /* interpolate temporary WXR array into WXR array */
+	      /* TODO: Add interpolation for height array */
+	      //nearest_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      //bilinear_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      bicubic_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	    } else {
+	      /* copy temporary WXR array to WXR array */
+	      for (j = 0; j < wxr_nlin; j++) {
+		for (i = 0; i < wxr_ncol; i++) {
+		  wxr_data[j][i] = wxr_data_tmp[j][i];
+		  wxr_height[j][i] = wxr_height_tmp[j][i];
+		}
 	      }
 	    }
 		
 	    /* Remove Temporary WXR Array */
-	    for (i = 0; i < wxr_nlin; i++) {
-	      free(wxr_data_tmp[i]);
-	      free(wxr_height_tmp[i]);
+	    for (j = 0; j < wxr_nlin_tmp; j++) {
+	      free(wxr_data_tmp[j]);
+	      free(wxr_height_tmp[j]);
 	    }
 	    free(wxr_height_tmp);
 	    
@@ -329,14 +341,14 @@ void read_wxr() {
 	      /* WXR every arc minute (60 per lon and 60 per lat */
 	      
 	      if ((lat_min_south != -1) && (lat_min_south != 60)) {
-		i = (lat - wxr_latmin_tmp)*wxr_pixperlat_tmp + lat_min_south;
-		j = (lon - wxr_lonmin_tmp)*wxr_pixperlon_tmp;
+		j = (lat - wxr_latmin_tmp)*wxr_pixperlat_tmp + lat_min_south;
+		i = (lon - wxr_lonmin_tmp)*wxr_pixperlon_tmp;
 		
 		//printf("Reading lon %i lat %i min %i. Indices: %i %i %i \n",
 		//	     lon,lat,lat_min_south,j,i,wxrBuffer[5+4+4+4+10]);
 		
 		for (k = 0; k < wxr_pixperlon_tmp; k++) {
-		  wxr_data_tmp[i][j+k] = wxrBuffer[5+4+4+4+k] * 10;
+		  wxr_data_tmp[j][i+k] = wxrBuffer[5+4+4+4+k] * 10;
 		}
 	      }
 		
@@ -344,11 +356,11 @@ void read_wxr() {
 	      /* WXR Levels from 0-100 and Height Information */
 	      /* WXR every arc minute for lat, but thinning lon resolution with higher lats */
 	      
-	      i = (lat - wxr_latmin_tmp)*wxr_pixperlat_tmp;
-	      j = (lon - wxr_lonmin_tmp)*wxr_pixperlon_tmp;
-	      if ((i>=0)&&(i<wxr_nlin_tmp)&&(j>=0)&&(j<wxr_ncol_tmp)) {
-		wxr_data_tmp[i][j] = 0.9 * lev;
-		wxr_height_tmp[i][j] = (int) hgt;
+	      j = (lat - wxr_latmin_tmp)*wxr_pixperlat_tmp;
+	      i = (lon - wxr_lonmin_tmp)*wxr_pixperlon_tmp;
+	      if ((j>=0)&&(j<wxr_nlin_tmp)&&(i>=0)&&(i<wxr_ncol_tmp)) {
+		wxr_data_tmp[j][i] = 0.9 * lev;
+		wxr_height_tmp[j][i] = (int) hgt;
 	      }
 	    }
 	      
@@ -372,14 +384,14 @@ void exit_wxr() {
 
   /*
   if (wxr_data) {
-    for (i = 0; i < wxr_nlin; i++)
-      free(wxr_data[i]);
+    for (j = 0; j < wxr_nlin; j++)
+      free(wxr_data[j]);
     free(wxr_data);
   }
 
   if (wxr_data_tmp) {
-    for (i = 0; i < wxr_nlin_tmp; i++)
-      free(wxr_data_tmp[i]);
+    for (j = 0; j < wxr_nlin_tmp; j++)
+      free(wxr_data_tmp[j]);
     free(wxr_data_tmp);
   }
   */
@@ -403,4 +415,94 @@ void exit_wxr() {
     deallocate_udpdata();
   }
   
+}
+
+void nearest_uchar(unsigned char **data, unsigned char **newData, int width, int height, int newWidth, int newHeight)
+{
+  int i,j,k;
+  int x,y;
+  //  unsigned char cc;
+  float tx = (float)(width-1) / newWidth;
+  float ty =  (float)(height-1) / newHeight;
+  
+  for(j=0;j<newHeight;j++) {
+    for(i=0;i<newWidth;i++) {
+      x = ceil(tx*i); /* NN x index of input data */
+      y = ceil(ty*j); /* NN y index of input data */
+      newData[j][i] = data[y][x];             
+    }
+  }
+}
+
+void bilinear_uchar(unsigned char **data, unsigned char **newData, int width, int height, int newWidth, int newHeight)
+{
+  int x,y;
+  float tx = (float)(width-1)/newWidth;
+  float ty = (float)(height-1)/newHeight;
+  float x_diff, y_diff;
+  int i,j;
+
+  for(j=0;j<newHeight;j++) {
+    for(i=0;i<newWidth;i++) {
+      x = (int)(tx * i);
+      y = (int)(ty * j);
+             
+      x_diff = ((tx * i) -x);
+      y_diff = ((ty * j) -y);
+     
+      newData[j][i] =
+	(float)data[y][x]*(1.0-x_diff)*(1.0-y_diff)
+	+(float)data[y][x+1]*(1.0-y_diff)*(x_diff)
+	+(float)data[y+1][x]*(y_diff)*(1.0-x_diff)
+	+(float)data[y+1][x+1]*(y_diff)*(x_diff);  
+    }
+  } 
+}
+
+void bicubic_uchar(unsigned char **data, unsigned char **newData, int width, int height, int newWidth, int newHeight)
+{    
+  float Cc;
+  float C[4];
+  float d0,d2,d3;
+  float a0,a1,a2,a3;
+  int i,j;
+  int jj;
+  int x,y;
+  float dx,dy;
+        
+  float tx = (float)(width-1)/newWidth;
+  float ty = (float)(height-1)/newHeight;
+        
+  for(j=0;j<newHeight;j++) {
+    for(i=0;i<newWidth;i++) {
+      x = (int)(tx * i);
+      y = (int)(ty * j);
+           
+      dx = tx*i-x;
+      dy = ty*j-y;
+                      
+      for(jj=0;jj<=3;jj++) {
+	a0 = (float)data[min(max(y-1+jj,0),height-1)][x];                                  
+	d0 = (float)data[min(max(y-1+jj,0),height-1)][max(x-1,0)] - a0;
+	d2 = (float)data[min(max(y-1+jj,0),height-1)][min(x+1,width-1)] - a0;
+	d3 = (float)data[min(max(y-1+jj,0),height-1)][min(x+2,width-1)] - a0;
+	a1 = -1.0/3.0*d0 + d2 -1.0/6.0*d3;
+	a2 =  1.0/2.0*d0 + 1.0/2.0*d2;
+	a3 = -1.0/6.0*d0 - 1.0/2.0*d2 + 1.0/6.0*d3;
+	C[jj] = a0 + a1*dx + a2*dx*dx + a3*dx*dx*dx;
+      }
+	
+      d0 = C[0]-C[1];
+      d2 = C[2]-C[1];
+      d3 = C[3]-C[1];
+      a0 = C[1];
+      a1 = -1.0/3.0*d0 + d2 -1.0/6.0*d3;
+      a2 =  1.0/2.0*d0 + 1.0/2.0*d2;
+      a3 = -1.0/6.0*d0 - 1.0/2.0*d2 + 1.0/6.0*d3;
+      Cc = a0 + a1*dy + a2*dy*dy + a3*dy*dy*dy;
+      if((int)Cc>255) Cc=255.0;
+      if((int)Cc<0) Cc=0.0;
+      newData[j][i] = Cc;
+    }    
+  }
 }

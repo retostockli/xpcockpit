@@ -147,6 +147,7 @@ namespace OpenGC
 
 	/* free WXR array and recreate it if we have new WXR data */
 	if (wxr_newdata == 1) {
+	  printf("Plotting New WXR Data in NAV Display\n");
 	  m_wxr_ncol = wxr_ncol;
 	  m_wxr_nlin = wxr_nlin;
 	  if (wxr_image) free(wxr_image);	    

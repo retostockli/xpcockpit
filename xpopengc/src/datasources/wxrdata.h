@@ -16,6 +16,7 @@
 
 #define WXR_MISS -9999.0
 #define MAXRADAR 20 /* maximum number of WXR pixels to retrieve in Type 2 */
+#define WXR_UPSCALE 5  /* Upscaling Factor */
 
 extern int wxr_type;
 extern float wxr_lonmin;
@@ -39,3 +40,6 @@ extern int wxr_newdata;
 void init_wxr(int type, char server_ip[]);
 void read_wxr(void);
 void exit_wxr(void);
+void nearest_uchar(unsigned char **data, unsigned char **newData, int width, int height, int newWidth, int newHeight);
+void bilinear_uchar(unsigned char **data, unsigned char **newData, int width, int height, int newWidth, int newHeight);
+void bicubic_uchar(unsigned char **data, unsigned char **newData, int width, int height, int newWidth, int newHeight);
