@@ -55,7 +55,7 @@ namespace OpenGC
   {
     GaugeComponent::Render();
 
-    bool egpws = false; /* draw egpws points or simple colored terrain */
+    bool egpws = true; /* draw egpws points or simple colored terrain */
     
     int acf_type = m_pDataSource->GetAcfType();
   
@@ -72,6 +72,7 @@ namespace OpenGC
     int i;
     int j;
     int z;
+    int p;
     int zmin, zmax, zdiff;
     int step;
 
@@ -88,7 +89,9 @@ namespace OpenGC
 
     /* Pointer to Terrain Database Object */
     TerrainData* pTerrainData = m_pNavDatabase->GetTerrainData();
-    
+
+    /* Pointer to Shoreline Database Object */
+    ShorelineData* pShorelineData = m_pNavDatabase->GetShorelineData();
     
     // double dtor = 0.0174533; /* radians per degree */
     // double radeg = 57.2958;  /* degree per radians */
@@ -329,6 +332,44 @@ namespace OpenGC
 	  glDisable (GL_TEXTURE_2D);
 	  glFlush();
 
+	  if (pShorelineData) {
+	    glColor3ub(COLOR_DARKBLUE);
+	    //glPolygonMode (GL_FRONT, GL_FILL);
+	    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	    for (p=0;p<pShorelineData->num_shorelines;p++) {
+
+	      if ((pShorelineData->shoreline_centerlon[p] < (aircraftLon+5.0)) &&
+		  (pShorelineData->shoreline_centerlon[p] > (aircraftLon-5.0)) &&
+		  (pShorelineData->shoreline_centerlat[p] < (aircraftLat+5.0)) &&
+		  (pShorelineData->shoreline_centerlat[p] > (aircraftLat-5.0))) {
+
+		/*
+		printf("Drawing Shoreline %i %i %f %f \n",p,pShorelineData->num_shorelinepoints[p],
+		       pShorelineData->shoreline_centerlon[p],pShorelineData->shoreline_centerlat[p]);
+		*/
+		
+		glBegin(GL_POLYGON);
+		//glBegin(GL_LINE_LOOP);
+		for (i=0;i<pShorelineData->num_shorelinepoints[p];i++) {
+		
+		  lon = pShorelineData->shoreline_lon[p][i];  
+		  lat = pShorelineData->shoreline_lat[p][i];  
+		  
+		  // convert to azimuthal equidistant coordinates with acf in center
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		  
+		  // Compute physical position relative to acf center on screen
+		  yPos = -northing / 1852.0 / mapRange * map_size; 
+		  xPos = easting / 1852.0  / mapRange * map_size;
+		  glVertex2f(xPos,yPos);
+		}
+		glEnd();
+		  
+
+	      }
+	    }
+	  }
+	  
 	}
 	
 	/* end of down-shifted and rotated coordinate system */

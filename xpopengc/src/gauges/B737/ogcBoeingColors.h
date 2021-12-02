@@ -49,6 +49,7 @@
 /* NAV DISPLAY */
 #define COLOR_VIOLET 255, 0, 200
 #define COLOR_LIGHTBLUE 0, 189, 231
+#define COLOR_DARKBLUE  0, 100, 200
 
 /* Greys */
 #define COLOR_GRAYBLUE 51, 51, 76

@@ -137,8 +137,8 @@ namespace OpenGC
     
     /* index 0 is water */
     dem_colortable[0][0] = 0;
-    dem_colortable[0][1] = 0;
-    dem_colortable[0][2] = 100;
+    dem_colortable[0][1] = 100;
+    dem_colortable[0][2] = 200;
 
   }
 

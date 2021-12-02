@@ -29,12 +29,32 @@ namespace OpenGC
   ShorelineData
   ::ShorelineData()
   {
-    num_shorelines = 0;       
+    num_shorelines = 0;
+    num_shorelinepoints = NULL;
+    shoreline_lon = NULL;
+    shoreline_lat = NULL;
   }
 
   ShorelineData
   ::~ShorelineData()
   {
+    int i;
+    if (num_shorelinepoints) free(num_shorelinepoints);
+    if (shoreline_centerlon) free(shoreline_centerlon);
+    if (shoreline_centerlat) free(shoreline_centerlat);
+    if (shoreline_lon) {
+      for (i=0;i<num_shorelines;i++) {
+	free(shoreline_lon[i]);
+      }
+      free(shoreline_lon);
+    }
+    if (shoreline_lat) {
+      for (i=0;i<num_shorelines;i++) {
+	free(shoreline_lat[i]);
+      }
+      free(shoreline_lat);
+    }
+      
   }
 
   bool
@@ -46,7 +66,7 @@ namespace OpenGC
     char filename[100];
     ifstream ifile;
 
-    sprintf(filename,"%s/%s",m_PathToGSHHG.c_str(),"gshhs_c.b");
+    sprintf(filename,"%s/%s",m_PathToGSHHG.c_str(),"gshhs_h.b");
     ifile.open(filename);
     if(ifile) {
       printf("GSHHG Shoreline File exists: %s \n",filename);
@@ -68,56 +88,89 @@ namespace OpenGC
      
     char filename[100];
     ifstream ifile;
-    int npoints;
-    int i;
+    int nshorelines;
+    int level;
+    int i,f;
     struct GSHHG_HEADER header;
     struct GSHHG_POINT points;
     
-    sprintf(filename,"%s/%s",m_PathToGSHHG.c_str(),"gshhs_c.b");
-    ifile.open (filename, ios::in | ios::binary);
-    while (ifile.peek() != EOF) {
-      num_shorelines++;
-      ifile.read ((char*)&header, sizeof(header));
-      header.id = swap_int32(header.id);
-      header.n = swap_int32(header.n);
-      header.flag = swap_int32(header.flag);
-      header.west = swap_int32(header.west);
-      header.east = swap_int32(header.east);
-      header.south = swap_int32(header.south);
-      header.north = swap_int32(header.north);
-      header.area = swap_int32(header.area);
-      header.area_full = swap_int32(header.area_full);
-      header.container = swap_int32(header.container);
-      header.ancestor = swap_int32(header.ancestor);
-      printf("%i %i %i \n",header.id,header.n,header.area);
-      for (i=0;i<header.n;i++) {
-	ifile.read ((char*)&points, sizeof(points));
-	points.x = swap_int32(points.x);
-	points.y = swap_int32(points.y);
-	//printf("%i %i %i \n",i,points.x,points.y);
+    sprintf(filename,"%s/%s",m_PathToGSHHG.c_str(),"gshhs_h.b");
+
+    /* Read file twice: first for getting number of polygons, second read the polygons */
+    for (f=0;f<2;f++) {
+      nshorelines = 0;
+      ifile.open (filename, ios::in | ios::binary);
+      while (ifile.peek() != EOF) {
+	ifile.read ((char*)&header, sizeof(header));
+	header.id = swap_int32(header.id);
+	header.n = swap_int32(header.n);
+	header.flag = swap_int32(header.flag);
+	header.west = swap_int32(header.west);
+	header.east = swap_int32(header.east);
+	header.south = swap_int32(header.south);
+	header.north = swap_int32(header.north);
+	header.area = swap_int32(header.area);
+	header.area_full = swap_int32(header.area_full);
+	header.container = swap_int32(header.container);
+	header.ancestor = swap_int32(header.ancestor);
+	level = header.flag & 255;
+	if ((f==1) && (level == 2)) {
+	  /* allocate polygon points for lakes */
+	  num_shorelinepoints[nshorelines] = header.n;
+	  shoreline_centerlon[nshorelines] = 0.0;
+	  shoreline_centerlat[nshorelines] = 0.0;
+	  shoreline_lon[nshorelines] = (float*)malloc(header.n * sizeof(float));
+	  shoreline_lat[nshorelines] = (float*)malloc(header.n * sizeof(float));
+	}
+      
+	for (i=0;i<header.n;i++) {
+	  ifile.read ((char*)&points, sizeof(points));
+	  points.x = swap_int32(points.x);
+	  points.y = swap_int32(points.y);
+	  //printf("%i %i %i \n",i,points.x,points.y);
+	  if ((f==1) && (level == 2)) {
+	    /* read polygon points for lakes */
+	    if (points.x > 180000000) {
+	      /* move all 180 - 360 degree lons to -180 to 0 degree lon */
+	      shoreline_lon[nshorelines][i] = (float) (points.x - 360000000) / 1.e6;
+	    } else {
+	      shoreline_lon[nshorelines][i] = (float) points.x / 1.e6;
+	    }
+	    shoreline_lat[nshorelines][i] = (float) points.y / 1.e6;
+	    shoreline_centerlon[nshorelines] += shoreline_lon[nshorelines][i];
+	    shoreline_centerlat[nshorelines] += shoreline_lat[nshorelines][i];
+	    //printf("%f %f \n",shoreline_lon[nshorelines][i],shoreline_lat[nshorelines][i]);
+	  }
+	}
+	if ((f==1) && (level == 2)) {
+	  shoreline_centerlon[nshorelines] /= (float) header.n;
+	  shoreline_centerlat[nshorelines] /= (float) header.n;
+	  //printf("%i %f %f \n",nshorelines,shoreline_centerlon[nshorelines],shoreline_centerlat[nshorelines]);
+	}
+       
+	if (level == 2) {
+	  nshorelines++;
+	}
+      }
+      ifile.close();
+      if (f==0) {
+	num_shorelines = nshorelines;
+	printf("Total number of Lakes: %i \n",num_shorelines);
+	num_shorelinepoints = (int*)malloc(num_shorelines * sizeof(int));
+	shoreline_centerlon = (float*)malloc(num_shorelines * sizeof(float));
+	shoreline_centerlat = (float*)malloc(num_shorelines * sizeof(float));
+	shoreline_lon = (float**)malloc(num_shorelines * sizeof(float*));
+	shoreline_lat = (float**)malloc(num_shorelines * sizeof(float*));
       }
     }
-    ifile.close();
 
-    printf("Total number of Shorelines: %i \n",num_shorelines);
-    
-    return false;
+    if (num_shorelines > 0) {
+      return true;
+    } else {
+      printf("No Lakes found! \n");
+      return false;
+    }
   }
     
 
 } // end namespace OpenGC
-    int id;       /* Unique polygon id number, starting at 0 */
-    int n;        /* Number of points in this polygon */
-    int flag;     /* = level + version << 8 + greenwich << 16 + source << 24 + river << 25 */
-    /* flag contains 5 items, as follows:
-     * low byte:    level = flag & 255: Values: 1 land, 2 lake, 3 island_in_lake, 4 pond_in_island_in_lake
-     * 2nd byte:    version = (flag >> 8) & 255: Values: Should be 12 for GSHHG release 12 (i.e., version 2.2)
-     * 3rd byte:    greenwich = (flag >> 16) & 1: Values: Greenwich is 1 if Greenwich is crossed
-     * 4th byte:    source = (flag >> 24) & 1: Values: 0 = CIA WDBII, 1 = WVS
-     * 4th byte:    river = (flag >> 25) & 1: Values: 0 = not set, 1 = river-lake and level = 2
-     */
-    int west, east, south, north;   /* min/max extent in micro-degrees */
-    int area;       /* Area of polygon in 1/10 km^2 */
-    int area_full;  /* Area of original full-resolution polygon in 1/10 km^2*/
-    int container;  /* Id of container polygon that encloses this polygon (1 if none) */
-    int ancestor; 

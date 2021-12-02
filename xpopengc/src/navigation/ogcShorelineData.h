@@ -42,6 +42,8 @@ public:
 
   int num_shorelines;
   int *num_shorelinepoints;
+  float *shoreline_centerlon;
+  float *shoreline_centerlat;
   float **shoreline_lon;
   float **shoreline_lat;
   

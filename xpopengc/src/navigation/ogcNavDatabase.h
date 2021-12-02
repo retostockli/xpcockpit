@@ -71,6 +71,9 @@ public:
   /** Get the Terrain Data Object **/
   TerrainData* GetTerrainData() {return m_TerrainData;}
   
+  /** Get the Shoreline Data Object **/
+  ShorelineData* GetShorelineData() {return m_ShorelineData;}
+  
 protected:
 
   /** A list of all nav objects */
