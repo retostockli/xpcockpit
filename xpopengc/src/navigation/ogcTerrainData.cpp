@@ -88,7 +88,7 @@ namespace OpenGC
       }
     }
 
-    if (!success) printf("DEM Dataset incomplete. Please Check\n");
+    if (!success) printf("DEM Dataset incomplete. Please Check!\n");
     
     return success;
   }

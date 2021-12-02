@@ -54,7 +54,9 @@ namespace OpenGC
   void B737NAVDrawDEM::Render()
   {
     GaugeComponent::Render();
-   
+
+    bool egpws = false; /* draw egpws points or simple colored terrain */
+    
     int acf_type = m_pDataSource->GetAcfType();
   
     bool is_captain = (this->GetArg() == 0);
@@ -65,10 +67,13 @@ namespace OpenGC
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-    //float lineWidth = 3.0;
+    //float lineWidth = 1.0;
 
     int i;
     int j;
+    int z;
+    int zmin, zmax, zdiff;
+    int step;
 
     unsigned char bval;
 
@@ -76,6 +81,10 @@ namespace OpenGC
     int dem_ncol, dem_nlin;
     int dem_pplon, dem_pplat;
     short int dem_miss = -500;
+
+    double lon, lat;
+    double easting, northing;
+    float xPos, yPos;
 
     /* Pointer to Terrain Database Object */
     TerrainData* pTerrainData = m_pNavDatabase->GetTerrainData();
@@ -109,7 +118,7 @@ namespace OpenGC
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
     // What's the altitude? (feet)
-    //float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+    float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     
     int *nav_shows_dem;
     if ((acf_type == 2) || (acf_type == 3)) {
@@ -129,10 +138,10 @@ namespace OpenGC
     if ((heading_map != FLT_MISS) && (*nav_shows_dem == 1) &&
 	(pTerrainData) && (mapMode != 3)) {
 	        
-    // Shift center and rotate about heading
+      // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
 
-      /* valid coordinates and full radar image received */
+      /* valid coordinates */
       if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) &&
 	  (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
 
@@ -187,7 +196,7 @@ namespace OpenGC
 	float textureCenterLon = (float) dem_lonmin + (float) dem_ncol / (float) dem_pplon * 0.5;
 	float textureCenterLat = (float) dem_latmin + (float) dem_nlin / (float) dem_pplat * 0.5;
 
-	/* miles per radar pixel. Each pixel .
+	/* miles per DEM pixel. Each pixel .
 	   Each degree lat is 111 km apart and each mile is 1.852 km */
 	float mpplon =  111.0 / (float) dem_pplon / 1.852;
 	float mpplat =  111.0 / (float) dem_pplat / 1.852;
@@ -200,57 +209,133 @@ namespace OpenGC
 	glRotatef(heading_map, 0, 0, 1);
 
 
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if (egpws) {
+	  /* Draw EGPWS points */
+
+	  /* Cycle through EGPWS classes */
+	  for (z=0;z<5;z++) {
+
+	    if (z==0) {
+	      glColor3ub(COLOR_GREEN);
+	      glPointSize(3);
+	      zmin = -2000;
+	      zmax = -1000;
+	      step = 2;
+	    } else if (z==1) {
+	      glColor3ub(COLOR_GREEN);
+	      glPointSize(3);
+	      zmin = -1000;
+	      zmax = -500;
+	      step = 1;
+	    } else if (z==2) {
+	      glColor3ub(COLOR_YELLOW);
+	      glPointSize(3);
+	      zmin = -500;
+	      zmax = 1000;
+	      step = 2;
+	    } else if (z==3) {
+	      glColor3ub(COLOR_YELLOW);
+	      glPointSize(3);
+	      zmin = 1000;
+	      zmax = 2000;
+	      step = 1;
+	    } else {
+	      glColor3ub(COLOR_RED);
+	      glPointSize(5);
+	      zmin = 2000;
+	      zmax = 50000;
+	      step = 1;
+	    }
+	      
+	    glBegin(GL_POINTS);
+	    
+	    for (j = 0; j < dem_nlin; j=j+step) {
+	      for (i = 0; i < dem_ncol; i=i+step) {
+
+		zdiff = (int) ((float) pTerrainData->dem_data[j][i] * 3.28084) - (int) *pressure_altitude;
+		
+		if ((zdiff >= zmin) && (zdiff < zmax)) {
+		
+		  lon = (double) dem_lonmin + ((double) i + 0.5) / (double) dem_pplon;  
+		  lat = (double) dem_latmin + ((double) j + 0.5) / (double) dem_pplat;  
+		  
+		  // convert to azimuthal equidistant coordinates with acf in center
+		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		  
+		  // Compute physical position relative to acf center on screen
+		  yPos = -northing / 1852.0 / mapRange * map_size; 
+		  xPos = easting / 1852.0  / mapRange * map_size;
+		  
+		  // Only draw the Fix if it's visible within the rendering area
+		  if ( sqrt(xPos*xPos + yPos*yPos) < map_size) {		    
+		    glVertex2f(xPos, yPos);		    
+		  }
+		}
+  
+	      } /* DEM columns */
+	    } /* DEM lines */
+	  
+	    glEnd();
+	  
+	  } /* EGPWS classes */
+			
+	} else {
+	  /* Draw Terrain */
+
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-	/* Remove border line */
-	GLfloat color[4]={0,0,0,1};
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+	  /* Remove border line */
+	  GLfloat color[4]={0,0,0,1};
+	  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 	
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-		      dem_ncol,  dem_nlin, 0, GL_RGBA,
-		      GL_UNSIGNED_BYTE, dem_image);
+	  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
+			dem_ncol,  dem_nlin, 0, GL_RGBA,
+			GL_UNSIGNED_BYTE, dem_image);
 
-	float scx = 0.5 * ((float) dem_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
-	float scy = 0.5 * ((float) dem_nlin) * mpplat / mapRange * map_size;
-	float tx = (textureCenterLon - aircraftLon) * ((float) dem_pplon) * mpplon / mapRange * map_size *
-	  cos(M_PI / 180.0 * aircraftLat);
-	float ty = (textureCenterLat - aircraftLat) * ((float) dem_pplat) * mpplat / mapRange * map_size;
+	  float scx = 0.5 * ((float) dem_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
+	  float scy = 0.5 * ((float) dem_nlin) * mpplat / mapRange * map_size;
+	  float tx = (textureCenterLon - aircraftLon) * ((float) dem_pplon) * mpplon / mapRange * map_size *
+	    cos(M_PI / 180.0 * aircraftLat);
+	  float ty = (textureCenterLat - aircraftLat) * ((float) dem_pplat) * mpplat / mapRange * map_size;
 
-	/*
-	glEnable(GL_BLEND);
-	glBlendEquation (GL_MAX);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	*/
+	  /*
+	    glEnable(GL_BLEND);
+	    glBlendEquation (GL_MAX);
+	    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	  */
 	
-	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	  glEnable(GL_TEXTURE_2D);
+	  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBegin(GL_TRIANGLES);
-        glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
-        glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
-        glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
-        glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
-        glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
-        glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
-	glEnd();
+	  glBegin(GL_TRIANGLES);
+	  glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
+	  glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
+	  glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
+	  glTexCoord2f(1.0f, 1.0f); glVertex2f( scx+tx,  scy+ty);
+	  glTexCoord2f(0.0f, 0.0f); glVertex2f(-scx+tx, -scy+ty);
+	  glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
+	  glEnd();
 
-	glDisable (GL_TEXTURE_2D);
-	glFlush();
+	  glDisable (GL_TEXTURE_2D);
+	  glFlush();
 
+	}
+	
 	/* end of down-shifted and rotated coordinate system */
 	glPopMatrix();
 
-	/* Delete radar image behind aircraft and beyond range of 60 NM*/
+	
+	/* Delete DEM image behind aircraft and beyond range of 60 NM*/
 	glPushMatrix();
 
 	glColor3ub(COLOR_BLACK);
@@ -275,7 +360,6 @@ namespace OpenGC
 	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*(2*acf_y - map_y_max));
 	  glVertex2f(m_PhysicalSize.x,0);
 	  glEnd();
-    float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
 
 	  glBegin(GL_POLYGON);
 	  glVertex2f(0,m_PhysicalSize.y);

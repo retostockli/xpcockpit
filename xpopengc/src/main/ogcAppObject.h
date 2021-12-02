@@ -120,6 +120,9 @@ protected:
   /** Path to Globe Project DEM Files */
   char m_DEMPath[255];
 
+  /** Path to GSHHG Shoreline Files */
+  char m_GSHHGPath[255];
+
   /**
    * We treat the file initialization process as a finite
    * state machine, where the current state is given below

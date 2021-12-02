@@ -276,6 +276,7 @@ namespace OpenGC
     int default_customdata = 0; // do not read from X-Plane's "Custom Data" directory by default
     int default_radardata = 0; // do not read from X-Plane's UDP radar data by default
     char default_dem_path[] = "";
+    char default_gshhg_path[] = "";
 
     printf("AppObject - Starting initialization with %s\n", iniFile);
 
@@ -306,11 +307,14 @@ namespace OpenGC
       // path to GLOBE DEM Files for Terrain Rendering in NAV Display. Will also be needed for VSI
       strcpy(m_DEMPath,iniparser_getstring(ini,"General:DEMPath",default_dem_path));
 
+      // path to GSHHG Files for shoreline/lake Rendering in NAV Display.
+      strcpy(m_GSHHGPath,iniparser_getstring(ini,"General:GSHHGPath",default_gshhg_path));
+
       // Initialize the nav database
       if (strcmp(m_XPlanePath,"")) {
 	if (verbosity > 0) printf("AppObject - Initializing the navigation database in %s\n", m_XPlanePath);
 	m_pNavDatabase = new NavDatabase;
-	if (!m_pNavDatabase->InitDatabase(m_XPlanePath,m_DEMPath,m_customdata)) return false;
+	if (!m_pNavDatabase->InitDatabase(m_XPlanePath,m_DEMPath,m_GSHHGPath,m_customdata)) return false;
       } else {
 	if (verbosity > 0) printf("AppObject - Not Loading navigation database since X-Plane path is empty.\n");
       }

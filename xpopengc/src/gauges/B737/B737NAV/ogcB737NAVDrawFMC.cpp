@@ -966,7 +966,7 @@ namespace OpenGC
 	    glPushMatrix();
 	    glColor3ub(COLOR_WHITE);
 	    snprintf( buffer, sizeof(buffer), "--------z");
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, buffer, m_Font);
+	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.96*m_PhysicalSize.y, buffer, m_Font);
 	    snprintf( buffer, sizeof(buffer), "----- NM");
 	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
 	    glPopMatrix();

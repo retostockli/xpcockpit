@@ -410,8 +410,9 @@ void exit_wxr() {
     
     int ret = send_udp_to_server();
     printf("Sent UDP Exit String to X-Plane with Length: %i \n",ret);
-    
+
     exit_udp_client();
+    printf("UDP Client Exited\n");
     deallocate_udpdata();
   }
   

@@ -177,7 +177,9 @@ void exit_udp_client(void)
 {
 
   poll_thread_exit_code = 1;
+  printf("Joining Poll Thread\n");
   pthread_join(poll_thread, NULL);
+  printf("Poll Thread Ended\n");
 
 #ifdef WIN
   closesocket(udpSocket);
@@ -206,6 +208,7 @@ void *poll_thread_main()
     ret = recv(udpSocket, buffer, udpRecvBufferLen, 0);
     if (ret == -1) {
       if ((errno == EWOULDBLOCK) || (errno == EINTR)) { // just no data yet or our own timeout ;-)
+	printf("UDP Poll Timeout \n");
       } else {
 	printf("HANDLEUDP: Receive Error %i \n",errno);
 	//poll_thread_exit_code = 1;

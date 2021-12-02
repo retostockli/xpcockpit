@@ -62,7 +62,7 @@ NavDatabase
 }
 
 bool NavDatabase
-::InitDatabase(string pathToNav, string pathToDEM, int customdata)
+::InitDatabase(string pathToNav, string pathToDEM, string pathToGSHHG, int customdata)
 {
   printf("NavDatabase::InitDatabase() - Loading geographic data...\n");
 
@@ -127,7 +127,17 @@ bool NavDatabase
     if (!(m_TerrainData -> CheckFiles())) {
       return false;
     }
+  }
 
+  if (!pathToGSHHG.empty()) {
+    m_ShorelineData = new ShorelineData;
+    m_ShorelineData -> SetPathToGSHHG(pathToGSHHG);
+    if (!(m_ShorelineData -> CheckFiles())) {
+      return false;
+    }
+    if (!(m_ShorelineData -> ReadShoreline())) {
+      return false;
+    }
   }
   
   return true;

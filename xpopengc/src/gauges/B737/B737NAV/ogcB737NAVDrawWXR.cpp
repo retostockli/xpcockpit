@@ -105,7 +105,7 @@ namespace OpenGC
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
     // What's the altitude? (feet)
-    //float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+    float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     
     int *nav_shows_wxr;
     if ((acf_type == 2) || (acf_type == 3)) {

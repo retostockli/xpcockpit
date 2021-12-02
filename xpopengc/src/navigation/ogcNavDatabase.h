@@ -34,6 +34,7 @@
 #include "ogcFixList.h"
 #include "ogcGeographicHash.h"
 #include "ogcTerrainData.h"
+#include "ogcShorelineData.h"
 
 namespace OpenGC
 {
@@ -47,7 +48,7 @@ public:
   virtual ~NavDatabase();
   
   /** Load the nav data */
-  bool InitDatabase(string pathToNav, string pathToDEM, int customdata);
+  bool InitDatabase(string pathToNav, string pathToDEM, string pathToGSHHG, int customdata);
   
   /** Get the navaid list */
   NavaidList* GetNavaidList() {return m_NavaidList;}
@@ -92,6 +93,9 @@ protected:
 
   /** Terrain Database **/
   TerrainData* m_TerrainData;
+  
+  /** Shoreline Database **/
+  ShorelineData* m_ShorelineData;
   
 };
 
