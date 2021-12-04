@@ -31,7 +31,7 @@
 
 #include "common.h"
 #include "serverdata.h"
-#include "test.h"
+#include "compass.h"
 
 int DOWN_PIN = 28;
 int UP_PIN = 29;
