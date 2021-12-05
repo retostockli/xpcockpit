@@ -42,6 +42,7 @@
 #include "test.h"
 #include "b737_fmc.h"
 #include "compass.h"
+#include "b737_awm.h"
 
 int acf_type;
 
@@ -82,6 +83,9 @@ int main(int argc, char **argv) {
   if (strcmp(argv[1],"compass") == 0) {
     if (compass_init()<0) exit_pi(-5);
   }
+  if (strcmp(argv[1],"boeing737awm") == 0) {
+    if (b737_awm_init()<0) exit_pi(-5);
+  }
 
   while (1) {
       
@@ -100,6 +104,9 @@ int main(int argc, char **argv) {
     }
     if (strcmp(argv[1],"compass") == 0) {
       compass();
+    }
+    if (strcmp(argv[1],"boeing737awm") == 0) {
+      b737_awm();
     }
 
     if ((strcmp(argv[1],"boeing737fmc") == 0) ||
