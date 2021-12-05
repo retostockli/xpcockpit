@@ -32,7 +32,11 @@ sudo apt install libfreetype6-dev -y
 sudo apt install libudev-dev -y
 sudo apt install build-essential -y
 sudo apt install autoconf -y
+sudo dpkg-reconfigure openssh-server
 
 git config --global user.email "reto.stockli@gmail.com"
 git config --global user.name "Reto Stockli"
 git clone git@github.com:retostockli/xpcockpit.git xpcockpit
+
+
+Static IP: edit /etc/dhcpcd.conf and add static IP for WLAN0 and ETH0
