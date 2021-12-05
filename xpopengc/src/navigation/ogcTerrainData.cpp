@@ -80,7 +80,7 @@ namespace OpenGC
       sprintf(filename,"%s/%c%s",m_PathToDEM.c_str(),f+97,"10g");
       ifile.open(filename);
       if(ifile) {
-	//printf("DEM File exists: %s \n",filename);
+	printf("DEM File exists: %s \n",filename);
 	ifile.close();
       } else {
 	printf("DEM File doesn't exist: %s \n",filename);

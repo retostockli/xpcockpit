@@ -42,6 +42,8 @@ namespace OpenGC
     m_NAVGauge = NULL;
 
     dem_image = NULL;
+    dem_lon = NULL;
+    dem_lat = NULL;
   
   }
 
@@ -54,8 +56,6 @@ namespace OpenGC
   void B737NAVDrawDEM::Render()
   {
     GaugeComponent::Render();
-
-    bool egpws = true; /* draw egpws points or simple colored terrain */
     
     int acf_type = m_pDataSource->GetAcfType();
   
@@ -124,6 +124,7 @@ namespace OpenGC
     float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     
     int *nav_shows_dem;
+    /*
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
 	nav_shows_dem = link_dataref_int("laminar/B738/EFIS_control/capt/terr_on");
@@ -134,11 +135,17 @@ namespace OpenGC
       nav_shows_dem = link_dataref_int("x737/cockpit/EFISCTRL_0/XXX_on");
     } else {
       nav_shows_dem = link_dataref_int("xpserver/EFIS_terr");
+    } 
+    */
+    if (is_captain) {
+      nav_shows_dem = link_dataref_int("xpserver/EFIS_capt_terr");
+    } else {
+      nav_shows_dem = link_dataref_int("xpserver/EFIS_fo_terr");
     }
-   
+    
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if ((heading_map != FLT_MISS) && (*nav_shows_dem == 1) &&
+    if ((heading_map != FLT_MISS) && (*nav_shows_dem >= 1) &&
 	(pTerrainData) && (mapMode != 3)) {
 	        
       // Shift center and rotate about heading
@@ -163,6 +170,15 @@ namespace OpenGC
 
 	  pTerrainData->ReadDEM(m_dem_lonmin,m_dem_lonmax,m_dem_latmin,m_dem_latmax);
 
+	  if (dem_lon) {
+	    for (j = 0; j < dem_nlin; j++) free(dem_lon[j]);
+	    free(dem_lon);
+	  }
+	  if (dem_lat) {
+	    for (j = 0; j < dem_nlin; j++) free(dem_lat[j]);
+	    free(dem_lat);
+	  }
+	  
 	  dem_lonmin = m_dem_lonmin;
 	  dem_lonmax = m_dem_lonmax;
 	  dem_latmin = m_dem_latmin;
@@ -173,10 +189,22 @@ namespace OpenGC
 	  
 	  if (dem_image) free(dem_image);	    
 	  dem_image = (unsigned char*)malloc(dem_nlin * dem_ncol * 4 * sizeof(unsigned char));
+
+	  dem_lon = (float**)malloc(dem_nlin * sizeof(float*));
+	  for (j = 0; j < dem_nlin; j++) {
+	    dem_lon[j] = (float*)malloc(dem_ncol * sizeof(float));
+	  }
+	  dem_lat = (float**)malloc(dem_nlin * sizeof(float*));
+	  for (j = 0; j < dem_nlin; j++) {
+	    dem_lat[j] = (float*)malloc(dem_ncol * sizeof(float));
+	  }
 	
 	  /* copy temporary DEM array to DEM array */
 	  for (j = 0; j < dem_nlin; j++) {
 	    for (i = 0; i < dem_ncol; i++) {
+	      		
+	      dem_lon[j][i] = (double) dem_lonmin + ((double) i + 0.5) / (double) dem_pplon;  
+	      dem_lat[j][i] = (double) dem_latmin + ((double) j + 0.5) / (double) dem_pplat;
 	      
 	      if (pTerrainData->dem_data[j][i] == dem_miss) {
 		bval = 0;
@@ -203,8 +231,6 @@ namespace OpenGC
 	   Each degree lat is 111 km apart and each mile is 1.852 km */
 	float mpplon =  111.0 / (float) dem_pplon / 1.852;
 	float mpplat =  111.0 / (float) dem_pplat / 1.852;
-
-
 	
 	glPushMatrix();
 	
@@ -212,7 +238,7 @@ namespace OpenGC
 	glRotatef(heading_map, 0, 0, 1);
 
 
-	if (egpws) {
+	if (*nav_shows_dem == 2) {
 	  /* Draw EGPWS points */
 
 	  /* Cycle through EGPWS classes */
@@ -256,18 +282,23 @@ namespace OpenGC
 	      for (i = 0; i < dem_ncol; i=i+step) {
 
 		zdiff = (int) ((float) pTerrainData->dem_data[j][i] * 3.28084) - (int) *pressure_altitude;
-		
+
 		if ((zdiff >= zmin) && (zdiff < zmax)) {
-		
-		  lon = (double) dem_lonmin + ((double) i + 0.5) / (double) dem_pplon;  
-		  lat = (double) dem_latmin + ((double) j + 0.5) / (double) dem_pplat;  
+
+		  //lon = (double) dem_lon[j][i];
+		  //lat = (double) dem_lat[j][i];
 		  
 		  // convert to azimuthal equidistant coordinates with acf in center
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		  //lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 		  
 		  // Compute physical position relative to acf center on screen
-		  yPos = -northing / 1852.0 / mapRange * map_size; 
-		  xPos = easting / 1852.0  / mapRange * map_size;
+		  //yPos = -northing / 1852.0 / mapRange * map_size; 
+		  //xPos = easting / 1852.0  / mapRange * map_size;
+
+		  /* Simplified Coordinate Calulation due to PERFORMANCE ISSUES WITH THE UPPER ONE */
+		  xPos = (dem_lon[j][i] - aircraftLon) * ((float) dem_pplon) * mpplon / mapRange * map_size *
+		    cos(M_PI / 180.0 * aircraftLat);
+		  yPos = (dem_lat[j][i] - aircraftLat) * ((float) dem_pplat) * mpplat / mapRange * map_size;
 		  
 		  // Only draw the Fix if it's visible within the rendering area
 		  if ( sqrt(xPos*xPos + yPos*yPos) < map_size) {		    
@@ -449,7 +480,7 @@ namespace OpenGC
 
     }
     
-    if ((*nav_shows_dem == 1) && (mapMode != 3) && (!mapCenter)) {   
+    if ((*nav_shows_dem >= 1) && (mapMode != 3) && (!mapCenter)) {   
       // plot map options
       glPushMatrix();
       glColor3ub(COLOR_BLACK);

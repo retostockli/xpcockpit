@@ -71,7 +71,7 @@ and set DEMPath under "general" in the ini file to the directory where the GLOBE
 
 If you want correct shorelines and lakes on top of that, please download the
 Global Self-consistent, Hierarchical, High-resolution Geography Database (GSHHG)
-from NOAA:
+from NOAA (download and unzip gshhg-bin-X.Y.Z.zip):
 https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/
 
 and set GSHHGPath under "general" in the ini file to the directory where GSHHG files are stored

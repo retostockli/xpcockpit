@@ -56,6 +56,8 @@ protected:
   /* RGBA Array for later OpenGL Rendering
      Use single array instead of 3D array since it has to be contiguous memory */
   unsigned char *dem_image;
+  float **dem_lon;
+  float **dem_lat;
 
   int m_dem_lonmin;
   int m_dem_lonmax;
