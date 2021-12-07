@@ -2,17 +2,9 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
- 
-  Copyright (C) 2021 by:
-  Original author:
-  Damion Shelton
-  Contributors (in alphabetical order):
-  Reto Stockli
 
-  Last modification:
-  Date:      $Date: 2015/11/24 $
-  Version:   $Revision: $
-  Author:    $Author: stockli $
+  Copyright (C) 2021 by:
+  Reto Stockli
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -31,11 +23,11 @@
 =========================================================================*/
 
 /**
- * Boeing 737 style primary flight display
+ * Boeing 737 style Integrated Standby Flight Display
  */
 
-#ifndef ogcB737PFD_h
-#define ogcB737PFD_h
+#ifndef ogcB737ISFD_h
+#define ogcB737ISFD_h
 
 #include "ogcGauge.h"
 #include "../ogcBoeingColors.h"
@@ -43,12 +35,12 @@
 namespace OpenGC
 {
 
-class B737PFD : public Gauge  
+class B737ISFD : public Gauge  
 {
 public:
 
-  B737PFD();
-  virtual ~B737PFD();
+  B737ISFD();
+  virtual ~B737ISFD();
 
   /** Overloaded render function */
   void Render();

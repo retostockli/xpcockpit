@@ -5,7 +5,7 @@
 
   Copyright (C) 2001-2021 by:
     Original author:
-      Michael De Feyter
+      Michael DeFeyter
     Contributors (in alphabetical order):
       Reto Stockli
   
@@ -25,20 +25,21 @@
 
 =========================================================================*/
 
-#if !defined(BOEING737PFDSA)
-#define BOEING737PFDSA
+#if !defined(AFX_BOEING737PFDSACOMPAS_H)
+#define AFX_BOEING737PFDSACOMPAS_H
 
-#include "ogcGauge.h"
-#include "../ogcBoeingColors.h"
+
+#include "ogcGaugeComponent.h"
 
 namespace OpenGC
 {
 
-class B737PFDSA : public Gauge  
+class B737PFDSACompas : public GaugeComponent  
 {
 public:
-	B737PFDSA();
-	virtual ~B737PFDSA();
+	B737PFDSACompas();
+	virtual ~B737PFDSACompas();
+
 	void Render();
 
 protected:
@@ -46,5 +47,4 @@ protected:
 };
 
 }
-
 #endif

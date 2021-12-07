@@ -5,10 +5,10 @@
 
   Copyright (C) 2001-2021 by:
     Original author:
-      Michael De Feyter
+      Michael DeFeyter
     Contributors (in alphabetical order):
       Reto Stockli
-  
+ 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 2 of the
@@ -25,24 +25,28 @@
 
 =========================================================================*/
 
-#if !defined(BOEING737PFDSA)
-#define BOEING737PFDSA
+#if !defined(BOEING737PFDSANAV_H)
+#define BOEING737PFDSANAV_H
 
-#include "ogcGauge.h"
-#include "../ogcBoeingColors.h"
+#include "ogcGaugeComponent.h"
 
 namespace OpenGC
 {
 
-class B737PFDSA : public Gauge  
+class B737PFDSANav : public GaugeComponent  
 {
 public:
-	B737PFDSA();
-	virtual ~B737PFDSA();
+	B737PFDSANav();
+	virtual ~B737PFDSANav();
+
 	void Render();
+
+	void setBottomHide(float bh) {bottomHide = bh;};
 
 protected:
 	int m_Font;
+
+	float bottomHide;
 };
 
 }

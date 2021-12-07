@@ -82,22 +82,30 @@ B737/B737NAV/ogcB737NAVDrawTCAS.cpp \
 B737/B737NAV/ogcB737NAVMapModeExpanded.cpp \
 B737/B737NAV/ogcB737NAVMapModePlan.cpp \
 B737/B737PFDSA/ogcB737PFDSA.cpp \
-B737/B737PFDSA/ogcB737PFDAttitude.cpp \
-B737/B737PFDSA/ogcB737PFDBackground.cpp \
-B737/B737PFDSA/ogcB737PFDCompas.cpp \
-B737/B737PFDSA/ogcB737PFDNav.cpp \
-B737/B737PFDSA/ogcB737PFDSpeedIndicator.cpp \
-B737/B737PFD/ogcB737AltitudeTape.cpp \
-B737/B737PFD/ogcB737AltitudeTicker.cpp \
-B737/B737PFD/ogcB737ArtificialHorizon.cpp \
-B737/B737PFD/ogcB737MachNumber.cpp \
+B737/B737PFDSA/ogcB737PFDSAAttitude.cpp \
+B737/B737PFDSA/ogcB737PFDSABackground.cpp \
+B737/B737PFDSA/ogcB737PFDSACompas.cpp \
+B737/B737PFDSA/ogcB737PFDSANav.cpp \
+B737/B737PFDSA/ogcB737PFDSASpeedIndicator.cpp \
+B737/B737PFD/ogcB737PFDAltitudeTape.cpp \
+B737/B737PFD/ogcB737PFDAltitudeTicker.cpp \
+B737/B737PFD/ogcB737PFDArtificialHorizon.cpp \
+B737/B737PFD/ogcB737PFDBackground.cpp \
 B737/B737PFD/ogcB737PFD.cpp \
 B737/B737PFD/ogcB737PFDHeadingIndicator.cpp \
-B737/B737PFD/ogcB737SpeedTape.cpp \
-B737/B737PFD/ogcB737SpeedTicker.cpp \
-B737/B737PFD/ogcB737VSI.cpp \
+B737/B737PFD/ogcB737PFDSpeedTape.cpp \
+B737/B737PFD/ogcB737PFDSpeedTicker.cpp \
+B737/B737PFD/ogcB737PFDVSI.cpp \
 B737/B737CLOCK/ogcB737Clock.cpp \
-B737/B737CLOCK/ogcB737ClockComponent.cpp
+B737/B737CLOCK/ogcB737ClockComponent.cpp \
+B737/B737ISFD/ogcB737ISFDAltitudeTape.cpp \
+B737/B737ISFD/ogcB737ISFDAltitudeTicker.cpp \
+B737/B737ISFD/ogcB737ISFDArtificialHorizon.cpp \
+B737/B737ISFD/ogcB737ISFDBackground.cpp \
+B737/B737ISFD/ogcB737ISFD.cpp \
+B737/B737ISFD/ogcB737ISFDHeadingIndicator.cpp \
+B737/B737ISFD/ogcB737ISFDSpeedTape.cpp \
+B737/B737ISFD/ogcB737ISFDSpeedTicker.cpp
 
 noinst_HEADERS = \
 Dummy/ogcDummyGauge.h \
@@ -189,19 +197,27 @@ B737/B737NAV/ogcB737NAVDrawTCAS.h \
 B737/B737NAV/ogcB737NAVMapModeExpanded.h \
 B737/B737NAV/ogcB737NAVMapModePlan.h \
 B737/B737PFDSA/ogcB737PFDSA.h \
-B737/B737PFDSA/ogcB737PFDAttitude.h \
-B737/B737PFDSA/ogcB737PFDBackground.h \
-B737/B737PFDSA/ogcB737PFDCompas.h \
-B737/B737PFDSA/ogcB737PFDNav.h \
-B737/B737PFDSA/ogcB737PFDSpeedIndicator.h \
-B737/B737PFD/ogcB737AltitudeTape.h \
-B737/B737PFD/ogcB737AltitudeTicker.h \
-B737/B737PFD/ogcB737ArtificialHorizon.h \
-B737/B737PFD/ogcB737MachNumber.h \
+B737/B737PFDSA/ogcB737PFDSAAttitude.h \
+B737/B737PFDSA/ogcB737PFDSABackground.h \
+B737/B737PFDSA/ogcB737PFDSACompas.h \
+B737/B737PFDSA/ogcB737PFDSANav.h \
+B737/B737PFDSA/ogcB737PFDSASpeedIndicator.h \
+B737/B737PFD/ogcB737PFDAltitudeTape.h \
+B737/B737PFD/ogcB737PFDAltitudeTicker.h \
+B737/B737PFD/ogcB737PFDArtificialHorizon.h \
+B737/B737PFD/ogcB737PFDBackground.h \
 B737/B737PFD/ogcB737PFD.h \
 B737/B737PFD/ogcB737PFDHeadingIndicator.h \
-B737/B737PFD/ogcB737SpeedTape.h \
-B737/B737PFD/ogcB737SpeedTicker.h \
-B737/B737PFD/ogcB737VSI.h \
+B737/B737PFD/ogcB737PFDSpeedTape.h \
+B737/B737PFD/ogcB737PFDSpeedTicker.h \
+B737/B737PFD/ogcB737PFDVSI.h \
 B737/B737CLOCK/ogcB737Clock.h \
-B737/B737CLOCK/ogcB737ClockComponent.h
+B737/B737CLOCK/ogcB737ClockComponent.h \
+B737/B737ISFD/ogcB737ISFDAltitudeTape.h \
+B737/B737ISFD/ogcB737ISFDAltitudeTicker.h \
+B737/B737ISFD/ogcB737ISFDArtificialHorizon.h \
+B737/B737ISFD/ogcB737ISFDBackground.h \
+B737/B737ISFD/ogcB737ISFD.h \
+B737/B737ISFD/ogcB737ISFDHeadingIndicator.h \
+B737/B737ISFD/ogcB737ISFDSpeedTape.h \
+B737/B737ISFD/ogcB737ISFDSpeedTicker.h

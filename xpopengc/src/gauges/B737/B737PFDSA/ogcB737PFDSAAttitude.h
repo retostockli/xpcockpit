@@ -3,9 +3,9 @@
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
 
-  Copyright (C) 2001-2021 by:
+  Copyright (C) 2001-2 by:
     Original author:
-      Michael De Feyter
+      Michael DeFeyter
     Contributors (in alphabetical order):
       Reto Stockli
   
@@ -25,20 +25,21 @@
 
 =========================================================================*/
 
-#if !defined(BOEING737PFDSA)
-#define BOEING737PFDSA
 
-#include "ogcGauge.h"
-#include "../ogcBoeingColors.h"
+#if !defined(BOEING737PFDSAATTITUDE_H)
+#define BOEING737PFDSAATTITUDE_H
+
+#include "ogcGaugeComponent.h"
 
 namespace OpenGC
 {
 
-class B737PFDSA : public Gauge  
+class B737PFDSAAttitude : public GaugeComponent  
 {
 public:
-	B737PFDSA();
-	virtual ~B737PFDSA();
+	B737PFDSAAttitude();
+	virtual ~B737PFDSAAttitude();
+
 	void Render();
 
 protected:
@@ -46,5 +47,4 @@ protected:
 };
 
 }
-
 #endif

@@ -3,10 +3,7 @@
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
 
-  Copyright (C) 2001-2021 by:
-  Original author:
-  Damion Shelton
-  Contributors (in alphabetical order):
+  Copyright (C) 2021  by:
   Reto Stockli
   
   This program is free software; you can redistribute it and/or
@@ -27,22 +24,21 @@
 
 #include <stdio.h>
 
-#include "ogcB737PFDArtificialHorizon.h"
-#include "ogcB737PFDAltitudeTicker.h"
-#include "ogcB737PFDAltitudeTape.h"
-#include "ogcB737PFDSpeedTape.h"
-#include "ogcB737PFDSpeedTicker.h"
-#include "ogcB737PFDHeadingIndicator.h"
-#include "ogcB737PFDVSI.h"
-#include "ogcB737PFD.h"
-#include "ogcB737PFDBackground.h"
+#include "ogcB737ISFDArtificialHorizon.h"
+#include "ogcB737ISFDAltitudeTicker.h"
+#include "ogcB737ISFDAltitudeTape.h"
+#include "ogcB737ISFDSpeedTape.h"
+#include "ogcB737ISFDSpeedTicker.h"
+#include "ogcB737ISFDHeadingIndicator.h"
+#include "ogcB737ISFD.h"
+#include "ogcB737ISFDBackground.h"
 
 namespace OpenGC
 {
 
-B737PFD::B737PFD()
+B737ISFD::B737ISFD()
 {
-  printf("B737PFD constructed\n");
+  printf("B737ISFD constructed\n");
  
   m_PhysicalSize.x = 200;
   m_PhysicalSize.y = 200;
@@ -54,66 +50,58 @@ B737PFD::B737PFD()
   this->SetGaugeOutline(true);
 
   // Create a heading indicator
-  B737PFDHeadingIndicator* pHeadingIndicator = new B737PFDHeadingIndicator();
+  B737ISFDHeadingIndicator* pHeadingIndicator = new B737ISFDHeadingIndicator();
   pHeadingIndicator->SetParentRenderObject(this);
   pHeadingIndicator->SetPosition(29,5);
   this->AddGaugeComponent(pHeadingIndicator);
 
   // Create an artficial horizon
-  B737PFDArtificialHorizon* pHorizon = new B737PFDArtificialHorizon();
+  B737ISFDArtificialHorizon* pHorizon = new B737ISFDArtificialHorizon();
   pHorizon->SetParentRenderObject(this);
   pHorizon->SetPosition(42,52);
   this->AddGaugeComponent(pHorizon);
 
   // Create an altitude tape
-  B737PFDAltitudeTape* pAltTape = new B737PFDAltitudeTape();
+  B737ISFDAltitudeTape* pAltTape = new B737ISFDAltitudeTape();
   pAltTape->SetParentRenderObject(this);
   pAltTape->SetPosition(150,32);
   this->AddGaugeComponent(pAltTape);
 
   // Create an altitude ticker
-  B737PFDAltitudeTicker* pAltTicker = new B737PFDAltitudeTicker();
+  B737ISFDAltitudeTicker* pAltTicker = new B737ISFDAltitudeTicker();
   pAltTicker->SetParentRenderObject(this);
   pAltTicker->SetPosition(157,90);
   this->AddGaugeComponent(pAltTicker);
 
-  // Create a VSI
-  B737PFDVSI* pVSI = new B737PFDVSI();
-  pVSI->SetParentRenderObject(this);
-  pVSI->SetPosition(182,44);
-  this->AddGaugeComponent(pVSI);
-
   // Create a speed tape
-  B737PFDSpeedTape* pSpeedTape = new B737PFDSpeedTape();
+  B737ISFDSpeedTape* pSpeedTape = new B737ISFDSpeedTape();
   pSpeedTape->SetParentRenderObject(this);
   pSpeedTape->SetPosition(8,32);
   this->AddGaugeComponent(pSpeedTape);
 
   // Create a speed ticker
-  B737PFDSpeedTicker* pSpeedTicker = new B737PFDSpeedTicker();
+  B737ISFDSpeedTicker* pSpeedTicker = new B737ISFDSpeedTicker();
   pSpeedTicker->SetParentRenderObject(this);
   pSpeedTicker->SetPosition(7,90);
   this->AddGaugeComponent(pSpeedTicker);
 
-  // Create all other messages and indicators on the PDF
-  B737PFDBackground* pBackground = new B737PFDBackground();
+  // Create all other messages and indicators on the ISFD
+  B737ISFDBackground* pBackground = new B737ISFDBackground();
   pBackground->SetParentRenderObject(this);
   pBackground->SetPosition(0,0);
   this->AddGaugeComponent(pBackground);
 
-  
-
 }
 
-B737PFD::~B737PFD()
+B737ISFD::~B737ISFD()
 {
   // Destruction handled by base class
 }
 
-void B737PFD::Render()
+void B737ISFD::Render()
 {
 
-  // printf("%i \n",this->GetArg());
+  //  printf("%i \n",this->GetArg());
   
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
   if (*avionics_on == 1) {

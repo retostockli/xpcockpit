@@ -2,18 +2,13 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
- 
-  Copyright (C) 2021 by:
+
+  Copyright (C) 2001-2021 by:
   Original author:
   Damion Shelton
   Contributors (in alphabetical order):
   Reto Stockli
-
-  Last modification:
-  Date:      $Date: 2015/11/24 $
-  Version:   $Revision: $
-  Author:    $Author: stockli $
-
+  
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 2 of the
@@ -31,32 +26,40 @@
 =========================================================================*/
 
 /**
- * Boeing 737 style primary flight display
+ * Boeing 737 PFD vertical speed indicator
  */
 
-#ifndef ogcB737PFD_h
-#define ogcB737PFD_h
+#ifndef ogcB737PFDVSI_h
+#define ogcB737PFDVSI_h
 
-#include "ogcGauge.h"
-#include "../ogcBoeingColors.h"
+#include "ogcGaugeComponent.h"
 
 namespace OpenGC
 {
 
-class B737PFD : public Gauge  
+class B737PFDVSI : public GaugeComponent  
 {
 public:
 
-  B737PFD();
-  virtual ~B737PFD();
+  B737PFDVSI();
+  virtual ~B737PFDVSI();
 
   /** Overloaded render function */
   void Render();
 
 protected:
 
-  /** Font from the font manager */
+  /** Routine to convert an altitude to needle position */
+  float VSpeedToNeedle(float vspd);
+
+  /** The font number provided to us by the font manager */
   int m_Font;
+
+  /** Centered position of needle in physical coordinates */
+  float m_NeedleCenter;
+
+  /** Max positive or negative deflection of needle in physical coordinates */
+  float m_MaxNeedleDeflection;
 
 };
 

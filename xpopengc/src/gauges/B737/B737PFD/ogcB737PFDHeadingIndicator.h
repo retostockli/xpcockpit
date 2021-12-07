@@ -2,19 +2,12 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcB737PFDHeadingIndicator.h,v $
 
-  Copyright (C) 2001-2015 by:
+  Copyright (C) 2001-2021 by:
   Original author:
   Damion Shelton
   Contributors (in alphabetical order):
   Reto Stockli
-
-  Last modification:
-  Date:      $Date: 2015/11/24 $
-  Version:   $Revision: $
-  Author:    $Author: stockli $
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -33,7 +26,7 @@
 =========================================================================*/
 
 /**
- * Boeing 737 style heading indicator
+ * Boeing 737 style PFD heading indicator
  */
 
 #ifndef ogcB737PFDHeadingIndicator_h

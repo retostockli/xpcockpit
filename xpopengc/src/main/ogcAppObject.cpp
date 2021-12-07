@@ -2,21 +2,14 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcAppObject.cpp,v $
 
-  Copyright (C) 2001-2 by:
+  Copyright (C) 2001-2021 by:
   Original author:
   Damion Shelton
   Contributors (in alphabetical order):
   Michael DeFeyter
   John Wojnaroski
   Reto Stockli
-
-  Last modification:
-  Date:      $Date: 2004/10/14 19:37:52 $
-  Version:   $Revision: 1.2 $
-  Author:    $Author: damion $
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -80,6 +73,7 @@ extern "C" {
 #include "B737/B737FMC/ogcB737FMC.h"
 #include "B737/B737MIP/ogcB737MIP.h"
 #include "B737/B737CLOCK/ogcB737Clock.h"
+#include "B737/B737ISFD/ogcB737ISFD.h"
 
 //----------NonFunctional--------
 /*
@@ -444,6 +438,7 @@ namespace OpenGC
     else if (strcmp(name, "B737FMC")==0) pGauge = new B737FMC(arg);
     else if (strcmp(name, "B737MIP")==0) pGauge = new B737MIP();
     else if (strcmp(name, "B737CLOCK")==0) pGauge = new B737Clock();
+    else if (strcmp(name, "B737ISFD")==0) pGauge = new B737ISFD();
     /*
       else if (strcmp(name, "B737AnalogFlaps")==0) pGauge = new B737AnalogFlaps();
       else if (strcmp(name, "B737VerticalSpeedDigital")==0) pGauge = new B737VerticalSpeedDigital();

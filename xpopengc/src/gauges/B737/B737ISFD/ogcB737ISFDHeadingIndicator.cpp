@@ -3,12 +3,9 @@
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
 
-  Copyright (C) 2001-2021 by:
-  Original author:
-  Damion Shelton
-  Contributors (in alphabetical order):
+  Copyright (C) 2021 by:
   Reto Stockli
- 
+  
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 2 of the
@@ -31,15 +28,15 @@
 
 #include "ogcGaugeComponent.h"
 #include "ogcCircleEvaluator.h"
-#include "ogcB737PFD.h"
-#include "ogcB737PFDHeadingIndicator.h"
+#include "ogcB737ISFD.h"
+#include "ogcB737ISFDHeadingIndicator.h"
 
 namespace OpenGC
 {
 
-  B737PFDHeadingIndicator::B737PFDHeadingIndicator()
+  B737ISFDHeadingIndicator::B737ISFDHeadingIndicator()
   {
-    printf("B737PFDHeadingIndicator constructed\n");
+    printf("B737ISFDHeadingIndicator constructed\n");
 
     m_Font = m_pFontManager->LoadDefaultFont();
 
@@ -53,12 +50,12 @@ namespace OpenGC
     m_Scale.y = 1.0;
   }
 
-  B737PFDHeadingIndicator::~B737PFDHeadingIndicator()
+  B737ISFDHeadingIndicator::~B737ISFDHeadingIndicator()
   {
 
   }
 
-  void B737PFDHeadingIndicator::Render()
+  void B737ISFDHeadingIndicator::Render()
   {
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
