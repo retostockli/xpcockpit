@@ -43,8 +43,8 @@ namespace OpenGC
     m_PhysicalPosition.x = 0;
     m_PhysicalPosition.y = 0;
 
-    m_PhysicalSize.x = 130;
-    m_PhysicalSize.y = 45;
+    m_PhysicalSize.x = 62;
+    m_PhysicalSize.y = 14;
 
     m_Scale.x = 1.0;
     m_Scale.y = 1.0;
@@ -78,13 +78,14 @@ namespace OpenGC
     // Save matrix
     glMatrixMode(GL_MODELVIEW);
 
-    float centerX = 60;
-    float centerY = -40;
-    float radius = 65.0;
-    float indicatorDegreesPerTrueDegrees = 1.5;
+    float centerX = 31;
+    float centerY = -70;
+    float radius = 82.0;
+    float indicatorDegreesPerTrueDegrees = 1.0;
 
     float bigFontSize = 5.0;
     float littleFontSize = 3.5;
+    float lineWidth = 3.0;
 
     char buffer[32];
 
@@ -96,18 +97,6 @@ namespace OpenGC
     //    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",0);
     float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
-
-    float *heading_mag_ap;
-    if ((acf_type == 2) || (acf_type == 3)) {
-      heading_mag_ap = link_dataref_flt("laminar/B738/autopilot/mcp_hdg_dial",0);
-    } else {
-      heading_mag_ap = link_dataref_flt("sim/cockpit2/autopilot/heading_dial_deg_mag_pilot",0);
-    }
-
-    float *ap_course1 = link_dataref_flt("sim/cockpit/radios/nav1_obs_degm",0);    // NAV autopilot course1     
-    //    float *ap_course2 = link_dataref_flt("sim/cockpit/radios/nav2_obs_degm",0);    // NAV autopilot course2    
-    //    float *ap_course1_copilot = link_dataref_flt("sim/cockpit/radios/nav1_obs_degm2",0);    // NAV autopilot course1     
-    //    float *ap_course2_copilot = link_dataref_flt("sim/cockpit/radios/nav2_obs_degm2",0);    // NAV autopilot course2    
 
     int *irs_mode;
     if ((acf_type == 2) || (acf_type == 3)) {
@@ -127,8 +116,8 @@ namespace OpenGC
       glTranslatef(centerX, centerY, 0);
 
       // Draw in gray
-      glColor3ub(COLOR_GRAYBLUE);
-      glLineWidth( 1.75 );
+      glColor3ub(COLOR_GRAY35);
+      glLineWidth( lineWidth*1.25 );
 
       // Set up the circle
       CircleEvaluator aCircle;
@@ -146,12 +135,13 @@ namespace OpenGC
       // Draw the center detent
       glColor3ub(COLOR_WHITE);
       glBegin(GL_LINE_LOOP);
-      glVertex2f(0.0f,radius);
-      glVertex2f(-3.0f,radius+5.0);
-      glVertex2f(3.0f,radius+5.0);
+      glVertex2f(0.0f,radius-2);
+      glVertex2f(-3.0f,radius+1.5);
+      glVertex2f(3.0f,radius+1.5);
       glEnd();
 
       // Draw Track line
+      /*
       glColor3ub(COLOR_WHITE);
       glBegin(GL_LINES);
       glVertex2f(0.0,0.0);
@@ -161,7 +151,7 @@ namespace OpenGC
       glVertex2f(-0.025*radius,0.7*radius);
       glVertex2f(0.025*radius,0.7*radius);
       glEnd();
-      
+      */
 
       snprintf( buffer, sizeof(buffer), "%03d", (int) lroundf(*track_mag) );
       fontx = -bigFontSize*1.5;
@@ -192,7 +182,7 @@ namespace OpenGC
 	  // If the heading is a multiple of ten, it gets a long tick
 	  if(displayHeading%10==0)
 	    {
-	      tickLength = 3;
+	      tickLength = 4;
 
 	      // Convert the display heading to a string
 	      snprintf( buffer, sizeof(buffer), "%d", displayHeading/10 );
@@ -219,8 +209,9 @@ namespace OpenGC
 
 	    }
 	  else // Otherwise it gets a short tick
-	    tickLength = 2;
+	    tickLength = 3;
 
+	  glLineWidth( lineWidth );
 	  glBegin(GL_LINES);
 	  glVertex2f(0,radius);
 	  glVertex2f(0,radius-tickLength);
@@ -231,113 +222,6 @@ namespace OpenGC
 
       glPopMatrix();
 
-      // draw magenta AP Heading
-
-      if (*heading_mag_ap != FLT_MISS) {
-	
-	glPushMatrix();
-	
-	// translate to center of drawing area
-	glTranslatef(centerX, centerY, 0);
-	
-	// rotate to dialed AP Heading
-	glRotatef((*heading_mag_ap - *heading_mag) * indicatorDegreesPerTrueDegrees,0,0,-1);
-	
-	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(2.0);
-	
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(-4.0f,radius);
-	glVertex2f(4.0f,radius);
-	glVertex2f(4.0f,radius+3.25);
-	glVertex2f(2.8f,radius+3.25);
-	glVertex2f(0.0f,radius);
-	glVertex2f(-2.8f,radius+3.25);
-	glVertex2f(-4.0f,radius+3.25);
-	glEnd();  
-	
-	glPopMatrix();
-
-	glPushMatrix();
-
-	snprintf( buffer, sizeof(buffer), "%03d", (int) *heading_mag_ap );
-  
-	m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
-	m_pFontManager->Print(33, 1 ,&buffer[0], m_Font ); 
-
-
-	m_pFontManager->SetSize(m_Font, littleFontSize, littleFontSize );
-	m_pFontManager->Print(48, 1 ,"H", m_Font ); 
-
-	glColor3ub(COLOR_GREEN);
-  
-	m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
-	m_pFontManager->Print(70, 1 ,"MAG", m_Font ); 
-
-	glPopMatrix();
-
-      }
-
-
-      if (*ap_course1 != FLT_MISS) {
-
-	glPushMatrix();     
-
-	// translate to center of drawing area
-	glTranslatef(centerX, centerY, 0);
-
-	// rotate to dialed NAV1/ADF1 Heading
-	glRotatef((*ap_course1 - *heading_mag) * indicatorDegreesPerTrueDegrees, 0, 0, -1);
-	
-	glColor3ub(COLOR_WHITE);
-	glLineWidth(3.0);
-	
-	// draw Heading arrow
-	glBegin(GL_LINES);
-	glVertex2f(0,0);
-	glVertex2f(0,radius-4);
-	glEnd();
-	
-	glBegin(GL_POLYGON);
-	glVertex2f(0,0.8*radius);
-	glVertex2f(-2,0.75*radius);
-	glVertex2f(2,0.75*radius);
-	glEnd();
-	
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(0,0.8*radius);
-	glVertex2f(-2,0.75*radius);
-	glVertex2f(2,0.75*radius);
-	glVertex2f(0,0.8*radius);
-	glEnd();
-
-	glPopMatrix();
-	
-      }
-
-    } else {
-
-      /* No Heading Data available */
-
-      glPushMatrix();
-      
-      glColor3ub(COLOR_ORANGE);
-
-      glTranslatef(m_PhysicalSize.x/2.0-bigFontSize, 5.0+0.5*bigFontSize, 0);
-      
-      m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
-      m_pFontManager->Print(-1.5*bigFontSize, -0.5*bigFontSize ,"HDG", m_Font ); 
-
-      float ss = bigFontSize;
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(-2.0*ss,-ss);
-      glVertex2f(2.0*ss,-ss);
-      glVertex2f(2.0*ss,ss);
-      glVertex2f(-2.0*ss,ss);
-      glEnd();
-      
-      glPopMatrix();
-      
     }
 
   }

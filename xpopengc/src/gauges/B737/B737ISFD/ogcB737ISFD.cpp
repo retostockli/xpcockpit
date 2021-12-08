@@ -40,8 +40,8 @@ B737ISFD::B737ISFD()
 {
   printf("B737ISFD constructed\n");
  
-  m_PhysicalSize.x = 200;
-  m_PhysicalSize.y = 200;
+  m_PhysicalSize.x = 100;
+  m_PhysicalSize.y = 100;
   
   // We need a font to draw the ILS display
   m_Font = m_pFontManager->LoadDefaultFont();
@@ -50,35 +50,39 @@ B737ISFD::B737ISFD()
   this->SetGaugeOutline(true);
 
   // Create a heading indicator
+
   B737ISFDHeadingIndicator* pHeadingIndicator = new B737ISFDHeadingIndicator();
   pHeadingIndicator->SetParentRenderObject(this);
-  pHeadingIndicator->SetPosition(29,5);
+  pHeadingIndicator->SetPosition(17,0);
   this->AddGaugeComponent(pHeadingIndicator);
 
   // Create an artficial horizon
   B737ISFDArtificialHorizon* pHorizon = new B737ISFDArtificialHorizon();
   pHorizon->SetParentRenderObject(this);
-  pHorizon->SetPosition(42,52);
+  pHorizon->SetPosition(17,15);
   this->AddGaugeComponent(pHorizon);
 
   // Create an altitude tape
   B737ISFDAltitudeTape* pAltTape = new B737ISFDAltitudeTape();
   pAltTape->SetParentRenderObject(this);
-  pAltTape->SetPosition(150,32);
+  pAltTape->SetPosition(80,0);
   this->AddGaugeComponent(pAltTape);
 
+  /*
   // Create an altitude ticker
   B737ISFDAltitudeTicker* pAltTicker = new B737ISFDAltitudeTicker();
   pAltTicker->SetParentRenderObject(this);
   pAltTicker->SetPosition(157,90);
   this->AddGaugeComponent(pAltTicker);
-
+  */
+  
   // Create a speed tape
   B737ISFDSpeedTape* pSpeedTape = new B737ISFDSpeedTape();
   pSpeedTape->SetParentRenderObject(this);
-  pSpeedTape->SetPosition(8,32);
+  pSpeedTape->SetPosition(0,0);
   this->AddGaugeComponent(pSpeedTape);
 
+  /*
   // Create a speed ticker
   B737ISFDSpeedTicker* pSpeedTicker = new B737ISFDSpeedTicker();
   pSpeedTicker->SetParentRenderObject(this);
@@ -90,7 +94,7 @@ B737ISFD::B737ISFD()
   pBackground->SetParentRenderObject(this);
   pBackground->SetPosition(0,0);
   this->AddGaugeComponent(pBackground);
-
+  */
 }
 
 B737ISFD::~B737ISFD()

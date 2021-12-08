@@ -41,8 +41,8 @@ namespace OpenGC
     m_PhysicalPosition.x = 0;
     m_PhysicalPosition.y = 0;
 
-    m_PhysicalSize.x = 24;
-    m_PhysicalSize.y = 136;
+    m_PhysicalSize.x = 20;
+    m_PhysicalSize.y = 100;
 
     m_Scale.x = 1.0;
     m_Scale.y = 1.0;
@@ -69,29 +69,6 @@ namespace OpenGC
       pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind_copilot",0);
     }
 
-    // Runway Altitude
-    float *rwy_altitude;
-    if ((acf_type == 2) || (acf_type == 3)) {
-      rwy_altitude = link_dataref_flt("laminar/B738/pfd/rwy_altitude",0);
-    } else {
-      rwy_altitude = link_dataref_flt("xpserver/rwy_altitude",0);
-    }
-    
-    // Autopilot altitude (feet)
-    float *ap_altitude;
-    if ((acf_type == 2) || (acf_type == 3)) {
-      ap_altitude = link_dataref_flt("laminar/B738/autopilot/mcp_alt_dial",0); 
-    } else if (acf_type == 1) {
-      ap_altitude = link_dataref_flt("x737/systems/afds/ALTHLD_baroalt",0);
-    } else {
-      ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0); 
-    }
-    
-    int *alt_disagree;
-    if ((acf_type == 2) || (acf_type == 3)) {
-      alt_disagree = link_dataref_int("laminar/B738/autopilot/alt_disagree");
-    }
-
     if (*pressure_altitude != FLT_MISS) {
 
       int alt = (int) *pressure_altitude;
@@ -101,7 +78,7 @@ namespace OpenGC
       glPushMatrix();
 
       // Draw in gray-blue
-      glColor3ub(COLOR_GRAYBLUE);
+      glColor3ub(COLOR_GRAY35);
 
       // Draw the background rectangle
       glBegin(GL_POLYGON);
@@ -115,11 +92,15 @@ namespace OpenGC
       // Tick marks are spaced every 100 ft. vertically
       // The tick spacing represents how far apart they are in physical
       // units
-      float tickSpacing = 17.0;
+      float tickSpacing = 10.0;
       float tickWidth = 3.7;
       float fontHeight = 4;
       float fontWidth = 3.5;
-      float fontIndent = 4.5;
+      float fontIndent = 1.0;
+      float lineWidth = 3.0;
+
+      // Vertical Center is shifted by 5%
+      float shifty = m_PhysicalSize.y * 0.05;
 
       m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
 
@@ -127,7 +108,7 @@ namespace OpenGC
       memset(buffer,0,sizeof(buffer));
 
       int nextHighestAlt = (alt/100)*100;
-      
+     
       if (nextHighestAlt < alt)
 	nextHighestAlt += 100;
 
@@ -140,7 +121,7 @@ namespace OpenGC
       float tickLocation = 0;
 
       glColor3ub(COLOR_WHITE);
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
 
       float i = 0; // counter
       int tickAlt; // speed represented by tick mark
@@ -150,14 +131,16 @@ namespace OpenGC
       for (i = 0; i <= ((m_PhysicalSize.y/2) / tickSpacing) + 1; i += 1.0)
 	{
 	  tickAlt = nextHighestAlt + (int)(i*100.0);
-	  tickLocation = (m_PhysicalSize.y/2) + i*tickSpacing + vertOffset;
+	  tickLocation = (m_PhysicalSize.y/2) + i*tickSpacing + vertOffset - shifty;
 	  float texty = tickLocation - fontHeight / 2;
-	  
-	  glLineWidth(2.0);
-	  glBegin(GL_LINES);
-	  glVertex2f(0, tickLocation);
-	  glVertex2f(tickWidth, tickLocation);
-	  glEnd();
+
+	  if ((tickAlt % 200)!=0 ) {
+	    glLineWidth(lineWidth);
+	    glBegin(GL_LINES);
+	    glVertex2f(0, tickLocation);
+	    glVertex2f(tickWidth, tickLocation);
+	    glEnd();
+	  }
 
 	  if( (tickAlt % 200)==0 )
 	    {
@@ -247,15 +230,17 @@ namespace OpenGC
       for (i = 1; i <= ((m_PhysicalSize.y/2) / tickSpacing) + 1; i += 1.0)
 	{
 	  tickAlt = nextHighestAlt - (int)(i*100);
-	  tickLocation = (m_PhysicalSize.y/2) - ( (i-1) * tickSpacing) - (tickSpacing - vertOffset);
+	  tickLocation = (m_PhysicalSize.y/2) - ( (i-1) * tickSpacing) - (tickSpacing - vertOffset) - shifty;
 	  float texty = tickLocation - fontHeight / 2;
 
-	  glLineWidth(2.0);
-	  glBegin(GL_LINES);
-	  glVertex2f(0, tickLocation);
-	  glVertex2f(tickWidth, tickLocation);
-	  glEnd();
-
+	  if ((tickAlt % 200)!=0 ) {
+	    glLineWidth(lineWidth);
+	    glBegin(GL_LINES);
+	    glVertex2f(0, tickLocation);
+	    glVertex2f(tickWidth, tickLocation);
+	    glEnd();
+	  }
+	    
 	  if( (tickAlt % 200)==0 )
 	    {
 	      charAlt = tickAlt;
@@ -338,94 +323,6 @@ namespace OpenGC
 	      m_pFontManager->Print(fontIndent + fontWidth*4, texty, &buffer[0], m_Font);
 	    }
 	}
-
-      if (*rwy_altitude != FLT_MISS) {
-	float rwyaltLocation = (*rwy_altitude - *pressure_altitude) *
-	  tickSpacing / 100.0 + m_PhysicalSize.y/2;
-	glColor3ub(COLOR_YELLOW);
-	glLineWidth(3.0);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(0.0, rwyaltLocation);
-	glVertex2f(m_PhysicalSize.x, rwyaltLocation);
-	glEnd();
-	for (int i=-2;i<10;i++) {
-	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(i*m_PhysicalSize.x/10.0, rwyaltLocation);
-	  glVertex2f((i+1)*m_PhysicalSize.x/10.0, rwyaltLocation-tickSpacing*0.4);
-	  glEnd();
-	}
-      }
-      
-      // draw MCP dialed altitude if within the altitude tape range
-      if (*ap_altitude != FLT_MISS) {
-	float mcpaltLocation = (*ap_altitude - *pressure_altitude) *
-	  tickSpacing / 100.0 + m_PhysicalSize.y/2;
-
-	// keep MCP altitude within bounds of tape
-	mcpaltLocation = fmin(fmax(0.0,mcpaltLocation),m_PhysicalSize.y);
-	
-	// draw a magenta MCP altitude indicator
-	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(3.0);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(0.5, mcpaltLocation+tickSpacing*0.2);
-	glVertex2f(0.5, mcpaltLocation+tickSpacing*0.6);
-	glVertex2f(m_PhysicalSize.x/2, mcpaltLocation+tickSpacing*0.6);
-	glVertex2f(m_PhysicalSize.x/2, mcpaltLocation-tickSpacing*0.6);
-	glVertex2f(0.5, mcpaltLocation-tickSpacing*0.6);
-	glVertex2f(0.5, mcpaltLocation-tickSpacing*0.2);
-	glVertex2f(m_PhysicalSize.x/6, mcpaltLocation-tickSpacing*0.05);
-	glVertex2f(m_PhysicalSize.x/6, mcpaltLocation+tickSpacing*0.05);
-	glEnd();
-      }
-
-      /* draw expected altitude change during next 10 seconds */
-      /*
-      if ((*vertical_speed != FLT_MISS) && (fabs(*vertical_speed) > 100)) {
-	float vLocation = *vertical_speed/6.0 * tickSpacing / 100.0 + m_PhysicalSize.y/2;
-	
-	glColor3ub(COLOR_GREEN);
-	glLineWidth(2.0);
-	glBegin(GL_LINES);
-	glVertex2f(tickWidth, m_PhysicalSize.y/2);
-	glVertex2f(tickWidth/2, m_PhysicalSize.y/2);
-	glEnd();	
-	glBegin(GL_LINES);
-	glVertex2f(tickWidth/2, m_PhysicalSize.y/2);
-	glVertex2f(tickWidth/2, vLocation);
-	glEnd();
-	if (*vertical_speed > 0.0) {
-	  glBegin(GL_LINES);
-	  glVertex2f(tickWidth/2, vLocation);
-	  glVertex2f(tickWidth/2 - tickWidth/4, vLocation - tickWidth/3);
-	  glEnd();	
-	  glBegin(GL_LINES);
-	  glVertex2f(tickWidth/2, vLocation);
-	  glVertex2f(tickWidth/2 + tickWidth/4, vLocation - tickWidth/3);
-	  glEnd();
-	} else {
-	  glBegin(GL_LINES);
-	  glVertex2f(tickWidth/2, vLocation);
-	  glVertex2f(tickWidth/2 - tickWidth/4, vLocation + tickWidth/3);
-	  glEnd();	
-	  glBegin(GL_LINES);
-	  glVertex2f(tickWidth/2, vLocation);
-	  glVertex2f(tickWidth/2 + tickWidth/4, vLocation + tickWidth/3);
-	  glEnd();
-	}
-      } 
-      */
-
-      if ((acf_type == 2) || (acf_type == 3)) {
-	if (*alt_disagree == 1) {
-	  glColor3ub(COLOR_ORANGE);
-	  m_pFontManager->SetSize(m_Font, 0.95*fontWidth, fontHeight);
-	  snprintf(buffer, sizeof(buffer), "ALT");
-	  m_pFontManager->Print(0.0,2.5*fontHeight, &buffer[0], m_Font);
-	  snprintf(buffer, sizeof(buffer), "DISAGREE");
-	  m_pFontManager->Print(0.0,1.0*fontHeight, &buffer[0], m_Font);
-	}
-      }
       
       glPopMatrix();
 
