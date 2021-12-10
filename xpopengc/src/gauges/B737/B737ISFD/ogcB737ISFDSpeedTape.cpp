@@ -58,17 +58,9 @@ namespace OpenGC
   {
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
-
-    int acf_type = m_pDataSource->GetAcfType();
-    bool is_captain = (this->GetArg() == 0);
-   
+  
     // indicated air speed (knots)
-    float *speed_knots;
-    if (is_captain) {
-      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
-    } else {
-      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed2",-1);
-    }
+    float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
           
     if (*speed_knots != FLT_MISS) {
 

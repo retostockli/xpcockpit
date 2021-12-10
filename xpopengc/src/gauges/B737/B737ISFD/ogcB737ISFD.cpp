@@ -68,13 +68,11 @@ B737ISFD::B737ISFD()
   pAltTape->SetPosition(80,0);
   this->AddGaugeComponent(pAltTape);
 
-  /*
   // Create an altitude ticker
   B737ISFDAltitudeTicker* pAltTicker = new B737ISFDAltitudeTicker();
   pAltTicker->SetParentRenderObject(this);
-  pAltTicker->SetPosition(157,90);
+  pAltTicker->SetPosition(74,39);
   this->AddGaugeComponent(pAltTicker);
-  */
   
   // Create a speed tape
   B737ISFDSpeedTape* pSpeedTape = new B737ISFDSpeedTape();
@@ -82,13 +80,14 @@ B737ISFD::B737ISFD()
   pSpeedTape->SetPosition(0,0);
   this->AddGaugeComponent(pSpeedTape);
 
-  /*
+
   // Create a speed ticker
   B737ISFDSpeedTicker* pSpeedTicker = new B737ISFDSpeedTicker();
   pSpeedTicker->SetParentRenderObject(this);
-  pSpeedTicker->SetPosition(7,90);
+  pSpeedTicker->SetPosition(0,39);
   this->AddGaugeComponent(pSpeedTicker);
 
+  /*
   // Create all other messages and indicators on the ISFD
   B737ISFDBackground* pBackground = new B737ISFDBackground();
   pBackground->SetParentRenderObject(this);

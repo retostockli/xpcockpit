@@ -23,6 +23,7 @@
   =========================================================================*/
 
 #include <stdio.h>
+#include <math.h>
 
 #include "ogcGaugeComponent.h"
 #include "ogcCircleEvaluator.h"
@@ -66,26 +67,41 @@ namespace OpenGC
     float lineWidth = 3.0;
     float scaley = 0.8;
     float scalex = 0.75;
-    float shifty = m_PhysicalSize.y * 0.07;
-    float radius = m_PhysicalSize.x / 2.0;
 
+    /* vertical center of gauge */
+    float center = m_PhysicalSize.y/2.0 - m_PhysicalSize.y * 0.07;
+
+    /* vertical center of bank marking circle and radius */
+    float bankcenter = m_PhysicalSize.y / 3.0;
+    float bankradius = m_PhysicalSize.x / 1.475;
+    
     // First, store the "root" position of the gauge component
     glMatrixMode(GL_MODELVIEW);
-
-    bool is_captain = (this->GetArg() == 0);
-    
+   
     int acf_type = m_pDataSource->GetAcfType();
     
     float *pitch = link_dataref_flt("sim/flightmodel/position/theta",-1);
     float *roll = link_dataref_flt("sim/flightmodel/position/phi",-1);
 
-    int *nav1_has_glideslope = link_dataref_int("sim/cockpit2/radios/indicators/nav1_flag_glideslope");
-    float *nav1_hdef = link_dataref_flt("sim/cockpit/radios/nav1_hdef_dot",-2);
-    float *nav1_vdef = link_dataref_flt("sim/cockpit/radios/nav1_vdef_dot",-2);
-    //    int *nav2_has_glideslope = link_dataref_int("sim/cockpit2/radios/indicators/nav2_flag_glideslope");
-    //    float *nav2_hdef = link_dataref_flt("sim/cockpit/radios/nav2_hdef_dot",-2);
-    //    float *nav2_vdef = link_dataref_flt("sim/cockpit/radios/nav2_vdef_dot",-2);
-   
+    int *nav1_CDI = link_dataref_int("sim/cockpit/radios/nav1_CDI");   
+    int *nav1_horizontal = link_dataref_int("sim/cockpit2/radios/indicators/nav1_display_horizontal");
+    int *nav1_vertical = link_dataref_int("sim/cockpit2/radios/indicators/nav1_display_vertical");
+    float *nav1_hdef = link_dataref_flt("sim/cockpit/radios/nav1_hdef_dot",-2);   
+    float *nav1_vdef = link_dataref_flt("sim/cockpit/radios/nav1_vdef_dot",-2);   
+
+    float *isfd_horizontal;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      isfd_horizontal = link_dataref_flt("laminar/B738/gauges/standby_app_horz",0);
+    } else {
+      isfd_horizontal = link_dataref_flt("xpserver/isfd/app_horizontal",0);
+    }
+    float *isfd_vertical;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      isfd_vertical = link_dataref_flt("laminar/B738/gauges/standby_app_vert",0);
+    } else {
+      isfd_vertical = link_dataref_flt("xpserver/isfd/app_vertical",0);
+    }
+    
     int *irs_mode;
     if ((acf_type == 2) || (acf_type == 3)) {
       irs_mode = link_dataref_int("laminar/B738/irs/irs_mode");
@@ -101,7 +117,7 @@ namespace OpenGC
 	glPushMatrix();
       
 	// Move to the center of the window
-	glTranslatef(m_PhysicalSize.x/2,m_PhysicalSize.y/2-shifty,0);
+	glTranslatef(m_PhysicalSize.x/2,center,0);
 
 	// Rotate based on the bank
 	glRotatef(*roll, 0, 0, 1);
@@ -148,89 +164,37 @@ namespace OpenGC
 	// The size for all pitch text
 	m_pFontManager->SetSize(m_Font,4.0, 4.0);
 
-	glBegin(GL_LINES);
 
 	// The dividing line between sky and ground
-	glVertex2f(-100,0);
-	glVertex2f(100,0);
+	glVertex2f(-300,0);
+	glVertex2f(300,0);
 
-	// +2.5 degrees
-	glVertex2f(-5.0*scalex,5.0*scaley);
-	glVertex2f(5.0*scalex,5.0*scaley);
+	for (float s=-1.0;s<=1.0;s=s+2.0) {
+	  for (float d=2.5;d<=50.0;d=d+2.5) {
+	    if (remainder(d,10.0) == 0.0) {
+	      glLineWidth(lineWidth);
+	      glBegin(GL_LINES);
+	      glVertex2f(-20.0*scalex,s*d*2.0*scaley);
+	      glVertex2f(20.0*scalex,s*d*2.0*scaley);
+	      glEnd();
+	      snprintf(buffer, sizeof(buffer), "%i", (int) d);
+	      m_pFontManager->Print(-29.5*scalex,s*d*2.0*scaley-2.0,&buffer[0],m_Font);
+	    } else if (remainder(d,5.0) == 0.0) {
+	      glLineWidth(lineWidth);
+	      glBegin(GL_LINES);
+	      glVertex2f(-10.0*scalex,s*d*2.0*scaley);
+	      glVertex2f(10.0*scalex,s*d*2.0*scaley);
+	      glEnd();
+	    } else {
+	      glLineWidth(lineWidth);
+	      glBegin(GL_LINES);
+	      glVertex2f(-5.0*scalex,s*d*2.0*scaley);
+	      glVertex2f(5.0*scalex,s*d*2.0*scaley);
+	      glEnd();
+	    }
+	  }
+	}
 
-	// +5.0 degrees
-	glVertex2f(-10.0*scalex,10.0*scaley);
-	glVertex2f(10.0*scalex,10.0*scaley);
-
-	// +7.5 degrees
-	glVertex2f(-5.0*scalex,15.0*scaley);
-	glVertex2f(5.0*scalex,15.0*scaley);
-
-	// +10.0 degrees
-	glVertex2f(-20.0*scalex,20.0*scaley);
-	glVertex2f(20.0*scalex,20.0*scaley);
-
-	// +12.5 degrees
-	glVertex2f(-5.0*scalex,25.0*scaley);
-	glVertex2f(5.0*scalex,25.0*scaley);
-
-	// +15.0 degrees
-	glVertex2f(-10.0*scalex,30.0*scaley);
-	glVertex2f(10.0*scalex,30.0*scaley);
-
-	// +17.5 degrees
-	glVertex2f(-5.0*scalex,35.0*scaley);
-	glVertex2f(5.0*scalex,35.0*scaley);
-
-	// +20.0 degrees
-	glVertex2f(-20.0*scalex,40.0*scaley);
-	glVertex2f(20.0*scalex,40.0*scaley);
-
-	// -2.5 degrees
-	glVertex2f(-5.0*scalex,-5.0*scaley);
-	glVertex2f(5.0*scalex,-5.0*scaley);
-
-	// -5.0 degrees
-	glVertex2f(-10.0*scalex,-10.0*scaley);
-	glVertex2f(10.0*scalex,-10.0*scaley);
-
-	// -7.5 degrees
-	glVertex2f(-5.0*scalex,-15.0*scaley);
-	glVertex2f(5.0*scalex,-15.0*scaley);
-
-	// -10.0 degrees
-	glVertex2f(-20.0*scalex,-20.0*scaley);
-	glVertex2f(20.0*scalex,-20.0*scaley);
-
-	// -12.5 degrees
-	glVertex2f(-5.0*scalex,-25.0*scaley);
-	glVertex2f(5.0*scalex,-25.0*scaley);
-
-	// -15.0 degrees
-	glVertex2f(-10.0*scalex,-30.0*scaley);
-	glVertex2f(10.0*scalex,-30.0*scaley);
-
-	// -17.5 degrees
-	glVertex2f(-5.0*scalex,-35.0*scaley);
-	glVertex2f(5.0*scalex,-35.0*scaley);
-
-	// -20.0 degrees
-	glVertex2f(-20.0*scalex,-40.0*scaley);
-	glVertex2f(20.0*scalex,-40.0*scaley);
-
-	glEnd();
-
-	// +10
-	m_pFontManager->Print(-29.5*scalex,18.0*scaley,"10",m_Font);
-
-	// -10
-	m_pFontManager->Print(-29.5*scalex,-22.0*scaley,"10",m_Font);
-
-	// +20
-	m_pFontManager->Print(-29.5*scalex,38.0*scaley,"20",m_Font);
-
-	// -20
-	m_pFontManager->Print(-29.5*scalex,-42.0*scaley,"20",m_Font);
 
 	glPopMatrix();
 
@@ -241,14 +205,14 @@ namespace OpenGC
 	// Draw in the sky color
 	glColor3ub(COLOR_SKY);
 	
-	aCircle.SetOrigin(m_PhysicalSize.x/2.0,m_PhysicalSize.y/3.0);
-	aCircle.SetRadius(m_PhysicalSize.x/1.5);
+	aCircle.SetOrigin(m_PhysicalSize.x/2.0,bankcenter);
+	aCircle.SetRadius(bankradius);
 	aCircle.SetDegreesPerPoint(5);
 	aCircle.SetArcStartEnd(300.0,360.0);
 	
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex2f(0,m_PhysicalSize.y);
-	glVertex2f(0,m_PhysicalSize.y/3.0);
+	glVertex2f(0,bankcenter);
 	aCircle.Evaluate();
 	glVertex2f(m_PhysicalSize.x/2.0,m_PhysicalSize.y);
 	glEnd();
@@ -258,7 +222,7 @@ namespace OpenGC
 	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y);
 	glVertex2f(m_PhysicalSize.x/2.0,m_PhysicalSize.y);
 	aCircle.Evaluate();
-	glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y/3.0);
+	glVertex2f(m_PhysicalSize.x,bankcenter);
 	glEnd();
 	
 	glPopMatrix();
@@ -297,6 +261,8 @@ namespace OpenGC
       // Draw in white
       glColor3ub(COLOR_WHITE);
 
+      glLineWidth(lineWidth);
+
       // Draw the center detent
       glBegin(GL_POLYGON);
       glVertex2f(m_PhysicalSize.x/2,m_PhysicalSize.y-4.5);
@@ -305,37 +271,37 @@ namespace OpenGC
       glVertex2f(m_PhysicalSize.x/2,m_PhysicalSize.y-4.5);
       glEnd();
 
-      // Move to the center of the window
-      glTranslatef(m_PhysicalSize.x/2,m_PhysicalSize.y/2-shifty,0);
+      // Move to the center of the bank circle
+      glTranslatef(m_PhysicalSize.x/2,bankcenter,0);
 
       glRotatef(10.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,49);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+3);
       glEnd();
   
       glRotatef(10.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,49);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+3);
       glEnd();
 
       glRotatef(10.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,53);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+6);
       glEnd();
 
       glRotatef(15.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,49);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+3);
       glEnd();
 
       glRotatef(15.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,51);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+6);
       glEnd();
 
       glPopMatrix();
@@ -343,37 +309,38 @@ namespace OpenGC
       // Right side bank markings
       // Reset the modelview matrix
       glPushMatrix();
-      // Move to the center of the window
-      glTranslatef(47,49,0);
+      
+      // Move to the center of the bank circle
+      glTranslatef(m_PhysicalSize.x/2,bankcenter,0);
 
       glRotatef(-10.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,49);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+3);
       glEnd();
   
       glRotatef(-10.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,49);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+3);
       glEnd();
 
       glRotatef(-10.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,53);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+6);
       glEnd();
 
       glRotatef(-15.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,49);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+3);
       glEnd();
 
       glRotatef(-15.0,0,0,1);
       glBegin(GL_LINES);
-      glVertex2f(0,46);
-      glVertex2f(0,51);
+      glVertex2f(0,bankradius);
+      glVertex2f(0,bankradius+6);
       glEnd();
 
       glPopMatrix();
@@ -384,27 +351,26 @@ namespace OpenGC
       //----------------Bank Indicator----------------
       // Reset the modelview matrix
       glPushMatrix();
-      // Move to the center of the window
-      glTranslatef(47,49,0);
+      // Move to the center of the bank circle
+      glTranslatef(m_PhysicalSize.x/2,bankcenter,0);
       // Rotate based on the bank
       glRotatef(*roll, 0, 0, 1);
 
       // Draw in white
-      glColor3ub(COLOR_WHITE);
       // Specify line width
       glLineWidth(lineWidth);
 
-      glBegin(GL_LINE_LOOP); // the bottom rectangle
-      glVertex2f(-4.5, 39.5);
-      glVertex2f(4.5, 39.5);
-      glVertex2f(4.5, 41.5);
-      glVertex2f(-4.5, 41.5);
+      glColor3ub(COLOR_BLACK);
+      glBegin(GL_POLYGON); // the top triangle
+      glVertex2f(-3.5, bankradius-4.5);
+      glVertex2f(0, bankradius);
+      glVertex2f(3.5, bankradius-4.5);
       glEnd();
-
-      glBegin(GL_LINE_STRIP); // the top triangle
-      glVertex2f(-4.5, 41.5);
-      glVertex2f(0, 46);
-      glVertex2f(4.5, 41.5);
+      glColor3ub(COLOR_WHITE);
+      glBegin(GL_LINE_LOOP); // the top triangle
+      glVertex2f(-3.5, bankradius-4.5);
+      glVertex2f(0, bankradius);
+      glVertex2f(3.5, bankradius-4.5);
       glEnd();
 
       glPopMatrix();
@@ -414,7 +380,7 @@ namespace OpenGC
       // Reset the modelview matrix
       glPushMatrix();
       // Move to the center of the window
-      glTranslatef(47,49,0);
+      glTranslatef(m_PhysicalSize.x/2,center,0);
 
       // The center axis indicator
       // Black background
@@ -440,65 +406,225 @@ namespace OpenGC
       // Black background
       glColor3ub(COLOR_BLACK);
       glBegin(GL_POLYGON);
-      glVertex2f(-39,1.25);
-      glVertex2f(-19,1.25);
-      glVertex2f(-19,-1.25);
-      glVertex2f(-39,-1.25);
-      glVertex2f(-39,1.25);
+      glVertex2f(-18,1.25);
+      glVertex2f(-5,1.25);
+      glVertex2f(-5,-1.25);
+      glVertex2f(-18,-1.25);
       glEnd();
+      glColor3ub(COLOR_BLACK);
       glBegin(GL_POLYGON);
-      glVertex2f(-19,1.25);
-      glVertex2f(-19,-5.75);
-      glVertex2f(-22,-5.75);
-      glVertex2f(-22,1.25);
-      glVertex2f(-19,1.25);
+      glVertex2f(-5,1.25);
+      glVertex2f(-5,-5.75);
+      glVertex2f(-8,-5.75);
+      glVertex2f(-8,1.25);
       glEnd();
-  
+ 
       // White lines
       glColor3ub(COLOR_WHITE);
       glLineWidth(lineWidth);
       glBegin(GL_LINE_LOOP);
-      glVertex2f(-39,1.25);
-      glVertex2f(-19,1.25);
-      glVertex2f(-19,-5.75);
-      glVertex2f(-22,-5.75);
-      glVertex2f(-22,-1.25);
-      glVertex2f(-39,-1.25);
+      glVertex2f(-18,1.25);
+      glVertex2f(-5,1.25);
+      glVertex2f(-5,-5.75);
+      glVertex2f(-8,-5.75);
+      glVertex2f(-8,-1.25);
+      glVertex2f(-18,-1.25);
+      glVertex2f(-18,1.25);
       glEnd();
 
       // The right part
       // Black background
       glColor3ub(COLOR_BLACK);
       glBegin(GL_POLYGON);
-      glVertex2f(39,1.25);
-      glVertex2f(19,1.25);
-      glVertex2f(19,-1.25);
-      glVertex2f(39,-1.25);
-      glVertex2f(39,1.25);
+      glVertex2f(18,1.25);
+      glVertex2f(5,1.25);
+      glVertex2f(5,-1.25);
+      glVertex2f(18,-1.25);
       glEnd();
+      glColor3ub(COLOR_BLACK);
       glBegin(GL_POLYGON);
-      glVertex2f(19,1.25);
-      glVertex2f(19,-5.75);
-      glVertex2f(22,-5.75);
-      glVertex2f(22,1.25);
-      glVertex2f(19,1.25);
+      glVertex2f(5,1.25);
+      glVertex2f(5,-5.75);
+      glVertex2f(8,-5.75);
+      glVertex2f(8,1.25);
       glEnd();
-  
+ 
       // White lines
       glColor3ub(COLOR_WHITE);
       glLineWidth(lineWidth);
       glBegin(GL_LINE_LOOP);
-      glVertex2f(39,1.25);
-      glVertex2f(19,1.25);
-      glVertex2f(19,-5.75);
-      glVertex2f(22,-5.75);
-      glVertex2f(22,-1.25);
-      glVertex2f(39,-1.25);
+      glVertex2f(18,1.25);
+      glVertex2f(5,1.25);
+      glVertex2f(5,-5.75);
+      glVertex2f(8,-5.75);
+      glVertex2f(8,-1.25);
+      glVertex2f(18,-1.25);
+      glVertex2f(18,1.25);
       glEnd();
 
       glPopMatrix();
       //--------------End draw attitude indicator------------
 
+      //--------------Start draw Horizontal Localizer--------
+      if (*isfd_horizontal == 1) {
+	// Draw the localizer
+    
+	// Position of Localizer in ISFD
+	float localizer_x = m_PhysicalSize.x/2.0;
+	float localizer_y = 3.5;
+    
+	// Overall localizer size
+	float localizerWidth = 9.0; // per Dot
+	float localizerHeight = 3.5;
+
+	// Black Background
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(localizer_x + 2.5*localizerWidth, localizer_y + localizerHeight/2.0 );
+	glVertex2f(localizer_x - 2.5*localizerWidth, localizer_y + localizerHeight/2.0 );
+	glVertex2f(localizer_x - 2.5*localizerWidth, localizer_y - localizerHeight/2.0 );
+	glVertex2f(localizer_x + 2.5*localizerWidth, localizer_y - localizerHeight/2.0 );
+	glEnd();	  
+	
+	// Verticalal center line
+	glColor3ub(COLOR_WHITE);
+	glBegin(GL_LINES);
+	glVertex2f( localizer_x, localizer_y + localizerHeight/2.0 );
+	glVertex2f( localizer_x, localizer_y - localizerHeight/2.0 );
+	glEnd();
+    
+	// Draw the localizer dots
+	
+	// Set up the circle
+	aCircle.SetRadius(1.0);
+	aCircle.SetArcStartEnd(0,360);
+	aCircle.SetDegreesPerPoint(30);
+    
+	glLineWidth(lineWidth);
+    
+	aCircle.SetOrigin(localizer_x + localizerWidth * 2, localizer_y);
+	glBegin(GL_LINE_LOOP);
+	aCircle.Evaluate();
+	glEnd();
+	
+	aCircle.SetOrigin(localizer_x + localizerWidth, localizer_y);
+	glBegin(GL_LINE_LOOP);
+	aCircle.Evaluate();
+	glEnd();
+	
+	aCircle.SetOrigin(localizer_x + -1 * localizerWidth, localizer_y);
+	glBegin(GL_LINE_LOOP);
+	aCircle.Evaluate();
+	glEnd();
+	
+	aCircle.SetOrigin(localizer_x + -1 * localizerWidth * 2, localizer_y);
+	glBegin(GL_LINE_LOOP);
+	aCircle.Evaluate();
+	glEnd();
+	
+	if (*nav1_horizontal == 1) {
+
+	  // The horizontal offset of the localizer bug
+	  float localizerPosition = localizer_x + *nav1_hdef * localizerWidth;
+	  // This is the localizer bug
+	  glColor3ub(COLOR_VIOLET);
+	  if (fabs(*nav1_hdef) < 2.49) {
+	    glBegin(GL_POLYGON);
+	  } else {
+	    glBegin(GL_LINE_LOOP);
+	  }
+	  glVertex2f( localizerPosition - 4, localizer_y ); 	
+	  glVertex2f( localizerPosition, localizer_y + 2 );
+	  glVertex2f( localizerPosition + 4, localizer_y );
+	  glVertex2f( localizerPosition, localizer_y - 2 );
+	  glEnd();
+	}
+
+      }
+      //--------------End draw Horizontal Localizer--------
+
+      //--------------Start draw Vertical Glideslope-------
+      if (*isfd_vertical == 1) {
+	// Draw the glideslope dots
+    
+	// The height of the glideslope markers above and below center (+/- 1 and 2 degrees deflection)
+	float glideslopeWidth = 3.5;
+	float glideslopeHeight = 9;
+	
+	// Horizontal position of the dots relative to the ADI center
+	float glideslope_x = m_PhysicalSize.x - 8;
+	float glideslope_y = center;
+
+	// Black Background
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(glideslope_x + glideslopeWidth/2.0, glideslope_y + 2.5*glideslopeHeight );
+	glVertex2f(glideslope_x - glideslopeWidth/2.0, glideslope_y + 2.5*glideslopeHeight );
+	glVertex2f(glideslope_x - glideslopeWidth/2.0, glideslope_y - 2.5*glideslopeHeight );
+	glVertex2f(glideslope_x + glideslopeWidth/2.0, glideslope_y - 2.5*glideslopeHeight );
+	glEnd();	  
+	
+	// Horizontal center line
+	glColor3ub(COLOR_WHITE);
+	glBegin(GL_LINES);
+	glVertex2f( glideslope_x - glideslopeWidth/2.0, center );
+	glVertex2f( glideslope_x - glideslopeWidth/2.0, center );
+	glEnd();
+    	
+	// Set up the circle
+	CircleEvaluator aCircle;
+	aCircle.SetRadius(1.0);
+	aCircle.SetArcStartEnd(0,360);
+	aCircle.SetDegreesPerPoint(30);
+    
+	glLineWidth(lineWidth);
+    
+	aCircle.SetOrigin(glideslope_x, glideslope_y + glideslopeHeight * 2);
+	glBegin(GL_LINE_LOOP);
+	aCircle.Evaluate();
+	glEnd();
+	
+	aCircle.SetOrigin(glideslope_x, glideslope_y + glideslopeHeight);
+	glBegin(GL_LINE_LOOP);
+	aCircle.Evaluate();
+	glEnd();
+	
+	aCircle.SetOrigin(glideslope_x, glideslope_y + -1 * glideslopeHeight);
+	glBegin(GL_LINE_LOOP);
+	aCircle.Evaluate();
+	glEnd();
+	
+	aCircle.SetOrigin(glideslope_x, glideslope_y + -1 * glideslopeHeight * 2);
+	glBegin(GL_LINE_LOOP);
+	aCircle.Evaluate();
+	glEnd();
+    
+	// This is the glideslope bug
+	if ((*nav1_vertical == 1) && (*nav1_CDI == 1)) {
+	  float rawGlideslope = *nav1_vdef;
+
+	  if (rawGlideslope < - 2.5) rawGlideslope = -2.5;
+	  if (rawGlideslope >   2.5) rawGlideslope = 2.5;
+     
+	  // The vertical offset of the glideslope bug
+	  float glideslopePosition = glideslope_y - rawGlideslope * glideslopeHeight;
+
+	  // fill the glideslope bug when we are in glide slope color is magenta
+	  glColor3ub(COLOR_VIOLET);
+	  if (fabs(rawGlideslope) < 2.49) {
+	    glBegin(GL_POLYGON);
+	  } else {
+	    glBegin(GL_LINE_LOOP);
+	  }
+	  glVertex2f( glideslope_x - 2, glideslopePosition ); 	
+	  glVertex2f( glideslope_x, glideslopePosition + 4 );
+	  glVertex2f( glideslope_x + 2, glideslopePosition );
+	  glVertex2f( glideslope_x, glideslopePosition - 4 );
+	  glEnd();	
+	}
+
+      }
+      //--------------End draw Vertical Glideslope-------
 
     }
     

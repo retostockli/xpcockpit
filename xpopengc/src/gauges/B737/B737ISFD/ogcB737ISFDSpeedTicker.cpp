@@ -40,8 +40,8 @@ namespace OpenGC
     m_PhysicalPosition.x = 0;
     m_PhysicalPosition.y = 0;
 
-    m_PhysicalSize.x = 21;
-    m_PhysicalSize.y = 18;
+    m_PhysicalSize.x = 19;
+    m_PhysicalSize.y = 13;
 
     m_Scale.x = 1.0;
     m_Scale.y = 1.0;
@@ -57,39 +57,28 @@ namespace OpenGC
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
 
-    bool is_captain = (this->GetArg() == 0);
+    // y position of the text (for easy changes)
+    double fontHeight = 7.0;
+    double texty = m_PhysicalSize.y / 2 - fontHeight / 2;
+    float lineWidth = 3.0;
 
     // Draw black background
     glColor3ub(COLOR_BLACK);
-    // Rectangular part
-    glRectd(0.0,0.0,18.0,18.0);
-    // Triangular part
-    glBegin(GL_TRIANGLES);
-    glVertex2f(18.0,7.0);
-    glVertex2f(21.0,9.0);
-    glVertex2f(18.0,11.0);
+    glRectd(0.0,0.0,m_PhysicalSize.x,m_PhysicalSize.y);
     glEnd();
 
     // White border around background
+    glLineWidth(lineWidth);
     glColor3ub(COLOR_WHITE);
-    glLineWidth(2.5);
     glBegin(GL_LINE_LOOP);
-    glVertex2f(0.0,0.0);
-    glVertex2f(0.0,18.0);
-    glVertex2f(18.0,18.0);
-    glVertex2f(18.0,11.0);
-    glVertex2f(21.0,9.0);
-    glVertex2f(18.0,7.0);
-    glVertex2f(18.0,0.0);
+    glVertex2f(0.3,0.3);
+    glVertex2f(m_PhysicalSize.x-0.3,0.3);
+    glVertex2f(m_PhysicalSize.x-0.3,m_PhysicalSize.y-0.3);
+    glVertex2f(0.3,m_PhysicalSize.y-0.3);
     glEnd();
 
     // indicated air speed (knots)
-    float *speed_knots;
-    if (is_captain) {
-      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
-    } else {
-      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed2",-1);
-    }
+    float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
     
     if (*speed_knots != FLT_MISS) {
 
@@ -100,7 +89,7 @@ namespace OpenGC
       // Speed for integer calculations
       int ias_int = (int) *speed_knots;
       float ias_flt = *speed_knots;
-
+     
       float ias1 = ias_flt;  // IAS last digit and floating point
       if (fabs(ias1)>=100.0) {
 	ias1 = ias1 - (float) (100*(int)(ias1/100.0));
@@ -116,9 +105,6 @@ namespace OpenGC
 	  ias_int = 30;
 	  } */
 
-      // y position of the text (for easy changes)
-      double fontHeight = 7.0;
-      double texty = m_PhysicalSize.y / 2 - fontHeight / 2;
 
       m_pFontManager->SetSize(m_Font, 6.0, fontHeight);
 
@@ -166,13 +152,13 @@ namespace OpenGC
 	  //printf("%i %i %i %i %f \n",ias_int,ten,tenup,tendown,vtrans);
 	  
 	  snprintf(buffer, sizeof(buffer), "%i", ten);
-	  m_pFontManager->Print(6.5, texty + vtrans, &buffer[0], m_Font);
+	  m_pFontManager->Print(7.5, texty + vtrans, &buffer[0], m_Font);
 
 	  snprintf(buffer, sizeof(buffer), "%i", tenup);
-	  m_pFontManager->Print(6.5, texty + vtrans + fontHeight + fontHeight, &buffer[0], m_Font);
+	  m_pFontManager->Print(7.5, texty + vtrans + fontHeight + fontHeight, &buffer[0], m_Font);
 
 	  snprintf(buffer, sizeof(buffer), "%i", tendown);
-	  m_pFontManager->Print(6.5, texty + vtrans - fontHeight - fontHeight, &buffer[0], m_Font);
+	  m_pFontManager->Print(7.5, texty + vtrans - fontHeight - fontHeight, &buffer[0], m_Font);
 
 	  ias_int = ias_int-10*(int)(ias_int/10);
 	}
@@ -191,20 +177,20 @@ namespace OpenGC
   
       // Display all of the digits
       snprintf(buffer, sizeof(buffer), "%i", five_one);
-      m_pFontManager->Print(11.0, texty+fontHeight*2+fontHeight/5, &buffer[0], m_Font);
+      m_pFontManager->Print(12.0, texty+fontHeight*2+fontHeight/5, &buffer[0], m_Font);
       
       snprintf(buffer, sizeof(buffer), "%i", four_one);
-      m_pFontManager->Print(11.0, texty+fontHeight+fontHeight/10, &buffer[0], m_Font);
+      m_pFontManager->Print(12.0, texty+fontHeight+fontHeight/10, &buffer[0], m_Font);
       
       snprintf(buffer, sizeof(buffer), "%i", three_one);
-      m_pFontManager->Print(11.0, texty, &buffer[0], m_Font);
+      m_pFontManager->Print(12.0, texty, &buffer[0], m_Font);
       
       if (ias_flt >= 1.0) {
 	snprintf(buffer, sizeof(buffer), "%i", two_one);
-	m_pFontManager->Print(11.0, texty-fontHeight-fontHeight/10, &buffer[0], m_Font);
+	m_pFontManager->Print(12.0, texty-fontHeight-fontHeight/10, &buffer[0], m_Font);
 	
 	snprintf(buffer, sizeof(buffer), "%i", one_one);
-	m_pFontManager->Print(11.0, texty-fontHeight*2-fontHeight/5, &buffer[0], m_Font);
+	m_pFontManager->Print(12.0, texty-fontHeight*2-fontHeight/5, &buffer[0], m_Font);
       }
       
     }

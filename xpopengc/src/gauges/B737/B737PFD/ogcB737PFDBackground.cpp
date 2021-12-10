@@ -730,7 +730,7 @@ namespace OpenGC
 	// Todo: fill the glideslope bug when we are in glide slope
 	// color is magenta
 	glColor3ub(COLOR_VIOLET);
-	if (fabs(rawGlideslope) < 2.0) {
+	if (fabs(rawGlideslope) < 2.49) {
 	  glBegin(GL_POLYGON);
 	} else {
 	  glBegin(GL_LINE_LOOP);
@@ -800,7 +800,7 @@ namespace OpenGC
 	float localizerPosition = ADICenterX + rawLocalizer * localizerWidth;
  	// This is the localizer bug
 	glColor3ub(COLOR_VIOLET);
-	if (fabs(rawLocalizer) < 2.0) {
+	if (fabs(rawLocalizer) < 2.49) {
 	  glBegin(GL_POLYGON);
 	} else {
 	  glBegin(GL_LINE_LOOP);

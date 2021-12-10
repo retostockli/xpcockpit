@@ -40,8 +40,8 @@ namespace OpenGC
     m_PhysicalPosition.x = 0;
     m_PhysicalPosition.y = 0;
 
-    m_PhysicalSize.x = 28;
-    m_PhysicalSize.y = 18;
+    m_PhysicalSize.x = 26;
+    m_PhysicalSize.y = 13;
 
     m_Scale.x = 1.0;
     m_Scale.y = 1.0;
@@ -56,42 +56,38 @@ namespace OpenGC
   {
     // Call base class to setup viewport and projection
     GaugeComponent::Render();
-
+    
     int acf_type = m_pDataSource->GetAcfType();
-    bool is_captain = (this->GetArg() == 0);
+ 
+    // y position of the text (for easy changes)
+    float bigFontHeight = 7.0;
+    float littleFontHeight = 5.5;
+    float texty = m_PhysicalSize.y / 2 - bigFontHeight / 2;
+    float lineWidth = 3.0;
 
     // Draw black background
     glColor3ub(COLOR_BLACK);
-    // Rectangular part
-    glRectd(3.5,0.0,28.0,18.0);
-    // Triangular part
-    glBegin(GL_TRIANGLES);
-    glVertex2f(0.0,9.0);
-    glVertex2f(3.5,6.0);
-    glVertex2f(3.5,12.0);
+    glRectd(0.0,0.0,m_PhysicalSize.x,m_PhysicalSize.y);
     glEnd();
 
     // White border around background
-    glLineWidth(2.5);
+    glLineWidth(lineWidth);
     glColor3ub(COLOR_WHITE);
     glBegin(GL_LINE_LOOP);
-    glVertex2f(0.0,9.0);
-    glVertex2f(3.5,12.0);
-    glVertex2f(3.5,18.0);
-    glVertex2f(28.0,18.0);
-    glVertex2f(28.0,0.0);
-    glVertex2f(3.5,0.0);
-    glVertex2f(3.5,6.0);
+    glVertex2f(0.3,0.3);
+    glVertex2f(m_PhysicalSize.x-0.3,0.3);
+    glVertex2f(m_PhysicalSize.x-0.3,m_PhysicalSize.y-0.3);
+    glVertex2f(0.3,m_PhysicalSize.y-0.3);
     glEnd();
 
     // Get the barometric altitude (feet)
     float *pressure_altitude;
-    if (is_captain) {
-      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+    if ((acf_type == 3) || (acf_type == 2)) {
+      pressure_altitude = link_dataref_flt("laminar/B738/gauges/standby_altitude_ft",0);
     } else {
-      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind_copilot",0);
+      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     }
-
+      
     if (*pressure_altitude != FLT_MISS) {
 
       float vtrans;
@@ -106,10 +102,6 @@ namespace OpenGC
       int alt100 = abs(alt)%100;
       //int alt100 = alt%100;
       
-      // y position of the text (for easy changes)
-      float bigFontHeight = 8.0;
-      float littleFontHeight = 6.5;
-      float texty = m_PhysicalSize.y / 2 - bigFontHeight / 2;
 
       m_pFontManager->SetSize(m_Font, 6.0, bigFontHeight);
 
@@ -141,13 +133,13 @@ namespace OpenGC
 	  }
 	  
 	  snprintf(buffer, sizeof(buffer), "%i", tenthousand);
-	  m_pFontManager->Print(5.0, texty + vtrans, &buffer[0], m_Font);
+	  m_pFontManager->Print(3.0, texty + vtrans, &buffer[0], m_Font);
 	  
 	  snprintf(buffer, sizeof(buffer), "%i", tenthousandup);
-	  m_pFontManager->Print(5.0, texty + vtrans + bigFontHeight + bigFontHeight, &buffer[0], m_Font);
+	  m_pFontManager->Print(3.0, texty + vtrans + bigFontHeight + bigFontHeight, &buffer[0], m_Font);
 	  
 	  snprintf(buffer, sizeof(buffer), "%i", tenthousanddown);
-	  m_pFontManager->Print(5.0, texty + vtrans - bigFontHeight - bigFontHeight, &buffer[0], m_Font);
+	  m_pFontManager->Print(3.0, texty + vtrans - bigFontHeight - bigFontHeight, &buffer[0], m_Font);
 
 	  
 	}
@@ -159,11 +151,11 @@ namespace OpenGC
 	  } else {
 	    glColor3ub(COLOR_GREEN);
 	    glBegin(GL_POLYGON);
-	    glVertex2f(4.0,texty);
-	    glVertex2f(4.0,texty + bigFontHeight);
-	    glVertex2f(8.0,texty + bigFontHeight);
-	    glVertex2f(8.0,texty);
-	    glVertex2f(4.0,texty);
+	    glVertex2f(2.0,texty);
+	    glVertex2f(2.0,texty + bigFontHeight);
+	    glVertex2f(6.0,texty + bigFontHeight);
+	    glVertex2f(6.0,texty);
+	    glVertex2f(2.0,texty);
 	    glEnd();
 	  }
 	}
@@ -193,13 +185,13 @@ namespace OpenGC
       if (negative) vtrans = -vtrans;
       
       snprintf(buffer, sizeof(buffer), "%i", thousand);
-      m_pFontManager->Print(9.5, texty + vtrans, &buffer[0], m_Font);
+      m_pFontManager->Print(7.5, texty + vtrans, &buffer[0], m_Font);
 
       snprintf(buffer, sizeof(buffer), "%i", thousandup);
-      m_pFontManager->Print(9.5, texty + vtrans + bigFontHeight + bigFontHeight, &buffer[0], m_Font);
+      m_pFontManager->Print(7.5, texty + vtrans + bigFontHeight + bigFontHeight, &buffer[0], m_Font);
 
       snprintf(buffer, sizeof(buffer), "%i", thousanddown);
-      m_pFontManager->Print(9.5, texty + vtrans - bigFontHeight - bigFontHeight, &buffer[0], m_Font);
+      m_pFontManager->Print(7.5, texty + vtrans - bigFontHeight - bigFontHeight, &buffer[0], m_Font);
 
       // The 100's, 10's, and 1's are drawn in a smaller size
       m_pFontManager->SetSize(m_Font, 5.0, littleFontHeight);
@@ -225,13 +217,13 @@ namespace OpenGC
       if (negative) vtrans = -vtrans;
       
       snprintf(buffer, sizeof(buffer), "%i", hundred);
-      m_pFontManager->Print(15.0, texty + vtrans, &buffer[0], m_Font);
+      m_pFontManager->Print(13.0, texty + vtrans, &buffer[0], m_Font);
 
       snprintf(buffer, sizeof(buffer), "%i", hundredup);
-      m_pFontManager->Print(15.0, texty + vtrans + littleFontHeight + littleFontHeight, &buffer[0], m_Font);
+      m_pFontManager->Print(13.0, texty + vtrans + littleFontHeight + littleFontHeight, &buffer[0], m_Font);
 
       snprintf(buffer, sizeof(buffer), "%i", hundreddown);
-      m_pFontManager->Print(15.0, texty + vtrans - littleFontHeight - littleFontHeight, &buffer[0], m_Font);
+      m_pFontManager->Print(13.0, texty + vtrans - littleFontHeight - littleFontHeight, &buffer[0], m_Font);
 
       // The 10's and 1's position (which is always 0) scroll based on altitude
       // We use three digits for the tens position, high, middle, and low
@@ -297,16 +289,16 @@ namespace OpenGC
      
       // Display all of the digits
       snprintf(buffer, sizeof(buffer), "%i", top_ten);
-      m_pFontManager->Print(19.0, texty + littleFontHeight + littleFontHeight/10, &buffer[0], m_Font);
-      m_pFontManager->Print(23.0, texty + littleFontHeight + littleFontHeight/10, "0", m_Font);
+      m_pFontManager->Print(17.0, texty + littleFontHeight + littleFontHeight/10, &buffer[0], m_Font);
+      m_pFontManager->Print(21.0, texty + littleFontHeight + littleFontHeight/10, "0", m_Font);
 
       snprintf(buffer, sizeof(buffer), "%i", middle_ten);
-      m_pFontManager->Print(19.0, texty, &buffer[0], m_Font);
-      m_pFontManager->Print(23.0, texty, "0", m_Font);
+      m_pFontManager->Print(17.0, texty, &buffer[0], m_Font);
+      m_pFontManager->Print(21.0, texty, "0", m_Font);
 
       snprintf(buffer, sizeof(buffer), "%i", bottom_ten);
-      m_pFontManager->Print(19.0, texty + -1*littleFontHeight - littleFontHeight/10, &buffer[0], m_Font);
-      m_pFontManager->Print(23.0, texty + -1*littleFontHeight - littleFontHeight/10, "0", m_Font);
+      m_pFontManager->Print(17.0, texty + -1*littleFontHeight - littleFontHeight/10, &buffer[0], m_Font);
+      m_pFontManager->Print(21.0, texty + -1*littleFontHeight - littleFontHeight/10, "0", m_Font);
 
     }
   }
