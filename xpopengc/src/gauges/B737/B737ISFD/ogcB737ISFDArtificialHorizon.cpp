@@ -166,8 +166,10 @@ namespace OpenGC
 
 
 	// The dividing line between sky and ground
+	glBegin(GL_LINES);
 	glVertex2f(-300,0);
 	glVertex2f(300,0);
+	glEnd();
 
 	for (float s=-1.0;s<=1.0;s=s+2.0) {
 	  for (float d=2.5;d<=50.0;d=d+2.5) {
@@ -568,7 +570,7 @@ namespace OpenGC
 	glColor3ub(COLOR_WHITE);
 	glBegin(GL_LINES);
 	glVertex2f( glideslope_x - glideslopeWidth/2.0, center );
-	glVertex2f( glideslope_x - glideslopeWidth/2.0, center );
+	glVertex2f( glideslope_x + glideslopeWidth/2.0, center );
 	glEnd();
     	
 	// Set up the circle

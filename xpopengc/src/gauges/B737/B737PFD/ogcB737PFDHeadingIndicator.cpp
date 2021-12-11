@@ -88,6 +88,7 @@ namespace OpenGC
 
     float bigFontSize = 5.0;
     float littleFontSize = 3.5;
+    float lineWidth = 3.0;
 
     char buffer[32];
 
@@ -131,7 +132,7 @@ namespace OpenGC
 
       // Draw in gray
       glColor3ub(COLOR_GRAYBLUE);
-      glLineWidth( 1.75 );
+      glLineWidth(lineWidth );
 
       // Set up the circle
       CircleEvaluator aCircle;
@@ -224,6 +225,7 @@ namespace OpenGC
 	  else // Otherwise it gets a short tick
 	    tickLength = 2;
 
+	  glLineWidth(lineWidth );
 	  glBegin(GL_LINES);
 	  glVertex2f(0,radius);
 	  glVertex2f(0,radius-tickLength);
@@ -247,7 +249,7 @@ namespace OpenGC
 	glRotatef((*heading_mag_ap - *heading_mag) * indicatorDegreesPerTrueDegrees,0,0,-1);
 	
 	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(2.0);
+	glLineWidth(lineWidth );
 	
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(-4.0f,radius);
@@ -293,7 +295,7 @@ namespace OpenGC
 	glRotatef((*ap_course1 - *heading_mag) * indicatorDegreesPerTrueDegrees, 0, 0, -1);
 	
 	glColor3ub(COLOR_WHITE);
-	glLineWidth(3.0);
+	glLineWidth(lineWidth );
 	
 	// draw Heading arrow
 	glBegin(GL_LINES);

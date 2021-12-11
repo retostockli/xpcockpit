@@ -66,6 +66,7 @@ namespace OpenGC
     char buffer[8];
 
     float bigFontSize = 5.0;
+    float lineWidth = 3.0;
 
     // First, store the "root" position of the gauge component
     glMatrixMode(GL_MODELVIEW);
@@ -172,7 +173,7 @@ namespace OpenGC
 	// Draw in white
 	glColor3ub(COLOR_WHITE);
 	// Specify line width
-	glLineWidth(1.0);
+	glLineWidth(lineWidth);
 	// The size for all pitch text
 	m_pFontManager->SetSize(m_Font,4.0, 4.0);
 
@@ -309,6 +310,7 @@ namespace OpenGC
 	m_pFontManager->Print(-1.5*bigFontSize, -0.5*bigFontSize ,"ATT", m_Font ); 
 	
 	float ss = bigFontSize;
+	glLineWidth(lineWidth);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(-2.0*ss,-ss);
 	glVertex2f(2.0*ss,-ss);
@@ -328,6 +330,7 @@ namespace OpenGC
 
       // Draw in white
       glColor3ub(COLOR_WHITE);
+      glLineWidth(lineWidth);
 
       // Move to the center of the window
       glTranslatef(47,49,0);
@@ -377,6 +380,7 @@ namespace OpenGC
       glPushMatrix();
       // Move to the center of the window
       glTranslatef(47,49,0);
+      glLineWidth(lineWidth);
 
       glRotatef(-10.0,0,0,1);
       glBegin(GL_LINES);
@@ -424,7 +428,7 @@ namespace OpenGC
       // Draw in white
       glColor3ub(COLOR_WHITE);
       // Specify line width
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
 
       glBegin(GL_LINE_LOOP); // the bottom rectangle
       glVertex2f(-4.5, 39.5);
@@ -460,7 +464,7 @@ namespace OpenGC
       glEnd();
       // White lines
       glColor3ub(COLOR_WHITE);
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
       glBegin(GL_LINE_LOOP);
       glVertex2f(1.25,1.25);
       glVertex2f(1.25,-1.25);
@@ -488,7 +492,7 @@ namespace OpenGC
   
       // White lines
       glColor3ub(COLOR_WHITE);
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
       glBegin(GL_LINE_LOOP);
       glVertex2f(-39,1.25);
       glVertex2f(-19,1.25);
@@ -518,7 +522,7 @@ namespace OpenGC
   
       // White lines
       glColor3ub(COLOR_WHITE);
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
       glBegin(GL_LINE_LOOP);
       glVertex2f(39,1.25);
       glVertex2f(19,1.25);
@@ -605,7 +609,7 @@ namespace OpenGC
 	// Move to the center of the window
 	glTranslatef(47,49,0);
 	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(3.0);
+	glLineWidth(lineWidth);
     
 	glTranslatef(0,*fd_pitch*2.0,0);
 	glBegin(GL_LINES);
@@ -623,7 +627,7 @@ namespace OpenGC
 	// Move to the center of the window
 	glTranslatef(47,49,0);
 	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(3.0);
+	glLineWidth(lineWidth);
 
 	glTranslatef(*fd_roll,0,0);
 	glBegin(GL_LINES);
@@ -643,7 +647,7 @@ namespace OpenGC
 	  // Move to the center of the window
 	  glTranslatef(47,49,0);
 	  glColor3ub(COLOR_MAGENTA);
-	  glLineWidth(3.0);
+	  glLineWidth(lineWidth);
 	  
 	  glPushMatrix();
 	  glTranslatef(0,*nav1_vdef*-20, 0);

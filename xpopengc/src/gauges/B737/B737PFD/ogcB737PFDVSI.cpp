@@ -75,6 +75,7 @@ namespace OpenGC
     char buffer[6];
     float bigFontSize = 5.0;
     float fontSize = 4.0;
+    float lineWidth = 3.0;
 
     // float *vertical_speed = link_dataref_flt("sim/flightmodel/position/vh_ind_fpm",1);
     float *vertical_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/vvi_fpm_pilot",1);
@@ -150,7 +151,7 @@ namespace OpenGC
       m_pFontManager->Print( 2.0, VSpeedToNeedle(-6000.0)-1.5,"6-",m_Font);
 
       float pos;
-      glLineWidth(1.5);
+      glLineWidth(lineWidth);
       pos = 0.5*(VSpeedToNeedle(0.0) + VSpeedToNeedle(1000.0));
       glBegin(GL_LINES);
       glVertex2f(6.0,pos);

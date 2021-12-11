@@ -62,6 +62,7 @@ namespace OpenGC
     memset(buffer,0,sizeof(buffer));
     float fontHeight = 5;
     float fontWidth = 5;
+    float lineWidth = 3.0;
     float rawGlideslope;
     float rawLocalizer;
 
@@ -288,7 +289,7 @@ namespace OpenGC
       float mach = fabs( *ias / (38.967854 * sqrt(*tat+273.15)));
     
       glColor3ub(COLOR_WHITE);
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
     
       m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
     
@@ -299,7 +300,7 @@ namespace OpenGC
     // 2. Plot Autopilot dialed speed above the speed tape
 
     glColor3ub(COLOR_VIOLET);
-    glLineWidth(2.0);
+    glLineWidth(lineWidth);
 
     m_pFontManager->SetSize(m_Font, 1.15*fontWidth, 1.35*fontHeight);
 
@@ -317,7 +318,7 @@ namespace OpenGC
 
     m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
     glColor3ub(COLOR_GREEN);
-    glLineWidth(2.0);
+    glLineWidth(lineWidth);
 
     if (*altimeter_pressure != FLT_MISS) {
       if (roundf(*altimeter_pressure*100) == 2992) {
@@ -337,7 +338,7 @@ namespace OpenGC
     // 4. Plot dialed Autopilot altitude in feet above the altitude tape
 
     glColor3ub(COLOR_VIOLET);
-    glLineWidth(2.0);
+    glLineWidth(lineWidth);
 
     if (*ap_altitude != FLT_MISS) {
       int thousands = (int) *ap_altitude / 1000.0;
@@ -396,7 +397,7 @@ namespace OpenGC
 	// Green border around background
 	if (*ap_spd_mode_rec == 1) {
 	  glColor3ub(COLOR_GREEN);
-	  glLineWidth(2.0);
+	  glLineWidth(lineWidth);
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(40,181+8);
 	  glVertex2f(72,181+8);
@@ -444,7 +445,7 @@ namespace OpenGC
 
 	if (*ap_hdg_mode_rec == 1) {
 	  // Green border around background
-	  glLineWidth(2.0);
+	  glLineWidth(lineWidth);
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(74,181+8);
 	  glVertex2f(105,181+8);
@@ -476,7 +477,7 @@ namespace OpenGC
 
 	// Green border around background
 	if (*ap_alt_mode_rec == 1) {
-	  glLineWidth(2.0);
+	  glLineWidth(lineWidth);
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(107,181+8);
 	  glVertex2f(140,181+8);
@@ -539,7 +540,7 @@ namespace OpenGC
 	// White border around background
 	/*
 	if (*ap_lnav_armed == 2) {
-	  glLineWidth(2.0);
+	  glLineWidth(lineWidth);
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(74,170+8);
 	  glVertex2f(105,170+8);
@@ -576,7 +577,7 @@ namespace OpenGC
 	// White border around background
 	/*
 	if (*ap_vvi_mode == 2)  {
-	  glLineWidth(2.0);
+	  glLineWidth(lineWidth);
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(107,170+8);
 	  glVertex2f(140,170+8);
@@ -619,7 +620,7 @@ namespace OpenGC
 	strcpy(buffer, "LAND 3");
 	m_pFontManager->Print(75,155+0, &buffer[0], m_Font);
 	if (*cmd_rec == 1) {
-	  glLineWidth(2.0);
+	  glLineWidth(lineWidth);
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(70,152);
 	  glVertex2f(110,152);
@@ -633,7 +634,7 @@ namespace OpenGC
 	  strcpy(buffer, "CMD");
 	  m_pFontManager->Print(80,155+0, &buffer[0], m_Font);	  
 	  if (*cmd_rec == 1) {
-	    glLineWidth(2.0);
+	    glLineWidth(lineWidth);
 	    glBegin(GL_LINE_LOOP);
 	    glVertex2f(77,152);
 	    glVertex2f(102,152);
@@ -645,7 +646,7 @@ namespace OpenGC
 	  strcpy(buffer, "FD");
 	  m_pFontManager->Print(84,155+0, &buffer[0], m_Font);
 	  if (*cmd_rec == 1) {
-	    glLineWidth(2.0);
+	    glLineWidth(lineWidth);
 	    glBegin(GL_LINE_LOOP);
 	    glVertex2f(81,152);
 	    glVertex2f(98,152);
@@ -689,7 +690,7 @@ namespace OpenGC
     aCircle.SetArcStartEnd(0,360);
     aCircle.SetDegreesPerPoint(10);
     
-    glLineWidth(2.0);
+    glLineWidth(lineWidth);
     
     aCircle.SetOrigin(dotsHoriz, ADICenterY + glideslopeHeight * 2);
     glBegin(GL_LINE_LOOP);
@@ -765,7 +766,7 @@ namespace OpenGC
     aCircle.SetArcStartEnd(0,360);
     aCircle.SetDegreesPerPoint(10);
     
-    glLineWidth(2.0);
+    glLineWidth(lineWidth);
     
     aCircle.SetOrigin(ADICenterX + localizerWidth * 2, localizerHeight);
     glBegin(GL_LINE_LOOP);
@@ -857,7 +858,7 @@ namespace OpenGC
       CircleEvaluator bCircle;
       
       m_pFontManager->SetSize(m_Font, 3.8, 3.8);
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
       
       glColor3ub(COLOR_WHITE);
       bCircle.SetRadius(R);

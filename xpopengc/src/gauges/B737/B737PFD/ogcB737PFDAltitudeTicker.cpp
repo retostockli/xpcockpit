@@ -63,7 +63,10 @@ namespace OpenGC
     int acf_type = m_pDataSource->GetAcfType();
     bool is_captain = (this->GetArg() == 0);
 
+    float lineWidth = 3.0;
+ 
     // Draw black background
+    glLineWidth(lineWidth);
     glColor3ub(COLOR_BLACK);
     // Rectangular part
     glRectd(3.5,0.0,28.0,18.0);
@@ -75,7 +78,7 @@ namespace OpenGC
     glEnd();
 
     // White border around background
-    glLineWidth(2.5);
+    glLineWidth(lineWidth);
     glColor3ub(COLOR_WHITE);
     glBegin(GL_LINE_LOOP);
     glVertex2f(0.0,9.0);
@@ -99,6 +102,7 @@ namespace OpenGC
 
       float vtrans;
       
+      
       char buffer[10];
       memset(buffer,0,sizeof(buffer));
 
@@ -108,7 +112,7 @@ namespace OpenGC
       // last two digitis (10s and 1s) of altitude
       int alt100 = abs(alt)%100;
       //int alt100 = alt%100;
-      
+     
       // y position of the text (for easy changes)
       float bigFontHeight = 8.0;
       float littleFontHeight = 6.5;

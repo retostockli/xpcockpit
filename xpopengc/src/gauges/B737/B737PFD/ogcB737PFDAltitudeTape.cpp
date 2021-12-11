@@ -123,6 +123,7 @@ namespace OpenGC
       float fontHeight = 4;
       float fontWidth = 3.5;
       float fontIndent = 4.5;
+      float lineWidth = 3.0;
 
       m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
 
@@ -143,7 +144,7 @@ namespace OpenGC
       float tickLocation = 0;
 
       glColor3ub(COLOR_WHITE);
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
 
       float i = 0; // counter
       int tickAlt; // speed represented by tick mark
@@ -156,7 +157,7 @@ namespace OpenGC
 	  tickLocation = (m_PhysicalSize.y/2) + i*tickSpacing + vertOffset;
 	  float texty = tickLocation - fontHeight / 2;
 	  
-	  glLineWidth(2.0);
+	  glLineWidth(lineWidth);
 	  glBegin(GL_LINES);
 	  glVertex2f(0, tickLocation);
 	  glVertex2f(tickWidth, tickLocation);
@@ -253,7 +254,7 @@ namespace OpenGC
 	  tickLocation = (m_PhysicalSize.y/2) - ( (i-1) * tickSpacing) - (tickSpacing - vertOffset);
 	  float texty = tickLocation - fontHeight / 2;
 
-	  glLineWidth(2.0);
+	  glLineWidth(lineWidth);
 	  glBegin(GL_LINES);
 	  glVertex2f(0, tickLocation);
 	  glVertex2f(tickWidth, tickLocation);
@@ -388,7 +389,7 @@ namespace OpenGC
 	float vLocation = *vertical_speed/6.0 * tickSpacing / 100.0 + m_PhysicalSize.y/2;
 	
 	glColor3ub(COLOR_GREEN);
-	glLineWidth(2.0);
+	glLineWidth(lineWidth);
 	glBegin(GL_LINES);
 	glVertex2f(tickWidth, m_PhysicalSize.y/2);
 	glVertex2f(tickWidth/2, m_PhysicalSize.y/2);

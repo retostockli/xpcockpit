@@ -64,6 +64,8 @@ namespace OpenGC
 
     int acf_type = m_pDataSource->GetAcfType();
     bool is_captain = (this->GetArg() == 0);
+
+    float lineWidth = 3.0;
    
     // indicated air speed (knots)
     float *speed_knots;
@@ -239,7 +241,7 @@ namespace OpenGC
       float tickLocation = 0;
 
       glColor3ub(COLOR_WHITE);
-      glLineWidth(2.0);
+      glLineWidth(lineWidth);
 
       float i = 0; // counter
       int tickSpeed; // speed represented by tick mark
@@ -254,7 +256,7 @@ namespace OpenGC
 	  // do not draw negative tick speeds
 	  if (tickSpeed >= 0) {
     
-	    glLineWidth(2.0);
+	    glLineWidth(lineWidth);
 	    glBegin(GL_LINES);
 	    glVertex2f(indent_x - tickWidth, tickLocation);
 	    glVertex2f(indent_x, tickLocation);
@@ -308,7 +310,7 @@ namespace OpenGC
 	    {
 	      tickLocation = (m_PhysicalSize.y/2) - ( (i-1) * tickSpacing) - (10 - vertOffset);
 
-	      glLineWidth(2.0);
+	      glLineWidth(lineWidth);
 	      glBegin(GL_LINES);
 	      glVertex2f(indent_x - tickWidth, tickLocation);
 	      glVertex2f(indent_x, tickLocation);
@@ -376,7 +378,7 @@ namespace OpenGC
 	    float minmaneuverspdLocation = float(*min_maneuver_speed - ias_flt) *
 	      tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	    glColor3ub(COLOR_ORANGE);
-	    glLineWidth(2.0);
+	    glLineWidth(lineWidth);
 	    glBegin(GL_LINE_STRIP);
 	    glVertex2f(indent_x+tickSpacing*0.175, minspdLocation);
 	    glVertex2f(indent_x+tickSpacing*0.175, minmaneuverspdLocation);
@@ -409,7 +411,7 @@ namespace OpenGC
 	    float maxmaneuverspdLocation = float(*max_maneuver_speed - ias_flt) *
 	      tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	    glColor3ub(COLOR_ORANGE);
-	    glLineWidth(2.0);
+	    glLineWidth(lineWidth);
 	    glBegin(GL_LINE_STRIP);
 	    glVertex2f(indent_x+tickSpacing*0.175, maxspdLocation);
 	    glVertex2f(indent_x+tickSpacing*0.175, maxmaneuverspdLocation);
@@ -433,7 +435,7 @@ namespace OpenGC
 	mcpspdLocation = fmin(fmax(0.0,mcpspdLocation),m_PhysicalSize.y);
 
 	// draw a magenta MCP altitude indicator
-	glLineWidth(3.0);
+	glLineWidth(lineWidth);
 	glColor3ub(COLOR_MAGENTA);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(indent_x-5.0, mcpspdLocation);
@@ -509,7 +511,7 @@ namespace OpenGC
 	  float vLocation = float(*v2_15 - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	  
 	  glColor3ub(COLOR_WHITE);
-	  glLineWidth(1.0);
+	  glLineWidth(lineWidth);
 
 	  glBegin(GL_LINE_LOOP);
 	  glVertex2f(indent_x-3.0, vLocation);
@@ -619,7 +621,7 @@ namespace OpenGC
 	float vLocation = float(*speed_acceleration*10.0) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 
 	glColor3ub(COLOR_GREEN);
-	glLineWidth(2.0);
+	glLineWidth(lineWidth);
 	glBegin(GL_LINES);
 	glVertex2f(indent_x - tickWidth, m_PhysicalSize.y/2);
 	glVertex2f(indent_x - tickWidth/2, m_PhysicalSize.y/2);

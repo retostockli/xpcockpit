@@ -87,13 +87,12 @@ B737ISFD::B737ISFD()
   pSpeedTicker->SetPosition(0,39);
   this->AddGaugeComponent(pSpeedTicker);
 
-  /*
   // Create all other messages and indicators on the ISFD
   B737ISFDBackground* pBackground = new B737ISFDBackground();
   pBackground->SetParentRenderObject(this);
-  pBackground->SetPosition(0,0);
+  pBackground->SetPosition(17,87);
   this->AddGaugeComponent(pBackground);
-  */
+  
 }
 
 B737ISFD::~B737ISFD()

@@ -62,6 +62,8 @@ namespace OpenGC
 
     bool is_captain = (this->GetArg() == 0);
 
+    float lineWidth = 3.0;
+    
     // Draw black background
     glColor3ub(COLOR_BLACK);
     // Rectangular part
@@ -75,7 +77,7 @@ namespace OpenGC
 
     // White border around background
     glColor3ub(COLOR_WHITE);
-    glLineWidth(2.5);
+    glLineWidth(lineWidth);
     glBegin(GL_LINE_LOOP);
     glVertex2f(0.0,0.0);
     glVertex2f(0.0,18.0);
