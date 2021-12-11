@@ -222,6 +222,30 @@ namespace OpenGC
 
       glPopMatrix();
 
+    } else {
+
+      /* No Heading Data available */
+
+      glPushMatrix();
+      
+      glColor3ub(COLOR_ORANGE);
+      glLineWidth(lineWidth);
+
+      glTranslatef(m_PhysicalSize.x/2.0, 5.0+0.5*bigFontSize, 0);
+      
+      m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
+      m_pFontManager->Print(-1.5*bigFontSize, -0.5*bigFontSize ,"HDG", m_Font ); 
+
+      float ss = bigFontSize;
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(-2.0*ss,-ss);
+      glVertex2f(2.0*ss,-ss);
+      glVertex2f(2.0*ss,ss);
+      glVertex2f(-2.0*ss,ss);
+      glEnd();
+      
+      glPopMatrix();
+
     }
 
   }
