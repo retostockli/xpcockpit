@@ -4,8 +4,12 @@ Use the .xsession to not log into the desktop environment
 user systemd service scripts go into:
 ~/.config/systemd/user
 
+# enable and disable again service in order to not make it autostart
+# or you can keep it enabled to have it autostarted ...
 systemctl --user enable xpopengc
 systemctl --user enable xppi
+systemctl --user disable xpopengc
+systemctl --user disable xppi
 
 
 systemctl --user start xpopengc
