@@ -1,8 +1,14 @@
-# remove all window managers like lx** openbox etc.
+Start Rasperry with Auto Desktop Login
+Use the .xsession to not log into the desktop environment
 
 user systemd service scripts go into:
 ~/.config/systemd/user
 
-systemd --user enable SCRIPTNAME
-sudo systemctl daemon-reload
+systemctl --user enable xpopengc
+systemctl --user enable xppi
+
+
+systemctl --user start xpopengc
+systemctl --user stop xppi
+
 
