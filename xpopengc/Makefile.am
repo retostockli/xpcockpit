@@ -13,6 +13,8 @@ inidata/boeing737.ini \
 inidata/boeing737mip.ini \
 inidata/boeing737nav.ini \
 inidata/boeing737pfd.ini \
+inidata/boeing737fo.ini \
+inidata/boeing737ca.ini \
 inidata/default.ini \
 fonts/CockpitMCDU.ttf \
 fonts/CockpitScreens.ttf \
