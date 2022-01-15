@@ -22,6 +22,7 @@
 
 #include "ogcNavDatabase.h"
 #include <stdio.h>
+#include <string.h>
 
 namespace OpenGC
 {
@@ -35,6 +36,8 @@ NavDatabase
   m_FixHash = 0;  
   m_AirportList = 0;
   m_AirportHash = 0;
+  m_TerrainData = 0;
+  m_ShorelineData = 0;
 }
 
 NavDatabase
@@ -60,7 +63,7 @@ NavDatabase
 }
 
 bool NavDatabase
-::InitDatabase(string pathToNav, int customdata)
+::InitDatabase(string pathToNav, string pathToDEM, string pathToGSHHG, int customdata)
 {
   printf("NavDatabase::InitDatabase() - Loading geographic data...\n");
 
@@ -116,6 +119,26 @@ bool NavDatabase
   if ( (int) m_AirportList->size() == 0 ) {
     printf("Airport File apt.dat not found\n");
     return false;
+  }
+
+  if (!pathToDEM.empty()) {
+    m_TerrainData = new TerrainData;
+    m_TerrainData -> SetPathToDEM(pathToDEM);
+    m_TerrainData -> CreateColorTable();
+    if (!(m_TerrainData -> CheckFiles())) {
+      return false;
+    }
+  }
+
+  if (!pathToGSHHG.empty()) {
+    m_ShorelineData = new ShorelineData;
+    m_ShorelineData -> SetPathToGSHHG(pathToGSHHG);
+    if (!(m_ShorelineData -> CheckFiles())) {
+      return false;
+    }
+    if (!(m_ShorelineData -> ReadShoreline())) {
+      return false;
+    }
   }
   
   return true;

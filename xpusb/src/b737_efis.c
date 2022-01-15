@@ -148,21 +148,20 @@ void b737_efis(void)
     efis_apt = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/arpt_press");
     efis_data = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/data_press");
     efis_pos = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/pos_press");
-    efis_terr = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/push_button/terr_press");
+    efis_terr = link_dataref_int("xpserver/EFIS_capt_terr");
     *efis_wxr = 0;
     *efis_sta = 0;
     *efis_wpt = 0;
     *efis_apt = 0;
     *efis_data = 0;
     *efis_pos = 0;
-    *efis_terr = 0;
     efis_wxr_led = link_dataref_int("laminar/B738/EFIS/EFIS_wx_on");
     efis_sta_led = link_dataref_int("laminar/B738/EFIS/EFIS_vor_on");
     efis_wpt_led = link_dataref_int("laminar/B738/EFIS/EFIS_fix_on");
     efis_apt_led = link_dataref_int("laminar/B738/EFIS/EFIS_airport_on");
     efis_data_led = link_dataref_int("xpserver/EFIS_data");
     efis_pos_led = link_dataref_int("xpserver/EFIS_pos");
-    efis_terr_led = link_dataref_int("xpserver/EFIS_terr");
+    efis_terr_led = link_dataref_int("xpserver/EFIS_capt_terr");
   } else if (acf_type == 1) {
     efis_wxr = link_dataref_int("x737/cockpit/EFISCTRL_0/WXR_on");
     efis_sta = link_dataref_int("x737/cockpit/EFISCTRL_0/STA_on");
@@ -170,7 +169,7 @@ void b737_efis(void)
     efis_apt = link_dataref_int("x737/cockpit/EFISCTRL_0/ARPT_on");
     efis_data = link_dataref_int("x737/cockpit/EFISCTRL_0/DATA_on");
     efis_pos = link_dataref_int("x737/cockpit/EFISCTRL_0/POS_on");
-    efis_terr = link_dataref_int("x737/cockpit/EFISCTRL_0/TERR_on");
+    efis_terr = link_dataref_int("xpserver/EFIS_capt_terr");
   } else {
     efis_wxr = link_dataref_int("sim/cockpit/switches/EFIFS_shows_weather");
     efis_sta = link_dataref_int("sim/cockpit/switches/EFIS_shows_VORs");
@@ -178,7 +177,7 @@ void b737_efis(void)
     efis_apt = link_dataref_int("sim/cockpit/switches/EFIS_shows_airports");
     efis_data = link_dataref_int("sim/cockpit/switches/EFIS_shows_NDBs");
     efis_pos = link_dataref_int("sim/cockpit/switches/EFIS_shows_tcas");
-    efis_terr = link_dataref_int("xpserver/EFIS_terr");
+    efis_terr = link_dataref_int("xpserver/EFIS_capt_terr");
    }
 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
@@ -199,8 +198,19 @@ void b737_efis(void)
   ret = digital_input(device,card,47,efis_wpt,1);  // WPT
   ret = digital_input(device,card,48,efis_apt,1);  // ARPT
   ret = digital_input(device,card,49,efis_data,1);  // DATA
-  ret = digital_input(device,card,50,efis_pos,1);  // POS
-  ret = digital_input(device,card,51,efis_terr,1);  // TERR
+  ret = digital_input(device,card,51,efis_pos,1);  // POS -- INOP
+  ret = digital_input(device,card,50,&temp,0);  // TERR
+  if (*efis_terr == INT_MISS) *efis_terr = 0;
+  if ((ret==1) && (temp==1)) {
+    if (*efis_terr == 0) {
+      *efis_terr = 1;
+    } else if (*efis_terr == 1) {
+      *efis_terr = 2;
+    } else {
+      *efis_terr = 0;
+    }
+    printf("EFIS TERR: %i \n",*efis_terr);
+  }
 
   ret = digital_input(device,card,67,&temp,0);
   ret = digital_input(device,card,66,&temp2,0);

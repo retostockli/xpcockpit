@@ -44,6 +44,7 @@ a slingle MAP mode (the MAP MODE EXPANDED) implemented.
 #include "ogcGaugeComponent.h"
 #include "B737/B737NAV/ogcB737NAV.h"
 #include "B737/B737NAV/ogcB737NAVDrawStatic.h"
+#include "B737/B737NAV/ogcB737NAVDrawDEM.h"
 #include "B737/B737NAV/ogcB737NAVDrawWXR.h"
 #include "B737/B737NAV/ogcB737NAVDrawStations.h"
 #include "B737/B737NAV/ogcB737NAVDrawFMC.h"
@@ -86,6 +87,13 @@ B737NAV::B737NAV()
   m_PhysicalSize.x = 200;
   m_PhysicalSize.y = 200;
 
+  B737NAVDrawDEM* pDrawDEM = new B737NAVDrawDEM();
+  pDrawDEM->SetParentRenderObject(this);
+  pDrawDEM->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawDEM->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawDEM->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawDEM);
+
   B737NAVDrawWXR* pDrawWXR = new B737NAVDrawWXR();
   pDrawWXR->SetParentRenderObject(this);
   pDrawWXR->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -114,13 +122,6 @@ B737NAV::B737NAV()
   pDrawTCAS->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawTCAS);
 
-  B737NAVDrawStatic* pDrawStatic = new B737NAVDrawStatic();
-  pDrawStatic->SetParentRenderObject(this);
-  pDrawStatic->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pDrawStatic->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pDrawStatic->SetNAVGauge(this);
-  this->AddGaugeComponent(pDrawStatic);
-
   B737NAVMapModeExpanded* pMapExp = new B737NAVMapModeExpanded();
   pMapExp->SetParentRenderObject(this);
   pMapExp->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -134,6 +135,13 @@ B737NAV::B737NAV()
   pMapPlan->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pMapPlan->SetNAVGauge(this);
   this->AddGaugeComponent(pMapPlan);
+
+  B737NAVDrawStatic* pDrawStatic = new B737NAVDrawStatic();
+  pDrawStatic->SetParentRenderObject(this);
+  pDrawStatic->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pDrawStatic->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pDrawStatic->SetNAVGauge(this);
+  this->AddGaugeComponent(pDrawStatic);
 
 }
 
@@ -155,7 +163,7 @@ void B737NAV::Render()
     irs_mode = link_dataref_int("xpserver/irs_mode");
     *irs_mode = 2;
   }
-  
+ 
   if (*avionics_on == 1) {
      
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);

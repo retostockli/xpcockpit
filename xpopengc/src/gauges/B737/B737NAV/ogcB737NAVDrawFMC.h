@@ -58,25 +58,6 @@ protected:
     char pth[3];
     float lon;
     float lat;
-    float alt;
-    float dist;
-    float eta;
-    float af_beg;
-    float af_end;
-    float radii_ctr_lon;
-    float radii_ctr_lat;
-    float radii_lon;
-    float radii_lat;
-    float radii_radius;
-    float rad_lon;
-    float rad_lat;
-    float rad_turn;
-    float radius;
-    float turn;
-    float hold_time;
-    float hold_dist;
-    float brg;
-    float crs;
   };
 
   wptstruct *wpt;

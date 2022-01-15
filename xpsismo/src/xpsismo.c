@@ -94,9 +94,9 @@ int main(int argc, char **argv) {
     /**** User Modules Follow Here ****/
 
     if (strcmp(argv[1],"test") == 0) {
-      if (acf_type >= 0) {
+      //      if (acf_type >= 0) {
 	test();
-      }
+	//      }
     }
     if (strcmp("boeing737mcp",argv[1]) == 0) {
       if (acf_type >= 0) {

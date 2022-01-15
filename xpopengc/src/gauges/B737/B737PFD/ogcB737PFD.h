@@ -2,10 +2,8 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcB737PFD.h,v $
-
-  Copyright (C) 2001-2015 by:
+ 
+  Copyright (C) 2021 by:
   Original author:
   Damion Shelton
   Contributors (in alphabetical order):

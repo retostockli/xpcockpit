@@ -2,19 +2,13 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcB737PFD.cpp,v $
 
-  Copyright (C) 2001-2 by:
+  Copyright (C) 2001-2021 by:
     Original author:
       Michael DeFeyter
     Contributors (in alphabetical order):
+      Reto Stockli
 
-  Last modification:
-    Date:      $Date: 2003/06/12 23:03:32 $
-    Version:   $Revision: 1.2 $
-    Author:    $Author: damion $
-  
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 2 of the
@@ -32,11 +26,11 @@
 =========================================================================*/
 
 #include "B737/B737PFDSA/ogcB737PFDSA.h"
-#include "B737/B737PFDSA/ogcB737PFDAttitude.h"
-#include "B737/B737PFDSA/ogcB737PFDSpeedIndicator.h"
-#include "B737/B737PFDSA/ogcB737PFDNav.h"
-#include "B737/B737PFDSA/ogcB737PFDCompas.h"
-#include "B737/B737PFDSA/ogcB737PFDBackground.h"
+#include "B737/B737PFDSA/ogcB737PFDSAAttitude.h"
+#include "B737/B737PFDSA/ogcB737PFDSASpeedIndicator.h"
+#include "B737/B737PFDSA/ogcB737PFDSANav.h"
+#include "B737/B737PFDSA/ogcB737PFDSACompas.h"
+#include "B737/B737PFDSA/ogcB737PFDSABackground.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -52,28 +46,28 @@ B737PFDSA::B737PFDSA()
 	m_PhysicalSize.x = 201;
 	m_PhysicalSize.y = 201;
 
-	B737PFDAttitude* attitude = new B737PFDAttitude();
+	B737PFDSAAttitude* attitude = new B737PFDSAAttitude();
 	attitude->SetParentRenderObject(this);
 	attitude->SetPosition(99.5, 78);
 	this->AddGaugeComponent(attitude);
 
-	B737PFDSpeedIndicator* speedIndicator = new B737PFDSpeedIndicator();
+	B737PFDSASpeedIndicator* speedIndicator = new B737PFDSASpeedIndicator();
 	speedIndicator->SetParentRenderObject(this);
 	speedIndicator->SetPosition(10, 90);
 	this->AddGaugeComponent(speedIndicator);
 
-	B737PFDNav* nav = new B737PFDNav();
+	B737PFDSANav* nav = new B737PFDSANav();
 	nav->SetParentRenderObject(this);
 	nav->SetPosition(102, -38);
 	nav->setBottomHide(38);
 	this->AddGaugeComponent(nav);
 
-	B737PFDCompas* compas = new B737PFDCompas();
+	B737PFDSACompas* compas = new B737PFDSACompas();
 	compas->SetParentRenderObject(this);
 	compas->SetPosition(10, 0);
 	this->AddGaugeComponent(compas);
 
-	B737PFDBackground* background = new B737PFDBackground();
+	B737PFDSABackground* background = new B737PFDSABackground();
 	background->SetParentRenderObject(this);
 	background->SetPosition(0, 0);
 	this->AddGaugeComponent(background);
@@ -88,6 +82,9 @@ B737PFDSA::~B737PFDSA()
 
 void B737PFDSA::Render()
 {
+
+  printf("THIS GAUGE IS NOT READY FOR X-PLANE \n");
+  
     int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
     if (*avionics_on == 1) {
 	Gauge::Render();

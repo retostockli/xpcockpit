@@ -2,18 +2,12 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcB737PFD.h,v $
 
-  Copyright (C) 2001-2 by:
+  Copyright (C) 2001-2021 by:
     Original author:
       Michael De Feyter
     Contributors (in alphabetical order):
-
-  Last modification:
-    Date:      $Date: 2003/04/18 06:00:43 $
-    Version:   $Revision: 1.1.1.1 $
-    Author:    $Author: damion $
+      Reto Stockli
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as

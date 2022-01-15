@@ -54,7 +54,7 @@ namespace OpenGC
  
     if (mapMode == 3) {
       // Draw the Plan Map Mode only
-      int acf_type = m_pDataSource->GetAcfType();    
+      //int acf_type = m_pDataSource->GetAcfType();    
       float mapRange = m_NAVGauge->GetMapRange();
       bool mapCenter = m_NAVGauge->GetMapCenter();
     
@@ -62,7 +62,7 @@ namespace OpenGC
 
       // define geometric stuff
       float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-      float lineWidth = 1.5 * m_PhysicalSize.x / 100.0;
+      float lineWidth = 3.0;
 
       // double dtor = 0.0174533; /* radians per degree */
       // double radeg = 57.2958;  /* degree per radians */
@@ -84,17 +84,15 @@ namespace OpenGC
       float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
 
       // Where is the aircraft?
-      double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
-      double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
+      //double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
+      //double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
     
       // What's the heading?
-      float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
-      float heading_map =  m_NAVGauge->GetMapHeading();
-      float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
+      //float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+      //float heading_map =  m_NAVGauge->GetMapHeading();
+      //float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
      
-      // The input coordinates are in lon/lat, so we have to rotate against true heading
-      // despite the NAV display is showing mag heading
-      if (heading_map != FLT_MISS) {
+      //if (heading_map != FLT_MISS) {
       
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -215,7 +213,7 @@ namespace OpenGC
 
 	glPopMatrix();
 
-      }
+	//}
       
     }
     

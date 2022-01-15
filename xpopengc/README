@@ -61,5 +61,23 @@ It should start a X window with a default gauge and tell you on the command line
 Start X-Plane with the xpserver plugin. You should see OpenGC display content changing according
 To your flight data. The current code is in development, any updates welcome.
 
+EGPWS
+-----
+
+If you want Terrain in the NAV display of the B737, please download the 16 DEM Tiles from the GLOBE Dataset:
+https://www.ngdc.noaa.gov/mgg/topo/gltiles.html
+
+and set DEMPath under "general" in the ini file to the directory where the GLOBE files are stored.
+
+If you want correct shorelines and lakes on top of that, please download the
+Global Self-consistent, Hierarchical, High-resolution Geography Database (GSHHG)
+from NOAA (download and unzip gshhg-bin-X.Y.Z.zip):
+https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/
+
+and set GSHHGPath under "general" in the ini file to the directory where GSHHG files are stored
+
+
+
+
 Good flight,
 Reto Stockli

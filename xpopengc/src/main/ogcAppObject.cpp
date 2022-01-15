@@ -2,20 +2,14 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcAppObject.cpp,v $
 
-  Copyright (C) 2001-2 by:
+  Copyright (C) 2001-2021 by:
   Original author:
   Damion Shelton
   Contributors (in alphabetical order):
   Michael DeFeyter
   John Wojnaroski
-
-  Last modification:
-  Date:      $Date: 2004/10/14 19:37:52 $
-  Version:   $Revision: 1.2 $
-  Author:    $Author: damion $
+  Reto Stockli
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -79,6 +73,7 @@ extern "C" {
 #include "B737/B737FMC/ogcB737FMC.h"
 #include "B737/B737MIP/ogcB737MIP.h"
 #include "B737/B737CLOCK/ogcB737Clock.h"
+#include "B737/B737ISFD/ogcB737ISFD.h"
 
 //----------NonFunctional--------
 /*
@@ -108,9 +103,7 @@ namespace OpenGC
     verbosity = 0;
 
     m_InitState = 0;
-  
-    m_DataSourceIsFlightGear = false;
-  
+    
     // Run a frame-rate test when loading OpenGC?
     m_FrameTest = false;
 
@@ -272,10 +265,12 @@ namespace OpenGC
     char default_server_ip[] = "127.0.0.1";
     int default_server_port = 8091;
     char default_data_source[] = "X-Plane";
-    char default_xplane_path[] = "NONE";
+    char default_xplane_path[] = "";
     char default_client_name[] = "xpopengc";
     int default_customdata = 0; // do not read from X-Plane's "Custom Data" directory by default
     int default_radardata = 0; // do not read from X-Plane's UDP radar data by default
+    char default_dem_path[] = "";
+    char default_gshhg_path[] = "";
 
     printf("AppObject - Starting initialization with %s\n", iniFile);
 
@@ -303,11 +298,17 @@ namespace OpenGC
       // 2: use regular UDP data stream of x-plane
       m_radardata = iniparser_getint(ini,"General:RadarData", default_radardata);
 
+      // path to GLOBE DEM Files for Terrain Rendering in NAV Display. Will also be needed for VSI
+      strcpy(m_DEMPath,iniparser_getstring(ini,"General:DEMPath",default_dem_path));
+
+      // path to GSHHG Files for shoreline/lake Rendering in NAV Display.
+      strcpy(m_GSHHGPath,iniparser_getstring(ini,"General:GSHHGPath",default_gshhg_path));
+
       // Initialize the nav database
       if (strcmp(m_XPlanePath,"")) {
 	if (verbosity > 0) printf("AppObject - Initializing the navigation database in %s\n", m_XPlanePath);
 	m_pNavDatabase = new NavDatabase;
-	if (!m_pNavDatabase->InitDatabase(m_XPlanePath,m_customdata)) return false;
+	if (!m_pNavDatabase->InitDatabase(m_XPlanePath,m_DEMPath,m_GSHHGPath,m_customdata)) return false;
       } else {
 	if (verbosity > 0) printf("AppObject - Not Loading navigation database since X-Plane path is empty.\n");
       }
@@ -351,6 +352,8 @@ namespace OpenGC
       m_pRenderWindow->mode(FL_RGB | FL_DOUBLE | FL_MULTISAMPLE);
       //m_pRenderWindow->mode(FL_RGB | FL_MULTISAMPLE);
       //m_pRenderWindow->mode(FL_RGB | FL_DOUBLE);
+
+      
       m_pRenderWindow->border(!decoration);
       //==================================================================================================//
       //  Temporary solution to produce a borderless (undecorated) window                               ==//
@@ -435,6 +438,7 @@ namespace OpenGC
     else if (strcmp(name, "B737FMC")==0) pGauge = new B737FMC(arg);
     else if (strcmp(name, "B737MIP")==0) pGauge = new B737MIP();
     else if (strcmp(name, "B737CLOCK")==0) pGauge = new B737Clock();
+    else if (strcmp(name, "B737ISFD")==0) pGauge = new B737ISFD();
     /*
       else if (strcmp(name, "B737AnalogFlaps")==0) pGauge = new B737AnalogFlaps();
       else if (strcmp(name, "B737VerticalSpeedDigital")==0) pGauge = new B737VerticalSpeedDigital();

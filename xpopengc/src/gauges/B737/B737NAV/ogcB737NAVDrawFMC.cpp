@@ -114,8 +114,6 @@ namespace OpenGC
     float *fmc_hold_dist;
     float *fmc_dist;
     float *fmc_eta;
-    float *fmc_af_beg;
-    float *fmc_af_end;
     float *fmc_radii_ctr_lon;
     float *fmc_radii_ctr_lat;
     float *fmc_radii_lon;
@@ -181,8 +179,6 @@ namespace OpenGC
       fmc_hold_dist = link_dataref_flt_arr("laminar/B738/fms/legs_hold_dist",256,-1,-1);
       fmc_dist = link_dataref_flt_arr("laminar/B738/fms/legs_dist",256,-1,-2);
       fmc_eta = link_dataref_flt_arr("laminar/B738/fms/legs_eta",256,-1,-2);
-      fmc_af_beg = link_dataref_flt_arr("laminar/B738/fms/legs_af_beg",256,-1,-2);
-      fmc_af_beg = link_dataref_flt_arr("laminar/B738/fms/legs_af_beg",256,-1,-2);
       fmc_radii_ctr_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lon",256,-1,-4);
       fmc_radii_ctr_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lat",256,-1,-4);
       fmc_radii_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lon2",256,-1,-4);
@@ -259,7 +255,14 @@ namespace OpenGC
       glPushMatrix();
       if (mapMode != 3) {
 	// plot RNP/ANP
-	if ((acf_type == 2) || (acf_type == 3)) {
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(m_PhysicalSize.x*0.3,m_PhysicalSize.y*0.0);
+	glVertex2f(m_PhysicalSize.x*0.3,m_PhysicalSize.y*0.1);
+	glVertex2f(m_PhysicalSize.x*0.7,m_PhysicalSize.y*0.1);
+	glVertex2f(m_PhysicalSize.x*0.7,m_PhysicalSize.y*0.0);
+	glEnd();
+ 	if ((acf_type == 2) || (acf_type == 3)) {
 	  if (*fmc_rnp != FLT_MISS) {
 	    glColor3ub(COLOR_GREEN);
 	    m_pFontManager->SetSize(m_Font, 0.9*fontSize, 0.9*fontSize);
@@ -467,26 +470,6 @@ namespace OpenGC
 		  memcpy(&wpt[i].pth,fmc_pth+2*i,sizeof(wpt[i].pth)-1);
 		  wpt[i].lon = fmc_lon[i];
 		  wpt[i].lat = fmc_lat[i];
-		  wpt[i].alt = fmc_alt[i];
-		  wpt[i].dist = fmc_dist[i];
-		  wpt[i].eta = fmc_eta[i];
-		  /* creates segfault from time to time */
-		  //wpt[i].af_beg = fmc_af_beg[i];
-		  //wpt[i].af_end = fmc_af_end[i];
-		  wpt[i].radii_ctr_lon = fmc_radii_ctr_lon[i];
-		  wpt[i].radii_ctr_lat = fmc_radii_ctr_lat[i];
-		  wpt[i].radii_lon = fmc_radii_lon[i];
-		  wpt[i].radii_lat = fmc_radii_lat[i];
-		  wpt[i].radii_radius = fmc_radii_radius[i];
-		  wpt[i].rad_lon = fmc_rad_lon[i];
-		  wpt[i].rad_lat = fmc_rad_lat[i];
-		  wpt[i].rad_turn = fmc_rad_turn[i]; // HOLD: 0: left, 1: RIGHT
-		  wpt[i].radius = fmc_radius[i];
-		  wpt[i].brg = fmc_brg[i]; // radians mag
-		  wpt[i].crs = fmc_crs[i]; // degrees mag
-		  wpt[i].turn = fmc_turn[i]; // 0,2: left. 3: right
-		  wpt[i].hold_time = fmc_hold_time[i]; // holding time in seconds
-		  wpt[i].hold_dist = fmc_hold_dist[i]; // holding distance in nm
 
 		  /*
 		    printf("%s %s %i %f %f %f %f %f\n",wpt[i].name,wpt[i].pth,fmc_turn[i],
@@ -648,7 +631,7 @@ namespace OpenGC
 		  // "HM" (hold with manual termination)
 		  // hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
 		  // hold length is 3.0 NM for a 60 second hold
-		  int holdtype = (int) wpt[i].rad_turn * 2 - 1; // 1: Right -1: Left
+		  int holdtype = (int) fmc_rad_turn[i] * 2 - 1; // 1: Right -1: Left
 		  /* hold speed */
 		  float holdspeed = max(*ground_speed,210.f);
 		  /* standard hold radius is around 1.5 nm */
@@ -656,16 +639,16 @@ namespace OpenGC
 		  float holdrad = pow(max(*true_air_speed,210.f),2.0) / 29127.0 / mapRange * map_size; // nm --> pixels
 		  //float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
 		  float holdlen;
-		  if (wpt[i].hold_time != 0.0) {
-		    holdlen = holdspeed * wpt[i].hold_time / 3600.0 / mapRange * map_size;
-		  } else if (wpt[i].hold_dist != 0.0) {
-		      holdlen = wpt[i].hold_dist / mapRange * map_size;
+		  if (fmc_hold_time[i] != 0.0) {
+		    holdlen = holdspeed * fmc_hold_time[i] / 3600.0 / mapRange * map_size;
+		  } else if (fmc_hold_dist[i] != 0.0) {
+		      holdlen = fmc_hold_dist[i] / mapRange * map_size;
 		  } else {
 		    /* default hold time per leg: 90 seconds */
 		    holdlen = holdspeed * 90.0 / 3600.0 / mapRange * map_size;
 		  }
 	      
-		  float gamma = (wpt[i].crs - *magnetic_variation)*3.14/180.; // inbound direction (radians)
+		  float gamma = (fmc_crs[i] - *magnetic_variation)*3.14/180.; // inbound direction (radians)
 		  xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course
 		  yPos1 = cos(gamma-3.14)*holdlen + yPos2; // Pos2 is end of inbound course
 		  xPos3 = sin(gamma+0.5*3.14*holdtype)*holdrad*2.0 + xPos2; // start of outbound course 
@@ -673,7 +656,7 @@ namespace OpenGC
 		  xPos4 = sin(gamma+0.5*3.14*holdtype)*holdrad*2.0 + xPos1; // end of outbound course 
 		  yPos4 = cos(gamma+0.5*3.14*holdtype)*holdrad*2.0 + yPos1;
 
-		  // printf("%i %i %i %f \n",i,holdtype, wpt[i].hold_time,wpt[i].crs);
+		  // printf("%i %i %i %f \n",i,holdtype, fmc_hold_time[i],fmc_crs[i]);
 		  
 		  glBegin(GL_LINES);
 		  glVertex2f(xPos1,yPos1);
@@ -745,7 +728,7 @@ namespace OpenGC
 		  if (new_course < 0.0) new_course += 360.0;
 
 		  double arc_angle;
-		  if (wpt[im1].turn == 2.0) {
+		  if (fmc_turn[im1] == 2.0) {
 		    /* 2: left turn */
 		    arc_angle = old_course - new_course;
 		  } else {
@@ -755,7 +738,7 @@ namespace OpenGC
 		  if (arc_angle < 0) arc_angle = arc_angle + 360;
 
 		  end_angle = start_angle;
-		  if (wpt[im1].turn == 2.0) {
+		  if (fmc_turn[im1] == 2.0) {
 		    /* left turn */
 		    end_angle -= arc_angle;
 		  } else {
@@ -770,8 +753,8 @@ namespace OpenGC
 		  
 		  // draw curved leg (partial circle)
 		  aCircle.SetDegreesPerPoint(2);
-		  //if (((wpt[im1].turn == 2) && (end_angle > start_angle)) ||
-		  //    ((wpt[im1].turn == 3) && (end_angle < start_angle))) {
+		  //if (((fmc_turn[im1] == 2) && (end_angle > start_angle)) ||
+		  //    ((fmc_turn[im1] == 3) && (end_angle < start_angle))) {
 		  //		  if ((abs(end_angle-start_angle) > 1.1*arc_angle) ||
 		  //     (end_angle < start_angle)) {
 		    /* turn over 0/360: reverse angle order to choose shorter arc */
@@ -936,12 +919,12 @@ namespace OpenGC
 		if (strcmp(wpt[i].name,"DISCONTINUITY") != 0) {
 		  m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
 		  m_pFontManager->Print(4,-6, wpt[i].name, m_Font);
-		  if (wpt[i].alt > 0) {
-		    if (wpt[i].alt >= 8000) {
-		      snprintf( buffer, sizeof(buffer), "FL%03i", wpt[i].alt/100 );
+		  if (fmc_alt[i] > 0.0) {
+		    if (fmc_alt[i] >= 8000.0) {
+		      snprintf( buffer, sizeof(buffer), "FL%03i", (int) fmc_alt[i]/100 );
 		      m_pFontManager->Print(4,-11, buffer, m_Font);
 		    } else {
-		      snprintf( buffer, sizeof(buffer), "%i", wpt[i].alt );
+		      snprintf( buffer, sizeof(buffer), "%i", (int) fmc_alt[i] );
 		      m_pFontManager->Print(4,-11, buffer, m_Font);
 		    }
 		  }
@@ -962,10 +945,10 @@ namespace OpenGC
 	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 1.0*fontSize);
 	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, wpt[wpt_current].name, m_Font);
 	      glColor3ub(COLOR_WHITE);
-	      int hour=wpt[wpt_current].eta;
-	      float minute=(wpt[wpt_current].eta - (float) hour)*60.0;
+	      int hour=fmc_eta[wpt_current];
+	      float minute=(fmc_eta[wpt_current] - (float) hour)*60.0;
 	      snprintf( buffer, sizeof(buffer), "%02d%04.1f z", hour, minute );
-	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, buffer, m_Font);
 	      
 	      lon = (double) wpt[wpt_current].lon;
 	      lat = (double) wpt[wpt_current].lat;
@@ -975,7 +958,7 @@ namespace OpenGC
 	      float distance = sqrt(easting*easting + northing*northing);
 	      
 	      snprintf( buffer, sizeof(buffer), "%.1f NM", distance );
-	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
 	      glPopMatrix();
 	    } 
 	      
@@ -983,9 +966,9 @@ namespace OpenGC
 	    glPushMatrix();
 	    glColor3ub(COLOR_WHITE);
 	    snprintf( buffer, sizeof(buffer), "--------z");
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
+	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.96*m_PhysicalSize.y, buffer, m_Font);
 	    snprintf( buffer, sizeof(buffer), "----- NM");
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
+	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
 	    glPopMatrix();
 	  } /* has waypoints */
 	} /* we are on either UFMC or ZIBO FMC for 737 */

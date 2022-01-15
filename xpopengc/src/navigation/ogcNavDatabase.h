@@ -33,6 +33,8 @@
 #include "ogcAirportList.h"
 #include "ogcFixList.h"
 #include "ogcGeographicHash.h"
+#include "ogcTerrainData.h"
+#include "ogcShorelineData.h"
 
 namespace OpenGC
 {
@@ -46,7 +48,7 @@ public:
   virtual ~NavDatabase();
   
   /** Load the nav data */
-  bool InitDatabase(string pathToNav, int customdata);
+  bool InitDatabase(string pathToNav, string pathToDEM, string pathToGSHHG, int customdata);
   
   /** Get the navaid list */
   NavaidList* GetNavaidList() {return m_NavaidList;}
@@ -65,6 +67,12 @@ public:
   
   /** Get the airport hash */
   GeographicHash* GetAirportHash() {return m_AirportHash;}
+
+  /** Get the Terrain Data Object **/
+  TerrainData* GetTerrainData() {return m_TerrainData;}
+  
+  /** Get the Shoreline Data Object **/
+  ShorelineData* GetShorelineData() {return m_ShorelineData;}
   
 protected:
 
@@ -85,6 +93,12 @@ protected:
 
   /** Airport objects hashed by lat/lon */
   GeographicHash* m_AirportHash;
+
+  /** Terrain Database **/
+  TerrainData* m_TerrainData;
+  
+  /** Shoreline Database **/
+  ShorelineData* m_ShorelineData;
   
 };
 

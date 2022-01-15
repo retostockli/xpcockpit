@@ -2,20 +2,13 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcB737PFDHeadingIndicator.cpp,v $
 
-  Copyright (C) 2001-2015 by:
+  Copyright (C) 2001-2021 by:
   Original author:
   Damion Shelton
   Contributors (in alphabetical order):
   Reto Stockli
-
-  Last modification:
-  Date:      $Date: 2015/11/24 $
-  Version:   $Revision: $
-  Author:    $Author: stockli $
-  
+ 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 2 of the
@@ -95,6 +88,7 @@ namespace OpenGC
 
     float bigFontSize = 5.0;
     float littleFontSize = 3.5;
+    float lineWidth = 3.0;
 
     char buffer[32];
 
@@ -138,7 +132,7 @@ namespace OpenGC
 
       // Draw in gray
       glColor3ub(COLOR_GRAYBLUE);
-      glLineWidth( 1.75 );
+      glLineWidth(lineWidth );
 
       // Set up the circle
       CircleEvaluator aCircle;
@@ -231,6 +225,7 @@ namespace OpenGC
 	  else // Otherwise it gets a short tick
 	    tickLength = 2;
 
+	  glLineWidth(lineWidth );
 	  glBegin(GL_LINES);
 	  glVertex2f(0,radius);
 	  glVertex2f(0,radius-tickLength);
@@ -254,7 +249,7 @@ namespace OpenGC
 	glRotatef((*heading_mag_ap - *heading_mag) * indicatorDegreesPerTrueDegrees,0,0,-1);
 	
 	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(2.0);
+	glLineWidth(lineWidth );
 	
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(-4.0f,radius);
@@ -300,7 +295,7 @@ namespace OpenGC
 	glRotatef((*ap_course1 - *heading_mag) * indicatorDegreesPerTrueDegrees, 0, 0, -1);
 	
 	glColor3ub(COLOR_WHITE);
-	glLineWidth(3.0);
+	glLineWidth(lineWidth );
 	
 	// draw Heading arrow
 	glBegin(GL_LINES);

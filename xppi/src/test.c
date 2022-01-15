@@ -32,13 +32,25 @@
 #include "serverdata.h"
 #include "test.h"
 
+//int LED_PIN = 22; /* GPIO 21, Physical Pin 31 */
+int LED_PIN = 7; /* GPIO 12, Physical Pin 32 */
+int KEY_PIN = 24; /* GPIO 24, Physical Pin 35 */
+
+int test_init(void) {
+
+  pinMode(LED_PIN, OUTPUT);
+  softPwmCreate(LED_PIN,0,100); //Pin,initalValue,pwmRange    
+  pinMode(KEY_PIN, INPUT);
+  pullUpDnControl(KEY_PIN, PUD_UP);
+ 
+  return 0;
+  
+}
+
 void test(void)
 {
 
   int ret;
-
-  int LED_PIN = 22; /* GPIO 21, Physical Pin 31 */
-  int KEY_PIN = 24; /* GPIO 24, Physical Pin 35 */
   
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -51,14 +63,14 @@ void test(void)
   if (*fvalue == FLT_MISS) *fvalue = 0.0;
   if (*value == INT_MISS) *value = 1;
 
-  pinMode(LED_PIN, OUTPUT);
-  if (*value != INT_MISS) digitalWrite(LED_PIN, *value);
+  if (*value != INT_MISS) {
+    //    digitalWrite(LED_PIN, *value);
+    softPwmWrite(LED_PIN, 50);
+  }
 
-  pinMode(KEY_PIN, INPUT);
-  pullUpDnControl(KEY_PIN, PUD_UP);
   ret = digitalRead(KEY_PIN);
   if (ret == 0) {
-    printf("Key Pressed\n");
+    //    printf("Key Pressed\n");
     *fvalue = 1.0;
   } else {
     *fvalue = 0.0;

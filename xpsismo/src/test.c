@@ -39,22 +39,28 @@ void test(void)
 
   int ret;
   int card = 0;
+  int i;
 
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
-  /* link floating point dataref with precision 10e-1 to local variable. This means
-     that we only transfer the variable if changed by 0.1 or more */
+  /* link floating point dataref with precision 10e-3 to local variable. This means
+     that we only transfer the variable if changed by 0.001 or more */
   float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
 
   /* link NAV1 Frequency to encoder value */
   int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
+
+  if (*encodervalue == INT_MISS) *encodervalue = 0;
   
   /* read second digital input (#1) */
-  ret = digital_input(card, 1, value, 0);
-  if (ret == 1) {
-    /* ret is 1 only if input has changed */
-    printf("Digital Input changed to: %i \n",*value);
+  //  for (i=0;i<MAXINPUTS;i++) {
+  for (i=0;i<70;i++) {
+    ret = digital_input(card, i, value, 0);
+    if (ret == 1) {
+      /* ret is 1 only if input has changed */
+      printf("Digital Input changed to: %i \n",*value);
+    }
   }
 
   /* read first analog input (#0) */
@@ -64,8 +70,8 @@ void test(void)
     //    printf("Analog Input changed to: %f \n",*fvalue);
   }
 
-  /* read encoder at inputs 13 and 15 */
-  ret = encoder_input(card, 13, 15, encodervalue, 5, 1);
+  /* read encoder at inputs 70 and 71 */
+  ret = encoder_input(card, 70, 71, encodervalue, 5, 1);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
@@ -73,7 +79,7 @@ void test(void)
   
   /* set LED connected to second output (#1) to value of above input */
   *value = 1;
-  for (int i=0;i<64;i++) {
+  for (i=0;i<64;i++) {
     ret = digital_output(card, i, value);
   }
   
