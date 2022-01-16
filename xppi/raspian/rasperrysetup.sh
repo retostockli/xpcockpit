@@ -28,18 +28,20 @@ sudo usermod -aG lpadmin stockli
 
 # AS USER STOCKLI
 
-# copy ssh keys from mariachi
-# scp -p .ssh/id_ecdsa $raspiname:.ssh/
+mkdir ~/.ssh
 
-# scp -p .ssh/id_ecdsa.pub $raspiname:.ssh/
+# copy ssh keys from mariachi
+scp -p .ssh/id_ecdsa $raspiname:.ssh/
+scp -p .ssh/id_ecdsa.pub $raspiname:.ssh/
 
 # REBOOT and LOGIN as STOCKLI
 
 
-#git config --global user.email "reto.stockli@gmail.com"
-#git config --global user.name "Reto Stockli"
-#git clone git@github.com:retostockli/xpcockpit.git xpcockpit
-
+git config --global user.email "reto.stockli@gmail.com"
+git config --global user.name "Reto Stockli"
+git clone git@github.com:retostockli/xpcockpit.git xpcockpit
+cd xpcockpit
+git checkout B737
 
 cat ~/.ssh/id_ecdsa.pub > ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
@@ -47,7 +49,6 @@ chmod 600 ~/.ssh/authorized_keys
 #
 
 
-sudo apt install mc -y
 sudo apt install emacs -y
 sudo apt install libfltk1.3-dev -y
 sudo apt install libftgl-dev -y
