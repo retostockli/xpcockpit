@@ -126,8 +126,8 @@ void *poll_thread_main()
       /* nothing read */
     }
 
-    /* wait loop not needed since we have a timeout */
-    //usleep(500);
+    /* wait loop needed to allow read buffer to be emptied by read code */
+    usleep(500);
 
   } /* while loop */
   
