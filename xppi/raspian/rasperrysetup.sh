@@ -55,3 +55,10 @@ sudo apt install libfreetype6-dev -y
 sudo apt install libudev-dev -y
 sudo apt install build-essential -y
 sudo apt install autoconf -y
+
+mkdir -p ~/GLOBE
+mkdir -p ~/GSHHG
+mkdir -p ~/X-Plane\ 11/Custom\ Data
+mkdir -p ~/X-Plane\ 11/Resources/default\ data
+mkdir -p ~/X-Plane\ 11/Resources/default\ scenery/default\ apt\ dat/Earth\ nav\ data
+
