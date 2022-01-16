@@ -15,6 +15,7 @@ inidata/boeing737nav.ini \
 inidata/boeing737pfd.ini \
 inidata/boeing737fo.ini \
 inidata/boeing737ca.ini \
+inidata/boeing737ce.ini \
 inidata/default.ini \
 fonts/CockpitMCDU.ttf \
 fonts/CockpitScreens.ttf \
