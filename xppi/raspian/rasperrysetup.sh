@@ -5,6 +5,7 @@
 # disable bluetooth
 # disable camera
 # enable ssh
+# disable blanking
 
 # sudo apt install mc
 # edit /etc/dhcpcd.conf and add fixed IP address for wlan0 and static router
@@ -36,6 +37,9 @@ scp -p .ssh/id_ecdsa.pub $raspiname:.ssh/
 
 # REBOOT and LOGIN as STOCKLI
 
+# edit autologin through desktop GUI
+sudo raspi-config
+
 
 git config --global user.email "reto.stockli@gmail.com"
 git config --global user.name "Reto Stockli"
@@ -46,7 +50,12 @@ git checkout B737
 cat ~/.ssh/id_ecdsa.pub > ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 
-#
+# define no-desktop xsession
+cp xsession ~/.xsession
+
+# copy systemd files
+mkdir -p ~/.config/systemd/user
+cp *.service ~/.config/systemd/user
 
 
 sudo apt install emacs -y
