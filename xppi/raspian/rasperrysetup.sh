@@ -1,6 +1,6 @@
 #!/bin/sh
 
-raspiname="192.168.1.163"
+# AS USER PI
 
 # disable bluetooth
 # disable camera
@@ -9,9 +9,24 @@ raspiname="192.168.1.163"
 # sudo apt install mc
 # edit /etc/dhcpcd.conf and add fixed IP address for wlan0 and static router
 # edit /etc/hostname and add the name of the rasperry pi computer
+# edit /etc/hosts and add the name of the rasperry pi computer to 127.0.1.1
 # sudo /etc/init.d/networking restart
 
 # sudo adduser stockli
+# Do add the user stockli first and add sudoers then logout and login as stockli
+sudo usermod -aG sudo stockli
+sudo usermod -aG tty stockli
+sudo usermod -aG gpio stockli
+sudo usermod -aG adm stockli
+sudo usermod -aG dialout stockli
+sudo usermod -aG audio stockli
+sudo usermod -aG video stockli
+sudo usermod -aG plugdev stockli
+sudo usermod -aG input stockli
+sudo usermod -aG netdev stockli
+sudo usermod -aG lpadmin stockli
+
+# AS USER STOCKLI
 
 # copy ssh keys from mariachi
 # scp -p .ssh/id_ecdsa $raspiname:.ssh/
@@ -29,18 +44,7 @@ raspiname="192.168.1.163"
 cat ~/.ssh/id_ecdsa.pub > ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 
-# Do add the user stockli first and add sudoers then logout and login as stockli
-sudo usermod -aG sudo stockli
-sudo usermod -aG tty stockli
-sudo usermod -aG gpio stockli
-sudo usermod -aG adm stockli
-sudo usermod -aG dialout stockli
-sudo usermod -aG audio stockli
-sudo usermod -aG video stockli
-sudo usermod -aG plugdev stockli
-sudo usermod -aG input stockli
-sudo usermod -aG netdev stockli
-sudo usermod -aG lpadmin stockli
+#
 
 
 sudo apt install mc -y
