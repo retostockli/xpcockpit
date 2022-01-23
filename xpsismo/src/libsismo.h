@@ -85,6 +85,8 @@ int digital_inputf(int card, int input, float *fvalue, int type);
 int digital_input(int card, int input, int *value, int type);
 int digital_outputf(int card, int output, float *fvalue);
 int digital_output(int card, int output, int *value);
+int servo_output(int card, int servo, int *value, int minval, int maxval);
+int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxval);
 int display_outputf(int card, int pos, int n, float *fvalue, int dp, int blank);
 int display_output(int card, int pos, int n, int *value, int dp, int blank);
 int analog_input(int card, int input, float *value, float minval, float maxval);

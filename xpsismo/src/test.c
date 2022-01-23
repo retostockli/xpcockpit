@@ -40,9 +40,12 @@ void test(void)
   int ret;
   int card = 0;
   int i;
+  int one = 1;
+  int zero = 0;
 
   /* link integer data like a switch in the cockpit */
-  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  int *value = link_dataref_int("xpserver/EFIS_capt_terr");
 
   /* link floating point dataref with precision 10e-3 to local variable. This means
      that we only transfer the variable if changed by 0.001 or more */
@@ -54,36 +57,48 @@ void test(void)
   if (*encodervalue == INT_MISS) *encodervalue = 0;
   
   /* read second digital input (#1) */
-  //  for (i=0;i<MAXINPUTS;i++) {
-  for (i=0;i<70;i++) {
-    ret = digital_input(card, i, value, 0);
+  for (i=0;i<sismo[card].ninputs;i++) {
+    //for (i=0;i<70;i++) {
+    //    ret = digital_input(card, i, value, 0);
     if (ret == 1) {
       /* ret is 1 only if input has changed */
-      printf("Digital Input changed to: %i \n",*value);
+      //printf("Digital Input %i changed to: %i \n",i,*value);
     }
   }
-
+ 
   /* read first analog input (#0) */
-  ret = analog_input(card,0,fvalue,0.0,1.0);
-  if (ret == 1) {
+  for (i=0;i<5;i++) {
+    //ret = analog_input(card,i,fvalue,0.0,1.0);
+    if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-    //    printf("Analog Input changed to: %f \n",*fvalue);
+      //printf("Analog Input %i changed to: %f \n",i,*fvalue);
+    }
   }
+   
 
   /* read encoder at inputs 70 and 71 */
-  ret = encoder_input(card, 70, 71, encodervalue, 5, 1);
+
+  ret = encoder_input(card, 70, 71, encodervalue, 1, 1);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
   }
+
+  ret = servo_output(card,1,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
-  *value = 1;
-  for (i=0;i<64;i++) {
-    ret = digital_output(card, i, value);
+  //*value = 1;
+  for (i=0;i<sismo[card].noutputs;i++) {
+    //    ret = digital_output(card, i, value);
   }
-  
+  for (i=0;i<sismo[card].noutputs;i++) {
+    if (i == *encodervalue) {
+      ret = digital_output(card, i, &one);
+    } else {
+      ret = digital_output(card, i, &zero);
+    }
+  }
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  ret = display_output(card, 0, 5, encodervalue, 2, 0);
+  //ret = display_output(card, 0, 5, encodervalue, 2, 0);
 
 }

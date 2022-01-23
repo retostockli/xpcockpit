@@ -340,6 +340,9 @@ int write_sismo() {
   int output;
   int group;
   int display;
+  int servo;
+  int servoindex;
+  int numservos;
   int anychanged;
   int bank; /* outputs bank: 0: master, 1: daughter 1, 2: daughter 2 */
   int firstoutput;
@@ -448,6 +451,47 @@ int write_sismo() {
       }
 
       /* check if daughter servos have changed */
+      connected = sismo[card].daughter_servo;
+      if (connected) {
+	for (bank=0;bank<2;bank++) {
+	  if (bank == 0) {
+	    /* first bank has servos 0..7 */
+	    numservos = 8;
+	  } else {
+	    /* second bank has servos 8..13 */
+	    numservos = 6;
+	  }
+	  anychanged = 0;
+	  memset(sismoSendBuffer,0,SENDMSGLEN);
+	  sismoSendBuffer[0] = 0x53;
+	  sismoSendBuffer[1] = 0x43;
+	  sismoSendBuffer[2] = 0x03;
+	  sismoSendBuffer[3] = bank;
+	  for (servo=0;servo<numservos;servo++) {
+	    if (bank == 0) {
+	      servoindex = servo;
+	    } else {
+	      /* internal index goes from 10..15 */
+	      servoindex = servo+2;
+	    }
+	    if (sismo[card].servos_changed[servo] == CHANGED) {
+	      if (verbose > 2) printf("Card %i Servo %i changed to: %i \n",card,servo+bank*8,
+				      sismo[card].servos[servo]);
+	      set_bit(&sismoSendBuffer[4],servoindex,1);
+	      sismoSendBuffer[5+servoindex] = (unsigned char) sismo[card].servos[servo];
+	      
+	      anychanged = 1;
+	      /* reset changed state since data will be sent to SISMO card */
+	      sismo[card].servos_changed[servo] = UNCHANGED;
+	    }
+	  }
+	  if (anychanged) {
+	    ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
+	    if (verbose > 1) printf("Sent %i bytes to card %i \n", ret,card);
+	  }
+
+	}
+      }
      
     }
   }
@@ -613,7 +657,71 @@ int digital_output(int card, int output, int *value)
 	retval = -1;
       }
     } else {
-      if (verbose > 0) printf("Digital Ouputt %i cannot be written. Card %i >= MAXCARDS\n",output,card);
+      if (verbose > 0) printf("Digital Output %i cannot be written. Card %i >= MAXCARDS\n",output,card);
+      retval = -1;
+    }
+
+  }
+
+  return retval;
+}
+
+/* wrapper for servo_output when supplying integer values */
+int servo_output(int card, int servo, int *value, int minval, int maxval)
+{
+  float fvalue;
+  float fminval;
+  float fmaxval;
+
+  if (*value == INT_MISS) {
+    fvalue = FLT_MISS;
+  } else {
+    fvalue = (float) *value;
+  }
+
+  fminval = (float) minval;
+  fmaxval = (float) maxval;
+    
+  return servo_outputf(card, servo, &fvalue, fminval, fmaxval);
+}
+
+int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxval)
+{
+  int retval = 0;
+  int data;
+  int servominval = 0;
+  int servomaxval = 255;
+
+  if (fvalue != NULL) {
+
+    if (card < MAXCARDS) {
+      if (sismo[card].connected) {
+	if ((servo >= 0) && (servo < sismo[card].nservos)) {
+
+	  if (*fvalue != FLT_MISS) {
+	    data = (int) ((*fvalue - fminval)/(fmaxval - fminval) *
+			  ((float) (servomaxval - servominval)) + (float) servominval);
+	    if (data > servomaxval) data = servomaxval;
+	    if (data < servominval) data = servominval;
+	    if (data != sismo[card].servos[servo]) {
+	      sismo[card].servos[servo] = data;
+	      sismo[card].servos_changed[servo] = CHANGED;
+	      if (verbose > 2) printf("Servo %i of card %i changed to %i \n",
+				      servo,card,data);
+	    }
+	  }
+	} else {
+	  if (verbose > 0) printf("Servo %i above maximum # of servos %i of card %i \n",
+				  servo,sismo[card].nservos,card);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 2) printf("Servo %i cannot be written. Card %i not connected \n",
+				servo,card);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Servo %i cannot be written. Card %i >= MAXCARDS\n",servo,card);
       retval = -1;
     }
 

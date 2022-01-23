@@ -53,6 +53,9 @@ chmod 600 ~/.ssh/authorized_keys
 # define no-desktop xsession
 cp xsession ~/.xsession
 
+# for fmc1 and fmc2
+sudo cp 20-screen.conf /etc/X11/xorg.conf.d
+
 # copy systemd files
 mkdir -p ~/.config/systemd/user
 cp *.service ~/.config/systemd/user

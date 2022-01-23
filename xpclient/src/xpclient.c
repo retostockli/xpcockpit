@@ -66,6 +66,9 @@ int main (int argc,char **argv)
  
     
   unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
+
+  int *nav_shows_dem = link_dataref_int("xpserver/EFIS_capt_terr");
+
   
   /*
   unsigned char *fmc1 = link_dataref_byte_arr("laminar/B738/fmc1/Line02_X", 40,-1);
@@ -114,7 +117,11 @@ int main (int argc,char **argv)
       if (*latitude != FLT_MISS) {
         printf("Latitude: %f\n",*latitude);
       }
- 
+
+      printf("TERR: %i \n",*nav_shows_dem);
+
+  *nav_shows_dem = 0;
+      
       if (*egt0 != FLT_MISS) {
 	printf("EGT Engine 1: %f\n",*egt0);
       }
