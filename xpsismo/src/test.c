@@ -67,37 +67,46 @@ void test(void)
   }
  
   /* read first analog input (#0) */
-  for (i=0;i<5;i++) {
-    //ret = analog_input(card,i,fvalue,0.0,1.0);
+  //  for (i=0;i<5;i++) {
+  i=2;
+    ret = analog_input(card,i,fvalue,0.0,1.0);
     if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-      //printf("Analog Input %i changed to: %f \n",i,*fvalue);
+      //     printf("Analog Input %i changed to: %f \n",i,*fvalue);
     }
-  }
+    //  }
    
 
   /* read encoder at inputs 70 and 71 */
 
-  ret = encoder_input(card, 70, 71, encodervalue, 1, 1);
+  ret = encoder_input(card, 70, 71, encodervalue, -1, 1);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
   }
 
-  ret = servo_output(card,1,encodervalue,0,100);
+  ret = servo_output(card,3,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
-  //*value = 1;
+
+  /*
   for (i=0;i<sismo[card].noutputs;i++) {
-    //    ret = digital_output(card, i, value);
-  }
-  for (i=0;i<sismo[card].noutputs;i++) {
-    if (i == *encodervalue) {
+    if ((i>=17) && (i<=17)) {
       ret = digital_output(card, i, &one);
     } else {
       ret = digital_output(card, i, &zero);
     }
-  }
+    }*/
+  
+ 
+  for (i=0;i<sismo[card].noutputs;i++) {
+    if ((i == *encodervalue) || ((i+1) == *encodervalue)) {
+      ret = digital_output(card, i, &one);
+    } else {
+      ret = digital_output(card, i, &zero);
+    }
+    }
+  
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
   //ret = display_output(card, 0, 5, encodervalue, 2, 0);
 

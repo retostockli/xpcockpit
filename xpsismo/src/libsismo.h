@@ -26,7 +26,7 @@
 #define MAXSAVE 30           /* maximum number of history values in data structure */
 #define INPUTINITVAL -1      /* initial value of inputs upon startup */
 #define DISPLAYSINITVAL -1   /* initial value of displays upon startup (BLANK) */
-#define OUTPUTSINITVAL 0     /* initial value of outputs upon startup (OFF) */
+#define OUTPUTSINITVAL -1     /* initial value of outputs upon startup (OFF) */
 #define SERVOSINITVAL 1023   /* initial value of servos upon startup (PARK) */
 #define ANALOGINPUTNBITS 10  /* number of bits of analog inputs */
 #define UNCHANGED 0          /* flag for unchanged input / output */

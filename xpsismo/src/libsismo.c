@@ -385,7 +385,7 @@ int write_sismo() {
 	  for (output=0;output<64;output++) {
 	    set_bit(&sismoSendBuffer[4+output/8],output%8,sismo[card].outputs[output+firstoutput]);
 	    if (sismo[card].outputs_changed[output+firstoutput] == CHANGED) {
-	      if (verbose > 2) printf("Card %i Output %i changed to: %i \n",
+	      if (verbose > 0) printf("Card %i Output %i changed to: %i \n",
 				      card,output,sismo[card].outputs[output+firstoutput]);
 	      anychanged = 1;
 	      /* reset changed state since data will be sent to SISMO card */
@@ -394,7 +394,7 @@ int write_sismo() {
 	  }
 	  if (anychanged) {
 	    ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
-	    if (verbose > 1) printf("Sent %i bytes to card %i \n", ret,card);
+	    if (verbose > 0) printf("Sent %i bytes to card %i \n", ret,card);
 	  }
 	}
       }
