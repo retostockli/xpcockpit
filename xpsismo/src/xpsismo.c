@@ -44,6 +44,7 @@
 #include "test.h"
 #include "b737_mcp.h"
 #include "b737_efis.h"
+#include "b737_mip.h"
 
 int acf_type;
 
@@ -103,6 +104,11 @@ int main(int argc, char **argv) {
 	b737_mcp();
 	b737_efis(0); /* captain */
 	b737_efis(1); /* copilot */
+      }
+    }
+    if (strcmp("boeing737mip",argv[1]) == 0) {
+      if (acf_type >= 0) {
+	b737_mip();
       }
     }
 

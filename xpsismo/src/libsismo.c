@@ -268,7 +268,7 @@ int read_sismo() {
 		val = get_bit(sismoRecvBuffer[8+b],i);
 		if (val != sismo[card].inputs[input][0]) {
 		  sismo[card].inputs[input][0] = val; 
-		  if (verbose > 0) printf("Card %i Input %i Changed to: %i \n",card,input,val);
+		  if (verbose > 2) printf("Card %i Input %i Changed to: %i \n",card,input,val);
 		}
 	      }
 	    }

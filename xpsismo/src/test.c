@@ -85,27 +85,31 @@ void test(void)
     printf("Encoder changed to: %i \n",*encodervalue);
   }
 
-  ret = servo_output(card,3,encodervalue,0,100);
+  ret = servo_output(card,0,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
 
+
+  for (i=0;i<sismo[card].noutputs;i++) {
+    if ((i>=0) && (i<=20)) {
+      ret = digital_output(card, i, &one);
+    } else {
+      ret = digital_output(card, i, &zero);
+    }
+  }
+ 
+
   /*
   for (i=0;i<sismo[card].noutputs;i++) {
-    if ((i>=17) && (i<=17)) {
+    if ((i == *encodervalue) || i == (*encodervalue+1) || i == (*encodervalue+2) || i == (*encodervalue+3)) {
+      //    if ((i == *encodervalue)) {
       ret = digital_output(card, i, &one);
     } else {
       ret = digital_output(card, i, &zero);
     }
-    }*/
+  }
+  */
   
- 
-  for (i=0;i<sismo[card].noutputs;i++) {
-    if ((i == *encodervalue) || ((i+1) == *encodervalue)) {
-      ret = digital_output(card, i, &one);
-    } else {
-      ret = digital_output(card, i, &zero);
-    }
-    }
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
   //ret = display_output(card, 0, 5, encodervalue, 2, 0);
