@@ -474,15 +474,15 @@ int write_sismo() {
 	      /* internal index goes from 10..15 */
 	      servoindex = servo+2;
 	    }
-	    if (sismo[card].servos_changed[servo] == CHANGED) {
-	      if (verbose > 2) printf("Card %i Servo %i changed to: %i \n",card,servo+bank*8,
-				      sismo[card].servos[servo]);
+	    if (sismo[card].servos_changed[servo+bank*8] == CHANGED) {
+	      if (verbose > 0) printf("Card %i Servo %i changed to: %i \n",card,servo+bank*8,
+				      sismo[card].servos[servo+bank*8]);
 	      set_bit(&sismoSendBuffer[4],servoindex,1);
-	      sismoSendBuffer[5+servoindex] = (unsigned char) sismo[card].servos[servo];
+	      sismoSendBuffer[5+servoindex] = (unsigned char) sismo[card].servos[servo+bank*8];
 	      
 	      anychanged = 1;
 	      /* reset changed state since data will be sent to SISMO card */
-	      sismo[card].servos_changed[servo] = UNCHANGED;
+	      sismo[card].servos_changed[servo+bank*8] = UNCHANGED;
 	    }
 	  }
 	  if (anychanged) {
