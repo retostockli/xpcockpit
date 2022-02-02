@@ -30,6 +30,11 @@
 #include "serverdata.h"
 #include "b737_mip.h"
 
+float capt_main_du_pos;
+float capt_lower_du_pos;
+float fo_main_du_pos;
+float fo_lower_du_pos;
+
 void b737_mip(void)
 {
 
@@ -60,6 +65,11 @@ void b737_mip(void)
   ret = digital_output(card, 63, avionics_on); // FO PANEL
   
   if ((acf_type == 2) || (acf_type == 3)) {
+
+    //* Keep guarded covers open at all times
+    int *guarded_covers = link_dataref_int("laminar/B738/guarded_covers");
+    *guarded_covers = 1;
+
     float *ap_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/ap_warn1",0);
     float *ap_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/ap_disconnect1",0);
     float *ap_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/ap_warn2",0);
@@ -110,13 +120,121 @@ void b737_mip(void)
     float *flaps_position = link_dataref_flt_arr("laminar/B738/flap_indicator",2,-1,-1);
     float *brake_pressure = link_dataref_flt("laminar/B738/brake/brake_press",0);
     float *yaw_damper = link_dataref_flt("laminar/B738/yaw_damper",-2);
-   
+
+    int *ap_prst_button = link_dataref_cmd_hold("laminar/B738/push_button/ap_light_pilot");
+    int *at_prst_button = link_dataref_cmd_hold("laminar/B738/push_button/at_light_pilot");
+    int *fmc_prst_button = link_dataref_cmd_hold("laminar/B738/push_button/fms_light_pilot");
+
+    float *nose_steer_pos = link_dataref_flt("laminar/B738/switches/nose_steer_pos",0);
+    int *nose_steer_norm = link_dataref_cmd_hold("laminar/B738/switch/nose_steer_norm");
+    int *nose_steer_alt = link_dataref_cmd_hold("laminar/B738/switch/nose_steer_alt");
+
+    float *capt_main_du = link_dataref_flt("laminar/B738/toggle_switch/main_pnl_du_capt",0);
+    int *capt_main_du_left = link_dataref_cmd_once("laminar/B738/toggle_switch/main_pnl_du_capt_left");
+    int *capt_main_du_right = link_dataref_cmd_once("laminar/B738/toggle_switch/main_pnl_du_capt_right");
+    
+    float *capt_lower_du = link_dataref_flt("laminar/B738/toggle_switch/lower_du_capt",0);
+    int *capt_lower_du_left = link_dataref_cmd_once("laminar/B738/toggle_switch/lower_du_capt_left");
+    int *capt_lower_du_right = link_dataref_cmd_once("laminar/B738/toggle_switch/lower_du_capt_right");
+    
+    float *fo_main_du = link_dataref_flt("laminar/B738/toggle_switch/main_pnl_du_fo",0);
+    int *fo_main_du_left = link_dataref_cmd_once("laminar/B738/toggle_switch/main_pnl_du_fo_left");
+    int *fo_main_du_right = link_dataref_cmd_once("laminar/B738/toggle_switch/main_pnl_du_fo_right");
+    
+    float *fo_lower_du = link_dataref_flt("laminar/B738/toggle_switch/lower_du_fo",0);
+    int *fo_lower_du_left = link_dataref_cmd_once("laminar/B738/toggle_switch/lower_du_fo_left");
+    int *fo_lower_du_right = link_dataref_cmd_once("laminar/B738/toggle_switch/lower_du_fo_right");
+    
     /* INPUTS */
+
+    /* AFDS Lights Test */
     ret = digital_input(card,0,&afds_test_1_capt,-1);
     ret = digital_input(card,1,&afds_test_2_capt,-1);
     ret = digital_input(card,2,&afds_test_1_fo,-1);
     ret = digital_input(card,3,&afds_test_2_fo,-1);
 
+    /* AFDS RESET: single button assignment for CAPT and FO */
+    ret = digital_input(card,4,ap_prst_button,-1);
+    ret = digital_input(card,5,at_prst_button,-1);
+    ret = digital_input(card,6,fmc_prst_button,-1);
+
+    /* Nose Wheel Alt/Norm */
+    *nose_steer_alt = 0;
+    *nose_steer_norm = 0;
+    ret = digital_input(card,7,&temp,0);
+    if ((temp == 0) && (*nose_steer_pos == 1.0)) {
+      *nose_steer_alt = 1;
+    }
+    if ((temp == 1) && (*nose_steer_pos == 0.0)) {
+      *nose_steer_norm = 1;
+    }
+
+    /* CAPT Main Display Selector */
+    ret = digital_input(card,8,&temp,-1);
+    if (temp == 1) capt_main_du_pos = -1.0; 
+    ret = digital_input(card,9,&temp,-1);
+    if (temp == 1) capt_main_du_pos = 0.0; 
+    ret = digital_input(card,10,&temp,-1);
+    if (temp == 1) capt_main_du_pos = 1.0; 
+    ret = digital_input(card,11,&temp,-1);
+    if (temp == 1) capt_main_du_pos = 2.0; 
+    ret = digital_input(card,12,&temp,-1);
+    if (temp == 1) capt_main_du_pos = 3.0; 
+   
+    ret = set_state_updnf(&capt_main_du_pos,capt_main_du,capt_main_du_right,capt_main_du_left);
+    if (ret != 0) {
+      printf("CAPT Main DU: %f %f %i %i \n",
+	     capt_main_du_pos,*capt_main_du,*capt_main_du_right,*capt_main_du_left);
+    }
+
+    /* CAPT Lower Display Selector */
+    ret = digital_input(card,13,&temp,-1);
+    if (temp == 1) capt_lower_du_pos = -1.0; 
+    ret = digital_input(card,14,&temp,-1);
+    if (temp == 1) capt_lower_du_pos = 0.0; 
+    ret = digital_input(card,15,&temp,-1);
+    if (temp == 1) capt_lower_du_pos = 1.0; 
+   
+    ret = set_state_updnf(&capt_lower_du_pos,capt_lower_du,capt_lower_du_right,capt_lower_du_left);
+    if (ret != 0) {
+      printf("CAPT Lower DU: %f %f %i %i \n",
+	     capt_lower_du_pos,*capt_lower_du,*capt_lower_du_right,*capt_lower_du_left);
+    }
+    
+    /* FO Main Display Selector */
+    ret = digital_input(card,24,&temp,-1);
+    if (temp == 1) fo_main_du_pos = 3.0; 
+    ret = digital_input(card,25,&temp,-1);
+    if (temp == 1) fo_main_du_pos = 2.0; 
+    ret = digital_input(card,26,&temp,-1);
+    if (temp == 1) fo_main_du_pos = 1.0; 
+    ret = digital_input(card,27,&temp,-1);
+    if (temp == 1) fo_main_du_pos = 0.0; 
+    ret = digital_input(card,28,&temp,-1);
+    if (temp == 1) fo_main_du_pos = -1.0; 
+   
+    ret = set_state_updnf(&fo_main_du_pos,fo_main_du,fo_main_du_left,fo_main_du_right);
+    if (ret != 0) {
+      printf("FO Main DU: %f %f %i %i \n",
+	     fo_main_du_pos,*fo_main_du,*fo_main_du_right,*fo_main_du_left);
+    }
+
+    /* FO Lower Display Selector */
+    ret = digital_input(card,29,&temp,-1);
+    if (temp == 1) fo_lower_du_pos = 1.0; 
+    ret = digital_input(card,30,&temp,-1);
+    if (temp == 1) fo_lower_du_pos = 0.0; 
+    ret = digital_input(card,31,&temp,-1);
+    if (temp == 1) fo_lower_du_pos = -1.0; 
+   
+    ret = set_state_updnf(&fo_lower_du_pos,fo_lower_du,fo_lower_du_left,fo_lower_du_right);
+    if (ret != 0) {
+      printf("FO Lower DU: %f %f %i %i \n",
+	     fo_lower_du_pos,*fo_lower_du,*fo_lower_du_right,*fo_lower_du_left);
+    }
+    
+
+    
     /* OUTPUTS */
     if ((afds_test_1_capt == 1) || (afds_test_2_capt == 1)) {
       if (afds_test_1_capt == 1) {
@@ -194,6 +312,8 @@ void b737_mip(void)
 
     ret = digital_outputf(card, 58, flaps_transit);
     ret = digital_outputf(card, 59, flaps_extend);
+
+
     
     /* SERVOS */
     ret = servo_outputf(card,0,flaps_position,-7.0,60.0);
