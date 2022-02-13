@@ -34,6 +34,10 @@ float capt_main_du_pos;
 float capt_lower_du_pos;
 float fo_main_du_pos;
 float fo_lower_du_pos;
+float lights_test_pos;
+float spd_ref_pos;
+float n1_set_source_pos;
+float autobrake_pos;
 
 void b737_mip(void)
 {
@@ -42,10 +46,10 @@ void b737_mip(void)
   
   int ret;
   int temp;
+  int temp2;
   int card = 0;
   int one = 1;
   int zero = 0;
-  int lights_test = 0;
 
   int afds_test_1_capt;
   int afds_test_2_capt;
@@ -63,6 +67,41 @@ void b737_mip(void)
   ret = digital_output(card, 23, avionics_on); // CAPT PANEL/EFIS/MCP
   ret = digital_output(card, 62, avionics_on); // FO PANEL
   ret = digital_output(card, 63, avionics_on); // FO PANEL
+
+  // gear handle
+  int *gear_handle_down;
+  float *gear_handle_position;
+  float *gear_lock_override;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    gear_handle_down = link_dataref_int("xpserver/gear_handle");
+    gear_handle_position = link_dataref_flt("laminar/B738/controls/gear_handle_down",-1);
+    gear_lock_override = link_dataref_flt("laminar/B738/gear_lock_ovrd/position",0);
+    *gear_lock_override = 1.0;
+  } else if (acf_type == 1) {
+    gear_handle_down = link_dataref_int("xpserver/gear_handle");
+    gear_handle_position = link_dataref_flt("x737/systems/landinggear/landingGearLever",-1);
+  } else {
+    gear_handle_down = link_dataref_int("sim/cockpit2/controls/gear_handle_down");
+    gear_handle_position = link_dataref_flt("xpserver/gear_handle_position",-1);
+  }
+
+  temp = (*gear_handle_position == 0.0);
+  ret = digital_input(card,22,&temp,-1);
+  if (temp == 1) {
+    if (ret==1) printf("gear handle up \n");
+    *gear_handle_down = 0;
+    *gear_handle_position = 0.0;
+  } else {
+    temp = (*gear_handle_position == 1.0);
+    ret = digital_input(card,23,&temp,-1);
+    if (temp == 1) {
+      if (ret==1) printf("gear handle down \n");
+      *gear_handle_down = 1;
+      *gear_handle_position = 1.0;
+    } else {
+      *gear_handle_position = 0.5;
+    }
+  }
   
   if ((acf_type == 2) || (acf_type == 3)) {
 
@@ -125,7 +164,7 @@ void b737_mip(void)
     int *at_prst_button = link_dataref_cmd_hold("laminar/B738/push_button/at_light_pilot");
     int *fmc_prst_button = link_dataref_cmd_hold("laminar/B738/push_button/fms_light_pilot");
 
-    float *nose_steer_pos = link_dataref_flt("laminar/B738/switches/nose_steer_pos",0);
+    float *nose_steer = link_dataref_flt("laminar/B738/switches/nose_steer_pos",0);
     int *nose_steer_norm = link_dataref_cmd_hold("laminar/B738/switch/nose_steer_norm");
     int *nose_steer_alt = link_dataref_cmd_hold("laminar/B738/switch/nose_steer_alt");
 
@@ -144,6 +183,58 @@ void b737_mip(void)
     float *fo_lower_du = link_dataref_flt("laminar/B738/toggle_switch/lower_du_fo",0);
     int *fo_lower_du_left = link_dataref_cmd_once("laminar/B738/toggle_switch/lower_du_fo_left");
     int *fo_lower_du_right = link_dataref_cmd_once("laminar/B738/toggle_switch/lower_du_fo_right");
+    int *recall = link_dataref_cmd_hold("laminar/B738/push_button/capt_six_pack");
+    int *master_caution = link_dataref_cmd_hold("laminar/B738/push_button/master_caution1");
+    int *fire_warn = link_dataref_cmd_hold("laminar/B738/push_button/fire_bell_light1");
+    
+    float *lights_test = link_dataref_flt("laminar/B738/toggle_switch/bright_test",0);
+    int *lights_test_up = link_dataref_cmd_once("laminar/B738/toggle_switch/bright_test_up");
+    int *lights_test_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/bright_test_dn");
+
+    int *spd_ref_adjust_left = link_dataref_cmd_once("laminar/B738/toggle_switch/spd_ref_adjust_left");
+    int *spd_ref_adjust_right = link_dataref_cmd_once("laminar/B738/toggle_switch/spd_ref_adjust_right");
+    
+    float *spd_ref = link_dataref_flt("laminar/B738/toggle_switch/spd_ref",0);
+    int *spd_ref_left = link_dataref_cmd_once("laminar/B738/toggle_switch/spd_ref_left");
+    int *spd_ref_right = link_dataref_cmd_once("laminar/B738/toggle_switch/spd_ref_right");
+
+    int *mfd_eng = link_dataref_cmd_hold("laminar/B738/LDU_control/push_button/MFD_ENG");
+    int *mfd_sys = link_dataref_cmd_hold("laminar/B738/LDU_control/push_button/MFD_SYS");
+
+    int *gpws_test = link_dataref_cmd_hold("laminar/B738/push_button/gpws_test");
+    float *gpws_flap_pos = link_dataref_flt("laminar/B738/toggle_switch/gpws_flap_pos",0);
+    int *gpws_flap = link_dataref_cmd_once("laminar/B738/toggle_switch/gpws_flap");
+    float *gpws_gear_pos = link_dataref_flt("laminar/B738/toggle_switch/gpws_gear_pos",0);
+    int *gpws_gear = link_dataref_cmd_once("laminar/B738/toggle_switch/gpws_gear");
+    float *gpws_terr_pos = link_dataref_flt("laminar/B738/toggle_switch/gpws_terr_pos",0);
+    int *gpws_terr = link_dataref_cmd_once("laminar/B738/toggle_switch/gpws_terr");
+     
+    float *n1_set_adjust = link_dataref_flt("laminar/B738/toggle_switch/n1_set_adjust",-3);
+    float *n1_set_source = link_dataref_flt("laminar/B738/toggle_switch/n1_set_source",0);
+    int *n1_set_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/n1_set_source_left");
+    int *n1_set_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/n1_set_source_right");
+    
+    float *autobrake = link_dataref_flt("laminar/B738/autobrake/autobrake_pos",0);
+    int *autobrake_up = link_dataref_cmd_once("laminar/B738/knob/autobrake_up");
+    int *autobrake_dn = link_dataref_cmd_once("laminar/B738/knob/autobrake_dn");
+      
+    int *fuel_flow_reset = link_dataref_cmd_hold("laminar/B738/toggle_switch/fuel_flow_up");
+    int *fuel_flow_used = link_dataref_cmd_hold("laminar/B738/toggle_switch/fuel_flow_dn");
+
+    int *isfd_baro_std = link_dataref_cmd_hold("laminar/B738/toggle_switch/standby_alt_baro_std");
+    int *isfd_baro_rst = link_dataref_cmd_hold("laminar/B738/toggle_switch/standby_alt_rst");
+    int *isfd_baro_app = link_dataref_cmd_hold("laminar/B738/toggle_switch/standby_alt_app");
+    int *isfd_baro_hpin = link_dataref_cmd_hold("laminar/B738/toggle_switch/standby_alt_hpin");
+    int *isfd_baro_plus = link_dataref_cmd_hold("laminar/B738/toggle_switch/standby_alt_plus");
+    int *isfd_baro_minus = link_dataref_cmd_hold("laminar/B738/toggle_switch/standby_alt_minus");
+    int *isfd_baro_up = link_dataref_cmd_once("laminar/B738/knob/standby_alt_baro_up");
+    int *isfd_baro_dn = link_dataref_cmd_once("laminar/B738/knob/standby_alt_baro_dn");
+
+    int *ptt = link_dataref_cmd_hold("xpilot/ptt");
+    int *mic_capt = link_dataref_int("xpserver/mic_capt");
+    int *mic_fo = link_dataref_int("xpserver/mic_fo");
+    int *clock_capt = link_dataref_int("xpserver/clock_capt");
+    int *clock_fo = link_dataref_int("xpserver/clock_fo");
     
     /* INPUTS */
 
@@ -162,10 +253,10 @@ void b737_mip(void)
     *nose_steer_alt = 0;
     *nose_steer_norm = 0;
     ret = digital_input(card,7,&temp,0);
-    if ((temp == 0) && (*nose_steer_pos == 1.0)) {
+    if ((temp == 0) && (*nose_steer == 1.0)) {
       *nose_steer_alt = 1;
     }
-    if ((temp == 1) && (*nose_steer_pos == 0.0)) {
+    if ((temp == 1) && (*nose_steer == 0.0)) {
       *nose_steer_norm = 1;
     }
 
@@ -200,6 +291,29 @@ void b737_mip(void)
       printf("CAPT Lower DU: %f %f %i %i \n",
 	     capt_lower_du_pos,*capt_lower_du,*capt_lower_du_right,*capt_lower_du_left);
     }
+
+    
+    /* Recall: sixpack pushbutton */
+    ret = digital_input(card,16,recall,-1);
+
+    /* fire warn pushbutton */
+    ret = digital_input(card,17,fire_warn,-1);
+
+    /* master caution pushbutton */
+    ret = digital_input(card,18,master_caution,-1);
+
+    /* lights test switch */
+    ret = digital_input(card,19,&temp,-1);
+    ret = digital_input(card,20,&temp2,-1);
+    if (temp == 1) lights_test_pos = 1.0; 
+    if (temp2 == 1) lights_test_pos = -1.0;
+    if ((temp == 0) && (temp2 == 0)) lights_test_pos = 0.0;
+    ret = set_state_updnf(&lights_test_pos,lights_test,lights_test_up,lights_test_dn);
+    if (ret != 0) {
+      printf("Lights Test: %f %f %i %i \n",
+	     lights_test_pos,*lights_test,*lights_test_up,*lights_test_dn);
+    }
+
     
     /* FO Main Display Selector */
     ret = digital_input(card,24,&temp,-1);
@@ -232,8 +346,146 @@ void b737_mip(void)
       printf("FO Lower DU: %f %f %i %i \n",
 	     fo_lower_du_pos,*fo_lower_du,*fo_lower_du_right,*fo_lower_du_left);
     }
-    
 
+    /* SPD REF Encoder */
+    temp = 0;
+    ret = encoder_input(card, 32, 33, &temp, 1, 1);
+    if (ret == 1) {
+      /* ret is 1 only if encoder has been turned */
+      printf("SPD REF: %i \n",temp);
+      if (temp > 0) *spd_ref_adjust_right = 1;
+      if (temp < 0) *spd_ref_adjust_left = 1;
+    }
+
+    /* SPD REF Rotary Switch */
+    ret = digital_input(card,35,&temp,-1);
+    if (temp == 1) spd_ref_pos = 6.0; 
+    ret = digital_input(card,36,&temp,-1);
+    if (temp == 1) spd_ref_pos = 5.0; 
+    ret = digital_input(card,38,&temp,-1);
+    if (temp == 1) spd_ref_pos = 4.0; 
+    ret = digital_input(card,39,&temp,-1);
+    if (temp == 1) spd_ref_pos = 3.0; 
+    ret = digital_input(card,41,&temp,-1);
+    if (temp == 1) spd_ref_pos = 2.0; 
+    ret = digital_input(card,42,&temp,-1);
+    if (temp == 1) spd_ref_pos = 1.0; 
+    ret = digital_input(card,44,&temp,-1);
+    if (temp == 1) spd_ref_pos = 0.0; 
+
+    ret = set_state_updnf(&spd_ref_pos,spd_ref,spd_ref_right,spd_ref_left);
+    if (ret != 0) {
+      printf("SPD REF: %f %f %i %i \n",
+	     spd_ref_pos,*spd_ref,*spd_ref_right,*spd_ref_left);
+    }
+
+    /* MFD Pushbuttons */
+    ret = digital_input(card,37,mfd_eng,-1);
+    ret = digital_input(card,53,mfd_sys,-1);
+
+    /* GPWS */
+    ret = digital_input(card,43,gpws_test,-1);
+
+    ret = digital_input(card,45,&temp,-1);
+    if ((temp == 1) && (*gpws_flap_pos == 0.0)) *gpws_flap = 1;
+    if ((temp == 0) && (*gpws_flap_pos == 1.0)) *gpws_flap = 1;
+      
+    ret = digital_input(card,46,&temp,-1);
+    if ((temp == 1) && (*gpws_gear_pos == 0.0)) *gpws_gear = 1;
+    if ((temp == 0) && (*gpws_gear_pos == 1.0)) *gpws_gear = 1;
+      
+    ret = digital_input(card,47,&temp,-1);
+    if ((temp == 1) && (*gpws_terr_pos == 0.0)) *gpws_terr = 1;
+    if ((temp == 0) && (*gpws_terr_pos == 1.0)) *gpws_terr = 1;
+
+    /* N1 Set Encoder */
+    ret = encoder_inputf(card, 48, 49, n1_set_adjust, 0.001, 1);
+    if (*n1_set_adjust != FLT_MISS) {
+      if (*n1_set_adjust > 1.03) *n1_set_adjust = 1.03;
+      if (*n1_set_adjust < 0.70) *n1_set_adjust = 0.70;
+    }
+
+    /* N1 Set Source Rotary Switch */
+    ret = digital_input(card,51,&temp,-1);
+    if (temp == 1) n1_set_source_pos = 1.0; 
+    ret = digital_input(card,52,&temp,-1);
+    if (temp == 1) n1_set_source_pos = 0.0; 
+    ret = digital_input(card,54,&temp,-1);
+    if (temp == 1) n1_set_source_pos = -1.0; 
+    ret = digital_input(card,55,&temp,-1);
+    if (temp == 1) n1_set_source_pos = -2.0; 
+
+    ret = set_state_updnf(&n1_set_source_pos,n1_set_source,n1_set_source_right,n1_set_source_left);
+    if (ret != 0) {
+      printf("N1 Set Source: %f %f %i %i \n",
+	     n1_set_source_pos,*n1_set_source,*n1_set_source_right,*n1_set_source_left);
+    }
+
+    /* Autobrake Rotary Switch */
+    ret = digital_input(card,56,&temp,-1);
+    if (temp == 1) autobrake_pos = 0.0; 
+    ret = digital_input(card,57,&temp,-1);
+    if (temp == 1) autobrake_pos = 1.0; 
+    ret = digital_input(card,58,&temp,-1);
+    if (temp == 1) autobrake_pos = 2.0; 
+    ret = digital_input(card,59,&temp,-1);
+    if (temp == 1) autobrake_pos = 3.0; 
+    ret = digital_input(card,60,&temp,-1);
+    if (temp == 1) autobrake_pos = 4.0; 
+    ret = digital_input(card,61,&temp,-1);
+    if (temp == 1) autobrake_pos = 5.0; 
+
+    ret = set_state_updnf(&autobrake_pos,autobrake,autobrake_up,autobrake_dn);
+    if (ret != 0) {
+      printf("AUTOBRAKE: %f %f %i %i \n",
+	     autobrake_pos,*autobrake,*autobrake_up,*autobrake_dn);
+    }
+
+    /* Fuel Flow Switch */
+    ret = digital_input(card,62,fuel_flow_reset,-1);
+    ret = digital_input(card,63,fuel_flow_used,-1);
+
+    /* ISFD */
+    ret = digital_input(card,64,isfd_baro_rst,-1);
+    ret = digital_input(card,65,isfd_baro_minus,-1);
+    ret = digital_input(card,66,isfd_baro_plus,-1);
+    ret = digital_input(card,67,isfd_baro_app,-1);
+    ret = digital_input(card,68,isfd_baro_hpin,-1);
+    ret = digital_input(card,69,isfd_baro_std,-1);
+
+    temp = 0;
+    ret = encoder_input(card, 70, 71, &temp, -1, 1);
+    if (ret == 1) {
+      /* ret is 1 only if encoder has been turned */
+      printf("STDBY BARO UP/DN: %i \n",temp);
+      if (temp > 0) *isfd_baro_up = 1;
+      if (temp < 0) *isfd_baro_dn = 1;
+    }
+
+    /* MIC Button */
+    ret = digital_input(card,72,mic_capt,-1);
+    ret = digital_input(card,80,mic_fo,-1);
+
+    if ((*mic_capt == 1) || (*mic_fo == 1)) {
+      *ptt = 1;
+    } else {
+      *ptt = 0;
+    }
+    
+    /* Clock Button */
+    ret = digital_input(card,73,clock_capt,-1);
+    ret = digital_input(card,81,clock_fo,-1);
+
+
+    
+    /* ANALOG INPUTS */
+    //    ret = analog_input(card,0,fvalue,0.0,1.0); /* CAPT OUTBD DU BRT */
+    //    ret = analog_input(card,1,fvalue,0.0,1.0); /* CAPT INBD DU BRT */
+    //    ret = analog_input(card,2,fvalue,0.0,1.0); /* CAPT UPPER DU BRT */
+    //    ret = analog_input(card,3,fvalue,0.0,1.0); /* FO OUTBD DU BRT */
+    //    ret = analog_input(card,4,fvalue,0.0,1.0); /* FO INBD DU BRT */
+    
+    
     
     /* OUTPUTS */
     if ((afds_test_1_capt == 1) || (afds_test_2_capt == 1)) {
@@ -254,7 +506,7 @@ void b737_mip(void)
     }
       
     ret = digital_outputf(card, 5, speedbrake_armed);
-    ret = digital_output(card, 6, &lights_test);   // speed brake do not arm
+    ret = digital_outputf(card, 6, lights_test);   // speed brake do not arm
     ret = digital_outputf(card, 7, stab_outoftrim);
 
     ret = digital_outputf(card, 8, sixpack_flt_cont);

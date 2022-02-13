@@ -88,7 +88,7 @@ Analog Inputs,Function,Comment
 0,CAPT OUTBD DU BRT,
 1,CAPT INBD DU BRT,
 2,CAPT UPPER DU BRT,
-3,FO OUTBD DU BRRT,
+3,FO OUTBD DU BRT,
 4,FO INBD DU BRT,
 ,,
 Outputs,Function,Comment
