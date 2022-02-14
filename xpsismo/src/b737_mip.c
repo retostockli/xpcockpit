@@ -47,7 +47,7 @@ void b737_mip(void)
   int ret;
   int temp;
   int temp2;
-  int card = 0;
+  int card = 1;
   int one = 1;
   int zero = 0;
 

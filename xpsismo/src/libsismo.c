@@ -321,7 +321,7 @@ int read_sismo() {
 	//printf("Left to Read: %i \n",udpReadLeft);
 	
       } else {
-	printf("Card with MAC %02x:%02x or Port %i is not defined in ini file \n",
+	if (verbose > 1) printf("Card with MAC %02x:%02x or Port %i is not defined in ini file \n",
 	       sismoRecvBuffer[2],sismoRecvBuffer[3],sismoRecvBuffer[6] + 256 * sismoRecvBuffer[7]);
       }
     } else {
