@@ -79,6 +79,12 @@ namespace OpenGC
     } else {
       stdby_pressure_mode = link_dataref_flt("sim/cockpit/misc/barometer_setting",0);
     }    
+    float *stdby_std_mode;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      stdby_std_mode = link_dataref_flt("laminar/B738/gauges/standby_alt_std_mode",0);
+    } else {
+      stdby_std_mode = link_dataref_flt("sim/cockpit/misc/barometer_setting",0);
+    }    
     float *isfd_horizontal;
     if ((acf_type == 2) || (acf_type == 3)) {
       isfd_horizontal = link_dataref_flt("laminar/B738/gauges/standby_app_horz",0);
@@ -108,10 +114,17 @@ namespace OpenGC
       m_pFontManager->Print(m_PhysicalSize.x*0.03,m_PhysicalSize.y*0.2, &buffer[0], m_Font);
     }
     
-    // Plot dialed barometric pressure in In Hg 
+    // Plot dialed barometric pressure in In Hg
+    bool is_std = false;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if (*stdby_std_mode == 1.0) is_std = true;
+    } else {
+      if (roundf(*stdby_pressure*100) == 2992) is_std = true;
+    }
+      
 
     if (*stdby_pressure != FLT_MISS) {
-      if (roundf(*stdby_pressure*100) == 2992) {
+      if (is_std) {
 	strcpy(buffer, "STD");
 	m_pFontManager->Print(m_PhysicalSize.x*0.77,m_PhysicalSize.y*0.2, &buffer[0], m_Font);
       } else {
