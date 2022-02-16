@@ -6,6 +6,7 @@
 # disable camera
 # enable ssh
 
+
 # sudo apt install mc
 # edit /etc/dhcpcd.conf and add fixed IP address for wlan0 and static router
 # edit /etc/hostname and add the name of the rasperry pi computer
@@ -27,6 +28,10 @@ sudo usermod -aG netdev stockli
 sudo usermod -aG lpadmin stockli
 
 # AS USER STOCKLI
+
+# open raspi-config
+# Select Auto Desktop Login for User stockli
+# select GL Driver
 
 # copy ssh keys from mariachi
 # scp -p .ssh/id_ecdsa $raspiname:.ssh/
