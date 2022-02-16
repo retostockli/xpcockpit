@@ -280,18 +280,23 @@ namespace OpenGC
     } else {
       altimeter_minimum = link_dataref_flt("sim/cockpit/misc/radio_altimeter_minimum",0);
     }
-      
-    if (*ias != FLT_MISS) {
+
+    float *ias_mach;
+    if (is_captain) {
+      ias_mach = link_dataref_flt("sim/cockpit2/gauges/indicators/mach_pilot",-3);
+    } else {
+      ias_mach = link_dataref_flt("sim/cockpit2/gauges/indicators/mach_copilot",-3);
+    }
+    
+    if (*ias_mach != FLT_MISS) {
       // 1. Plot Mach number below the speed tape
-      // transform air speed (knots) to Mach number
-      float mach = fabs( *ias / (38.967854 * sqrt(*tat+273.15)));
     
       glColor3ub(COLOR_WHITE);
       glLineWidth(lineWidth);
     
       m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
     
-      snprintf(buffer, sizeof(buffer), "%5.3f", mach);
+      snprintf(buffer, sizeof(buffer), "%5.3f", *ias_mach);
       m_pFontManager->Print(10,25+0, &buffer[0], m_Font);
     }
 

@@ -96,12 +96,13 @@ namespace OpenGC
       //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
       float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
+      /*
       float *track_mag;
       if (is_captain) {
 	track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
       } else {
 	track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
-      }
+	}*/
       
       int *efis1_selector_pilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
       //  int *efis1_selector_copilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
@@ -137,7 +138,7 @@ namespace OpenGC
 	*has_heading_ap_line = 1;
       }
 
-      if ((*heading_mag != FLT_MISS) && (*track_mag != FLT_MISS)) {
+      if ((heading_map != FLT_MISS) && (*magnetic_variation != FLT_MISS)) {
 
 	float dist_to_altitude = FLT_MISS; // Miles
 	if ((*ap_altitude != FLT_MISS) && (*ap_vspeed != FLT_MISS) &&
@@ -155,7 +156,8 @@ namespace OpenGC
 	// Shift center and rotate about heading
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
 	//glRotatef(*track_mag, 0, 0, 1);
-	glRotatef(*heading_mag, 0, 0, 1);
+	glRotatef(heading_map + *magnetic_variation, 0, 0, 1);
+	//glRotatef(*heading_mag, 0, 0, 1);
 
 	// plot ADF / VOR 1/2 heading arrows
 	// TODO: extend to co-pilot EFIS selector
@@ -397,14 +399,15 @@ namespace OpenGC
 
 	  glPopMatrix();
 	}
-
+	
 	// set up tick marks
-	if (heading_map != FLT_MISS) {
+	if ((heading_map != FLT_MISS) && (*magnetic_variation != FLT_MISS)) {
 	  glColor3ub(COLOR_WHITE);
 	  glPushMatrix();
 	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
 	  //	  glRotatef(*track_mag,0,0,1);
-	  glRotatef(*heading_mag,0,0,1);
+	  glRotatef(heading_map + *magnetic_variation,0,0,1);
+	  //glRotatef(*heading_mag,0,0,1);
 	  for ( int i=0; i<=71; i++ ) {
 	    float ticklen;
 	    if ( i % 2 == 0 ) {
@@ -437,7 +440,7 @@ namespace OpenGC
 	  
 	  glPushMatrix();
 	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	  glRotatef(*track_mag - *heading_mag,0,0,1); // put wind correction rotation here
+	  glRotatef(heading_map - *heading_mag + *magnetic_variation,0,0,1); // put wind correction rotation here
 	  
 	  // TRIANGLE ON TOP OF THE MAP MARKS THE WIND CORRECTION!
 	  glColor3ub(COLOR_WHITE);
