@@ -26,8 +26,8 @@
 #define MAXSAVE 30           /* maximum number of history values in data structure */
 #define INPUTINITVAL -1      /* initial value of inputs upon startup */
 #define DISPLAYSINITVAL -1   /* initial value of displays upon startup (BLANK) */
-#define OUTPUTSINITVAL 0     /* initial value of outputs upon startup (OFF) */
-#define SERVOSINITVAL 1023   /* initial value of servos upon startup (PARK) */
+#define OUTPUTSINITVAL 0    /* initial value of outputs upon startup (OFF) */
+#define SERVOSINITVAL -1     /* initial value of servos upon startup (PARK) */
 #define ANALOGINPUTNBITS 10  /* number of bits of analog inputs */
 #define UNCHANGED 0          /* flag for unchanged input / output */
 #define CHANGED 1            /* flag for changed input / output. 
@@ -85,6 +85,8 @@ int digital_inputf(int card, int input, float *fvalue, int type);
 int digital_input(int card, int input, int *value, int type);
 int digital_outputf(int card, int output, float *fvalue);
 int digital_output(int card, int output, int *value);
+int servo_output(int card, int servo, int *value, int minval, int maxval);
+int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxval);
 int display_outputf(int card, int pos, int n, float *fvalue, int dp, int blank);
 int display_output(int card, int pos, int n, int *value, int dp, int blank);
 int analog_input(int card, int input, float *value, float minval, float maxval);

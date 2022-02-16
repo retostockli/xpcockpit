@@ -193,8 +193,8 @@ void B737NAV::Render()
     if (m_MapMode != 3) {
       SetMapCtrLon(*aircraftLon);
       SetMapCtrLat(*aircraftLat);
-      //      m_MapHeading = *track_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols are on TRACK TRUE
-      m_MapHeading = *heading_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols are on TRACK TRUE
+      m_MapHeading = *track_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols are on TRACK TRUE
+      // m_MapHeading = *heading_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols are on TRACK TRUE
     } else {
       // set throught DrawFMC gauge component when reading center FMS waypoint
       m_MapHeading = 0.0;

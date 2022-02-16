@@ -187,7 +187,7 @@ int ini_sismodata()
     }
     for(j=0;j<MAXSERVOS;j++) {
       sismo[i].servos[j] = SERVOSINITVAL;
-      sismo[i].servos_changed[j] = UNCHANGED;
+      sismo[i].servos_changed[j] = CHANGED;
     }
  }
 

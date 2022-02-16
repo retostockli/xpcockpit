@@ -948,7 +948,7 @@ namespace OpenGC
 	      int hour=fmc_eta[wpt_current];
 	      float minute=(fmc_eta[wpt_current] - (float) hour)*60.0;
 	      snprintf( buffer, sizeof(buffer), "%02d%04.1f z", hour, minute );
-	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, buffer, m_Font);
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
 	      
 	      lon = (double) wpt[wpt_current].lon;
 	      lat = (double) wpt[wpt_current].lat;
@@ -958,7 +958,7 @@ namespace OpenGC
 	      float distance = sqrt(easting*easting + northing*northing);
 	      
 	      snprintf( buffer, sizeof(buffer), "%.1f NM", distance );
-	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
+	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
 	      glPopMatrix();
 	    } 
 	      
@@ -966,9 +966,9 @@ namespace OpenGC
 	    glPushMatrix();
 	    glColor3ub(COLOR_WHITE);
 	    snprintf( buffer, sizeof(buffer), "--------z");
-	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.96*m_PhysicalSize.y, buffer, m_Font);
-	    snprintf( buffer, sizeof(buffer), "----- NM");
 	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
+	    snprintf( buffer, sizeof(buffer), "----- NM");
+	    m_pFontManager->Print(0.82*m_PhysicalSize.x,0.87*m_PhysicalSize.y, buffer, m_Font);
 	    glPopMatrix();
 	  } /* has waypoints */
 	} /* we are on either UFMC or ZIBO FMC for 737 */

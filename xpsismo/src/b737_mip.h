@@ -1,6 +1,6 @@
-/* This is the b737_efis.h header to the b737_efis.c code
+/* This is the b737_mip.h header to the b737_mip.c code
 
-   Copyright (C) 2021 Reto Stockli
+   Copyright (C) 2022 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -16,4 +16,4 @@
 
 
 /* Prototype Functions */
-void b737_efis(int copilot);
+void b737_mip(void);
