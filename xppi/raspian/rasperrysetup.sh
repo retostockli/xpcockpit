@@ -7,6 +7,7 @@
 # enable ssh
 # disable blanking
 
+
 # sudo apt install mc
 # edit /etc/dhcpcd.conf and add fixed IP address for wlan0 and static router
 # edit /etc/hostname and add the name of the rasperry pi computer
@@ -29,6 +30,12 @@ sudo usermod -aG lpadmin stockli
 
 # AS USER STOCKLI
 
+# open raspi-config
+# Select Auto Desktop Login for User stockli
+# select GL Driver
+
+# copy ssh keys from mariachi
+# scp -p .ssh/id_ecdsa $raspiname:.ssh/
 mkdir ~/.ssh
 
 # copy ssh keys from mariachi
@@ -69,9 +76,10 @@ sudo apt install libudev-dev -y
 sudo apt install build-essential -y
 sudo apt install autoconf -y
 
+sudo cp 010_pi-nopasswd /etc/sudoers.d/
+
 mkdir -p ~/GLOBE
 mkdir -p ~/GSHHG
 mkdir -p ~/X-Plane\ 11/Custom\ Data
 mkdir -p ~/X-Plane\ 11/Resources/default\ data
 mkdir -p ~/X-Plane\ 11/Resources/default\ scenery/default\ apt\ dat/Earth\ nav\ data
-
