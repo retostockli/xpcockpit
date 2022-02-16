@@ -85,7 +85,7 @@ namespace OpenGC
     if ((acf_type == 3) || (acf_type == 2)) {
       pressure_altitude = link_dataref_flt("laminar/B738/gauges/standby_altitude_ft",1);
     } else {
-      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",1);
+      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     }
       
     if (*pressure_altitude != FLT_MISS) {
