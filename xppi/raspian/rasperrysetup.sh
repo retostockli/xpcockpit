@@ -46,9 +46,6 @@ git checkout B737
 cat ~/.ssh/id_ecdsa.pub > ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 
-#
-
-
 sudo apt install emacs -y
 sudo apt install libfltk1.3-dev -y
 sudo apt install libftgl-dev -y
@@ -56,3 +53,7 @@ sudo apt install libfreetype6-dev -y
 sudo apt install libudev-dev -y
 sudo apt install build-essential -y
 sudo apt install autoconf -y
+
+
+sudo cp 010_pi-nopasswd /etc/sudoers.d/
+sudo cp 
