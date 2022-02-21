@@ -32,17 +32,42 @@
 #include "serverdata.h"
 #include "test.h"
 
-//int LED_PIN = 22; /* GPIO 21, Physical Pin 31 */
-int LED_PIN = 7; /* GPIO 12, Physical Pin 32 */
-int KEY_PIN = 24; /* GPIO 24, Physical Pin 35 */
+//int PWM_PIN = 24; /* GPIO 10, Physical Pin 35 */
+//int LED_PIN = 13; /* GPIO 9, Physical Pin 21 */
+//int KEY_INPUT_PIN = 29;	/* p.40 GPIO 21 Physical Pin 40 */
+//int KEY_OUTPUT_PIN = 15; /* GPIO 14 Physical Pin 8 */
+
+int PWM_PIN = 19; /* GPIO 10, Physical Pin 35 */
+int LED_PIN = 9; /* GPIO 9, Physical Pin 21 */
+int KEY_INPUT_PIN = 21;	/* GPIO 21 Physical Pin 40 */
+int KEY_OUTPUT_PIN = 14; /* GPIO 14 Physical Pin 8 */
 
 int test_init(void) {
 
+#ifdef PIGPIO
+  gpioSetMode(PWM_PIN, PI_OUTPUT);
+  gpioSetPWMrange(PWM_PIN,100); //Pin,initalValue,pwmRange    
+  gpioSetMode(KEY_INPUT_PIN, PI_INPUT);
+  gpioSetPullUpDown(KEY_INPUT_PIN, PI_PUD_UP);
+  gpioSetMode(KEY_OUTPUT_PIN, PI_OUTPUT);
+  gpioSetMode(LED_PIN, PI_OUTPUT);
+
+  gpioWrite(KEY_OUTPUT_PIN,0);
+
+  gpioPWM(PWM_PIN, 50);
+#else
+  pinMode(PWM_PIN, OUTPUT);
+  softPwmCreate(PWM_PIN,0,100); //Pin,initalValue,pwmRange    
+  pinMode(KEY_INPUT_PIN, INPUT);
+  pullUpDnControl(KEY_INPUT_PIN, PUD_UP);
+  pinMode(KEY_OUTPUT_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
-  softPwmCreate(LED_PIN,0,100); //Pin,initalValue,pwmRange    
-  pinMode(KEY_PIN, INPUT);
-  pullUpDnControl(KEY_PIN, PUD_UP);
- 
+
+  digitalWrite(KEY_OUTPUT_PIN,0);
+
+  softPwmWrite(PWM_PIN, 50);
+#endif
+  
   return 0;
   
 }
@@ -64,15 +89,27 @@ void test(void)
   if (*value == INT_MISS) *value = 1;
 
   if (*value != INT_MISS) {
-    //    digitalWrite(LED_PIN, *value);
-    softPwmWrite(LED_PIN, 50);
   }
 
-  ret = digitalRead(KEY_PIN);
+#ifdef PIGPIO
+  ret = gpioRead(KEY_INPUT_PIN);
+#else
+  ret = digitalRead(KEY_INPUT_PIN);
+#endif
   if (ret == 0) {
-    //    printf("Key Pressed\n");
+    printf("Key Pressed\n");
+#ifdef PIGPIO
+    gpioWrite(LED_PIN,1);
+#else
+    digitalWrite(LED_PIN,1);
+#endif
     *fvalue = 1.0;
   } else {
+#ifdef PIGPIO
+    gpioWrite(LED_PIN,0);
+#else
+    digitalWrite(LED_PIN,0);
+#endif
     *fvalue = 0.0;
   }
 

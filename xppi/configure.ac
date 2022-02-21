@@ -23,15 +23,11 @@ case $host_os in
 linux*)
     os=linux
     ;;
-darwin*)
-    os=darwin
-    ;;
 *)
     AC_MSG_ERROR([Unsupported operating system. Currently only Linux and Darwin/OSX are supported.])
 esac
 
 AM_CONDITIONAL([OS_LINUX], [test "x$os" = xlinux])
-AM_CONDITIONAL([OS_DARWIN], [test "x$os" = xdarwin])
 
 # Debug compilation support
 AC_MSG_CHECKING([whether to build with debug information])
@@ -50,12 +46,36 @@ else
     CFLAGS="$CFLAGS -O2"
 fi
 
+# check for pigpio library / header presence (PRIORITARY OVER WIRINGPI)
+AC_CHECK_LIB(pigpio, gpioInitialise, , HAVE_PIGPIO=no)
+if test "x$HAVE_PIGPIO" = xno; then
+    AC_MSG_NOTICE([Can't find pigpio library, or can't link a program to it.])
+#else
+# Enable this as soon as we have found a way around the sudo permission of pigpio
+#    AC_DEFINE([PIGPIO],[],[Use PIGPIO to access GPIO instead of wiringPi])
+fi
+AC_CHECK_HEADER(pigpio.h)
+
+
+# also check for wiringpi library / header presence
+AC_CHECK_LIB(wiringPi, wiringPiSetup, , HAVE_WIRINGPI=no)
+if test "x$HAVE_WIRINGPI" = xno; then
+    AC_MSG_NOTICE([Can't find wiringPi library, or can't link a program to it.])
+fi
+AC_CHECK_HEADER(wiringPi.h)
+
+if test "x$HAVE_WIRINGPI" = xno; then
+  if test "x$HAVE_PIGPIO" = xno; then
+    AC_MSG_ERROR([Need either pigpio or wiringPi library to work.])
+  fi
+fi
+
+
 # Enable Threading support
 CFLAGS="$CFLAGS -pthread"
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdio.h stdlib.h string.h unistd.h signal.h sys/ioctl.h sys/socket.h arpa/inet.h netinet.h sys/time.h])
-AC_CHECK_HEADER(wiringPi.h)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SSIZE_T
@@ -67,7 +87,7 @@ AC_TYPE_UINT8_T
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol])
 AC_CHECK_LIB([m],[roundf])
-AC_CHECK_LIB([wiringPi],[wiringPiSetup])
+AC_CHECK_LIB([rt],[clock_gettime])
 
 # set installation prefix to current directory if none was given
 if test "x$prefix" = xNONE; then

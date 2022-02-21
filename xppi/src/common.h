@@ -17,6 +17,7 @@
 
 #include <wiringPi.h>
 #include <softPwm.h>
+#include <pigpio.h>
 
 #define INTERVAL 50
 

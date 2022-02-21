@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
 
   /* initialize wiringPi Library */
   if (init_pi()<0) exit_pi(-4);
-
+ 
   /* initialize modules */
   if ((strcmp(argv[1],"boeing737fmc") == 0) ||
       (strcmp(argv[1],"boeing737fmc1") == 0) ||

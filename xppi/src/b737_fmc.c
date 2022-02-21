@@ -46,38 +46,71 @@
 #define nRows 8
 
 // columns are outputs. All are set to HIGH except the column being scanned.
+/* const int colPins[] = {  */
+/* 		15,     // p.8  BCM.14 	UART TX Pi3 OK */
+/* 		16,     // p.10 BCM.15 	UART RX Pi3 OK */
+/* 		1, 	// p.12 BCM.18 	PWM0 Pi3 OK */
+/* 		4, 	// p.16 BCM.23 	Pi3 OK */
+/* 		5, 	// p.18 BCM.24 	Pi3 OK */
+/* 		6,	// p.22 BCM.25 	Pi3 OK */
+/* 		10,	// p.24	BCM.8   CE0 Pi3 OK */
+/* 		11,	// p.26 BCM.7	CE1 Pi3 OK */
+/* 		27	// p.36 BCM.16  Pi3 OK */
+/* 		}; */
+/* // rows are inputs. */
+/* const int rowPins[] = {  */
+/* 		29,	// p.40 BCM.21	SCLK Pi3 OK */
+/* 		8,	// p.3  BCM.2   I2C SDA Pi3 OK */
+/* 		9,	// p.5  BCM.3   I2C SCL Pi3 OK */
+/* 		7,	// p.7  BCM.4   GPCLK0 Pi3 OK */
+/* 		0,	// p.11 BCM.17  Pi3 OK */
+/* 		2, 	// p.13 BCM.27  Pi3 OK */
+/* 		3,	// p.15 BCM.22  Pi3 OK */
+/* 		12	// p.19 BCM.10  MOSI Pi3 OK */
+/* 		}; */
+
+/* const int exec_led_pin = 13; // p. 21 BCM 9  Pi3 OK */
+/* const int msg_led_pin = 14;  // p. 23 BCM 11 Pi3 OK */
+/* const int dspy_led_pin = 21; // p. 29 BCM 5  Pi3 OK */
+/* const int ofst_led_pin = 22; // p. 31 BCM 6  Pi3 OK */
+/* const int fail_led_pin = 23; // p. 33 BCM 13 Pi3 OK */
+/* const int bgl_pwm_pin = 24;  // p. 35 BCM 19 Pi3 OK */
+/* const int rot_sw_pin = 26;   // p. 32 BCM 12 */
+/* const int rot_a_pin = 25;    // p. 37 BCM 26 */
+/* const int rot_b_pin = 28;    // p. 38 BCM 20 */
+
 const int colPins[] = { 
-		15,     // p.8  BCM.14 	UART TX Pi3 OK
-		16,     // p.10 BCM.15 	UART RX Pi3 OK
-		1, 	// p.12 BCM.18 	PWM0 Pi3 OK
-		4, 	// p.16 BCM.23 	Pi3 OK
-		5, 	// p.18 BCM.24 	Pi3 OK
-		6,	// p.22 BCM.25 	Pi3 OK
-		10,	// p.24	BCM.8   CE0 Pi3 OK
-		11,	// p.26 BCM.7	CE1 Pi3 OK
-		27	// p.36 BCM.16  Pi3 OK
+		14,     // p.8  BCM.14 	UART TX Pi3 OK
+		15,     // p.10 BCM.15 	UART RX Pi3 OK
+		18, 	// p.12 BCM.18 	PWM0 Pi3 OK
+		23, 	// p.16 BCM.23 	Pi3 OK
+		24, 	// p.18 BCM.24 	Pi3 OK
+		25,	// p.22 BCM.25 	Pi3 OK
+		8,	// p.24	BCM.8   CE0 Pi3 OK
+		7,	// p.26 BCM.7	CE1 Pi3 OK
+		16	// p.36 BCM.16  Pi3 OK
 		};
 // rows are inputs.
 const int rowPins[] = { 
-		29,	// p.40 BCM.21	SCLK Pi3 OK
-		8,	// p.3  BCM.2   I2C SDA Pi3 OK
-		9,	// p.5  BCM.3   I2C SCL Pi3 OK
-		7,	// p.7  BCM.4   GPCLK0 Pi3 OK
-		0,	// p.11 BCM.17  Pi3 OK
-		2, 	// p.13 BCM.27  Pi3 OK
-		3,	// p.15 BCM.22  Pi3 OK
-		12	// p.19 BCM.10  MOSI Pi3 OK
+		21,	// p.40 BCM.21	SCLK Pi3 OK
+		2,	// p.3  BCM.2   I2C SDA Pi3 OK
+		3,	// p.5  BCM.3   I2C SCL Pi3 OK
+		4,	// p.7  BCM.4   GPCLK0 Pi3 OK
+		17,	// p.11 BCM.17  Pi3 OK
+		27, 	// p.13 BCM.27  Pi3 OK
+		22,	// p.15 BCM.22  Pi3 OK
+		10	// p.19 BCM.10  MOSI Pi3 OK
 		};
 
-const int exec_led_pin = 13; // p. 21 BCM 9  Pi3 OK
-const int msg_led_pin = 14;  // p. 23 BCM 11 Pi3 OK
-const int dspy_led_pin = 21; // p. 29 BCM 5  Pi3 OK
-const int ofst_led_pin = 22; // p. 31 BCM 6  Pi3 OK
-const int fail_led_pin = 23; // p. 33 BCM 13 Pi3 OK
-const int key_led_pin = 24;  // p. 35 BCM 19 Pi3 OK
-const int rot_sw_pin = 26;   // p. 32 BCM 12
-const int rot_a_pin = 25;    // p. 37 BCM 26
-const int rot_b_pin = 28;    // p. 38 BCM 20
+const int exec_led_pin = 9; // p. 21 BCM 9  Pi3 OK
+const int msg_led_pin = 11;  // p. 23 BCM 11 Pi3 OK
+const int dspy_led_pin = 5; // p. 29 BCM 5  Pi3 OK
+const int ofst_led_pin = 6; // p. 31 BCM 6  Pi3 OK
+const int fail_led_pin = 13; // p. 33 BCM 13 Pi3 OK
+const int bgl_pwm_pin = 19;  // p. 35 BCM 19 Pi3 OK
+const int rot_sw_pin = 12;   // p. 32 BCM 12
+const int rot_a_pin = 26;    // p. 37 BCM 26
+const int rot_b_pin = 20;    // p. 38 BCM 20
 
 /* 3D array with 9 Columns x 8 Rows x 10 Chars */
 const char zibo[nCols][nRows][12] = {{"_1L","_2L","_3L","_4L","_5L","_6L","_1R","_2R"},
@@ -166,8 +199,8 @@ int b737_fmc_init()
   pinMode(dspy_led_pin, OUTPUT);
   pinMode(ofst_led_pin, OUTPUT);
   pinMode(fail_led_pin, OUTPUT);
-  pinMode(key_led_pin,  OUTPUT);
-  softPwmCreate(key_led_pin,0,100); //Pin,initalValue,pwmRange    
+  pinMode(bgl_pwm_pin,  OUTPUT);
+  softPwmCreate(bgl_pwm_pin,0,100); //Pin,initalValue,pwmRange    
 
   pinMode(rot_a_pin,  INPUT);
   pinMode(rot_a_pin,  INPUT);
@@ -251,7 +284,7 @@ void b737_fmc()
 	(*key_brightness != FLT_MISS)) {
       printf("New Key Brightness: %f \n",*key_brightness);
       key_brightness_save = *key_brightness;
-      softPwmWrite(key_led_pin, (int) (*key_brightness * 100.0));
+      softPwmWrite(bgl_pwm_pin, (int) (*key_brightness * 100.0));
     }
     
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);

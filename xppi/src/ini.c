@@ -137,8 +137,17 @@ int ini_signal_handler(void)
 /* Initializing wiringPi */
 int init_pi(void)
 {
-  wiringPiSetup();
+#ifdef PIGPIO
+  if (gpioInitialise() < 0) {
+    return -1;
+  } else {
+    return 0;
+  }
+#else
+  // wiringPiSetup(); /* Use Wiring Pi Numbering DEPRECATED */
+  wiringPiSetupGpio(); /* Use GPIO / BCM Numbering */
   return 0;
+#endif
 }
 
 /* Exiting */
@@ -151,6 +160,11 @@ void exit_pi(int ret)
   /* free local dataref structure */
   clear_dataref();
 
+#ifdef PIGPIO
+  /* free gpio handling */
+  gpioTerminate();
+#endif
+  
   if ((ret != SIGINT) && (ret != SIGTERM)) {
     printf("Exiting with status %i \n",ret);
     exit(ret);

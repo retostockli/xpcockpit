@@ -34,14 +34,23 @@
 #include "serverdata.h"
 #include "b737_awm.h"
 
-#define CONT_HORN_PIN 0
-#define INT_HORN_PIN 1
-#define AP_DISC_PIN 2
-#define HI_CHIME_PIN 3
-#define HILOW_CHIME_PIN 4
-#define LOW_CHIME_PIN 5
-#define CLACKER_PIN 12
-#define FIRE_BELL_PIN 13
+/* #define CONT_HORN_PIN 0 */
+/* #define INT_HORN_PIN 1 */
+/* #define AP_DISC_PIN 2 */
+/* #define HI_CHIME_PIN 3 */
+/* #define HILOW_CHIME_PIN 4 */
+/* #define LOW_CHIME_PIN 5 */
+/* #define CLACKER_PIN 12 */
+/* #define FIRE_BELL_PIN 13 */
+
+#define CONT_HORN_PIN 17
+#define INT_HORN_PIN 18
+#define AP_DISC_PIN 27
+#define HI_CHIME_PIN 22
+#define HILOW_CHIME_PIN 23
+#define LOW_CHIME_PIN 24
+#define CLACKER_PIN 10
+#define FIRE_BELL_PIN 9
 
 int b737_awm_init(void) {
  
