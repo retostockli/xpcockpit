@@ -1,4 +1,4 @@
-/* This is the compass.c code which drives a wet compass attached with 2 coils through
+/* This is the B737 compass.c code which drives a wet compass attached with 2 coils through
    a L9110 motor H-Bridge and 2 PWM signals
 
    Copyright (C) 2021 Reto Stockli
@@ -31,7 +31,7 @@
 
 #include "common.h"
 #include "serverdata.h"
-#include "compass.h"
+#include "b737_compass.h"
 
 /* int DOWN_PIN = 28; /\* GPIO 20, Physical Pin 38 *\/ */
 /* int UP_PIN = 29;   /\* GPIO 21, Physical Pin 40 *\/ */
@@ -85,7 +85,7 @@ float interpolate(float xval)
   return val;
 }
 
-int compass_init(void) {
+int b737_compass_init(void) {
 
   pinMode(DOWN_PIN, INPUT);
   pinMode(UP_PIN, INPUT);
@@ -105,7 +105,7 @@ int compass_init(void) {
   
 }
 
-void compass(void)
+void b737_compass(void)
 {
 
   int calibrate = 0;  /* set to 1 in order to create a new x/y calibration table (see above) */
@@ -114,7 +114,8 @@ void compass(void)
   int ret;
   
   /* link integer data like a switch in the cockpit */
-  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  //  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  int *value = link_dataref_int("sim/cockpit/electrical/avionics_on");
   
  
   /* not needed, only if you run without x-plane connection */

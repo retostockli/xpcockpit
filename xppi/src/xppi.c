@@ -41,7 +41,7 @@
 #include "check_aircraft.h"
 #include "test.h"
 #include "b737_fmc.h"
-#include "compass.h"
+#include "b737_compass.h"
 #include "b737_awm.h"
 
 int acf_type;
@@ -72,19 +72,20 @@ int main(int argc, char **argv) {
   if (init_pi()<0) exit_pi(-4);
  
   /* initialize modules */
+  if (strcmp(argv[1],"test") == 0) {
+    if (test_init()<0) exit_pi(-5);
+  }
+  if (strcmp(argv[1],"boeing737compass") == 0) {
+    if (b737_compass_init()<0) exit_pi(-5);
+    if (b737_awm_init()<0) exit_pi(-5);
+  }
+  if (strcmp(argv[1],"boeing737awm") == 0) {
+    if (b737_awm_init()<0) exit_pi(-5);
+  }
   if ((strcmp(argv[1],"boeing737fmc") == 0) ||
       (strcmp(argv[1],"boeing737fmc1") == 0) ||
       (strcmp(argv[1],"boeing737fmc2") == 0)) {
     if (b737_fmc_init()<0) exit_pi(-5);
-  }
-  if (strcmp(argv[1],"test") == 0) {
-    if (test_init()<0) exit_pi(-5);
-  }
-  if (strcmp(argv[1],"compass") == 0) {
-    if (compass_init()<0) exit_pi(-5);
-  }
-  if (strcmp(argv[1],"boeing737awm") == 0) {
-    if (b737_awm_init()<0) exit_pi(-5);
   }
 
   while (1) {
@@ -102,8 +103,9 @@ int main(int argc, char **argv) {
     if (strcmp(argv[1],"test") == 0) {
       test();
     }
-    if (strcmp(argv[1],"compass") == 0) {
-      compass();
+    if (strcmp(argv[1],"boeing737compass") == 0) {
+      b737_compass();
+      b737_awm();
     }
     if (strcmp(argv[1],"boeing737awm") == 0) {
       b737_awm();

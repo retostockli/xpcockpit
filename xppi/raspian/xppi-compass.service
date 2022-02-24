@@ -1,0 +1,11 @@
+[Unit]
+Description=Systemd service to start and stop xppi with user stockli
+
+[Service]
+Type=simple
+#User=stockli
+#Group=stockli
+ExecStart=/home/stockli/xpcockpit/xppi/bin/xppi boeing737compass 
+
+[Install]
+WantedBy=default.target

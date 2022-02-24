@@ -6,7 +6,7 @@ Description=Systemd service to start and stop xpopengc with user stockli
 [Service]
 #User=stockli
 Environment=DISPLAY=:0.0
-ExecStart=/home/stockli/xpcockpit/xpopengc/bin/xpopengc boeing737cdu2
+ExecStart=/home/stockli/xpcockpit/xpopengc/bin/xpopengc boeing737du2
 #ExecStart=xeyes
 
 [Install]
