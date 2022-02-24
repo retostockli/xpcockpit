@@ -15,7 +15,7 @@
 */
 
 /* General Definitions */
-#define MAXCONNECT 10         /* Maximum simultaneous TCP/IP connections to the server */
+#define MAXCONNECT 20         /* Maximum simultaneous TCP/IP connections to the server */
 
 /* Client Socket Status */
 

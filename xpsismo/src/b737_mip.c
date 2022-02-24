@@ -464,8 +464,14 @@ void b737_mip(void)
 
     /* MIC Button */
     ret = digital_input(card,72,mic_capt,-1);
+    if (ret == 1) {
+      printf("MIC CAPTAIN\n");
+    }
     ret = digital_input(card,80,mic_fo,-1);
-
+    if (ret == 1) {
+      printf("MIC COPILOT\n");
+    }
+ 
     if ((*mic_capt == 1) || (*mic_fo == 1)) {
       *ptt = 1;
     } else {
@@ -474,8 +480,14 @@ void b737_mip(void)
     
     /* Clock Button */
     ret = digital_input(card,73,clock_capt,-1);
-    ret = digital_input(card,81,clock_fo,-1);
-
+    if (ret == 1) {
+      printf("CLOCK CAPTAIN\n");
+    }
+     ret = digital_input(card,81,clock_fo,-1);
+    if (ret == 1) {
+      printf("CLOCK COPILOT\n");
+    }
+ 
 
     
     /* ANALOG INPUTS */

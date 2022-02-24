@@ -141,7 +141,7 @@ PLUGIN_API int XPluginStart(
   /* define the xpserver Plugin Menu */
   strcpy(outName, "xpserver");
   strcpy(outSig, "xplanesdk.xpserver");
-  strcpy(outDesc, "This plugin communicates X-Plane data to IOCARDS and OpenGC via TCP/IP.");
+  strcpy(outDesc, "This plugin communicates X-Plane data to OpenCockpits, SISMO, Rasperry, Leo Bodnar and OpenGC via TCP/IP.");
 
   xpserverMenuItem = XPLMAppendMenuItem( XPLMFindPluginsMenu(), "xpserver", 0, 1);		
   xpserverMenu = XPLMCreateMenu( "xpserver", XPLMFindPluginsMenu(), xpserverMenuItem, xpserverMenuHandlerCallback,0);
@@ -552,9 +552,9 @@ void xpserverClientWindowCallback(
 		 (char*)("#"), NULL, xplmFont_Basic);
   XPLMDrawString(colorwhite, left + 25, top - 35, 
 		 (char*)("Client Name"), NULL, xplmFont_Basic);
-  XPLMDrawString(colorwhite, left + 150, top - 35, 
+  XPLMDrawString(colorwhite, left + 175, top - 35, 
 		 (char*)("Client IP"), NULL, xplmFont_Basic);
-  XPLMDrawString(colorwhite, left + 230, top - 35, 
+  XPLMDrawString(colorwhite, left + 270, top - 35, 
 		 (char*)("# Datarefs"), NULL, xplmFont_Basic);
   
   i = 0;
@@ -568,10 +568,10 @@ void xpserverClientWindowCallback(
 		       (char*) str, NULL, xplmFont_Basic);
 	XPLMDrawString(colorred, left + 25, top - 35 - 15*i, 
 		       (char*) clientnameArray[j], NULL, xplmFont_Basic);
-	XPLMDrawString(colorred, left + 150, top - 35 - 15*i, 
+	XPLMDrawString(colorred, left + 175, top - 35 - 15*i, 
 		       (char*) clntAddrArray[j], NULL, xplmFont_Basic);
 	snprintf(str, 6, "%d", numlinkArray[j]);
-	XPLMDrawString(colorred, left + 230, top - 35 - 15*i, 
+	XPLMDrawString(colorred, left + 270, top - 35 - 15*i, 
 		       (char*) str, NULL, xplmFont_Basic);
 
       }
