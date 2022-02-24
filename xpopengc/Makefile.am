@@ -10,9 +10,9 @@ inidata/boeing737.ini \
 inidata/boeing737mip.ini \
 inidata/boeing737nav.ini \
 inidata/boeing737pfd.ini \
-inidata/boeing737cdu1.ini \
+inidata/boeing737du1.ini \
 inidata/boeing737eicas.ini \
-inidata/boeing737cdu2.ini \
+inidata/boeing737du2.ini \
 inidata/boeing737fmc1.ini \
 inidata/boeing737fmc2.ini \
 inidata/default.ini \
