@@ -18,5 +18,5 @@
 
 
 /* Prototype Functions */
-int compass_init(void);
-void compass(void);
+int b737_compass_init(void);
+void b737_compass(void);
