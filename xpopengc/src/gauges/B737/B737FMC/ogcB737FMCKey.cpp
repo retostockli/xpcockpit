@@ -119,7 +119,7 @@ namespace OpenGC
       switch(m_KeyForm) {
       case 0:
 	glColor3ub( COLOR_GRAY25 );
-	glPolygonMode(GL_FRONT,GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
 	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
@@ -129,7 +129,7 @@ namespace OpenGC
 	break;
       case 1:
 	glColor3ub( COLOR_GRAY25 );
-	glPolygonMode(GL_FRONT,GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
 	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
@@ -146,7 +146,7 @@ namespace OpenGC
 	break;
       case 2:
 	glColor3ub( COLOR_GRAY25 );
-	glPolygonMode(GL_FRONT,GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
 	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
@@ -162,7 +162,7 @@ namespace OpenGC
 	break;
       default:
 	glColor3ub( COLOR_GRAY25 );
-	glPolygonMode(GL_FRONT,GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0.1*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);
 	glVertex2f( 0.9*m_PhysicalSize.x, 0.1*m_PhysicalSize.y);

@@ -251,6 +251,7 @@ namespace OpenGC
 
 	  /* Draw black background to obscure station / tcas symbols */
 	  glColor3ub(COLOR_BLACK);
+	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_POLYGON);
 	  glVertex2f(0,0);
 	  glVertex2f(0,m_PhysicalSize.y*0.15);
@@ -302,6 +303,7 @@ namespace OpenGC
 
 	  /* Draw black background to obscure station / tcas symbols */
 	  glColor3ub(COLOR_BLACK);
+	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_POLYGON);
 	  glVertex2f(m_PhysicalSize.x,0);
 	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*0.15);

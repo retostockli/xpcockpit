@@ -165,6 +165,7 @@ namespace OpenGC
 	    m_pFontManager->Print(5.0, texty + bigFontHeight/10.0, &buffer[0], m_Font);
 	  } else {
 	    glColor3ub(COLOR_GREEN);
+	    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	    glBegin(GL_POLYGON);
 	    glVertex2f(4.0,texty);
 	    glVertex2f(4.0,texty + bigFontHeight);

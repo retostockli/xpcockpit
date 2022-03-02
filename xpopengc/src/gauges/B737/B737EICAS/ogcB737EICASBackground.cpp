@@ -95,6 +95,7 @@ namespace OpenGC
     glPushMatrix();
 
     glEnable(GL_LINE_SMOOTH);
+    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
     glLineWidth(3.0);
     glColor3ub(COLOR_LIGHTBLUE);

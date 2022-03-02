@@ -251,6 +251,7 @@ namespace OpenGC
     if (heading_map != FLT_MISS) {
 
       glMatrixMode(GL_MODELVIEW);
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
       glPushMatrix();
       if (mapMode != 3) {

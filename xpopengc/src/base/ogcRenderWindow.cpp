@@ -124,7 +124,7 @@ RenderWindow
   glClearColor(0, 0, 0, 0);
 
   // Verify that we're drawing filled polys by default
-  glPolygonMode(GL_FRONT, GL_FILL);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   // Set smoothing on by default
   this->SetSmoothLines(true);

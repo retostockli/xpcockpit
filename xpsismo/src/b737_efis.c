@@ -41,8 +41,8 @@ void b737_efis(int copilot)
   int temp;
   int temp2;
   int card = 0;
-  int one = 1;
-  int zero = 0;
+  //  int one = 1;
+  //  int zero = 0;
 
   /* input offset between copilot and captain input pins */
   int offset;
@@ -187,13 +187,13 @@ void b737_efis(int copilot)
   int *efis_tfc;
   if ((acf_type == 2) || (acf_type == 3)) {
     if (copilot) {
-      efis_wxr = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/wxr_press");
+      //      efis_wxr = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/wxr_press");
       efis_sta = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/sta_press");
       efis_wpt = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/wpt_press");
       efis_apt = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/arpt_press");
       efis_data = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/data_press");
       efis_pos = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/pos_press");
-      efis_terr = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/terr_press");
+      //      efis_terr = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/terr_press");
       efis_fpv = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/fpv_press");
       efis_mtrs = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/mtrs_press");
       efis_rst = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/rst_press");
@@ -201,13 +201,13 @@ void b737_efis(int copilot)
       efis_ctr = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/ctr_press");
       efis_tfc = link_dataref_cmd_hold("laminar/B738/EFIS_control/fo/push_button/tfc_press");
     } else {
-      efis_wxr = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/wxr_press");
+      //      efis_wxr = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/wxr_press");
       efis_sta = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/sta_press");
       efis_wpt = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/wpt_press");
       efis_apt = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/arpt_press");
       efis_data = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/data_press");
       efis_pos = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/pos_press");
-      efis_terr = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/terr_press");
+      //      efis_terr = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/terr_press");
       efis_fpv = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/fpv_press");
       efis_mtrs = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/mtrs_press");
       efis_rst = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/rst_press");
@@ -216,13 +216,13 @@ void b737_efis(int copilot)
       efis_tfc = link_dataref_cmd_hold("laminar/B738/EFIS_control/capt/push_button/tfc_press");
     }
   } else if (acf_type == 1) {
-    efis_wxr = link_dataref_int("x737/cockpit/EFISCTRL_0/WXR_on");
+    //    efis_wxr = link_dataref_int("x737/cockpit/EFISCTRL_0/WXR_on");
     efis_sta = link_dataref_int("x737/cockpit/EFISCTRL_0/STA_on");
     efis_wpt = link_dataref_int("x737/cockpit/EFISCTRL_0/WPT_on");
     efis_apt = link_dataref_int("x737/cockpit/EFISCTRL_0/ARPT_on");
     efis_data = link_dataref_int("x737/cockpit/EFISCTRL_0/DATA_on");
     efis_pos = link_dataref_int("x737/cockpit/EFISCTRL_0/POS_on");
-    efis_terr = link_dataref_int("x737/cockpit/EFISCTRL_0/TERR_on");
+    //    efis_terr = link_dataref_int("x737/cockpit/EFISCTRL_0/TERR_on");
     efis_fpv = link_dataref_int("xpserver/EFIS_FPV");
     efis_mtrs = link_dataref_int("xpserver/EFIS_MTRS");
     efis_rst = link_dataref_int("xpserver/EFIS_RST");
@@ -230,13 +230,13 @@ void b737_efis(int copilot)
     efis_ctr = link_dataref_int("xpserver/EFIS_CTR");
     efis_tfc = link_dataref_int("xpserver/EFIS_TFC");
   } else {
-    efis_wxr = link_dataref_int("sim/cockpit/switches/EFIFS_shows_weather");
+    //    efis_wxr = link_dataref_int("sim/cockpit/switches/EFIFS_shows_weather");
     efis_sta = link_dataref_int("sim/cockpit/switches/EFIS_shows_VORs");
     efis_wpt = link_dataref_int("sim/cockpit/switches/EFIS_shows_waypoints");
     efis_apt = link_dataref_int("sim/cockpit/switches/EFIS_shows_airports");
     efis_data = link_dataref_int("sim/cockpit/switches/EFIS_shows_NDBs");
     efis_pos = link_dataref_int("sim/cockpit/switches/EFIS_shows_tcas");
-    efis_terr = link_dataref_int("xpserver/EFIS_TERR");
+    //    efis_terr = link_dataref_int("xpserver/EFIS_TERR");
     efis_fpv = link_dataref_int("xpserver/EFIS_FPV");
     efis_mtrs = link_dataref_int("xpserver/EFIS_MTRS");
     efis_rst = link_dataref_int("xpserver/EFIS_RST");
@@ -245,25 +245,45 @@ void b737_efis(int copilot)
     efis_tfc = link_dataref_int("xpserver/EFIS_TFC");
    }
 
-  int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
+  if (copilot) {
+    efis_wxr = link_dataref_int("xpserver/EFIS_fo_wxr");
+    efis_terr = link_dataref_int("xpserver/EFIS_fo_terr");
+  } else {
+    efis_wxr = link_dataref_int("xpserver/EFIS_capt_wxr");
+    efis_terr = link_dataref_int("xpserver/EFIS_capt_terr");
+  }
 
 
   /* INPUTS */
   
   /* NAV MAP FEATURE BUTTONS */
-  ret = digital_input(card,40+offset,efis_wxr,-1);  // WXR
+  ret = digital_input(card,40+offset,efis_wxr,1);  // WXR --> toggle switch
   ret = digital_input(card,41+offset,efis_sta,-1);  // STA
   ret = digital_input(card,42+offset,efis_wpt,-1);  // WPT
   ret = digital_input(card,43+offset,efis_apt,-1);  // ARPT
   ret = digital_input(card,44+offset,efis_data,-1);  // DATA
   ret = digital_input(card,45+offset,efis_pos,-1);  // POS
-  ret = digital_input(card,46+offset,efis_terr,-1);  // TERR
   ret = digital_input(card,52+offset,efis_fpv,-1);  // FPV
   ret = digital_input(card,53+offset,efis_mtrs,-1);  // MTRS
   ret = digital_input(card,34+offset,efis_rst,-1);  // RST
   ret = digital_input(card,39+offset,efis_std,-1);  // STD
   ret = digital_input(card,104+offset1,efis_ctr,-1);  // CTR
   ret = digital_input(card,105+offset1,efis_tfc,-1);  // TFC
+
+  /* Special Handling for TERR since we cycle through TERR modes */
+  temp = 0;
+  ret = digital_input(card,46+offset,&temp,1);  // TERR --> toggle switch
+  if (*efis_terr == INT_MISS) *efis_terr = 0;
+  if ((ret==1) && (temp==1)) {
+    if (*efis_terr == 0) {
+      *efis_terr = 1;
+    } else if (*efis_terr == 1) {
+      *efis_terr = 2;
+    } else {
+      *efis_terr = 0;
+    }
+    printf("EFIS TERR: %i \n",*efis_terr);
+  }
 
   /* EFIS VOR1/OFF/ADF1 selector */
   ret = digital_input(card,32+offset,&temp,-1); // VOR1

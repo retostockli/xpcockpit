@@ -138,6 +138,7 @@ namespace OpenGC
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       if (*nav_shows_apt == 1) {
 	glColor3ub(COLOR_BLACK);
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,m_PhysicalSize.y*0.380);
 	glVertex2f(0,m_PhysicalSize.y*0.420);
@@ -149,6 +150,7 @@ namespace OpenGC
       }
       if (*nav_shows_fix == 1) {
 	glColor3ub(COLOR_BLACK);
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,m_PhysicalSize.y*0.340);
 	glVertex2f(0,m_PhysicalSize.y*0.380);
@@ -160,6 +162,7 @@ namespace OpenGC
       }
       if ((*nav_shows_vor == 1) || (*nav_shows_ndb == 1)) {
 	glColor3ub(COLOR_BLACK);
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,m_PhysicalSize.y*0.300);
 	glVertex2f(0,m_PhysicalSize.y*0.340);

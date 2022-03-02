@@ -303,6 +303,7 @@ namespace OpenGC
 	glVertex2f(0,radius-4);
 	glEnd();
 	
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,0.8*radius);
 	glVertex2f(-2,0.75*radius);

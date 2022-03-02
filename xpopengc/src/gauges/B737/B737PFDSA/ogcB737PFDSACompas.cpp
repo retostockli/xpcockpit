@@ -90,6 +90,7 @@ void B737PFDSACompas::Render()
 	glPushMatrix();
 
 	glTranslatef(40, 40, 0); // move to center
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
 	// outer circle markers on -90, -45, 0, 45, 90
 	for (i = -90; i <= 90; i += 45) {

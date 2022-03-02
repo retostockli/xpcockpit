@@ -91,6 +91,8 @@ namespace OpenGC
     
     if ((*vertical_speed != FLT_MISS) && (*irs_mode == 2)) {
 
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+
       glPushMatrix();
       
       m_pFontManager->SetSize(m_Font,fontSize, fontSize);

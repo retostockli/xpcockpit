@@ -126,6 +126,8 @@ namespace OpenGC
 
     if ((*roll != FLT_MISS) && (*pitch != FLT_MISS)) {
 
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+
       if (*irs_mode == 2) {
 
 	glPushMatrix();

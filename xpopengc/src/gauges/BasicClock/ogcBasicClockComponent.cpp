@@ -97,7 +97,8 @@ namespace OpenGC
     double partCenter = partSize / 2;		// defines component center
 
     m_pFontManager->SetSize(m_Font, fontSize, fontSize);
-
+    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+	
     glPushMatrix();
     glTranslated(partCenter, partCenter, 0);
 

@@ -89,6 +89,7 @@ namespace OpenGC
       glColor3ub(COLOR_GRAY35);
 
       // Draw the background rectangle
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       glBegin(GL_POLYGON);
       glVertex2f(0.0, 0.0);
       glVertex2f(0.0, m_PhysicalSize. y);

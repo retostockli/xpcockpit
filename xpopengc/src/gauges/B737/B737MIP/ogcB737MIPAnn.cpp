@@ -153,7 +153,7 @@ namespace OpenGC
     switch(m_AnnForm) {
     case 0:
       glColor3ub( m_AnnBGColor[0], m_AnnBGColor[1], m_AnnBGColor[2] );
-      glPolygonMode(GL_FRONT,GL_FILL);
+      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glBegin(GL_POLYGON);
       glVertex2f( 0.05*m_PhysicalSize.x, 0.05*m_PhysicalSize.y);
       glVertex2f( 0.95*m_PhysicalSize.x, 0.05*m_PhysicalSize.y);

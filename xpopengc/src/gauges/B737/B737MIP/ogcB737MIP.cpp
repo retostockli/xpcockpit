@@ -483,6 +483,8 @@ void B737MIP::Render()
     
     // black rectangle of MIP display
     //    glColor3ub(COLOR_WHITE);
+    //    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+    //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
     //    glBegin(GL_POLYGON);
     //    glBegin(GL_LINE_LOOP);
     //    glVertex2f( 10, m_PhysicalSize.y - 4 );
@@ -492,8 +494,6 @@ void B737MIP::Render()
     //    glVertex2f( 98, m_PhysicalSize.y - 68 );
     //    glVertex2f( 10, m_PhysicalSize.y - 68 );
     //    glEnd();
-
-    //glPolygonMode(GL_FRONT,GL_LINE);
 
     glPopMatrix();
 

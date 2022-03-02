@@ -266,6 +266,7 @@ namespace OpenGC
 	    glRotatef(-1.0* heading_map, 0, 0, 1);
 
 	    glLineWidth(2.0);
+	    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
 	    float ss2 = 0.65*ss;
 	    if (fabs(zPos) < 300.) {
@@ -292,14 +293,14 @@ namespace OpenGC
 	    } else {
 	      // other: white diamond
 	      glColor3ub(COLOR_WHITE);
-	      glPolygonMode(GL_FRONT,GL_LINE);
+	      glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 	      glBegin(GL_POLYGON);
 	      glVertex2f(0, -ss2);
 	      glVertex2f(ss2, 0);
 	      glVertex2f(0, ss2);
 	      glVertex2f(-ss2, 0);
 	      glEnd();
-	      glPolygonMode(GL_FRONT,GL_FILL);
+	      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	    }
 
 	    if (fabs(zPos/100) < 100) {

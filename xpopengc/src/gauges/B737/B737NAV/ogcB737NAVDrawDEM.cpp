@@ -365,8 +365,7 @@ namespace OpenGC
 
 	  if (pShorelineData) {
 	    glColor3ub(COLOR_DARKBLUE);
-	    //glPolygonMode (GL_FRONT, GL_FILL);
-	    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	    //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	    for (p=0;p<pShorelineData->num_shorelines;p++) {
 
 	      if ((pShorelineData->shoreline_centerlon[p] < (aircraftLon+5.0)) &&
@@ -379,8 +378,9 @@ namespace OpenGC
 		       pShorelineData->shoreline_centerlon[p],pShorelineData->shoreline_centerlat[p]);
 		*/
 		
-		glBegin(GL_POLYGON);
-		//glBegin(GL_LINE_LOOP);
+		//glBegin(GL_POLYGON);
+		glBegin(GL_LINE_LOOP);
+		// Implement Stencil or Tesselator for filling concave polygons
 		for (i=0;i<pShorelineData->num_shorelinepoints[p];i++) {
 		
 		  lon = pShorelineData->shoreline_lon[p][i];  
@@ -393,6 +393,7 @@ namespace OpenGC
 		  yPos = -northing / 1852.0 / mapRange * map_size; 
 		  xPos = easting / 1852.0  / mapRange * map_size;
 		  glVertex2f(xPos,yPos);
+
 		}
 		glEnd();
 		  
@@ -412,6 +413,7 @@ namespace OpenGC
 
 	glColor3ub(COLOR_BLACK);
 	if (!mapCenter) {
+	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_POLYGON);
 	  glVertex2f(0,0);
 	  glVertex2f(0,m_PhysicalSize.y*acf_y);
@@ -426,6 +428,7 @@ namespace OpenGC
 	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y);
 	  glEnd();
 	} else {
+	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_POLYGON);
 	  glVertex2f(0,0);
 	  glVertex2f(0,m_PhysicalSize.y*(2*acf_y - map_y_max));
@@ -453,6 +456,7 @@ namespace OpenGC
 	  aCircle.SetRadius(m_PhysicalSize.y*(map_y_max-acf_y));
 	  
 	  // Upper Left quarter
+	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_TRIANGLE_FAN);
 	  glVertex2f(0.0,m_PhysicalSize.y*map_y_max);
 	  //glVertex2f(0.0,m_PhysicalSize.y*acf_y);
@@ -463,6 +467,7 @@ namespace OpenGC
 	  glEnd();
 	  
 	  // Upper Right quarter
+	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_TRIANGLE_FAN);
 	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*map_y_max);
 	  //glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*acf_y);
@@ -484,6 +489,7 @@ namespace OpenGC
       // plot map options
       glPushMatrix();
       glColor3ub(COLOR_BLACK);
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       glBegin(GL_POLYGON);
       glVertex2f(0,m_PhysicalSize.y*0.220);
       glVertex2f(0,m_PhysicalSize.y*0.260);

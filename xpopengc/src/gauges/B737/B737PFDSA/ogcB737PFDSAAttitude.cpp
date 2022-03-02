@@ -89,6 +89,7 @@ void B737PFDSAAttitude::Render()
   // Remember, the coordinate system is now centered in the gauge component
   glColor3ub(COLOR_GROUND);
 
+  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
   glBegin(GL_POLYGON);
   glVertex2f(-300,-300);
   glVertex2f(-300,0);

@@ -108,6 +108,7 @@ namespace OpenGC
     float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     
     int *nav_shows_wxr;
+    /*
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
 	nav_shows_wxr = link_dataref_int("laminar/B738/EFIS/EFIS_wx_on");
@@ -118,8 +119,15 @@ namespace OpenGC
       nav_shows_wxr = link_dataref_int("x737/cockpit/EFISCTRL_0/WXR_on");
     } else {
       nav_shows_wxr = link_dataref_int("sim/cockpit2/EFIS/EFIS_weather_on");
-    }
+      }*/
 
+    if (is_captain) {
+      nav_shows_wxr = link_dataref_int("xpserver/EFIS_capt_wxr");
+    } else {
+      nav_shows_wxr = link_dataref_int("xpserver/EFIS_fo_wxr");
+    }
+    
+    
     /* Sample Datarefs for controlling WXR gain and tilt */
     float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2); /* Gain should go from 0.1 .. 2.0 */
     float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2); /* Tilt in degrees up/down : not implemented yet */
@@ -279,6 +287,7 @@ namespace OpenGC
 	glPushMatrix();
 
 	glColor3ub(COLOR_BLACK);
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,0);
 	glVertex2f(0,m_PhysicalSize.y*acf_y);
@@ -286,6 +295,7 @@ namespace OpenGC
 	glVertex2f(m_PhysicalSize.x,0);
 	glEnd();
 	
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,m_PhysicalSize.y);
 	glVertex2f(0,m_PhysicalSize.y*map_y_max);
@@ -330,6 +340,7 @@ namespace OpenGC
       // plot map options
       glPushMatrix();
       glColor3ub(COLOR_BLACK);
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       glBegin(GL_POLYGON);
       glVertex2f(0,m_PhysicalSize.y*0.260);
       glVertex2f(0,m_PhysicalSize.y*0.300);

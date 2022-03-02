@@ -1133,7 +1133,7 @@ void B737FMC::Render()
       // grey FMC plate
       /*
 	glColor3ub(COLOR_GRAY40);
-	glPolygonMode(GL_FRONT,GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f( 0, 0);
 	glVertex2f( m_PhysicalSize.x, 0);
@@ -1178,7 +1178,7 @@ void B737FMC::Render()
 	  float y1 = m_PhysicalSize.y / 2 - 8;
 	
 	  glColor3ub(COLOR_YELLOW);
-	  glPolygonMode(GL_FRONT,GL_FILL);
+	  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	  glBegin(GL_POLYGON);
 	  glVertex2f( x0, y0);
 	  glVertex2f( x1, y0);
@@ -1192,6 +1192,7 @@ void B737FMC::Render()
    
       // white rectangle of actual FMC display
       glColor3ub(COLOR_WHITE);
+      //    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
       //    glBegin(GL_POLYGON);
       glBegin(GL_LINE_LOOP);
       glVertex2f( 13, m_PhysicalSize.y - 1 );
@@ -1202,7 +1203,6 @@ void B737FMC::Render()
       glVertex2f( 13, m_PhysicalSize.y - 79 );
       glEnd();
 
-      //glPolygonMode(GL_FRONT,GL_LINE);
  
       glPopMatrix();
 

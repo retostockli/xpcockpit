@@ -64,6 +64,7 @@ void B737PFDSANav::Render()
 	GaugeComponent::Render();
 
 	/*
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	
 	float value = m_pDataSource->GetAirframe()->GetMag_Heading();
 	float value2 = m_pDataSource->GetAirframe()->GetNav1_OBS();

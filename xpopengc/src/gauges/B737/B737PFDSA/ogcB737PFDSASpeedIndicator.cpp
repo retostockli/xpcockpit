@@ -63,6 +63,7 @@ void B737PFDSASpeedIndicator::Render()
 	GaugeComponent::Render();
 
 	/*
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	
 	float value = m_pDataSource->GetAirframe()->GetIAS();
 	float avalue = m_pDataSource->GetAirframe()->GetGround_Speed_K();

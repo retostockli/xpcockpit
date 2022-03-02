@@ -112,6 +112,7 @@ namespace OpenGC {
       
       
 	// The background of the dial
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       
 	glColor3ub(COLOR_GRAY25);
 	glBegin(GL_POLYGON);

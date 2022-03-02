@@ -105,6 +105,7 @@ namespace OpenGC
     if ((*roll != FLT_MISS) && (*pitch != FLT_MISS)) {
 
       glPushMatrix();
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       
       // Move to the center of the window
       glTranslatef(m_PhysicalSize.x/2,center,0);
@@ -472,6 +473,7 @@ namespace OpenGC
 
       // Black Background
       glColor3ub(COLOR_BLACK);
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       glBegin(GL_POLYGON);
       glVertex2f(localizer_x + 2.5*localizerWidth, localizer_y + localizerHeight/2.0 );
       glVertex2f(localizer_x - 2.5*localizerWidth, localizer_y + localizerHeight/2.0 );
@@ -522,6 +524,7 @@ namespace OpenGC
 	// This is the localizer bug
 	glColor3ub(COLOR_VIOLET);
 	if (fabs(*nav1_hdef) < 2.49) {
+	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_POLYGON);
 	} else {
 	  glBegin(GL_LINE_LOOP);
@@ -550,6 +553,7 @@ namespace OpenGC
 
       // Black Background
       glColor3ub(COLOR_BLACK);
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       glBegin(GL_POLYGON);
       glVertex2f(glideslope_x + glideslopeWidth/2.0, glideslope_y + 2.5*glideslopeHeight );
       glVertex2f(glideslope_x - glideslopeWidth/2.0, glideslope_y + 2.5*glideslopeHeight );
@@ -605,6 +609,7 @@ namespace OpenGC
 	// fill the glideslope bug when we are in glide slope color is magenta
 	glColor3ub(COLOR_VIOLET);
 	if (fabs(rawGlideslope) < 2.49) {
+	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_POLYGON);
 	} else {
 	  glBegin(GL_LINE_LOOP);
