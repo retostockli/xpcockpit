@@ -52,6 +52,9 @@
 #define CLACKER_PIN 10
 #define FIRE_BELL_PIN 9
 
+int belts_save;
+struct timeval attend_time1;
+
 int b737_awm_init(void) {
  
   pinMode(CONT_HORN_PIN, OUTPUT);
@@ -63,6 +66,8 @@ int b737_awm_init(void) {
   pinMode(CLACKER_PIN, OUTPUT);
   pinMode(FIRE_BELL_PIN, OUTPUT);
 
+  belts_save = 0;
+  
   return 0;
   
 }
@@ -71,23 +76,63 @@ void b737_awm(void)
 {
 
   int ret;
-  
-  /* link integer data like a switch in the cockpit */
-  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
-  
- 
-  /* not needed, only if you run without x-plane connection */
-  if (*value == INT_MISS) *value = 0;
+  struct timeval attend_time2;
+  double dtime;
 
-  if (*value != INT_MISS) {
-        digitalWrite(CONT_HORN_PIN, *value);
-        digitalWrite(INT_HORN_PIN, *value);
-        digitalWrite(AP_DISC_PIN, *value);
-        digitalWrite(HI_CHIME_PIN, *value);
-        digitalWrite(HILOW_CHIME_PIN, *value);
+  if (acf_type == 3) {
+  
+    /* link integer data like a switch in the cockpit */
+    int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+
+    int *ap_disconnect = link_dataref_int("laminar/b738/fmodpack/fmod_ap_disconnect");
+    int *belts = link_dataref_int("laminar/b738/fmodpack/play_seatbelt_no_smoke");
+    float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
+    float *mach_warn = link_dataref_flt("laminar/B738/fmod/mach_warn",0);
+    int *fire_bell = link_dataref_int("laminar/b738/fmodpack/fmod_play_firebells");
+    float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
+    float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
+    
+    /* not needed, only if you run without x-plane connection */
+    if (*value == INT_MISS) *value = 0;
+
+    if (*value != INT_MISS) {
+      /*
         digitalWrite(LOW_CHIME_PIN, *value);
-        digitalWrite(CLACKER_PIN, *value);
-        digitalWrite(FIRE_BELL_PIN, *value);
-  }
+      */
+    }
 
+    
+    if (*ap_disconnect != INT_MISS) digitalWrite(AP_DISC_PIN, *ap_disconnect);
+    
+    if ((*belts != INT_MISS) && (*belts != belts_save)) {
+      digitalWrite(HI_CHIME_PIN, 1);
+      belts_save = *belts;
+    } else {
+      digitalWrite(HI_CHIME_PIN, 0);
+    }
+    
+    if (*attend != FLT_MISS) {
+      gettimeofday(&attend_time2,NULL);
+      if ((int) *attend == 1) {
+	digitalWrite(HILOW_CHIME_PIN, 1);
+	gettimeofday(&attend_time1,NULL);
+      } else {
+	dtime = ((attend_time2.tv_sec - attend_time1.tv_sec) +
+		   (attend_time2.tv_usec - attend_time1.tv_usec) / 1000000.0);
+	if (dtime > 1.0) digitalWrite(HILOW_CHIME_PIN, 0);	  
+      } 
+    } else {
+      digitalWrite(HILOW_CHIME_PIN, 0);
+    }
+
+    if (*mach_warn != FLT_MISS) digitalWrite(CLACKER_PIN, (int) *mach_warn);
+    
+    if (*fire_bell != INT_MISS) digitalWrite(FIRE_BELL_PIN, *fire_bell);
+
+    if (*config_warn != FLT_MISS) digitalWrite(INT_HORN_PIN, (int) *config_warn);
+
+    if (*gear_warn != FLT_MISS) digitalWrite(CONT_HORN_PIN, (int) *gear_warn);
+    
+  }
+  
 }
