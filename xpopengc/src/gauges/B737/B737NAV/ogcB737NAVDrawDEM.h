@@ -63,6 +63,7 @@ protected:
   int m_dem_lonmax;
   int m_dem_latmin;
   int m_dem_latmax;
+
   
 };
 

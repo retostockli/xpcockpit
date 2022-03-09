@@ -99,7 +99,7 @@ else
 # Linux: check presence of OpenGL library and headers
    AC_CHECK_LIB(GL, main, , unset HAVE_GL, -lGL)
    AC_CHECK_LIB(GLU, main, , unset HAVE_GL, -lGLU)
-#   AC_CHECK_LIB(GLUT, main, , unset HAVE_GL,-lGLUT)
+#   AC_CHECK_LIB(glut, main, , unset HAVE_GL,-lglut)
 
    AC_CHECK_HEADERS(GL/gl.h GL/glu.h GL/glext.h, , unset HAVE_GL,
        [
@@ -109,14 +109,18 @@ else
         #if HAVE_GL_GL_H
         #include <GL/gl.h>
         #endif
-            #if HAVE_GL_GLU_H
+        #if HAVE_GL_GLU_H
         #include <GL/glu.h>
+        #endif
+        #if HAVE_GL_GLUT_H
+        #include <GL/glut.h>
         #endif
        ])
   else
 # Windows: check presence of OpenGL32 / glu32 library and headers
    AC_CHECK_LIB(opengl32, main, , unset HAVE_GL, -lopengl32)
    AC_CHECK_LIB(glu32, main, , unset HAVE_GL, -lglu32)
+#   AC_CHECK_LIB(glut32, main, , unset HAVE_GL, -lglut32)
 
    AC_CHECK_HEADERS(GL/gl.h GL/glu.h GL/glext.h, , unset HAVE_GL,
        [
@@ -126,8 +130,11 @@ else
         #if HAVE_GL_GL_H
         #include <GL/gl.h>
         #endif
-            #if HAVE_GL_GLU_H
+        #if HAVE_GL_GLU_H
         #include <GL/glu.h>
+        #endif
+        #if HAVE_GL_GLUT_H
+        #include <GL/glut.h>
         #endif
        ])
 

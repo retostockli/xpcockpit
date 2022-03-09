@@ -67,7 +67,7 @@ namespace OpenGC
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-    //float lineWidth = 1.0;
+    float lineWidth = 6.0;
 
     int i;
     int j;
@@ -142,7 +142,9 @@ namespace OpenGC
     } else {
       nav_shows_dem = link_dataref_int("xpserver/EFIS_fo_terr");
     }
-   
+
+    *nav_shows_dem = 1;
+    
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((heading_map != FLT_MISS) && (*nav_shows_dem >= 1) &&
@@ -364,8 +366,11 @@ namespace OpenGC
 	  glFlush();
 
 	  if (pShorelineData) {
+
+	    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	    glColor3ub(COLOR_DARKBLUE);
-	    //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	    glLineWidth(lineWidth);
+	    
 	    for (p=0;p<pShorelineData->num_shorelines;p++) {
 
 	      if ((pShorelineData->shoreline_centerlon[p] < (aircraftLon+5.0)) &&
@@ -380,7 +385,6 @@ namespace OpenGC
 		
 		//glBegin(GL_POLYGON);
 		glBegin(GL_LINE_LOOP);
-		// Implement Stencil or Tesselator for filling concave polygons
 		for (i=0;i<pShorelineData->num_shorelinepoints[p];i++) {
 		
 		  lon = pShorelineData->shoreline_lon[p][i];  
@@ -394,12 +398,12 @@ namespace OpenGC
 		  xPos = easting / 1852.0  / mapRange * map_size;
 		  glVertex2f(xPos,yPos);
 
-		}
+		} /* loop through points of a lake */
 		glEnd();
 		  
 
-	      }
-	    }
+	      } /* lake inside display region */
+	    } /* loop through all lakes */
 	  }
 	  
 	}
