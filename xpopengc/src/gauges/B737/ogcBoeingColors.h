@@ -53,6 +53,7 @@
 
 /* Greys */
 #define COLOR_GRAYBLUE 51, 51, 76
+#define COLOR_GRAY15 25, 25, 25
 #define COLOR_GRAY25 64, 64, 64
 #define COLOR_GRAY35 90, 90, 90
 #define COLOR_GRAY40 100, 100, 100
