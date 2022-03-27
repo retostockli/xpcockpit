@@ -103,9 +103,12 @@ namespace OpenGC
       } else {
 	track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
 	}*/
-      
-      int *efis1_selector_pilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
-      //  int *efis1_selector_copilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
+      int *efis1_selector;      
+      if (is_captain) {
+	efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
+      } else {
+	efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
+      }
       float *adf1_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/adf1_bearing_deg_mag",0);
       float *nav1_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/nav1_bearing_deg_mag",0);
       //    unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",500,-1);
@@ -113,8 +116,12 @@ namespace OpenGC
       unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",150,-1);
       unsigned char *adf1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf1_nav_id",150,-1);
 
-      int *efis2_selector_pilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
-      //  int *efis2_selector_copilot = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_copilot");
+      int *efis2_selector;
+      if (is_captain) {
+	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
+      } else {
+	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_copilot");
+      }
       float *adf2_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_bearing_deg_mag",0);
       float *nav2_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/nav2_bearing_deg_mag",0);
       //    unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",500,-1);
@@ -162,14 +169,14 @@ namespace OpenGC
 	// plot ADF / VOR 1/2 heading arrows
 	// TODO: extend to co-pilot EFIS selector
 
-	if ((((*efis1_selector_pilot == 0) && (*adf1_bearing != FLT_MISS) &&
+	if ((((*efis1_selector == 0) && (*adf1_bearing != FLT_MISS) &&
 	     (strcmp((const char*) adf1_name,"") != 0)) || 
-	    ((*efis1_selector_pilot == 2) && (*nav1_bearing != FLT_MISS) &&
+	    ((*efis1_selector == 2) && (*nav1_bearing != FLT_MISS) &&
 	     (strcmp((const char*) nav1_name,"") != 0))) && (heading_map != FLT_MISS)) {
 
 	  glPushMatrix();     
 
-	  if (*efis1_selector_pilot == 0) {
+	  if (*efis1_selector == 0) {
 	    glRotatef(-*adf1_bearing, 0, 0, 1);
 	    glColor3ub(COLOR_CYAN);
 	  } else {
@@ -209,14 +216,14 @@ namespace OpenGC
 	  glPopMatrix();
 	}
  
-	if ((((*efis2_selector_pilot == 0) && (*adf2_bearing != FLT_MISS) &&
+	if ((((*efis2_selector == 0) && (*adf2_bearing != FLT_MISS) &&
 	     (strcmp((const char*) adf2_name,"") != 0)) || 
-	    ((*efis2_selector_pilot == 2) && (*nav2_bearing != FLT_MISS) &&
+	    ((*efis2_selector == 2) && (*nav2_bearing != FLT_MISS) &&
 	     (strcmp((const char*) nav2_name,"") != 0))) && (heading_map != FLT_MISS)) {
 
 	  glPushMatrix();     
 
-	  if (*efis2_selector_pilot == 0) {
+	  if (*efis2_selector == 0) {
 	    glRotatef(-*adf2_bearing, 0, 0, 1);
 	    glColor3ub(COLOR_CYAN);
 	  } else {

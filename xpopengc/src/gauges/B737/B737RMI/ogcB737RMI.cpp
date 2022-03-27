@@ -66,25 +66,60 @@ namespace OpenGC
     float center_x = m_PhysicalSize.x / 2.0;
     float center_y = m_PhysicalSize.y / 2.0;
     
-    float value = 45; // = m_pDataSource->GetAirframe()->GetMag_Heading();
+    float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
 	
-    bool adfValid = true; // = m_pDataSource->GetAirframe()->GetAdf1_Valid();
-    float adfValue = 120.0; // = m_pDataSource->GetAirframe()->GetAdf1_Heading();
+    int *efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
+    float *adf1_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/adf1_bearing_deg_mag",0);
+    float *nav1_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/nav1_bearing_deg_mag",0);
+    unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",150,-1);
+    unsigned char *adf1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf1_nav_id",150,-1);
 	
-    bool nav1Valid = true; // = (m_pDataSource->GetAirframe()->GetNav1_Valid() != 0 ? true : false);
-    float nav1DirValue = 180.0; // = m_pDataSource->GetAirframe()->GetNav1_Bearing();
-    //	bool nav1HasDME = m_pDataSource->GetAirframe()->GetNav1_Has_DME();
-    //	float nav1DMEValue = m_pDataSource->GetAirframe()->GetNav1_DME();
-
-    bool nav2Valid = true; // (m_pDataSource->GetAirframe()->GetNav2_Valid() != 0 ? true : false);
-    float nav2DirValue = 180.0; // = m_pDataSource->GetAirframe()->GetNav2_Bearing();
-    //	bool nav2HasDME = m_pDataSource->GetAirframe()->GetNav2_Has_DME();
-    //	float nav2DMEValue = m_pDataSource->GetAirframe()->GetNav2_DME();
-
+    int *efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
+    float *adf2_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_bearing_deg_mag",0);
+    float *nav2_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/nav2_bearing_deg_mag",0);
+    unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",150,-1);
+    unsigned char *adf2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf2_nav_id",150,-1);
+	
     int i;
     char buf[10];
 
+    float heading;
+    float nav1;
+    float nav2;
+    if (*heading_mag != FLT_MISS) {
+      heading = *heading_mag;
+    } else {
+      heading = 0.0;
+    }
+    
+    if ((((*efis1_selector == 0) && (*adf1_bearing != FLT_MISS) &&
+	  (strcmp((const char*) adf1_name,"") != 0)) || 
+	 ((*efis1_selector == 2) && (*nav1_bearing != FLT_MISS) &&
+	  (strcmp((const char*) nav1_name,"") != 0))) && (*heading_mag != FLT_MISS)) {
 
+      if (*efis1_selector == 0) {
+	nav1 = *adf1_bearing;
+      } else {
+        nav1 = *nav1_bearing;
+      }
+    } else {
+      nav1 = 90.0 + heading;
+    }
+
+    if ((((*efis2_selector == 0) && (*adf2_bearing != FLT_MISS) &&
+	  (strcmp((const char*) adf2_name,"") != 0)) || 
+	 ((*efis2_selector == 2) && (*nav2_bearing != FLT_MISS) &&
+	  (strcmp((const char*) nav2_name,"") != 0))) && (*heading_mag != FLT_MISS)) {
+
+      if (*efis2_selector == 0) {
+	nav2 = *adf2_bearing;
+      } else {
+	nav2 = *nav2_bearing;
+      }    
+    } else {
+      nav2 = 90.0 + heading;
+    }
+      
     // Draw the background rectangle
     // Draw in dark gray
     glColor3ub(COLOR_GRAY35);
@@ -136,7 +171,7 @@ namespace OpenGC
     }
 
     glPushMatrix();
-    glRotated(value, 0, 0, 1);
+    glRotated(*heading_mag, 0, 0, 1);
 
     // draw marker lines & text
     m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
@@ -176,62 +211,62 @@ namespace OpenGC
       glPopMatrix();
     }
 
-    glPopMatrix();
-
     // draw VOR/ADF arrows
-    if (nav1Valid) {
-      glPushMatrix();
-      glRotated(-nav1DirValue, 0, 0, 1);
-      glColor3ub(COLOR_WHITE);
-      glBegin(GL_POLYGON);
-      glVertex2f(0, R-7);
-      glVertex2f(-3, R-16);
-      glVertex2f(3, R-16);
-      glEnd();
 
-      glLineWidth(lineWidth*1.5);
-      glEnable(GL_LINE_STIPPLE);
-      glLineStipple( 4, 0x3F3F );
-      glBegin(GL_LINES);
-      glVertex2f(0.0,R-15);
-      glVertex2f(0.0,-R+6);
-      glEnd();
-      glDisable(GL_LINE_STIPPLE);
+    glPushMatrix();
+    glRotatef(-nav1, 0, 0, 1);
+    glColor3ub(COLOR_WHITE);
+    glBegin(GL_POLYGON);
+    glVertex2f(0, R-7);
+    glVertex2f(-3, R-16);
+    glVertex2f(3, R-16);
+    glEnd();
 
-      /*
+    glLineWidth(lineWidth*1.5);
+    glEnable(GL_LINE_STIPPLE);
+    glLineStipple( 4, 0x3F3F );
+    glBegin(GL_LINES);
+    glVertex2f(0.0,R-15);
+    glVertex2f(0.0,-R+6);
+    glEnd();
+    glDisable(GL_LINE_STIPPLE);
+
+    /*
       bool draw = true;
       glLineWidth(4.0);
       for (i = R-7; i >= -R+9; i -= 2*(R-9)/14) {
-	if (draw) {
-	  glBegin(GL_LINE_STRIP);
-	  glVertex2f(0, i);
-	  glVertex2f(0, i-(2*(R-9)/14));
-	  glEnd();
-	}
-	draw = !draw;
+      if (draw) {
+      glBegin(GL_LINE_STRIP);
+      glVertex2f(0, i);
+      glVertex2f(0, i-(2*(R-9)/14));
+      glEnd();
       }
-      */
-      glPopMatrix();
-    }
-    if (nav2Valid) {
-      glPushMatrix();
-      glRotated(-nav2DirValue, 0, 0, 1);
-      glLineWidth(lineWidth);
-      glColor3ub(COLOR_WHITE);
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(0, R-5);
-      glVertex2f(-4, R-17);
-      glVertex2f(4, R-17);
-      glEnd();
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(-1.5, R-17);
-      glVertex2f(1.5, R-17);
-      glVertex2f(1.5, -R+17);
-      glVertex2f(0.0, -R+9);
-      glVertex2f(-1.5, -R+17);
-      glEnd();
-      glPopMatrix();
-    }    
+      draw = !draw;
+      }
+    */
+    glPopMatrix();
+    
+
+    glPushMatrix();
+    glRotatef(-nav2, 0, 0, 1);  
+    glLineWidth(lineWidth);
+    glColor3ub(COLOR_WHITE);
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(0, R-5);
+    glVertex2f(-4, R-17);
+    glVertex2f(4, R-17);
+    glEnd();
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(-1.5, R-17);
+    glVertex2f(1.5, R-17);
+    glVertex2f(1.5, -R+17);
+    glVertex2f(0.0, -R+9);
+    glVertex2f(-1.5, -R+17);
+    glEnd();
+    glPopMatrix();
+
+    /* end of heading rotated coordinate system */
+    glPopMatrix();
   
     /* Small Circle in the middle holding needles */
     glPushMatrix();
