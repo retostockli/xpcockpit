@@ -1,6 +1,7 @@
 SUBDIRS = src/navigation src/base src/datasources src/gauges src/main
 EXTRA_DIST = doc fonts inidata
 pkgdata_DATA = \
+inidata/wxr.ini \
 inidata/a320default.ini \
 inidata/a320mcdu.ini \
 inidata/a320mip.ini \

@@ -40,7 +40,7 @@
 extern "C" {
 #include "dictionary.h"
 #include "iniparser.h"
-#include "udpdata.h"
+#include "wxrdata.h"
 }
 #include "ogcAppObject.h"
 #include "ogcRenderObject.h"
@@ -52,6 +52,7 @@ extern "C" {
 #include "ogcXPlaneDataSource.h"
 
 //-----------Gauges------------
+#include "WXR/ogcWXR.h"
 #include "Dummy/ogcDummyGauge.h"
 #include "BasicClock/ogcBasicClock.h"
 #include "A320/A320PFD/ogcA320PFD.h"
@@ -195,7 +196,7 @@ namespace OpenGC
     
     // Every time we loop we grab some new data and re-render the window
     m_pDataSource->OnIdle();
-    if ((numreceived > 0) || (m_InitState <= 1)) {
+    if ((numreceived > 0) || (m_InitState <= 1) || (wxr_newdata == 1)) {
       //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
       Fl::flush();
@@ -432,6 +433,7 @@ namespace OpenGC
     if (verbosity > 0) printf ("AppObject - Gauge %s, xp %f, yp %f, xs %f, ys %f, (arg %i)\n", name, xPos, yPos, xScale, yScale, arg);
 
     if (strcmp(name, "BasicClock")==0) pGauge = new BasicClock();
+    else if (strcmp(name, "WXR")==0) pGauge = new WXR();
     else if (strcmp(name, "B737PFD")==0) pGauge = new B737PFD();
     else if (strcmp(name, "B737PFDSA")==0) pGauge = new B737PFDSA();
     else if (strcmp(name, "B737EICAS")==0) pGauge = new B737EICAS();

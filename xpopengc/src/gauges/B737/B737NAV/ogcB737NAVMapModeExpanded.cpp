@@ -338,13 +338,13 @@ namespace OpenGC
 	glColor3ub(COLOR_WHITE);
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
 	m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	if (mapRange > 5.0) {
+	if (mapRange >= 5.0) {
 	  snprintf(buffer, sizeof(buffer), "%i", (int) (mapRange / 2.0));
 	} else {
 	  snprintf(buffer, sizeof(buffer), "%2.1f", mapRange / 2.0);
 	}
 	if ((mapRange / 2.0) < 100) {
-	  if (mapRange > 5.0) {
+	  if (mapRange >= 5.0) {
 	    m_pFontManager->Print( -1.5*fontSize, map_size*0.505, &buffer[0], m_Font);
 	  } else {
 	    m_pFontManager->Print( -2.0*fontSize, map_size*0.505, &buffer[0], m_Font);
