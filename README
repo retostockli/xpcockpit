@@ -1,5 +1,5 @@
 This is the xpcockpit Project by Reto Stockli, supported by Hans Jansen
-
+.
 It enables to connect custom hardware to X-Plane by use of a C library
 which allows to subscribe to X-Plane datarefs and commands. The
 currently supported hardware is most OpenCockpits cards and Leo Bodnar's 
