@@ -53,8 +53,6 @@ namespace OpenGC
   void B737RMI::Render()
   {
   
-    //  int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
-    // if (*avionics_on == 1) {
     Gauge::Render();
 
     float tickWidth = 1.5;
@@ -83,13 +81,20 @@ namespace OpenGC
     int i;
     char buf[10];
 
+
+    bool has_heading;
+    bool has_nav1;
+    bool has_nav2;
+    
     float heading;
     float nav1;
     float nav2;
     if (*heading_mag != FLT_MISS) {
       heading = *heading_mag;
+      has_heading = true;
     } else {
       heading = 0.0;
+      has_heading = false;
     }
     
     if ((((*efis1_selector == 0) && (*adf1_bearing != FLT_MISS) &&
@@ -102,8 +107,10 @@ namespace OpenGC
       } else {
         nav1 = *nav1_bearing;
       }
+      has_nav1 = true;
     } else {
       nav1 = 90.0 + heading;
+      has_nav1 = false;
     }
 
     if ((((*efis2_selector == 0) && (*adf2_bearing != FLT_MISS) &&
@@ -115,14 +122,16 @@ namespace OpenGC
 	nav2 = *adf2_bearing;
       } else {
 	nav2 = *nav2_bearing;
-      }    
+      }
+      has_nav2 = true;
     } else {
       nav2 = 90.0 + heading;
+      has_nav2 = false;
     }
       
     // Draw the background rectangle
     // Draw in dark gray
-    glColor3ub(COLOR_GRAY35);
+    glColor3ub(COLOR_GRAY15);
     glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
     glVertex2f(0.0, 0.0);
@@ -132,15 +141,11 @@ namespace OpenGC
     glVertex2f(0.0, 0.0);
     glEnd();
 
-    // Set up the circles
+    /* Outer Circle */
     CircleEvaluator aCircle;
     aCircle.SetRadius(R);
     aCircle.SetArcStartEnd(0,360);
     aCircle.SetDegreesPerPoint(10);
-    CircleEvaluator bCircle;
-    bCircle.SetRadius(R/8);
-    bCircle.SetArcStartEnd(0,360);
-    bCircle.SetDegreesPerPoint(20);
         
     glColor3ub(COLOR_BLACK);
     aCircle.SetOrigin(center_x, center_y);
@@ -156,22 +161,8 @@ namespace OpenGC
     glTranslatef(center_x, center_y, 0); // move to center
     glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
-    // outer circle markers on -90, -45, 0, 45, 90
-    for (i = 0; i < 360; i += 45) {
-      glPushMatrix();
-      glRotated(i, 0, 0, 1);
-      glLineWidth(2.0);
-      glColor3ub(COLOR_WHITE);
-      glBegin(GL_POLYGON);
-      glVertex2f(0, R);
-      glVertex2f(2, R+3);
-      glVertex2f(-2, R+3);
-      glEnd();
-      glPopMatrix();
-    }
-
     glPushMatrix();
-    glRotated(*heading_mag, 0, 0, 1);
+    glRotated(*heading_mag, 0, 0, 1); // rotate with heading
 
     // draw marker lines & text
     m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
@@ -213,74 +204,193 @@ namespace OpenGC
 
     // draw VOR/ADF arrows
 
-    glPushMatrix();
+    /* NAV1/ADV1 */
+    glPushMatrix();    
     glRotatef(-nav1, 0, 0, 1);
     glColor3ub(COLOR_WHITE);
+    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
-    glVertex2f(0, R-7);
-    glVertex2f(-3, R-16);
-    glVertex2f(3, R-16);
+    glVertex2f(0, R-6);
+    glVertex2f(-4, R-18);
+    glVertex2f(4, R-18);
     glEnd();
 
-    glLineWidth(lineWidth*1.5);
+    glLineWidth(lineWidth*2.0);
     glEnable(GL_LINE_STIPPLE);
-    glLineStipple( 4, 0x3F3F );
+    glLineStipple( 5, 0x3F3F );
     glBegin(GL_LINES);
     glVertex2f(0.0,R-15);
     glVertex2f(0.0,-R+6);
     glEnd();
     glDisable(GL_LINE_STIPPLE);
-
-    /*
-      bool draw = true;
-      glLineWidth(4.0);
-      for (i = R-7; i >= -R+9; i -= 2*(R-9)/14) {
-      if (draw) {
-      glBegin(GL_LINE_STRIP);
-      glVertex2f(0, i);
-      glVertex2f(0, i-(2*(R-9)/14));
-      glEnd();
-      }
-      draw = !draw;
-      }
-    */
     glPopMatrix();
-    
 
+    /* NAV2/ADV2 */
     glPushMatrix();
     glRotatef(-nav2, 0, 0, 1);  
-    glLineWidth(lineWidth);
+    glLineWidth(lineWidth*2.0);
     glColor3ub(COLOR_WHITE);
-    glBegin(GL_LINE_LOOP);
-    glVertex2f(0, R-5);
-    glVertex2f(-4, R-17);
-    glVertex2f(4, R-17);
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(0.0, R-6);
+    glVertex2f(-6.0, R-19);
+    glVertex2f(-3.0, R-19);
+    glVertex2f(-3.0, -R+13);
+    glVertex2f(-1.5, -R+13);
+    glVertex2f(-1.5, -R+5);
     glEnd();
-    glBegin(GL_LINE_LOOP);
-    glVertex2f(-1.5, R-17);
-    glVertex2f(1.5, R-17);
-    glVertex2f(1.5, -R+17);
-    glVertex2f(0.0, -R+9);
-    glVertex2f(-1.5, -R+17);
+
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(0.0, R-6);
+    glVertex2f(6.0, R-19);
+    glVertex2f(3.0, R-19);
+    glVertex2f(3.0, -R+13);
+    glVertex2f(1.5, -R+13);
+    glVertex2f(1.5, -R+5);
     glEnd();
+
     glPopMatrix();
 
     /* end of heading rotated coordinate system */
     glPopMatrix();
+
+    /* end of center-translated coordinate system */
+    glPopMatrix();
   
     /* Small Circle in the middle holding needles */
+
+    CircleEvaluator bCircle;
+    bCircle.SetRadius(R/6);
+    bCircle.SetArcStartEnd(0,360);
+    bCircle.SetDegreesPerPoint(20);
+
     glPushMatrix();
     glColor3ub(COLOR_GRAY15);
-    aCircle.SetOrigin(center_x, center_y);
+    bCircle.SetOrigin(center_x, center_y);
     glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
     bCircle.Evaluate();
     glEnd();
     glPopMatrix();
 
+    /* missing nav 1 warning */
+    if (!has_nav1) {
+      glLineWidth(lineWidth*1.5);
+      glPushMatrix();
+      glTranslatef(0, center_y-10, 0); 
+      glRotated(-15.0, 0, 0, 1);
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+      glColor3ub(COLOR_ORANGERED);
+      glBegin(GL_POLYGON);
+      glVertex2f(6, 0);
+      glVertex2f(0, 15);
+      glVertex2f(0, 35);
+      glVertex2f(6, 35);
+      glEnd();
+      glColor3ub(COLOR_BLACK);
+      glBegin(GL_POLYGON);
+      glVertex2f(0, 35);
+      glVertex2f(6, 32);
+      glVertex2f(0, 29);
+      glEnd();
+      glBegin(GL_POLYGON);
+      glVertex2f(0, 29);
+      glVertex2f(6, 26);
+      glVertex2f(0, 23);
+      glEnd();
+      glBegin(GL_POLYGON);
+      glVertex2f(3, 23);
+      glVertex2f(1, 18);
+      glVertex2f(5, 18);
+      glEnd();
+      glBegin(GL_LINES);
+      glVertex2f(3, 18);
+      glVertex2f(3, 10);
+      glEnd();
+      glPopMatrix();
+    }
+      
+    /* missing nav 2 warning */
+    if (!has_nav2) {
+      glLineWidth(lineWidth*1.5);
+      glPushMatrix();
+      glTranslatef(m_PhysicalSize.x-6, center_y-10, 0); 
+      glRotated(15.0, 0, 0, 1);
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+      glColor3ub(COLOR_ORANGERED);
+      glBegin(GL_POLYGON);
+      glVertex2f(0, 0);
+      glVertex2f(6, 15);
+      glVertex2f(6, 35);
+      glVertex2f(0, 35);
+      glEnd();
+      glColor3ub(COLOR_BLACK);
+      glBegin(GL_POLYGON);
+      glVertex2f(6, 35);
+      glVertex2f(0, 32);
+      glVertex2f(6, 29);
+      glEnd();
+      glBegin(GL_POLYGON);
+      glVertex2f(6, 29);
+      glVertex2f(0, 26);
+      glVertex2f(6, 23);
+      glEnd();
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(3, 23);
+      glVertex2f(1, 18);
+      glVertex2f(5, 18);
+      glEnd();
+      glBegin(GL_LINES);
+      glVertex2f(3.8, 18);
+      glVertex2f(3.8, 10);
+      glVertex2f(2.2, 18);
+      glVertex2f(2.2, 10);
+      glEnd();
+      glPopMatrix();
+    }
+      
+    /* missing heading */
+    if (!has_heading) {
+      glLineWidth(lineWidth*1.5);
+      glPushMatrix();
+      glTranslatef(center_x+13, m_PhysicalSize.y-6.5, 0); 
+      glRotated(105.0, 0, 0, 1);
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+      glColor3ub(COLOR_ORANGERED);
+      glBegin(GL_POLYGON);
+      glVertex2f(0, 0);
+      glVertex2f(6, 15);
+      glVertex2f(6, 35);
+      glVertex2f(0, 35);
+      glEnd();
+      glColor3ub(COLOR_BLACK);
+      snprintf(buf, sizeof(buf), "HDG");
+      glRotated(-90.0, 0, 0, 1);
+      m_pFontManager->SetSize(m_Font, fontWidth*0.7, fontHeight*0.7);
+      m_pFontManager->Print(-30,1, buf, m_Font);
+      glPopMatrix();
+    }
+
+    glPushMatrix();
+
+    glTranslatef(center_x, center_y, 0); // move to center
+    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+
+    // outer circle markers on -90, -45, 0, 45, 90
+    for (i = 0; i < 360; i += 45) {
+      glPushMatrix();
+      glRotated(i, 0, 0, 1);
+      glLineWidth(2.0);
+      glColor3ub(COLOR_WHITE);
+      glBegin(GL_POLYGON);
+      glVertex2f(0, R-2);
+      glVertex2f(2, R+3);
+      glVertex2f(-2, R+3);
+      glEnd();
+      glPopMatrix();
+    }
+
     glPopMatrix();
-  
-    //}
+         
   }
 
 } // end namespace OpenGC
