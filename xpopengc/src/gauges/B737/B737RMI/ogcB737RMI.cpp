@@ -60,9 +60,9 @@ namespace OpenGC
     float fontWidth = 4.5;
     float lineWidth = 3.0;
 	
-    float R = m_PhysicalSize.x / 2.0 * 0.9;
+    float R = m_PhysicalSize.x / 2.0 * 0.85;
     float center_x = m_PhysicalSize.x / 2.0;
-    float center_y = m_PhysicalSize.y / 2.0;
+    float center_y = m_PhysicalSize.y / 2.0 * 0.95;
     
     float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
 	
@@ -276,7 +276,7 @@ namespace OpenGC
     if (!has_nav1) {
       glLineWidth(lineWidth*1.5);
       glPushMatrix();
-      glTranslatef(0, center_y-10, 0); 
+      glTranslatef(3, center_y-10, 0); 
       glRotated(-15.0, 0, 0, 1);
       glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       glColor3ub(COLOR_ORANGERED);
@@ -313,7 +313,7 @@ namespace OpenGC
     if (!has_nav2) {
       glLineWidth(lineWidth*1.5);
       glPushMatrix();
-      glTranslatef(m_PhysicalSize.x-6, center_y-10, 0); 
+      glTranslatef(m_PhysicalSize.x-6-3, center_y-10, 0); 
       glRotated(15.0, 0, 0, 1);
       glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       glColor3ub(COLOR_ORANGERED);
@@ -349,10 +349,10 @@ namespace OpenGC
     }
       
     /* missing heading */
-    if (!has_heading) {
+//    if (!has_heading) {
       glLineWidth(lineWidth*1.5);
       glPushMatrix();
-      glTranslatef(center_x+13, m_PhysicalSize.y-6.5, 0); 
+      glTranslatef(center_x+13, m_PhysicalSize.y-6.5-5, 0); 
       glRotated(105.0, 0, 0, 1);
       glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
       glColor3ub(COLOR_ORANGERED);
@@ -368,7 +368,7 @@ namespace OpenGC
       m_pFontManager->SetSize(m_Font, fontWidth*0.7, fontHeight*0.7);
       m_pFontManager->Print(-30,1, buf, m_Font);
       glPopMatrix();
-    }
+//    }
 
     glPushMatrix();
 
