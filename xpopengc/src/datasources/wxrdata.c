@@ -302,10 +302,12 @@ void read_wxr() {
 
 	    if (WXR_UPSCALE > 1) {
 	      /* interpolate temporary WXR array into WXR array */
-	      /* TODO: Add interpolation for height array */
 	      //nearest_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      //nearest_int(wxr_height_tmp, wxr_height, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
 	      //bilinear_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      //bilinear_int(wxr_height_tmp, wxr_height, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
 	      bicubic_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      bicubic_int(wxr_height_tmp, wxr_height, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
 	    } else {
 	      /* copy temporary WXR array to WXR array */
 	      for (j = 0; j < wxr_nlin; j++) {
@@ -349,18 +351,19 @@ void read_wxr() {
 		
 		for (k = 0; k < wxr_pixperlon_tmp; k++) {
 		  wxr_data_tmp[j][i+k] = wxrBuffer[5+4+4+4+k] * 10;
+		  wxr_height_tmp[i][i+k] = 30000; /* no height information in type 1 data, assume 30000 feet */
 		}
 	      }
 		
 	    } else {
-	      /* WXR Levels from 0-100 and Height Information */
+	      /* WXR Levels from 0-100 and storm top height information (feet a.s.l.) */
 	      /* WXR every arc minute for lat, but thinning lon resolution with higher lats */
 	      
 	      j = (lat - wxr_latmin_tmp)*wxr_pixperlat_tmp;
 	      i = (lon - wxr_lonmin_tmp)*wxr_pixperlon_tmp;
 	      if ((j>=0)&&(j<wxr_nlin_tmp)&&(i>=0)&&(i<wxr_ncol_tmp)) {
 		wxr_data_tmp[j][i] = 0.9 * lev;
-		wxr_height_tmp[j][i] = (int) hgt;
+		wxr_height_tmp[j][i] = (int) (hgt * 3.28);
 	      }
 	    }
 	      
@@ -435,7 +438,49 @@ void nearest_uchar(unsigned char **data, unsigned char **newData, int width, int
   }
 }
 
+void nearest_int(int **data, int **newData, int width, int height, int newWidth, int newHeight)
+{
+  int i,j,k;
+  int x,y;
+  //  int cc;
+  float tx = (float)(width-1) / newWidth;
+  float ty =  (float)(height-1) / newHeight;
+  
+  for(j=0;j<newHeight;j++) {
+    for(i=0;i<newWidth;i++) {
+      x = ceil(tx*i); /* NN x index of input data */
+      y = ceil(ty*j); /* NN y index of input data */
+      newData[j][i] = data[y][x];             
+    }
+  }
+}
+
 void bilinear_uchar(unsigned char **data, unsigned char **newData, int width, int height, int newWidth, int newHeight)
+{
+  int x,y;
+  float tx = (float)(width-1)/newWidth;
+  float ty = (float)(height-1)/newHeight;
+  float x_diff, y_diff;
+  int i,j;
+
+  for(j=0;j<newHeight;j++) {
+    for(i=0;i<newWidth;i++) {
+      x = (int)(tx * i);
+      y = (int)(ty * j);
+             
+      x_diff = ((tx * i) -x);
+      y_diff = ((ty * j) -y);
+     
+      newData[j][i] =
+	(float)data[y][x]*(1.0-x_diff)*(1.0-y_diff)
+	+(float)data[y][x+1]*(1.0-y_diff)*(x_diff)
+	+(float)data[y+1][x]*(y_diff)*(1.0-x_diff)
+	+(float)data[y+1][x+1]*(y_diff)*(x_diff);  
+    }
+  } 
+}
+
+void bilinear_int(int **data, int **newData, int width, int height, int newWidth, int newHeight)
 {
   int x,y;
   float tx = (float)(width-1)/newWidth;
@@ -503,6 +548,52 @@ void bicubic_uchar(unsigned char **data, unsigned char **newData, int width, int
       Cc = a0 + a1*dy + a2*dy*dy + a3*dy*dy*dy;
       if((int)Cc>255) Cc=255.0;
       if((int)Cc<0) Cc=0.0;
+      newData[j][i] = Cc;
+    }    
+  }
+}
+
+void bicubic_int(int **data, int **newData, int width, int height, int newWidth, int newHeight)
+{    
+  float Cc;
+  float C[4];
+  float d0,d2,d3;
+  float a0,a1,a2,a3;
+  int i,j;
+  int jj;
+  int x,y;
+  float dx,dy;
+        
+  float tx = (float)(width-1)/newWidth;
+  float ty = (float)(height-1)/newHeight;
+        
+  for(j=0;j<newHeight;j++) {
+    for(i=0;i<newWidth;i++) {
+      x = (int)(tx * i);
+      y = (int)(ty * j);
+           
+      dx = tx*i-x;
+      dy = ty*j-y;
+                      
+      for(jj=0;jj<=3;jj++) {
+	a0 = (float)data[min(max(y-1+jj,0),height-1)][x];                                  
+	d0 = (float)data[min(max(y-1+jj,0),height-1)][max(x-1,0)] - a0;
+	d2 = (float)data[min(max(y-1+jj,0),height-1)][min(x+1,width-1)] - a0;
+	d3 = (float)data[min(max(y-1+jj,0),height-1)][min(x+2,width-1)] - a0;
+	a1 = -1.0/3.0*d0 + d2 -1.0/6.0*d3;
+	a2 =  1.0/2.0*d0 + 1.0/2.0*d2;
+	a3 = -1.0/6.0*d0 - 1.0/2.0*d2 + 1.0/6.0*d3;
+	C[jj] = a0 + a1*dx + a2*dx*dx + a3*dx*dx*dx;
+      }
+	
+      d0 = C[0]-C[1];
+      d2 = C[2]-C[1];
+      d3 = C[3]-C[1];
+      a0 = C[1];
+      a1 = -1.0/3.0*d0 + d2 -1.0/6.0*d3;
+      a2 =  1.0/2.0*d0 + 1.0/2.0*d2;
+      a3 = -1.0/6.0*d0 - 1.0/2.0*d2 + 1.0/6.0*d3;
+      Cc = a0 + a1*dy + a2*dy*dy + a3*dy*dy*dy;
       newData[j][i] = Cc;
     }    
   }

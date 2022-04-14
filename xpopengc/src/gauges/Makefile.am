@@ -3,6 +3,9 @@ noinst_LIBRARIES = libOpenGCGauges.a
 
 # Source file names
 libOpenGCGauges_a_SOURCES = \
+WXR/ogcWXR.cpp \
+WXR/ogcDrawWXR.cpp \
+WXR/ogcDrawWXRInfo.cpp \
 Dummy/ogcDummyGauge.cpp \
 BasicClock/ogcBasicClock.cpp \
 BasicClock/ogcBasicClockComponent.cpp \
@@ -105,9 +108,13 @@ B737/B737ISFD/ogcB737ISFDBackground.cpp \
 B737/B737ISFD/ogcB737ISFD.cpp \
 B737/B737ISFD/ogcB737ISFDHeadingIndicator.cpp \
 B737/B737ISFD/ogcB737ISFDSpeedTape.cpp \
-B737/B737ISFD/ogcB737ISFDSpeedTicker.cpp
+B737/B737ISFD/ogcB737ISFDSpeedTicker.cpp \
+B737/B737RMI/ogcB737RMI.cpp
 
 noinst_HEADERS = \
+WXR/ogcWXR.h \
+WXR/ogcDrawWXR.h \
+WXR/ogcDrawWXRInfo.h \
 Dummy/ogcDummyGauge.h \
 BasicClock/ogcBasicClock.h \
 BasicClock/ogcBasicClockComponent.h \
@@ -220,4 +227,5 @@ B737/B737ISFD/ogcB737ISFDBackground.h \
 B737/B737ISFD/ogcB737ISFD.h \
 B737/B737ISFD/ogcB737ISFDHeadingIndicator.h \
 B737/B737ISFD/ogcB737ISFDSpeedTape.h \
-B737/B737ISFD/ogcB737ISFDSpeedTicker.h
+B737/B737ISFD/ogcB737ISFDSpeedTicker.h \
+B737/B737RMI/ogcB737RMI.h

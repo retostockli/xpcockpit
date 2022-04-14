@@ -20,7 +20,7 @@
 #include <assert.h>
 #include <pthread.h>
 
-#define UDPRECVBUFLEN 30*100
+#define UDPRECVBUFLEN 30*1000
 #define UDPSENDBUFLEN 28
 
 /* UDP CLIENT PARAMETERS */
