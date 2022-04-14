@@ -541,8 +541,11 @@ namespace OpenGC
 	    
 	    
 	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
-	    //for (int i=1;i<2;i++) {
+	      //for (int i=4;i<11;i++) {
 
+	      /* Do not draw from last missed approach wpt to airport */
+	      if ((wpt_miss2 > 0) && (i < wpt_miss2)) {
+	      
 	      int im1 = max(i-1,0);
 
 	      // convert to azimuthal equidistant coordinates with acf in center
@@ -612,7 +615,7 @@ namespace OpenGC
 		if (strcmp(wpt[im1].name,"DISCONTINUITY") != 0) {
 		  
 		glLineWidth(lineWidth);
-		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
+		if ((i >= (wpt_miss1-1)) && (i <= wpt_miss2)) {
 		  // missed approach route
 		  glColor3ub(COLOR_LIGHTBLUE);
 		  glEnable(GL_LINE_STIPPLE);
@@ -890,9 +893,9 @@ namespace OpenGC
 		  glEnd();
 		}
 
-		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
-		  glDisable(GL_LINE_STIPPLE);
-		}
+		//		if ((i >= wpt_miss1) && (i <= wpt_miss2)) {
+		glDisable(GL_LINE_STIPPLE);
+		  //		}
 
 		} // not a Discontinuity in flight plan
 		
@@ -934,6 +937,8 @@ namespace OpenGC
 		glPopMatrix();
 		
 	      }
+
+	      } /* only draw if not past last missed approach wpt */
 	      
 	    } /* cycle through waypoints */
     

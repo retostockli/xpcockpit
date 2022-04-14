@@ -143,7 +143,7 @@ namespace OpenGC
       nav_shows_dem = link_dataref_int("xpserver/EFIS_fo_terr");
     }
 
-    *nav_shows_dem = 1;
+    // *nav_shows_dem = 1;
     
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
