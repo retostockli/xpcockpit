@@ -164,6 +164,23 @@ namespace OpenGC
     float *seg3_ctr_lat;
     float *seg3_radius;
     float *seg3_turn;
+
+    unsigned char *ref_apt_name;
+    float *ref_apt_alt;
+    float *ref_rwy_lon0;
+    float *ref_rwy_lon1;
+    float *ref_rwy_lat0;
+    float *ref_rwy_lat1;
+    float *ref_rwy_len;
+    float *ref_rwy_crs;
+    unsigned char *des_apt_name;
+    float *des_apt_alt;
+    float *des_rwy_lon0;
+    float *des_rwy_lon1;
+    float *des_rwy_lat0;
+    float *des_rwy_lat1;
+    float *des_rwy_len;
+    float *des_rwy_crs;
     
     if (acf_type == 3) {
       /* ZIBO 737 FMC */
@@ -225,6 +242,24 @@ namespace OpenGC
       seg3_ctr_lat = link_dataref_flt_arr("laminar/B738/fms/legs_seg3_ctr_lat",256,-1,-4);
       seg3_radius = link_dataref_flt_arr("laminar/B738/fms/legs_seg3_radius",256,-1,-4);
       seg3_turn = link_dataref_flt_arr("laminar/B738/fms/legs_seg3_turn",256,-1,0);
+
+      ref_apt_name = link_dataref_byte_arr("laminar/B738/fms/ref_list_rwy_icao",20,-1);
+      ref_apt_alt = link_dataref_flt("laminar/B738/fms/ref_icao_alt",0);
+      ref_rwy_lon0 = link_dataref_flt("laminar/B738/fms/ref_runway_start_lon",-5);
+      ref_rwy_lat0 = link_dataref_flt("laminar/B738/fms/ref_runway_start_lat",-5);
+      ref_rwy_lon1 = link_dataref_flt("laminar/B738/fms/ref_runway_end_lon",-5);
+      ref_rwy_lat1 = link_dataref_flt("laminar/B738/fms/ref_runway_end_lat",-5);
+      ref_rwy_len = link_dataref_flt("laminar/B738/fms/ref_runway_len",-5);
+      ref_rwy_crs = link_dataref_flt("laminar/B738/fms/ref_runway_crs",-5);
+
+      des_apt_name = link_dataref_byte_arr("laminar/B738/fms/des_list_rwy_icao",20,-1);
+      des_apt_alt = link_dataref_flt("laminar/B738/fms/des_icao_alt",0);
+      des_rwy_lon0 = link_dataref_flt("laminar/B738/fms/dest_runway_start_lon",-5);
+      des_rwy_lat0 = link_dataref_flt("laminar/B738/fms/dest_runway_start_lat",-5);
+      des_rwy_lon1 = link_dataref_flt("laminar/B738/fms/dest_runway_end_lon",-5);
+      des_rwy_lat1 = link_dataref_flt("laminar/B738/fms/dest_runway_end_lat",-5);
+      des_rwy_len = link_dataref_flt("laminar/B738/fms/dest_runway_len",-5);
+      des_rwy_crs = link_dataref_flt("laminar/B738/fms/dest_runway_crs",-5);
 
       /* set center lat/lon of map to currently selected waypoint
 	 in Plan Mode Map (Center Waypoint) */
@@ -364,6 +399,8 @@ namespace OpenGC
 	double heading;
 	float xPos;
 	float yPos;
+	float xPos0;
+	float yPos0;
 	float xPos1;
 	float yPos1;
 	float xPos2;
@@ -542,15 +579,14 @@ namespace OpenGC
 	    }
 	    
 	    /* We draw from last to present waypoint */
-	    for (int i=max(wpt_current-1,0);i<nwpt;i++) {
-	      //for (int i=4;i<11;i++) {
+	    int i = max(wpt_current-1,0);
+	    while (i<nwpt) {
 
 	      int i0 = max(i-1,0);
 	      while (fmc_bypass[i0] == 1.0) {
 		i0 -= 1;
 		if (i0 < 0) break;
 	      }
-
 	      int i1 = i;
 	      while (fmc_bypass[i1] == 1.0) {
 		i1 += 1;
@@ -628,7 +664,7 @@ namespace OpenGC
 		
 		  /* only draw leg if it is not a Discontinuity/Vector/RW in flight plan */
 		  if ((strcmp(wpt[i0].name,"DISCONTINUITY") != 0) && (strcmp(wpt[i0].name,"(VECTOR)") != 0) &&
-		      !((wpt[i0].name[0] == 'R') && (wpt[i0].name[1] == 'W') && (i0 < 3))) {
+		      (strncmp(wpt[i0].name,"RW",2) != 0)) {
 		  
 		    glLineWidth(lineWidth);
 		    if ((i >= (wpt_miss1-1)) && (i <= wpt_miss2)) {
@@ -877,30 +913,38 @@ namespace OpenGC
 		    glDisable(GL_LINE_STIPPLE);
 
 		  } // not a Discontinuity in flight plan
+
+		  glPopMatrix();
 		
 		  // draw waypoint symbol and name
+		  glPushMatrix();
 		  glTranslatef(xPosL, yPosL, 0.0);
 		  glRotatef(-1.0* heading_map, 0, 0, 1);
 
-		  if (i == wpt_current) {
+		  
+		  if (i1 == wpt_current) {
 		    glColor3ub(COLOR_VIOLET);
 		  } else {
 		    glColor3ub(COLOR_WHITE);
 		  }
-		  glLineWidth(0.8*lineWidth);
-		  glBegin(GL_LINE_LOOP);
-		  glVertex2f(0.15*ss, 0.15*ss);
-		  glVertex2f(1.0*ss,  0.0);
-		  glVertex2f(0.15*ss, -0.15*ss);
-		  glVertex2f(0.0, -1.0*ss);
-		  glVertex2f(-0.15*ss, -0.15*ss);
-		  glVertex2f(-1.0*ss, 0.0);
-		  glVertex2f(-0.15*ss, 0.15*ss);
-		  glVertex2f( 0.0, 1.0*ss);
-		  glEnd();
+		  if (strncmp(wpt[i1].name,"RW",2) != 0) {
+		    /* draw waypoint symbol */
+		    glLineWidth(0.8*lineWidth);
+		    glBegin(GL_LINE_LOOP);
+		    glVertex2f(0.15*ss, 0.15*ss);
+		    glVertex2f(1.0*ss,  0.0);
+		    glVertex2f(0.15*ss, -0.15*ss);
+		    glVertex2f(0.0, -1.0*ss);
+		    glVertex2f(-0.15*ss, -0.15*ss);
+		    glVertex2f(-1.0*ss, 0.0);
+		    glVertex2f(-0.15*ss, 0.15*ss);
+		    glVertex2f( 0.0, 1.0*ss);
+		    glEnd();
+		  }
 		
 		  if ((strcmp(wpt[i1].name,"DISCONTINUITY") != 0) && (strcmp(wpt[i1].name,"(VECTOR)") != 0) &&
-		      !((wpt[i1].name[0] == 'R') && (wpt[i1].name[1] == 'W'))) {
+		      (strncmp(wpt[i1].name,"RW",2) != 0)) {
+		    /* print waypoint name */
 		    m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
 		    m_pFontManager->Print(4,-6, wpt[i1].name, m_Font);
 		    if (fmc_alt[i1] > 0.0) {
@@ -915,10 +959,129 @@ namespace OpenGC
 		  }
 
 		  glPopMatrix();
+
+		  if ((i0 < 3) && (strncmp(wpt[i1].name,"RW",2) == 0) && (strcmp(wpt[i0].name,(char*) ref_apt_name) == 0) &&
+		      (*ref_rwy_lon0 != 0.0) && (*ref_rwy_lon1 != 0.0) && (*ref_rwy_lat0 != 0.0) && (*ref_rwy_lat0 != 0.0)) {
+		    /* draw runway symbol for reference airport */
+		    glPushMatrix();
+
+		    double rwy_width = 0.1;
+		    double rwy_hdg_L = *ref_rwy_crs - 90.0;
+		    double rwy_hdg_R = *ref_rwy_crs + 90.0;
+
+		    lon = (double) *ref_rwy_lon0;
+		    lat = (double) *ref_rwy_lat0;
+		    latlon_at_dist_heading(&lon, &lat, &rwy_width, &rwy_hdg_L, &lon2, &lat2);
+		    lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		    yPos0 = -northing / 1852.0 / mapRange * map_size; 
+		    xPos0 = easting / 1852.0  / mapRange * map_size;
+
+		    lon = (double) *ref_rwy_lon1;
+		    lat = (double) *ref_rwy_lat1;
+		    latlon_at_dist_heading(&lon, &lat, &rwy_width, &rwy_hdg_L, &lon2, &lat2);
+		    lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		    yPos1 = -northing / 1852.0 / mapRange * map_size; 
+		    xPos1 = easting / 1852.0  / mapRange * map_size;
+
+		    glLineWidth(lineWidth*1.5);
+		    glBegin(GL_LINES);
+		    glVertex2f(xPos0,yPos0);
+		    glVertex2f(xPos1,yPos1);
+		    glEnd();
+		    
+		    lon = (double) *ref_rwy_lon0;
+		    lat = (double) *ref_rwy_lat0;
+		    latlon_at_dist_heading(&lon, &lat, &rwy_width, &rwy_hdg_R, &lon2, &lat2);
+		    lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		    yPos0 = -northing / 1852.0 / mapRange * map_size; 
+		    xPos0 = easting / 1852.0  / mapRange * map_size;
+
+		    lon = (double) *ref_rwy_lon1;
+		    lat = (double) *ref_rwy_lat1;
+		    latlon_at_dist_heading(&lon, &lat, &rwy_width, &rwy_hdg_R, &lon2, &lat2);
+		    lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		    yPos1 = -northing / 1852.0 / mapRange * map_size; 
+		    xPos1 = easting / 1852.0  / mapRange * map_size;
+
+		    glLineWidth(lineWidth*1.5);
+		    glBegin(GL_LINES);
+		    glVertex2f(xPos0,yPos0);
+		    glVertex2f(xPos1,yPos1);
+		    glEnd();
+
+		    glTranslatef(xPos0, yPos0, 0.0);
+		    glRotatef(-1.0* heading_map, 0, 0, 1);
+		    /* print waypoint name */
+		    m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
+		    m_pFontManager->Print(4,-1, wpt[i1].name, m_Font);
+
+		    glPopMatrix();
+		  }
+		  
+		  if ((i0 > 2) && (strncmp(wpt[i0].name,"RW",2) == 0) && (strcmp(wpt[nwpt-1].name,(char*) des_apt_name) == 0) &&
+		      (*des_rwy_lon0 != 0.0) && (*des_rwy_lon1 != 0.0) && (*des_rwy_lat0 != 0.0) && (*des_rwy_lat0 != 0.0)) {
+		    /* draw runway symbol for destination airport */
+		    glPushMatrix();
+
+		    double rwy_width = 0.1;
+		    double rwy_hdg_L = *des_rwy_crs - 90.0;
+		    double rwy_hdg_R = *des_rwy_crs + 90.0;
+
+		    lon = (double) *des_rwy_lon0;
+		    lat = (double) *des_rwy_lat0;
+		    latlon_at_dist_heading(&lon, &lat, &rwy_width, &rwy_hdg_L, &lon2, &lat2);
+		    lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		    yPos0 = -northing / 1852.0 / mapRange * map_size; 
+		    xPos0 = easting / 1852.0  / mapRange * map_size;
+
+		    lon = (double) *des_rwy_lon1;
+		    lat = (double) *des_rwy_lat1;
+		    latlon_at_dist_heading(&lon, &lat, &rwy_width, &rwy_hdg_L, &lon2, &lat2);
+		    lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		    yPos1 = -northing / 1852.0 / mapRange * map_size; 
+		    xPos1 = easting / 1852.0  / mapRange * map_size;
+
+		    glLineWidth(lineWidth*1.5);
+		    glBegin(GL_LINES);
+		    glVertex2f(xPos0,yPos0);
+		    glVertex2f(xPos1,yPos1);
+		    glEnd();
+		    
+		    lon = (double) *des_rwy_lon0;
+		    lat = (double) *des_rwy_lat0;
+		    latlon_at_dist_heading(&lon, &lat, &rwy_width, &rwy_hdg_R, &lon2, &lat2);
+		    lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		    yPos0 = -northing / 1852.0 / mapRange * map_size; 
+		    xPos0 = easting / 1852.0  / mapRange * map_size;
+
+		    lon = (double) *des_rwy_lon1;
+		    lat = (double) *des_rwy_lat1;
+		    latlon_at_dist_heading(&lon, &lat, &rwy_width, &rwy_hdg_R, &lon2, &lat2);
+		    lonlat2gnomonic(&lon2, &lat2, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		    yPos1 = -northing / 1852.0 / mapRange * map_size; 
+		    xPos1 = easting / 1852.0  / mapRange * map_size;
+
+		    glLineWidth(lineWidth*1.5);
+		    glBegin(GL_LINES);
+		    glVertex2f(xPos0,yPos0);
+		    glVertex2f(xPos1,yPos1);
+		    glEnd();
+
+		    glTranslatef(xPos0, yPos0, 0.0);
+		    glRotatef(-1.0* heading_map, 0, 0, 1);
+		    /* print waypoint name */
+		    m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
+		    m_pFontManager->Print(4,-1, wpt[i0].name, m_Font);
+
+		    glPopMatrix();
+		  }
 		
 		}
 
 	      } /* only draw if not past last missed approach wpt */
+
+	      /* increase counter to next waypoint */
+	      i = i1 + 1;
 	      
 	    } /* cycle through waypoints */
     
