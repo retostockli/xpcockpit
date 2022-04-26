@@ -131,14 +131,19 @@ namespace OpenGC
     m_pFontManager->Print(44, 5, "FUEL KG", m_Font);
 
 	
-    m_pFontManager->Print(80, 190, "TAT", m_Font);
+    m_pFontManager->Print(75, 190, "TAT", m_Font);
     m_pFontManager->SetSize(m_Font,6,6);
     glColor3ub(COLOR_WHITE);
     char buf[50];
-
+    
     if (*tat != FLT_MISS) {
-      snprintf(buf, sizeof(buf), "%.01f c", *tat);
-      m_pFontManager->Print(95, 190, buf, m_Font);
+      int itat = (int) *tat;
+      if (itat > 0) {
+	snprintf(buf, sizeof(buf), "+%i c", itat);
+      } else {
+	snprintf(buf, sizeof(buf), "%i c", itat);
+      }
+      m_pFontManager->Print(90, 190, buf, m_Font);
     }
 
     // warning annunciators
@@ -147,26 +152,35 @@ namespace OpenGC
     if ((acf_type == 1) || (acf_type == 3)) {
       if (*valve1 == 1.0) {
 	glColor3ub(COLOR_YELLOW);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	glBegin(GL_POLYGON);
-	glVertex2f(120, 194.5);
-	glVertex2f(155, 194.5);
-	glVertex2f(155, 185.5);
-	glVertex2f(120, 185.5);
-	glEnd();;
+      } else {
+	glColor3ub(COLOR_GRAY15);
+      }
+      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+      glBegin(GL_POLYGON);
+      glVertex2f(120, 194.5);
+      glVertex2f(155, 194.5);
+      glVertex2f(155, 185.5);
+      glVertex2f(120, 185.5);
+      glEnd();;
+      if (*valve1 == 1.0) {
 	glColor3ub(COLOR_BLACK);
 	m_pFontManager->Print(124, 191,"START VALVE", m_Font);
 	m_pFontManager->Print(132, 186,"OPEN", m_Font);
       }
+
       if (*valve2 == 1.0) {
 	glColor3ub(COLOR_YELLOW);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	glBegin(GL_POLYGON);
-	glVertex2f(120+40, 194.5);
-	glVertex2f(155+40, 194.5);
-	glVertex2f(155+40, 185.5);
-	glVertex2f(120+40, 185.5);
-	glEnd();;
+      } else {
+	glColor3ub(COLOR_GRAY15);
+      }
+      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+      glBegin(GL_POLYGON);
+      glVertex2f(120+40, 194.5);
+      glVertex2f(155+40, 194.5);
+      glVertex2f(155+40, 185.5);
+      glVertex2f(120+40, 185.5);
+      glEnd();;
+      if (*valve2 == 1.0) {
 	glColor3ub(COLOR_BLACK);
 	m_pFontManager->Print(124+40, 191,"START VALVE", m_Font);
 	m_pFontManager->Print(132+40, 186,"OPEN", m_Font);
@@ -174,26 +188,35 @@ namespace OpenGC
       
       if (*filter1 == 1.0) {
 	glColor3ub(COLOR_YELLOW);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	glBegin(GL_POLYGON);
-	glVertex2f(120, 194.5-10);
-	glVertex2f(155, 194.5-10);
-	glVertex2f(155, 185.5-10);
-	glVertex2f(120, 185.5-10);
-	glEnd();;
+      } else {
+	glColor3ub(COLOR_GRAY15);
+      }
+      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+      glBegin(GL_POLYGON);
+      glVertex2f(120, 194.5-10);
+      glVertex2f(155, 194.5-10);
+      glVertex2f(155, 185.5-10);
+      glVertex2f(120, 185.5-10);
+      glEnd();;
+      if (*filter1 == 1.0) {
 	glColor3ub(COLOR_BLACK);
 	m_pFontManager->Print(126, 191-10,"OIL FILTER", m_Font);
 	m_pFontManager->Print(130, 186-10,"BYPASS", m_Font);
       }
+
       if (*filter2 == 1.0) {
 	glColor3ub(COLOR_YELLOW);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	glBegin(GL_POLYGON);
-	glVertex2f(120+40, 194.5-10);
-	glVertex2f(155+40, 194.5-10);
-	glVertex2f(155+40, 185.5-10);
-	glVertex2f(120+40, 185.5-10);
-	glEnd();;
+      } else {
+	glColor3ub(COLOR_GRAY15);
+      }
+      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+      glBegin(GL_POLYGON);
+      glVertex2f(120+40, 194.5-10);
+      glVertex2f(155+40, 194.5-10);
+      glVertex2f(155+40, 185.5-10);
+      glVertex2f(120+40, 185.5-10);
+      glEnd();;
+      if (*filter2 == 1.0) {
 	glColor3ub(COLOR_BLACK);
 	m_pFontManager->Print(126+40, 191-10,"OIL FILTER", m_Font);
 	m_pFontManager->Print(130+40, 186-10,"BYPASS", m_Font);
@@ -202,26 +225,35 @@ namespace OpenGC
 
     if (*oilpress1 == 1) {
       glColor3ub(COLOR_YELLOW);
-      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-      glBegin(GL_POLYGON);
-      glVertex2f(120, 194.5-20);
-      glVertex2f(155, 194.5-20);
-      glVertex2f(155, 185.5-20);
-      glVertex2f(120, 185.5-20);
-      glEnd();;
+    } else {
+      glColor3ub(COLOR_GRAY15);
+    }
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(120, 194.5-20);
+    glVertex2f(155, 194.5-20);
+    glVertex2f(155, 185.5-20);
+    glVertex2f(120, 185.5-20);
+    glEnd();;
+    if (*oilpress1 == 1) {
       glColor3ub(COLOR_BLACK);
       m_pFontManager->Print(129, 191-20,"LOW OIL", m_Font);
       m_pFontManager->Print(127, 186-20,"PRESSURE", m_Font);
     }
+    
     if (*oilpress2 == 1) {
       glColor3ub(COLOR_YELLOW);
-      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-      glBegin(GL_POLYGON);
-      glVertex2f(120+40, 194.5-20);
-      glVertex2f(155+40, 194.5-20);
-      glVertex2f(155+40, 185.5-20);
-      glVertex2f(120+40, 185.5-20);
-      glEnd();;
+    } else {
+      glColor3ub(COLOR_GRAY15);
+    }
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(120+40, 194.5-20);
+    glVertex2f(155+40, 194.5-20);
+    glVertex2f(155+40, 185.5-20);
+    glVertex2f(120+40, 185.5-20);
+    glEnd();;
+    if (*oilpress2 == 1) {
       glColor3ub(COLOR_BLACK);
       m_pFontManager->Print(129+40, 191-20,"LOW OIL", m_Font);
       m_pFontManager->Print(127+40, 186-20,"PRESSURE", m_Font);

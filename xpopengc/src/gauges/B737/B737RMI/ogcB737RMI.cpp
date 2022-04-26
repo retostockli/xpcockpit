@@ -349,7 +349,7 @@ namespace OpenGC
     }
       
     /* missing heading */
-//    if (!has_heading) {
+    if (!has_heading) {
       glLineWidth(lineWidth*1.5);
       glPushMatrix();
       glTranslatef(center_x+13, m_PhysicalSize.y-6.5-5, 0); 
@@ -368,7 +368,7 @@ namespace OpenGC
       m_pFontManager->SetSize(m_Font, fontWidth*0.7, fontHeight*0.7);
       m_pFontManager->Print(-30,1, buf, m_Font);
       glPopMatrix();
-//    }
+    }
 
     glPushMatrix();
 

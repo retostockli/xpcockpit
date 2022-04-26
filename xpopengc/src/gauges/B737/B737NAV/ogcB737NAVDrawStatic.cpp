@@ -64,7 +64,7 @@ namespace OpenGC
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-    float lineWidth = 1.0 * m_PhysicalSize.x / 100.0;
+    float lineWidth = 1.5 * m_PhysicalSize.x / 100.0;
    
     char buffer[36];
     

@@ -62,7 +62,7 @@ namespace OpenGC
 
       // define geometric stuff
       float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
-      float lineWidth = 3.0;
+      float lineWidth = 4.0;
 
       // double dtor = 0.0174533; /* radians per degree */
       // double radeg = 57.2958;  /* degree per radians */
@@ -135,6 +135,18 @@ namespace OpenGC
 	m_pFontManager->Print( -0.5*fontSize, -map_size*1.15, "S", m_Font);
 	m_pFontManager->Print( map_size*1.1 , -0.5*fontSize , "E", m_Font);
 	m_pFontManager->Print( -map_size*1.2 , -0.5*fontSize , "W", m_Font);
+
+	/* North Arrow */
+	glLineWidth( lineWidth );
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(1.0*fontSize,map_size*1.1);
+	glVertex2f(1.0*fontSize,map_size*1.1+fontSize);
+	glEnd();
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(0.7*fontSize,map_size*1.1+0.7*fontSize);
+	glVertex2f(1.0*fontSize,map_size*1.1+fontSize);
+	glVertex2f(1.3*fontSize,map_size*1.1+0.7*fontSize);
+	glEnd();
 
 	glColor3ub(COLOR_WHITE);
 	m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );

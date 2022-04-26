@@ -181,6 +181,13 @@ namespace OpenGC
     float *des_rwy_lat1;
     float *des_rwy_len;
     float *des_rwy_crs;
+
+    float *tc_lon;
+    float *tc_lat;
+    float *tc_show;
+    float *td_lon;
+    float *td_lat;
+    float *td_show;
     
     if (acf_type == 3) {
       /* ZIBO 737 FMC */
@@ -217,7 +224,8 @@ namespace OpenGC
       fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",-2);
       fmc_vnav_td_dist = link_dataref_flt("laminar/B738/fms/vnav_td_dist",-1);
       fmc_vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",0);
-      fmc_has_vrnp = link_dataref_int("laminar/B738/fms/vrnp_enable");
+      //      fmc_has_vrnp = link_dataref_int("laminar/B738/fms/vrnp_enable");
+      fmc_has_vrnp = link_dataref_int("laminar/B738/pfd/nd_vert_path");
       fmc_rnav_enable = link_dataref_int("laminar/B738/fms/rnav_enable");
       fmc_rnav_alt = link_dataref_flt("laminar/B738/fms/rnav_alt",0);
       fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
@@ -261,6 +269,14 @@ namespace OpenGC
       des_rwy_len = link_dataref_flt("laminar/B738/fms/dest_runway_len",-5);
       des_rwy_crs = link_dataref_flt("laminar/B738/fms/dest_runway_crs",-5);
 
+      tc_lon = link_dataref_flt("laminar/B738/nd/tc_lon",-4);
+      tc_lat = link_dataref_flt("laminar/B738/nd/tc_lat",-4);
+      tc_show = link_dataref_flt("laminar/B738/nd/tc_show",0);
+
+      td_lon = link_dataref_flt("laminar/B738/nd/td_lon",-4);
+      td_lat = link_dataref_flt("laminar/B738/nd/td_lat",-4);
+      td_show = link_dataref_flt("laminar/B738/nd/td_show",0);
+      
       /* set center lat/lon of map to currently selected waypoint
 	 in Plan Mode Map (Center Waypoint) */
       if ((*fmc_ctr != INT_MISS) && (mapMode == 3)) {
@@ -382,8 +398,6 @@ namespace OpenGC
         
 	// Set up circle for small symbols
 	CircleEvaluator aCircle;
-	aCircle.SetArcStartEnd(0,360);
-	aCircle.SetDegreesPerPoint(10);
 
 	double northing;
 	double easting;
@@ -922,14 +936,16 @@ namespace OpenGC
 		  glRotatef(-1.0* heading_map, 0, 0, 1);
 
 		  
-		  if (i1 == wpt_current) {
+		  if ((i1 == wpt_current) || (strcmp(wpt[i1].name,wpt[wpt_current].name) == 0)) {
+		    /* print current waypoint or same waypoint in waypoint list which is the same
+		       as the current waypoint in violett */
 		    glColor3ub(COLOR_VIOLET);
 		  } else {
 		    glColor3ub(COLOR_WHITE);
 		  }
 		  if (strncmp(wpt[i1].name,"RW",2) != 0) {
 		    /* draw waypoint symbol */
-		    glLineWidth(0.8*lineWidth);
+		    glLineWidth(lineWidth);
 		    glBegin(GL_LINE_LOOP);
 		    glVertex2f(0.15*ss, 0.15*ss);
 		    glVertex2f(1.0*ss,  0.0);
@@ -960,12 +976,15 @@ namespace OpenGC
 
 		  glPopMatrix();
 
-		  if ((i0 < 3) && (strncmp(wpt[i1].name,"RW",2) == 0) && (strcmp(wpt[i0].name,(char*) ref_apt_name) == 0) &&
-		      (*ref_rwy_lon0 != 0.0) && (*ref_rwy_lon1 != 0.0) && (*ref_rwy_lat0 != 0.0) && (*ref_rwy_lat0 != 0.0)) {
-		    /* draw runway symbol for reference airport */
+		  /* draw runway symbol for reference airport */
+		  if ((i0 < 3) && (strncmp(wpt[i1].name,"RW",2) == 0) &&
+		      (strcmp(wpt[i0].name,(char*) ref_apt_name) == 0) &&
+		      (*ref_rwy_lon0 != 0.0) && (*ref_rwy_lon1 != 0.0) &&
+		      (*ref_rwy_lat0 != 0.0) && (*ref_rwy_lat0 != 0.0)) {
+
 		    glPushMatrix();
 
-		    double rwy_width = 0.1;
+		    double rwy_width = 0.15 * mapRange / 10.0;;
 		    double rwy_hdg_L = *ref_rwy_crs - 90.0;
 		    double rwy_hdg_R = *ref_rwy_crs + 90.0;
 
@@ -1018,12 +1037,15 @@ namespace OpenGC
 		    glPopMatrix();
 		  }
 		  
-		  if ((i0 > 2) && (strncmp(wpt[i0].name,"RW",2) == 0) && (strcmp(wpt[nwpt-1].name,(char*) des_apt_name) == 0) &&
-		      (*des_rwy_lon0 != 0.0) && (*des_rwy_lon1 != 0.0) && (*des_rwy_lat0 != 0.0) && (*des_rwy_lat0 != 0.0)) {
-		    /* draw runway symbol for destination airport */
+		  /* draw runway symbol for destination airport */
+		  if ((i0 > 2) && (strncmp(wpt[i0].name,"RW",2) == 0) &&
+		      (strcmp(wpt[nwpt-1].name,(char*) des_apt_name) == 0) &&
+		      (*des_rwy_lon0 != 0.0) && (*des_rwy_lon1 != 0.0) &&
+		      (*des_rwy_lat0 != 0.0) && (*des_rwy_lat0 != 0.0)) {
+
 		    glPushMatrix();
 
-		    double rwy_width = 0.1;
+		    double rwy_width = 0.15 * mapRange / 10.0;
 		    double rwy_hdg_L = *des_rwy_crs - 90.0;
 		    double rwy_hdg_R = *des_rwy_crs + 90.0;
 
@@ -1084,8 +1106,57 @@ namespace OpenGC
 	      i = i1 + 1;
 	      
 	    } /* cycle through waypoints */
-    
-	    glPopMatrix();
+
+	    /* Draw T/C and T/D */
+	    if (*tc_show == 1.0) {
+	      glPushMatrix();
+	      lon = (double) *tc_lon;
+	      lat = (double) *tc_lat;
+	      lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+	      yPos = -northing / 1852.0 / mapRange * map_size; 
+	      xPos = easting / 1852.0  / mapRange * map_size;
+	      glTranslatef(xPos, yPos, 0.0);
+	      glRotatef(-1.0* heading_map, 0, 0, 1);
+	      aCircle.SetArcStartEnd(0,360);
+	      aCircle.SetDegreesPerPoint(30);
+	      aCircle.SetRadius(2);
+	      aCircle.SetOrigin(0,0);
+	      glColor3ub(COLOR_GREEN);
+	      glLineWidth(lineWidth*1.5);
+	      glBegin(GL_LINE_STRIP);
+	      aCircle.Evaluate();
+	      glEnd();
+	      m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
+	      m_pFontManager->Print(4,-2, "T/C", m_Font);
+	      glPopMatrix();
+	    }
+
+	    if (*td_show == 1.0) {
+	      glPushMatrix();
+	      lon = (double) *td_lon;
+	      lat = (double) *td_lat;
+	      lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+	      yPos = -northing / 1852.0 / mapRange * map_size; 
+	      xPos = easting / 1852.0  / mapRange * map_size;
+	      glTranslatef(xPos, yPos, 0.0);
+	      glRotatef(-1.0* heading_map, 0, 0, 1);
+	      aCircle.SetArcStartEnd(0,360);
+	      aCircle.SetDegreesPerPoint(30);
+	      aCircle.SetRadius(2);
+	      aCircle.SetOrigin(0,0);
+	      glColor3ub(COLOR_GREEN);
+	      glLineWidth(lineWidth*1.5);
+	      glBegin(GL_LINE_STRIP);
+	      aCircle.Evaluate();
+	      glEnd();
+	      m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
+	      m_pFontManager->Print(4,-2, "T/D", m_Font);
+	      glPopMatrix();
+	    }
+
+	    
+	    glPopMatrix(); // end of rotated and translated coordinate system
+
 
 	    if (wpt_current < nwpt) {	    
 	      /* Draw currently active waypoint at UR corner of NAV display */
@@ -1094,11 +1165,15 @@ namespace OpenGC
 	      m_pFontManager->SetSize(m_Font, 0.9*fontSize, 1.0*fontSize);
 	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.95*m_PhysicalSize.y, wpt[wpt_current].name, m_Font);
 	      glColor3ub(COLOR_WHITE);
-	      int hour=fmc_eta[wpt_current];
-	      float minute=(fmc_eta[wpt_current] - (float) hour)*60.0;
-	      snprintf( buffer, sizeof(buffer), "%02d%04.1f z", hour, minute );
+	      if (fmc_eta[wpt_current] == 0.0) {
+		snprintf( buffer, sizeof(buffer), "--------z");
+	      } else {
+		int hour=fmc_eta[wpt_current];
+		float minute=(fmc_eta[wpt_current] - (float) hour)*60.0;
+		snprintf( buffer, sizeof(buffer), "%02d%04.1f z", hour, minute );
+	      }
 	      m_pFontManager->Print(0.82*m_PhysicalSize.x,0.91*m_PhysicalSize.y, buffer, m_Font);
-	      
+		
 	      lon = (double) wpt[wpt_current].lon;
 	      lat = (double) wpt[wpt_current].lat;
 	      lonlat2gnomonic(&lon, &lat, &easting, &northing, aircraftLon, aircraftLat);
