@@ -179,13 +179,19 @@ void b737_throttle(void)
   }
   
   int *autothrottle_on;
+  int *lock_throttle;
   if ((acf_type == 2) || (acf_type == 3)) {
-    //    autothrottle_on = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
+    // autothrottle_on = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
     autothrottle_on = link_dataref_int("laminar/B738/autopilot/speed_mode");
+    lock_throttle = link_dataref_int("laminar/B738/autopilot/lock_throttle");
   } else if (acf_type == 1) {
     autothrottle_on = link_dataref_int("x737/systems/athr/athr_active");
+    lock_throttle = link_dataref_int("xpserver/lock_throttle");
+    *lock_throttle = 1;
   } else {
     autothrottle_on = link_dataref_int("sim/cockpit2/autopilot/autothrottle_on");
+    lock_throttle = link_dataref_int("xpserver/lock_throttle");
+    *lock_throttle = 1;
   }
  
   float *fuel_mixture_left;
@@ -511,7 +517,7 @@ void b737_throttle(void)
 
   }
   
-  if (*autothrottle_on >= 1) {
+  if ((*autothrottle_on >= 1) && (*lock_throttle == 1)) {
     /* on autopilot and autothrottle */
     
     /* DCMotors PLUS Card */
