@@ -47,6 +47,7 @@ void b737_mip(void)
   int ret;
   int temp;
   int temp2;
+  float fvalue;
   int card = 1;
   int one = 1;
   int zero = 0;
@@ -99,6 +100,7 @@ void b737_mip(void)
       *gear_handle_down = 1;
       *gear_handle_position = 1.0;
     } else {
+      if (ret==1) printf("gear handle neutral \n");
       *gear_handle_position = 0.5;
     }
   }
@@ -491,7 +493,7 @@ void b737_mip(void)
 
     
     /* ANALOG INPUTS */
-    //    ret = analog_input(card,0,fvalue,0.0,1.0); /* CAPT OUTBD DU BRT */
+    ret = analog_input(card,0,&fvalue,0.0,1.0); /* CAPT OUTBD DU BRT */
     //    ret = analog_input(card,1,fvalue,0.0,1.0); /* CAPT INBD DU BRT */
     //    ret = analog_input(card,2,fvalue,0.0,1.0); /* CAPT UPPER DU BRT */
     //    ret = analog_input(card,3,fvalue,0.0,1.0); /* FO OUTBD DU BRT */
@@ -582,6 +584,7 @@ void b737_mip(void)
     /* SERVOS */
     ret = servo_outputf(card,0,flaps_position,-7.0,60.0);
     ret = servo_outputf(card,1,brake_pressure,-850.0,5300.0);
+    ret = servo_outputf(card,3,&fvalue,-0.1,1.1);
     
   }
     

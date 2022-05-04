@@ -37,13 +37,13 @@ INPUT 4
 BUTTON 1/2	Column wire color
 1 rose		white/orange		Trim Down
 2 gray		white/black/orange	Trim Up
-3 green		white/gray			INT MIC
-4 yellow		white/red/black		MIC
-5 brown		white/blue			AP Disconnect
+3 green		white/gray		INT MIC
+4 yellow	white/red/black		MIC
+5 brown		white/blue		AP Disconnect
 6 violet
 7 blue		white/orange/brown	HAT Up    (brown/geen)
-8 red			white/red/brown		HAT Down  (rose)
-9 red/blue		white/green/black		HAT Left  (yellow/white)
+8 red		white/red/brown		HAT Down  (rose)
+9 red/blue	white/green/black	HAT Left  (yellow/white)
 10 green/white	white/yellow/black	HAT Right (green)
 11 rose/gray	white/yellow		HAT Push
 12 brown/green
