@@ -43,6 +43,7 @@
 #include "b737_fmc.h"
 #include "b737_compass.h"
 #include "b737_awm.h"
+#include "b737_yawdamper.h"
 
 int acf_type;
 
@@ -82,6 +83,9 @@ int main(int argc, char **argv) {
   if (strcmp(argv[1],"boeing737awm") == 0) {
     if (b737_awm_init()<0) exit_pi(-5);
   }
+  if (strcmp(argv[1],"boeing737yawdamper") == 0) {
+    if (b737_yawdamper_init()<0) exit_pi(-5);
+  }
   if ((strcmp(argv[1],"boeing737fmc") == 0) ||
       (strcmp(argv[1],"boeing737fmc1") == 0) ||
       (strcmp(argv[1],"boeing737fmc2") == 0)) {
@@ -109,6 +113,9 @@ int main(int argc, char **argv) {
     }
     if (strcmp(argv[1],"boeing737awm") == 0) {
       b737_awm();
+    }
+    if (strcmp(argv[1],"boeing737yawdamper") == 0) {
+      b737_yawdamper();
     }
 
     if ((strcmp(argv[1],"boeing737fmc") == 0) ||

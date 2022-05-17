@@ -423,7 +423,7 @@ void b737_pedestal(void)
   }
 
 
-  /* let us map the cargo fire extinguisher select to the IRS select for now */
+  /* Cargo Fire */
   if ((acf_type == 2) || (acf_type == 3)) {
     ret = digital_input(device,card,49,&test,0);
     if (ret == 1) {
@@ -432,17 +432,6 @@ void b737_pedestal(void)
     ret = digital_input(device,card,50,&test2,0);
     if (ret == 1) {
       printf("Cargo Fire AFT Switch B: %i \n",test2);
-    }
-    int irs_r_pos = INT_MISS;
-    if ((test != INT_MISS) && (test2 != INT_MISS)) {
-      irs_r_pos = (1-test) + test2;
-    } 
-    int *irs_r = link_dataref_int("laminar/B738/toggle_switch/irs_right");
-    int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left");
-    int *irs_r_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_right");
-    ret = set_state_updn(&irs_r_pos,irs_r,irs_r_right,irs_r_left);
-    if (ret == 1) {
-      printf("IRS R POS: %i \n",irs_r_pos);
     }
 
     ret = digital_input(device,card,51,&test,0);
@@ -453,17 +442,7 @@ void b737_pedestal(void)
     if (ret == 1) {
       printf("Cargo Fire FWD Switch B: %i \n",test2);
     }
-    int irs_l_pos = INT_MISS;
-    if ((test != INT_MISS) && (test2 != INT_MISS)) {
-      irs_l_pos = (1-test) + test2;
-    } 
-    int *irs_l = link_dataref_int("laminar/B738/toggle_switch/irs_left");
-    int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left");
-    int *irs_l_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_right");
-    ret = set_state_updn(&irs_l_pos,irs_l,irs_l_right,irs_l_left);
-    if (ret == 1) {
-      printf("IRS L POS: %i \n",irs_l_pos);
-    }
+
   }
 
   /* TRANSPONDER */

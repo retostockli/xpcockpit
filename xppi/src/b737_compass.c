@@ -124,10 +124,14 @@ void b737_compass(void)
   if (*value != INT_MISS) {
     digitalWrite(LIGHT_PIN, *value);
   }
-
-  //  float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
-  float *heading_mag = link_dataref_flt("sim/cockpit/autopilot/heading_mag",0);      
   
+  float *heading_mag;
+  if (calibrate) {
+    heading_mag = link_dataref_flt("sim/cockpit/autopilot/heading_mag",0);
+  } else {
+    heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+  }
+    
   /* read encoder at inputs 13 and 15 */
   if (*heading_mag == FLT_MISS) *heading_mag = 0.0;
 

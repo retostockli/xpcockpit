@@ -257,8 +257,11 @@ void b737_efis(int copilot)
   /* INPUTS */
   
   /* NAV MAP FEATURE BUTTONS */
+  if (*efis_wxr == INT_MISS) *efis_wxr = 0;
   ret = digital_input(card,40+offset,efis_wxr,1);  // WXR --> toggle switch
+  if (ret == 1) printf("WXR: %i \n",*efis_wxr);
   ret = digital_input(card,41+offset,efis_sta,-1);  // STA
+  if (ret == 1) printf("STA: %i \n",*efis_sta);
   ret = digital_input(card,42+offset,efis_wpt,-1);  // WPT
   ret = digital_input(card,43+offset,efis_apt,-1);  // ARPT
   ret = digital_input(card,44+offset,efis_data,-1);  // DATA

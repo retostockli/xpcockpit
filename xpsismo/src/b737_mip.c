@@ -305,8 +305,8 @@ void b737_mip(void)
     ret = digital_input(card,18,master_caution,-1);
 
     /* lights test switch */
-    ret = digital_input(card,19,&temp,-1);
-    ret = digital_input(card,20,&temp2,-1);
+    ret = digital_input(card,20,&temp,-1);
+    ret = digital_input(card,19,&temp2,-1);
     if (temp == 1) lights_test_pos = 1.0; 
     if (temp2 == 1) lights_test_pos = -1.0;
     if ((temp == 0) && (temp2 == 0)) lights_test_pos = 0.0;
