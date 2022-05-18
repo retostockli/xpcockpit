@@ -57,6 +57,16 @@ struct timeval attend_time1;
 
 int b737_awm_init(void) {
  
+#ifdef PIGPIO
+  gpioSetMode(CONT_HORN_PIN, PI_OUTPUT);
+  gpioSetMode(INT_HORN_PIN, PI_OUTPUT);
+  gpioSetMode(AP_DISC_PIN, PI_OUTPUT);
+  gpioSetMode(HI_CHIME_PIN, PI_OUTPUT);
+  gpioSetMode(HILOW_CHIME_PIN, PI_OUTPUT);
+  gpioSetMode(LOW_CHIME_PIN, PI_OUTPUT);
+  gpioSetMode(CLACKER_PIN, PI_OUTPUT);
+  gpioSetMode(FIRE_BELL_PIN, PI_OUTPUT);
+#else
   pinMode(CONT_HORN_PIN, OUTPUT);
   pinMode(INT_HORN_PIN, OUTPUT);
   pinMode(AP_DISC_PIN, OUTPUT);
@@ -65,7 +75,8 @@ int b737_awm_init(void) {
   pinMode(LOW_CHIME_PIN, OUTPUT);
   pinMode(CLACKER_PIN, OUTPUT);
   pinMode(FIRE_BELL_PIN, OUTPUT);
-
+#endif
+  
   belts_save = 0;
   
   return 0;
@@ -102,36 +113,116 @@ void b737_awm(void)
     }
 
     
-    if (*ap_disconnect != INT_MISS) digitalWrite(AP_DISC_PIN, *ap_disconnect);
+    if (*ap_disconnect != INT_MISS) {
+#ifdef PIGPIO
+      gpioWrite(AP_DISC_PIN, *ap_disconnect);
+#else
+      digitalWrite(AP_DISC_PIN, *ap_disconnect);
+#endif
+    } else {
+#ifdef PIGPIO
+      gpioWrite(AP_DISC_PIN, 0);
+#else
+      digitalWrite(AP_DISC_PIN, 0);
+#endif
+    }
     
     if ((*belts != INT_MISS) && (*belts != belts_save)) {
+#ifdef PIGPIO
+      gpioWrite(HI_CHIME_PIN, 1);
+#else
       digitalWrite(HI_CHIME_PIN, 1);
+#endif
       belts_save = *belts;
     } else {
+#ifdef PIGPIO
+      gpioWrite(HI_CHIME_PIN, 0);
+#else
       digitalWrite(HI_CHIME_PIN, 0);
+#endif
     }
     
     if (*attend != FLT_MISS) {
       gettimeofday(&attend_time2,NULL);
       if ((int) *attend == 1) {
+#ifdef PIGPIO
+	gpioWrite(HILOW_CHIME_PIN, 1);
+#else
 	digitalWrite(HILOW_CHIME_PIN, 1);
+#endif
 	gettimeofday(&attend_time1,NULL);
       } else {
 	dtime = ((attend_time2.tv_sec - attend_time1.tv_sec) +
 		   (attend_time2.tv_usec - attend_time1.tv_usec) / 1000000.0);
-	if (dtime > 1.0) digitalWrite(HILOW_CHIME_PIN, 0);	  
+	if (dtime > 1.0) {
+#ifdef PIGPIO
+	  gpioWrite(HILOW_CHIME_PIN, 0);
+#else
+	  digitalWrite(HILOW_CHIME_PIN, 0);
+#endif
+	}
       } 
     } else {
+#ifdef PIGPIO
+      gpioWrite(HILOW_CHIME_PIN, 0);
+#else
       digitalWrite(HILOW_CHIME_PIN, 0);
+#endif
     }
 
-    if (*mach_warn != FLT_MISS) digitalWrite(CLACKER_PIN, (int) *mach_warn);
     
-    if (*fire_bell != INT_MISS) digitalWrite(FIRE_BELL_PIN, *fire_bell);
-
-    if (*config_warn != FLT_MISS) digitalWrite(INT_HORN_PIN, (int) *config_warn);
-
-    if (*gear_warn != FLT_MISS) digitalWrite(CONT_HORN_PIN, (int) *gear_warn);
+    if (*mach_warn != FLT_MISS) {
+#ifdef PIGPIO
+      gpioWrite(CLACKER_PIN, (int) *mach_warn);
+#else
+      digitalWrite(CLACKER_PIN, (int) *mach_warn);
+#endif
+    } else {
+#ifdef PIGPIO
+      gpioWrite(CLACKER_PIN, 0);
+#else
+      digitalWrite(CLACKER_PIN, 0);
+#endif
+    }
+    if (*fire_bell != INT_MISS) {
+#ifdef PIGPIO
+      gpioWrite(FIRE_BELL_PIN, *fire_bell);
+#else
+      digitalWrite(FIRE_BELL_PIN, *fire_bell);
+#endif
+    } else {
+#ifdef PIGPIO
+      gpioWrite(FIRE_BELL_PIN, 0);
+#else
+      digitalWrite(FIRE_BELL_PIN, 0);
+#endif
+    }
+    if (*config_warn != FLT_MISS) {
+#ifdef PIGPIO
+      gpioWrite(INT_HORN_PIN, (int) *config_warn);
+#else
+      digitalWrite(INT_HORN_PIN, (int) *config_warn);
+#endif
+    } else {
+#ifdef PIGPIO
+      gpioWrite(INT_HORN_PIN, 0);
+#else
+      digitalWrite(INT_HORN_PIN, 0);
+#endif
+    }
+    if (*gear_warn != FLT_MISS) {
+#ifdef PIGPIO
+      gpioWrite(CONT_HORN_PIN, (int) *gear_warn);
+#else
+      digitalWrite(CONT_HORN_PIN, (int) *gear_warn);
+#endif
+    } else {
+#ifdef PIGPIO
+      gpioWrite(CONT_HORN_PIN, 0);
+#else
+      digitalWrite(CONT_HORN_PIN, 0);
+#endif
+    }
     
   }
   

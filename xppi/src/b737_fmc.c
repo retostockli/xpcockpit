@@ -134,6 +134,10 @@ int rot_direction;
 pthread_t poll_thread;      /* read thread */
 int poll_thread_exit_code;  /* read thread exit code */
 
+int pressedRow;
+int pressedCol;
+int somethingPressed;
+
 void *poll_thread_main()
 /* thread handles inputs which change faster than xppi cycle */
 {
@@ -147,10 +151,16 @@ void *poll_thread_main()
   while (!poll_thread_exit_code) {
     /* Put code here to asynchronously do operations from main thread */
 
+#ifdef PIGPIO
+#else
     rot_a = digitalRead(rot_a_pin);
+#endif
     if (rot_a != rot_a_save) changed = 1;
 
+#ifdef PIGPIO
+#else
     rot_b = digitalRead(rot_b_pin);
+#endif
     if (rot_b != rot_b_save) changed = 1;
       
     if (changed) {
@@ -194,6 +204,8 @@ int b737_fmc_init()
   rot_direction = 0;
   
   /* Initialize pins */
+#ifdef PIGPIO
+#else
   pinMode(exec_led_pin, OUTPUT);
   pinMode(msg_led_pin,  OUTPUT);
   pinMode(dspy_led_pin, OUTPUT);
@@ -208,17 +220,24 @@ int b737_fmc_init()
   pullUpDnControl(rot_sw_pin, PUD_UP);
   pullUpDnControl(rot_a_pin, PUD_UP);
   pullUpDnControl(rot_b_pin, PUD_UP);
+#endif
   
   /* set columns as outputs, HIGH by default */
   for (pin = 0; pin < nCols; pin++) {
+#ifdef PIGPIO
+#else
     digitalWrite(colPins[pin], HIGH);
     pinMode(colPins[pin], OUTPUT);
+#endif
   }
   
   /* set rows as inputs, with Pull-UP enabled. */
   for (pin = 0; pin < nRows; pin++) {
+#ifdef PIGPIO
+#else
     pinMode(rowPins[pin], INPUT);
     pullUpDnControl(rowPins[pin], PUD_UP);
+#endif
   }
 
   /* init thread to read encoder since encoder changes are too fast
@@ -248,6 +267,7 @@ void b737_fmc()
     int nowCol;
     int nowRow;
     int i,j;
+    int status;
     char datarefname[100];
     int *datarefptr[nCols][nRows];
 
@@ -284,9 +304,14 @@ void b737_fmc()
 	(*key_brightness != FLT_MISS)) {
       printf("New Key Brightness: %f \n",*key_brightness);
       key_brightness_save = *key_brightness;
+#ifdef PIGPIO
+#else
       softPwmWrite(bgl_pwm_pin, (int) (*key_brightness * 100.0));
+#endif
     }
     
+#ifdef PIGPIO
+#else
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
     if (*msg_led != INT_MISS) digitalWrite(msg_led_pin, *msg_led);  
     /*
@@ -294,6 +319,8 @@ void b737_fmc()
     if (*ofst_led != INT_MISS) digitalWrite(ofst_led_pin, *ofst_led);
     if (*fail_led != INT_MISS) digitalWrite(fail_led_pin, *fail_led);
     */
+#endif
+
     /* fetch rotary encoder switch: not needed since switch 
        is directly connected to the MENU key of the display */
     /*
@@ -308,19 +335,31 @@ void b737_fmc()
     /* DSPY_LED connected to DOWN key of the display */
     if (rot_direction == -1) {
       printf("Rotary DOWN: \n");
+#ifdef PIGPIO
+#else
       digitalWrite(dspy_led_pin, 1);
+#endif
       rot_direction = 0;
     } else {
+#ifdef PIGPIO
+#else
       digitalWrite(dspy_led_pin, 0);
+#endif
     }
       
     /* FAIL_LED connected to UP key of the display */
     if (rot_direction == 1) {
       printf("Rotary UP: \n");
+#ifdef PIGPIO
+#else
       digitalWrite(fail_led_pin, 1);
+#endif
       rot_direction = 0;
     } else {
+#ifdef PIGPIO
+#else
       digitalWrite(fail_led_pin, 0);
+#endif
     }
 
 
@@ -334,16 +373,20 @@ void b737_fmc()
     {
     
       // set the current column to LOW
+#ifdef PIGPIO
+#else
       digitalWrite(colPins[nowCol], 0);
-    
+#endif    
       // go through the rows, see who is low (pressed)
     
       for (nowRow = 0; nowRow < nRows; nowRow++) {
      
 	// delay a bit for the GPIO state to settle
 	usleep(5);
-	int status = digitalRead(rowPins[nowRow]);
-      
+#ifdef PIGPIO
+#else
+	status = digitalRead(rowPins[nowRow]);
+#endif      
 	// something pressed
 	if (status == 0) {
 	  gotPress = 1;
@@ -379,8 +422,10 @@ void b737_fmc()
       
       }
       // restore the current column to HIGH
+#ifdef PIGPIO
+#else
       digitalWrite(colPins[nowCol], HIGH);
-    
+#endif    
     }
   
     if (!gotPress) 

@@ -15,9 +15,12 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#ifdef PIGPIO
+#include <pigpio.h>
+#else
 #include <wiringPi.h>
 #include <softPwm.h>
-#include <pigpio.h>
+#endif
 
 #define INTERVAL 50
 

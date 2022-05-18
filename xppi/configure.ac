@@ -50,9 +50,9 @@ fi
 AC_CHECK_LIB(pigpio, gpioInitialise, , HAVE_PIGPIO=no)
 if test "x$HAVE_PIGPIO" = xno; then
     AC_MSG_NOTICE([Can't find pigpio library, or can't link a program to it.])
-#else
-# Enable this as soon as we have found a way around the sudo permission of pigpio
-#    AC_DEFINE([PIGPIO],[],[Use PIGPIO to access GPIO instead of wiringPi])
+else
+ Enable this as soon as we have found a way around the sudo permission of pigpio
+    AC_DEFINE([PIGPIO],[],[Use PIGPIO to access GPIO instead of wiringPi])
 fi
 AC_CHECK_HEADER(pigpio.h)
 

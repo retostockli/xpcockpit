@@ -62,23 +62,28 @@ int main(int argc, char **argv) {
 
   /* parse the selected ini file */
   if (ini_read(argv[0],argv[1])<0) exit_pi(-2);
-  
-  /* initialize handler for command-line interrupts (ctrl-c) */
-  if (ini_signal_handler()<0) exit_pi(-3);
 
   /* initialize TCP/IP interface */
   if (initialize_tcpip()<0) exit_pi(-4);
 
   /* initialize wiringPi Library */
   if (init_pi()<0) exit_pi(-4);
+  
+  /* initialize handler for command-line interrupts (ctrl-c) */
+  /* needs to be put after initalizing pi */
+  if (ini_signal_handler()<0) exit_pi(-3);
  
   /* initialize modules */
   if (strcmp(argv[1],"test") == 0) {
     if (test_init()<0) exit_pi(-5);
   }
-  if (strcmp(argv[1],"boeing737compass") == 0) {
+  if (strcmp(argv[1],"boeing737mip") == 0) {
     if (b737_compass_init()<0) exit_pi(-5);
     if (b737_awm_init()<0) exit_pi(-5);
+    if (b737_yawdamper_init()<0) exit_pi(-5);
+  }
+  if (strcmp(argv[1],"boeing737compass") == 0) {
+    if (b737_compass_init()<0) exit_pi(-5);
   }
   if (strcmp(argv[1],"boeing737awm") == 0) {
     if (b737_awm_init()<0) exit_pi(-5);
@@ -107,9 +112,13 @@ int main(int argc, char **argv) {
     if (strcmp(argv[1],"test") == 0) {
       test();
     }
-    if (strcmp(argv[1],"boeing737compass") == 0) {
+    if (strcmp(argv[1],"boeing737mip") == 0) {
       b737_compass();
       b737_awm();
+      b737_yawdamper();
+    }
+    if (strcmp(argv[1],"boeing737compass") == 0) {
+      b737_compass();
     }
     if (strcmp(argv[1],"boeing737awm") == 0) {
       b737_awm();

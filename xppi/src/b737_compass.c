@@ -87,12 +87,15 @@ float interpolate(float xval)
 
 int b737_compass_init(void) {
 
-  pinMode(DOWN_PIN, INPUT);
-  pinMode(UP_PIN, INPUT);
-  pullUpDnControl(DOWN_PIN, PUD_DOWN);
-  pullUpDnControl(UP_PIN, PUD_DOWN);
-  
-  
+#ifdef PIGPIO
+  gpioSetMode(LIGHT_PIN, PI_OUTPUT);
+  gpioSetMode(A1A_PIN, PI_OUTPUT);
+  gpioSetMode(A1B_PIN, PI_OUTPUT);
+  gpioSetMode(B1A_PIN, PI_OUTPUT);
+  gpioSetMode(B1B_PIN, PI_OUTPUT);
+  gpioSetPWMrange(A1A_PIN,255);     
+  gpioSetPWMrange(B1A_PIN,255);     
+#else
   pinMode(LIGHT_PIN, OUTPUT);
   pinMode(A1A_PIN, OUTPUT);
   pinMode(A1B_PIN, OUTPUT);
@@ -100,7 +103,8 @@ int b737_compass_init(void) {
   pinMode(B1B_PIN, OUTPUT);
   softPwmCreate(A1A_PIN,0,255); //Pin,initalValue,pwmRange    
   softPwmCreate(B1A_PIN,0,255); //Pin,initalValue,pwmRange    
-
+#endif
+  
   return 0;
   
 }
@@ -122,7 +126,11 @@ void b737_compass(void)
   if (*value == INT_MISS) *value = 1;
 
   if (*value != INT_MISS) {
+#ifdef PIGPIO
+    gpioWrite(LIGHT_PIN, *value);
+#else
     digitalWrite(LIGHT_PIN, *value);
+#endif
   }
   
   float *heading_mag;
@@ -134,19 +142,6 @@ void b737_compass(void)
     
   /* read encoder at inputs 13 and 15 */
   if (*heading_mag == FLT_MISS) *heading_mag = 0.0;
-
-  ret = digitalRead(UP_PIN);
-  if (ret == 1) {
-    *heading_mag += 1.0;
-    printf("HEADING: %f \n",*heading_mag);
-  }
-  ret = digitalRead(DOWN_PIN);
-  if (ret == 1) {
-    *heading_mag -= 1.0;
-    printf("HEADING: %f \n",*heading_mag);
-  }
-  if (*heading_mag > 360.0) *heading_mag = 0.0;
-  if (*heading_mag < 0.0) *heading_mag = 360.0;
 
   if (calibrate) {
     compassdegrees = *heading_mag;
@@ -162,14 +157,29 @@ void b737_compass(void)
   int zero = 0;
   int one = 1;
 
+#ifdef PIGPIO
+  if (x < 0) {
+    gpioPWM(A1A_PIN, absx);
+    gpioWrite(A1B_PIN, zero);
+  } else {
+    gpioPWM(A1A_PIN, revabsx);
+    gpioWrite(A1B_PIN, one);
+  }  
+  if (y > 0) {
+    gpioPWM(B1A_PIN, absy);
+    gpioWrite(B1B_PIN, zero);
+  } else {
+    gpioPWM(B1A_PIN, revabsy);
+    gpioWrite(B1B_PIN, one);
+  }
+#else
   if (x < 0) {
     softPwmWrite(A1A_PIN, absx);
     digitalWrite(A1B_PIN, zero);
   } else {
     softPwmWrite(A1A_PIN, revabsx);
     digitalWrite(A1B_PIN, one);
-  }
-  
+  }  
   if (y > 0) {
     softPwmWrite(B1A_PIN, absy);
     digitalWrite(B1B_PIN, zero);
@@ -177,5 +187,6 @@ void b737_compass(void)
     softPwmWrite(B1A_PIN, revabsy);
     digitalWrite(B1B_PIN, one);
   }
-    
+#endif
+  
 }

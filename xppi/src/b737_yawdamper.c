@@ -32,17 +32,24 @@
 #include "b737_yawdamper.h"
 
 
-int A1A_PIN = 2;   /* Physical Pin 3 */
-int A1B_PIN = 3;   /* Physical Pin 5 */
-int LIGHT_PIN = 4; /* Physical Pin 7 */
+int A1_PIN = 2;   /* Physical Pin 3 */
+int B1_PIN = 3;   /* Physical Pin 5 */
+int YAW_LED_PIN = 4; /* Physical Pin 7 */
 
-int b737_compass_init(void) {
+int b737_yawdamper_init(void) {
   
-  pinMode(LIGHT_PIN, OUTPUT);
-  pinMode(A1A_PIN, OUTPUT);
-  pinMode(A1B_PIN, OUTPUT);
-  softPwmCreate(A1A_PIN,0,255); //Pin,initalValue,pwmRange    
-
+#ifdef PIGPIO
+  gpioSetMode(YAW_LED_PIN, PI_OUTPUT);
+  gpioSetMode(A1_PIN, PI_OUTPUT);
+  gpioSetMode(B1_PIN, PI_OUTPUT);
+  gpioSetPWMrange(A1_PIN,255);     
+#else
+  pinMode(YAW_LED_PIN, OUTPUT);
+  pinMode(A1_PIN, OUTPUT);
+  pinMode(B1_PIN, OUTPUT);
+  softPwmCreate(A1_PIN,0,255);     
+#endif
+  
   return 0;
   
 }
@@ -62,26 +69,39 @@ void b737_yawdamper(void)
   if (*value == INT_MISS) *value = 1;
 
   if (*value != INT_MISS) {
-    digitalWrite(LIGHT_PIN, *value);
+#ifdef PIGPIO
+    gpioWrite(YAW_LED_PIN, *value);
+#else
+    digitalWrite(YAW_LED_PIN, *value);
+#endif
   }
   
   float *heading_mag = link_dataref_flt("sim/cockpit/autopilot/heading_mag",0);
     
   if (*heading_mag == FLT_MISS) *heading_mag = 180.0;
 
-  int x = (int) 255.0 * (compassdegrees-180.0)/180.0;
+  int x = (int) 255.0 * (*heading_mag-180.0)/180.0;
   int absx = abs(x);
   int revabsx = 255-abs(x);
   int zero = 0;
   int one = 1;
 
+#ifdef PIGPIO
   if (x < 0) {
-    softPwmWrite(A1A_PIN, absx);
-    digitalWrite(A1B_PIN, zero);
+    gpioPWM(A1_PIN, absx);
+    gpioWrite(B1_PIN, zero);
   } else {
-    softPwmWrite(A1A_PIN, revabsx);
-    digitalWrite(A1B_PIN, one);
+    gpioPWM(A1_PIN, revabsx);
+    gpioWrite(B1_PIN, one);
   }
-
+#else
+  if (x < 0) {
+    softPwmWrite(A1_PIN, absx);
+    digitalWrite(B1_PIN, zero);
+  } else {
+    softPwmWrite(A1_PIN, revabsx);
+    digitalWrite(B1_PIN, one);
+  }
+#endif
     
 }
