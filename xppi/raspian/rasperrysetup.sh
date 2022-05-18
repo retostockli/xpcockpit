@@ -1,7 +1,8 @@
 #!/bin/sh
 
-# AS USER PI
+# Select user stockli upon first login
 
+# set hostname in gui
 # disable bluetooth
 # disable camera
 # enable ssh
@@ -10,10 +11,13 @@
 
 # sudo apt install mc
 # edit /etc/dhcpcd.conf and add fixed IP address for wlan0 and static router
+
+# if hostname not set yet:
 # edit /etc/hostname and add the name of the rasperry pi computer
 # edit /etc/hosts and add the name of the rasperry pi computer to 127.0.1.1
-# sudo /etc/init.d/networking restart
+# reboot in order networking changes to take effect
 
+# if user was not chosen upon first install:
 # sudo adduser stockli
 # Do add the user stockli first and add sudoers then logout and login as stockli
 sudo usermod -aG sudo stockli
@@ -34,18 +38,15 @@ sudo usermod -aG lpadmin stockli
 # Select Auto Desktop Login for User stockli
 # select GL Driver
 
-# copy ssh keys from mariachi
-# scp -p .ssh/id_ecdsa $raspiname:.ssh/
 mkdir ~/.ssh
 
 # copy ssh keys from mariachi
 scp -p .ssh/id_ecdsa $raspiname:.ssh/
 scp -p .ssh/id_ecdsa.pub $raspiname:.ssh/
 
-# REBOOT and LOGIN as STOCKLI
 
-# edit autologin through desktop GUI
-sudo raspi-config
+cat ~/.ssh/id_ecdsa.pub > ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
 
 
 git config --global user.email "reto.stockli@gmail.com"
@@ -54,8 +55,7 @@ git clone git@github.com:retostockli/xpcockpit.git xpcockpit
 cd xpcockpit
 git checkout B737
 
-cat ~/.ssh/id_ecdsa.pub > ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
+cd xpcockpit/xppi/raspian
 
 # define no-desktop xsession
 cp xsession ~/.xsession
@@ -78,6 +78,7 @@ sudo apt install autoconf -y
 
 sudo cp 010_pi-nopasswd /etc/sudoers.d/
 
+# for DU1 and DU2:
 mkdir -p ~/GLOBE
 mkdir -p ~/GSHHG
 mkdir -p ~/X-Plane\ 11/Custom\ Data
