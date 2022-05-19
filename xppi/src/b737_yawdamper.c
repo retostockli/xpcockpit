@@ -32,9 +32,9 @@
 #include "b737_yawdamper.h"
 
 
-int A1_PIN = 2;   /* Physical Pin 3 */
-int B1_PIN = 3;   /* Physical Pin 5 */
-int YAW_LED_PIN = 4; /* Physical Pin 7 */
+int A1_PIN = 11;   /* Physical Pin 23 */
+int B1_PIN = 8;   /* Physical Pin 24 */
+int YAW_LED_PIN = 7; /* Physical Pin 26 */
 
 int b737_yawdamper_init(void) {
   

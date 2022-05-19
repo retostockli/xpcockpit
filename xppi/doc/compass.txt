@@ -1,0 +1,24 @@
+Standby Compass connected to Rasperry 40 pin header
+
+DSUB connector to Compass
+PIN  Function
+1    
+2    
+3
+4    
+5
+6
+7    
+8
+9    
+
+
+Rasperry Connector
+PIN	GPIO	Function
+2	5V	VCC L9110 Board
+3	2	Light
+5	3	A1A L9110 Board
+6	GND	GND L9110 Board
+7	4	A1B L9110 Board
+8	14	B1A L9110 Board
+10	15	B1B L9110 Board

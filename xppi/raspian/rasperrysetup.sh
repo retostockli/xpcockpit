@@ -61,13 +61,18 @@ cd xpcockpit/xppi/raspian
 cp xsession ~/.xsession
 
 # for fmc1 and fmc2
-sudo cp 20-screen.conf /etc/X11/xorg.conf.d
+sudo cp 20-screen.conf /etc/X11/xorg.conf.d/
+
+# no password shutdown etc:
+sudo cp 010_pi-nopasswd /etc/sudoers.d/
+
 
 # copy systemd files
 mkdir -p ~/.config/systemd/user
 cp *.service ~/.config/systemd/user
 
 
+sudo apt install x11-apps -y
 sudo apt install emacs -y
 sudo apt install libfltk1.3-dev -y
 sudo apt install libftgl-dev -y
@@ -75,9 +80,6 @@ sudo apt install libfreetype6-dev -y
 sudo apt install libudev-dev -y
 sudo apt install build-essential -y
 sudo apt install autoconf -y
-
-sudo cp 010_pi-nopasswd /etc/sudoers.d/
-
 # for DU1 and DU2:
 mkdir -p ~/GLOBE
 mkdir -p ~/GSHHG

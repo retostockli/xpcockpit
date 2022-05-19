@@ -1,0 +1,17 @@
+Yaw Damper connected to Rasperry 40 pin header
+
+DSUB connector to Yaw Damper
+PIN  Function
+1    GND Shield
+2    GND Shield
+3
+4    LED Backlight green wire
+5
+6
+7    Coil Brown wire
+8
+9    Coil White wire
+
+
+Rasperry Connector
+PIN	 GPIO	Function

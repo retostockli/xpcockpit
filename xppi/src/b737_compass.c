@@ -33,16 +33,7 @@
 #include "serverdata.h"
 #include "b737_compass.h"
 
-/* int DOWN_PIN = 28; /\* GPIO 20, Physical Pin 38 *\/ */
-/* int UP_PIN = 29;   /\* GPIO 21, Physical Pin 40 *\/ */
-/* int LIGHT_PIN = 8; /\* GPIO 2, Physical Pin 3 *\/ */
-/* int A1A_PIN = 9;   /\* GPIO 3, Physical Pin 5 *\/ */
-/* int A1B_PIN = 7;   /\* GPIO 4, Physical Pin 7 *\/ */
-/* int B1A_PIN = 15;  /\* GPIO 14, Physical Pin 8 *\/ */
-/* int B1B_PIN = 16;  /\* GPIO 15, Physical Pin 10 *\/ */
 
-int DOWN_PIN = 20; /* GPIO 20, Physical Pin 38 */
-int UP_PIN = 21;   /* GPIO 21, Physical Pin 40 */
 int LIGHT_PIN = 2; /* GPIO 2, Physical Pin 3 */
 int A1A_PIN = 3;   /* GPIO 3, Physical Pin 5 */
 int A1B_PIN = 4;   /* GPIO 4, Physical Pin 7 */

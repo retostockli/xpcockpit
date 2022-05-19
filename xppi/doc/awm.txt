@@ -2,19 +2,19 @@ Rasperry PIN's to connect to SSR Pin
 SSR DC+: Rasperry Pin 17 3.3V
 SSR DC-: Rasperry Pin 14 0.0V
 
-15 PIN Connector				SSR	PIN	WPi	GPIO
-2	Continuous Horn		GND		1	11	0	17
-3	Intermittent Horn	GND		2	12	1	18
-4	AP Disconnect		GND		3	13	2	27
+15 PIN Connector				SSR	PIN	GPIO
+2	Continuous Horn		GND		1	11	17
+3	Intermittent Horn	GND		2	12	18
+4	AP Disconnect		GND		3	13	27
 5	Ampl ifier		28V	Fixed
 6	Amplifier		GND	Fixed
-7	Hi Chime		28V		4	15	3	22
-8	Hi/Low Chime		28V		5	16	4	23
-9	Low Chime		28V		6	18	5	24
+7	Hi Chime		28V		4	15	22
+8	Hi/Low Chime		28V		5	16	23
+9	Low Chime		28V		6	18	24
 10	Clacker No 1		GND	Fixed
-11	Clacker No 1		28V		7	19	12	10
+11	Clacker No 1		28V		7	19	10
 12	Fire Bell		GND	Fixed
-13	Fire Bell		28V		8	21	13	9
+13	Fire Bell		28V		8	21	9
 14 Not Known
 15 Not Known
 
