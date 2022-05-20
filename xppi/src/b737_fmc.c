@@ -45,6 +45,9 @@
 #define nCols 9
 #define nRows 8
 
+#define FMC_PWM_RANGE 360
+#define FMC_PWM_FREQ 40
+
 // columns are outputs. All are set to HIGH except the column being scanned.
 /* const int colPins[] = {  */
 /* 		15,     // p.8  BCM.14 	UART TX Pi3 OK */
@@ -152,12 +155,14 @@ void *poll_thread_main()
     /* Put code here to asynchronously do operations from main thread */
 
 #ifdef PIGPIO
+    rot_a = gpioRead(rot_a_pin);
 #else
     rot_a = digitalRead(rot_a_pin);
 #endif
     if (rot_a != rot_a_save) changed = 1;
 
 #ifdef PIGPIO
+    rot_b = gpioRead(rot_b_pin);
 #else
     rot_b = digitalRead(rot_b_pin);
 #endif
@@ -205,6 +210,22 @@ int b737_fmc_init()
   
   /* Initialize pins */
 #ifdef PIGPIO
+  gpioSetMode(exec_led_pin, PI_OUTPUT);
+  gpioSetMode(msg_led_pin,  PI_OUTPUT);
+  gpioSetMode(dspy_led_pin, PI_OUTPUT);
+  gpioSetMode(ofst_led_pin, PI_OUTPUT);
+  gpioSetMode(fail_led_pin, PI_OUTPUT);
+  gpioSetMode(bgl_pwm_pin,  PI_OUTPUT);
+  gpioSetPWMrange(bgl_pwm_pin,FMC_PWM_RANGE);
+  gpioSetPWMfrequency(bgl_pwm_pin,FMC_PWM_FREQ);
+  gpioPWM(bgl_pwm_pin, 0);
+ 
+  gpioSetMode(rot_a_pin,  PI_INPUT);
+  gpioSetMode(rot_a_pin,  PI_INPUT);
+  gpioSetMode(rot_b_pin,  PI_INPUT);
+  gpioSetPullUpDown(rot_sw_pin, PI_PUD_UP);
+  gpioSetPullUpDown(rot_a_pin, PI_PUD_UP);
+  gpioSetPullUpDown(rot_b_pin, PI_PUD_UP);
 #else
   pinMode(exec_led_pin, OUTPUT);
   pinMode(msg_led_pin,  OUTPUT);
@@ -225,8 +246,10 @@ int b737_fmc_init()
   /* set columns as outputs, HIGH by default */
   for (pin = 0; pin < nCols; pin++) {
 #ifdef PIGPIO
+    gpioWrite(colPins[pin], 1);
+    gpioSetMode(colPins[pin], PI_OUTPUT);
 #else
-    digitalWrite(colPins[pin], HIGH);
+    digitalWrite(colPins[pin], 1);
     pinMode(colPins[pin], OUTPUT);
 #endif
   }
@@ -234,6 +257,8 @@ int b737_fmc_init()
   /* set rows as inputs, with Pull-UP enabled. */
   for (pin = 0; pin < nRows; pin++) {
 #ifdef PIGPIO
+    gpioSetMode(rowPins[pin], PI_INPUT);
+    gpioSetPullUpDown(rowPins[pin], PI_PUD_UP);
 #else
     pinMode(rowPins[pin], INPUT);
     pullUpDnControl(rowPins[pin], PUD_UP);
@@ -305,12 +330,20 @@ void b737_fmc()
       printf("New Key Brightness: %f \n",*key_brightness);
       key_brightness_save = *key_brightness;
 #ifdef PIGPIO
-#else
+      gpioPWM(bgl_pwm_pin, (int) (*key_brightness * 100.0));
+ #else
       softPwmWrite(bgl_pwm_pin, (int) (*key_brightness * 100.0));
 #endif
     }
     
 #ifdef PIGPIO
+    if (*exec_led != INT_MISS) gpioWrite(exec_led_pin, *exec_led);
+    if (*msg_led != INT_MISS) gpioWrite(msg_led_pin, *msg_led);  
+    /*
+    if (*dspy_led != INT_MISS) gpioWrite(dspy_led_pin, *dspy_led);
+    if (*ofst_led != INT_MISS) gpioWrite(ofst_led_pin, *ofst_led);
+    if (*fail_led != INT_MISS) gpioWrite(fail_led_pin, *fail_led);
+    */
 #else
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
     if (*msg_led != INT_MISS) digitalWrite(msg_led_pin, *msg_led);  
@@ -336,12 +369,14 @@ void b737_fmc()
     if (rot_direction == -1) {
       printf("Rotary DOWN: \n");
 #ifdef PIGPIO
+      gpioWrite(dspy_led_pin, 1);
 #else
       digitalWrite(dspy_led_pin, 1);
 #endif
       rot_direction = 0;
     } else {
 #ifdef PIGPIO
+      gpioWrite(dspy_led_pin, 0);
 #else
       digitalWrite(dspy_led_pin, 0);
 #endif
@@ -351,12 +386,14 @@ void b737_fmc()
     if (rot_direction == 1) {
       printf("Rotary UP: \n");
 #ifdef PIGPIO
+      gpioWrite(fail_led_pin, 1);
 #else
       digitalWrite(fail_led_pin, 1);
 #endif
       rot_direction = 0;
     } else {
 #ifdef PIGPIO
+      gpioWrite(fail_led_pin, 0);
 #else
       digitalWrite(fail_led_pin, 0);
 #endif
@@ -374,6 +411,7 @@ void b737_fmc()
     
       // set the current column to LOW
 #ifdef PIGPIO
+      gpioWrite(colPins[nowCol], 0);
 #else
       digitalWrite(colPins[nowCol], 0);
 #endif    
@@ -384,6 +422,7 @@ void b737_fmc()
 	// delay a bit for the GPIO state to settle
 	usleep(5);
 #ifdef PIGPIO
+	status = gpioRead(rowPins[nowRow]);
 #else
 	status = digitalRead(rowPins[nowRow]);
 #endif      
@@ -423,8 +462,9 @@ void b737_fmc()
       }
       // restore the current column to HIGH
 #ifdef PIGPIO
+      gpioWrite(colPins[nowCol], 1);
 #else
-      digitalWrite(colPins[nowCol], HIGH);
+      digitalWrite(colPins[nowCol], 1);
 #endif    
     }
   

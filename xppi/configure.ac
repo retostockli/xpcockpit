@@ -46,7 +46,7 @@ else
     CFLAGS="$CFLAGS -O2"
 fi
 
-# check for pigpio library / header presence (PRIORITARY OVER WIRINGPI)
+# 1. Option: check for pigpio library / header presence (PRIORITARY OVER WIRINGPI)
 AC_CHECK_LIB(pigpio, gpioInitialise, , HAVE_PIGPIO=no)
 if test "x$HAVE_PIGPIO" = xno; then
     AC_MSG_NOTICE([Can't find pigpio library, or can't link a program to it.])
@@ -57,17 +57,17 @@ fi
 AC_CHECK_HEADER(pigpio.h)
 
 
-# also check for wiringpi library / header presence
-AC_CHECK_LIB(wiringPi, wiringPiSetup, , HAVE_WIRINGPI=no)
-if test "x$HAVE_WIRINGPI" = xno; then
-    AC_MSG_NOTICE([Can't find wiringPi library, or can't link a program to it.])
-fi
-AC_CHECK_HEADER(wiringPi.h)
+# 2. Option: check for wiringpi library / header presence
+if test "x$HAVE_PIGPIO" = xno; then
+    AC_CHECK_LIB(wiringPi, wiringPiSetup, , HAVE_WIRINGPI=no)
+    if test "x$HAVE_WIRINGPI" = xno; then
+	AC_MSG_NOTICE([Can't find wiringPi library, or can't link a program to it.])
+    fi
+    AC_CHECK_HEADER(wiringPi.h)
 
-if test "x$HAVE_WIRINGPI" = xno; then
-  if test "x$HAVE_PIGPIO" = xno; then
-    AC_MSG_ERROR([Need either pigpio or wiringPi library to work.])
-  fi
+    if test "x$HAVE_WIRINGPI" = xno; then
+        AC_MSG_ERROR([Need either pigpio or wiringPi library to work.])
+    fi
 fi
 
 

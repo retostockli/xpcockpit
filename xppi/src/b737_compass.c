@@ -39,6 +39,8 @@ int A1A_PIN = 3;   /* GPIO 3, Physical Pin 5 */
 int A1B_PIN = 4;   /* GPIO 4, Physical Pin 7 */
 int B1A_PIN = 14;  /* GPIO 14, Physical Pin 8 */
 int B1B_PIN = 15;  /* GPIO 15, Physical Pin 10 */
+int COMPASS_PWM_RANGE = 360;
+int COMPASS_PWM_FREQ = 40;
 
 /* This is the translation table of magnetic deg input (x) to degees shown on compass (y) */
 /* Since the coils on the compass are not exactly orthogonal and the magnetic field is not perfect */
@@ -78,22 +80,38 @@ float interpolate(float xval)
 
 int b737_compass_init(void) {
 
+  /* we need to use both L9110 pins as PWM for each motor since the generation of the 
+     PWM signal has a minimum duty cycle which prevents a near 0 PWM frequency. So we
+     start from maximum PWM for positive and negative motor directions */
+  
 #ifdef PIGPIO
   gpioSetMode(LIGHT_PIN, PI_OUTPUT);
   gpioSetMode(A1A_PIN, PI_OUTPUT);
   gpioSetMode(A1B_PIN, PI_OUTPUT);
   gpioSetMode(B1A_PIN, PI_OUTPUT);
   gpioSetMode(B1B_PIN, PI_OUTPUT);
-  gpioSetPWMrange(A1A_PIN,255);     
-  gpioSetPWMrange(B1A_PIN,255);     
+  gpioSetPWMrange(A1A_PIN,COMPASS_PWM_RANGE);
+  gpioSetPWMrange(A1B_PIN,COMPASS_PWM_RANGE);
+  gpioSetPWMrange(B1A_PIN,COMPASS_PWM_RANGE);
+  gpioSetPWMrange(B1B_PIN,COMPASS_PWM_RANGE);
+  gpioSetPWMfrequency(A1A_PIN,COMPASS_PWM_FREQ);
+  gpioSetPWMfrequency(A1B_PIN,COMPASS_PWM_FREQ);
+  gpioSetPWMfrequency(B1A_PIN,COMPASS_PWM_FREQ);
+  gpioSetPWMfrequency(B1B_PIN,COMPASS_PWM_FREQ);
+  gpioPWM(A1A_PIN, 0);
+  gpioPWM(A1B_PIN, 0);
+  gpioPWM(B1A_PIN, 0);
+  gpioPWM(B1B_PIN, 0);
 #else
   pinMode(LIGHT_PIN, OUTPUT);
   pinMode(A1A_PIN, OUTPUT);
   pinMode(A1B_PIN, OUTPUT);
   pinMode(B1A_PIN, OUTPUT);
   pinMode(B1B_PIN, OUTPUT);
-  softPwmCreate(A1A_PIN,0,255); //Pin,initalValue,pwmRange    
-  softPwmCreate(B1A_PIN,0,255); //Pin,initalValue,pwmRange    
+  softPwmCreate(A1A_PIN,0,COMPASS_PWM_RANGE); //Pin,initalValue,pwmRange    
+  softPwmCreate(A1B_PIN,0,COMPASS_PWM_RANGE); //Pin,initalValue,pwmRange    
+  softPwmCreate(B1A_PIN,0,COMPASS_PWM_RANGE); //Pin,initalValue,pwmRange    
+  softPwmCreate(B1B_PIN,0,COMPASS_PWM_RANGE); //Pin,initalValue,pwmRange    
 #endif
   
   return 0;
@@ -107,6 +125,9 @@ void b737_compass(void)
   float compassdegrees;
 
   int ret;
+
+  int zero = 0;
+  int one = 1;
   
   /* link integer data like a switch in the cockpit */
   //  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -131,7 +152,6 @@ void b737_compass(void)
     heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
   }
     
-  /* read encoder at inputs 13 and 15 */
   if (*heading_mag == FLT_MISS) *heading_mag = 0.0;
 
   if (calibrate) {
@@ -139,44 +159,42 @@ void b737_compass(void)
   } else {
     compassdegrees = interpolate(*heading_mag);
   }
-  int y = (int) 255.0 * cos(compassdegrees*3.14/180.0);
-  int x = (int) 255.0 * sin(compassdegrees*3.14/180.0);
+  int y = (int) (((float) COMPASS_PWM_RANGE) * cos(compassdegrees*3.14/180.0));
+  int x = (int) (((float) COMPASS_PWM_RANGE) * sin(compassdegrees*3.14/180.0));
   int absx = abs(x);
   int absy = abs(y);
-  int revabsx = 255-abs(x);
-  int revabsy = 255-abs(y);
-  int zero = 0;
-  int one = 1;
+  int revabsx = COMPASS_PWM_RANGE-abs(x);
+  int revabsy = COMPASS_PWM_RANGE-abs(y);
 
 #ifdef PIGPIO
   if (x < 0) {
-    gpioPWM(A1A_PIN, absx);
-    gpioWrite(A1B_PIN, zero);
+    gpioPWM(A1A_PIN, COMPASS_PWM_RANGE);
+    gpioPWM(A1B_PIN, revabsx);
   } else {
     gpioPWM(A1A_PIN, revabsx);
-    gpioWrite(A1B_PIN, one);
+    gpioPWM(A1B_PIN, COMPASS_PWM_RANGE);
   }  
   if (y > 0) {
-    gpioPWM(B1A_PIN, absy);
-    gpioWrite(B1B_PIN, zero);
+    gpioPWM(B1A_PIN, COMPASS_PWM_RANGE);
+    gpioPWM(B1B_PIN, revabsy);
   } else {
     gpioPWM(B1A_PIN, revabsy);
-    gpioWrite(B1B_PIN, one);
+    gpioPWM(B1B_PIN, COMPASS_PWM_RANGE);
   }
 #else
   if (x < 0) {
-    softPwmWrite(A1A_PIN, absx);
-    digitalWrite(A1B_PIN, zero);
+    softPwmWrite(A1A_PIN, COMPASS_PWM_RANGE);
+    softPwmWrite(A1B_PIN, revabsx);
   } else {
     softPwmWrite(A1A_PIN, revabsx);
-    digitalWrite(A1B_PIN, one);
+    softPwmWrite(A1B_PIN, COMPASS_PWM_RANGE);
   }  
   if (y > 0) {
-    softPwmWrite(B1A_PIN, absy);
-    digitalWrite(B1B_PIN, zero);
+    softPwmWrite(B1A_PIN, COMPASS_PWM_RANGE);
+    softPwmWrite(B1B_PIN, revabsy);
   } else {
     softPwmWrite(B1A_PIN, revabsy);
-    digitalWrite(B1B_PIN, one);
+    softPwmWrite(B1B_PIN, COMPASS_PWM_RANGE);
   }
 #endif
   

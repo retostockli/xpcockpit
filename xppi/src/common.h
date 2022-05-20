@@ -23,6 +23,7 @@
 #endif
 
 #define INTERVAL 50
+//#define INTERVAL 1000
 
 /* verbosity of xpsismo (0-4) */
 extern int verbose;
