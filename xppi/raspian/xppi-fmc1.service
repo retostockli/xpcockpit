@@ -5,7 +5,8 @@ Description=Systemd service to start and stop xppi with user stockli
 Type=simple
 #User=stockli
 #Group=stockli
-ExecStart=/home/stockli/xpcockpit/xppi/bin/xppi boeing737fmc1 
+ExecStart=sudo /home/stockli/xpcockpit/xppi/bin/xppi boeing737fmc1 
+ExecStop=sudo /bin/kill $MAINPID
 
 [Install]
 WantedBy=default.target

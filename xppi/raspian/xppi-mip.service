@@ -6,6 +6,7 @@ Type=simple
 #User=stockli
 #Group=stockli
 ExecStart=sudo /home/stockli/xpcockpit/xppi/bin/xppi boeing737mip 
+ExecStop=sudo /bin/kill $MAINPID
 
 [Install]
 WantedBy=default.target
