@@ -40,37 +40,39 @@ int A1B_PIN = 4;   /* GPIO 4, Physical Pin 7 */
 int B1A_PIN = 14;  /* GPIO 14, Physical Pin 8 */
 int B1B_PIN = 15;  /* GPIO 15, Physical Pin 10 */
 int COMPASS_PWM_RANGE = 360;
-int COMPASS_PWM_FREQ = 40;
+int COMPASS_PWM_FREQ = 20;
 
-/* This is the translation table of magnetic deg input (x) to degees shown on compass (y) */
-/* Since the coils on the compass are not exactly orthogonal and the magnetic field is not perfect */
+/* FOR CALIBRATION = 1 */
+/* This is the translation table of magnetic deg input from Autopilot Heading Knob/Display (yval) 
+   to degees shown on standby compass (xval).
+   Since the coils on the compass are not exactly orthogonal and the magnetic field is not perfect */
 
-static float y[22] = { 45, 60, 90,110,140,146,148,153,161,171,180,215,245,276,310,330,350,360,375,390,405,420}; /* Input Degrees */
-static float x[22] = { -2,  7, 25, 40, 75,105,110,120,130,140,150,177,192,225,277,312,328,335,345,350,358,367}; /* Degrees on Compass NEED TO COVER 0..360 degrees at least */
+static float xval[31] = {  0, 10, 20,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,265,269,283,290,300,315,330,345,360,370,380,390}; /* Degrees on Compass NEED TO COVER 0..360 degrees at least */
+static float yval[31] = {-48,-30,-12, 0,20,37,47,52, 57, 65, 79, 95,115,139,161,178,193,206,216,219,220,223,225,230,242,260,283,312,330,348,360}; /* Input Degrees from AP Heading Knob */
 
-float interpolate(float xval)
+float interpolate(float input)
 {
   int left;
   int right;
   float val;
-  int n=sizeof(x)/sizeof(float);
+  int n=sizeof(xval)/sizeof(float);
 
   left = n-2;
   right = n-1;
   for (int i=1;i<(n-1);i++) {
-    if (xval < x[i]) {
+    if (input < xval[i]) {
       left = i-1;
       right = i;
       break;
     }
   }
 
-  if (xval < x[0]) {
-    val = y[0];
-  } else if (xval > x[n-1]) {
-    val = y[n-1];
+  if (input < xval[0]) {
+    val = yval[0];
+  } else if (input > xval[n-1]) {
+    val = yval[n-1];
   } else {
-    val = ((x[right] - xval) * y[left] + (xval - x[left]) * y[right]) / (x[right] - x[left]);
+    val = ((xval[right] - input) * yval[left] + (input - xval[left]) * yval[right]) / (xval[right] - xval[left]);
   }
   
   //  printf("%f %i %i %f \n",xval,left,right,val);
