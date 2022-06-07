@@ -142,10 +142,7 @@ int main (int argc, char **argv)
       if (strcmp("boeing737",argv[1]) == 0) {
 	if (acf_type >= 0) {
 	  b737_pedestal();
-	  b737_efis();
-	  b737_mcp();
 	  b737_throttle();
-	  //dcmotorsplus_test();
 	  b737_yokerudder();
 	  b737_overhead_fwd();
 	}
