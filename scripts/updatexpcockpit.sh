@@ -11,4 +11,7 @@ cd ..
 cd xppi
 make
 make install
+cd raspian
+cp *.service ~/.config/systemd/user/
+
 
