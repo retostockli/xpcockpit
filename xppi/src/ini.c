@@ -138,7 +138,12 @@ int ini_signal_handler(void)
 int init_pi(void)
 {
 #ifdef PIGPIO
-  //  gpioCfgSetInternals(1<<10);
+
+  /* Add this for pigpio not to interfere with signal handlling */
+  int cfg = gpioCfgGetInternals();
+  cfg |= PI_CFG_NOSIGHANDLER;  // (1<<10)
+  gpioCfgSetInternals(cfg);
+
   if (gpioInitialise() < 0) {
     return -1;
   } else {

@@ -91,10 +91,11 @@ void b737_awm(void)
   double dtime;
 
   if (acf_type == 3) {
-  
-    /* link integer data like a switch in the cockpit */
-    int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
+    /* testing */
+    //float *config_warn = link_dataref_flt("laminar/B738/toggle_switch/bright_test",0);
+ 
+    /* link integer data like a switch in the cockpit */
     int *ap_disconnect = link_dataref_int("laminar/b738/fmodpack/fmod_ap_disconnect");
     int *belts = link_dataref_int("laminar/b738/fmodpack/play_seatbelt_no_smoke");
     float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
@@ -102,16 +103,6 @@ void b737_awm(void)
     int *fire_bell = link_dataref_int("laminar/b738/fmodpack/fmod_play_firebells");
     float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
-    
-    /* not needed, only if you run without x-plane connection */
-    if (*value == INT_MISS) *value = 0;
-
-    if (*value != INT_MISS) {
-      /*
-        digitalWrite(LOW_CHIME_PIN, *value);
-      */
-    }
-
     
     if (*ap_disconnect != INT_MISS) {
 #ifdef PIGPIO
