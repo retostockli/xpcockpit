@@ -49,38 +49,6 @@
 #define FMC_PWM_FREQ 40
 
 // columns are outputs. All are set to HIGH except the column being scanned.
-/* const int colPins[] = {  */
-/* 		15,     // p.8  BCM.14 	UART TX Pi3 OK */
-/* 		16,     // p.10 BCM.15 	UART RX Pi3 OK */
-/* 		1, 	// p.12 BCM.18 	PWM0 Pi3 OK */
-/* 		4, 	// p.16 BCM.23 	Pi3 OK */
-/* 		5, 	// p.18 BCM.24 	Pi3 OK */
-/* 		6,	// p.22 BCM.25 	Pi3 OK */
-/* 		10,	// p.24	BCM.8   CE0 Pi3 OK */
-/* 		11,	// p.26 BCM.7	CE1 Pi3 OK */
-/* 		27	// p.36 BCM.16  Pi3 OK */
-/* 		}; */
-/* // rows are inputs. */
-/* const int rowPins[] = {  */
-/* 		29,	// p.40 BCM.21	SCLK Pi3 OK */
-/* 		8,	// p.3  BCM.2   I2C SDA Pi3 OK */
-/* 		9,	// p.5  BCM.3   I2C SCL Pi3 OK */
-/* 		7,	// p.7  BCM.4   GPCLK0 Pi3 OK */
-/* 		0,	// p.11 BCM.17  Pi3 OK */
-/* 		2, 	// p.13 BCM.27  Pi3 OK */
-/* 		3,	// p.15 BCM.22  Pi3 OK */
-/* 		12	// p.19 BCM.10  MOSI Pi3 OK */
-/* 		}; */
-
-/* const int exec_led_pin = 13; // p. 21 BCM 9  Pi3 OK */
-/* const int msg_led_pin = 14;  // p. 23 BCM 11 Pi3 OK */
-/* const int dspy_led_pin = 21; // p. 29 BCM 5  Pi3 OK */
-/* const int ofst_led_pin = 22; // p. 31 BCM 6  Pi3 OK */
-/* const int fail_led_pin = 23; // p. 33 BCM 13 Pi3 OK */
-/* const int bgl_pwm_pin = 24;  // p. 35 BCM 19 Pi3 OK */
-/* const int rot_sw_pin = 26;   // p. 32 BCM 12 */
-/* const int rot_a_pin = 25;    // p. 37 BCM 26 */
-/* const int rot_b_pin = 28;    // p. 38 BCM 20 */
 
 const int colPins[] = { 
 		14,     // p.8  BCM.14 	UART TX Pi3 OK
@@ -267,11 +235,13 @@ int b737_fmc_init()
 
   /* init thread to read encoder since encoder changes are too fast
      for repeat cycle of xppi */
+  /*
   poll_thread_exit_code = 0;
   if (pthread_create(&poll_thread, NULL, &poll_thread_main, NULL)>0) {
     printf("Poll thread could not be created.\n");
     return -1;
   }
+  */
 
   return 0;
 }
@@ -279,8 +249,8 @@ int b737_fmc_init()
 void b737_fmc_exit(void)
 {
   /* shut down read thread */
-  poll_thread_exit_code = 1;
-  pthread_join(poll_thread, NULL);
+  //poll_thread_exit_code = 1;
+  //pthread_join(poll_thread, NULL);
 }
 
 void b737_fmc()
@@ -476,7 +446,7 @@ void b737_fmc()
       {
 	somethingPressed = 0;
       
-	printf("KEY RELEASE col=%02d row=%02d\n",  pressedCol,pressedRow);
+	// printf("KEY RELEASE col=%02d row=%02d\n",  pressedCol,pressedRow);
       }
     }
 

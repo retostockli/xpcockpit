@@ -138,6 +138,7 @@ int ini_signal_handler(void)
 int init_pi(void)
 {
 #ifdef PIGPIO
+  //  gpioCfgSetInternals(1<<10);
   if (gpioInitialise() < 0) {
     return -1;
   } else {
