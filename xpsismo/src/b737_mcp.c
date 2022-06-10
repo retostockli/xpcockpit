@@ -133,7 +133,7 @@ void b737_mcp(void)
   int *ap_n1;
   int *ap_n1_led;
   int *ap_at_arm;
-  int *ap_at_arm_status;
+  float *ap_at_arm_status;
   int *ap_speed;
   int *ap_speed_led;
   int *ap_speed_co;
@@ -173,7 +173,7 @@ void b737_mcp(void)
     ap_n1 = link_dataref_cmd_hold("laminar/B738/autopilot/n1_press"); // AP speed N1 button
     ap_n1_led = link_dataref_int("laminar/B738/autopilot/n1_status"); // 0: off, 1: armed, 2: captured
     ap_at_arm = link_dataref_cmd_once("laminar/B738/autopilot/autothrottle_arm_toggle");    // AP Autothrottle arm
-    ap_at_arm_status = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
+    ap_at_arm_status = link_dataref_flt("laminar/B738/autopilot/autothrottle_arm_pos",0);
     ap_speed = link_dataref_cmd_hold("laminar/B738/autopilot/speed_press");     // AP mcpspd select switch
     ap_speed_led = link_dataref_int("laminar/B738/autopilot/speed_status1");
     ap_speed_co = link_dataref_cmd_hold("laminar/B738/autopilot/change_over_press");
@@ -299,16 +299,18 @@ void b737_mcp(void)
 
   /* AT ARM SWITCH */
   /* only change at_arm if switch has changed */
-  /* safe algorithm for solenoid relais in pedestal code */
+  /* safe algorithm for solenoid relais */
   ret = digital_input(card,3,&temp,-1);
   if (ret==1) {
+    //printf("%f %i \n",*ap_at_arm_status,*ap_at_arm);
+    *ap_at_arm = 0;
     if ((acf_type == 2) || (acf_type == 3)) {
       *ap_at_arm = 0;
-      if ((*ap_at_arm_status == 0) && (temp == 1)) {
+      if ((*ap_at_arm_status == 0.0) && (temp == 1)) {
 	*ap_at_arm = 1;
 	printf("ARMING AT\n");
       }
-      if ((*ap_at_arm_status == 1) && (temp == 0)) {
+      if ((*ap_at_arm_status == 1.0) && (temp == 0)) {
 	*ap_at_arm = 1;
 	printf("DISARMING AT\n");
       }
@@ -321,7 +323,7 @@ void b737_mcp(void)
        Only trigger after command has been executed, means
        that after *ap_at_arm is back to 0 */
     if ((acf_type == 2) || (acf_type == 3)) {
-      if ((*ap_at_arm_status == 0) && (temp == 1) && (*ap_at_arm == 0)) {
+      if ((*ap_at_arm_status == 0.0) && (temp == 1) && (*ap_at_arm == 0)) {
 	ret = digital_output(card, 21, &one);
       } else {
 	ret = digital_output(card, 21, &zero);
@@ -509,7 +511,7 @@ void b737_mcp(void)
   ret = digital_output(card,16,ap_fdir_b_led);
   /* A/T ARM LED */
   if ((acf_type == 2) || (acf_type == 3)) {
-    ret = digital_output(card,1,ap_at_arm_status);
+    ret = digital_outputf(card,1,ap_at_arm_status);
   } else {
     ret = digital_output(card,1,ap_at_arm);
   }
