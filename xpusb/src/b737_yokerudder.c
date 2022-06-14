@@ -34,8 +34,8 @@
 /* Yoke Buttons
    0: Stab Trim down
    1: Stab Trim up
-   2: INT MIC
-   3: MIC
+   2: INT MIC CAPT
+   3: MIC CPAT
    4: AP Disconnect
    5:
    6: HAT Up
@@ -43,6 +43,11 @@
    8: HAT Left
    9: HAT Right
    10: HAT Pushbutton
+
+   16: MIC F/O
+   17: INT MIC F/O
+
+   
 */
 
 
@@ -144,7 +149,7 @@ void b737_yokerudder(void)
   /* yoke buttons */
   ret = digital_input(device,card,0,&button,0);
   if (button == 1) {
-    //printf("stab trim down \n");
+    // printf("stab trim down \n");
     if (*stab_trim_me == 1) {
       *stab_trim_down = 1;
     }
@@ -154,7 +159,7 @@ void b737_yokerudder(void)
    
   ret = digital_input(device,card,1,&button,0);
   if (button == 1) {
-    //printf("stab trim up \n");
+    // printf("stab trim up \n");
     if (*stab_trim_me == 1) {
       *stab_trim_up = 1;
     }
