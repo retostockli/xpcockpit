@@ -68,7 +68,7 @@ B737NAV::B737NAV()
   printf("B737NAV constructed\n");
         
   // We want to draw an outline
-  this->SetGaugeOutline(true);
+  this->SetGaugeOutline(false);
 
   // Initialize Map Type Variables valid for all Subcomponents
   m_MapCenter = false;

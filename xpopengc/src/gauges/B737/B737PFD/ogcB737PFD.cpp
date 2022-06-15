@@ -51,7 +51,7 @@ B737PFD::B737PFD()
   m_Font = m_pFontManager->LoadDefaultFont();
   
   // We want to draw an outline
-  this->SetGaugeOutline(true);
+  this->SetGaugeOutline(false);
 
   // Create a heading indicator
   B737PFDHeadingIndicator* pHeadingIndicator = new B737PFDHeadingIndicator();

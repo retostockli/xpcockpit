@@ -275,7 +275,7 @@ namespace OpenGC
 	  glLineWidth(lineWidth);
 	  if (*has_heading_ap_line == 1) {
 	    glEnable(GL_LINE_STIPPLE);
-	    glLineStipple( 4, 0x0F0F );
+	    glLineStipple( 4, 0x0303 );
 	    glBegin(GL_LINES);
 	    glVertex2f(0.0,0.0);
 	    glVertex2f(0.0,map_size);

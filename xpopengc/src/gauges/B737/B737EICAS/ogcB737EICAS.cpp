@@ -61,7 +61,7 @@ namespace OpenGC
     m_PhysicalSize.y = 200;
 	
     // We want to draw an outline
-    this->SetGaugeOutline(true);
+    this->SetGaugeOutline(false);
 
     B737EICASN1* N1_1 = new B737EICASN1();
     N1_1->SetParentRenderObject(this);
