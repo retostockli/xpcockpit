@@ -105,6 +105,8 @@ void b737_throttle(void)
   float stabilizer=FLT_MISS;
   float minstabilizer_x737 = -0.280;
   float maxstabilizer_x737 =  1.000;
+  float minstabilizer_zibo = -1.000;
+  float maxstabilizer_zibo =  0.719;
   float minstabilizer_xplane = -1.000;
   float maxstabilizer_xplane =  1.000;
   float minstabilizer;
@@ -149,15 +151,10 @@ void b737_throttle(void)
   } else {
     speedbrake_xplane = link_dataref_flt("sim/cockpit2/controls/speedbrake_ratio",-2);
   }
-    
-  float *stabilizer_xplane;
-  if ((acf_type == 2) || (acf_type == 3)) {
-    stabilizer_xplane = link_dataref_flt("sim/cockpit2/controls/elevator_trim",-3);
-  } else if (acf_type == 1) {
-    stabilizer_xplane = link_dataref_flt("x737/systems/stabtrim/manualTrimSetting",-3);
-  } else {
-    stabilizer_xplane = link_dataref_flt("sim/cockpit2/controls/elevator_trim",-3);
-  }
+
+  int *trim_up = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_up_mech");
+  int *trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down_mech");
+  float *stabilizer_xplane = link_dataref_flt("sim/cockpit2/controls/elevator_trim",-3);
 
   int *toga_button;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -179,19 +176,19 @@ void b737_throttle(void)
   }
   
   int *autothrottle_on;
-  int *lock_throttle;
+  float *lock_throttle;
   if ((acf_type == 2) || (acf_type == 3)) {
     // autothrottle_on = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
     autothrottle_on = link_dataref_int("laminar/B738/autopilot/speed_mode");
-    lock_throttle = link_dataref_int("laminar/B738/autopilot/lock_throttle");
+    lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0);
   } else if (acf_type == 1) {
     autothrottle_on = link_dataref_int("x737/systems/athr/athr_active");
-    lock_throttle = link_dataref_int("xpserver/lock_throttle");
-    *lock_throttle = 1;
+    lock_throttle = link_dataref_flt("xpserver/lock_throttle1",0);
+    *lock_throttle = 1.0;
   } else {
     autothrottle_on = link_dataref_int("sim/cockpit2/autopilot/autothrottle_on");
-    lock_throttle = link_dataref_int("xpserver/lock_throttle");
-    *lock_throttle = 1;
+    lock_throttle = link_dataref_flt("xpserver/lock_throttle1",0);
+    *lock_throttle = 1.0;
   }
  
   float *fuel_mixture_left;
@@ -225,7 +222,10 @@ void b737_throttle(void)
   */
 
   /* fetch stabilizer setting from x737 dataref if available */
-  if (acf_type == 1) {
+  if ((acf_type == 2) || (acf_type == 3)) {
+    minstabilizer = minstabilizer_zibo;
+    maxstabilizer = maxstabilizer_zibo;
+  } else if (acf_type == 1) {
     minstabilizer = minstabilizer_x737;
     maxstabilizer = maxstabilizer_x737;
   } else {
@@ -328,6 +328,8 @@ void b737_throttle(void)
   if (ret == 1) {
     //printf("Stabilizer Trim: %i %f %f \n",stabilizer_mode,stabilizer,*stabilizer_xplane);
   }
+
+  /* STAB MODE: 0=IDLE, 1=HW Driving, 2=XP Driving */
   if ((stabilizer_mode < 0) || (stabilizer_mode > 2)) stabilizer_mode = 0;
   if ((stabilizer_mode == 0) && (stabilizer != FLT_MISS) && (*stabilizer_xplane != FLT_MISS) &&
       (fabs(stabilizer - *stabilizer_xplane) > difstabilizer)) {
@@ -349,10 +351,6 @@ void b737_throttle(void)
       (fabs(stabilizer - *stabilizer_xplane) < difstabilizer)) {
     /* Idle mode: H/W and X-Plane in same position */
     stabilizer_mode = 0;
-  }
-
-  if (ret == 1) {
-    //printf("Stabilizer Mode: %i %i %f \n",stabilizer_mode,*stab_trim_ap,stabilizer - *stabilizer_xplane);
   }
   
     
@@ -432,9 +430,8 @@ void b737_throttle(void)
   if (ret == 1) {
     printf("Stabilizer Trim Main Elect: %i \n",*stab_trim_me);
   }
-  input = 4;
-
   
+  input = 4;  
   ret = digital_input(device_bu0836,0,input,stab_trim_ap,0);
   if (*stab_trim_ap != INT_MISS) {
     *stab_trim_ap = 1 - *stab_trim_ap;
@@ -442,6 +439,7 @@ void b737_throttle(void)
   if (ret == 1) {
     printf("Stabilizer Trim Auto Pilot: %i \n",*stab_trim_ap);
   }
+  
   input = 5;
   ret = digital_input(device_bu0836,0,input,horn_cutoff,0);
   if (ret == 1) {
@@ -462,13 +460,18 @@ void b737_throttle(void)
   if ((ret == 1) && (*at_disconnect_button == 1)) {
     printf("AT Disengaged: \n");
   }
-    
+
+
+  /* STAB TRIM CONTROL */
   if (stabilizer_mode == 0) {
     /* No Change */
     /* set motor of stab trim to idle */
     ret = digital_output(device_dcmotor,card,2,&zero);    
     value = 0.0;
     ret = motors_output(device_dcmotor,2,&value,maxval);
+
+    *trim_up = 0;
+    *trim_down = 0;
   } 
   if (stabilizer_mode == 1) {
     /* manual stabilizer trim */
@@ -477,8 +480,14 @@ void b737_throttle(void)
     value = 0.0;
     ret = motors_output(device_dcmotor,2,&value,maxval);
 
-    /* set X-Plane value to H/W value */
-    *stabilizer_xplane = stabilizer;
+    /* set X-Plane value to H/W value by using commands */
+    if (stabilizer > *stabilizer_xplane) {
+      *trim_up = 1;
+      *trim_down = 0;
+    } else {
+      *trim_up = 0;
+      *trim_down = 1;
+    }
   } 
   if (stabilizer_mode == 2) {
     /* Auto Stabilizer Trim */
@@ -515,9 +524,11 @@ void b737_throttle(void)
       ret = motors_output(device_dcmotor,2,&value,maxval); /* move motor for stabilizer trim */
     }
 
+    *trim_up = 0;
+    *trim_down = 0;
   }
-  
-  if ((*autothrottle_on >= 1) && (*lock_throttle == 1)) {
+    
+  if ((*autothrottle_on >= 1) && (*lock_throttle == 1.0)) {
     /* on autopilot and autothrottle */
     
     /* DCMotors PLUS Card */
