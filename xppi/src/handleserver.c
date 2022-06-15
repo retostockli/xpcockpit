@@ -102,8 +102,7 @@ int initialize_tcpip(void)
   if ((clntSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
     printf("HANDLESERVER: Cannot initialize client TCP socket \n");
     ret = -41; 
-  } else {
-    
+  } else {    
     /* Construct the server address structure */
     memset(&ServAddr, 0, sizeof(ServAddr));            /* Zero out structure */
     ServAddr.sin_family      = AF_INET;                /* Internet address family */
@@ -171,6 +170,11 @@ int check_server(void)
 {
 
   int ret = 0;
+  int res; 
+  fd_set myset; 
+  struct timeval tv; 
+  int valopt; 
+  socklen_t lon; 
 
   if (socketStatus == status_Error) {
     if (verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
@@ -182,22 +186,73 @@ int check_server(void)
     if (check_tcpip_counter == (1000/INTERVAL)) {
       check_tcpip_counter=0;
 
-      /* Check for and establish a connection to the X-Plane server */
-      if (verbose > 2) printf("HANDLESERVER: Checking for X-Plane server \n");
-      if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
-	/* no server visible yet ... */
-	if (verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
+      unsigned long nSetSocketType = NON_BLOCKING;
 #ifdef WIN
-	closesocket(clntSock);
+      if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
 #else
-	close(clntSock); 
+      if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
 #endif
-	if (initialize_tcpip() < 0) {
-	  if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
-	  ret = -43;
+	{
+	  if (verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
+	  socketStatus = status_Error;
+	  ret = -42;
+	}     
+
+      /* Check for and establish a connection to the X-Plane server */
+      if (verbose > 0) printf("HANDLESERVER: Checking for X-Plane server \n");
+      if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
+	if (errno == EINPROGRESS) { 
+	  if (verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
+	  do { 
+	    tv.tv_sec = 0; 
+	    tv.tv_usec = 50000; /* 50 ms timeout for connect */
+	    FD_ZERO(&myset); 
+	    FD_SET(clntSock, &myset); 
+	    res = select(clntSock+1, NULL, &myset, NULL, &tv); 
+	    if (res < 0 && errno != EINTR) { 
+              if (verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+              break;
+	    } else if (res > 0) { 
+              // Socket selected for write 
+              lon = sizeof(int); 
+              if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+		if (verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
+		break;
+              } 
+              // Check the value returned... 
+              if (valopt) { 
+		if (verbose > 2) printf("HANDLESERVER: No connection %d - %s\n", valopt, strerror(valopt)); 
+		break;
+              } 
+	      /* yeah, we found the xpserver plugin running in X-Plane ... */
+	      if (verbose > 0) {
+		printf("HANDLESERVER: Connected to X-Plane. \n");
+		printf("X-Plane Server Plugin Address:Port is %s:%i \n",server_ip, server_port);
+	      }
+	      socketStatus = status_Connected;
+              break; 
+	    } else { 
+              if (verbose > 1) printf("HANDLESERVER: Timeout in select() - Cancelling!\n"); 
+              break;
+	    } 
+	  } while (1);
+	} else { 
+	  if (verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+	} 
+
+	if (socketStatus == status_Disconnected) {
+	  /* no server visible yet or connection timeout ... */
+	  if (verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
+#ifdef WIN
+	  closesocket(clntSock);
+#else
+	  close(clntSock); 
+#endif
+	  if (initialize_tcpip() < 0) {
+	    if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+	    ret = -43;
+	  }
 	}
-	
-	socketStatus = status_Disconnected;
 
       } else {
 	/* yeah, we found the xpserver plugin running in X-Plane ... */
@@ -207,18 +262,6 @@ int check_server(void)
 	}
 
 	socketStatus = status_Connected;
-
-	unsigned long nSetSocketType = NON_BLOCKING;
-#ifdef WIN
-	if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
-#else
-	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
-#endif
-	  {
-	    if (verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
-	    socketStatus = status_Error;
-	    ret = -42;
-	  }     
       }
     }
 
@@ -368,12 +411,12 @@ int receive_server(void) {
 					    offset,serverdata[offset].datarefname,datai);
 		  }
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Disarding data. \n",
+		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					  offset,serverdata[offset].datarefname);
 		}
 		recv_left -= sizeof(int);
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Disarding. \n",offset);
+		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
 		recv_left = 0;
 	      }
 	      break;
@@ -388,12 +431,12 @@ int receive_server(void) {
 					    offset,serverdata[offset].datarefname,dataf);
 		  }
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Disarding data. \n",
+		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					  offset,serverdata[offset].datarefname);
 		}
 		recv_left -= sizeof(float);
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Disarding. \n",offset);
+		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
 		recv_left = 0;
 	      }
 	      break;
@@ -408,12 +451,12 @@ int receive_server(void) {
 					    offset,serverdata[offset].datarefname, datad);
 		  }
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Disarding data. \n",
+		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					  offset,serverdata[offset].datarefname);
 		}
 		recv_left -= sizeof(double);
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Disarding. \n",offset);
+		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
 		recv_left = 0;
 	      }
 	      break;
@@ -443,12 +486,12 @@ int receive_server(void) {
 		  }
 		  free(datavf);
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Disarding data. \n",
+		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					  offset, serverdata[offset].datarefname);
 		}
 		recv_left -= nelements*sizeof(float);
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Disarding. \n",
+		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
 					offset, serverdata[offset].datarefname);
 		recv_left = 0;
 	      }
@@ -479,12 +522,12 @@ int receive_server(void) {
 		  }
 		  free(datavi);
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Disarding data. \n",
+		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					  offset, serverdata[offset].datarefname);
 		}
 		recv_left -= nelements*sizeof(int);
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Disarding. \n",
+		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
 					offset, serverdata[offset].datarefname);
 		recv_left = 0;
 	      }
@@ -511,12 +554,12 @@ int receive_server(void) {
 		  }
 		  free(datab);
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Disarding data. \n",
+		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					  offset, serverdata[offset].datarefname );
 		}
 		recv_left -= nelements*sizeof(unsigned char);
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Disarding. \n",
+		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
 					offset, serverdata[offset].datarefname);
 		recv_left = 0;
 	      }
@@ -533,12 +576,12 @@ int receive_server(void) {
 					    offset,serverdata[offset].datarefname,datai);
 		  }
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Disarding data. \n",
+		  if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					  offset,serverdata[offset].datarefname);
 		}
 		recv_left -= sizeof(int);
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Disarding. \n",offset);
+		if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
 		recv_left = 0;
 	      }
 	      break;
