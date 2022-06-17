@@ -301,9 +301,9 @@ void b737_mcp(void)
   /* only change at_arm if switch has changed */
   /* safe algorithm for solenoid relais */
   ret = digital_input(card,3,&temp,-1);
+  *ap_at_arm = 0;
   if (ret==1) {
     //printf("%f %i \n",*ap_at_arm_status,*ap_at_arm);
-    *ap_at_arm = 0;
     if ((acf_type == 2) || (acf_type == 3)) {
       *ap_at_arm = 0;
       if ((*ap_at_arm_status == 0.0) && (temp == 1)) {
@@ -317,19 +317,21 @@ void b737_mcp(void)
     } else {
       *ap_at_arm = temp;
     }
-  } else {
-    /* trigger AT solenoid to disarm AT if software AT status changes to off 
-       and if switch is still in on position (temp==1).
-       Only trigger after command has been executed, means
-       that after *ap_at_arm is back to 0 */
-    if ((acf_type == 2) || (acf_type == 3)) {
-      if ((*ap_at_arm_status == 0.0) && (temp == 1) && (*ap_at_arm == 0)) {
-	ret = digital_output(card, 21, &one);
-      } else {
-	ret = digital_output(card, 21, &zero);
-      }
+  }
+  
+  printf("status %f temp %i arm cmd %i \n",*ap_at_arm_status,temp,*ap_at_arm);
+  /* trigger AT solenoid to disarm AT if software AT status changes to off 
+     and if switch is still in on position (temp==1).
+     Only trigger after command has been executed, means
+     that after *ap_at_arm is back to 0 */
+  if ((acf_type == 2) || (acf_type == 3)) {
+    if ((*ap_at_arm_status == 0.0) && (temp == 1) && (*ap_at_arm == 0)) {
+      ret = digital_output(card, 21, &one);
+    } else {
+      ret = digital_output(card, 21, &zero);
     }
   }
+
 
   /* AP ENGAGE SWITCH */
   if ((acf_type == 2) || (acf_type == 3)) {
