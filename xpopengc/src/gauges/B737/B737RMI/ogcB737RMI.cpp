@@ -216,6 +216,8 @@ namespace OpenGC
     glEnd();
 
     glLineWidth(lineWidth*2.0);
+    /* Line Stippling does not work with OpenGL ES */
+    /*
     glEnable(GL_LINE_STIPPLE);
     glLineStipple( 5, 0x3F3F );
     glBegin(GL_LINES);
@@ -223,6 +225,9 @@ namespace OpenGC
     glVertex2f(0.0,-R+6);
     glEnd();
     glDisable(GL_LINE_STIPPLE);
+    */
+    drawDashedLine(0.0,R-15.0,0.0,-R+6.0,15,0.8);
+
     glPopMatrix();
 
     /* NAV2/ADV2 */

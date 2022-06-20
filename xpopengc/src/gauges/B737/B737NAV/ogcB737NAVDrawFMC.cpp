@@ -66,6 +66,10 @@ namespace OpenGC
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
     float lineWidth = 1.1 * m_PhysicalSize.x / 100.0;
 
+    // parameters for dashed lines (missed approach route)
+    int nper100 = 16; /* number of dashed per 100 pixels */
+    float ratio = 0.6; /* ratio of dashed to total length */
+
     // double dtor = 0.0174533; /* radians per degree */
     // double radeg = 57.2958;  /* degree per radians */
 
@@ -681,13 +685,17 @@ namespace OpenGC
 		      (strncmp(wpt[i0].name,"RW",2) != 0)) {
 		  
 		    glLineWidth(lineWidth);
+		    bool missed_app_wpt;
 		    if ((i >= (wpt_miss1-1)) && (i <= wpt_miss2)) {
 		      // missed approach route
+		      missed_app_wpt = true;
 		      glColor3ub(COLOR_LIGHTBLUE);
-		      glEnable(GL_LINE_STIPPLE);
-		      glLineStipple( 4, 0x0F0F );
+		      /* Does not work with OpenGL ES */
+		      //glEnable(GL_LINE_STIPPLE);
+		      //glLineStipple( 4, 0x0F0F );
 		    } else {
 		      // regular route
+		      missed_app_wpt = false;
 		      glColor3ub(COLOR_VIOLET);
 		    }
 
@@ -727,11 +735,15 @@ namespace OpenGC
 		      yPos4 = cos(gamma+0.5*3.14*holdtype)*holdrad*2.0 + yPos1;
 
 		      // printf("%i %i %i %f \n",i,holdtype, fmc_hold_time[i1],fmc_crs[i1]);
-		  
-		      glBegin(GL_LINES);
-		      glVertex2f(xPos1,yPos1);
-		      glVertex2f(xPos2,yPos2);
-		      glEnd();
+
+		      if (missed_app_wpt) {
+			drawDashedLine(xPos1,yPos1,xPos2,yPos2,nper100,ratio);
+		      } else {
+			glBegin(GL_LINES);
+			glVertex2f(xPos1,yPos1);
+			glVertex2f(xPos2,yPos2);
+			glEnd();
+		      }
 
 		      xPosC = 0.5*(xPos3-xPos2) + xPos2;
 		      yPosC = 0.5*(yPos3-yPos2) + yPos2;
@@ -739,14 +751,23 @@ namespace OpenGC
 		      aCircle.SetArcStartEnd(180./3.14*(gamma-0.5*3.14),180./3.14*(gamma+0.5*3.14));
 		      aCircle.SetRadius(holdrad);
 		      aCircle.SetOrigin(xPosC,yPosC);
+		      if (missed_app_wpt) {
+			aCircle.SetDashed(nper100,ratio);
+		      } else {
+			aCircle.SetDashed(0,1.0);
+		      }
 		      glBegin(GL_LINE_STRIP);
 		      aCircle.Evaluate();
 		      glEnd();
 		  
-		      glBegin(GL_LINES);
-		      glVertex2f(xPos3,yPos3);
-		      glVertex2f(xPos4,yPos4);
-		      glEnd();
+		      if (missed_app_wpt) {
+			drawDashedLine(xPos3,yPos3,xPos4,yPos4,nper100,ratio);
+		      } else {
+			glBegin(GL_LINES);
+			glVertex2f(xPos3,yPos3);
+			glVertex2f(xPos4,yPos4);
+			glEnd();
+		      }
 		  
 		      xPosC = 0.5*(xPos4-xPos1) + xPos1;
 		      yPosC = 0.5*(yPos4-yPos1) + yPos1;
@@ -754,6 +775,11 @@ namespace OpenGC
 		      aCircle.SetArcStartEnd(180./3.14*(gamma+0.5*3.14),180./3.14*(gamma-0.5*3.14));
 		      aCircle.SetRadius(holdrad);
 		      aCircle.SetOrigin(xPosC,yPosC);
+		      if (missed_app_wpt) {
+			aCircle.SetDashed(nper100,ratio);
+		      } else {
+			aCircle.SetDashed(0,1.0);
+		      }
 		      glBegin(GL_LINE_STRIP);
 		      aCircle.Evaluate();
 		      glEnd();
@@ -802,6 +828,11 @@ namespace OpenGC
 		      }
 		      aCircle.SetRadius(seg1_radius[i0] / mapRange * map_size);
 		      aCircle.SetOrigin(xPosC,yPosC);
+		      if (missed_app_wpt) {
+			aCircle.SetDashed(nper100,ratio);
+		      } else {
+			aCircle.SetDashed(0,1.0);
+		      }
 		      glBegin(GL_LINE_STRIP);
 		      aCircle.Evaluate();
 		      glEnd();
@@ -825,10 +856,14 @@ namespace OpenGC
 			yPos4 = -northing / 1852.0 / mapRange * map_size; 
 			xPos4 = easting / 1852.0  / mapRange * map_size;
 		    		    
-			glBegin(GL_LINES);
-			glVertex2f(xPos3,yPos3);
-			glVertex2f(xPos4,yPos4);
-			glEnd();
+			if (missed_app_wpt) {
+			  drawDashedLine(xPos3,yPos3,xPos4,yPos4,nper100,ratio);
+			} else {
+			  glBegin(GL_LINES);
+			  glVertex2f(xPos3,yPos3);
+			  glVertex2f(xPos4,yPos4);
+			  glEnd();
+			}
 
 			/* end lon/lat of segment 2 */
 			lonT = (double) seg2_end_lon[i0];
@@ -877,6 +912,11 @@ namespace OpenGC
 			}
 			aCircle.SetRadius(seg1_radius[i0] / mapRange * map_size);
 			aCircle.SetOrigin(xPosC,yPosC);
+			if (missed_app_wpt) {
+			  aCircle.SetDashed(nper100,ratio);
+			} else {
+			  aCircle.SetDashed(0,1.0);
+			}
 			glBegin(GL_LINE_STRIP);
 			aCircle.Evaluate();
 			glEnd();
@@ -910,21 +950,30 @@ namespace OpenGC
 			glPopMatrix();
 		      */
 		 
-		      glBegin(GL_LINES);
-		      glVertex2f(xPosT,yPosT);
-		      glVertex2f(xPos2,yPos2);
-		      glEnd();
+		      if (missed_app_wpt) {
+			drawDashedLine(xPosT,yPosT,xPos2,yPos2,nper100,ratio);
+		      } else {
+			glBegin(GL_LINES);
+			glVertex2f(xPosT,yPosT);
+			glVertex2f(xPos2,yPos2);
+			glEnd();
+		      }
 
 		    } else {
 		      // draw straight line
 
-		      glBegin(GL_LINES);
-		      glVertex2f(xPos,yPos);
-		      glVertex2f(xPos2,yPos2);
-		      glEnd();
+		      if (missed_app_wpt) {
+			drawDashedLine(xPos,yPos,xPos2,yPos2,nper100,ratio);
+		      } else {
+			glBegin(GL_LINES);
+			glVertex2f(xPos,yPos);
+			glVertex2f(xPos2,yPos2);
+			glEnd();
+		      }
 		    }
 
-		    glDisable(GL_LINE_STIPPLE);
+		    /* Does not work with OpenGL ES */
+		    //glDisable(GL_LINE_STIPPLE);
 
 		  } // not a Discontinuity in flight plan
 
@@ -1121,6 +1170,7 @@ namespace OpenGC
 	      aCircle.SetDegreesPerPoint(30);
 	      aCircle.SetRadius(2);
 	      aCircle.SetOrigin(0,0);
+	      aCircle.SetDashed(0,1.0);
 	      glColor3ub(COLOR_GREEN);
 	      glLineWidth(lineWidth*1.5);
 	      glBegin(GL_LINE_STRIP);
@@ -1144,6 +1194,7 @@ namespace OpenGC
 	      aCircle.SetDegreesPerPoint(30);
 	      aCircle.SetRadius(2);
 	      aCircle.SetOrigin(0,0);
+	      aCircle.SetDashed(0,1.0);
 	      glColor3ub(COLOR_GREEN);
 	      glLineWidth(lineWidth*1.5);
 	      glBegin(GL_LINE_STRIP);

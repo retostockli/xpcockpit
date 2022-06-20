@@ -53,6 +53,9 @@ public:
   /** Defines the center of the circle in physical units */
   void SetOrigin(double x, double y);
 
+  /** Defines dashed circle */
+  void SetDashed(int nper100, float ratio);
+
   /** Calls the GL code to evaluate the circle (generates points) */
   void Evaluate();
 
@@ -70,7 +73,16 @@ protected:
   /** How many degrees to move before generating a new point */
   double m_DegreesPerPoint;
 
+  /** How many dashes per 100 pixels diameter (set to 0 for no dashes) **/
+  int m_Nper100;
+
+  /** Ratio of dashed versus total space **/
+  float m_Ratio;
+
 };
+
+  /* Function to draw a dashed line since in OpenGL ES the gl_line_stipple function is not available */
+  void drawDashedLine(float x0, float y0, float x1, float y1, float nper100, float ratio);
 
 } // end namespace OpenGC
 

@@ -274,13 +274,16 @@ namespace OpenGC
 	  glColor3ub(COLOR_MAGENTA);
 	  glLineWidth(lineWidth);
 	  if (*has_heading_ap_line == 1) {
-	    glEnable(GL_LINE_STIPPLE);
-	    glLineStipple( 4, 0x0303 );
-	    glBegin(GL_LINES);
-	    glVertex2f(0.0,0.0);
-	    glVertex2f(0.0,map_size);
-	    glEnd();
-	    glDisable(GL_LINE_STIPPLE);
+	    /* DOES NOT WORK ON OPENGL ES
+	       glEnable(GL_LINE_STIPPLE);
+	       glLineStipple( 4, 0x0303 );
+	       glBegin(GL_LINES);
+	       glVertex2f(0.0,0.0);
+	       glVertex2f(0.0,map_size);
+	       glEnd();
+	       glDisable(GL_LINE_STIPPLE);
+	    */
+	    drawDashedLine(0.0,0.0,0.0,map_size,10,0.3);
 	  }
 	  glBegin(GL_LINE_STRIP);
 	  glVertex2f(m_PhysicalSize.x * -0.020,map_size);
