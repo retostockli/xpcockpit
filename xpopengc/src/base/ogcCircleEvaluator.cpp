@@ -103,9 +103,9 @@ CircleEvaluator
     endRad += 2*pi;
   double currentRad = startRad;
 
-  //if (m_Nper100 > 0) {
-    if (0) {
-    glEnd; /* stop glRendering since we start from scratch here */
+  if (m_Nper100 > 0) {
+  //  if (0) {
+    glEnd(); /* stop glRendering since we start from scratch here */
     /* dashed circle */
     double perimeter = 2.0 * m_Radius * pi;
     double dashPerCircle = perimeter / 100.0 * (float) m_Nper100;
@@ -119,15 +119,16 @@ CircleEvaluator
 	y = m_Radius*cos(currentRad) + m_YOrigin;
 	glVertex2d(x,y);
 	currentRad += radPerPoint;
-      } while(currentRad < dashEndRad);
+      } while (currentRad < dashEndRad);
       x = m_Radius*sin(dashEndRad) + m_XOrigin;
       y = m_Radius*cos(dashEndRad) + m_YOrigin;
       glVertex2d(x,y);
-      glEnd;
+      glEnd();
       currentRad += radPerDash * (1.-m_Ratio); /* jump to next dash start */
-    } while(currentRad < endRad);
+    } while (currentRad < endRad);
     glBegin(GL_LINE_STRIP); /* restart glRendering for compatibility with calling circle routine */
   } else {
+    /* Regular Circle with full line */
     do
       {
 	x = m_Radius*sin(currentRad) + m_XOrigin;

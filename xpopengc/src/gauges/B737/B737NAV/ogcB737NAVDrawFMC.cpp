@@ -309,7 +309,7 @@ namespace OpenGC
 
       glMatrixMode(GL_MODELVIEW);
       glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-
+   
       glPushMatrix();
       if (mapMode != 3) {
 	// plot RNP/ANP
@@ -759,7 +759,7 @@ namespace OpenGC
 		      glBegin(GL_LINE_STRIP);
 		      aCircle.Evaluate();
 		      glEnd();
-		  
+  		  
 		      if (missed_app_wpt) {
 			drawDashedLine(xPos3,yPos3,xPos4,yPos4,nper100,ratio);
 		      } else {

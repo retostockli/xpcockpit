@@ -46,6 +46,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <FL/Fl.H>
+#include "ogcGLHeaders.h"
 #include "ogcObject.h"
 #include "ogcAppObject.h"
 #include "ogcDataSource.h"
@@ -95,6 +96,19 @@ void signal_handler(int sigraised)
   exit(0);
 }
 
+void GLAPIENTRY MessageCallback( GLenum source,
+				 GLenum type,
+				 GLuint id,
+				 GLenum severity,
+				 GLsizei length,
+				 const GLchar* message,
+				 const void* userParam )
+{
+   fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
+}
+
 int main(int argc, char* argv[])
 {
   /* print License terms */
@@ -115,6 +129,10 @@ int main(int argc, char* argv[])
     printf("Could not establish new Termination signal handler.\n");
   }
 
+  // Enable OpenGL Debugging (or not)
+  //glEnable              ( GL_DEBUG_OUTPUT );
+  //glDebugMessageCallback( MessageCallback, 0 );
+  
   printf ("=========== OpenGC - Starting up ==========\n");
     
   // Set the update rate in nominal seconds per frame
