@@ -360,7 +360,6 @@ void b737_pedestal(void)
     printf("SELCAL VHF1 button: %i \n",*vhf1);
   }
 
-  /* use WX SELECTOR for AUTOBRAKE until we have built the MIP */
   ret = digital_input(device,card,55,&test,0);
   if (ret == 1) {
     printf("WX Radar Switch: %i \n",test);
@@ -376,17 +375,6 @@ void b737_pedestal(void)
   ret = digital_input(device,card,61,&test3,0);
   if (ret == 1) {
     printf("WX Radar Switch: %i \n",test3*5);
-  }
-  float autobrake_pos;
-  if ((acf_type == 2) || (acf_type == 3)) {
-    autobrake_pos = (float) test + test1*2 + test2*3 + test3*5;
-    float *autobrake = link_dataref_flt("laminar/B738/autobrake/autobrake_pos",0);
-    int *autobrake_dn = link_dataref_cmd_once("laminar/B738/knob/autobrake_dn");
-    int *autobrake_up = link_dataref_cmd_once("laminar/B738/knob/autobrake_up");
-    ret = set_state_updnf(&autobrake_pos,autobrake,autobrake_up,autobrake_dn);
-    if (ret == 1) {
-      printf("AUTOBRAKE: %f \n",autobrake_pos);
-    }
   }
 
   /* CARGO FIRE */
