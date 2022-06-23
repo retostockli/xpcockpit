@@ -195,13 +195,15 @@ namespace OpenGC
   {
     
     // Every time we loop we grab some new data and re-render the window
+    // Only render if things have changed from X-Plane or during init, so
+    // all datarefs have been safely received
     m_pDataSource->OnIdle();
-    if ((numreceived > 0) || (m_InitState <= 1) || (wxr_newdata == 1)) {
+    if ((numreceived > 0) || (m_InitState <= 100) || (wxr_newdata == 1)) {
       //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
       Fl::flush();
     }
-    if (m_InitState == 1) m_InitState++;
+    if (m_InitState <= 100) m_InitState++;
   }
 
   bool AppObject::IntermediateInitialization()

@@ -39,8 +39,8 @@ int main (int argc,char **argv)
   
   /* server settings */
   memset(server_ip,0,sizeof(server_ip));
-  strcpy(server_ip,"127.0.0.1");
-  // strcpy(server_ip,"192.168.0.100");
+  //strcpy(server_ip,"127.0.0.1");
+  strcpy(server_ip,"192.168.1.203");
   server_port = 8091;
   strcpy(clientname,"xpclient");
 

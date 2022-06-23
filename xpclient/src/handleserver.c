@@ -205,7 +205,7 @@ int check_server(void)
 	  if (verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
 	  do { 
 	    tv.tv_sec = 0; 
-	    tv.tv_usec = 50000; /* 50 ms timeout for connect */
+	    tv.tv_usec = 500000; /* 500 ms timeout for connect */
 	    FD_ZERO(&myset); 
 	    FD_SET(clntSock, &myset); 
 	    res = select(clntSock+1, NULL, &myset, NULL, &tv); 
