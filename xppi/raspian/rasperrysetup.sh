@@ -38,6 +38,9 @@ sudo usermod -aG lpadmin stockli
 # Select Auto Desktop Login for User stockli
 # select GL Driver
 
+# enable boot messages:
+# remove "quiet" from /boot/cmdline.txt
+
 mkdir ~/.ssh
 
 # copy ssh keys from mariachi
