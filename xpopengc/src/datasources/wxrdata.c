@@ -66,6 +66,8 @@ int wxr_phase;
 unsigned char **wxr_data;
 int **wxr_height;
 int wxr_newdata;
+int wxr_firstread;
+int wxr_firstsend;
 
 /* Type 1: WXR data from X-Plane's Control Pad: we act as server */
 /* Type 2: WXR data from X-Plane's regular UDP stream: we act as client */
@@ -83,6 +85,8 @@ void init_wxr(int type, char server_ip[]) {
   wxr_latmin = WXR_MISS;
   wxr_latmax = WXR_MISS;
   wxr_newdata = 0;
+  wxr_firstread = 0;
+  wxr_firstsend = 0;
   
   if (wxr_type == 1) {
     /* initialize UDP socket if needed for WXR data from X-Plane*/
@@ -122,18 +126,36 @@ void init_wxr(int type, char server_ip[]) {
     init_udp_client();
     init_udp_receive();
 
+    wxr_phase = 0;
+
+  }
+
+  
+}
+
+void write_wxr() {
+
+  int ret, n;
+
+  if ((wxr_type == 2) && (wxr_firstsend == 0)) {
+ 
+    if (MAXRADAR > 0) {
+      n = (int) log10(MAXRADAR) + 1; // number of characters of MAXRADAR number (converted to string)
+    } else {
+      n = 1;
+    }
+ 
     /* generate send message to initialize UDP transfer */
     sprintf(udpSendBuffer,"RADR %i",MAXRADAR);
     udpSendBuffer[4]='\0';
     udpSendBuffer[6+n]='\0';
 
     ret = send_udp_to_server();
-    printf("Sent UDP Init String to X-Plane with Length: %i \n",ret);
+    printf("Sent WXR Init UDP String to X-Plane with length: %i \n",ret);
 
-    wxr_phase = 0;
-
+    wxr_firstsend = 1;
+    
   }
-
   
 }
 
@@ -170,6 +192,11 @@ void read_wxr() {
 	
     while (udpReadLeft > 0) {
 
+      if (wxr_firstread == 0) {
+	printf("This client is receiving WXR data from X-Plane!\n");
+	wxr_firstread = 1;
+      }
+      
       //printf("%i \n ",udpReadLeft);
       
       pthread_mutex_lock(&exit_cond_lock);    

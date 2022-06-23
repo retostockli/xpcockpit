@@ -141,16 +141,24 @@ void XPlaneDataSource::OnIdle()
       SetAcfType(1); // x737
     } else if (strcmp((const char*) tailnum,"D-ATUC")==0) {
       SetAcfType(1); // x737
+    } else if (strcmp((const char*) tailnum,"")==0) {
+      SetAcfType(-2); // No Tail Number (likely no ACF loaded)
     } else {
-      SetAcfType(0); // other
+      SetAcfType(0); // other aircraft
     } 
   } else {
-    SetAcfType(0);
+    SetAcfType(-1); // failed to initialize tail number
   }
   
   /* send data to X-Plane via TCP/IP */
   if (send_server()<0) exit(-11);
 
+  /* Send WXR Init String, but only once X-Plane is connected, 
+     and aircraft is loaded, else it will be going to nirvana */
+  if ((socketStatus == status_Connected) && (GetAcfType() >= 0)) {
+    write_wxr();
+  }
+    
   /* WXR Data Reading */
   read_wxr();
   
