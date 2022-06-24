@@ -35,6 +35,7 @@ int bank15;
 int bank20;
 int bank25;
 int bank30;
+int ap_at_arm_status_save;
 
 void b737_mcp(void)
 {
@@ -295,43 +296,42 @@ void b737_mcp(void)
   if (ret) {
     printf("Flight Director First Officer: %i \n",*ap_fdir_b);
   }
-
-
+  
   /* AT ARM SWITCH */
   /* only change at_arm if switch has changed */
   /* safe algorithm for solenoid relais */
-  ret = digital_input(card,3,&temp,-1);
-  *ap_at_arm = 0;
+  if ((ap_at_arm_status_save != 0) && (ap_at_arm_status_save != 1)) ap_at_arm_status_save = 0;
+  ret = digital_input(card,3,&ap_at_arm_status_save,-1);
   if (ret==1) {
     //printf("%f %i \n",*ap_at_arm_status,*ap_at_arm);
     if ((acf_type == 2) || (acf_type == 3)) {
       *ap_at_arm = 0;
-      if ((*ap_at_arm_status == 0.0) && (temp == 1)) {
+      if ((*ap_at_arm_status == 0.0) && (ap_at_arm_status_save == 1)) {
 	*ap_at_arm = 1;
 	printf("ARMING AT\n");
       }
-      if ((*ap_at_arm_status == 1.0) && (temp == 0)) {
+      if ((*ap_at_arm_status == 1.0) && (ap_at_arm_status_save == 0)) {
 	*ap_at_arm = 1;
 	printf("DISARMING AT\n");
       }
     } else {
-      *ap_at_arm = temp;
+      *ap_at_arm_status = (int) ap_at_arm_status_save;
+    }
+  } else {
+    //printf("%f %i \n",*ap_at_arm_status,ap_at_arm_status_save);
+    /* trigger AT solenoid to disarm AT if software AT status changes to off 
+       and if switch is still in on position (temp==1).
+       Only trigger after command has been executed, means
+       that after *ap_at_arm is back to 0 */
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if ((*ap_at_arm_status == 0.0) && (ap_at_arm_status_save == 1) && (*ap_at_arm == 0)) {
+	printf("AT was Disarmed by X-Plane\n");
+	ret = digital_output(card, 21, &one);
+      } else {
+	ret = digital_output(card, 21, &zero);
+      }
     }
   }
-  
-  //printf("status %f temp %i arm cmd %i \n",*ap_at_arm_status,temp,*ap_at_arm);
-  /* trigger AT solenoid to disarm AT if software AT status changes to off 
-     and if switch is still in on position (temp==1).
-     Only trigger after command has been executed, means
-     that after *ap_at_arm is back to 0 */
-  if ((acf_type == 2) || (acf_type == 3)) {
-    if ((*ap_at_arm_status == 0.0) && (temp == 1) && (*ap_at_arm == 0)) {
-      ret = digital_output(card, 21, &one);
-    } else {
-      ret = digital_output(card, 21, &zero);
-    }
-  }
-
 
   /* AP ENGAGE SWITCH */
   if ((acf_type == 2) || (acf_type == 3)) {
