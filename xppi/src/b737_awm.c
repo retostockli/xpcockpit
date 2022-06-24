@@ -100,7 +100,7 @@ void b737_awm(void)
     int *belts = link_dataref_int("laminar/b738/fmodpack/play_seatbelt_no_smoke");
     float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
     float *mach_warn = link_dataref_flt("laminar/B738/fmod/mach_warn",0);
-    int *fire_bell = link_dataref_int("laminar/b738/fmodpack/fmod_play_firebells");
+    int *fire_bell = link_dataref_int("laminar/b738/annunciator/fire_bell_anun");
     float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
     
