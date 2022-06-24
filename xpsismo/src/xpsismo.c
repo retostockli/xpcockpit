@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
     
       /* reset counters and such */
     if (reset_sismodata() < 0) exit_sismo(-13);
-    
+   
     usleep(INTERVAL*1000);
   }
   

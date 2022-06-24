@@ -104,7 +104,8 @@ int initialize_tcpip(void)
   if ((clntSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
     printf("HANDLESERVER: Cannot initialize client TCP socket \n");
     ret = -41; 
-  } else {    
+  } else {
+    
     /* Construct the server address structure */
     memset(&ServAddr, 0, sizeof(ServAddr));            /* Zero out structure */
     ServAddr.sin_family      = AF_INET;                /* Internet address family */
@@ -172,11 +173,6 @@ int check_server(void)
 {
 
   int ret = 0;
-  int res; 
-  fd_set myset; 
-  struct timeval tv; 
-  int valopt; 
-  socklen_t lon; 
 
   if (socketStatus == status_Error) {
     if (verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
@@ -188,73 +184,22 @@ int check_server(void)
     if (check_tcpip_counter == (1000/INTERVAL)) {
       check_tcpip_counter=0;
 
-      unsigned long nSetSocketType = NON_BLOCKING;
-#ifdef WIN
-      if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
-#else
-      if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
-#endif
-	{
-	  if (verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
-	  socketStatus = status_Error;
-	  ret = -42;
-	}     
-
       /* Check for and establish a connection to the X-Plane server */
-      if (verbose > 0) printf("HANDLESERVER: Checking for X-Plane server \n");
+      if (verbose > 2) printf("HANDLESERVER: Checking for X-Plane server \n");
       if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
-	if (errno == EINPROGRESS) { 
-	  if (verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
-	  do { 
-	    tv.tv_sec = 0; 
-	    tv.tv_usec = 500000; /* 500 ms timeout for connect */
-	    FD_ZERO(&myset); 
-	    FD_SET(clntSock, &myset); 
-	    res = select(clntSock+1, NULL, &myset, NULL, &tv); 
-	    if (res < 0 && errno != EINTR) { 
-              if (verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
-              break;
-	    } else if (res > 0) { 
-              // Socket selected for write 
-              lon = sizeof(int); 
-              if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
-		if (verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
-		break;
-              } 
-              // Check the value returned... 
-              if (valopt) { 
-		if (verbose > 2) printf("HANDLESERVER: No connection %d - %s\n", valopt, strerror(valopt)); 
-		break;
-              } 
-	      /* yeah, we found the xpserver plugin running in X-Plane ... */
-	      if (verbose > 0) {
-		printf("HANDLESERVER: Connected to X-Plane. \n");
-		printf("X-Plane Server Plugin Address:Port is %s:%i \n",server_ip, server_port);
-	      }
-	      socketStatus = status_Connected;
-              break; 
-	    } else { 
-              if (verbose > 1) printf("HANDLESERVER: Timeout in select() - Cancelling!\n"); 
-              break;
-	    } 
-	  } while (1);
-	} else { 
-	  if (verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
-	} 
-
-	if (socketStatus == status_Disconnected) {
-	  /* no server visible yet or connection timeout ... */
-	  if (verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
+	/* no server visible yet ... */
+	if (verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
 #ifdef WIN
-	  closesocket(clntSock);
+	closesocket(clntSock);
 #else
-	  close(clntSock); 
+	close(clntSock); 
 #endif
-	  if (initialize_tcpip() < 0) {
-	    if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
-	    ret = -43;
-	  }
+	if (initialize_tcpip() < 0) {
+	  if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+	  ret = -43;
 	}
+	
+	socketStatus = status_Disconnected;
 
       } else {
 	/* yeah, we found the xpserver plugin running in X-Plane ... */
@@ -264,6 +209,18 @@ int check_server(void)
 	}
 
 	socketStatus = status_Connected;
+
+	unsigned long nSetSocketType = NON_BLOCKING;
+#ifdef WIN
+	if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
+#else
+	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
+#endif
+	  {
+	    if (verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
+	    socketStatus = status_Error;
+	    ret = -42;
+	  }     
       }
     }
 
@@ -301,6 +258,9 @@ int receive_server(void) {
   recvBuffer[recvMsgSize] = 0;
   message_ptr = recvBuffer;
 
+  /* reset received flag of datarefs */
+  reset_received();
+  
   while (socketStatus == status_Connected) {
     
     /* Check for new data from server */
@@ -399,6 +359,7 @@ int receive_server(void) {
 	      nelements = 1;
 	    }
 
+	    serverdata[offset].received = 1;
 	    serverdata[offset].nrecv++;
 	    
 	    switch (serverdata[offset].type) {
@@ -613,6 +574,7 @@ int receive_server(void) {
 				    offset, serverdata[offset].datarefname);
 
 	    serverdata[offset].status = XPSTATUS_VALID;
+	    serverdata[offset].received = 1;
 	    count_dataref();
 	  }
 
@@ -640,6 +602,7 @@ int receive_server(void) {
 	    memset(serverdata[offset].datarefname,0,sizeof(serverdata[offset].datarefname));
 
 	    serverdata[offset].status = XPSTATUS_UNINITIALIZED;
+	    serverdata[offset].received = 1;
 	    count_dataref();
 	  }
 
@@ -691,6 +654,9 @@ int receive_server(void) {
     
   } 
 
+  /* count number of received datarefs */
+  count_received();
+  
   return recvMsgSize;
 }
 

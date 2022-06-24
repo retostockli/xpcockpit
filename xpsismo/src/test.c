@@ -72,7 +72,7 @@ void test(void)
     ret = analog_input(card,i,fvalue,0.0,1.0);
     if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-      //     printf("Analog Input %i changed to: %f \n",i,*fvalue);
+      printf("Analog Input %i changed to: %f \n",i,*fvalue);
     }
     //  }
    
@@ -85,7 +85,7 @@ void test(void)
     printf("Encoder changed to: %i \n",*encodervalue);
   }
 
-  ret = servo_output(card,0,encodervalue,0,100);
+  //ret = servo_output(card,0,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
 
@@ -112,6 +112,6 @@ void test(void)
   
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  //ret = display_output(card, 0, 5, encodervalue, 2, 0);
+  ret = display_output(card, 0, 5, encodervalue, 2, 0);
 
 }
