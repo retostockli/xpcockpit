@@ -1,6 +1,6 @@
 #!/bin/sh
 
-raspi="cdu2"
+raspi="du2"
 
 rsync -av ~/GLOBE/* ${raspi}:GLOBE/
 rsync -av ~/GSHHG/* ${raspi}:GSHHG/

@@ -173,7 +173,7 @@ void b737_mcp(void)
     ap_n1 = link_dataref_cmd_hold("laminar/B738/autopilot/n1_press"); // AP speed N1 button
     ap_n1_led = link_dataref_int("laminar/B738/autopilot/n1_status"); // 0: off, 1: armed, 2: captured
     ap_at_arm = link_dataref_cmd_once("laminar/B738/autopilot/autothrottle_arm_toggle");    // AP Autothrottle arm
-    ap_at_arm_status = link_dataref_flt("laminar/B738/autopilot/autothrottle_arm_status1",0);
+    ap_at_arm_status = link_dataref_flt("laminar/B738/autopilot/autothrottle_status1",0);
     ap_speed = link_dataref_cmd_hold("laminar/B738/autopilot/speed_press");     // AP mcpspd select switch
     ap_speed_led = link_dataref_int("laminar/B738/autopilot/speed_status1");
     ap_speed_co = link_dataref_cmd_hold("laminar/B738/autopilot/change_over_press");
@@ -319,7 +319,7 @@ void b737_mcp(void)
     }
   }
   
-  printf("status %f temp %i arm cmd %i \n",*ap_at_arm_status,temp,*ap_at_arm);
+  //printf("status %f temp %i arm cmd %i \n",*ap_at_arm_status,temp,*ap_at_arm);
   /* trigger AT solenoid to disarm AT if software AT status changes to off 
      and if switch is still in on position (temp==1).
      Only trigger after command has been executed, means
