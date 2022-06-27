@@ -158,7 +158,7 @@ void b737_mip(void)
     float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",0);
     float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",0);
 
-    float *flaps_position = link_dataref_flt_arr("laminar/B738/flap_indicator",2,-1,-1);
+    float *flaps_position = link_dataref_flt("sim/cockpit2/controls/flap_handle_deploy_ratio",-3);
     float *brake_pressure = link_dataref_flt("laminar/B738/brake/brake_press",0);
     float *yaw_damper = link_dataref_flt("laminar/B738/yaw_damper",-2);
 
@@ -582,7 +582,7 @@ void b737_mip(void)
 
     
     /* SERVOS */
-    ret = servo_outputf(card,0,flaps_position,-7.0,60.0);
+    ret = servo_outputf(card,0,flaps_position, -0.075,1.25);
     ret = servo_outputf(card,1,brake_pressure,-850.0,5300.0);
     ret = servo_outputf(card,3,&fvalue,-0.1,1.1);
     

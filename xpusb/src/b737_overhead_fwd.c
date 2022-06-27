@@ -920,16 +920,16 @@ void b737_overhead_fwd(void)
     int test2;
     ret = digital_input(device,card,7,&test,0);
     if (ret == 1) {
-      printf("IRS 1: %i \n",test);
+      printf("IRS NAV: %i \n",test);
     }
     ret = digital_input(device,card,8,&test2,0);
     if (ret == 1) {
-      printf("IRS 2: %i \n",test2);
+      printf("IRS OFF: %i \n",test2);
     }
 
     int irs_l_pos = INT_MISS;
     if ((test != INT_MISS) && (test2 != INT_MISS)) {
-      irs_l_pos = (1-test) + test2;
+      irs_l_pos = (1-test2) + test;
     } 
     int *irs_l = link_dataref_int("laminar/B738/toggle_switch/irs_left");
     int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left");
@@ -941,7 +941,7 @@ void b737_overhead_fwd(void)
 
     int irs_r_pos = INT_MISS;
     if ((test != INT_MISS) && (test2 != INT_MISS)) {
-      irs_r_pos = (1-test) + test2;
+      irs_r_pos = (1-test2) + test;
     } 
     int *irs_r = link_dataref_int("laminar/B738/toggle_switch/irs_right");
     int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left");

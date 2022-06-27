@@ -35,6 +35,8 @@
 int speedbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
 int parkbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
 int stabilizer_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
+float stabilizer_old; /* save value for stabilizer to dampen small changes from pots */
+
 
 void b737_throttle(void)
 {
@@ -111,7 +113,7 @@ void b737_throttle(void)
   float maxstabilizer_xplane =  1.000;
   float minstabilizer;
   float maxstabilizer;
-  float difstabilizer = 0.005; /* minimum difference between x-plane and H/W to toggle a change */
+  float difstabilizer = 0.01; /* minimum difference between x-plane and H/W to toggle a change */
   
   int parkbrake;
   float difparkbrake = 0.05; /* minimum difference between x-plane and H/W to toggle a change */
@@ -204,9 +206,12 @@ void b737_throttle(void)
     fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",8,-1,-2);
   }
   
+  //  if ((acf_type == 2) || (acf_type == 3)) { 
+  //  } else {
   int *stab_trim_ap = link_dataref_int("xpserver/stab_trim_ap");
   int *stab_trim_me = link_dataref_int("xpserver/stab_trim_me");
-
+    // }
+    
   int *horn_cutoff;
   if ((acf_type == 2) || (acf_type == 3)) { 
     horn_cutoff = link_dataref_cmd_once("laminar/B738/alert/gear_horn_cutout");
@@ -283,10 +288,10 @@ void b737_throttle(void)
   if ((speedbrake_mode == 0) && (speedbrake != FLT_MISS) && (*speedbrake_xplane != FLT_MISS) &&
       (fabs(speedbrake - *speedbrake_xplane) > difspeedbrake)) {
     if (ret == 1) {
-      /* H/W has changed */
+      /* H/W has changed: Manual Mode */
       speedbrake_mode = 1;
     } else {
-      /* X-Plane has changed */
+      /* X-Plane has changed: AP Mode */
       speedbrake_mode = 2;
     }
   }  
@@ -332,12 +337,12 @@ void b737_throttle(void)
   /* STAB MODE: 0=IDLE, 1=HW Driving, 2=XP Driving */
   if ((stabilizer_mode < 0) || (stabilizer_mode > 2)) stabilizer_mode = 0;
   if ((stabilizer_mode == 0) && (stabilizer != FLT_MISS) && (*stabilizer_xplane != FLT_MISS) &&
-      (fabs(stabilizer - *stabilizer_xplane) > difstabilizer)) {
-    if (ret == 1) {
-      /* H/W has changed */
+      (fabs(stabilizer - *stabilizer_xplane) >= difstabilizer)) {
+    if ((ret == 1) && ((fabs(stabilizer-stabilizer_old) >= 0.002))) {
+      /* H/W has changed: Manual Mode */
       stabilizer_mode = 1;
     } else {
-      /* X-Plane has changed */
+      /* X-Plane has changed: AP Mode */
       if (*stab_trim_ap == 1) {
 	/* Only drive stab trim actuator with A/P if stab trim cutout switch
 	   on control column is inactive: prevents stabilizer runaway (see lion air crash) */
@@ -352,7 +357,7 @@ void b737_throttle(void)
     /* Idle mode: H/W and X-Plane in same position */
     stabilizer_mode = 0;
   }
-  
+  stabilizer_old = stabilizer;
     
   input = 0;
   ret = digital_input(device_bu0836,0,input,&parkbrake,0);
@@ -488,6 +493,9 @@ void b737_throttle(void)
       *trim_up = 0;
       *trim_down = 1;
     }
+
+    printf("Manual Stabilizer Mode: %f %f \n ",stabilizer,*stabilizer_xplane);
+    
   } 
   if (stabilizer_mode == 2) {
     /* Auto Stabilizer Trim */
@@ -501,7 +509,7 @@ void b737_throttle(void)
       
       if (*stabilizer_xplane > (stabilizer+difstabilizer)) {
 	if (stabilizer < maxstabilizer)	{
-	  value = -max(min(pow((fabs(*stabilizer_xplane - stabilizer))*2.0,0.5),maxval),0.2*maxval);
+	  value = -max(min(pow((fabs(*stabilizer_xplane - stabilizer))*2.0,0.5),maxval),0.4*maxval);
 	  //	  printf("Stabilizer Trim: %f of %f: motor %f \n",stabilizer,*stabilizer_xplane,value);
 	  ret = digital_output(device_dcmotor,card,2,&one); /* activate motor for stabilizer trim */
 	} else {
@@ -510,7 +518,7 @@ void b737_throttle(void)
       }
       if (*stabilizer_xplane < (stabilizer-difstabilizer)) {
 	if (stabilizer > minstabilizer)	{
-	  value = max(min(pow((fabs(*stabilizer_xplane - stabilizer))*2.0,0.5),maxval),0.2*maxval);
+	  value = max(min(pow((fabs(*stabilizer_xplane - stabilizer))*2.0,0.5),maxval),0.4*maxval);
 	  //	  printf("Stabilizer Trim: %f of %f: motor %f \n",stabilizer,*stabilizer_xplane,value);
 	  ret = digital_output(device_dcmotor,card,2,&one); /* activate motor for stabilizer trim */
 	} else {
@@ -526,6 +534,8 @@ void b737_throttle(void)
 
     *trim_up = 0;
     *trim_down = 0;
+
+    printf("Auto Stabilizer Mode: %f %f \n",stabilizer,*stabilizer_xplane);
   }
     
   if ((*autothrottle_on >= 1) && (*lock_throttle == 1.0)) {
