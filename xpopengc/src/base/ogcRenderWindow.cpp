@@ -185,9 +185,9 @@ RenderWindow
 //  glLoadIdentity();
 
   // Draw all of the gauges
-//  glPushMatrix();	// hj ?
+  //glPushMatrix();	// hj ?
   this->RenderGauges();
-//  glPopMatrix();	// hj ?
+  //glPopMatrix();	// hj ?
 
 //  if(m_FrameTest) // NOTE: m_FrameTest not known outside ogcAppObject.cpp!
 //    this->ShowFrameRate();
