@@ -221,44 +221,38 @@ namespace OpenGC
 
   void AppObject::Cleanup()
   {  
-    if (verbosity > 0) cout << "AppObject - Cleaning up\n";
-  
-    if(m_pDataSource != 0)
-      {
-	if (verbosity > 1) cout << "AppObject - Deleting Data Source\n";
-	delete m_pDataSource;
-	m_pDataSource = 0;
-      }
-  
+    if (verbosity > 0) printf("AppObject - Cleaning up\n");
+
+
     if(m_pRenderWindow != 0)
       {
-	if (verbosity > 1) cout << "AppObject - Deleting render window\n";
+	if (verbosity > 1) printf("AppObject - Deleting render window\n");
 	delete m_pRenderWindow;
 	m_pRenderWindow = 0;
+      }
+ 
+    if (m_pDataSource != 0)
+      {
+	if (verbosity > 1) printf("AppObject - Deleting data source\n");
+	delete m_pDataSource;
+	m_pDataSource = 0;
       }
   
     if(m_pFontManager != 0)
       {
-	if (verbosity > 1) cout << "AppObject - Deleting font manager\n";
+	if (verbosity > 1) printf("AppObject - Deleting font manager\n");
 	delete m_pFontManager;
 	m_pFontManager = 0;
       }
-  
-    if (m_pDataSource != 0)
-      {
-	if (verbosity > 1) cout << "AppObject - Deleting data source\n";
-	delete m_pDataSource;
-	m_pDataSource = 0;
-      }
-  
+   
     if (m_pNavDatabase != 0)
       {
-	if (verbosity > 1) cout << "AppObject - Deleting nav database\n";
+	if (verbosity > 1) printf("AppObject - Deleting nav database\n");
 	delete m_pNavDatabase;
 	m_pNavDatabase = 0;
       }
   
-    if (verbosity > 1) cout << "AppObject - Finished memory cleanup\n";
+    if (verbosity > 1) printf("AppObject - Finished memory cleanup\n");
   }
 
   bool AppObject::DoFileInitialization(char* iniFile)

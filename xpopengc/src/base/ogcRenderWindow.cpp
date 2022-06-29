@@ -83,6 +83,7 @@ RenderWindow
   GaugeIteratorType it;
 
   // If there are gauges, delete them
+  
   if( !m_NumGauges==0 )
   {    
     for (it = m_GaugeList.begin(); it != m_GaugeList.end(); ++it)
