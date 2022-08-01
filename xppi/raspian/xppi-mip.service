@@ -1,5 +1,6 @@
 [Unit]
 Description=Systemd service to start and stop xppi with user stockli
+After=multi-user.target
 
 [Service]
 Type=simple

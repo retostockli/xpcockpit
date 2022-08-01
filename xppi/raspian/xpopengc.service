@@ -1,12 +1,11 @@
 [Unit]
 Description=Systemd service to start and stop xpopengc with user stockli
-#Requires=lightdm.service
-#After=lightdm.service
+After=graphical.target
 
 [Service]
 #User=stockli
 Environment=DISPLAY=:0.0
-ExecStart=/home/stockli/xpcockpit/xpopengc/bin/xpopengc boeing737fmc1
+ExecStart=/home/stockli/xpcockpit/xpopengc/bin/xpopengc boeing737pfd
 #ExecStart=xeyes
 
 [Install]
