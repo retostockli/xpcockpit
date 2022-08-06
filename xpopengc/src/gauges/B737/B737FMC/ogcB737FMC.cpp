@@ -1209,15 +1209,22 @@ void B737FMC::Render()
     }
 
   } else {
+    // Draw green rectangle in upper left of gauge to show it is loaded (red if X-plane is not yet connected)
     Gauge::ResetGaugeCoordinateSystem();
-    // Draw green rectangle in upper left of gauge to show it is loaded
+    if (*avionics_on == 0) {
+      // Valid dataref: Connection to X-Plane intact
+      glColor3ub(COLOR_GREEN);
+    } else {
+      // Likely missing dataref: Connection to X-Plane not yet done
+      glColor3ub(COLOR_RED);
+    }
     glColor3ub(COLOR_GREEN);
     glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
-    glVertex2f(5,m_PhysicalSize.y-5);
-    glVertex2f(10,m_PhysicalSize.y-5);
-    glVertex2f(10,m_PhysicalSize.y-10);
-    glVertex2f(5,m_PhysicalSize.y-10);
+    glVertex2f(2,m_PhysicalSize.y-2);
+    glVertex2f(4,m_PhysicalSize.y-2);
+    glVertex2f(4,m_PhysicalSize.y-4);
+    glVertex2f(2,m_PhysicalSize.y-4);
     glEnd();  
   }
 }

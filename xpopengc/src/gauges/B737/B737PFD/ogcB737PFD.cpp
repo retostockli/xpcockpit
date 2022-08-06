@@ -119,9 +119,15 @@ void B737PFD::Render()
   if (*avionics_on == 1) {
     Gauge::Render();
   } else {
+    // Draw green rectangle in upper left of gauge to show it is loaded (red if X-plane is not yet connected)
     Gauge::ResetGaugeCoordinateSystem();
-    // Draw green rectangle in upper left of gauge to show it is loaded
-    glColor3ub(COLOR_GREEN);
+    if (*avionics_on == 0) {
+      // Valid dataref: Connection to X-Plane intact
+      glColor3ub(COLOR_GREEN);
+    } else {
+      // Likely missing dataref: Connection to X-Plane not yet done
+      glColor3ub(COLOR_RED);
+    }
     glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
     glVertex2f(5,m_PhysicalSize.y-5);

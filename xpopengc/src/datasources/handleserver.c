@@ -567,8 +567,12 @@ int receive_server(void) {
 	  recv_left -= sizeof(errorstring);
 	      
 	  if (strncmp(serverdata[offset].datarefname,errorstring,sizeof(errorstring))) {
-	    if (verbose > 0) printf("HANDLESERVER: X-Plane cannot link offset %i dataref %s: %s \n",
-				    offset,serverdata[offset].datarefname,errorstring);
+	    if (verbose > 0) {
+	      printf("\033[1;31m");
+	      printf("HANDLESERVER: X-Plane cannot link offset %i dataref %s: %s \n",
+		     offset,serverdata[offset].datarefname,errorstring);
+	      printf("\033[0m");
+	    }
 	  } else {
 	    if (verbose > 0) printf("HANDLESERVER: X-Plane linked offset %i dataref %s \n",
 				    offset, serverdata[offset].datarefname);
