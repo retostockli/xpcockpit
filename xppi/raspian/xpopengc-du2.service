@@ -1,7 +1,6 @@
 [Unit]
 Description=Systemd service to start and stop xpopengc with user stockli
-#Requires=lightdm.service
-#After=lightdm.service
+After=graphical.target
 
 [Service]
 #User=stockli
