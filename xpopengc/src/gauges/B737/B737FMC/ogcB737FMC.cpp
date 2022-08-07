@@ -1218,7 +1218,6 @@ void B737FMC::Render()
       // Likely missing dataref: Connection to X-Plane not yet done
       glColor3ub(COLOR_RED);
     }
-    glColor3ub(COLOR_GREEN);
     glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
     glVertex2f(2,m_PhysicalSize.y-2);
