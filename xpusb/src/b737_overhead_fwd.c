@@ -613,9 +613,9 @@ void b737_overhead_fwd(void)
     device = servo2;
     float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",-1);
     if (*servotest == 1) {
-      ret = servos_output(device,3,&servoval,0.0,1.0,210,1023);
+      ret = servos_output(device,3,&servoval,0.0,1.0,295,975);
     } else {
-      ret = servos_output(device,3,zone_temp,0.0,90.0,210,1023);
+      ret = servos_output(device,3,zone_temp,0.0,80.0,295,975);
     }
       
     /* Yellow Annunciators */
@@ -664,11 +664,11 @@ void b737_overhead_fwd(void)
     float *cabin_climb = link_dataref_flt("laminar/B738/cabin_vvi",1);    
     if (*servotest == 1) {
       ret = servos_output(device,0,&servoval,0.0,1.0,200,1023);
-      ret = servos_output(device,1,&servoval,0.0,1.0,210,1023);
+      ret = servos_output(device,1,&servoval,0.0,1.0,250,1023);
       ret = servos_output(device,2,&servoval,0.0,1.0,200,860);
     } else {
       ret = servos_output(device,0,cabin_altitude,0.0,27000.0,200,1023);
-      ret = servos_output(device,1,cabin_pressure_diff,0.0,7.0,210,1023);
+      ret = servos_output(device,1,cabin_pressure_diff,0.0,6.75,250,1023);
       ret = servos_output(device,2,cabin_climb,-1800.,1800.,200,860);
     }
     
@@ -1250,9 +1250,9 @@ void b737_overhead_fwd(void)
 
     float *fuel_temp = link_dataref_flt("laminar/B738/engine/fuel_temp",0);
     if (*servotest == 1) {
-      ret = servos_output(device,4,&servoval,0.0,1.0,200,975);
+      ret = servos_output(device,4,&servoval,0.0,1.0,240,1000);
     } else {
-      ret = servos_output(device,4,fuel_temp,-50.0,50.0,200,975);
+      ret = servos_output(device,4,fuel_temp,-50.0,50.0,240,1000);
     }
       
 
