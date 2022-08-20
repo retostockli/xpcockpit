@@ -1527,7 +1527,7 @@ void b737_overhead_fwd(void)
     ival = 10;
     ret = mastercard_display(device,card,0,5,&ival,1);
     ret = mastercard_display(device,card,6,5,&ival,1);
-
+    
     /* Fuel Pump */
     device = mastercard;
     card = 1;
