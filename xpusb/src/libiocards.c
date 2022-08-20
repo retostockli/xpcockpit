@@ -2056,7 +2056,7 @@ int receive_bu0836(void)
 	    }
 	    bit = button - (button/8)*8;
 	    iocard[device].inputs[card][button] = (recv_data[byte] >> bit) & 0x01;
-	    if (verbose > 3) printf("LIBIOCARDS: Device %i Button %i Value %i %i %i \n",device,button,
+	    if (verbose > 2) printf("LIBIOCARDS: Device %i Button %i Value %i %i %i \n",device,button,
 				    iocard[device].inputs[card][button], byte, bit);
 	  }
 	}

@@ -321,7 +321,7 @@ int receive_server(void) {
 #else
       if (errno == EWOULDBLOCK) { // just no data yet ...
 #endif
-	if (verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
+	if (verbose > 4) printf("HANDLESERVER: Client Socket: no data yet. \n");
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
       } else {
 #ifdef WIN

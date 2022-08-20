@@ -194,6 +194,17 @@ void b737_yokerudder(void)
     *free_camera=0;
   }
   
+  ret = digital_input(device,card,16,&button,0);
+  if ((ret == 1) && (button == 1)) {
+    *viewmode=0;
+    *view_horizontal=0.0;
+    *view_vertical=0.0;
+    *forward_with_nothing=1;
+    *forward_with_panel=0;
+    *circle=0;
+    *free_camera=0;
+  }
+  
 
   ret = digital_input(device,card,10,&button,0);
   if ((ret == 1) && (button == 1)) {
