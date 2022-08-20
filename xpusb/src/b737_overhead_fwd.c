@@ -1488,6 +1488,7 @@ void b737_overhead_fwd(void)
     /* A few basic switches for other ACF */
     device = mastercard;
     card = 0;
+    
     int *battery_i = link_dataref_int("sim/cockpit/electrical/battery_on");
     int *avionics_i = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
     ret = digital_input(device,card,8,&ival,0);
