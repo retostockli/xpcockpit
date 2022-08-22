@@ -582,6 +582,24 @@ void b737_mip(void)
 
     
     /* SERVOS */
+    /* Flap deploy ratio is measured from 0-1 where:
+       0     : 0 deg
+       0.125 : 1 deg
+       0.250 : 2 deg
+       0.375 : 5 deg
+       0.500 : 10 deg
+       0.625 : 15 deg
+       0.750 : 25 deg
+       0.875 : 30 deg
+       1.000 : 40 deg
+
+       The flaps gauge in the B737 is linear in the second column
+       so we have to translate the deploy ratio into the second column
+       by linear interpolation
+       --> Flaps gauge seems to be broken? Sticks to same postion and does only 
+       move erratically and not return.
+    */
+    // printf("%f \n",*flaps_position);
     ret = servo_outputf(card,0,flaps_position, -0.075,1.25);
     ret = servo_outputf(card,1,brake_pressure,-850.0,5300.0);
     ret = servo_outputf(card,3,&fvalue,-0.1,1.1);
