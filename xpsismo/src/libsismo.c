@@ -884,11 +884,11 @@ int analog_input(int card, int input, float *value, float minval, float maxval)
 		 sismo[card].analoginputs[input][5],sismo[card].analoginputs[input][6]
 		 ); */
 	  
-	  if (!found) {
-	    *value = ((float) sismo[card].analoginputs[input][0]) / (float) pow(2,ANALOGINPUTNBITS) * 
+	  *value = ((float) sismo[card].analoginputs[input][0]) / (float) pow(2,ANALOGINPUTNBITS) * 
 	    (maxval - minval) + minval;
-	    retval = 1;
-	  }
+	    if (!found) {
+	      retval = 1;
+	    }
 	  
 	} else {
 	  if (verbose > 0) printf("Analog Input %i above maximum # of analog inputs %i of card %i \n",
