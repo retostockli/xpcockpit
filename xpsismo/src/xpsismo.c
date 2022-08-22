@@ -100,24 +100,24 @@ int main(int argc, char **argv) {
 	//      }
     }
     if (strcmp("boeing737mcp",argv[1]) == 0) {
-      if (acf_type >= 0) {
+      //      if (acf_type >= 0) {
 	b737_mcp();
 	b737_efis(0); /* captain */
 	b737_efis(1); /* copilot */
-      }
+	//      }
     }
     if (strcmp("boeing737mip",argv[1]) == 0) {
-      if (acf_type >= 0) {
+      //      if (acf_type >= 0) {
 	b737_mip();
-      }
+	//      }
     }
     if (strcmp("boeing737",argv[1]) == 0) {
-      if (acf_type >= 0) {
+      //      if (acf_type >= 0) {
 	b737_mcp();
 	b737_efis(0); /* captain */
 	b737_efis(1); /* copilot */
 	b737_mip();
-      }
+	//      }
     }
 
     /**** User Modules End Here ****/

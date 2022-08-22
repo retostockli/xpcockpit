@@ -321,23 +321,24 @@ void b737_efis(int copilot)
   }
 
   /* BARO IN/HPA */
-  if ((acf_type == 2) || (acf_type == 3)) {
-    ret = digital_input(card,108+offset1,&temp,-1);
-    if ((*altimeter_pressure_unit == 1) && (temp == 0)) {
-      printf("Altimeter Pressure Unit: in Hg \n");
-      *altimeter_pressure_unit_dn = 1;
+  if (*altimeter_pressure_unit != INT_MISS) {
+    if ((acf_type == 2) || (acf_type == 3)) {
+      ret = digital_input(card,108+offset1,&temp,-1);
+      if ((*altimeter_pressure_unit == 1) && (temp == 0)) {
+	printf("Altimeter Pressure Unit: in Hg \n");
+	*altimeter_pressure_unit_dn = 1;
+      }
+      if ((*altimeter_pressure_unit == 0) && (temp == 1)) {
+	*altimeter_pressure_unit_up = 1;
+	printf("Altimeter Pressure Unit: hPa \n");
+      }
+    } else {
+      ret = digital_input(card,108+offset1,altimeter_pressure_unit,-1);
+      if (ret == 1) {
+	if (*altimeter_pressure_unit == 0) printf("Altimeter Pressure Unit: in Hg \n");
+	if (*altimeter_pressure_unit == 1) printf("Altimeter Pressure Unit: hPa \n");
+      }
     }
-    if ((*altimeter_pressure_unit == 0) && (temp == 1)) {
-      *altimeter_pressure_unit_up = 1;
-      printf("Altimeter Pressure Unit: hPa \n");
-    }
-  } else {
-   ret = digital_input(card,108+offset1,altimeter_pressure_unit,-1);
-   if (ret == 1) {
-     if (*altimeter_pressure_unit == 0) printf("Altimeter Pressure Unit: in Hg \n");
-     if (*altimeter_pressure_unit == 1) printf("Altimeter Pressure Unit: hPa \n");
-   }
-   *altimeter_pressure_unit = temp;
   }
 
   /* MINS RADIO/BARO */
