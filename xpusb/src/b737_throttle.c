@@ -206,12 +206,7 @@ void b737_throttle(void)
     fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",8,-1,-2);
   }
   
-  //  if ((acf_type == 2) || (acf_type == 3)) { 
-  //  } else {
-  int *stab_trim_ap = link_dataref_int("xpserver/stab_trim_ap");
-  int *stab_trim_me = link_dataref_int("xpserver/stab_trim_me");
-    // }
-    
+     
   int *horn_cutoff;
   if ((acf_type == 2) || (acf_type == 3)) { 
     horn_cutoff = link_dataref_cmd_once("laminar/B738/alert/gear_horn_cutout");
@@ -220,6 +215,31 @@ void b737_throttle(void)
   } else {
     horn_cutoff = link_dataref_int("xpserver/HORN_CUTOFF");
   }
+
+
+  /* Covers of the Stab Trim Cutoff switches: open */
+  if ((acf_type == 2) || (acf_type == 3)) { 
+    int *main_elect_cover_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/el_trim_lock");
+    float *main_elect_cover_pos = link_dataref_flt("laminar/B738/toggle_switch/el_trim_lock_pos",-3);
+    ret = set_switch_cover(main_elect_cover_pos,main_elect_cover_toggle,1);     
+    int *autopilot_cover_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/ap_trim_lock");
+    float *autopilot_cover_pos = link_dataref_flt("laminar/B738/toggle_switch/ap_trim_lock_pos",-3);
+    ret = set_switch_cover(autopilot_cover_pos,autopilot_cover_toggle,1);     
+  }
+
+  /* Stab Trim Cutoff Switches */
+  
+  int *main_elect_toggle;
+  float *main_elect_pos;
+  int *autopilot_toggle;
+  float *autopilot_pos;
+  if ((acf_type == 2) || (acf_type == 3)) { 
+    main_elect_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/el_trim");
+    main_elect_pos = link_dataref_flt("laminar/B738/toggle_switch/el_trim_pos",-3);
+    autopilot_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/ap_trim");
+    autopilot_pos = link_dataref_flt("laminar/B738/toggle_switch/ap_trim_pos",-3);
+  }
+
   
   /*
   float *stabilizer_min = link_dataref_flt("sim/aircraft/controls/acf_min_trim_elev",-3);
@@ -343,10 +363,14 @@ void b737_throttle(void)
       stabilizer_mode = 1;
     } else {
       /* X-Plane has changed: AP Mode */
-      if (*stab_trim_ap == 1) {
-	/* Only drive stab trim actuator with A/P if stab trim cutout switch
-	   on control column is inactive: prevents stabilizer runaway (see lion air crash) */
-	stabilizer_mode = 2;
+      if ((acf_type == 2) || (acf_type == 3)) { 
+	if (*autopilot_pos == 1) {
+	  /* Only drive stab trim actuator with A/P if stab trim cutout switch
+	     on control column is inactive: prevents stabilizer runaway (see lion air crash) */
+	  stabilizer_mode = 2;
+	} else {
+	  stabilizer_mode = 1;
+	}
       } else {
 	stabilizer_mode = 1;
       }
@@ -430,19 +454,28 @@ void b737_throttle(void)
     }
   }
 
-  input = 3;
-  ret = digital_input(device_bu0836,0,input,stab_trim_me,0);
-  if (ret == 1) {
-    printf("Stabilizer Trim Main Elect: %i \n",*stab_trim_me);
-  }
-  
-  input = 4;  
-  ret = digital_input(device_bu0836,0,input,stab_trim_ap,0);
-  if (*stab_trim_ap != INT_MISS) {
-    *stab_trim_ap = 1 - *stab_trim_ap;
-  }
-  if (ret == 1) {
-    printf("Stabilizer Trim Auto Pilot: %i \n",*stab_trim_ap);
+  if ((acf_type == 2) || (acf_type == 3)) {
+    input = 3;
+    value = *main_elect_pos;
+    if (value != FLT_MISS) {
+      value = 1 - value;
+    }
+    ret = digital_inputf(device_bu0836,0,input,&value,0);
+    if (value != FLT_MISS) {
+      value = 1 - value;
+    }
+    if (ret == 1) {
+      printf("Stabilizer Trim Main Elect: %f \n",value);
+    }
+    ret = set_state_togglef(&value,main_elect_pos,main_elect_toggle);     
+
+    input = 4;  
+    value = *autopilot_pos;
+    ret = digital_inputf(device_bu0836,0,input,&value,0);
+    if (ret == 1) {
+      printf("Stabilizer Trim Auto Pilot: %f \n",value);
+    }
+    ret = set_state_togglef(&value,autopilot_pos,autopilot_toggle);     
   }
   
   input = 5;
