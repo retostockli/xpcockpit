@@ -358,13 +358,14 @@ void b737_throttle(void)
   if ((stabilizer_mode < 0) || (stabilizer_mode > 2)) stabilizer_mode = 0;
   if ((stabilizer_mode == 0) && (stabilizer != FLT_MISS) && (*stabilizer_xplane != FLT_MISS) &&
       (fabs(stabilizer - *stabilizer_xplane) >= difstabilizer)) {
-    if ((ret == 1) && ((fabs(stabilizer-stabilizer_old) >= 0.002))) {
+    if ((ret == 1) && ((fabs(stabilizer-stabilizer_old) >= 0.005))) {
       /* H/W has changed: Manual Mode */
       stabilizer_mode = 1;
     } else {
       /* X-Plane has changed: AP Mode */
-      if ((acf_type == 2) || (acf_type == 3)) { 
-	if (*autopilot_pos == 1) {
+      if ((acf_type == 2) || (acf_type == 3)) {
+	//printf("AP SWITCH: %f \n",*autopilot_pos);
+	if (*autopilot_pos == 0.0) {
 	  /* Only drive stab trim actuator with A/P if stab trim cutout switch
 	     on control column is inactive: prevents stabilizer runaway (see lion air crash) */
 	  stabilizer_mode = 2;
