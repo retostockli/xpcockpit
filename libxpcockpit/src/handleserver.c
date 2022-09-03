@@ -45,7 +45,7 @@
 #include "handleserver.h"
 #include "xplanebeacon.h"
 #include "serverdata.h"
-#include "common.h"
+#include "libxpcommon.h"
 
 /* global defines */
 #define TCPBUFSIZE      1000000   /* how much memory (bytes) do we need at maximum for a single transmission */
@@ -201,7 +201,7 @@ int check_xpserver(void)
 	socketStatus = status_Connected;
       }
 
-      if (check_tcpip_counter == (1000/INTERVAL)) {
+      if (check_tcpip_counter == (1000/interval)) {
 	check_tcpip_counter=0;
 
 	/* set to non-blocking (1) for direct read

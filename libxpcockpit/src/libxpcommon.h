@@ -1,9 +1,6 @@
-/* This is the xpclient.h header to xpclient.c
+/* This is the common.h header to the xpclient code
 
-   Copyright (C) 2009 - 2014 Reto Stockli
-
-   Additions for analog axes treatment by Hans Jansen 2011
-   Also several cosmetic changes and changes for Linux compilation
+   Copyright (C) 2022  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -17,8 +14,6 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#include <signal.h>
+extern int verbose; /* verbosity >= 0 */
 
-/* Prototype functions */
-int initialize_signal_handler(void);
-void exit_xpclient(int ret);
+extern int interval; /* interval in seconds for polling xpserver */

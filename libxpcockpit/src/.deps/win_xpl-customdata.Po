@@ -1,0 +1,15 @@
+win_xpl-customdata.o: customdata.c ../config.h common.h \
+ ../SDK/CHeaders/XPLM/XPLMDataAccess.h ../SDK/CHeaders/XPLM/XPLMDefs.h \
+ ../SDK/CHeaders/XPLM/XPLMUtilities.h customdata.h
+
+../config.h:
+
+common.h:
+
+../SDK/CHeaders/XPLM/XPLMDataAccess.h:
+
+../SDK/CHeaders/XPLM/XPLMDefs.h:
+
+../SDK/CHeaders/XPLM/XPLMUtilities.h:
+
+customdata.h:

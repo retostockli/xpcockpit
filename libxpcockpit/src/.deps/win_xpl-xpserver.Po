@@ -1,0 +1,34 @@
+win_xpl-xpserver.o: xpserver.c ../config.h common.h \
+ ../SDK/CHeaders/XPLM/XPLMDataAccess.h ../SDK/CHeaders/XPLM/XPLMDefs.h \
+ ../SDK/CHeaders/XPLM/XPLMProcessing.h \
+ ../SDK/CHeaders/XPLM/XPLMUtilities.h ../SDK/CHeaders/XPLM/XPLMMenus.h \
+ ../SDK/CHeaders/XPLM/XPLMDisplay.h ../SDK/CHeaders/XPLM/XPLMGraphics.h \
+ iniparser.h dictionary.h clientdata.h handleclient.h xpserver.h
+
+../config.h:
+
+common.h:
+
+../SDK/CHeaders/XPLM/XPLMDataAccess.h:
+
+../SDK/CHeaders/XPLM/XPLMDefs.h:
+
+../SDK/CHeaders/XPLM/XPLMProcessing.h:
+
+../SDK/CHeaders/XPLM/XPLMUtilities.h:
+
+../SDK/CHeaders/XPLM/XPLMMenus.h:
+
+../SDK/CHeaders/XPLM/XPLMDisplay.h:
+
+../SDK/CHeaders/XPLM/XPLMGraphics.h:
+
+iniparser.h:
+
+dictionary.h:
+
+clientdata.h:
+
+handleclient.h:
+
+xpserver.h:

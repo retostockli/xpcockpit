@@ -1,0 +1,15 @@
+windows_xpl-clientdata.o: clientdata.c ../config.h common.h \
+ ../SDK/CHeaders/XPLM/XPLMDataAccess.h ../SDK/CHeaders/XPLM/XPLMDefs.h \
+ ../SDK/CHeaders/XPLM/XPLMUtilities.h clientdata.h
+
+../config.h:
+
+common.h:
+
+../SDK/CHeaders/XPLM/XPLMDataAccess.h:
+
+../SDK/CHeaders/XPLM/XPLMDefs.h:
+
+../SDK/CHeaders/XPLM/XPLMUtilities.h:
+
+clientdata.h:

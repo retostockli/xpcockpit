@@ -1,0 +1,3 @@
+lin_xpl-dictionary.o: dictionary.c dictionary.h
+
+dictionary.h:

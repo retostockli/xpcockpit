@@ -33,25 +33,30 @@
 #include "xpclient.h"
 #include "serverdata.h"
 #include "handleserver.h"
+#include "xplanebeacon.h"
 
 int main (int argc,char **argv)
 {
   
   /* server settings */
-  memset(server_ip,0,sizeof(server_ip));
-  //strcpy(server_ip,"127.0.0.1");
-  strcpy(server_ip,"192.168.1.203");
-  server_port = 8091;
+  XPlaneServerManual = 0;
+  memset(XPlaneServerIP,0,sizeof(XPlaneServerIP));
+  //strcpy(XPlaneServerIP,"192.168.1.203");
+  XPlaneServerPort = 8091;
+  memset(clientname,0,sizeof(clientname));
   strcpy(clientname,"xpclient");
 
   /* initialize handler for command-line interrupts (ctrl-c) */
-  if (initialize_signal_handler()<0) exit_client(-3);
+  if (initialize_signal_handler()<0) exit_xpclient(-3);
 
+  /* initialize and start X-Plane Beacon reception */
+  if (initialize_beacon_client()<0) exit_xpclient(-4);
+  
   /* initialize local dataref structure */
-  if (initialize_dataref()<0) exit_client(-4);
+  if (initialize_dataref()<0) exit_xpclient(-6);
 
   /* initialize TCP/IP interface */
-  if (initialize_tcpip()<0) exit_client(-6);
+  if (initialize_tcpip_client()<0) exit_xpclient(-7);
   
   /* subscribe to specific datarefs */
 
@@ -107,10 +112,10 @@ int main (int argc,char **argv)
     {
 
       /* check for TCP/IP connection to X-Plane */
-      if (check_server()<0) exit_client(-11);
+      if (check_xpserver()<0) exit_xpclient(-11);
       
       /* receive data from X-Plane via TCP/IP */
-      if (receive_server()<0) exit_client(-12);
+      if (receive_from_xpserver()<0) exit_xpclient(-12);
     
       /***** start do something with the datarefs *****/
 
@@ -188,7 +193,7 @@ int main (int argc,char **argv)
 
 
       /* send data to X-Plane via TCP/IP */
-      if (send_server()<0) exit_client(-15);
+      if (send_to_xpserver()<0) exit_xpclient(-15);
  
       /* run usbiocards data exchange (usb and tcp/ip) every second as an example (INTERVAL is 1 ms).
 	 In a real application you would run it e.g. every 10 ms to make sure you get a smooth update
@@ -198,16 +203,19 @@ int main (int argc,char **argv)
     }
 
   /* stop sending/receiving datarefs */
-  exit_client(0);
+  exit_xpclient(0);
 
 }	
 
 /* Exiting */
-void exit_client(int ret)
+void exit_xpclient(int ret)
 {
 
   /* cancel tcp/ip connection */
-  exit_tcpip();
+  exit_tcpip_client();
+
+  /* cancel beacon client */
+  exit_beacon_client();
 
   /* free local dataref structure */
   clear_dataref();
@@ -224,11 +232,11 @@ int initialize_signal_handler(void)
 {
   int ret = 0;
 
-  if (signal(SIGINT, exit_client) == SIG_ERR) {
+  if (signal(SIGINT, exit_xpclient) == SIG_ERR) {
     printf("Could not establish new interrupt signal handler.\n");
     ret = -1;
   }
-  if (signal(SIGTERM, exit_client) == SIG_ERR) {
+  if (signal(SIGTERM, exit_xpclient) == SIG_ERR) {
     printf("Could not establish new termination signal handler.\n");
     ret = -1;
   }

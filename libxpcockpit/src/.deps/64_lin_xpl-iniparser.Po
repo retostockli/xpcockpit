@@ -1,0 +1,5 @@
+64_lin_xpl-iniparser.o: iniparser.c iniparser.h dictionary.h
+
+iniparser.h:
+
+dictionary.h:
