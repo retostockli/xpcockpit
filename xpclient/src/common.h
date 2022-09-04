@@ -13,8 +13,3 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. 
 */
-
-#define verbose 1
-
-#define INTERVAL 999  /* poll interval in milliseconds: set between 1-999 milliseconds
-			 (>= 1000 ms will not work with some usleep implementations) */

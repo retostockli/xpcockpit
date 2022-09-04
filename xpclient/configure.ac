@@ -64,6 +64,7 @@ CFLAGS="$CFLAGS -fno-common"
 # Enable Threading support
 CFLAGS="$CFLAGS -pthread"
 
+
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
 if test "x$os" = xwin; then
@@ -83,6 +84,35 @@ AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol malloc])
 AC_CHECK_LIB([m],[roundf])
 if test "x$os" = xwin; then
     AC_CHECK_LIB([ws2_32],[socket])
+fi
+
+HAVE_LIBXPCOCKPIT=yes
+AC_MSG_CHECKING([whether a location for the xpcockpit library was specified])
+AC_ARG_WITH([libxpcockpit],
+[AS_HELP_STRING([--with-libxpcockpit=<directory>],
+                [Specify location the xpcockpit library. Configure will expect
+to find headers in <directory>/include and libraries in <directory>/lib.])]
+,
+                [LIBXPCOCKPITDIR=$with_libxpcockpit])
+if test -z "$LIBXPCOCKPITDIR" ; then
+    AC_MSG_RESULT([no])
+    LIBS="$LIBS -L$ac_pwd/../libxpcockpit/lib"
+    CPPFLAGS="$CPPFLAGS -I$ac_pwd/../libxpcockpit/include"
+else
+    AC_MSG_RESULT([$LIBXPCOCKPITDIR])
+    LIBS="$LIBS -L$LIBXPCOCKPITDIR/lib"
+    CPPFLAGS="$CPPFLAGS -I$LIBXPCOCKPITDIR/include"
+fi
+
+AC_CHECK_HEADER([xplanebeacon.h],,unset HAVE_LIBXPCOCKPIT)
+AC_CHECK_LIB([xpcockpit],[initialize_beacon_client],,unset HAVE_LIBXPCOCKPIT)
+
+if test -z "$HAVE_LIBXPCOCKPIT"; then
+    AC_MSG_ERROR([Can't find xpcockpit library, or can't link a program to it.
+    Please compile (make) and install (make install) the library in the xpcockpit 
+    subdirectory libxpcockpit.
+    In case you have installed it in a custom location, use:
+    --with-libxpcockpit=<directory> to specify a custom installation directory.])
 fi
 
 # set installation prefix to current directory if none was given

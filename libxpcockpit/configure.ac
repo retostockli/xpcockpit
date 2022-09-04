@@ -63,6 +63,12 @@ else
     CFLAGS="$CFLAGS -O3"
 fi
 
+# do not allow multiple definitions
+CFLAGS="$CFLAGS -fno-common"
+
+# Enable Threading support
+CFLAGS="$CFLAGS -pthread"
+
 # set installation prefix to current directory if none was given
 if test "x$prefix" = xNONE; then
     prefix=`pwd`;

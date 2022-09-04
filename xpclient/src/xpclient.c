@@ -29,11 +29,14 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include "common.h"
 #include "xpclient.h"
+#include "libxpcommon.h"
 #include "serverdata.h"
 #include "handleserver.h"
 #include "xplanebeacon.h"
+
+int verbose;
+int interval;
 
 int main (int argc,char **argv)
 {
@@ -45,6 +48,10 @@ int main (int argc,char **argv)
   XPlaneServerPort = 8091;
   memset(clientname,0,sizeof(clientname));
   strcpy(clientname,"xpclient");
+
+  verbose=1;  
+  interval=999;  /* poll interval in milliseconds: set between 1-999 milliseconds
+			 (>= 1000 ms will not work with some usleep implementations) */
 
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (initialize_signal_handler()<0) exit_xpclient(-3);
@@ -195,10 +202,10 @@ int main (int argc,char **argv)
       /* send data to X-Plane via TCP/IP */
       if (send_to_xpserver()<0) exit_xpclient(-15);
  
-      /* run usbiocards data exchange (usb and tcp/ip) every second as an example (INTERVAL is 1 ms).
+      /* run usbiocards data exchange (usb and tcp/ip) every second as an example (interval is 1 ms).
 	 In a real application you would run it e.g. every 10 ms to make sure you get a smooth update
 	 of flight data in your client and vice versa */
-      usleep(INTERVAL*1000);
+      usleep(interval*1000);
     
     }
 
