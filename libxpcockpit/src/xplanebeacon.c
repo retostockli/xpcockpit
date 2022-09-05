@@ -42,7 +42,6 @@
 #endif
 
 #include "xplanebeacon.h"
-#include "libxpcommon.h"
 
 #define POLL_MAX_TIMEOUT 15 /* Maximum # of seconds we accept as timeout for X-Plane to send no beacon */
 
@@ -51,6 +50,8 @@ pthread_t poll_thread;                /* read thread */
 int poll_thread_exit_code;            /* read thread exit code */
 pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 int poll_timeout_counter;
+
+int xplanebeacon_verbose;
 
 /* allocation of global variables from externals in header file */
 char XPlaneBeaconIP[30];
@@ -61,9 +62,11 @@ int XPlaneBeaconSocket;
 void *poll_thread_main();
 
 /* set up udp socket with given server address and port */
-int initialize_beacon_client(void)
+int initialize_beacon_client(int init_verbose)
 {
 
+  xplanebeacon_verbose = init_verbose;
+  
   struct sockaddr_in clientAddr;     /* Client address structure */
 
   // initialize Beacon Info
@@ -106,7 +109,7 @@ int initialize_beacon_client(void)
       printf("X-Plane Beacon Client set to non-blocking failed\n");
       return -1;
     } else {
-      if (verbose > 0) printf("X-Plane Beacon Client Socket ready\n");
+      if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Socket ready\n");
     }
  
     /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
@@ -133,9 +136,9 @@ void exit_beacon_client(void)
 {
 
   poll_thread_exit_code = 1;
-  if (verbose > 0) printf("X-Plane Beacon Client Joining Poll Thread\n");
+  if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Joining Poll Thread\n");
   pthread_join(poll_thread, NULL);
-  if (verbose > 0) printf("X-Plane Beacon Client Poll Thread Ended\n");
+  if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Poll Thread Ended\n");
 
 #ifdef WIN
   closesocket(XPlaneBeaconSocket);
@@ -166,7 +169,7 @@ void *poll_thread_main()
   struct sockaddr_in serverAddr;     /* Server address structure */
   int addrlen = sizeof(serverAddr);
 
-  if (verbose > 0) printf("X-Plane Beacon Client Receive thread running \n");
+  if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Receive thread running \n");
 
   while (!poll_thread_exit_code) {
 
@@ -178,7 +181,7 @@ void *poll_thread_main()
 	//printf("UDP Poll Timeout \n");
 	poll_timeout_counter += 1;
 	if ((poll_timeout_counter == POLL_MAX_TIMEOUT) && (XPlaneBeaconPort != 0)) {
-	  if (verbose > 0) printf("No X-Plane Beacon for %i seconds: Resetting X-Plane IP and listening ...\n",POLL_MAX_TIMEOUT);
+	  if (xplanebeacon_verbose > 0) printf("No X-Plane Beacon for %i seconds: Resetting X-Plane IP and listening ...\n",POLL_MAX_TIMEOUT);
 	  memset(XPlaneBeaconIP,0,sizeof(XPlaneBeaconIP));
 	  XPlaneBeaconPort = 0;
 	}
@@ -194,20 +197,20 @@ void *poll_thread_main()
 
 	/* Fill X-Plane Beacon Structure */
 	memcpy(&becn.beacon_major_version,&buffer[5],sizeof(becn.beacon_major_version));
-	if (verbose > 2) printf("X-Plane Major Version Number: %d\n",becn.beacon_major_version);
+	if (xplanebeacon_verbose > 2) printf("X-Plane Major Version Number: %d\n",becn.beacon_major_version);
 	memcpy(&becn.beacon_minor_version,&buffer[6],sizeof(becn.beacon_minor_version));
-	if (verbose > 2) printf("X-Plane Minor Version Number: %d\n",becn.beacon_minor_version);
+	if (xplanebeacon_verbose > 2) printf("X-Plane Minor Version Number: %d\n",becn.beacon_minor_version);
 	memcpy(&becn.application_host_id,&buffer[7],sizeof(becn.application_host_id));
-	if (verbose > 2) printf("X-Plane Application ID (1=X-Plane, 2=Plane Maker): %d\n",becn.application_host_id);
+	if (xplanebeacon_verbose > 2) printf("X-Plane Application ID (1=X-Plane, 2=Plane Maker): %d\n",becn.application_host_id);
 	memcpy(&becn.version_number,&buffer[11],sizeof(becn.version_number));
-	if (verbose > 2) printf("X-Plane Version Number: %d\n",becn.version_number);
+	if (xplanebeacon_verbose > 2) printf("X-Plane Version Number: %d\n",becn.version_number);
 	memcpy(&becn.role,&buffer[15],sizeof(becn.role));
-	if (verbose > 2) printf("X-Plane Role (1=master,2=slave,3=IOS): %d\n",becn.role);
+	if (xplanebeacon_verbose > 2) printf("X-Plane Role (1=master,2=slave,3=IOS): %d\n",becn.role);
 	memcpy(&becn.port,&buffer[19],sizeof(becn.port));
-	if (verbose > 2) printf("X-Plane UDP Port: %d\n",becn.port);
+	if (xplanebeacon_verbose > 2) printf("X-Plane UDP Port: %d\n",becn.port);
 	if (ret > 21) {
 	  memcpy(&becn.computer_name,&buffer[21],ret-21);
-	  if (verbose > 2) printf("X-Plane Computer Name: %s\n",becn.computer_name);
+	  if (xplanebeacon_verbose > 2) printf("X-Plane Computer Name: %s\n",becn.computer_name);
 	}
 
 	/* we only want the IP of the master and of X-Plane */
@@ -218,7 +221,7 @@ void *poll_thread_main()
 	  strcpy(XPlaneBeaconIP,inet_ntoa(serverAddr.sin_addr));   /* Server IP address */
 	  XPlaneBeaconPort = ntohs(serverAddr.sin_port);     /* Server port */
 	  
-	  if (verbose > 1) printf("X-Plane Beacon IP: %s and Port: %i \n",XPlaneBeaconIP,XPlaneBeaconPort);
+	  if (xplanebeacon_verbose > 1) printf("X-Plane Beacon IP: %s and Port: %i \n",XPlaneBeaconIP,XPlaneBeaconPort);
 	}
       }
     } else {
@@ -231,7 +234,7 @@ void *poll_thread_main()
   } /* while loop */
   
   /* thread was killed */
-  if (verbose > 0) printf("X-Plane Beacon Client receive thread shutting down \n");
+  if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client receive thread shutting down \n");
 
   return 0;
 }

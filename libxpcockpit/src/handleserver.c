@@ -45,23 +45,30 @@
 #include "handleserver.h"
 #include "xplanebeacon.h"
 #include "serverdata.h"
-#include "libxpcommon.h"
 
 /* global defines */
 #define TCPBUFSIZE      1000000   /* how much memory (bytes) do we need at maximum for a single transmission */
 
-/* global variable allocation */
-char XPlaneServerIP[30]; /* X-Plane Server IP */
-short unsigned int XPlaneServerPort; /* X-Plane Server Port (always manual) */
-int XPlaneServerManual; /* Do we specify a manual XPServer IP (1) or let the Beacon find X-Plane in the network (0) */
+#define CHECK_INTERVAL 1.0 /* Check every x seconds for X-Plane xpserver plugin presence */ 
 
+/* global variable allocation */
 char recvBuffer[TCPBUFSIZE];        /* Buffer for receive string */
 char sendBuffer[TCPBUFSIZE];        /* Buffer for send string */
 
 struct sockaddr_in ServAddr;     /* Server address structure */
 int socketStatus;                /* Socket status 1-5 */
 int clntSock;                    /* client socket descriptor */
-int check_tcpip_counter;  /* only check for server every x calls to check_server */
+
+int handleserver_verbose;
+
+struct timeval connect_t2;
+struct timeval connect_t1;
+
+
+/* global variable allocation from externals in header file */
+char XPlaneServerIP[30]; /* X-Plane Server IP */
+short unsigned int XPlaneServerPort; /* X-Plane Server Port (always manual) */
+int XPlaneServerManual; /* Do we specify a manual XPServer IP (1) or let the Beacon find X-Plane in the network (0) */
 
 /* transfer floating point values from host to network byte order */
 void htonf (float *src, float *dst)
@@ -86,15 +93,17 @@ void ntohf (float *src, float *dst)
 }
 
 /* set up the tcp/ip interface with given server address and port */
-int initialize_tcpip_client(void)
+int initialize_tcpip_client(int init_verbose)
 {
 
+  handleserver_verbose = init_verbose;
+  
   /* initialize network status */
   socketStatus = status_Init;
-  
-  /* reset counter */
-  check_tcpip_counter = 0;
-  
+
+  /* get current time of day */
+  gettimeofday(&connect_t1,NULL);
+
 #ifdef WIN
   WSADATA wsaData;
   if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
@@ -109,7 +118,7 @@ int initialize_tcpip_client(void)
     return -1; 
   } else {    
     
-    if (verbose > 1) printf("HANDLESERVER: Client Socket ready\n");
+    if (handleserver_verbose > 1) printf("HANDLESERVER: Client Socket ready\n");
 
     socketStatus = status_Ready;
   }
@@ -141,10 +150,10 @@ void exit_tcpip_client(void)
       sendMsgSize = send(clntSock, message_ptr, send_left, 0);
       
       if (sendMsgSize == -1) {
-	if (verbose > 0) printf("HANDLESERVER: Error Sending data to Server. \n");
+	if (handleserver_verbose > 0) printf("HANDLESERVER: Error Sending data to Server. \n");
 	socketStatus = status_Error;	/* signal a transmission error */
       } else {
-	if (verbose > 1) printf("HANDLESERVER: sending %i bytes \n",sendMsgSize);	      
+	if (handleserver_verbose > 1) printf("HANDLESERVER: sending %i bytes \n",sendMsgSize);	      
 	send_left -= sendMsgSize;
 	message_ptr += sendMsgSize;
       }
@@ -164,7 +173,7 @@ void exit_tcpip_client(void)
   
   socketStatus = status_Init;
 
-  if (verbose > 0) printf("HANDLESERVER: Client Socket closed\n");
+  if (handleserver_verbose > 0) printf("HANDLESERVER: Client Socket closed\n");
 
 }
 
@@ -180,9 +189,14 @@ int check_xpserver(void)
   int valopt; 
   socklen_t lon; 
 
+  if (socketStatus == status_Error) {
+    if (handleserver_verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
+    socketStatus = status_Connected;
+  }
+
   if (socketStatus == status_Ready) {
     
-    /* Auto-detect X-Plane Server IP if needed */
+    /* Use Auto-detected X-Plane Server IP if selected */
     if (XPlaneServerManual == 0) {
       strncpy(XPlaneServerIP,XPlaneBeaconIP,sizeof(XPlaneServerIP));
     }
@@ -196,13 +210,16 @@ int check_xpserver(void)
       ServAddr.sin_addr.s_addr = inet_addr(XPlaneServerIP);   /* Server IP address */
       ServAddr.sin_port        = htons(XPlaneServerPort);     /* Server port */
 
-      if (socketStatus == status_Error) {
-	if (verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
-	socketStatus = status_Connected;
-      }
+      /* get current time of day */
+      gettimeofday(&connect_t2,NULL);
+  
+      float dt = ((connect_t2.tv_sec - connect_t1.tv_sec) + (connect_t2.tv_usec - connect_t1.tv_usec) / 1000000.0);
+      
+      if (dt > CHECK_INTERVAL) {
 
-      if (check_tcpip_counter == (1000/interval)) {
-	check_tcpip_counter=0;
+	/* new time reference for next call is current time */
+	connect_t1.tv_sec = connect_t2.tv_sec;
+	connect_t1.tv_usec = connect_t2.tv_usec;
 
 	/* set to non-blocking (1) for direct read
 	   set to blocking (0) for asynchronous read */
@@ -213,16 +230,16 @@ int check_xpserver(void)
 	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
 #endif
 	  {
-	    if (verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
 	    socketStatus = status_Error;
 	    ret = -42;
 	  }     
 
 	/* Check for and establish a connection to the X-Plane server */
-	if (verbose > 0) printf("HANDLESERVER: Checking for X-Plane server \n");
+	if (handleserver_verbose > 0) printf("HANDLESERVER: Checking for X-Plane server \n");
 	if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
 	  if (errno == EINPROGRESS) { 
-	    if (verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
+	    if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
 	    do { 
 	      tv.tv_sec = 0; 
 	      tv.tv_usec = 500000; /* 500 ms timeout for connect */
@@ -230,54 +247,54 @@ int check_xpserver(void)
 	      FD_SET(clntSock, &myset); 
 	      res = select(clntSock+1, NULL, &myset, NULL, &tv); 
 	      if (res < 0 && errno != EINTR) { 
-		if (verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
 		break;
 	      } else if (res > 0) { 
 		// Socket selected for write 
 		lon = sizeof(int); 
 		if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
-		  if (verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
 		  break;
 		} 
 		// Check the value returned... 
 		if (valopt) { 
-		  if (verbose > 2) printf("HANDLESERVER: No connection %d - %s\n", valopt, strerror(valopt)); 
+		  if (handleserver_verbose > 2) printf("HANDLESERVER: No connection %d - %s\n", valopt, strerror(valopt)); 
 		  break;
 		} 
 		/* yeah, we found the xpserver plugin running in X-Plane ... */
-		if (verbose > 0) {
+		if (handleserver_verbose > 0) {
 		  printf("HANDLESERVER: Connected to X-Plane. \n");
 		  printf("X-Plane Server Plugin Address:Port is %s:%i \n",XPlaneServerIP, XPlaneServerPort);
 		}
 		socketStatus = status_Connected;
 		break; 
 	      } else { 
-		if (verbose > 1) printf("HANDLESERVER: Timeout in select() - Cancelling!\n"); 
+		if (handleserver_verbose > 1) printf("HANDLESERVER: Timeout in select() - Cancelling!\n"); 
 		break;
 	      } 
 	    } while (1);
 	  } else { 
-	    if (verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
 	  } 
 
 	  /* After a failed Connect we have to reinitialize the socket. Why? */
 	  if (socketStatus == status_Ready) {
 	    /* no server visible yet or connection timeout ... */
-	    if (verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
+	    if (handleserver_verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
 #ifdef WIN
 	    closesocket(clntSock);
 #else
 	    close(clntSock); 
 #endif
-	    if (initialize_tcpip_client() < 0) {
-	      if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+	    if (initialize_tcpip_client(handleserver_verbose) < 0) {
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
 	      ret = -43;
 	    }
 	  }
 
 	} else {
 	  /* yeah, we found the xpserver plugin running in X-Plane ... */
-	  if (verbose > 0) {
+	  if (handleserver_verbose > 0) {
 	    printf("HANDLESERVER: Connected to X-Plane. \n");
 	    printf("X-Plane Server Plugin Address:Port is %s:%i \n",XPlaneServerIP, XPlaneServerPort);
 	  }
@@ -287,18 +304,15 @@ int check_xpserver(void)
 
       }
 
-      check_tcpip_counter++;
-
     } else {
-      /* no valid IP address: set disconnected status */
-      socketStatus = status_Init;
+      /* no valid IP address: wait for x-plane beacon to send us one */
     }
 
   } else {
     /* Re-initialize Socket if we're back to init state */
     if (socketStatus == status_Init) {
-      if (initialize_tcpip_client() < 0) {
-	if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+      if (initialize_tcpip_client(handleserver_verbose) < 0) {
+	if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
 	ret = -43;
       }
     }
@@ -343,7 +357,7 @@ int receive_from_xpserver(void) {
 #endif
     
     if (recv_left == 0) { // disconnection
-      if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected without notice from client socket. \n");
+      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane disconnected without notice from client socket. \n");
       disconnected = 1;
       recvMsgSize = 0;
       break;
@@ -355,7 +369,7 @@ int receive_from_xpserver(void) {
 #else
 	if (errno == EWOULDBLOCK) { // just no data yet ...
 #endif
-	  if (verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
+	  if (handleserver_verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
 	  if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
 	} else {
 #ifdef WIN
@@ -369,14 +383,14 @@ int receive_from_xpserver(void) {
 		(errno == ENETDOWN)     || (errno == ENETRESET)    ||
 		(errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
 #endif
-	      if (verbose > 0) printf("HANDLESERVER: X-Plane disconnected with error from client socket. Error! \n");
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane disconnected with error from client socket. Error! \n");
 	      socketStatus = status_Init;
 	      disconnected = 1;
 	      recv_left = 0;
 	      recvMsgSize = 0;
 	      break;
 	    } else { // here we have a real error
-	      if (verbose > 0) printf("HANDLESERVER: Client Socket Error. Received %i bytes \n",recv_left);
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: Client Socket Error. Received %i bytes \n",recv_left);
 	      socketStatus = status_Error;
 	      recv_left = 0; 
 	      recvMsgSize = 0;
@@ -396,11 +410,11 @@ int receive_from_xpserver(void) {
 	  memcpy(&datai,&recvBuffer[recvMsgSize-sizeof(int)],sizeof(int));
 	  if ((datai == MARK_EOT) || (datai == MARK_DISCONNECT)) {	
 	    /* received full message with EOT or DISCONNECT marker at the end */
-	    if (verbose > 1) printf("HANDLESERVER: Received Total %i bytes \n",recvMsgSize);
+	    if (handleserver_verbose > 1) printf("HANDLESERVER: Received Total %i bytes \n",recvMsgSize);
 	    break;
 	  } else {
 	    /* only partial message received */
-	    if (verbose > 1) printf("HANDLESERVER: Received Partial %i bytes \n",recv_left);
+	    if (handleserver_verbose > 1) printf("HANDLESERVER: Received Partial %i bytes \n",recv_left);
 	  }
       
 	}
@@ -441,16 +455,16 @@ int receive_from_xpserver(void) {
 		      if (datai != INT_MISS) {
 			memcpy(serverdata[offset].data,&datai,sizeof(int));
 			memcpy(serverdata[offset].data_old,&datai,sizeof(int));
-			if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %i \n",
+			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %i \n",
 						offset,serverdata[offset].datarefname,datai);
 		      }
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset,serverdata[offset].datarefname);
 		    }
 		    recv_left -= sizeof(int);
 		  } else {
-		    if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
+		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
 		    recv_left = 0;
 		  }
 		  break;
@@ -461,16 +475,16 @@ int receive_from_xpserver(void) {
 		      if (dataf != FLT_MISS) {
 			memcpy(serverdata[offset].data,&dataf,sizeof(float));
 			memcpy(serverdata[offset].data_old,&dataf,sizeof(float));
-			if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %f \n",
+			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %f \n",
 						offset,serverdata[offset].datarefname,dataf);
 		      }
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset,serverdata[offset].datarefname);
 		    }
 		    recv_left -= sizeof(float);
 		  } else {
-		    if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
+		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
 		    recv_left = 0;
 		  }
 		  break;
@@ -481,16 +495,16 @@ int receive_from_xpserver(void) {
 		      if (datad != DBL_MISS) {
 			memcpy(serverdata[offset].data,&datad,sizeof(double));
 			memcpy(serverdata[offset].data_old,&datad,sizeof(double));
-			if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %f \n",
+			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %f \n",
 						offset,serverdata[offset].datarefname, datad);
 		      }
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset,serverdata[offset].datarefname);
 		    }
 		    recv_left -= sizeof(double);
 		  } else {
-		    if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
+		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
 		    recv_left = 0;
 		  }
 		  break;
@@ -505,7 +519,7 @@ int receive_from_xpserver(void) {
 			    if (datavf[j] != FLT_MISS) {
 			      memcpy(&((float*) serverdata[offset].data)[j],&datavf[j],sizeof(float));
 			      memcpy(&((float*) serverdata[offset].data_old)[j],&datavf[j],sizeof(float));
-			      if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %f \n",
+			      if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %f \n",
 						      offset,serverdata[offset].datarefname, j, datavf[j]);
 			    }
 			  }
@@ -513,19 +527,19 @@ int receive_from_xpserver(void) {
 			  if (*datavf != FLT_MISS) {
 			    memcpy(serverdata[offset].data,datavf,sizeof(float));
 			    memcpy(serverdata[offset].data_old,datavf,sizeof(float));
-			    if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %f \n",
+			    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %f \n",
 						    offset,serverdata[offset].datarefname, serverdata[offset].index, *datavf);
 			  }
 			}
 		      }
 		      free(datavf);
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset, serverdata[offset].datarefname);
 		    }
 		    recv_left -= nelements*sizeof(float);
 		  } else {
-		    if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
+		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
 					    offset, serverdata[offset].datarefname);
 		    recv_left = 0;
 		  }
@@ -541,7 +555,7 @@ int receive_from_xpserver(void) {
 			    if (datavi[j] != INT_MISS) {
 			      memcpy(&((int*) serverdata[offset].data)[j],&datavi[j],sizeof(int));
 			      memcpy(&((int*) serverdata[offset].data_old)[j],&datavi[j],sizeof(int));
-			      if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %i \n",
+			      if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %i \n",
 						      offset, serverdata[offset].datarefname, j, datavi[j]);
 			    }
 			  }
@@ -549,19 +563,19 @@ int receive_from_xpserver(void) {
 			  if (*datavi != INT_MISS) {
 			    memcpy(serverdata[offset].data,datavi,sizeof(int));
 			    memcpy(serverdata[offset].data_old,datavi,sizeof(int));
-			    if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %i \n",
+			    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %i \n",
 						    offset, serverdata[offset].datarefname, serverdata[offset].index, *datavi);
 			  }
 			}
 		      }
 		      free(datavi);
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset, serverdata[offset].datarefname);
 		    }
 		    recv_left -= nelements*sizeof(int);
 		  } else {
-		    if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
+		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
 					    offset, serverdata[offset].datarefname);
 		    recv_left = 0;
 		  }
@@ -576,24 +590,24 @@ int receive_from_xpserver(void) {
 			  for (j=0;j<nelements;j++) {
 			    memcpy(&((unsigned char*) serverdata[offset].data)[j],&datab[j],sizeof(unsigned char));
 			    memcpy(&((unsigned char*) serverdata[offset].data_old)[j],&datab[j],sizeof(unsigned char));
-			    if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %u \n",
+			    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %u \n",
 						    offset, serverdata[offset].datarefname, j, datab[j]);
 			  }
 			} else {
 			  memcpy(serverdata[offset].data,datab,sizeof(unsigned char));
 			  memcpy(serverdata[offset].data_old,datab,sizeof(unsigned char));
-			  if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %u \n",
+			  if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %u \n",
 						  offset, serverdata[offset].datarefname, serverdata[offset].index, *datab);
 			}
 		      }
 		      free(datab);
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset, serverdata[offset].datarefname );
 		    }
 		    recv_left -= nelements*sizeof(unsigned char);
 		  } else {
-		    if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
+		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
 					    offset, serverdata[offset].datarefname);
 		    recv_left = 0;
 		  }
@@ -606,16 +620,16 @@ int receive_from_xpserver(void) {
 		      if (datai != INT_MISS) {
 			memcpy(serverdata[offset].data,&datai,sizeof(int));
 			memcpy(serverdata[offset].data_old,&datai,sizeof(int));
-			if (verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %i \n",
+			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %i \n",
 						offset,serverdata[offset].datarefname,datai);
 		      }
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset,serverdata[offset].datarefname);
 		    }
 		    recv_left -= sizeof(int);
 		  } else {
-		    if (verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
+		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
 		    recv_left = 0;
 		  }
 		  break;
@@ -638,14 +652,14 @@ int receive_from_xpserver(void) {
 	      recv_left -= sizeof(errorstring);
 	      
 	      if (strncmp(serverdata[offset].datarefname,errorstring,sizeof(errorstring))) {
-		if (verbose > 0) {
+		if (handleserver_verbose > 0) {
 		  printf("\033[1;31m");
 		  printf("HANDLESERVER: X-Plane cannot link offset %i dataref %s: %s \n",
 			 offset,serverdata[offset].datarefname,errorstring);
 		  printf("\033[0m");
 		}
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: X-Plane linked offset %i dataref %s \n",
+		if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane linked offset %i dataref %s \n",
 					offset, serverdata[offset].datarefname);
 
 		serverdata[offset].status = XPSTATUS_VALID;
@@ -653,7 +667,7 @@ int receive_from_xpserver(void) {
 	      }
 
 	    } else {
-	      if (verbose > 0) printf("HANDLESERVER: X-Plane link confirmation for offset %i dataref %s incomplete. \n",
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane link confirmation for offset %i dataref %s incomplete. \n",
 				      offset, serverdata[offset].datarefname);
 	      recv_left = 0;
 	    }
@@ -668,10 +682,10 @@ int receive_from_xpserver(void) {
 	      memcpy(&errorstring,&recvBuffer[recvMsgSize-recv_left],sizeof(errorstring));
 	      recv_left -= sizeof(errorstring);
 	      if (strncmp(serverdata[offset].datarefname,errorstring,sizeof(errorstring))) {
-		if (verbose > 0) printf("HANDLESERVER: X-Plane cannot unlink offset %i dataref %s: %s \n",
+		if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane cannot unlink offset %i dataref %s: %s \n",
 					offset,serverdata[offset].datarefname,errorstring);
 	      } else {
-		if (verbose > 0) printf("HANDLESERVER: X-Plane unlinked offset %i dataref %s \n",
+		if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane unlinked offset %i dataref %s \n",
 					offset, serverdata[offset].datarefname);
 		memset(serverdata[offset].datarefname,0,sizeof(serverdata[offset].datarefname));
 
@@ -680,7 +694,7 @@ int receive_from_xpserver(void) {
 	      }
 
 	    } else {
-	      if (verbose > 0) printf("HANDLESERVER: X-Plane unlink confirmation for offset %i dataref %s incomplete. \n",
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane unlink confirmation for offset %i dataref %s incomplete. \n",
 				      offset, serverdata[offset].datarefname);
 	      recv_left = 0;
 	    }
@@ -689,11 +703,11 @@ int receive_from_xpserver(void) {
 
 
 	  if (first == MARK_EOT) {
-	    if (verbose > 1) {printf("HANDLESERVER: Received EOT Marker \n"); fflush(stdout);}
+	    if (handleserver_verbose > 1) {printf("HANDLESERVER: Received EOT Marker \n"); fflush(stdout);}
 	  }
 
 	  if (first == MARK_DISCONNECT) {
-	    if (verbose > 0) printf("HANDLESERVER: Received Disconnect Marker \n");
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: Received Disconnect Marker \n");
 	    
 	    socketStatus = status_Init;
 	    disconnected = 1;
@@ -720,8 +734,8 @@ int receive_from_xpserver(void) {
 #else
 	close(clntSock); 
 #endif
-	if (initialize_tcpip_client() < 0) {
-	  if (verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+	if (initialize_tcpip_client(handleserver_verbose) < 0) {
+	  if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
 	  recvMsgSize = -123;
 	}
     
@@ -767,7 +781,7 @@ int receive_from_xpserver(void) {
 	      case XPSTATUS_ALLOC: 
 		/* serverdata for dataref allocated: send dataref link command to X-Plane */
 		if ((send_left+6*sizeof(int)+sizeof(serverdata[i].datarefname)+sizeof(clientname)) <= TCPBUFSIZE) {
-		  if (verbose > 1) printf("HANDLESERVER: sending definition for offset %i dataref %s \n",i, serverdata[i].datarefname);
+		  if (handleserver_verbose > 1) printf("HANDLESERVER: sending definition for offset %i dataref %s \n",i, serverdata[i].datarefname);
 
 		  first = MARK_LINK + i;
 		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
@@ -793,7 +807,7 @@ int receive_from_xpserver(void) {
 
 		  serverdata[i].status = XPSTATUS_LINK;
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending initial offset %i dataref %s \n",
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending initial offset %i dataref %s \n",
 					  i, serverdata[i].datarefname);
 		}
 		break;
@@ -809,7 +823,7 @@ int receive_from_xpserver(void) {
 	      
 		  serverdata[i].status = XPSTATUS_UNLINK;
 		} else {
-		  if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending unlink offset %i dataref %s \n",
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending unlink offset %i dataref %s \n",
 					  i, serverdata[i].datarefname);
 		}
 		break;
@@ -838,7 +852,7 @@ int receive_from_xpserver(void) {
 		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
 		      send_left += sizeof(int);
 
-		      if (verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %i \n", 
+		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %i \n", 
 					      i, serverdata[i].datarefname,*(int *) serverdata[i].data);
 		  
 		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
@@ -846,7 +860,7 @@ int receive_from_xpserver(void) {
 		      send_left += sizeof(int);
 		  
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
 					      i, serverdata[i].datarefname);
 		    }
 		  }
@@ -863,7 +877,7 @@ int receive_from_xpserver(void) {
 		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
 		      send_left += sizeof(int);
 
-		      if (verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %f \n", 
+		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %f \n", 
 					      i, serverdata[i].datarefname, *(float *) serverdata[i].data);
 		  
 		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(float));
@@ -871,7 +885,7 @@ int receive_from_xpserver(void) {
 		      send_left += sizeof(float);
 		  
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
 					      i, serverdata[i].datarefname);
 		    }
 		  }
@@ -888,7 +902,7 @@ int receive_from_xpserver(void) {
 		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
 		      send_left += sizeof(int);
 
-		      if (verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %f \n", 
+		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %f \n", 
 					      i, serverdata[i].datarefname,*(double *) serverdata[i].data);
 
 		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(double));
@@ -896,7 +910,7 @@ int receive_from_xpserver(void) {
 		      send_left += sizeof(double);
 		  
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
 					      i, serverdata[i].datarefname);
 		    }
 		  }
@@ -912,7 +926,7 @@ int receive_from_xpserver(void) {
 			    (int) roundf(((float *) serverdata[i].data_old)[j] * scale)) changed = 1;
 		      }
 
-		      if ((changed == 1) && (verbose > 1)) 
+		      if ((changed == 1) && (handleserver_verbose > 1)) 
 			printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %f \n", 
 			       i, serverdata[i].datarefname,j,((float *) serverdata[i].data)[j]);
 		    }
@@ -923,7 +937,7 @@ int receive_from_xpserver(void) {
 		      if ((int) roundf(*(float *) serverdata[i].data * scale) != (int) roundf(*(float *) serverdata[i].data_old * scale)) changed = 1;
 		    }
 
-		    if ((changed == 1) && (verbose > 1)) 
+		    if ((changed == 1) && (handleserver_verbose > 1)) 
 		      printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %f \n", 
 			     i, serverdata[i].datarefname, serverdata[i].index, *(float *) serverdata[i].data);
 		  }
@@ -938,7 +952,7 @@ int receive_from_xpserver(void) {
 		      send_left += nelements*sizeof(float);
 
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
 					      i, serverdata[i].datarefname);
 		    }
 		  }
@@ -949,7 +963,7 @@ int receive_from_xpserver(void) {
 		    for (j=0;j<nelements;j++) {
 		      if (((int *) serverdata[i].data)[j] != ((int *) serverdata[i].data_old)[j]) changed = 1;
 
-		      if ((changed == 1) && (verbose > 1)) 
+		      if ((changed == 1) && (handleserver_verbose > 1)) 
 			printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %i \n", 
 			       i, serverdata[i].datarefname,j,((int *) serverdata[i].data)[j]);
 		    }
@@ -957,7 +971,7 @@ int receive_from_xpserver(void) {
 		    if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
 
 
-		    if ((changed == 1) && (verbose > 1)) 
+		    if ((changed == 1) && (handleserver_verbose > 1)) 
 		      printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %i \n", 
 			     i, serverdata[i].datarefname, serverdata[i].index, *(int *) serverdata[i].data);
 		  }
@@ -972,7 +986,7 @@ int receive_from_xpserver(void) {
 		      send_left += nelements*sizeof(int);
 
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
 					      i, serverdata[i].datarefname);
 		    }
 		  }
@@ -983,13 +997,13 @@ int receive_from_xpserver(void) {
 		    for (j=0;j<nelements;j++) {
 		      if (((unsigned char *) serverdata[i].data)[j] != ((unsigned char *) serverdata[i].data_old)[j]) changed = 1;
 
-		      if ((changed == 1) && (verbose > 1)) printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %u \n",
+		      if ((changed == 1) && (handleserver_verbose > 1)) printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %u \n",
 								  i, serverdata[i].datarefname,j,((unsigned char *) serverdata[i].data)[j]);
 		    }
 		  } else {
 		    if (*(unsigned char *) serverdata[i].data != *(unsigned char *) serverdata[i].data_old) changed = 1;
 
-		    if ((changed == 1) && (verbose > 1)) printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %u \n",
+		    if ((changed == 1) && (handleserver_verbose > 1)) printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %u \n",
 								i, serverdata[i].datarefname, serverdata[i].index, *(unsigned char *) serverdata[i].data);
 		  }
 		  if (changed == 1) {
@@ -1003,7 +1017,7 @@ int receive_from_xpserver(void) {
 		      send_left += nelements*sizeof(unsigned char);
 
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
 					      i, serverdata[i].datarefname);
 		    }
 		  }
@@ -1017,7 +1031,7 @@ int receive_from_xpserver(void) {
 		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
 		      send_left += sizeof(int);
 
-		      if (verbose > 1) printf("HANDLESERVER: sending data for offset %i command %s: %i \n", 
+		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i command %s: %i \n", 
 					      i, serverdata[i].datarefname,*(int *) serverdata[i].data);
 		  
 		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
@@ -1025,7 +1039,7 @@ int receive_from_xpserver(void) {
 		      send_left += sizeof(int);
 		  
 		    } else {
-		      if (verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i command %s \n",
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i command %s \n",
 					      i, serverdata[i].datarefname);
 		    }
 		  }
@@ -1054,7 +1068,7 @@ int receive_from_xpserver(void) {
 	    memcpy(&sendBuffer[send_left],&datai,sizeof(int));
 	    send_left += sizeof(int);
 
-	    if (verbose > 1) printf("HANDLESERVER: TOTAL sending %i bytes \n",send_left);
+	    if (handleserver_verbose > 1) printf("HANDLESERVER: TOTAL sending %i bytes \n",send_left);
 	
 	    message_ptr = sendBuffer;
 	    while ((send_left > 0) && (socketStatus == status_Connected)) {
@@ -1069,13 +1083,13 @@ int receive_from_xpserver(void) {
 #else
 		  if (errno == EWOULDBLOCK) {
 #endif
-		    if (verbose > 1) printf("HANDLESERVER: Caught EAGAIN signal sending data to Server\n");
+		    if (handleserver_verbose > 1) printf("HANDLESERVER: Caught EAGAIN signal sending data to Server\n");
 		  } else {
-		    if (verbose > 0) printf("HANDLESERVER: Error Sending data to Server \n");
+		    if (handleserver_verbose > 0) printf("HANDLESERVER: Error Sending data to Server \n");
 		    socketStatus = status_Error;	/* signal a transmission error */
 		  }
 		} else {
-		  if (verbose > 2) printf("HANDLESERVER: Partial sending %i bytes \n",sendMsgSize);
+		  if (handleserver_verbose > 2) printf("HANDLESERVER: Partial sending %i bytes \n",sendMsgSize);
 		  send_left -= sendMsgSize;
 		  message_ptr += sendMsgSize;
 		}

@@ -86,7 +86,7 @@ extern char clientname[100]; /* name of x-plane client package */
 extern int lastindex; /* stores the index of the last Dataref called */
 
 /* Prototype functions for x-plane data handling */
-int initialize_dataref();
+int initialize_dataref(int init_verbose);
 void clear_dataref();
 void count_dataref();
 

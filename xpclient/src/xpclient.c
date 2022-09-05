@@ -30,40 +30,36 @@
 #include <signal.h>
 
 #include "xpclient.h"
-#include "libxpcommon.h"
 #include "serverdata.h"
 #include "handleserver.h"
 #include "xplanebeacon.h"
-
-int verbose;
-int interval;
 
 int main (int argc,char **argv)
 {
   
   /* server settings */
-  XPlaneServerManual = 0;
+  XPlaneServerManual = 1;
   memset(XPlaneServerIP,0,sizeof(XPlaneServerIP));
-  //strcpy(XPlaneServerIP,"192.168.1.203");
+  strcpy(XPlaneServerIP,"127.0.0.1");
   XPlaneServerPort = 8091;
   memset(clientname,0,sizeof(clientname));
   strcpy(clientname,"xpclient");
 
-  verbose=1;  
-  interval=999;  /* poll interval in milliseconds: set between 1-999 milliseconds
+  int verbose=1;  
+  int interval=500;  /* poll interval in milliseconds: set between 1-999 milliseconds
 			 (>= 1000 ms will not work with some usleep implementations) */
 
   /* initialize handler for command-line interrupts (ctrl-c) */
   if (initialize_signal_handler()<0) exit_xpclient(-3);
 
   /* initialize and start X-Plane Beacon reception */
-  if (initialize_beacon_client()<0) exit_xpclient(-4);
+  if (initialize_beacon_client(verbose)<0) exit_xpclient(-4);
   
   /* initialize local dataref structure */
-  if (initialize_dataref()<0) exit_xpclient(-6);
+  if (initialize_dataref(verbose)<0) exit_xpclient(-6);
 
   /* initialize TCP/IP interface */
-  if (initialize_tcpip_client()<0) exit_xpclient(-7);
+  if (initialize_tcpip_client(verbose)<0) exit_xpclient(-7);
   
   /* subscribe to specific datarefs */
 

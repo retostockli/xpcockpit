@@ -31,7 +31,6 @@
 #include <sys/types.h>
 
 #include "serverdata.h"
-#include "libxpcommon.h"
 
 int predict = 1;
 
@@ -41,6 +40,8 @@ int numlink; /* number of serverdata elements linked */
 char clientname[100]; /* name of x-plane client package */
 int lastindex; /* stores the index of the last Dataref called */
 struct timeval time_start; /* stores the time when we initialized the dataref structure */
+
+int serverdata_verbose;
 
 int time_subtract (struct timeval *x, struct timeval *y, struct timeval *result) {
   /* Perform the carry for the later subtraction by updating y. */
@@ -65,8 +66,9 @@ int time_subtract (struct timeval *x, struct timeval *y, struct timeval *result)
 }
 
 /* initialize local dataref structure */
-int initialize_dataref() {
+int initialize_dataref(int init_verbose) {
 
+  serverdata_verbose = init_verbose;
   serverdata = NULL;
   numalloc = 0;
   numlink = 0;
@@ -92,7 +94,7 @@ void clear_dataref() {
   
   if (serverdata != NULL) {    
     if (numalloc > 0) {
-      if (verbose > 0) {
+      if (serverdata_verbose > 0) {
 	printf("\n");
 	printf("Time elapsed: %f seconds\n",seconds_elapsed);
 	printf("Statistics on Dataref exchange \n");
@@ -100,7 +102,7 @@ void clear_dataref() {
       }
       for (i=0;i<numalloc;i++) {
 	if (serverdata[i].data != NULL) {
-	  if (verbose > 0) {
+	  if (serverdata_verbose > 0) {
 	    fsend = (float) serverdata[i].nsend / seconds_elapsed;
 	    frecv = (float) serverdata[i].nrecv / seconds_elapsed;
 	    if ((fsend > 15.0) || (frecv > 15.0)) {

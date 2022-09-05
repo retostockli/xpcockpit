@@ -7,4 +7,4 @@ lib_LIBRARIES = libxpcockpit.a
 libxpcockpit_a_SOURCES = handleserver.c xplanebeacon.c serverdata.c
 
 # plugin headers that must go into a distribution
-include_HEADERS = handleserver.h xplanebeacon.h serverdata.h libxpcommon.h
+include_HEADERS = handleserver.h xplanebeacon.h serverdata.h

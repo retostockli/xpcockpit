@@ -38,7 +38,7 @@ extern int XPlaneServerManual;
 /* TCP/IP PROTOTYPE FUNCTIONS */
 
 /* Prototype functions for Network communication */
-int initialize_tcpip_client(void);
+int initialize_tcpip_client(int init_verbose);
 void exit_tcpip_client(void);
 int check_xpserver(void);
 int send_to_xpserver(void);
