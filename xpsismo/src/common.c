@@ -20,7 +20,6 @@
 
 /* allocation of global variables from common.h */
 int verbose;
-int acf_type; 
 
 int set_state_updnf(float *new_statef, float *old_statef, int *up, int *dn)
 {

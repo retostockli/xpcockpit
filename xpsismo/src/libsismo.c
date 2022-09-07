@@ -27,13 +27,13 @@
 #include <float.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <assert.h>
+#include <pthread.h>
 
 #include "common.h"
 #include "libsismo.h"
 #include "handleudp.h"
 #include "serverdata.h"
-
-int verbose;
 
 //char xpserver_ip[30];
 //int xpserver_port;
@@ -153,14 +153,14 @@ int read_sismo() {
     
     /* empty UDP receive buffer instead of directly accessing the device */
 
-    pthread_mutex_lock(&exit_cond_lock);    
+    pthread_mutex_lock(&udp_exit_cond_lock);    
     /* read from start of receive buffer */
     memcpy(sismoRecvBuffer,&udpRecvBuffer[0],RECVMSGLEN);
     /* shift remaining read buffer to the left */
     memmove(&udpRecvBuffer[0],&udpRecvBuffer[RECVMSGLEN],udpReadLeft-RECVMSGLEN);    
     /* decrease read buffer position and counter */
     udpReadLeft -= RECVMSGLEN;
-    pthread_mutex_unlock(&exit_cond_lock);
+    pthread_mutex_unlock(&udp_exit_cond_lock);
 
     /* decode message */
 

@@ -15,18 +15,12 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#define INTERVAL 10
+#include "check_aircraft.h"
+
+#define INTERVAL 10 /* Polling interval (seconds) for both xpserver plugin and sismo cards */
 
 /* verbosity of xpsismo (0-4) */
 extern int verbose;
-
-extern int acf_type; /* aircraft type: 
-                -1: undefined (acf info not yet received)
-		 0: any X-Plane aircraft
-		 1: x737 by Benedikt Stratmann
-		 2: Laminar B737-800
-		 3: ZIBO MOD of Laminar B737-800
-	      */
 
 /* prototype functions */
 int set_state_updnf(float *new_statef, float *old_statef, int *up, int *dn);

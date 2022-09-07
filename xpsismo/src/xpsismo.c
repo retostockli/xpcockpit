@@ -41,12 +41,11 @@
 #include "handleserver.h"
 #include "serverdata.h"
 #include "check_aircraft.h"
+#include "xplanebeacon.h"
 #include "test.h"
 #include "b737_mcp.h"
 #include "b737_efis.h"
 #include "b737_mip.h"
-
-int acf_type;
 
 // Driver code 
 int main(int argc, char **argv) {
@@ -57,21 +56,24 @@ int main(int argc, char **argv) {
     printf("Invalid number of arguments. Please only specify the initialization name. This is the prefix of one of the initialization file names found in the source subdirectory inidata/ or in the installation subdirectory share/.\n");
     exit_sismo(-1);
   }
-
-  /* initialize local dataref structure */
-  if (initialize_dataref()<0) exit_sismo(-1);
+  
+  /* initialize handler for command-line interrupts (ctrl-c) */
+  if (ini_signal_handler()<0) exit_sismo(-1);
 
   /* parse the selected ini file */
   if (ini_read(argv[0],argv[1])<0) exit_sismo(-2);
-  
-  /* initialize handler for command-line interrupts (ctrl-c) */
-  if (ini_signal_handler()<0) exit_sismo(-3);
+
+  /* initialize and start X-Plane Beacon reception */
+  if (initialize_beacon_client(verbose)<0) exit_sismo(-3);
+ 
+  /* initialize local dataref structure */
+  if (initialize_dataref(verbose)<0) exit_sismo(-4);
 
   /* initialize TCP/IP interface */
-  if (initialize_tcpip()<0) exit_sismo(-4);
+  if (initialize_tcpip_client(verbose)<0) exit_sismo(-5);
 
   /* initialize sismo I/O data structure */
-  if (ini_sismodata()<0) exit_sismo(-5);
+  if (ini_sismodata()<0) exit_sismo(-6);
   
   /* initialize UDP server */
   if (init_udp_server(sismoserver_ip,sismoserver_port) < 0) exit_sismo(-6);
@@ -85,10 +87,10 @@ int main(int argc, char **argv) {
     if (read_sismo() < 0) exit_sismo(-8);
       
     /* check for TCP/IP connection to X-Plane */
-    if (check_server()<0) exit_sismo(-9);
+    if (check_xpserver()<0) exit_sismo(-9);
  
     /* receive data from X-Plane via TCP/IP */
-    if (receive_server()<0) exit_sismo(-10);
+    if (receive_xpserver()<0) exit_sismo(-10);
     
     check_aircraft();
  
@@ -126,7 +128,7 @@ int main(int argc, char **argv) {
     if (write_sismo() < 0) exit_sismo(-11);
 
     /* send data to X-Plane via TCP/IP */
-    if (send_server()<0) exit_sismo(-12);
+    if (send_xpserver()<0) exit_sismo(-12);
     
       /* reset counters and such */
     if (reset_sismodata() < 0) exit_sismo(-13);

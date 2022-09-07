@@ -48,10 +48,10 @@ void b737_mip(void)
   int ret;
   int temp;
   int temp2;
-  float fvalue;
+  //  float fvalue;
   int card = 1;
   int one = 1;
-  int zero = 0;
+  //  int zero = 0;
 
   int afds_test_1_capt;
   int afds_test_2_capt;
@@ -161,7 +161,7 @@ void b737_mip(void)
 
     float *flaps_position = link_dataref_flt("sim/cockpit2/controls/flap_handle_deploy_ratio",-3);
     float *brake_pressure = link_dataref_flt("laminar/B738/brake/brake_press",0);
-    float *yaw_damper = link_dataref_flt("laminar/B738/yaw_damper",-2);
+    //float *yaw_damper = link_dataref_flt("laminar/B738/yaw_damper",-2);
 
     int *ap_prst_button = link_dataref_cmd_hold("laminar/B738/push_button/ap_light_pilot");
     int *at_prst_button = link_dataref_cmd_hold("laminar/B738/push_button/at_light_pilot");

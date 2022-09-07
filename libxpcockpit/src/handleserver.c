@@ -325,12 +325,15 @@ int check_xpserver(void)
       }
     }
   }
+
+  /* Return value is 1 if connected and 0 if not connected */
+  if (socketStatus == status_Connected) ret = 1;
   
   return ret;
 }
 
 /* receive data stream from X-Plane TCP/IP server */
-int receive_from_xpserver(void) {
+int receive_xpserver(void) {
 
   int recvMsgSize;                    /* Size of received completed message */
   int recv_left;
@@ -355,6 +358,9 @@ int receive_from_xpserver(void) {
   recvMsgSize = 0;
   recvBuffer[recvMsgSize] = 0;
   message_ptr = recvBuffer;
+
+  /* reset received flag of datarefs */
+  reset_received();
 
   while (socketStatus == status_Connected) {
     
@@ -453,6 +459,7 @@ int receive_from_xpserver(void) {
 		  nelements = 1;
 		}
 
+		serverdata[offset].received = 1;
 		serverdata[offset].nrecv++;
 	    
 		switch (serverdata[offset].type) {
@@ -671,6 +678,7 @@ int receive_from_xpserver(void) {
 					offset, serverdata[offset].datarefname);
 
 		serverdata[offset].status = XPSTATUS_VALID;
+		serverdata[offset].received = 1;
 		count_dataref();
 	      }
 
@@ -698,6 +706,7 @@ int receive_from_xpserver(void) {
 		memset(serverdata[offset].datarefname,0,sizeof(serverdata[offset].datarefname));
 
 		serverdata[offset].status = XPSTATUS_UNINITIALIZED;
+		serverdata[offset].received = 1;
 		count_dataref();
 	      }
 
@@ -749,11 +758,14 @@ int receive_from_xpserver(void) {
     
       } 
 
+      /* count number of received datarefs */
+      count_received();
+
       return recvMsgSize;
     }
 
     /* send data stream to X-Plane TCP/IP server */
-    int send_to_xpserver(void) {
+    int send_xpserver(void) {
 
       //  struct timeval tval_before, tval_after, tval_result;
   

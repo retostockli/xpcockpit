@@ -117,7 +117,7 @@ int main (int argc,char **argv)
       if (check_xpserver()<0) exit_xpclient(-11);
       
       /* receive data from X-Plane via TCP/IP */
-      if (receive_from_xpserver()<0) exit_xpclient(-12);
+      if (receive_xpserver()<0) exit_xpclient(-12);
     
       /***** start do something with the datarefs *****/
 
@@ -195,7 +195,7 @@ int main (int argc,char **argv)
 
 
       /* send data to X-Plane via TCP/IP */
-      if (send_to_xpserver()<0) exit_xpclient(-15);
+      if (send_xpserver()<0) exit_xpclient(-15);
  
       /* run usbiocards data exchange (usb and tcp/ip) every second as an example (interval is 1 ms).
 	 In a real application you would run it e.g. every 10 ms to make sure you get a smooth update

@@ -40,5 +40,5 @@ extern short unsigned int XPlaneServerPort;
 int initialize_tcpip_client(int init_verbose);
 void exit_tcpip_client(void);
 int check_xpserver(void);
-int send_to_xpserver(void);
-int receive_from_xpserver(void);
+int send_xpserver(void);
+int receive_xpserver(void);

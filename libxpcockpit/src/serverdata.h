@@ -75,6 +75,7 @@ typedef struct {
   int nextindex;          /* stores the index of the next index that will be called */
   int nsend;              /* number of times the dataref was sent to the server */
   int nrecv;              /* number of times the dataref was received from the server */
+  int received;           /* 1 if this dataref was received during this loop, 0 else */
 } serverdata_struct;
 
 extern struct timeval time_start;
@@ -84,11 +85,14 @@ extern int numalloc; /* number of serverdata elements allocated */
 extern int numlink; /* number of serverdata elements linked */
 extern char clientname[100]; /* name of x-plane client package */
 extern int lastindex; /* stores the index of the last Dataref called */
+extern int numreceived; /* stores number of datarefs that were received in this loop */
 
 /* Prototype functions for x-plane data handling */
 int initialize_dataref(int init_verbose);
 void clear_dataref();
 void count_dataref();
+void count_received();
+void reset_received();
 
 /* the following dataref subscription functions refer to arguments which are defined as follows
 

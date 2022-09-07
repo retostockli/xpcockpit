@@ -13,35 +13,17 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. 
 */
-
-#include <arpa/inet.h>
-
-/* posix tread headers */
 #include <assert.h>
 #include <pthread.h>
 
-#define UDPRECVBUFLEN 30*1000
-#define UDPSENDBUFLEN 28
 
-/* UDP CLIENT PARAMETERS */
-char udpClientIP[30];
-short int udpClientPort;
-char udpServerIP[30];
-short int udpServerPort;
-int clientSocket;
-int serverSocket;
+extern unsigned char *udpSendBuffer;         /* buffer containing data to send to udp */
+extern unsigned char *udpRecvBuffer;         /* buffer containing data that was read from udp */
+extern int udpReadLeft;                      /* counter of bytes to read from receive thread */
 
-struct sockaddr_in udpServerAddr;     /* Server address structure */
-struct sockaddr_in udpClientAddr;     /* Client address structure */
-
-unsigned char *udpSendBuffer;         /* buffer containing data to send to udp */
-unsigned char *udpRecvBuffer;         /* buffer containing data that was read from udp */
-int udpReadLeft;                      /* counter of bytes to read from receive thread */
-
-/* thread parameters */
-extern pthread_t poll_thread;                /* read thread */
-extern int poll_thread_exit_code;            /* read thread exit code */
-extern pthread_mutex_t exit_cond_lock;
+extern pthread_t udp_poll_thread;                /* read thread */
+extern int udp_poll_thread_exit_code;            /* read thread exit code */
+extern pthread_mutex_t udp_exit_cond_lock;
 
 /* Prototype functions for Network communication */
 int init_udp_server(char server_ip[],int server_port);

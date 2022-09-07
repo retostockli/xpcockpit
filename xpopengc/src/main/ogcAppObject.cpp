@@ -198,6 +198,7 @@ namespace OpenGC
     // Only render if things have changed from X-Plane or during init, so
     // all datarefs have been safely received
     m_pDataSource->OnIdle();
+    //printf("%i \n",numreceived);
     if ((numreceived > 0) || (m_InitState <= 100) || (wxr_newdata == 1)) {
       //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
@@ -260,7 +261,7 @@ namespace OpenGC
     char temp_string[50];
     dictionary *ini;
     int default_verbosity = 0;
-    char default_server_ip[] = "127.0.0.1";
+    char default_server_ip[] = "";
     int default_server_port = 8091;
     char default_data_source[] = "X-Plane";
     char default_xplane_path[] = "";

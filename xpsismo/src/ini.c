@@ -33,6 +33,7 @@
 #include "ini.h"
 #include "handleserver.h"
 #include "serverdata.h"
+#include "xplanebeacon.h"
 
 /* this routine parses the usbiocards.ini file and reads its values */
 int ini_read(char* programPath, char* iniName)
@@ -104,9 +105,9 @@ int ini_read(char* programPath, char* iniName)
     strncpy(clientname,iniparser_getstring(ini,"xpserver:Name", ""),sizeof(clientname));
     if (! strcmp(clientname,"")) strncpy(clientname,PACKAGE_NAME,sizeof(clientname));
     printf("XPSERVER Client name: %s\n", clientname);
-    strcpy(server_ip,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
-    server_port = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
-    printf("XPSERVER Address %s Port %i \n",server_ip, server_port);
+    strcpy(XPlaneServerIP,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
+    XPlaneServerPort = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
+    printf("XPSERVER Address %s Port %i \n",XPlaneServerIP, XPlaneServerPort);
 
     strcpy(sismoserver_ip,iniparser_getstring(ini,"sismoserver:Address", default_sismoserver_ip));
     sismoserver_port = iniparser_getint(ini,"sismoserver:Port", default_sismoserver_port);
@@ -250,7 +251,10 @@ void exit_sismo(int ret)
   exit_udp();
 
   /* cancel tcp/ip connection */
-  exit_tcpip();
+  exit_tcpip_client();
+
+  /* cancel beacon client */
+  exit_beacon_client();
 
   /* free local dataref structure */
   clear_dataref();

@@ -2,19 +2,12 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcXPlaneDataSource.cpp,v $
-
-  Copyright (C) 2001-2 by:
+ 
+  Copyright (C) 2022 by:
     Original author:
       Damion Shelton
     Contributors (in alphabetical order):
       Reto Stockli
-
-  Last modification:
-    Date:      $Date: 2015/10/06 $
-    Version:   $Revision: $
-    Author:    $Author: stockli $
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -60,11 +53,12 @@
 
 extern "C" {
 #include "handleserver.h"
+#include "xplanebeacon.h"
 #include "wxrdata.h"
-#include "common.h"
 }
 
 extern int verbosity;
+int verbose;
 
 namespace OpenGC
 {
@@ -74,18 +68,14 @@ extern FLTKRenderWindow* m_pRenderWindow;
 void XPlaneDataSource::define_server(int port, string ip_address, int radardata)
 {
   int n;
-
-  printf("Contacting xpserver plugin at IP %s Port %i %i \n",ip_address.c_str(), port,radardata);
+  
   // TCP Server (xpserver running as an X-Plane plugin)
-  strncpy(server_ip,ip_address.c_str(),ip_address.length()); 
-  server_port = port;
-
-  /* initialize TCP/IP interface */
-  if (initialize_tcpip() < 0) exit(-8);
+  strncpy(XPlaneServerIP,ip_address.c_str(),ip_address.length()); 
+  XPlaneServerPort = port;
 
   /* initialize UDP interface to read WXR data */
-  init_wxr(radardata,server_ip);
-
+  init_wxr(radardata,XPlaneServerIP);
+ 
 }
 
 XPlaneDataSource::XPlaneDataSource()
@@ -93,8 +83,16 @@ XPlaneDataSource::XPlaneDataSource()
   
   printf("XPlaneDataSource constructed\n");
 
+  printf("Verbosity: %i\n",verbosity);
+
   /* initialize local dataref structure */
-  if (initialize_dataref() < 0) exit(-8);
+  if (initialize_dataref(verbosity) < 0) exit(-8);
+ 
+  /* initialize and start X-Plane Beacon reception */
+  if (initialize_beacon_client(verbosity)<0) exit(-8);
+
+  /* initialize TCP/IP interface */
+  if (initialize_tcpip_client(verbosity) < 0) exit(-8);
   
   // initialize with default ACF
   SetAcfType(0);
@@ -108,8 +106,11 @@ XPlaneDataSource::~XPlaneDataSource()
   printf("Free TCP/IP socket and Dataref Structure \n");
   
   /* cancel tcp/ip connection */
-  exit_tcpip();
+  exit_tcpip_client();
 
+  /* cancel beacon client */
+  exit_beacon_client();
+  
   /* cancel wxr udp socket */
   exit_wxr();
   
@@ -121,13 +122,14 @@ XPlaneDataSource::~XPlaneDataSource()
 void XPlaneDataSource::OnIdle()
 {
 
-  int ret;
+  int connected;
   
   /* check for TCP/IP connection to X-Plane */
-  if (check_server()<0) exit(-9);
+  connected = check_xpserver();
+  if (connected<0) exit(-9);
   
   /* receive data from X-Plane via TCP/IP */
-  if (receive_server()<0) exit(-10);
+  if (receive_xpserver()<0) exit(-10);
  
   /* determine Aircraft type based on Tail Number */
   unsigned char *tailnum = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum",  40, -1);
@@ -151,11 +153,11 @@ void XPlaneDataSource::OnIdle()
   }
   
   /* send data to X-Plane via TCP/IP */
-  if (send_server()<0) exit(-11);
+  if (send_xpserver()<0) exit(-11);
 
   /* Send WXR Init String, but only once X-Plane is connected, 
      and aircraft is loaded, else it will be going to nirvana */
-  if ((socketStatus == status_Connected) && (GetAcfType() >= 0)) {
+  if ((connected==1) && (GetAcfType() >= 0)) {
     write_wxr();
   }
     

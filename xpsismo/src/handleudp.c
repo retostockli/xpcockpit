@@ -32,18 +32,39 @@
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <arpa/inet.h>
+#include <assert.h>
+#include <pthread.h>
 
 #include "handleudp.h"
 #include "common.h"
 
-pthread_t poll_thread;                /* read thread */
-int poll_thread_exit_code;            /* read thread exit code */
-pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
+#define UDPRECVBUFLEN 30*1000
+#define UDPSENDBUFLEN 28
+
+/* UDP CLIENT PARAMETERS */
+char udpClientIP[30];
+short int udpClientPort;
+char udpServerIP[30];
+short int udpServerPort;
+int clientSocket;
+int serverSocket;
+
+struct sockaddr_in udpServerAddr;     /* Server address structure */
+struct sockaddr_in udpClientAddr;     /* Client address structure */
+
+unsigned char *udpSendBuffer;         /* buffer containing data to send to udp */
+unsigned char *udpRecvBuffer;         /* buffer containing data that was read from udp */
+int udpReadLeft;                      /* counter of bytes to read from receive thread */
+
+pthread_t udp_poll_thread;                /* read thread */
+int udp_poll_thread_exit_code;            /* read thread exit code */
+pthread_mutex_t udp_exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* set up udp server socket with given server address and port */
 int init_udp_server(char server_ip[],int server_port)
 {
-
+  
   /* Create a UDP socket */
   if ((serverSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
     printf("HANDLEUDP: Cannot initialize client UDP socket \n");
@@ -85,7 +106,7 @@ int init_udp_server(char server_ip[],int server_port)
   return 0;
 }
 
-void *poll_thread_main()
+void *udpclient_thread_main()
 /* thread handles udp receive on the server socket by use of blocking read and a read buffer */
 {
   int ret = 0;
@@ -93,7 +114,7 @@ void *poll_thread_main()
 
   printf("HANDLEUDP: Receive thread running \n");
 
-  while (!poll_thread_exit_code) {
+  while (!udp_poll_thread_exit_code) {
 
     /* read call goes here (1 s timeout for blocking operation) */
     ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
@@ -102,7 +123,7 @@ void *poll_thread_main()
 	if (verbose > 3) printf("HANDLEUDP: No data yet. \n");
       } else {
 	printf("HANDLEUDP: Receive Error. \n");
-	poll_thread_exit_code = 1;
+	udp_poll_thread_exit_code = 1;
 	break;
       } 
     } else if ((ret > 0) && (ret <= UDPRECVBUFLEN)) {
@@ -110,10 +131,10 @@ void *poll_thread_main()
       
       /* does it fit into read buffer? */
       if (ret <= (UDPRECVBUFLEN - udpReadLeft)) {
-	pthread_mutex_lock(&exit_cond_lock);
+	pthread_mutex_lock(&udp_exit_cond_lock);
 	memcpy(&udpRecvBuffer[udpReadLeft],buffer,ret);
 	udpReadLeft += ret;
-	pthread_mutex_unlock(&exit_cond_lock);
+	pthread_mutex_unlock(&udp_exit_cond_lock);
 	
 	if (verbose > 3) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
       } else {
@@ -150,8 +171,8 @@ int init_udp_receive() {
 
   udpReadLeft=0;
  
-  poll_thread_exit_code = 0;
-  ret = pthread_create(&poll_thread, NULL, &poll_thread_main, NULL);
+  udp_poll_thread_exit_code = 0;
+  ret = pthread_create(&udp_poll_thread, NULL, &udpclient_thread_main, NULL);
   if (ret>0) {
     printf("HANDLEUDP: poll thread could not be created.\n");
     return -1;
@@ -163,8 +184,8 @@ int init_udp_receive() {
 /* end udp connection */
 void exit_udp(void)
 {
-  poll_thread_exit_code = 1;
-  pthread_join(poll_thread, NULL);
+  udp_poll_thread_exit_code = 1;
+  pthread_join(udp_poll_thread, NULL);
   close(serverSocket);
 }
 

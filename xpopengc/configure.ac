@@ -71,6 +71,7 @@ CFLAGS="$CFLAGS -fno-common"
 
 # Enable Threading support
 CXXFLAGS="$CXXFLAGS -pthread"
+CFLAGS="$CFLAGS -pthread"
 
 # Checks for libraries and headers.
 
@@ -247,6 +248,35 @@ AC_CHECK_FUNCS([bzero floor memset socket sqrt strcspn malloc])
 
 # Add local OpenGC source code directories to include directives
 CPPFLAGS="$CPPFLAGS -I$PWD/src/base -I$PWD/src/datasources -I$PWD/src/navigation -I$PWD/src/gauges -I$PWD/src/main"
+
+HAVE_LIBXPCOCKPIT=yes
+AC_MSG_CHECKING([whether a location for the xpcockpit library was specified])
+AC_ARG_WITH([libxpcockpit],
+[AS_HELP_STRING([--with-libxpcockpit=<directory>],
+                [Specify location the xpcockpit library. Configure will expect
+to find headers in <directory>/include and libraries in <directory>/lib.])]
+,
+                [LIBXPCOCKPITDIR=$with_libxpcockpit])
+if test -z "$LIBXPCOCKPITDIR" ; then
+    AC_MSG_RESULT([no])
+    LIBS="$LIBS -L$ac_pwd/../libxpcockpit/lib"
+    CPPFLAGS="$CPPFLAGS -I$ac_pwd/../libxpcockpit/include"
+else
+    AC_MSG_RESULT([$LIBXPCOCKPITDIR])
+    LIBS="$LIBS -L$LIBXPCOCKPITDIR/lib"
+    CPPFLAGS="$CPPFLAGS -I$LIBXPCOCKPITDIR/include"
+fi
+
+AC_CHECK_HEADER([xplanebeacon.h],,unset HAVE_LIBXPCOCKPIT)
+AC_CHECK_LIB([xpcockpit],[initialize_beacon_client],,unset HAVE_LIBXPCOCKPIT)
+
+if test -z "$HAVE_LIBXPCOCKPIT"; then
+    AC_MSG_ERROR([Can't find xpcockpit library, or can't link a program to it.
+    Please compile (make) and install (make install) the library in the xpcockpit 
+    subdirectory libxpcockpit.
+    In case you have installed it in a custom location, use:
+    --with-libxpcockpit=<directory> to specify a custom installation directory.])
+fi
 
 # Substitute
 AC_SUBST(AM_CXXFLAGS)

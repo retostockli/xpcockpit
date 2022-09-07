@@ -281,10 +281,10 @@ void b737_mcp(void)
   if (*avionics_on != 1) blank = 1;
 
   /* INPUTS */
-
+  
   /* Flight Director Captain */
   ret = digital_input(card,2,ap_fdir_a,-1);
-  if (ret) {
+  if (ret==1) {
     printf("Flight Director Captain: %i \n",*ap_fdir_a);
   }
   if (acf_type == 0) {
@@ -293,7 +293,7 @@ void b737_mcp(void)
 
   /* Flight Director Copilot */
   ret = digital_input(card,29,ap_fdir_b,-1);
-  if (ret) {
+  if (ret==1) {
     printf("Flight Director First Officer: %i \n",*ap_fdir_b);
   }
   

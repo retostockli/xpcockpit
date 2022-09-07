@@ -43,13 +43,13 @@
 
 #include "xplanebeacon.h"
 
-#define POLL_MAX_TIMEOUT 15 /* Maximum # of seconds we accept as timeout for X-Plane to send no beacon */
+#define XPBEACON_POLL_MAX_TIMEOUT 15 /* Maximum # of seconds we accept as timeout for X-Plane to send no beacon */
 
 /* allocation of global variables */
-pthread_t poll_thread;                /* read thread */
-int poll_thread_exit_code;            /* read thread exit code */
-pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
-int poll_timeout_counter;
+pthread_t xpbeacon_poll_thread;                /* read thread */
+int xpbeacon_poll_thread_exit_code;            /* read thread exit code */
+pthread_mutex_t xpbeacon_exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
+int xpbeacon_poll_timeout_counter;
 
 int xplanebeacon_verbose;
 
@@ -59,7 +59,7 @@ short unsigned int XPlaneBeaconPort;
 int XPlaneBeaconSocket;
 
 /* definition of prototype functions */
-void *poll_thread_main();
+void *xpbeacon_poll_thread_main();
 
 /* HOW TO TEST MULTICAST UDP RECEPTION FROM CMD LINE:
    iperf -s -u -B 239.255.1.1 -p 49707 -i 1
@@ -77,7 +77,7 @@ int initialize_beacon_client(int init_verbose)
   // initialize Beacon Info
   memset(XPlaneBeaconIP,0,sizeof(XPlaneBeaconIP));
   XPlaneBeaconPort = 0;
-  poll_timeout_counter = 0;
+  xpbeacon_poll_timeout_counter = 0;
 
   /* Create a UDP socket */
   if ((XPlaneBeaconSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
@@ -135,8 +135,8 @@ int initialize_beacon_client(int init_verbose)
     tv.tv_usec = 0;
     setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
    
-    poll_thread_exit_code = 0;
-    if (pthread_create(&poll_thread, NULL, &poll_thread_main, NULL)>0) {
+    xpbeacon_poll_thread_exit_code = 0;
+    if (pthread_create(&xpbeacon_poll_thread, NULL, &xpbeacon_poll_thread_main, NULL)>0) {
       printf("X-Plane Beacon Client Read Poll thread could not be created.\n");
       return -1;
     }
@@ -152,9 +152,9 @@ int initialize_beacon_client(int init_verbose)
 void exit_beacon_client(void)
 {
 
-  poll_thread_exit_code = 1;
+  xpbeacon_poll_thread_exit_code = 1;
   if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Joining Poll Thread\n");
-  pthread_join(poll_thread, NULL);
+  pthread_join(xpbeacon_poll_thread, NULL);
   if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Poll Thread Ended\n");
 
 #ifdef WIN
@@ -165,7 +165,7 @@ void exit_beacon_client(void)
 
 }
 
-void *poll_thread_main()
+void *xpbeacon_poll_thread_main()
 /* thread handles udp receive on the server socket by use of blocking read and a read buffer */
 {
 
@@ -188,7 +188,7 @@ void *poll_thread_main()
 
   if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Receive thread running \n");
 
-  while (!poll_thread_exit_code) {
+  while (!xpbeacon_poll_thread_exit_code) {
 
     /* read call goes here (1 s timeout for blocking operation) */
     ret = recvfrom(XPlaneBeaconSocket, buffer, bufferlen, 
@@ -196,15 +196,15 @@ void *poll_thread_main()
     if (ret == -1) {
       if ((errno == EWOULDBLOCK) || (errno == EINTR)) { /* just no data yet or our own timeout */
 	//printf("UDP Poll Timeout \n");
-	poll_timeout_counter += 1;
-	if ((poll_timeout_counter == POLL_MAX_TIMEOUT) && (XPlaneBeaconPort != 0)) {
-	  if (xplanebeacon_verbose > 0) printf("No X-Plane Beacon for %i seconds: Resetting X-Plane IP and listening ...\n",POLL_MAX_TIMEOUT);
+	xpbeacon_poll_timeout_counter += 1;
+	if ((xpbeacon_poll_timeout_counter == XPBEACON_POLL_MAX_TIMEOUT) && (XPlaneBeaconPort != 0)) {
+	  if (xplanebeacon_verbose > 0) printf("No X-Plane Beacon for %i seconds: Resetting X-Plane IP and listening ...\n",XPBEACON_POLL_MAX_TIMEOUT);
 	  memset(XPlaneBeaconIP,0,sizeof(XPlaneBeaconIP));
 	  XPlaneBeaconPort = 0;
 	}
       } else {
 	printf("X-Plane Beacon Client Receive Error %i \n",errno);
-	//poll_thread_exit_code = 1;
+	//xpbeacon_poll_thread_exit_code = 1;
 	//break;
       } 
     } else if (ret > 0) {
@@ -233,7 +233,7 @@ void *poll_thread_main()
 	/* we only want the IP of the master and of X-Plane */
 
 	if ((becn.application_host_id == 1) && (becn.role == 1)) {
-	  poll_timeout_counter = 0; /* reset timeout counter */
+	  xpbeacon_poll_timeout_counter = 0; /* reset timeout counter */
 	  
 	  strcpy(XPlaneBeaconIP,inet_ntoa(serverAddr.sin_addr));   /* Server IP address */
 	  XPlaneBeaconPort = ntohs(serverAddr.sin_port);     /* Server port */
