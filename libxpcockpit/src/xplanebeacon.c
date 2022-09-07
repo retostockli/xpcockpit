@@ -61,6 +61,10 @@ int XPlaneBeaconSocket;
 /* definition of prototype functions */
 void *poll_thread_main();
 
+/* HOW TO TEST MULTICAST UDP RECEPTION FROM CMD LINE:
+   iperf -s -u -B 239.255.1.1 -p 49707 -i 1
+*/
+
 /* set up udp socket with given server address and port */
 int initialize_beacon_client(int init_verbose)
 {
@@ -68,7 +72,8 @@ int initialize_beacon_client(int init_verbose)
   xplanebeacon_verbose = init_verbose;
   
   struct sockaddr_in clientAddr;     /* Client address structure */
-
+  struct ip_mreq mreq;
+  
   // initialize Beacon Info
   memset(XPlaneBeaconIP,0,sizeof(XPlaneBeaconIP));
   XPlaneBeaconPort = 0;
@@ -97,7 +102,19 @@ int initialize_beacon_client(int init_verbose)
       printf("X-Plane Beacon Client Bind failed\n");
       return -1;
     }
- 
+
+    /* construct an IGMP join request structure */
+    memset(&mreq, 0, sizeof(mreq));            /* Zero out structure */
+    mreq.imr_multiaddr.s_addr = inet_addr("239.255.1.1");
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+
+    /* send an ADD MEMBERSHIP message via setsockopt */
+    if ((setsockopt(XPlaneBeaconSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
+		    (void*) &mreq, sizeof(mreq))) < 0) {
+      printf("X-Plane Beacon Client Add to UDP Multicast Group failed");
+      return -1;
+    }
+    
    /* set to non-blocking (1) for direct read
        set to blocking (0) for asynchronous read */
     unsigned long nSetSocketType = 0;
