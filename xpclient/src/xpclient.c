@@ -38,9 +38,9 @@ int main (int argc,char **argv)
 {
   
   /* server settings */
-  XPlaneServerManual = 1;
+  XPlaneServerManual = 0;
   memset(XPlaneServerIP,0,sizeof(XPlaneServerIP));
-  strcpy(XPlaneServerIP,"127.0.0.1");
+  //strcpy(XPlaneServerIP,"127.0.0.1");
   XPlaneServerPort = 8091;
   memset(clientname,0,sizeof(clientname));
   strcpy(clientname,"xpclient");
