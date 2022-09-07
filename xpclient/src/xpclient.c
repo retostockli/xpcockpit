@@ -38,7 +38,6 @@ int main (int argc,char **argv)
 {
   
   /* server settings */
-  XPlaneServerManual = 0;
   memset(XPlaneServerIP,0,sizeof(XPlaneServerIP));
   //strcpy(XPlaneServerIP,"127.0.0.1");
   XPlaneServerPort = 8091;

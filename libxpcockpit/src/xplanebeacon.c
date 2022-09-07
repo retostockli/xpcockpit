@@ -116,7 +116,7 @@ int initialize_beacon_client(int init_verbose)
     }
     
    /* set to non-blocking (1) for direct read
-       set to blocking (0) for asynchronous read */
+      set to blocking (0) for asynchronous read */
     unsigned long nSetSocketType = 0;
 #ifdef WIN
     if (ioctlsocket(XPlaneBeaconSocket,FIONBIO,&nSetSocketType) < 0) {

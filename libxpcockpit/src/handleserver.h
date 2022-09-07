@@ -33,7 +33,6 @@
 /* Global variable declaration */
 extern char XPlaneServerIP[30];
 extern short unsigned int XPlaneServerPort;
-extern int XPlaneServerManual;
 
 /* TCP/IP PROTOTYPE FUNCTIONS */
 

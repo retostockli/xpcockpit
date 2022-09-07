@@ -97,7 +97,15 @@ int initialize_tcpip_client(int init_verbose)
 {
 
   handleserver_verbose = init_verbose;
-  
+
+  /* Check if we have a pre-defined X-Plane IP Address. If not, use X-Plane 
+     UDP Multicast Beacon to find the X-Plane server on our network */
+  if (strcmp(XPlaneServerIP,"")!=0) {
+    XPlaneServerManual = 1;
+  } else {
+    XPlaneServerManual = 0;
+  }
+   
   /* initialize network status */
   socketStatus = status_Init;
 
