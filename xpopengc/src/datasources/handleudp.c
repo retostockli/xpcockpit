@@ -104,7 +104,7 @@ int init_udp_server()
 int init_udp_client(void)
 {
   int ret = 0;
-
+  
   /* Create a UDP socket */
   if ((udpSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
     printf("HANDLEUDP: Cannot initialize client UDP socket \n");

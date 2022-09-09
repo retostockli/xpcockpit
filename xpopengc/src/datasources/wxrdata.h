@@ -30,6 +30,7 @@ extern int wxr_ncol;
 extern int wxr_nlin;
 
 extern int wxr_phase; /* 0: getting bounds, 1: getting data */
+extern int wxr_initialized; /* 0: not initialized, 1: initialized */
 
 extern unsigned char **wxr_data; /* storm level 0-100 */
 extern int **wxr_height; /* top height of storm feet a.s.l */
@@ -39,7 +40,7 @@ extern int wxr_firstsend; /* init string for type 2 WXR data reception was sent 
 
 /* prototype functions */
 
-void init_wxr(int type, char server_ip[]);
+void init_wxr(char server_ip[]);
 void write_wxr(void);
 void read_wxr(void);
 void exit_wxr(void);

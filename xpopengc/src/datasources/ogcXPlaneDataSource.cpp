@@ -73,8 +73,8 @@ void XPlaneDataSource::define_server(int port, string ip_address, int radardata)
   strncpy(XPlaneServerIP,ip_address.c_str(),ip_address.length()); 
   XPlaneServerPort = port;
 
-  /* initialize UDP interface to read WXR data */
-  init_wxr(radardata,XPlaneServerIP);
+  wxr_type = radardata;
+  wxr_initialized = 0;
  
 }
 
@@ -153,14 +153,17 @@ void XPlaneDataSource::OnIdle()
   /* send data to X-Plane via TCP/IP */
   if (send_xpserver()<0) exit(-11);
 
-  /* Send WXR Init String, but only once X-Plane is connected, 
-     and aircraft is loaded, else it will be going to nirvana */
-  if ((connected==1) && (GetAcfType() >= 0)) {
-    write_wxr();
-  }
+  /* WXR Data */
+  if (connected==1) {
+    /* initialize UDP interface to read WXR data */
+    init_wxr(XPlaneServerIP);
     
-  /* WXR Data Reading */
-  read_wxr();
+    /* Send WXR Init String */
+    write_wxr();
+    
+    /* WXR Data Reading */
+    read_wxr();
+  }
   
 } // end "OnIdle()"
 

@@ -62,6 +62,7 @@ int wxr_ncol;
 int wxr_nlin;
 
 int wxr_phase;
+int wxr_initialized;
 
 unsigned char **wxr_data;
 int **wxr_height;
@@ -71,65 +72,69 @@ int wxr_firstsend;
 
 /* Type 1: WXR data from X-Plane's Control Pad: we act as server */
 /* Type 2: WXR data from X-Plane's regular UDP stream: we act as client */
-void init_wxr(int type, char server_ip[]) {
+void init_wxr(char server_ip[]) {
 
-  int n, ret;
+  if (wxr_initialized == 0) {
+
+    if (strcmp(server_ip,"")!=0) {
   
-  wxr_type = type;
-  wxr_lonmin_tmp = WXR_MISS;
-  wxr_lonmax_tmp = WXR_MISS;
-  wxr_latmin_tmp = WXR_MISS;
-  wxr_latmax_tmp = WXR_MISS;
-  wxr_lonmin = WXR_MISS;
-  wxr_lonmax = WXR_MISS;
-  wxr_latmin = WXR_MISS;
-  wxr_latmax = WXR_MISS;
-  wxr_newdata = 0;
-  wxr_firstread = 0;
-  wxr_firstsend = 0;
+      int n, ret;
   
-  if (wxr_type == 1) {
-    /* initialize UDP socket if needed for WXR data from X-Plane*/
-    /* UDP Server Port (OpenGC acts as UDP server for X-Plane as control pad client) */
-    strcpy(udpServerIP, server_ip);
-    udpServerPort = 48003;
+      wxr_lonmin_tmp = WXR_MISS;
+      wxr_lonmax_tmp = WXR_MISS;
+      wxr_latmin_tmp = WXR_MISS;
+      wxr_latmax_tmp = WXR_MISS;
+      wxr_lonmin = WXR_MISS;
+      wxr_lonmax = WXR_MISS;
+      wxr_latmin = WXR_MISS;
+      wxr_latmax = WXR_MISS;
+      wxr_newdata = 0;
+      wxr_firstread = 0;
+      wxr_firstsend = 0;
+  
+      if (wxr_type == 1) {
+	/* initialize UDP socket if needed for WXR data from X-Plane*/
+	/* UDP Server Port (OpenGC acts as UDP server for X-Plane as control pad client) */
+	strcpy(udpServerIP, server_ip);
+	udpServerPort = 48003;
     
-    udpReadLeft=0;
-    int sendlen = 0; /* no sending */
-    int recvlen = 8100; // 'xRAD' plus '\0' (5 bytes) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0 = 81 bytes per message
-    allocate_udpdata(sendlen,recvlen);
+	udpReadLeft=0;
+	int sendlen = 0; /* no sending */
+	int recvlen = 8100; // 'xRAD' plus '\0' (5 bytes) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0 = 81 bytes per message
+	allocate_udpdata(sendlen,recvlen);
     
-    init_udp_server();
-    init_udp_receive();
+	init_udp_server();
+	init_udp_receive();
 
-    wxr_phase = 0;
+      }
 
-  }
-
-  if (wxr_type == 2) {
-    /* initialize UDP socket if needed for WXR data from X-Plane*/
-    /* UDP Server Port (X-Plane acts as Server, this here is the client) */
-    strcpy(udpServerIP, server_ip);
-    udpServerPort = 49000;
+      if (wxr_type == 2) {
+	/* initialize UDP socket if needed for WXR data from X-Plane*/
+	/* UDP Server Port (X-Plane acts as Server, this here is the client) */
+	strcpy(udpServerIP, server_ip);
+	udpServerPort = 49000;
  
-    if (MAXRADAR > 0) {
-      n = (int) log10(MAXRADAR) + 1; // number of characters of MAXRADAR number (converted to string)
-    } else {
-      n = 1;
-    }
+	if (MAXRADAR > 0) {
+	  n = (int) log10(MAXRADAR) + 1; // number of characters of MAXRADAR number (converted to string)
+	} else {
+	  n = 1;
+	}
   
-    int sendlen = 7+n;
-    int recvlen = (5+13*MAXRADAR)*100;
+	int sendlen = 7+n;
+	int recvlen = (5+13*MAXRADAR)*100;
 
-    allocate_udpdata(sendlen,recvlen);
+	allocate_udpdata(sendlen,recvlen);
 
-    init_udp_client();
-    init_udp_receive();
+	init_udp_client();
+	init_udp_receive();
 
-    wxr_phase = 0;
+      }
 
+      wxr_phase = 0;
+      wxr_initialized = 1;
+
+    }
   }
-
   
 }
 
@@ -137,7 +142,7 @@ void write_wxr() {
 
   int ret, n;
 
-  if ((wxr_type == 2) && (wxr_firstsend == 0)) {
+  if ((wxr_type == 2) && (wxr_firstsend == 0) && (wxr_initialized)) {
  
     if (MAXRADAR > 0) {
       n = (int) log10(MAXRADAR) + 1; // number of characters of MAXRADAR number (converted to string)
@@ -178,7 +183,7 @@ void read_wxr() {
   char *wxrBuffer;
   int wxrBufferLen;
   
-  if ((wxr_type == 1) || (wxr_type == 2)) {
+  if (((wxr_type == 1) || (wxr_type == 2)) && (wxr_initialized)) {
   
     if (wxr_type == 1) {
       wxrBufferLen = 81;
@@ -410,40 +415,46 @@ void read_wxr() {
 
 void exit_wxr() {
 
-  int i;
+  if (wxr_initialized) {
+  
+    int i;
 
-  /*
-  if (wxr_data) {
-    for (j = 0; j < wxr_nlin; j++)
+    /*
+      if (wxr_data) {
+      for (j = 0; j < wxr_nlin; j++)
       free(wxr_data[j]);
-    free(wxr_data);
-  }
+      free(wxr_data);
+      }
 
-  if (wxr_data_tmp) {
-    for (j = 0; j < wxr_nlin_tmp; j++)
+      if (wxr_data_tmp) {
+      for (j = 0; j < wxr_nlin_tmp; j++)
       free(wxr_data_tmp[j]);
-    free(wxr_data_tmp);
-  }
-  */
+      free(wxr_data_tmp);
+      }
+    */
 
-  if (wxr_type == 1) {
+    if (wxr_type == 1) {
       exit_udp_server();
       deallocate_udpdata();
-  }
+    }
   
-  if (wxr_type == 2) {
+    if (wxr_type == 2) {
 
-    /* generate send message to terminate UDP transfer */
-    sprintf(udpSendBuffer,"RADR %i",0);
-    udpSendBuffer[4]='\0';
-    udpSendBuffer[7]='\0';
+      /* generate send message to terminate UDP transfer */
+      sprintf(udpSendBuffer,"RADR %i",0);
+      udpSendBuffer[4]='\0';
+      udpSendBuffer[7]='\0';
     
-    int ret = send_udp_to_server();
-    printf("Sent UDP Exit String to X-Plane with Length: %i \n",ret);
+      int ret = send_udp_to_server();
+      printf("Sent UDP Exit String to X-Plane with Length: %i \n",ret);
 
-    exit_udp_client();
-    printf("UDP Client Exited\n");
-    deallocate_udpdata();
+      exit_udp_client();
+      printf("UDP Client Exited\n");
+      deallocate_udpdata();
+    }
+
+    wxr_initialized = 0;
+    
   }
   
 }
