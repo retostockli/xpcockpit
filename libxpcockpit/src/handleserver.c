@@ -47,7 +47,7 @@
 #include "serverdata.h"
 
 /* global defines */
-#define TCPBUFSIZE      1000000   /* how much memory (bytes) do we need at maximum for a single transmission */
+#define TCPBUFSIZE 1000000   /* how much memory (bytes) do we need at maximum for a single transmission */
 
 #define CHECK_INTERVAL 1.0 /* Check every x seconds for X-Plane xpserver plugin presence */ 
 
@@ -92,10 +92,10 @@ void ntohf (float *src, float *dst)
   return;
 }
 
-/* set up the tcp/ip interface with given server address and port */
+/* initialize this module */
 int initialize_tcpip_client(int init_verbose)
 {
-
+  
   handleserver_verbose = init_verbose;
 
   /* Check if we have a pre-defined X-Plane IP Address. If not, use X-Plane 
@@ -105,13 +105,19 @@ int initialize_tcpip_client(int init_verbose)
   } else {
     XPlaneServerManual = 0;
   }
-   
+  
+  return create_tcpip_socket();
+}
+
+/* set up the tcp/ip interface socket with given server address and port */
+int create_tcpip_socket(void)
+{
   /* initialize network status */
   socketStatus = status_Init;
-
+  
   /* get current time of day */
   gettimeofday(&connect_t1,NULL);
-
+  
 #ifdef WIN
   WSADATA wsaData;
   if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
@@ -119,7 +125,7 @@ int initialize_tcpip_client(int init_verbose)
     return -1;
   }
 #endif
-    
+  
   /* Create a reliable, stream socket using TCP */
   if ((clntSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
     printf("HANDLESERVER: Cannot initialize client TCP socket \n");
@@ -127,7 +133,7 @@ int initialize_tcpip_client(int init_verbose)
   } else {    
     
     if (handleserver_verbose > 1) printf("HANDLESERVER: Client Socket ready\n");
-
+    
     socketStatus = status_Ready;
   }
   
@@ -294,7 +300,7 @@ int check_xpserver(void)
 #else
 	    close(clntSock); 
 #endif
-	    if (initialize_tcpip_client(handleserver_verbose) < 0) {
+	    if (create_tcpip_socket() < 0) {
 	      if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
 	      ret = -43;
 	    }
@@ -319,7 +325,7 @@ int check_xpserver(void)
   } else {
     /* Re-initialize Socket if we're back to init state */
     if (socketStatus == status_Init) {
-      if (initialize_tcpip_client(handleserver_verbose) < 0) {
+      if (create_tcpip_socket() < 0) {
 	if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
 	ret = -43;
       }
@@ -397,7 +403,7 @@ int receive_xpserver(void) {
 		(errno == ENETDOWN)     || (errno == ENETRESET)    ||
 		(errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
 #endif
-	      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane disconnected with error from client socket. Error! \n");
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane disconnected without notice from client socket. Error! \n");
 	      socketStatus = status_Init;
 	      disconnected = 1;
 	      recv_left = 0;
@@ -751,7 +757,7 @@ int receive_xpserver(void) {
 #else
 	close(clntSock); 
 #endif
-	if (initialize_tcpip_client(handleserver_verbose) < 0) {
+	if (create_tcpip_socket() < 0) {
 	  if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
 	  recvMsgSize = -123;
 	}

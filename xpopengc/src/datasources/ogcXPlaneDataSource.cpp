@@ -83,8 +83,6 @@ XPlaneDataSource::XPlaneDataSource()
   
   printf("XPlaneDataSource constructed\n");
 
-  printf("Verbosity: %i\n",verbosity);
-
   /* initialize local dataref structure */
   if (initialize_dataref(verbosity) < 0) exit(-8);
  

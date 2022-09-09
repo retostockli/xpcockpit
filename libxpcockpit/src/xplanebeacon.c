@@ -43,7 +43,7 @@
 
 #include "xplanebeacon.h"
 
-#define XPBEACON_POLL_MAX_TIMEOUT 15 /* Maximum # of seconds we accept as timeout for X-Plane to send no beacon */
+#define XPBEACON_POLL_MAX_TIMEOUT 300 /* Maximum # of seconds we accept as timeout for X-Plane to send no beacon */
 
 /* allocation of global variables */
 pthread_t xpbeacon_poll_thread;                /* read thread */

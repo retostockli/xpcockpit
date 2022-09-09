@@ -38,6 +38,7 @@ extern short unsigned int XPlaneServerPort;
 
 /* Prototype functions for Network communication */
 int initialize_tcpip_client(int init_verbose);
+int create_tcpip_socket(void);
 void exit_tcpip_client(void);
 int check_xpserver(void);
 int send_xpserver(void);

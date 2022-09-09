@@ -45,7 +45,7 @@ int main (int argc,char **argv)
   strcpy(clientname,"xpclient");
 
   int verbose=1;  
-  int interval=500;  /* poll interval in milliseconds: set between 1-999 milliseconds
+  int interval=999;  /* poll interval in milliseconds: set between 1-999 milliseconds
 			 (>= 1000 ms will not work with some usleep implementations) */
 
   /* initialize handler for command-line interrupts (ctrl-c) */
