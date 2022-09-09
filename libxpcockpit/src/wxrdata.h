@@ -39,7 +39,6 @@ extern int wxr_firstread; /* first bits of data were read by this client */
 extern int wxr_firstsend; /* init string for type 2 WXR data reception was sent */
 
 /* prototype functions */
-
 void init_wxr(char server_ip[]);
 void write_wxr(void);
 void read_wxr(void);

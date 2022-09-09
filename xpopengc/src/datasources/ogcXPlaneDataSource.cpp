@@ -55,7 +55,9 @@ extern "C" {
 #include "handleserver.h"
 #include "xplanebeacon.h"
 #include "wxrdata.h"
+#include "check_aircraft.h"
 }
+
 
 extern int verbosity;
 int verbose;
@@ -93,7 +95,7 @@ XPlaneDataSource::XPlaneDataSource()
   if (initialize_tcpip_client(verbosity) < 0) exit(-8);
   
   // initialize with default ACF
-  SetAcfType(0);
+  SetAcfType(-1);
 
   verbose = verbosity;
   
@@ -130,31 +132,14 @@ void XPlaneDataSource::OnIdle()
   if (receive_xpserver()<0) exit(-10);
  
   /* determine Aircraft type based on Tail Number */
-  unsigned char *tailnum = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum",  40, -1);
-  if (tailnum) {
-    //printf("ACF_TAILNUM: %s \n",tailnum);
-    if (strcmp((const char*) tailnum,"ZB738")==0) {
-      SetAcfType(3); // ZIBO
-    } else if (strcmp((const char*) tailnum,"NN816N")==0) {
-      SetAcfType(2); // Laminar 737
-    } else if (strcmp((const char*) tailnum,"OY-GRL")==0) {
-      SetAcfType(1); // x737
-    } else if (strcmp((const char*) tailnum,"D-ATUC")==0) {
-      SetAcfType(1); // x737
-    } else if (strcmp((const char*) tailnum,"")==0) {
-      SetAcfType(-2); // No Tail Number (likely no ACF loaded)
-    } else {
-      SetAcfType(0); // other aircraft
-    } 
-  } else {
-    SetAcfType(-1); // failed to initialize tail number
-  }
-  
+  check_aircraft();
+  SetAcfType(acf_type);
+ 
   /* send data to X-Plane via TCP/IP */
   if (send_xpserver()<0) exit(-11);
 
   /* WXR Data */
-  if (connected==1) {
+  if ((connected==1) && (GetAcfType() >= 0)) {
     /* initialize UDP interface to read WXR data */
     init_wxr(XPlaneServerIP);
     
@@ -163,6 +148,10 @@ void XPlaneDataSource::OnIdle()
     
     /* WXR Data Reading */
     read_wxr();
+  } else {
+    /* cancel WXR udp transfer and data structure if X-Plane is connected
+       this is needed to re-initialize and re-send the init string with a new connection */
+    exit_wxr();
   }
   
 } // end "OnIdle()"

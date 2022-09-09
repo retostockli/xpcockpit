@@ -9,6 +9,14 @@ then
     echo "error in pulling git branch"
     exit 1
 fi
+cd libxpcockpit
+make 
+if [ $? != 0 ]
+then
+    echo "error in make libxpcockpit"
+    exit 2
+fi
+make install
 cd xpopengc
 make 
 if [ $? != 0 ]

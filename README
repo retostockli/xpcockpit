@@ -18,3 +18,15 @@ The project is aimed at the following crowd:
 - People with some programming exercise
 - Friends of good wine and cheese
 
+HOW TO START:
+- first compile and install the library libxpopencockpits
+- then compile and install ther x-plane plugin xpserver
+- then compile (and optionally install) any of the clients
+
+Information on compiling and installing those items are found in the respective subdirectories
+
+NEW: for existing users of xpcockpit: the library is a new thing. I've realized that a lot of
+the data handling code was replicated in each client, so I've packed everything in a library,
+which has to be compiled only once. The clients then all link to this library.
+
+

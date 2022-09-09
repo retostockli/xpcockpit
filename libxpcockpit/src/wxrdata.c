@@ -1,7 +1,7 @@
 /* This is the wxrdata.c code which decodes X-Plane Weather data sent by UDP protocol
    TODO: Elevation data in Type 2 data source not yet used
 
-   Copyright (C) 2009 - 2014  Reto Stockli
+   Copyright (C) 2009 - 2022 Reto Stockli
    Adaptation to Linux compilation by Hans Jansen
 
    This program is free software: you can redistribute it and/or modify it under the 
@@ -23,6 +23,7 @@
 #include <stdio.h>   
 #include <stdlib.h>  
 #include <sys/types.h>
+#include <sys/time.h>
 #include <stdbool.h>
 #include <unistd.h>   
 #include <string.h>
@@ -30,12 +31,14 @@
 #include <math.h>
 #include <pthread.h>
 
-#include "handleudp.h"
-#include "udpdata.h"
+#include "xplanewxr.h"
 #include "wxrdata.h"
 
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
+
+#define WXR_CHECK_INTERVAL 1.0
+
 
 float wxr_lonmin_tmp;
 float wxr_lonmax_tmp;
@@ -70,6 +73,9 @@ int wxr_newdata;
 int wxr_firstread;
 int wxr_firstsend;
 
+struct timeval wxr_t2;
+struct timeval wxr_t1;
+
 /* Type 1: WXR data from X-Plane's Control Pad: we act as server */
 /* Type 2: WXR data from X-Plane's regular UDP stream: we act as client */
 void init_wxr(char server_ip[]) {
@@ -95,24 +101,24 @@ void init_wxr(char server_ip[]) {
       if (wxr_type == 1) {
 	/* initialize UDP socket if needed for WXR data from X-Plane*/
 	/* UDP Server Port (OpenGC acts as UDP server for X-Plane as control pad client) */
-	strcpy(udpServerIP, server_ip);
-	udpServerPort = 48003;
+	strcpy(wxrServerIP, server_ip);
+	wxrServerPort = 48003;
     
-	udpReadLeft=0;
+	wxrReadLeft=0;
 	int sendlen = 0; /* no sending */
 	int recvlen = 8100; // 'xRAD' plus '\0' (5 bytes) plus 3 integers (12 bytes) plus 61 bytes of radar returns plus \0 = 81 bytes per message
-	allocate_udpdata(sendlen,recvlen);
+	allocate_wxrdata(sendlen,recvlen);
     
-	init_udp_server();
-	init_udp_receive();
+	init_wxr_server();
+	init_wxr_receive();
 
       }
 
       if (wxr_type == 2) {
 	/* initialize UDP socket if needed for WXR data from X-Plane*/
 	/* UDP Server Port (X-Plane acts as Server, this here is the client) */
-	strcpy(udpServerIP, server_ip);
-	udpServerPort = 49000;
+	strcpy(wxrServerIP, server_ip);
+	wxrServerPort = 49000;
  
 	if (MAXRADAR > 0) {
 	  n = (int) log10(MAXRADAR) + 1; // number of characters of MAXRADAR number (converted to string)
@@ -123,15 +129,18 @@ void init_wxr(char server_ip[]) {
 	int sendlen = 7+n;
 	int recvlen = (5+13*MAXRADAR)*100;
 
-	allocate_udpdata(sendlen,recvlen);
+	allocate_wxrdata(sendlen,recvlen);
 
-	init_udp_client();
-	init_udp_receive();
+	init_wxr_client();
+	init_wxr_receive();
 
       }
 
       wxr_phase = 0;
       wxr_initialized = 1;
+  
+      /* get current time of day */
+      gettimeofday(&wxr_t1,NULL);
 
     }
   }
@@ -142,6 +151,24 @@ void write_wxr() {
 
   int ret, n;
 
+  /* if we did not receive any WXR data for X seconds, send init string again */
+  if (wxr_firstread == 0) {
+  
+    /* get current time of day */
+    gettimeofday(&wxr_t2,NULL);
+    
+    float dt = ((wxr_t2.tv_sec - wxr_t1.tv_sec) + (wxr_t2.tv_usec - wxr_t1.tv_usec) / 1000000.0);
+    
+    if (dt > WXR_CHECK_INTERVAL) {
+      
+      /* new time reference for next call is current time */
+      wxr_t1.tv_sec = wxr_t2.tv_sec;
+      wxr_t1.tv_usec = wxr_t2.tv_usec;
+      
+      wxr_firstsend = 0;   
+    }
+  }
+  
   if ((wxr_type == 2) && (wxr_firstsend == 0) && (wxr_initialized)) {
  
     if (MAXRADAR > 0) {
@@ -151,12 +178,12 @@ void write_wxr() {
     }
  
     /* generate send message to initialize UDP transfer */
-    sprintf(udpSendBuffer,"RADR %i",MAXRADAR);
-    udpSendBuffer[4]='\0';
-    udpSendBuffer[6+n]='\0';
+    sprintf(wxrSendBuffer,"RADR %i",MAXRADAR);
+    wxrSendBuffer[4]='\0';
+    wxrSendBuffer[6+n]='\0';
 
-    ret = send_udp_to_server();
-    printf("Sent WXR Init UDP String to X-Plane with length: %i \n",ret);
+    ret = send_wxr_to_server();
+    printf("Sent WXR Init String to X-Plane with length: %i \n",ret);
 
     wxr_firstsend = 1;
     
@@ -195,23 +222,21 @@ void read_wxr() {
     }
     wxrBuffer=(char*) malloc(wxrBufferLen);
 	
-    while (udpReadLeft > 0) {
+    while (wxrReadLeft > 0) {
 
       if (wxr_firstread == 0) {
 	printf("This client is receiving WXR data from X-Plane!\n");
 	wxr_firstread = 1;
       }
       
-      //printf("%i \n ",udpReadLeft);
-      
-      pthread_mutex_lock(&exit_cond_lock);    
+      pthread_mutex_lock(&wxr_exit_cond_lock);    
       /* read from start of receive buffer */
-      memcpy(wxrBuffer,&udpRecvBuffer[0],wxrBufferLen);
+      memcpy(wxrBuffer,&wxrRecvBuffer[0],wxrBufferLen);
       /* shift remaining read buffer to the left */
-      memmove(&udpRecvBuffer[0],&udpRecvBuffer[wxrBufferLen],udpReadLeft-wxrBufferLen);    
+      memmove(&wxrRecvBuffer[0],&wxrRecvBuffer[wxrBufferLen],wxrReadLeft-wxrBufferLen);    
       /* decrease read buffer position and counter */
-      udpReadLeft -= wxrBufferLen;
-      pthread_mutex_unlock(&exit_cond_lock);
+      wxrReadLeft -= wxrBufferLen;
+      pthread_mutex_unlock(&wxr_exit_cond_lock);
 	
       for (r=0;r<nrad;r++) {
 	
@@ -434,23 +459,23 @@ void exit_wxr() {
     */
 
     if (wxr_type == 1) {
-      exit_udp_server();
-      deallocate_udpdata();
+      exit_wxr_server();
+      deallocate_wxrdata();
     }
   
     if (wxr_type == 2) {
 
       /* generate send message to terminate UDP transfer */
-      sprintf(udpSendBuffer,"RADR %i",0);
-      udpSendBuffer[4]='\0';
-      udpSendBuffer[7]='\0';
+      sprintf(wxrSendBuffer,"RADR %i",0);
+      wxrSendBuffer[4]='\0';
+      wxrSendBuffer[7]='\0';
     
-      int ret = send_udp_to_server();
-      printf("Sent UDP Exit String to X-Plane with Length: %i \n",ret);
+      int ret = send_wxr_to_server();
+      printf("Sent WXR Exit String to X-Plane with Length: %i \n",ret);
 
-      exit_udp_client();
-      printf("UDP Client Exited\n");
-      deallocate_udpdata();
+      exit_wxr_client();
+      printf("WXR Client Exited\n");
+      deallocate_wxrdata();
     }
 
     wxr_initialized = 0;

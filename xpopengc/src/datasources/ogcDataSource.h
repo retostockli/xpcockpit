@@ -23,16 +23,14 @@
 #ifndef ogcDataSource_h
 #define ogcDataSource_h
 
-// #include "ogcAirframeDataContainer.h"
 #include <string>
-
-extern "C" {
-#include "serverdata.h"
-#include "udpdata.h"
-}
 
 namespace OpenGC
 {
+
+extern "C" {
+#include "serverdata.h"
+}
 
 using namespace std;
 
