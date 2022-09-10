@@ -152,7 +152,9 @@ void write_wxr() {
   int ret, n;
 
   /* if we did not receive any WXR data for X seconds, send init string again */
+
   if (wxr_firstread == 0) {
+
   
     /* get current time of day */
     gettimeofday(&wxr_t2,NULL);
@@ -160,6 +162,8 @@ void write_wxr() {
     float dt = ((wxr_t2.tv_sec - wxr_t1.tv_sec) + (wxr_t2.tv_usec - wxr_t1.tv_usec) / 1000000.0);
     
     if (dt > WXR_CHECK_INTERVAL) {
+      
+      printf("%i %i %i \n",wxr_initialized,wxr_firstsend,wxr_firstread);
       
       /* new time reference for next call is current time */
       wxr_t1.tv_sec = wxr_t2.tv_sec;
