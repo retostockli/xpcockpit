@@ -20,6 +20,7 @@ then
     exit 2
 fi
 make install
+cd ..
 cd xpopengc
 autoreconf
 automake --add-missing
