@@ -37,7 +37,7 @@
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
 
-#define WXR_CHECK_INTERVAL 1.0
+#define WXR_CHECK_INTERVAL 30.0
 
 
 float wxr_lonmin_tmp;
@@ -84,7 +84,7 @@ void init_wxr(char server_ip[]) {
 
     if (strcmp(server_ip,"")!=0) {
   
-      int n, ret;
+      int n;
   
       wxr_lonmin_tmp = WXR_MISS;
       wxr_lonmax_tmp = WXR_MISS;
@@ -149,29 +149,56 @@ void init_wxr(char server_ip[]) {
 
 void write_wxr() {
 
-  int ret, n;
+  int ret, n, j;
 
   /* if we did not receive any WXR data for X seconds, send init string again */
 
-  if (wxr_firstread == 0) {
-
-  
+      
     /* get current time of day */
     gettimeofday(&wxr_t2,NULL);
-    
+
     float dt = ((wxr_t2.tv_sec - wxr_t1.tv_sec) + (wxr_t2.tv_usec - wxr_t1.tv_usec) / 1000000.0);
     
     if (dt > WXR_CHECK_INTERVAL) {
       
-      printf("%i %i %i \n",wxr_initialized,wxr_firstsend,wxr_firstread);
+      printf("We did receive WXR data for %i seconds, send init string to X-Plane\n",
+	     (int) WXR_CHECK_INTERVAL);
       
       /* new time reference for next call is current time */
+      /* will be reset if we successfully read WXR data from x-plane */
       wxr_t1.tv_sec = wxr_t2.tv_sec;
       wxr_t1.tv_usec = wxr_t2.tv_usec;
       
-      wxr_firstsend = 0;   
+      wxr_firstsend = 0;
+      
+      if (wxr_data_tmp != NULL) {
+	/* Remove Temporary WXR Array */
+	for (j = 0; j < wxr_nlin_tmp; j++) {
+	  free(wxr_data_tmp[j]);
+	}
+	free(wxr_data_tmp);
+	wxr_data_tmp = NULL;
+      }
+
+      if (wxr_height_tmp != NULL) {
+	/* Remove Temporary WXR Array */
+	for (j = 0; j < wxr_nlin_tmp; j++) {
+	  free(wxr_height_tmp[j]);
+	}
+	free(wxr_height_tmp);
+	wxr_height_tmp = NULL;
+      }
+ 	
+      /* prepare for new scanning of bounds */
+      wxr_lonmin_tmp = WXR_MISS;
+      wxr_lonmax_tmp = WXR_MISS;
+      wxr_latmin_tmp = WXR_MISS;
+      wxr_latmax_tmp = WXR_MISS;
+      
+      wxr_phase = 0;
+      wxr_newdata = 0;
+      
     }
-  }
   
   if ((wxr_type == 2) && (wxr_firstsend == 0) && (wxr_initialized)) {
  
@@ -190,6 +217,7 @@ void write_wxr() {
     printf("Sent WXR Init String to X-Plane with length: %i \n",ret);
 
     wxr_firstsend = 1;
+    wxr_firstread = 0;
     
   }
   
@@ -220,7 +248,6 @@ void read_wxr() {
       wxrBufferLen = 81;
       nrad = 1;
     } else {
-      char *wxrBuffer;
       wxrBufferLen = 5+13*MAXRADAR;
       nrad = MAXRADAR;
     }
@@ -228,6 +255,12 @@ void read_wxr() {
 	
     while (wxrReadLeft > 0) {
 
+      /* get current time of day */
+      /* update timer if we receive WXR data */
+      gettimeofday(&wxr_t1,NULL);
+      
+      // printf("%i \n",wxrReadLeft);
+      
       if (wxr_firstread == 0) {
 	printf("This client is receiving WXR data from X-Plane!\n");
 	wxr_firstread = 1;
@@ -333,15 +366,17 @@ void read_wxr() {
 	    printf("WXR Data reception complete \n");
 
 	    /* free WXR array and recreate it */
-	    if (wxr_data) {
+	    if (wxr_data != NULL) {
 	      for (j = 0; j < wxr_nlin; j++)
 		free(wxr_data[j]);
 	      free(wxr_data);
+	      wxr_data = NULL;
 	    }
-	    if (wxr_height) {
+	    if (wxr_height != NULL) {
 	      for (j = 0; j < wxr_nlin; j++)
 		free(wxr_height[j]);
 	      free(wxr_height);
+	      wxr_height = NULL;
 	    }
 	    
 	    wxr_pixperlon = WXR_UPSCALE * wxr_pixperlon_tmp;
@@ -384,7 +419,12 @@ void read_wxr() {
 	      free(wxr_data_tmp[j]);
 	      free(wxr_height_tmp[j]);
 	    }
+	    free(wxr_data_tmp);
 	    free(wxr_height_tmp);
+	    wxr_data_tmp = NULL;
+	    wxr_height_tmp = NULL;
+
+	    printf("Temporary WXR arrays deleted\n");
 	    
 	    /* prepare for new scanning of bounds */
 	    wxr_lonmin_tmp = WXR_MISS;
@@ -436,7 +476,8 @@ void read_wxr() {
       
     } /* read left ? */
     
-    free(wxrBuffer);     
+    free(wxrBuffer);
+    wxrBuffer = NULL;
 
   } /* Type 1 or Type 2 */
   
@@ -446,19 +487,20 @@ void exit_wxr() {
 
   if (wxr_initialized) {
   
-    int i;
 
     /*
-      if (wxr_data) {
+      if (wxr_data != NULL) {
       for (j = 0; j < wxr_nlin; j++)
       free(wxr_data[j]);
       free(wxr_data);
+      wxr_data = NULL;
       }
 
-      if (wxr_data_tmp) {
+      if (wxr_data_tmp != NULL) {
       for (j = 0; j < wxr_nlin_tmp; j++)
       free(wxr_data_tmp[j]);
       free(wxr_data_tmp);
+      wxr_data_tmp = NULL;
       }
     */
 
@@ -490,7 +532,7 @@ void exit_wxr() {
 
 void nearest_uchar(unsigned char **data, unsigned char **newData, int width, int height, int newWidth, int newHeight)
 {
-  int i,j,k;
+  int i,j;
   int x,y;
   //  unsigned char cc;
   float tx = (float)(width-1) / newWidth;
@@ -507,7 +549,7 @@ void nearest_uchar(unsigned char **data, unsigned char **newData, int width, int
 
 void nearest_int(int **data, int **newData, int width, int height, int newWidth, int newHeight)
 {
-  int i,j,k;
+  int i,j;
   int x,y;
   //  int cc;
   float tx = (float)(width-1) / newWidth;

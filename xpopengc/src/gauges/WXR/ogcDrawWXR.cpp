@@ -113,7 +113,8 @@ namespace OpenGC
 	  printf("Plotting New WXR Data in NAV Display\n");
 	  m_wxr_ncol = wxr_ncol;
 	  m_wxr_nlin = wxr_nlin;
-	  if (wxr_image) free(wxr_image);	    
+	  if (wxr_image) free(wxr_image);
+	  wxr_image = NULL;
 	  wxr_image = (unsigned char*)malloc(m_wxr_nlin * m_wxr_ncol * 4 * sizeof(unsigned char));
 
 	  float gain = *wxr_gain;

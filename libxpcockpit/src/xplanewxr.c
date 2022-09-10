@@ -239,7 +239,7 @@ void *wxr_poll_thread_main()
   while (!wxr_poll_thread_exit_code) {
 
     /* read call goes here (1 s timeout for blocking operation) */
-    int addrlen = sizeof(wxrAddr);
+    socklen_t addrlen = sizeof(wxrAddr);
     ret = recvfrom(wxrSocket, buffer, wxrRecvBufferLen, 
            0, (struct sockaddr *) &wxrAddr, &addrlen);
     //ret = recv(wxrSocket, buffer, wxrRecvBufferLen, 0);
@@ -379,7 +379,9 @@ void allocate_wxrdata(int sendlen, int recvlen) {
 
 void deallocate_wxrdata() {
   free(wxrSendBuffer);
+  wxrSendBuffer=NULL;
   free(wxrRecvBuffer);
+  wxrRecvBuffer=NULL;
 }
 
 

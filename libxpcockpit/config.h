@@ -2,7 +2,7 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Debug Mode */
-/* #undef DEBUG */
+#define DEBUG /**/
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #define HAVE_ARPA_INET_H 1
@@ -104,7 +104,7 @@
 /* #undef MAC */
 
 /* No-debug Mode */
-#define NDEBUG /**/
+/* #undef NDEBUG */
 
 /* Name of package */
 #define PACKAGE "xpserver"

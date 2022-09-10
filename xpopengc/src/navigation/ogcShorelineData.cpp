@@ -40,19 +40,24 @@ namespace OpenGC
   {
     int i;
     if (num_shorelinepoints) free(num_shorelinepoints);
+    num_shorelinepoints = NULL;
     if (shoreline_centerlon) free(shoreline_centerlon);
+    shoreline_centerlon = NULL;
     if (shoreline_centerlat) free(shoreline_centerlat);
+    shoreline_centerlat = NULL;
     if (shoreline_lon) {
       for (i=0;i<num_shorelines;i++) {
 	free(shoreline_lon[i]);
       }
       free(shoreline_lon);
+      shoreline_lon = NULL;
     }
     if (shoreline_lat) {
       for (i=0;i<num_shorelines;i++) {
 	free(shoreline_lat[i]);
       }
       free(shoreline_lat);
+      shoreline_lat = NULL;
     }
       
   }

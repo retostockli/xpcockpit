@@ -175,10 +175,12 @@ namespace OpenGC
 	  if (dem_lon) {
 	    for (j = 0; j < dem_nlin; j++) free(dem_lon[j]);
 	    free(dem_lon);
+	    dem_lon = NULL;
 	  }
 	  if (dem_lat) {
 	    for (j = 0; j < dem_nlin; j++) free(dem_lat[j]);
 	    free(dem_lat);
+	    dem_lat = NULL;
 	  }
 	  
 	  dem_lonmin = m_dem_lonmin;

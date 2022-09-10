@@ -61,10 +61,15 @@ namespace OpenGC
       for (j = 0; j < m_pplat; j++)
 	free(dem_data_1deg[j]);
     }
+    free(dem_data_1deg);
+    dem_data_1deg = NULL;
+    
     if (dem_data) {
       for (j = 0; j < m_nlin; j++)
 	free(dem_data[j]);
     }
+    free(dem_data);
+    dem_data = NULL;
   }
 
   bool
@@ -262,6 +267,7 @@ namespace OpenGC
 	free(dem_data[j]);
       }
       free(dem_data);
+      dem_data = NULL;
     } else {
       exists = false;
     }
@@ -307,6 +313,7 @@ namespace OpenGC
 	free(tmp_data[j]);
       }
       free(tmp_data);
+      tmp_data = NULL;
     }
 
     m_lonmin = lonmin;

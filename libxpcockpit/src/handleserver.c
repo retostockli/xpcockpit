@@ -554,6 +554,7 @@ int receive_xpserver(void) {
 			}
 		      }
 		      free(datavf);
+		      datavf=NULL;
 		    } else {
 		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset, serverdata[offset].datarefname);
@@ -590,6 +591,7 @@ int receive_xpserver(void) {
 			}
 		      }
 		      free(datavi);
+		      datavf=NULL;
 		    } else {
 		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset, serverdata[offset].datarefname);
@@ -622,6 +624,7 @@ int receive_xpserver(void) {
 			}
 		      }
 		      free(datab);
+		      datab=NULL;
 		    } else {
 		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
 					      offset, serverdata[offset].datarefname );
