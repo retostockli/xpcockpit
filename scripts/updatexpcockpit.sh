@@ -10,6 +10,9 @@ then
     exit 1
 fi
 cd libxpcockpit
+autoreconf
+automake --add-missing
+./configure
 make 
 if [ $? != 0 ]
 then
@@ -18,6 +21,9 @@ then
 fi
 make install
 cd xpopengc
+autoreconf
+automake --add-missing
+./configure
 make 
 if [ $? != 0 ]
 then
@@ -32,6 +38,9 @@ then
 fi
 cd ..
 cd xppi
+autoreconf
+automake --add-missing
+./configure
 make
 if [ $? != 0 ]
 then
