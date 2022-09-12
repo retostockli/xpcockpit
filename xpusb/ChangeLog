@@ -1,6 +1,12 @@
-2020/05/03 Reto Stockli and Hans Jansen
+2022/09/12 Reto Stockli and Hans Jansen
 
 This file documents changes since USBIOCARDS Version 0.1
+
+Version 0.80
+------------
+- autodetect X-Plane IP address
+- outsourced all server/client and dictionary functions to common
+  library libxpcockpit which is now linked
 
 Version 0.70
 ------------

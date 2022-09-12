@@ -15,6 +15,8 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#include "check_aircraft.h"
+
 #ifdef PIGPIO
 #include <pigpio.h>
 #else
@@ -27,13 +29,5 @@
 
 /* verbosity of xpsismo (0-4) */
 extern int verbose;
-
-extern int acf_type; /* aircraft type: 
-                -1: undefined (acf info not yet received)
-		 0: any X-Plane aircraft
-		 1: x737 by Benedikt Stratmann
-		 2: Laminar B737-800
-		 3: ZIBO MOD of Laminar B737-800
-	      */
 
 extern int is_copilot; /* 0: Captain, 1: Copilot */

@@ -101,9 +101,8 @@ int ini_read(char* programPath, char* iniName)
     strncpy(clientname,iniparser_getstring(ini,"xpserver:Name", ""),sizeof(clientname));
     if (! strcmp(clientname,"")) strncpy(clientname,PACKAGE_NAME,sizeof(clientname));
     printf("XPSERVER Client name: %s\n", clientname);
-    strcpy(server_ip,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
-    server_port = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
-    printf("XPSERVER Address %s Port %i \n",server_ip, server_port);
+    strcpy(XPlaneServerIP,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
+    XPServerPort = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
     is_copilot = iniparser_getint(ini,"panel:copilot", default_copilot);
     printf("Hardware runs for Copilot: %i \n",is_copilot);
 
@@ -164,7 +163,10 @@ void exit_pi(int ret)
 {
 
   /* cancel tcp/ip connection */
-  exit_tcpip();
+  exit_tcpip_client();
+
+  /* cancel beacon client */
+  exit_beacon_client();
 
   /* free local dataref structure */
   clear_dataref();

@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpusb], [0.70], [Reto Stockli])
-AC_CONFIG_SRCDIR([src/dictionary.c])
+AC_INIT([xpusb], [0.80], [Reto Stockli])
+AC_CONFIG_SRCDIR([src/xpusb.c])
 
 # produce makefiles (turn on warnings on automake!)
 AM_INIT_AUTOMAKE([-Wall])
@@ -43,6 +43,28 @@ AM_CONDITIONAL([OS_LINUX], [test "x$os" = xlin])
 AM_CONDITIONAL([OS_DARWIN], [test "x$os" = xmac])
 AM_CONDITIONAL([OS_WINDOWS], [test "x$os" = xwin])
 
+# Debug compilation support
+AC_MSG_CHECKING([whether to build with debug information])
+AC_ARG_ENABLE([debug],
+    [AS_HELP_STRING([--enable-debug],
+        [enable debug data generation (default=no)])],
+    [HAVE_DEBUG="$enableval"],
+    [HAVE_DEBUG=no])
+AC_MSG_RESULT([$HAVE_DEBUG])
+
+if test "x$HAVE_DEBUG" = xyes; then
+    AC_DEFINE([DEBUG],[],[Debug Mode])
+# DEBUGGGING WITH LEAK CHECK AND OUT OF BOUNDS CHECK
+#    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address"
+# REGULAR DEBUGGING FOR GDB
+    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized"
+# DEBUGING WITH GPROF SYMBOLS
+#    CFLAGS="$CFLAGS -g -pg -Wall"
+else
+    AC_DEFINE([NDEBUG],[],[No-debug Mode])
+    CFLAGS="$CFLAGS -O2"
+fi
+
 # Checks for libraries.
 AC_MSG_CHECKING([whether a location for the libusb-1.0 library was specified])
 AC_ARG_WITH([libusb],
@@ -80,33 +102,15 @@ if test "x$os" = xlin; then
     AC_CHECK_LIB(rt,clock_gettime,,AC_MSG_ERROR([Could not find the rt library]))
 fi
 AC_CHECK_LIB(m,main,,AC_MSG_ERROR([Could not find the math library]))
+if test "x$os" = xwin; then
+    AC_CHECK_LIB([ws2_32],[socket])
+fi
+
+# do not allow multiple definitions
+CFLAGS="$CFLAGS -fno-common"
 
 # Enable Threading support
 CFLAGS="$CFLAGS -pthread"
-
-# Debug compilation support
-AC_MSG_CHECKING([whether to build with debug information])
-AC_ARG_ENABLE([debug],
-    [AS_HELP_STRING([--enable-debug],
-        [enable debug data generation (default=no)])],
-    [HAVE_DEBUG="$enableval"],
-    [HAVE_DEBUG=no])
-AC_MSG_RESULT([$HAVE_DEBUG])
-
-if test "x$HAVE_DEBUG" = xyes; then
-    AC_DEFINE([DEBUG],[],[Debug Mode])
-# DEBUGGGING WITH LEAK CHECK AND OUT OF BOUNDS CHECK
-#    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address"
-# REGULAR DEBUGGING FOR GDB
-    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized"
-# DEBUGING WITH GPROF SYMBOLS
-#    CFLAGS="$CFLAGS -g -pg -Wall"
-else
-    AC_DEFINE([NDEBUG],[],[No-debug Mode])
-    CFLAGS="$CFLAGS -O2"
-fi
-
-CFLAGS="$CFLAGS -fno-common"
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
@@ -123,8 +127,41 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
 # Checks for library functions.
-# AC_FUNC_MALLOC
+AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol malloc])
+AC_CHECK_LIB([m],[roundf])
+if test "x$os" = xwin; then
+    AC_CHECK_LIB([ws2_32],[socket])
+fi
+
+HAVE_LIBXPCOCKPIT=yes
+AC_MSG_CHECKING([whether a location for the xpcockpit library was specified])
+AC_ARG_WITH([libxpcockpit],
+[AS_HELP_STRING([--with-libxpcockpit=<directory>],
+                [Specify location the xpcockpit library. Configure will expect
+to find headers in <directory>/include and libraries in <directory>/lib.])]
+,
+                [LIBXPCOCKPITDIR=$with_libxpcockpit])
+if test -z "$LIBXPCOCKPITDIR" ; then
+    AC_MSG_RESULT([no])
+    LIBS="$LIBS -L$ac_pwd/../libxpcockpit/lib"
+    CPPFLAGS="$CPPFLAGS -I$ac_pwd/../libxpcockpit/include"
+else
+    AC_MSG_RESULT([$LIBXPCOCKPITDIR])
+    LIBS="$LIBS -L$LIBXPCOCKPITDIR/lib"
+    CPPFLAGS="$CPPFLAGS -I$LIBXPCOCKPITDIR/include"
+fi
+
+AC_CHECK_HEADER([xplanebeacon.h],,unset HAVE_LIBXPCOCKPIT)
+AC_CHECK_LIB([xpcockpit],[initialize_beacon_client],,unset HAVE_LIBXPCOCKPIT)
+
+if test -z "$HAVE_LIBXPCOCKPIT"; then
+    AC_MSG_ERROR([Can't find xpcockpit library, or can't link a program to it.
+    Please compile (make) and install (make install) the library in the xpcockpit 
+    subdirectory libxpcockpit.
+    In case you have installed it in a custom location, use:
+    --with-libxpcockpit=<directory> to specify a custom installation directory.])
+fi
 
 
 # set installation prefix to current directory if none was given

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpsismo], [0.21], [Reto Stockli])
+AC_INIT([xpsismo], [0.30], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/xpsismo.c])
 
 # produce makefiles (turn on warnings on automake!)

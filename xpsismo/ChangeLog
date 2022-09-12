@@ -1,0 +1,12 @@
+2022/09/12 Reto Stockli
+
+Version 0.30
+------------
+- outsourced all server/client and dictionary functions to common
+  library libxpcockpit which is now linked
+
+Initial Versions
+----------------
+
+Not documented changes.
+

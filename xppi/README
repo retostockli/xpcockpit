@@ -1,0 +1,30 @@
+NEW: Autodetect X-Plane IP Address. Just put empty IP Address in ini file
+
+--------------------------------------------------------------------
+NEW: First configure, make and make install the library libxpcockpit
+
+cd ../libxpcockpit
+
+If you cloned from git first run these in order to populate all needed automake/autoconf files:
+autoreconf
+automake --add-missing
+autoreconf
+
+Then type:
+./configure
+make
+make install
+
+Then jump back to this directory here.
+--------------------------------------------------------------------
+
+If you cloned from git first run these in order to populate all needed automake/autoconf files:
+autoreconf
+automake --add-missing
+autoreconf
+
+Then type:
+./configure
+make
+cd src
+./xppi test

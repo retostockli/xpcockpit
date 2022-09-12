@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xppi], [0.01], [Reto Stockli])
+AC_INIT([xppi], [0.20], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/xppi.c])
 
 # produce makefiles (turn on warnings on automake!)
@@ -70,6 +70,8 @@ if test "x$HAVE_PIGPIO" = xno; then
     fi
 fi
 
+# do not allow multiple definitions
+CFLAGS="$CFLAGS -fno-common"
 
 # Enable Threading support
 CFLAGS="$CFLAGS -pthread"
@@ -88,6 +90,35 @@ AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol])
 AC_CHECK_LIB([m],[roundf])
 AC_CHECK_LIB([rt],[clock_gettime])
+
+HAVE_LIBXPCOCKPIT=yes
+AC_MSG_CHECKING([whether a location for the xpcockpit library was specified])
+AC_ARG_WITH([libxpcockpit],
+[AS_HELP_STRING([--with-libxpcockpit=<directory>],
+                [Specify location the xpcockpit library. Configure will expect
+to find headers in <directory>/include and libraries in <directory>/lib.])]
+,
+                [LIBXPCOCKPITDIR=$with_libxpcockpit])
+if test -z "$LIBXPCOCKPITDIR" ; then
+    AC_MSG_RESULT([no])
+    LIBS="$LIBS -L$ac_pwd/../libxpcockpit/lib"
+    CPPFLAGS="$CPPFLAGS -I$ac_pwd/../libxpcockpit/include"
+else
+    AC_MSG_RESULT([$LIBXPCOCKPITDIR])
+    LIBS="$LIBS -L$LIBXPCOCKPITDIR/lib"
+    CPPFLAGS="$CPPFLAGS -I$LIBXPCOCKPITDIR/include"
+fi
+
+AC_CHECK_HEADER([xplanebeacon.h],,unset HAVE_LIBXPCOCKPIT)
+AC_CHECK_LIB([xpcockpit],[initialize_beacon_client],,unset HAVE_LIBXPCOCKPIT)
+
+if test -z "$HAVE_LIBXPCOCKPIT"; then
+    AC_MSG_ERROR([Can't find xpcockpit library, or can't link a program to it.
+    Please compile (make) and install (make install) the library in the xpcockpit 
+    subdirectory libxpcockpit.
+    In case you have installed it in a custom location, use:
+    --with-libxpcockpit=<directory> to specify a custom installation directory.])
+fi
 
 # set installation prefix to current directory if none was given
 if test "x$prefix" = xNONE; then

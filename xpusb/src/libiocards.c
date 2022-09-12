@@ -76,7 +76,7 @@ int read_ini(char* programPath, char* iniName)
   char cwd[200];
   char *pch;
 
-  char default_server_ip[] = "127.0.0.1";
+  char default_server_ip[] = "";
   int default_server_port = 8091;	// port 8090 traditionally used by other SIOC plugins, like uipcx!
   int default_verbose = 0;
 
@@ -98,7 +98,7 @@ int read_ini(char* programPath, char* iniName)
   int default_nservos = 0;
   int default_status = -1;
 
-  memset(server_ip,0,sizeof(server_ip));
+  memset(XPlaneServerIP,0,sizeof(XPlaneServerIP));
 
   /* check if we are in the source code directory or in the binary installation path */
   if (strncmp("/",programPath,1)==0) {
@@ -138,11 +138,10 @@ int read_ini(char* programPath, char* iniName)
 
   if (ini != NULL) {
 
-    strcpy(server_ip,iniparser_getstring(ini,"network:Server Address", default_server_ip));
-    server_port = iniparser_getint(ini,"network:Server Port", default_server_port);
+    strcpy(XPlaneServerIP,iniparser_getstring(ini,"network:Server Address", default_server_ip));
+    XPlaneServerPort = iniparser_getint(ini,"network:Server Port", default_server_port);
 
     verbose = iniparser_getint(ini,"general:verbose", default_verbose);
-    printf("X-Plane Server Plugin Address:Port is %s:%i \n",server_ip, server_port);
     
     /* Set up the client name for the server */
     strncpy(clientname,iniparser_getstring(ini,"general:Name", ""),sizeof(clientname));

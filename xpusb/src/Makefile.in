@@ -112,26 +112,22 @@ am_hidls_OBJECTS = $(am__objects_1) hidls.$(OBJEXT)
 hidls_OBJECTS = $(am_hidls_OBJECTS)
 hidls_LDADD = $(LDADD)
 am__xpusb_SOURCES_DIST = hid_darwin.c hid_linux.c hid_windows.c \
-	common.c xpusb.c libiocards.c serverdata.c handleserver.c \
-	libusb_interface.c hidapi_interface.c dictionary.c iniparser.c \
-	iocard_test.c usbkeys_test.c usbservos_test.c \
-	dcmotorsplus_test.c bu0836_test.c check_aircraft.c b737_mcp.c \
+	common.c xpusb.c libiocards.c libusb_interface.c \
+	hidapi_interface.c iocard_test.c usbkeys_test.c \
+	usbservos_test.c dcmotorsplus_test.c bu0836_test.c b737_mcp.c \
 	b737_pedestal.c b737_throttle.c b737_efis.c b737_yokerudder.c \
 	b737_overhead_fwd.c a320_overhead.c a320_chrono.c \
 	a320_mcdu_keys.c a320_pedestal_mip.c
 am_xpusb_OBJECTS = $(am__objects_1) common.$(OBJEXT) xpusb.$(OBJEXT) \
-	libiocards.$(OBJEXT) serverdata.$(OBJEXT) \
-	handleserver.$(OBJEXT) libusb_interface.$(OBJEXT) \
-	hidapi_interface.$(OBJEXT) dictionary.$(OBJEXT) \
-	iniparser.$(OBJEXT) iocard_test.$(OBJEXT) \
+	libiocards.$(OBJEXT) libusb_interface.$(OBJEXT) \
+	hidapi_interface.$(OBJEXT) iocard_test.$(OBJEXT) \
 	usbkeys_test.$(OBJEXT) usbservos_test.$(OBJEXT) \
 	dcmotorsplus_test.$(OBJEXT) bu0836_test.$(OBJEXT) \
-	check_aircraft.$(OBJEXT) b737_mcp.$(OBJEXT) \
-	b737_pedestal.$(OBJEXT) b737_throttle.$(OBJEXT) \
-	b737_efis.$(OBJEXT) b737_yokerudder.$(OBJEXT) \
-	b737_overhead_fwd.$(OBJEXT) a320_overhead.$(OBJEXT) \
-	a320_chrono.$(OBJEXT) a320_mcdu_keys.$(OBJEXT) \
-	a320_pedestal_mip.$(OBJEXT)
+	b737_mcp.$(OBJEXT) b737_pedestal.$(OBJEXT) \
+	b737_throttle.$(OBJEXT) b737_efis.$(OBJEXT) \
+	b737_yokerudder.$(OBJEXT) b737_overhead_fwd.$(OBJEXT) \
+	a320_overhead.$(OBJEXT) a320_chrono.$(OBJEXT) \
+	a320_mcdu_keys.$(OBJEXT) a320_pedestal_mip.$(OBJEXT)
 xpusb_OBJECTS = $(am_xpusb_OBJECTS)
 xpusb_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -155,15 +151,13 @@ am__depfiles_remade = ./$(DEPDIR)/a320_chrono.Po \
 	./$(DEPDIR)/b737_mcp.Po ./$(DEPDIR)/b737_overhead_fwd.Po \
 	./$(DEPDIR)/b737_pedestal.Po ./$(DEPDIR)/b737_throttle.Po \
 	./$(DEPDIR)/b737_yokerudder.Po ./$(DEPDIR)/bu0836_test.Po \
-	./$(DEPDIR)/check_aircraft.Po ./$(DEPDIR)/common.Po \
-	./$(DEPDIR)/dcmotorsplus_test.Po ./$(DEPDIR)/dictionary.Po \
-	./$(DEPDIR)/handleserver.Po ./$(DEPDIR)/hid_darwin.Po \
-	./$(DEPDIR)/hid_linux.Po ./$(DEPDIR)/hid_windows.Po \
-	./$(DEPDIR)/hidapi_interface.Po ./$(DEPDIR)/hidls.Po \
-	./$(DEPDIR)/iniparser.Po ./$(DEPDIR)/iocard_test.Po \
+	./$(DEPDIR)/common.Po ./$(DEPDIR)/dcmotorsplus_test.Po \
+	./$(DEPDIR)/hid_darwin.Po ./$(DEPDIR)/hid_linux.Po \
+	./$(DEPDIR)/hid_windows.Po ./$(DEPDIR)/hidapi_interface.Po \
+	./$(DEPDIR)/hidls.Po ./$(DEPDIR)/iocard_test.Po \
 	./$(DEPDIR)/libiocards.Po ./$(DEPDIR)/libusb_interface.Po \
-	./$(DEPDIR)/serverdata.Po ./$(DEPDIR)/usbkeys_test.Po \
-	./$(DEPDIR)/usbservos_test.Po ./$(DEPDIR)/xpusb.Po
+	./$(DEPDIR)/usbkeys_test.Po ./$(DEPDIR)/usbservos_test.Po \
+	./$(DEPDIR)/xpusb.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -311,18 +305,13 @@ xpusb_SOURCES = $(OS_SRC) \
 common.c \
 xpusb.c \
 libiocards.c \
-serverdata.c \
-handleserver.c \
 libusb_interface.c \
 hidapi_interface.c \
-dictionary.c \
-iniparser.c \
 iocard_test.c \
 usbkeys_test.c \
 usbservos_test.c \
 dcmotorsplus_test.c \
 bu0836_test.c \
-check_aircraft.c \
 b737_mcp.c \
 b737_pedestal.c \
 b737_throttle.c \
@@ -340,20 +329,15 @@ hidls_SOURCES = $(OS_SRC) hidls.c
 noinst_HEADERS = \
 common.h \
 hidapi.h \
-dictionary.h \
-iniparser.h \
 xpusb.h \
 libiocards.h \
-serverdata.h \
 libusb_interface.h \
 hidapi_interface.h \
-handleserver.h \
 iocard_test.h \
 usbkeys_test.h \
 usbservos_test.h \
 dcmotorsplus_test.h \
 bu0836_test.h \
-check_aircraft.h \
 b737_mcp.h \
 b737_pedestal.h \
 b737_throttle.h \
@@ -466,21 +450,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/b737_throttle.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/b737_yokerudder.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bu0836_test.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_aircraft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dcmotorsplus_test.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dictionary.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/handleserver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hid_darwin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hid_linux.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hid_windows.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hidapi_interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hidls.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iniparser.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iocard_test.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libiocards.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libusb_interface.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/serverdata.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usbkeys_test.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/usbservos_test.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xpusb.Po@am__quote@ # am--include-marker
@@ -643,21 +622,16 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/b737_throttle.Po
 	-rm -f ./$(DEPDIR)/b737_yokerudder.Po
 	-rm -f ./$(DEPDIR)/bu0836_test.Po
-	-rm -f ./$(DEPDIR)/check_aircraft.Po
 	-rm -f ./$(DEPDIR)/common.Po
 	-rm -f ./$(DEPDIR)/dcmotorsplus_test.Po
-	-rm -f ./$(DEPDIR)/dictionary.Po
-	-rm -f ./$(DEPDIR)/handleserver.Po
 	-rm -f ./$(DEPDIR)/hid_darwin.Po
 	-rm -f ./$(DEPDIR)/hid_linux.Po
 	-rm -f ./$(DEPDIR)/hid_windows.Po
 	-rm -f ./$(DEPDIR)/hidapi_interface.Po
 	-rm -f ./$(DEPDIR)/hidls.Po
-	-rm -f ./$(DEPDIR)/iniparser.Po
 	-rm -f ./$(DEPDIR)/iocard_test.Po
 	-rm -f ./$(DEPDIR)/libiocards.Po
 	-rm -f ./$(DEPDIR)/libusb_interface.Po
-	-rm -f ./$(DEPDIR)/serverdata.Po
 	-rm -f ./$(DEPDIR)/usbkeys_test.Po
 	-rm -f ./$(DEPDIR)/usbservos_test.Po
 	-rm -f ./$(DEPDIR)/xpusb.Po
@@ -717,21 +691,16 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/b737_throttle.Po
 	-rm -f ./$(DEPDIR)/b737_yokerudder.Po
 	-rm -f ./$(DEPDIR)/bu0836_test.Po
-	-rm -f ./$(DEPDIR)/check_aircraft.Po
 	-rm -f ./$(DEPDIR)/common.Po
 	-rm -f ./$(DEPDIR)/dcmotorsplus_test.Po
-	-rm -f ./$(DEPDIR)/dictionary.Po
-	-rm -f ./$(DEPDIR)/handleserver.Po
 	-rm -f ./$(DEPDIR)/hid_darwin.Po
 	-rm -f ./$(DEPDIR)/hid_linux.Po
 	-rm -f ./$(DEPDIR)/hid_windows.Po
 	-rm -f ./$(DEPDIR)/hidapi_interface.Po
 	-rm -f ./$(DEPDIR)/hidls.Po
-	-rm -f ./$(DEPDIR)/iniparser.Po
 	-rm -f ./$(DEPDIR)/iocard_test.Po
 	-rm -f ./$(DEPDIR)/libiocards.Po
 	-rm -f ./$(DEPDIR)/libusb_interface.Po
-	-rm -f ./$(DEPDIR)/serverdata.Po
 	-rm -f ./$(DEPDIR)/usbkeys_test.Po
 	-rm -f ./$(DEPDIR)/usbservos_test.Po
 	-rm -f ./$(DEPDIR)/xpusb.Po

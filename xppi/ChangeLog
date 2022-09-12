@@ -1,1 +1,10 @@
+2022/09/12 Reto Stockli
+
+Version 0.20
+------------
+- autodetect X-Plane IP
+- outsourced all common functions of xpcockpit clients to library
+
+Version 0.10
+------------
 - Changed from WiringPi Numbering to GPIO / BCM Numbering

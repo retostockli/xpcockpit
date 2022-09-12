@@ -39,13 +39,12 @@
 #include "handleserver.h"
 #include "serverdata.h"
 #include "check_aircraft.h"
+#include "xplanebeacon.h"
 #include "test.h"
 #include "b737_fmc.h"
 #include "b737_compass.h"
 #include "b737_awm.h"
 #include "b737_yawdamper.h"
-
-int acf_type;
 
 // Driver code 
 int main(int argc, char **argv) {
@@ -57,21 +56,25 @@ int main(int argc, char **argv) {
     exit_pi(-1);
   }
 
-  /* initialize local dataref structure */
-  if (initialize_dataref()<0) exit_pi(-1);
 
   /* parse the selected ini file */
   if (ini_read(argv[0],argv[1])<0) exit_pi(-2);
 
+  /* initialize and start X-Plane Beacon reception */
+  if (initialize_beacon_client(verbose)<0) exit_sismo(-3);
+ 
+  /* initialize local dataref structure */
+  if (initialize_dataref(verbose)<0) exit_sismo(-4);
+
   /* initialize TCP/IP interface */
-  if (initialize_tcpip()<0) exit_pi(-4);
+  if (initialize_tcpip_client(verbose)<0) exit_sismo(-5);
 
   /* initialize wiringPi Library */
   if (init_pi()<0) exit_pi(-4);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
   /* needs to be put after initalizing pi */
-  if (ini_signal_handler()<0) exit_pi(-3);
+  if (ini_signal_handler()<0) exit_pi(-1);
  
   /* initialize modules */
   if (strcmp(argv[1],"test") == 0) {
@@ -100,10 +103,10 @@ int main(int argc, char **argv) {
   while (1) {
       
     /* check for TCP/IP connection to X-Plane */
-    if (check_server()<0) exit_pi(-9);
+    if (check_xpserver()<0) exit_pi(-9);
  
     /* receive data from X-Plane via TCP/IP */
-    if (receive_server()<0) exit_pi(-10);
+    if (receive_xpserver()<0) exit_pi(-10);
     
     check_aircraft();
  
@@ -136,7 +139,7 @@ int main(int argc, char **argv) {
     /**** User Modules End Here ****/
  
     /* send data to X-Plane via TCP/IP */
-    if (send_server()<0) exit_pi(-12);
+    if (send_xpserver()<0) exit_pi(-12);
    
     usleep(INTERVAL*1000);
   }

@@ -35,6 +35,7 @@
 #include "libiocards.h"
 #include "serverdata.h"
 #include "handleserver.h"
+#include "xplanebeacon.h"
 
 /* headers to user space modules */
 #include "iocard_test.h"
@@ -76,18 +77,21 @@ int main (int argc, char **argv)
     exit_xpusb(-1);
   }
 
-  /* initialize local dataref structure */
-  if (initialize_dataref()<0) exit_xpusb(-4);
-
   /* parse the xpusb.ini file */
-  if (read_ini(argv[0],argv[1])<0) exit_xpusb(-2);
+  if (read_ini(argv[0],argv[1])<0) exit_xpusb(-1);
   
   /* initialize handler for command-line interrupts (ctrl-c) */
-  if (initialize_signal_handler()<0) exit_xpusb(-3);
+  if (initialize_signal_handler()<0) exit_xpusb(-2);
+
+  /* initialize and start X-Plane Beacon reception */
+  if (initialize_beacon_client(verbose)<0) exit_xpusb(-3);
+ 
+  /* initialize local dataref structure */
+  if (initialize_dataref(verbose)<0) exit_xpusb(-4);
 
   /* initialize TCP/IP interface */
-  if (initialize_tcpip()<0) exit_xpusb(-6);
-
+  if (initialize_tcpip_client(verbose)<0) exit_xpusb(-5);
+  
   /* initialize USB/HID interface */
   if (initialize_usb()<0) exit_xpusb(-7);
   
@@ -119,13 +123,13 @@ int main (int argc, char **argv)
       if (receive_bu0836()<0) exit_xpusb(-12);
       
       /* check for TCP/IP connection to X-Plane */
-      if (check_server()<0) exit_xpusb(-13);
+      if (check_xpserver()<0) exit_xpusb(-13);
       
       /* receive data from Chrono-A320 module */
       if (receive_chrono320()<0) exit_xpusb(-16);
       
       /* receive data from X-Plane via TCP/IP */
-      if (receive_server()<0) exit_xpusb(-14);
+      if (receive_xpserver()<0) exit_xpusb(-14);
 
       check_aircraft();
       
@@ -189,20 +193,13 @@ int main (int argc, char **argv)
       if (send_chrono320()<0) exit_xpusb(-25);
       
       /* send data to X-Plane via TCP/IP */
-      if (send_server()<0) exit_xpusb(-23);
+      if (send_xpserver()<0) exit_xpusb(-23);
       
       /* save a copy of the current I/O state */
       if (copy_iocardsdata()<0) exit_xpusb(-24);
      
       /* run xpusb data exchange (usb and tcp/ip) every 1000 microseconds */
       usleep(INTERVAL*1000);
-     
-      /*
-      gettimeofday(&tval_after, NULL);
-      timersub(&tval_after, &tval_before, &tval_result);
-      printf("Time elapsed: %ld.%06ld\n",
-	     (long int)tval_result.tv_sec, (long int)tval_result.tv_usec);
-      */
 
     }
 
@@ -216,7 +213,10 @@ void exit_xpusb(int ret)
   terminate_usb();
 
   /* cancel tcp/ip connection */
-  exit_tcpip();
+  exit_tcpip_client();
+
+  /* cancel beacon client */
+  exit_beacon_client();
 
   /* free local dataref structure */
   clear_dataref();

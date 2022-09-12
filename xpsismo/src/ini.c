@@ -107,7 +107,6 @@ int ini_read(char* programPath, char* iniName)
     printf("XPSERVER Client name: %s\n", clientname);
     strcpy(XPlaneServerIP,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
     XPlaneServerPort = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
-    printf("XPSERVER Address %s Port %i \n",XPlaneServerIP, XPlaneServerPort);
 
     strcpy(sismoserver_ip,iniparser_getstring(ini,"sismoserver:Address", default_sismoserver_ip));
     sismoserver_port = iniparser_getint(ini,"sismoserver:Port", default_sismoserver_port);
