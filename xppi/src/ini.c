@@ -31,6 +31,7 @@
 #include "ini.h"
 #include "handleserver.h"
 #include "serverdata.h"
+#include "xplanebeacon.h"
 
 int verbose;
 int is_copilot;
@@ -102,7 +103,7 @@ int ini_read(char* programPath, char* iniName)
     if (! strcmp(clientname,"")) strncpy(clientname,PACKAGE_NAME,sizeof(clientname));
     printf("XPSERVER Client name: %s\n", clientname);
     strcpy(XPlaneServerIP,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
-    XPServerPort = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
+    XPlaneServerPort = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
     is_copilot = iniparser_getint(ini,"panel:copilot", default_copilot);
     printf("Hardware runs for Copilot: %i \n",is_copilot);
 

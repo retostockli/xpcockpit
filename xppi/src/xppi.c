@@ -61,13 +61,13 @@ int main(int argc, char **argv) {
   if (ini_read(argv[0],argv[1])<0) exit_pi(-2);
 
   /* initialize and start X-Plane Beacon reception */
-  if (initialize_beacon_client(verbose)<0) exit_sismo(-3);
+  if (initialize_beacon_client(verbose)<0) exit_pi(-3);
  
   /* initialize local dataref structure */
-  if (initialize_dataref(verbose)<0) exit_sismo(-4);
+  if (initialize_dataref(verbose)<0) exit_pi(-4);
 
   /* initialize TCP/IP interface */
-  if (initialize_tcpip_client(verbose)<0) exit_sismo(-5);
+  if (initialize_tcpip_client(verbose)<0) exit_pi(-5);
 
   /* initialize wiringPi Library */
   if (init_pi()<0) exit_pi(-4);
