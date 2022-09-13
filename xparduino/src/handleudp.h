@@ -24,19 +24,9 @@
 #define UDPSENDBUFLEN 28
 
 /* UDP CLIENT PARAMETERS */
-char udpClientIP[30];
-short int udpClientPort;
-char udpServerIP[30];
-short int udpServerPort;
-int clientSocket;
-int serverSocket;
-
-struct sockaddr_in udpServerAddr;     /* Server address structure */
-struct sockaddr_in udpClientAddr;     /* Client address structure */
-
-unsigned char *udpSendBuffer;         /* buffer containing data to send to udp */
-unsigned char *udpRecvBuffer;         /* buffer containing data that was read from udp */
-int udpReadLeft;                      /* counter of bytes to read from receive thread */
+extern unsigned char *udpSendBuffer;         /* buffer containing data to send to udp */
+extern unsigned char *udpRecvBuffer;         /* buffer containing data that was read from udp */
+extern int udpReadLeft;                      /* counter of bytes to read from receive thread */
 
 /* thread parameters */
 extern pthread_t poll_thread;                /* read thread */

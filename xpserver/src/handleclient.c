@@ -309,6 +309,7 @@ void receive_client(int clntSock) {
 		    }
 		  }
 		  free(datavf);
+		  datavf=NULL;
 		} else {
 		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n", clntSock, offset, clientdata[offset].datarefname);
 		}
@@ -341,6 +342,7 @@ void receive_client(int clntSock) {
 		    }
 		  }
 		  free(datavi);
+		  datavi=NULL;
 		} else {
 		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n",clntSock, offset, clientdata[offset].datarefname);
 		}
@@ -369,6 +371,7 @@ void receive_client(int clntSock) {
 		    }
 		  }
 		  free(datab);
+		  datab=NULL;
 		} else {
 		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n", clntSock, offset, clientdata[offset].datarefname);
 		}
@@ -763,6 +766,7 @@ void send_client(int clntSock) {
 		}
 	      }
 	      free(datavf);
+	      datavf=NULL;
 	      break;
 	    case XPTYPE_INT_ARR:
 	      datavi = malloc(nelements*sizeof(int));
@@ -808,6 +812,7 @@ void send_client(int clntSock) {
 		}
 	      }
 	      free(datavi);
+	      datavi=NULL;
 	      break;
 	    case XPTYPE_BYTE_ARR:
 	      datab = malloc(nelements*sizeof(unsigned char));
@@ -851,6 +856,7 @@ void send_client(int clntSock) {
 		}
 	      }
 	      free(datab);
+	      datab=NULL;
 	      break;
 	    case XPTYPE_CMD_ONCE:
 	      /* we need to report back that the command was executed

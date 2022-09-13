@@ -35,10 +35,6 @@
 
 int verbose;
 
-//char xpserver_ip[30];
-//int xpserver_port;
-//char clientname[100];
-
 char arduinoserver_ip[30];
 int arduinoserver_port;
 

@@ -33,6 +33,7 @@
 #include "ini.h"
 #include "handleserver.h"
 #include "serverdata.h"
+#include "xplanebeacon.h"
 
 /* this routine parses the usbioards.ini file and reads its values */
 int ini_read(char* programPath, char* iniName)
@@ -53,7 +54,7 @@ int ini_read(char* programPath, char* iniName)
   int default_verbose = 0;
 
   /* xpserver */
- char default_xpserver_ip[] = "127.0.0.1";
+ char default_xpserver_ip[] = "";
   int default_xpserver_port = 8091;
 
   /* arduino server */
@@ -109,9 +110,8 @@ int ini_read(char* programPath, char* iniName)
     strncpy(clientname,iniparser_getstring(ini,"xpserver:Name", ""),sizeof(clientname));
     if (! strcmp(clientname,"")) strncpy(clientname,PACKAGE_NAME,sizeof(clientname));
     printf("XPSERVER Client name: %s\n", clientname);
-    strcpy(server_ip,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
-    server_port = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
-    printf("XPSERVER Address %s Port %i \n",server_ip, server_port);
+    strcpy(XPlaneServerIP,iniparser_getstring(ini,"xpserver:Address", default_xpserver_ip));
+    XPlaneServerPort = iniparser_getint(ini,"xpserver:Port", default_xpserver_port);
 
     strcpy(arduinoserver_ip,iniparser_getstring(ini,"arduinoserver:Address", default_arduinoserver_ip));
     arduinoserver_port = iniparser_getint(ini,"arduinoserver:Port", default_arduinoserver_port);
@@ -271,7 +271,10 @@ void exit_arduino(int ret)
   exit_udp();
 
   /* cancel tcp/ip connection */
-  exit_tcpip();
+  exit_tcpip_client();
+
+  /* cancel beacon client */
+  exit_beacon_client();
 
   /* free local dataref structure */
   clear_dataref();

@@ -1,0 +1,10 @@
+2022/09/13 Reto Stockli
+
+Version 0.10
+------------
+- outsourced xplane data communication to library
+- autodetect IP of x-plane
+
+Version 0.01
+------------
+- Initial version
