@@ -58,7 +58,7 @@ namespace OpenGC
 
   void B737PFDBackground::Render()
   {
-    char buffer[12]; // temporary buffer for text
+    char buffer[30]; // temporary buffer for text
     memset(buffer,0,sizeof(buffer));
     float fontHeight = 5;
     float fontWidth = 5;
@@ -954,6 +954,17 @@ namespace OpenGC
       } else if (*ils_active == 1) {
 	strcpy( buffer, "ILS");
 	m_pFontManager->Print(42,154,buffer, m_Font);
+      }
+
+      // Control Panel Source Warning
+      float *control_panel_source = link_dataref_flt("laminar/B738/toggle_switch/dspl_ctrl_pnl",0);
+      if ((is_captain && (*control_panel_source == 1)) || (is_copilot && (*control_panel_source == -1))) {
+	m_pFontManager->SetSize(m_Font, 3, 3.5);
+	glColor3ub(COLOR_ORANGE);
+	snprintf( buffer, sizeof(buffer), "%s", "DISPLAYS" );
+	m_pFontManager->Print(150,15,buffer, m_Font);
+	snprintf( buffer, sizeof(buffer), "%s", "CONTROL PANEL" );
+	m_pFontManager->Print(143,9,buffer, m_Font);
       }
     }
 

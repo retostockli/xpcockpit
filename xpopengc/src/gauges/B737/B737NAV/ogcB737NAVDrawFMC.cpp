@@ -111,23 +111,19 @@ namespace OpenGC
     float *fmc_ok;
     float *fmc_lon;
     float *fmc_lat;
-    float *fmc_turn;
+    //    float *fmc_turn;
     float *fmc_alt;
-    float *fmc_type;
+    //    float *fmc_type;
     float *fmc_hold_time;
     float *fmc_hold_dist;
-    float *fmc_dist;
+    //    float *fmc_dist;
     float *fmc_eta;
-    float *fmc_radii_ctr_lon;
-    float *fmc_radii_ctr_lat;
-    float *fmc_radii_lon;
-    float *fmc_radii_lat;
-    float *fmc_radii_radius;
+
     float *fmc_rad_lon;
     float *fmc_rad_lat;
     float *fmc_rad_turn;
     float *fmc_radius;
-    float *fmc_brg;
+    //    float *fmc_brg;
     float *fmc_crs;
     int *fmc_miss1;
     int *fmc_miss2;
@@ -141,15 +137,18 @@ namespace OpenGC
     float *fmc_vnav_td_dist;
     float *fmc_vnav_err;
     int *fmc_has_vrnp;
-    int *fmc_rnav_enable;
+    //    int *fmc_rnav_enable;
     float *fmc_rnav_alt;
     unsigned char *fmc_name;
     unsigned char *fmc_pth;
     int *fmc_idx;
     int *fmc_nidx;
 
-    float *seg1_start_lon;
-    float *seg1_start_lat;
+    float *fmc_af_beg;
+    float *fmc_af_end;
+    
+    //    float *seg1_start_lon;
+    //    float *seg1_start_lat;
     float *seg1_start_ang;
     float *seg1_end_lon;
     float *seg1_end_lat;
@@ -170,20 +169,20 @@ namespace OpenGC
     float *seg3_turn;
 
     unsigned char *ref_apt_name;
-    float *ref_apt_alt;
+    //    float *ref_apt_alt;
     float *ref_rwy_lon0;
     float *ref_rwy_lon1;
     float *ref_rwy_lat0;
     float *ref_rwy_lat1;
-    float *ref_rwy_len;
+    //    float *ref_rwy_len;
     float *ref_rwy_crs;
     unsigned char *des_apt_name;
-    float *des_apt_alt;
+    //    float *des_apt_alt;
     float *des_rwy_lon0;
     float *des_rwy_lon1;
     float *des_rwy_lat0;
     float *des_rwy_lat1;
-    float *des_rwy_len;
+    //    float *des_rwy_len;
     float *des_rwy_crs;
 
     float *tc_lon;
@@ -202,17 +201,12 @@ namespace OpenGC
       fmc_alt = link_dataref_flt_arr("laminar/B738/fms/legs_alt_rest1",256,-1,0);
       fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr"); 
       fmc_cur = link_dataref_int("laminar/B738/fms/vnav_idx"); 
-      fmc_turn = link_dataref_flt_arr("laminar/B738/fms/legs_turn",256,-1,0);
-      fmc_type = link_dataref_flt_arr("laminar/B738/fms/legs_type",256,-1,0);
+      //      fmc_turn = link_dataref_flt_arr("laminar/B738/fms/legs_turn",256,-1,0);
+      //      fmc_type = link_dataref_flt_arr("laminar/B738/fms/legs_type",256,-1,0);
       fmc_hold_time = link_dataref_flt_arr("laminar/B738/fms/legs_hold_time",256,-1,-1);
       fmc_hold_dist = link_dataref_flt_arr("laminar/B738/fms/legs_hold_dist",256,-1,-1);
-      fmc_dist = link_dataref_flt_arr("laminar/B738/fms/legs_dist",256,-1,-2);
+      //      fmc_dist = link_dataref_flt_arr("laminar/B738/fms/legs_dist",256,-1,-2);
       fmc_eta = link_dataref_flt_arr("laminar/B738/fms/legs_eta",256,-1,-2);
-      fmc_radii_ctr_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lon",256,-1,-4);
-      fmc_radii_ctr_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_ctr_lat",256,-1,-4);
-      fmc_radii_lon = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lon2",256,-1,-4);
-      fmc_radii_lat = link_dataref_flt_arr("laminar/B738/fms/legs_radii_lat2",256,-1,-4);
-      fmc_radii_radius = link_dataref_flt_arr("laminar/B738/fms/legs_radii_radius",256,-1,-1);
       fmc_rad_lon = link_dataref_flt_arr("laminar/B738/fms/legs_rad_lon",256,-1,-4);
       fmc_rad_lat = link_dataref_flt_arr("laminar/B738/fms/legs_rad_lat",256,-1,-4);
       fmc_rad_turn = link_dataref_flt_arr("laminar/B738/fms/legs_rad_turn",256,-1,0);
@@ -220,7 +214,7 @@ namespace OpenGC
       fmc_miss1 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx");
       fmc_miss2 = link_dataref_int("laminar/B738/fms/missed_app_wpt_idx2");
       fmc_bypass = link_dataref_flt_arr("laminar/B738/fms/legs_bypass",256,-1,0);
-      fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_mag",256,-1,-5);
+      //      fmc_brg = link_dataref_flt_arr("laminar/B738/fms/legs_brg_mag",256,-1,-5);
       fmc_crs = link_dataref_flt_arr("laminar/B738/fms/legs_crs_mag",256,-1,-5);
       fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
       fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
@@ -230,12 +224,15 @@ namespace OpenGC
       fmc_vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",0);
       //      fmc_has_vrnp = link_dataref_int("laminar/B738/fms/vrnp_enable");
       fmc_has_vrnp = link_dataref_int("laminar/B738/pfd/nd_vert_path");
-      fmc_rnav_enable = link_dataref_int("laminar/B738/fms/rnav_enable");
+      //      fmc_rnav_enable = link_dataref_int("laminar/B738/fms/rnav_enable");
       fmc_rnav_alt = link_dataref_flt("laminar/B738/fms/rnav_alt",0);
       fmc_nidx = link_dataref_int("laminar/B738/fms/num_of_wpts");
 
-      seg1_start_lon = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_start_lon",256,-1,-4);
-      seg1_start_lat = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_start_lat",256,-1,-4);
+      fmc_af_beg = link_dataref_flt_arr("laminar/B738/fms/legs_af_beg",256,-1,-1);
+      fmc_af_end = link_dataref_flt_arr("laminar/B738/fms/legs_af_end",256,-1,-1);
+
+      //      seg1_start_lon = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_start_lon",256,-1,-4);
+      //      seg1_start_lat = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_start_lat",256,-1,-4);
       seg1_start_ang = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_start_angle",256,-1,-4);
       seg1_end_lon = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_end_lon",256,-1,-4);
       seg1_end_lat = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_end_lat",256,-1,-4);
@@ -256,21 +253,21 @@ namespace OpenGC
       seg3_turn = link_dataref_flt_arr("laminar/B738/fms/legs_seg3_turn",256,-1,0);
 
       ref_apt_name = link_dataref_byte_arr("laminar/B738/fms/ref_list_rwy_icao",20,-1);
-      ref_apt_alt = link_dataref_flt("laminar/B738/fms/ref_icao_alt",0);
+      //      ref_apt_alt = link_dataref_flt("laminar/B738/fms/ref_icao_alt",0);
       ref_rwy_lon0 = link_dataref_flt("laminar/B738/fms/ref_runway_start_lon",-5);
       ref_rwy_lat0 = link_dataref_flt("laminar/B738/fms/ref_runway_start_lat",-5);
       ref_rwy_lon1 = link_dataref_flt("laminar/B738/fms/ref_runway_end_lon",-5);
       ref_rwy_lat1 = link_dataref_flt("laminar/B738/fms/ref_runway_end_lat",-5);
-      ref_rwy_len = link_dataref_flt("laminar/B738/fms/ref_runway_len",-5);
+      //      ref_rwy_len = link_dataref_flt("laminar/B738/fms/ref_runway_len",-5);
       ref_rwy_crs = link_dataref_flt("laminar/B738/fms/ref_runway_crs",-5);
 
       des_apt_name = link_dataref_byte_arr("laminar/B738/fms/des_list_rwy_icao",20,-1);
-      des_apt_alt = link_dataref_flt("laminar/B738/fms/des_icao_alt",0);
+      //      des_apt_alt = link_dataref_flt("laminar/B738/fms/des_icao_alt",0);
       des_rwy_lon0 = link_dataref_flt("laminar/B738/fms/dest_runway_start_lon",-5);
       des_rwy_lat0 = link_dataref_flt("laminar/B738/fms/dest_runway_start_lat",-5);
       des_rwy_lon1 = link_dataref_flt("laminar/B738/fms/dest_runway_end_lon",-5);
       des_rwy_lat1 = link_dataref_flt("laminar/B738/fms/dest_runway_end_lat",-5);
-      des_rwy_len = link_dataref_flt("laminar/B738/fms/dest_runway_len",-5);
+      //      des_rwy_len = link_dataref_flt("laminar/B738/fms/dest_runway_len",-5);
       des_rwy_crs = link_dataref_flt("laminar/B738/fms/dest_runway_crs",-5);
 
       tc_lon = link_dataref_flt("laminar/B738/nd/tc_lon",-4);
@@ -784,7 +781,7 @@ namespace OpenGC
 		      aCircle.Evaluate();
 		      glEnd();
 
-		      // draw curved track
+		      // draw curved track (RADII Type with Segments 1-3)
 		    } else if ((seg1_ctr_lon[i0] != 0.0) &&
 			       (seg1_ctr_lat[i0] != 0.0) &&
 			       (seg1_end_lon[i0] != 0.0) &&
@@ -958,6 +955,61 @@ namespace OpenGC
 			glVertex2f(xPos2,yPos2);
 			glEnd();
 		      }
+
+		      // Rad turn
+		    } else if ((fmc_rad_turn[i1] != -1.0) &&
+			       (fmc_rad_lon[i1] != 0.0) &&
+			       (fmc_rad_lat[i1] != 0.0) &&
+			       (fmc_radius[i1] >= 0.1)) {
+
+		      //printf("%i %f %f %f \n",i1,fmc_rad_turn[i1],fmc_rad_lon[i1],fmc_rad_lat[i1]);
+		      /* Center of Arc */
+		      lon = (double) fmc_rad_lon[i1];
+		      lat = (double) fmc_rad_lat[i1];
+		      lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+		      yPosC = -northing / 1852.0 / mapRange * map_size; 
+		      xPosC = easting / 1852.0  / mapRange * map_size;		  
+		      
+		      /* Start of Arc */
+		      double start_angle;
+		      if (fmc_af_beg[i1] != 0.0) {
+			start_angle = (double) fmc_af_beg[i1];
+		      } else {
+			lon2 = (double) wpt[i0].lon;
+			lat2 = (double) wpt[i0].lat;
+			start_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
+		      }
+		      
+		      /* End of Arc */
+		      double end_angle;
+		      if (fmc_af_end[i1] != 0.0) {
+			end_angle = (double) fmc_af_end[i1];
+		      } else {
+			lon2 = (double) wpt[i1].lon;
+			lat2 = (double) wpt[i1].lat;
+			end_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
+		      }
+		      
+		      aCircle.SetDegreesPerPoint(2);
+		      if (fmc_rad_turn[i1] == 2.0) {
+			/* left turn */
+			aCircle.SetArcStartEnd(end_angle,start_angle);
+		      } else {
+			/* right turn */
+			aCircle.SetArcStartEnd(start_angle,end_angle);
+		      }
+
+		      aCircle.SetRadius(fmc_radius[i1] / mapRange * map_size);
+		      aCircle.SetOrigin(xPosC,yPosC);
+		      if (missed_app_wpt) {
+			aCircle.SetDashed(nper100,ratio);
+		      } else {
+			aCircle.SetDashed(0,1.0);
+		      }
+		      glBegin(GL_LINE_STRIP);
+		      aCircle.Evaluate();
+		      glEnd();
+		      
 
 		    } else {
 		      // draw straight line

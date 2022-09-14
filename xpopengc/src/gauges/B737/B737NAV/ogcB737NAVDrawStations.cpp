@@ -220,8 +220,8 @@ namespace OpenGC
 	    aircraftLon2 = aircraftLon + (double) lo;
 	    aircraftLat2 = aircraftLat + (double) la;
 
-	    // REMOVED: only display Fixes with a map range <= 40 nm
-	    if (*nav_shows_fix == 1) {
+	    // only display Fixes with a map range <= 40 nm
+	    if ((*nav_shows_fix == 1) && (mapRange <= 40.0)) {
 
 	      //----------Fixes-----------
 	  
@@ -282,14 +282,14 @@ namespace OpenGC
 		    glTranslatef(xPos, yPos, 0.0);
 		    glRotatef(-1.0* heading_map, 0, 0, 1);
 		  
-		    /* small triangle: white */
-		    float ss2 = 0.50*ss;
+		    /* small triangle: light blue */
+		    float ss2 = 0.40*ss;
 		    for (i=0;i<2;i++) {
 		      if (i==0) {
 			glColor3ub(COLOR_BLACK);
 			glLineWidth(lineWidth*2.0);
 		      } else {
-			glColor3ub(COLOR_WHITE);
+			glColor3ub(COLOR_LIGHTBLUE);
 			glLineWidth(lineWidth);
 		      }
 		      glBegin(GL_LINE_LOOP);
