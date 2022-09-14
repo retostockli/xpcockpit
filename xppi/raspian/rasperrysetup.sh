@@ -10,7 +10,11 @@
 
 
 # sudo apt install mc
-# edit /etc/dhcpcd.conf and add fixed IP address for wlan0 and static router
+# edit /etc/dhcpcd.conf and add fixed IP address for eth0 and static router
+
+# disable wlan and bluetooth
+sudo rfkill block wlan0
+sudo rfkill block bluetooth
 
 # if hostname not set yet:
 # edit /etc/hostname and add the name of the rasperry pi computer
@@ -89,3 +93,10 @@ mkdir -p ~/GSHHG
 mkdir -p ~/X-Plane\ 11/Custom\ Data
 mkdir -p ~/X-Plane\ 11/Resources/default\ data
 mkdir -p ~/X-Plane\ 11/Resources/default\ scenery/default\ apt\ dat/Earth\ nav\ data
+
+
+
+# Update Rasperry OS
+sudo apt update
+sudo apt full-upgrade
+sudo apt clean

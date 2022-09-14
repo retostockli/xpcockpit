@@ -5,6 +5,7 @@ After=graphical.target
 [Service]
 #User=stockli
 Environment=DISPLAY=:0.0
+ExecStartPre=sleep 10
 ExecStart=/home/stockli/xpcockpit/xpopengc/bin/xpopengc boeing737du1
 #ExecStart=xeyes
 

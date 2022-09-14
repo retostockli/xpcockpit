@@ -4,8 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=simple
-#User=stockli
-#Group=stockli
+ExecStartPre=sleep 10
 ExecStart=sudo /home/stockli/xpcockpit/xppi/bin/xppi boeing737fmc2
 ExecStop=sudo /bin/kill $MAINPID
 

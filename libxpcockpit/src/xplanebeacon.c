@@ -111,7 +111,7 @@ int initialize_beacon_client(int init_verbose)
     /* send an ADD MEMBERSHIP message via setsockopt */
     if ((setsockopt(XPlaneBeaconSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
 		    (void*) &mreq, sizeof(mreq))) < 0) {
-      printf("X-Plane Beacon Client Add to UDP Multicast Group failed");
+      printf("X-Plane Beacon Client Add to UDP Multicast Group failed\n");
       return -1;
     }
     
