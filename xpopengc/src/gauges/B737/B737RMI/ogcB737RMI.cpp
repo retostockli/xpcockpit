@@ -64,7 +64,7 @@ namespace OpenGC
     float center_x = m_PhysicalSize.x / 2.0;
     float center_y = m_PhysicalSize.y / 2.0 * 0.95;
     
-    float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
 	
     int *efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
     float *adf1_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/adf1_bearing_deg_mag",0);

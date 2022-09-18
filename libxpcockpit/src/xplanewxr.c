@@ -32,6 +32,7 @@
 
 #ifdef WIN
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/socket.h> 
 #include <sys/ioctl.h>
@@ -319,10 +320,10 @@ int recv_wxr_from_server(void) {
   //	       0, (struct sockaddr *) &wxrServerAddr, &addrlen);
 
   /* Nonblocking */
-  n = recv(wxrSocket, wxrRecvBuffer, wxrRecvBufferLen, MSG_DONTWAIT);
+  //n = recv(wxrSocket, wxrRecvBuffer, wxrRecvBufferLen, MSG_DONTWAIT);
 
   /* Blocking */
-  //n = recv(wxrSocket, wxrRecvBuffer, wxrRecvBufferLen, 0);
+  n = recv(wxrSocket, wxrRecvBuffer, wxrRecvBufferLen, 0);
 
 
   //printf("Received from X-Plane: %i \n",n);
@@ -363,7 +364,7 @@ int send_wxr_to_client(char client_ip[],int client_port,unsigned char data[], in
   */
   
   n = sendto(wxrSocket, data, len, 
-	     MSG_CONFIRM, (struct sockaddr *) &wxrClientAddr, 
+	     0, (struct sockaddr *) &wxrClientAddr, 
 	     sizeof(wxrClientAddr));
 
   return n;

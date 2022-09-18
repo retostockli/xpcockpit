@@ -99,7 +99,7 @@ void WXR::Render()
      
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
-    float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
     float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
     int *rangesel = link_dataref_int("sim/cockpit2/EFIS/map_range");

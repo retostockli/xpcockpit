@@ -155,7 +155,7 @@ namespace OpenGC {
       double *aircraft_lon = link_dataref_dbl ("sim/flightmodel/position/longitude",-5);
       if (*aircraft_lon != INT_MISS) acLon = *aircraft_lon; else acLon = 0;
       // Aircraft heading
-      float *heading_mag = link_dataref_flt ("sim/flightmodel/position/magpsi",-1);
+      float *heading_mag = link_dataref_flt ("sim/flightmodel/position/mag_psi",-1);
       if (*heading_mag != FLT_MISS) hdgMag = *heading_mag; else hdgMag = 0;
       float *heading_true = link_dataref_flt ("sim/flightmodel/position/psi",0);
       if (*heading_true != FLT_MISS) hdgTrue = *heading_true; else hdgTrue = 0;

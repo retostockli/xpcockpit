@@ -424,7 +424,7 @@ void read_wxr() {
 	    wxr_data_tmp = NULL;
 	    wxr_height_tmp = NULL;
 
-	    printf("Temporary WXR arrays deleted\n");
+	    //printf("Temporary WXR arrays deleted\n");
 	    
 	    /* prepare for new scanning of bounds */
 	    wxr_lonmin_tmp = WXR_MISS;

@@ -18,7 +18,6 @@
 #include <fstream>
 #include <algorithm>    // std::min,max
 #include <cmath>
-#include <byteswap.h>
 #include "ogcShorelineData.h"
 
 namespace OpenGC

@@ -1,4 +1,12 @@
-xpopengc-windows.zip is the windows build for the open source xpopengc OpenGC-based 
+Short Introduction for Windows Users
+------------------------------------
+
+WINDOWS BUILD CURRENTLY BROKEN AND NOT 
+PART OF THE DISTRIBUTION SINCE I DO NOT HAVE ANY WINDOwS
+MACHINE TO TEST. PLEASE ASK ME IF YOU REALLY WANT
+TO HAVE THE THING RUNNING ON WINDOWS.
+
+xpcockpit-windows.zip is the windows build for the open source xpopengc OpenGC-based 
 Glass Cockpit and the xpserver plugin for x-plane. It is made for those
 who want to try out our software on Windows without installing a full
 development platform. However, if you want to change, extend or add new

@@ -1,16 +1,22 @@
-This is the xpcockpit Project by Reto Stockli, supported by Hans Jansen
-.
+2022/09/18
+
+This is the xpcockpit Project by Reto Stockli, supported by Hans Jansen.
+
 It enables to connect custom hardware to X-Plane by use of a C library
 which allows to subscribe to X-Plane datarefs and commands. The
 currently supported hardware is most OpenCockpits cards and Leo Bodnar's 
 BU0836 card. The project also includes a glass cockpit software which
 is a further development of the OpenGC project for Boeing 737 and Airbus 320.
 
-The project consists of four components
+The project consists of these components
+libxpcockpit: a library containing I/O functions of all xpcockpit clients. Needs to be compiled first
 xpserver: the plugin to X-Plane which handles dataref/command I/O via TCP/IP
 xpclient: a sample client software to show how to subscribe and use datarefs
-xpusb: the actual client which interacts with OpenCockpits/Leo Bodnar's Hardware
+xpusb: the client which interacts with OpenCockpits/Leo Bodnar's Hardware
 xpopengc: the glass cockpit software client that simulates B737/A320 Gauges
+xppi: the client which enables the Rasperry Pi GPIO usage with X-Plane
+xpsismo: the client which communicates to the SISMO Ethernet Modules
+xparduino: the client which communicates to Arduino (demo only, not operational)
 
 The project is aimed at the following crowd:
 - X-Plane users working on Linux or OSX and now also on Windows
@@ -25,8 +31,10 @@ HOW TO START:
 
 Information on compiling and installing those items are found in the respective subdirectories
 
+---------------------------------------------------------------------------------------------
 NEW: for existing users of xpcockpit: the library is a new thing. I've realized that a lot of
 the data handling code was replicated in each client, so I've packed everything in a library,
 which has to be compiled only once. The clients then all link to this library.
+---------------------------------------------------------------------------------------------
 
 

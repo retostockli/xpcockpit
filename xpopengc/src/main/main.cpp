@@ -96,6 +96,7 @@ void signal_handler(int sigraised)
   exit(0);
 }
 
+/*
 void GLAPIENTRY MessageCallback( GLenum source,
 				 GLenum type,
 				 GLuint id,
@@ -107,7 +108,7 @@ void GLAPIENTRY MessageCallback( GLenum source,
    fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
            ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
             type, severity, message );
-}
+	    }*/
 
 int main(int argc, char* argv[])
 {

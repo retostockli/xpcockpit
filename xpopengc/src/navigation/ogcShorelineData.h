@@ -81,6 +81,17 @@ protected:
     val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF ); 
     return (val << 16) | ((val >> 16) & 0xFFFF);
   }
+
+  /*
+  int swap_int32(int value)
+  {
+    int retval;
+    retval=value & 0xFF;
+    retval=(retval<<8) | ((value >>8)& 0xFF);
+    retval=(retval<<8) | ((value >>16)& 0xFF);
+    retval=(retval<<8) | ((value >>24)& 0xFF); 
+  }
+  */
   
 };
 

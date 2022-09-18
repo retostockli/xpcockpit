@@ -92,7 +92,7 @@ namespace OpenGC
       //double aircraftLat = m_NAVGauge->GetMapCtrLat();
     
       // What's the heading?
-      float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+      float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
       //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
       float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 

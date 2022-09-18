@@ -96,7 +96,7 @@ namespace OpenGC
     float fontx;
 
     // What's the heading?
-    float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
     //    float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",0);
     float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
