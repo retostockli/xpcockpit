@@ -89,7 +89,7 @@ void compass(void)
   
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
-  //  float *heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+  //  float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
   float *heading_mag = link_dataref_flt("sim/cockpit/autopilot/heading_mag",0);      
   
   /* read encoder at inputs 13 and 15 */

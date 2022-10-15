@@ -151,7 +151,7 @@ void b737_compass(void)
   if (calibrate) {
     heading_mag = link_dataref_flt("sim/cockpit/autopilot/heading_mag",0);
   } else {
-    heading_mag = link_dataref_flt("sim/flightmodel/position/magpsi",-1);
+    heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
   }
     
   if (*heading_mag == FLT_MISS) *heading_mag = 0.0;
