@@ -38,6 +38,7 @@ extern int wxrRecvBufferLen;
 extern char *wxrSendBuffer;
 extern char *wxrRecvBuffer;
 extern int wxrReadLeft;                      /* counter of bytes to read from receive thread */
+extern int wxr_is_xp12;   /* WXR data is from XP12 instead from XP11 */
 
 /* Prototype functions */
 int init_wxr_server(void);

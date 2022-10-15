@@ -60,6 +60,7 @@ char *wxrRecvBuffer;
 int wxrSendBufferLen;
 int wxrRecvBufferLen;
 int wxrReadLeft;                      /* counter of bytes to read from receive thread */
+int wxr_is_xp12;
 
 /* set up udp server socket with given server address and port */
 int init_wxr_server()
@@ -256,7 +257,15 @@ void *wxr_poll_thread_main()
       /* read is ok */
       /* are we reading WXR data ? */
       if ((strncmp(buffer,"xRAD",4)==0) || (strncmp(buffer,"RADR",4)==0)) {
-	  
+
+	/* CHECK IF WE HAVE XP12 or XP11 */
+	/* assume not more than one packet per call is received */
+	if ((ret-5)/50 == 13) {
+	  wxr_is_xp12 = 0;
+	} else {
+	  wxr_is_xp12 = 1;
+	}
+	   
 	/* does it fit into read buffer? */
 	if (ret <= (wxrRecvBufferLen - wxrReadLeft)) {
 	  pthread_mutex_lock(&wxr_exit_cond_lock);
