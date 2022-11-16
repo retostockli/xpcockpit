@@ -98,8 +98,12 @@ namespace OpenGC
       ap_speed_is_mach = link_dataref_int("sim/cockpit/autopilot/airspeed_is_mach");  
       ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0); 
     }
-    
-    float *altimeter_pressure = link_dataref_flt("sim/cockpit/misc/barometer_setting",-2);
+    float *altimeter_pressure;
+    if (is_captain) {
+      altimeter_pressure = link_dataref_flt("sim/cockpit/misc/barometer_setting",-2);
+    } else {
+      altimeter_pressure = link_dataref_flt("sim/cockpit/misc/barometer_setting2",-2);
+    }
 
     //  int *altimeter_pressure_unit = link_dataref_int("x737/systems/units/baroPressUnit");   
     int *altimeter_pressure_unit;

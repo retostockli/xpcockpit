@@ -2,6 +2,13 @@
 
 This file documents changes since Version 0.60
 
+Version 0.82
+------------
+- almost finalized B737 glass cockpit displays and testing in fully assembled
+  cockpit is ongoing
+- small fluctuations in real time response detected with operation on rasperry pi 4, 
+  needs checking
+
 Version 0.81
 ------------
 - much faster link_dataref commands
