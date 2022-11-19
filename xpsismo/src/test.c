@@ -68,12 +68,12 @@ void test(void)
  
   /* read first analog input (#0) */
   //  for (i=0;i<5;i++) {
-  i=2;
-    ret = analog_input(card,i,fvalue,0.0,1.0);
-    if (ret == 1) {
+  i=0;
+  ret = analog_input(card,i,fvalue,0.0,10000.0);
+  if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-      printf("Analog Input %i changed to: %f \n",i,*fvalue);
-    }
+    printf("Analog Input %i changed to: %f \n",i,*fvalue);
+  }
     //  }
    
 
@@ -112,6 +112,6 @@ void test(void)
   
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  ret = display_output(card, 0, 5, encodervalue, 2, 0);
+  ret = display_outputf(card, 0, 5, fvalue, 1, 0);
 
 }

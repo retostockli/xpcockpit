@@ -320,7 +320,7 @@ void read_wxr() {
 	    memcpy(&lev,&wxrBuffer[5+r*13+8],sizeof(lev));
 	    memcpy(&hgt,&wxrBuffer[5+r*13+9],sizeof(hgt));
 	  }
-	  printf("%i lon %f lat %f hgt %f lev %i \n",r,lon,lat,hgt,lev);
+	  //printf("%i lon %f lat %f hgt %f lev %i \n",r,lon,lat,hgt,lev);
 	  
 	}
 	  
