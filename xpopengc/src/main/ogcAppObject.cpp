@@ -32,6 +32,7 @@
 #endif
 #include <stdio.h>
 #include <sys/time.h>
+#include <math.h>
 
 //--------GL Stuff---------
 #include "ogcGLHeaders.h"
@@ -111,7 +112,11 @@ namespace OpenGC
     m_FrameTest = false;
 
     /* reset frame rate */
+    for (int i=0;i<NFPS;i++) {
+      m_FPSArray[i] = FLT_MISS;
+    }
     m_FPS = FLT_MISS;
+    m_FPSIndex = 0;
 
     /*if (verbosity > 1)*/ printf("AppObject - constructed\n");
   }
@@ -479,26 +484,37 @@ namespace OpenGC
     m_pRenderWindow->AddGauge(pGauge);
   }
 
-// Shows the frame rate at top-left of window
+// calculate frame rate from timing and with running mean function
   void AppObject::CheckFrameRate()
   {
 
     float fps;
 
-    fps = m_FPS;
-    
+    fps = m_FPSArray[m_FPSIndex];
+
+    /* evaluate timer */
     if (fps == FLT_MISS) {
       fps = 0.0; // temporary value
       gettimeofday(&m_start,NULL); // start count
     } else {
       gettimeofday(&m_end,NULL); // end count
       fps = 1./(m_end.tv_sec - m_start.tv_sec + (m_end.tv_usec - m_start.tv_usec)/1000000.0);
-      //printf("fps: %f \n",fps);
       gettimeofday(&m_start,NULL); // start count
       
     }
 
+    m_FPSArray[m_FPSIndex] = fps;
+    m_FPSIndex += 1;
+    if (m_FPSIndex == NFPS) m_FPSIndex = 0;
+
+    /* store running mean of fps */
+    fps = 0.0;
+    for (int i=0;i<NFPS;i++) {
+      fps += m_FPSArray[i];
+    }
+    fps /= (float) NFPS;
     m_FPS = fps;
+    printf("fps: %i \n",(int) round(fps));
   }
   
 } // end namespace OpenGC

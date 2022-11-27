@@ -48,6 +48,8 @@
 #include "ogcFontManager.h"
 #include "ogcNavDatabase.h"
 
+#define NFPS 10
+
 namespace OpenGC
 {
 
@@ -145,6 +147,8 @@ protected:
   bool m_FrameTest;
   struct timeval m_start;
   struct timeval m_end;
+  float m_FPSArray[NFPS];
+  int m_FPSIndex;
   float m_FPS;
   
 };

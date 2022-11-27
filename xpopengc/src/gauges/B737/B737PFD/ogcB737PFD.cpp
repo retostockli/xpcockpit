@@ -26,6 +26,7 @@
 =========================================================================*/
 
 #include <stdio.h>
+#include <math.h>
 
 #include "ogcB737PFDArtificialHorizon.h"
 #include "ogcB737PFDAltitudeTicker.h"
@@ -143,9 +144,9 @@ void B737PFD::Render()
 
   if (fps != FLT_MISS) {
     glColor3ub(COLOR_RED);
-    snprintf( buffer, sizeof(buffer), "%f3.1", fps);
+    snprintf( buffer, sizeof(buffer), "%i",(int) round(fps) );
     this->m_pFontManager->SetSize(m_Font, 5, 5);
-    this->m_pFontManager->Print(m_PhysicalSize.x-20, m_PhysicalSize.y-10, &buffer[0], m_Font);    
+    this->m_pFontManager->Print(m_PhysicalSize.x-15, m_PhysicalSize.y-10, &buffer[0], m_Font);    
   }
   
 }
