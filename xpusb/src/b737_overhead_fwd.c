@@ -71,6 +71,7 @@ void b737_overhead_fwd(void)
   if ((acf_type == 2) || (acf_type == 3)) {
     
     float *lights_test = link_dataref_flt("laminar/B738/annunciator/test",0);
+    int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
 
 
     /* ------------- */
@@ -236,7 +237,7 @@ void b737_overhead_fwd(void)
     float *ac_volt = link_dataref_flt("laminar/B738/ac_volt_value",0);
     float *ac_amps = link_dataref_flt("laminar/B738/ac_amp_value",0);
     float *ac_freq = link_dataref_flt("laminar/B738/ac_freq_value",0);
-    if (*battery == 1.0) {
+    if (*avionics_on == 1) {
       ret = mastercard_displayf(device,card,11,2,dc_amps,0);
       ret = mastercard_displayf(device,card,6,2,dc_volt,0);
       ret = mastercard_displayf(device,card,1,3,ac_volt,0);

@@ -31,7 +31,6 @@
 #include "ogcGauge.h"
 
 extern int verbosity;
-//extern bool m_FrameTest; // how do we find that variable?
 
 namespace OpenGC
 {

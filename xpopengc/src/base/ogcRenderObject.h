@@ -101,6 +101,12 @@ public:
   /** Returns the fontmanager */
   FontManager* GetFontManager() { return m_pFontManager;}
 
+  /** Returns the fps */
+  float GetFPS() { return m_FPS;}
+  
+  /** Stores the fps */
+  void SetFPS(float fps) { m_FPS = fps;}
+
 protected:
 
   /** Pointer to data source */
@@ -138,6 +144,9 @@ protected:
   
   /** Rotation, in degrees left */
   int m_Rotation;
+
+  /** fps diagnostics **/
+  float m_FPS;
 };
 
 } // end namespace OpenGC

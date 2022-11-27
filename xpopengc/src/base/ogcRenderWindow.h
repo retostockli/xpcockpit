@@ -69,6 +69,9 @@ public:
   /** Iterates through the gauges and invokes the render method */
   void RenderGauges();
 
+  /** Iterates through the gauges and updates fps */
+  void SetFPS(float fps);
+
   /** Check to see if an extension exists */
   //  GLboolean RenderWindow::CheckExtension( char *extName );
   GLboolean CheckExtension( char *extName );
@@ -92,9 +95,6 @@ public:
   void OnMessage(Message message, void* data);
   
 protected:
-
-  /** Shows the frame rate */
-  void ShowFrameRate();
 
   /** Window height and width in pixels */
   OrderedPair<unsigned int> m_WindowSize;
@@ -124,9 +124,6 @@ protected:
 
   /** True if it's safe to render things */
   bool m_IsOKToRender;
-
-  /** The font handle provided to us by the font manager */
-  int m_Font;
 };
 
 } // end namespace OpenGC

@@ -237,4 +237,15 @@ namespace OpenGC
     }
   }
 
+  /*
+  float fps = GetFPS();
+  char buffer[5];
+
+  if (fps != FLT_MISS) {
+    glColor3ub(COLOR_RED);
+    snprintf( buffer, sizeof(buffer), "%f3.1", fps);
+    this->m_pFontManager->SetSize(m_Font, 5, 5);
+    this->m_pFontManager->Print(m_PhysicalSize.x-20, m_PhysicalSize.y-10, &buffer[0], m_Font);    
+    }*/
+  
 }

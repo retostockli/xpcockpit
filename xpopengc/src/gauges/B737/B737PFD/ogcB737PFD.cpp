@@ -112,9 +112,9 @@ B737PFD::~B737PFD()
 
 void B737PFD::Render()
 {
-
-  // printf("%i \n",this->GetArg());
   
+  // printf("%i \n",this->GetArg());
+
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
   if (*avionics_on == 1) {
@@ -136,6 +136,16 @@ void B737PFD::Render()
     glVertex2f(10,m_PhysicalSize.y-10);
     glVertex2f(5,m_PhysicalSize.y-10);
     glEnd();  
+  }
+
+  float fps = GetFPS();
+  char buffer[5];
+
+  if (fps != FLT_MISS) {
+    glColor3ub(COLOR_RED);
+    snprintf( buffer, sizeof(buffer), "%f3.1", fps);
+    this->m_pFontManager->SetSize(m_Font, 5, 5);
+    this->m_pFontManager->Print(m_PhysicalSize.x-20, m_PhysicalSize.y-10, &buffer[0], m_Font);    
   }
   
 }

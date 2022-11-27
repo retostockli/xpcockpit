@@ -42,6 +42,7 @@ void test(void)
   int i;
   int one = 1;
   int zero = 0;
+  int display = 0;
 
   /* link integer data like a switch in the cockpit */
   //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -69,7 +70,7 @@ void test(void)
   /* read first analog input (#0) */
   //  for (i=0;i<5;i++) {
   i=0;
-  ret = analog_input(card,i,fvalue,0.0,10000.0);
+  ret = analog_input(card,i,fvalue,0.0,10.0);
   if (ret == 1) {
     /* ret is 1 only if analog input has changed */
     printf("Analog Input %i changed to: %f \n",i,*fvalue);
@@ -97,7 +98,7 @@ void test(void)
       ret = digital_output(card, i, &zero);
     }
   }
- 
+
 
   /*
   for (i=0;i<sismo[card].noutputs;i++) {
@@ -109,9 +110,15 @@ void test(void)
     }
   }
   */
+
+  if (*fvalue != FLT_MISS) {
+    i = (int) *fvalue;
+    display = i + i*10 + i*100 + i*1000 + i*10000;
+  }
   
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  ret = display_outputf(card, 0, 5, fvalue, 1, 0);
+  ret = display_output(card, 0, 5, &display, 1, 0);
+  ret = display_output(card, 8, 5, &display, 1, 0);
 
 }
