@@ -514,7 +514,7 @@ namespace OpenGC
     }
     fps /= (float) NFPS;
     m_FPS = fps;
-    printf("fps: %i \n",(int) round(fps));
+    //printf("fps: %i \n",(int) round(fps));
   }
   
 } // end namespace OpenGC

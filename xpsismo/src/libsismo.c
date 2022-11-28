@@ -249,14 +249,15 @@ int read_sismo() {
 	  for (b=0;b<8;b++) {
 	    for (i=0;i<8;i++) {
 	      input = b*8+i + firstinput;
-	      val = get_bit(sismoRecvBuffer[8+b],i);
+	      //val = get_bit(sismoRecvBuffer[8+b],i);
+	      val = 1-get_bit(sismoRecvBuffer[8+b],i); // we now use 1: input pressed and 0: input free
 	      if (val != sismo[card].inputs[input][0]) any = 1;
 	    }
 	  }
 	  /* if any input changed make sure we capture the whole history of changed
 	     inputs, since during a single reception we can have several state changes */
 	  if (any) {
-	    //	    printf("%i %i \n",get_bit(sismoRecvBuffer[8+0],0),get_bit(sismoRecvBuffer[8+0],1));
+	    //	    printf("%i %i \n",1-get_bit(sismoRecvBuffer[8+0],0),1-get_bit(sismoRecvBuffer[8+0],1));
 	    for (b=0;b<8;b++) {
 	      for (i=0;i<8;i++) {
 		input = b*8+i + firstinput;
@@ -265,7 +266,8 @@ int read_sismo() {
 		  sismo[card].inputs[input][s+1] = sismo[card].inputs[input][s];
 		}
 		/* update input if changed */
-		val = get_bit(sismoRecvBuffer[8+b],i);
+		//val = get_bit(sismoRecvBuffer[8+b],i);
+		val = 1-get_bit(sismoRecvBuffer[8+b],i); // we now use 1: input pressed and 0: input free
 		if (val != sismo[card].inputs[input][0]) {
 		  sismo[card].inputs[input][0] = val; 
 		  if (verbose > 2) printf("Card %i Input %i Changed to: %i \n",card,input,val);
@@ -515,7 +517,6 @@ int digital_inputf(int card, int input, float *fvalue, int type)
 /* master card has 64 inputs (0..63)
    daughter card 1 and 2 have another 64 inputs (64..127 and 128..191) */
 /* Two types : */
-/* -1: pushbutton 1-value: 0 means pressed, 1 means unpressed */
 /* 0: pushbutton */
 /* 1: toggle switch */
 int digital_input(int card, int input, int *value, int type)
@@ -539,18 +540,7 @@ int digital_input(int card, int input, int *value, int type)
 	  } else {
 	    s = 0;
 	  }
-	  if (type == -1) {
-	    /* simple pushbutton / switch INVERSE 1-value */
-	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
-	      if ((1-*value) != sismo[card].inputs[input][s]) {
-		*value = 1-sismo[card].inputs[input][s];
-		retval = 1;
-		if (verbose > 1) printf("Pushbutton INVERSE: Card %i Input %i Changed to %i \n",
-					card, input, *value);
-	      }
-	    }
-
-	  } else if (type == 0) {
+	  if (type == 0) {
 	    /* simple pushbutton / switch */
 	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
 	      if (*value != sismo[card].inputs[input][s]) {
@@ -561,7 +551,7 @@ int digital_input(int card, int input, int *value, int type)
 	      }
 	    }
 
-	  } else {
+	  } else if (type == 1) {
 	    if (sismo[card].inputs_nsave[bank] != 0) {
 	      /* toggle state everytime you press button */
 	      if (s < (MAXSAVE-1)) {
@@ -584,6 +574,8 @@ int digital_input(int card, int input, int *value, int type)
 	      }
 	    }
 
+	  } else {
+	    printf("Unknown Digital Input Type %i (only use 0 and 1) \n",type);
 	  }
 	} else {
 	  if (verbose > 0) printf("Digital Input %i above maximum # of inputs %i of card %i \n",
@@ -982,7 +974,9 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
 			updown = -1;
 		      }
-	  
+
+		      //printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
+		      
 		      if (updown != 0) {
 			/* add accelerator by using s as number of queued encoder changes */
 			*value = *value + ((float) updown)  * multiplier * (float) (s*2+1);

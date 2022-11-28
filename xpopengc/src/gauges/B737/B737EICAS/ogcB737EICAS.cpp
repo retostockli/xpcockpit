@@ -2,19 +2,12 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcB737EICAS.cpp,v $
 
-  Copyright (C) 2001-2015 by:
+  Copyright (C) 2001-2022 by:
   Original author:
   Michael DeFeyter
   Contributors (in alphabetical order):
   Reto Stockli
-
-  Last modification:
-  Date:      $Date: 2015/09/12 $
-  Version:   $Revision: $
-  Author:    $Author: stockli $
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -60,6 +53,9 @@ namespace OpenGC
 
     m_PhysicalSize.x = 200;
     m_PhysicalSize.y = 200;
+  
+    // We need a font to draw the fps
+    m_Font = m_pFontManager->LoadDefaultFont();
 	
     // We want to draw an outline
     this->SetGaugeOutline(false);
@@ -239,12 +235,12 @@ namespace OpenGC
   
     float fps = GetFPS();
     char buffer[5];
-    
+   
     if (fps != FLT_MISS) {
       glColor3ub(COLOR_RED);
       snprintf( buffer, sizeof(buffer), "%i",(int) round(fps) );
       this->m_pFontManager->SetSize(m_Font, 5, 5);
-      this->m_pFontManager->Print(m_PhysicalSize.x-25, m_PhysicalSize.y-20, &buffer[0], m_Font);    
+      this->m_pFontManager->Print(15, m_PhysicalSize.y-10, &buffer[0], m_Font);    
     }
 
   }

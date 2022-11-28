@@ -46,6 +46,7 @@
 #include "b737_mcp.h"
 #include "b737_efis.h"
 #include "b737_mip.h"
+#include "b737_pedestal.h"
 
 // Driver code 
 int main(int argc, char **argv) {
@@ -113,12 +114,18 @@ int main(int argc, char **argv) {
 	b737_mip();
 	//      }
     }
+    if (strcmp("boeing737pedestal",argv[1]) == 0) {
+      //      if (acf_type >= 0) {
+	b737_pedestal();
+	//      }
+    }
     if (strcmp("boeing737",argv[1]) == 0) {
       //      if (acf_type >= 0) {
 	b737_mcp();
 	b737_efis(0); /* captain */
 	b737_efis(1); /* copilot */
 	b737_mip();
+	//b737_pedestal();
 	//      }
     }
 

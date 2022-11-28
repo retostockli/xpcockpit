@@ -31,8 +31,7 @@
 #include "common.h"
 #include "libsismo.h"
 #include "serverdata.h"
-
-int encodervalue;
+#include "test.h"
 
 void test(void)
 {
@@ -45,8 +44,7 @@ void test(void)
   int display = 0;
 
   /* link integer data like a switch in the cockpit */
-  //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
-  int *value = link_dataref_int("xpserver/EFIS_capt_terr");
+  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
   /* link floating point dataref with precision 10e-3 to local variable. This means
      that we only transfer the variable if changed by 0.001 or more */
@@ -58,13 +56,11 @@ void test(void)
   if (*encodervalue == INT_MISS) *encodervalue = 0;
   
   /* read second digital input (#1) */
-  for (i=0;i<sismo[card].ninputs;i++) {
-    //for (i=0;i<70;i++) {
-    //    ret = digital_input(card, i, value, 0);
-    if (ret == 1) {
-      /* ret is 1 only if input has changed */
-      //printf("Digital Input %i changed to: %i \n",i,*value);
-    }
+  i=1;
+  ret = digital_input(card, i, value, 0);
+  if (ret == 1) {
+    /* ret is 1 only if input has changed */
+    printf("Digital Input %i changed to: %i \n",i,*value);
   }
  
   /* read first analog input (#0) */

@@ -77,13 +77,13 @@ namespace OpenGC
     if ((acf_type == 2) || (acf_type == 3)) {
       stdby_pressure_mode = link_dataref_flt("laminar/B738/gauges/standby_alt_mode",0);
     } else {
-      stdby_pressure_mode = link_dataref_flt("sim/cockpit/misc/barometer_setting",0);
+      stdby_pressure_mode = link_dataref_flt("sim/cockpit/misc/barometer_setting",-2);
     }    
     float *stdby_std_mode;
     if ((acf_type == 2) || (acf_type == 3)) {
       stdby_std_mode = link_dataref_flt("laminar/B738/gauges/standby_alt_std_mode",0);
     } else {
-      stdby_std_mode = link_dataref_flt("sim/cockpit/misc/barometer_setting",0);
+      stdby_std_mode = link_dataref_flt("sim/cockpit/misc/barometer_setting",-2);
     }    
     float *isfd_horizontal;
     if ((acf_type == 2) || (acf_type == 3)) {

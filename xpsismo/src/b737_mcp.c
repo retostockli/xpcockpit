@@ -39,12 +39,12 @@ int ap_at_arm_status_save;
 
 void b737_mcp(void)
 {
+  int card = 0; /* SISMO card according to ini file */
 
   /* In the SISMO MCP all switches are inverted (0=on; 1=off) */
   
   int ret;
   int temp;
-  int card = 0;
   int one = 1;
   int zero = 0;
 
@@ -283,7 +283,7 @@ void b737_mcp(void)
   /* INPUTS */
   
   /* Flight Director Captain */
-  ret = digital_input(card,2,ap_fdir_a,-1);
+  ret = digital_input(card,2,ap_fdir_a,0);
   if (ret==1) {
     printf("Flight Director Captain: %i \n",*ap_fdir_a);
   }
@@ -292,7 +292,7 @@ void b737_mcp(void)
   }
 
   /* Flight Director Copilot */
-  ret = digital_input(card,29,ap_fdir_b,-1);
+  ret = digital_input(card,29,ap_fdir_b,0);
   if (ret==1) {
     printf("Flight Director First Officer: %i \n",*ap_fdir_b);
   }
@@ -301,7 +301,7 @@ void b737_mcp(void)
   /* only change at_arm if switch has changed */
   /* safe algorithm for solenoid relais */
   if ((ap_at_arm_status_save != 0) && (ap_at_arm_status_save != 1)) ap_at_arm_status_save = 0;
-  ret = digital_input(card,3,&ap_at_arm_status_save,-1);
+  ret = digital_input(card,3,&ap_at_arm_status_save,0);
   if (ret==1) {
     //printf("%f %i \n",*ap_at_arm_status,*ap_at_arm);
     if ((acf_type == 2) || (acf_type == 3)) {
@@ -337,7 +337,7 @@ void b737_mcp(void)
   if ((acf_type == 2) || (acf_type == 3)) {
     /* with ZIBO we can only toggle the switch, so check status as well */
     *ap_engage = 0;
-    ret = digital_input(card,24,ap_disengage_status,-1);
+    ret = digital_input(card,24,ap_disengage_status,0);
     if (ret == 1) {
       if (*ap_disengage_status == 0) {
 	printf("AP Engaged \n");
@@ -368,23 +368,23 @@ void b737_mcp(void)
     } 
   }
 
-  ret = digital_input(card,4,ap_n1,-1);
+  ret = digital_input(card,4,ap_n1,0);
   if (ret == 1) printf("N1 Button: %i \n",*ap_n1);  
-  ret = digital_input(card,5,ap_speed,-1);
+  ret = digital_input(card,5,ap_speed,0);
   if (ret == 1) printf("SPEED Button: %i \n",*ap_speed);
-  ret = digital_input(card,7,ap_lvl_chg,-1);
+  ret = digital_input(card,7,ap_lvl_chg,0);
   if (ret == 1) printf("LVL CHG Button: %i \n",*ap_lvl_chg);
-  ret = digital_input(card,10,ap_vnav,-1);
+  ret = digital_input(card,10,ap_vnav,0);
   if (ret == 1) printf("VNAV Button: %i \n",*ap_vnav);
-  ret = digital_input(card,11,ap_hdg_sel,-1);
+  ret = digital_input(card,11,ap_hdg_sel,0);
   if (ret == 1) printf("HDG SEL Button: %i \n",*ap_hdg_sel);
-  ret = digital_input(card,15,ap_app,-1);
+  ret = digital_input(card,15,ap_app,0);
   if (ret == 1) printf("APP Button: %i \n",*ap_app);
-  ret = digital_input(card,16,ap_vor_loc,-1);
+  ret = digital_input(card,16,ap_vor_loc,0);
   if (ret == 1) printf("VOR LOC Button: %i \n",*ap_vor_loc);
-  ret = digital_input(card,17,ap_lnav,-1);
+  ret = digital_input(card,17,ap_lnav,0);
   if (ret == 1) printf("LNAV Button: %i \n",*ap_lnav);
-  ret = digital_input(card,18,ap_alt_hld,-1);
+  ret = digital_input(card,18,ap_alt_hld,0);
   if (ret == 1) printf("ALT HLD Button: %i \n",*ap_alt_hld);
   if (acf_type == 1) {
     ret = digital_input(card,29,ap_vs_arm,1);
@@ -406,44 +406,44 @@ void b737_mcp(void)
       }
     }
   } else {
-    ret = digital_input(card,23,ap_vs_arm,-1);
+    ret = digital_input(card,23,ap_vs_arm,0);
     if (ret == 1) printf("V/S Button: %i \n",*ap_vs_arm);
   }
 
-  ret = digital_input(card,26,ap_cmd_a,-1);
+  ret = digital_input(card,26,ap_cmd_a,0);
   if (ret == 1) printf("CMD A Button: %i \n",*ap_cmd_a);
-  ret = digital_input(card,28,ap_cmd_b,-1);
+  ret = digital_input(card,28,ap_cmd_b,0);
   if (ret == 1) printf("CMD B Button: %i \n",*ap_cmd_b);
-  ret = digital_input(card,25,ap_cws_a,-1);
+  ret = digital_input(card,25,ap_cws_a,0);
   if (ret == 1) printf("CWS A Button: %i \n",*ap_cws_a);
-  ret = digital_input(card,27,ap_cws_b,-1);
+  ret = digital_input(card,27,ap_cws_b,0);
   if (ret == 1) printf("CWS B Button: %i \n",*ap_cws_b);
 
-  ret = digital_input(card,6,ap_speed_co,-1);
+  ret = digital_input(card,6,ap_speed_co,0);
   if (ret == 1) printf("C/O Button: %i \n",*ap_speed_co);
-  ret = digital_input(card,96,ap_speed_interv,-1);
+  ret = digital_input(card,96,ap_speed_interv,0);
   if (ret == 1) printf("SPD INTV Button: %i \n",*ap_speed_interv);
-  ret = digital_input(card,97,ap_alt_interv,-1);
+  ret = digital_input(card,97,ap_alt_interv,0);
   if (ret == 1) printf("ALT INTV Button: %i \n",*ap_alt_interv);
 
 
-  ret = digital_input(card,102,&bank10,-1);
+  ret = digital_input(card,102,&bank10,0);
   if (ret == 1) {
     printf("Bank Limit 10\n");
   }
-  ret = digital_input(card,101,&bank15,-1);
+  ret = digital_input(card,101,&bank15,0);
   if (ret == 1) {
     printf("Bank Limit 15\n");
   }
-  ret = digital_input(card,100,&bank20,-1);
+  ret = digital_input(card,100,&bank20,0);
   if (ret == 1) {
     printf("Bank Limit 20\n");
   }
-  ret = digital_input(card,99,&bank25,-1);
+  ret = digital_input(card,99,&bank25,0);
   if (ret == 1) {
     printf("Bank Limit 25\n");
   }
-  ret = digital_input(card,98,&bank30,-1);
+  ret = digital_input(card,98,&bank30,0);
   if (ret == 1) {
     printf("Bank Limit 30\n");
   }
