@@ -37,26 +37,29 @@
 #define min(A,B) ((A)<(B) ? (A) : (B)) 
 
 /* Common Variables */
+int adf1_tfr_button;
 int adf1_ant_switch;
 int adf1_tone_switch;
 
+int xpndr_sel_switch;
+int xpndr_src_switch;
+int xpndr_mode_select;
+
 void b737_pedestal(void)
 {
-
 
   /* local variables */
   int card = 2; /* SISMO card according to configuration */
   
   int ret;
   int updn;
-  int test;
-  int test1; 
-  int test2;
-  int test3; 
-  int tfr;
+  int dp;
   int temp;
-  int integer;
-  int decimal;
+  int integer; /* integer part of displays */
+  int decimal; /* decimal part of displays */
+  int i0; /* first input # per panel */
+  int o0; /* first output # per panel */
+  int d0; /* first display # per panel */
 
   /* parameters */
   /* X-Plane frequencies are scaled by 10 kHz except for adf and dme */
@@ -70,7 +73,7 @@ void b737_pedestal(void)
   int adf_min = 190; // kHz
   int adf_max = 1750; // kHz
   int transponder_min = 0;
-  int transponder_max = 7777;
+  int transponder_max = 7;
 
   float trim_min = -1.0;
   float trim_max = 1.0;
@@ -87,19 +90,17 @@ void b737_pedestal(void)
   int *com2_freq_active = link_dataref_int("sim/cockpit2/radios/actuators/com2_frequency_hz_833");
   int *adf1_freq_active = link_dataref_int("sim/cockpit/radios/adf1_freq_hz");
   int *adf2_freq_active = link_dataref_int("sim/cockpit/radios/adf2_freq_hz");
-  //  int *dme_freq_active = link_dataref_int("sim/cockpit/radios/dme_freq_hz");
   int *nav1_freq_stdby = link_dataref_int("sim/cockpit/radios/nav1_stdby_freq_hz");
   int *nav2_freq_stdby = link_dataref_int("sim/cockpit/radios/nav2_stdby_freq_hz");
   int *com1_freq_stdby = link_dataref_int("sim/cockpit2/radios/actuators/com1_standby_frequency_hz_833");
   int *com2_freq_stdby = link_dataref_int("sim/cockpit2/radios/actuators/com2_standby_frequency_hz_833");
   int *adf1_freq_stdby = link_dataref_int("sim/cockpit/radios/adf1_stdby_freq_hz");
   int *adf2_freq_stdby = link_dataref_int("sim/cockpit/radios/adf2_stdby_freq_hz"); 
-  //  int *dme_freq_stdby = link_dataref_int("sim/cockpit/radios/dme_stdby_freq_hz");
 
   int *transponder_code = link_dataref_int("sim/cockpit/radios/transponder_code");
   int *transponder_fail = link_dataref_int("sim/operation/failures/rel_xpndr");
-  int *transponder_ident = link_dataref_int("sim/cockpit/radios/transponder_id");
 
+  int *transponder_ident;
   float *transponder_mode_f;
   int *transponder_mode_up;
   int *transponder_mode_dn;
@@ -109,6 +110,9 @@ void b737_pedestal(void)
     transponder_mode_dn = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_dn");
     *transponder_mode_up = 0;
     *transponder_mode_dn = 0;
+    transponder_ident = link_dataref_cmd_once("laminar/B738/push_button/transponder_ident_dn");
+  } else {
+    transponder_ident = link_dataref_cmd_once("sim/transponder/transponder_ident");
   }
   int *transponder_mode = link_dataref_int("sim/cockpit/radios/transponder_mode");
     
@@ -256,7 +260,6 @@ void b737_pedestal(void)
   int *cargofire_disch = link_dataref_int("xpserver/cargofire_disch");
   int *cargofire_test = link_dataref_int("xpserver/cargofire_test");
   int *cargofire_fault = link_dataref_int("xpserver/cargofire_fault");
-  //  int *transponder_select = link_dataref_int("xpserver/transponder_select");
 
 
   int *stab_trim_mode;
@@ -292,31 +295,36 @@ void b737_pedestal(void)
   int blank = 0;
   if (*avionics_on != 1) blank = 1;
 
+  if (0) {
+  
   /*** ADF1 Panel ***/ 
-
+  i0 = 0;
+  o0 = 0;
+  d0 = 0;
+  
   /* ADF1 tfr button */
-  ret = digital_input(card,0,&tfr,0);
+  ret = digital_input(card,i0+0,&adf1_tfr_button,0);
   if (ret == 1) {
-    printf("ADF1 TFR Button: %i \n",tfr);
-    if (tfr == 1) {
+    printf("ADF1 TFR Button: %i \n",adf1_tfr_button);
+    if (adf1_tfr_button == 1) {
       temp = *adf1_freq_active;
       *adf1_freq_active = *adf1_freq_stdby;
       *adf1_freq_stdby = temp;
     }
   }
   /* ADF1 ANT switch */
-  ret = digital_input(card,1,&adf1_ant_switch,0);
+  ret = digital_input(card,i0+1,&adf1_ant_switch,0);
   if (ret == 1) {
     printf("ADF1 ANT SWITCH: %i \n",adf1_ant_switch);
   }
   /* ADF1 TONE switch */
-  ret = digital_input(card,2,&adf1_tone_switch,0);
+  ret = digital_input(card,i0+2,&adf1_tone_switch,0);
   if (ret == 1) {
     printf("ADF1 TONE SWITCH: %i \n",adf1_tone_switch);
   }
   /* ADF1 Outer Encoder (100 kHz step) */
   updn = 0;
-  ret = encoder_input(card,3,4,&updn,100,1);
+  ret = encoder_input(card,i0+3,i0+4,&updn,100,1);
   if (ret == 1) {
     if (*adf1_freq_stdby != INT_MISS) {
       *adf1_freq_stdby += updn;
@@ -326,7 +334,7 @@ void b737_pedestal(void)
   }
   /* ADF1 Inner Encoder (1 kHz step) */
   updn = 0;
-  ret = encoder_input(card,5,6,&updn,1,1);
+  ret = encoder_input(card,i0+5,i0+6,&updn,1,1);
   if (ret == 1) {
     if (*adf1_freq_stdby != INT_MISS) {
       integer = *adf1_freq_stdby / 100;
@@ -341,9 +349,149 @@ void b737_pedestal(void)
   }
   /* ADF1 Displays */
   temp = *adf1_freq_active * 10;
-  ret = display_output(card, 0, 5, &temp, 1, blank);
+  ret = display_output(card, d0+0, 5, &temp, 1, blank);
   temp = *adf1_freq_stdby * 10;
-  ret = display_output(card, 8, 5, &temp, 1, blank);
+  ret = display_output(card, d0+8, 5, &temp, 1, blank);
 
 
+  }
+
+  /*** TRANSPONDER PANEL ***/
+  i0 = 0;
+  o0 = 0;
+  d0 = 0;
+
+  /* XPNDR IDENT button */
+  ret = digital_input(card,i0+8,transponder_ident,0);
+  if (ret == 1) {
+    printf("XPNDR IDENT BUTTON: %i \n",*transponder_ident);
+  }
+  /* XPNDR Selection switch */
+  ret = digital_input(card,i0+9,&xpndr_sel_switch,0);
+  if (ret == 1) {
+    printf("XPNDR SEL SWITCH: %i \n",xpndr_sel_switch);
+  }
+  /* XPNDR Source switch */
+  ret = digital_input(card,i0+10,&xpndr_src_switch,0);
+  if (ret == 1) {
+    printf("XPNDR SRC SWITCH: %i \n",xpndr_src_switch);
+  }
+  /* XPNDR Mode Select */
+  temp = 0;
+  ret = digital_input(card,i0+11,&temp,0);
+  if ((ret == 1) && (xpndr_mode_select != 1)) {
+    xpndr_mode_select = 1;
+    printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
+  }
+  temp = 0;
+  ret = digital_input(card,i0+12,&temp,0);
+  if ((ret == 1) && (xpndr_mode_select != 2)) {
+    xpndr_mode_select = 2;
+    printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
+  }
+  temp = 0;
+  ret = digital_input(card,i0+13,&temp,0);
+  if ((ret == 1) && (xpndr_mode_select != 3)) {
+    xpndr_mode_select = 3;
+    printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
+  }
+  temp = 0;
+  ret = digital_input(card,i0+14,&temp,0);
+  if ((ret == 1) && (xpndr_mode_select != 4)) {
+    xpndr_mode_select = 4;
+    printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
+  }
+  temp = 0;
+  ret = digital_input(card,i0+15,&temp,0);
+  if ((ret == 1) && (xpndr_mode_select != 5)) {
+    xpndr_mode_select = 5;
+    printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
+  }
+
+  if ((acf_type == 2) || (acf_type == 3)) {
+    float xpndr_mode_select_f = (float) xpndr_mode_select;
+    ret = set_state_updnf(&xpndr_mode_select_f,transponder_mode_f,transponder_mode_up,transponder_mode_dn);
+    if (ret != 0) {
+      printf("XPNDR MODE: %f %f %i %i \n",
+	     xpndr_mode_select_f,*transponder_mode_f,*transponder_mode_up,*transponder_mode_dn);
+    }
+  } else {
+    *transponder_mode = xpndr_mode_select;
+  }
+
+  
+  if (*transponder_code != INT_MISS) {
+    /* XPNDR Encoder Digits 1's */
+    updn = 0;
+    ret = encoder_input(card,i0+6,i0+7,&updn,1,1);
+    if (ret == 1) {
+      temp = *transponder_code - (*transponder_code / 10) * 10;
+      *transponder_code -= temp;
+      temp += updn;
+      if (temp > transponder_max) temp = transponder_min;
+      if (temp < transponder_min) temp = transponder_max;
+      *transponder_code += temp; 
+      printf("TRANSPONDER CODE: %i\n",*transponder_code);
+    }
+    /* XPNDR Encoder Digits 10's */
+    updn = 0;
+    ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
+    if (ret == 1) {
+      temp = (*transponder_code - (*transponder_code / 100) * 100)/10;
+      *transponder_code -= 10*temp;
+      temp += updn;
+      if (temp > transponder_max) temp = transponder_min;
+      if (temp < transponder_min) temp = transponder_max;
+      *transponder_code += 10*temp; 
+      printf("TRANSPONDER CODE: %i\n",*transponder_code);
+    }
+    /* XPNDR Encoder Digits 100's */
+    updn = 0;
+    ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
+    if (ret == 1) {
+      temp = (*transponder_code - (*transponder_code / 1000) * 1000)/100;
+      *transponder_code -= 100*temp;
+      temp += updn;
+      if (temp > transponder_max) temp = transponder_min;
+      if (temp < transponder_min) temp = transponder_max;
+      *transponder_code += 100*temp; 
+      printf("TRANSPONDER CODE: %i\n",*transponder_code);
+    }
+    /* XPNDR Encoder Digits 1000's */
+    updn = 0;
+    ret = encoder_input(card,i0+0,i0+1,&updn,1,1);
+    if (ret == 1) {
+      temp = *transponder_code / 1000;
+      *transponder_code -= 1000*temp;
+      temp += updn;
+      if (temp > transponder_max) temp = transponder_min;
+      if (temp < transponder_min) temp = transponder_max;
+      *transponder_code += 1000*temp; 
+      printf("TRANSPONDER CODE: %i\n",*transponder_code);
+    }
+    
+    /* Digits 1's */
+    temp = *transponder_code - (*transponder_code / 10) * 10;
+    ret = display_output(card, d0+6, 1, &temp, -1, blank);
+    /* Digits 10's */
+    temp = *transponder_code / 10 - (*transponder_code / 100) * 10;
+    ret = display_output(card, d0+7, 1, &temp, -1, blank);
+    /* Digits 100's */
+    temp = *transponder_code / 100 - (*transponder_code / 1000)*10;
+    ret = display_output(card, d0+8+6, 1, &temp, -1, blank);
+    /* Digits 1000's */
+    if (*transponder_fail != INT_MISS) {
+      dp = -1 + *transponder_fail; /* set major digit DP for transponder fail led */
+    } else {
+      dp = -1;
+    }
+    temp = *transponder_code / 1000;
+    ret = display_output(card, d0+8+7, 1, &temp, dp, blank);
+
+  } else {
+    temp = 0;
+    ret = display_output(card, d0+6, 2, &temp, -1, 1);
+    ret = display_output(card, d0+8+6, 2, &temp, -1, 1);
+  }
+ 
 }
