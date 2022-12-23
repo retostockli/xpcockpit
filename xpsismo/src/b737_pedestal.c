@@ -41,6 +41,9 @@ int adf1_tfr_button;
 int adf1_ant_switch;
 int adf1_tone_switch;
 
+int nav1_tfr_button;
+int nav1_test_button;
+
 int xpndr_sel_switch;
 int xpndr_src_switch;
 int xpndr_mode_select;
@@ -55,6 +58,7 @@ void b737_pedestal(void)
   int updn;
   int dp;
   int temp;
+  int temp2;
   int integer; /* integer part of displays */
   int decimal; /* decimal part of displays */
   int i0; /* first input # per panel */
@@ -80,6 +84,8 @@ void b737_pedestal(void)
 
   float flood_brightness;
   float panel_brightness;
+
+  float fvalue;
 
 
 
@@ -117,7 +123,12 @@ void b737_pedestal(void)
   int *transponder_mode = link_dataref_int("sim/cockpit/radios/transponder_mode");
     
   float *rudder_trim = link_dataref_flt("sim/flightmodel/controls/rud_trim",-3);
-  float *aileron_trim = link_dataref_flt("sim/flightmodel/controls/ail_trim",-4);
+  int *rudder_trim_left = link_dataref_cmd_hold("sim/flight_controls/rudder_trim_left");
+  int *rudder_trim_right = link_dataref_cmd_hold("sim/flight_controls/rudder_trim_right");
+  
+  //  float *aileron_trim = link_dataref_flt("sim/flightmodel/controls/ail_trim",-4);
+  int *aileron_trim_left = link_dataref_cmd_hold("sim/flight_controls/aileron_trim_left");
+  int *aileron_trim_right = link_dataref_cmd_hold("sim/flight_controls/aileron_trim_right");
 
   /* FIRE SWITCHES ETC. (ONLY FOR x737) */
   int *fire_test; 
@@ -295,7 +306,7 @@ void b737_pedestal(void)
   int blank = 0;
   if (*avionics_on != 1) blank = 1;
 
-  if (0) {
+
   
   /*** ADF1 Panel ***/ 
   i0 = 0;
@@ -353,8 +364,62 @@ void b737_pedestal(void)
   temp = *adf1_freq_stdby * 10;
   ret = display_output(card, d0+8, 5, &temp, 1, blank);
 
+  if (0) {
+  
+  /*** NAV1 Panel ***/ 
+  i0 = 0;
+  o0 = 0;
+  d0 = 0;
+  
+  /* NAV1 tfr button */
+  ret = digital_input(card,i0+0,&nav1_tfr_button,0);
+  if (ret == 1) {
+    printf("NAV1 TFR Button: %i \n",nav1_tfr_button);
+    if (nav1_tfr_button == 1) {
+      temp = *nav1_freq_active;
+      *nav1_freq_active = *nav1_freq_stdby;
+      *nav1_freq_stdby = temp;
+    }
+  }
+  /* NAV1 Test Button */
+  ret = digital_input(card,i0+1,&nav1_test_button,0);
+  if (ret == 1) {
+    printf("NAV1 TEST Button: %i \n",nav1_test_button);
+  }
+  /* NAV1 Outer Encoder (1 MHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
+  if (ret == 1) {
+    if (*nav1_freq_stdby != INT_MISS) {
+      integer = *nav1_freq_stdby / 100;
+      decimal = *nav1_freq_stdby - integer * 100;
+      if (integer < nav_min) integer = nav_max;
+      if (integer > nav_max) integer = nav_min;
+      *nav1_freq_stdby = integer * 100 + decimal;
+      printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
+    }
+  }
+  /* NAV1 Inner Encoder (50 kHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  if (ret == 1) {
+    if (*nav1_freq_stdby != INT_MISS) {
+      integer = *nav1_freq_stdby / 100;
+      decimal = *nav1_freq_stdby - integer * 100;
+      decimal += updn;
+      if (decimal < 0) decimal = 95;
+      if (decimal > 95) decimal = 0;
+      *nav1_freq_stdby = integer * 100 + decimal;
+      printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
+    }
+  }
+  /* NAV1 Displays */
+  ret = display_output(card, d0+0, 5, nav1_freq_active, 2, blank);
+  ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, blank);
 
   }
+  
+  if (0) {
 
   /*** TRANSPONDER PANEL ***/
   i0 = 0;
@@ -493,5 +558,55 @@ void b737_pedestal(void)
     ret = display_output(card, d0+6, 2, &temp, -1, 1);
     ret = display_output(card, d0+8+6, 2, &temp, -1, 1);
   }
- 
+
+  }
+
+
+  if (0) {
+  
+  /**** RUDDER TRIM PANEL ***/
+  i0 = 0;
+  o0 = 0;
+  d0 = 0;
+  /* Aileron Trim Left switch 1 */
+  ret = digital_input(card,i0+1,&temp,0);
+  /* Aileron Trim Left switch 2 */
+  ret = digital_input(card,i0+3,&temp2,0);
+  /* Only activate Aileron Trim if both Switches are activated */
+  if ((temp == 1) && (temp2 == 1)) {
+    *aileron_trim_left = 1;
+  } else {
+    *aileron_trim_left = 0;
+  }
+  /* Aileron Trim Right switch 1 */
+  ret = digital_input(card,i0+2,&temp,0);
+  /* Aileron Trim Right switch 2 */
+  ret = digital_input(card,i0+4,&temp2,0);
+  /* Only activate Aileron Trim if both Switches are activated */
+  if ((temp == 1) && (temp2 == 1)) {
+    *aileron_trim_right = 1;
+  } else {
+    *aileron_trim_right = 0;
+  }
+  
+  /* Rudder Trim Left switch */
+  ret = digital_input(card,i0+5,rudder_trim_left,0);
+  if (ret == 1) {
+    printf("RUDDER TRIM LEFT SWITCH \n");
+  }
+  /* Rudder Trim Right switch */
+  ret = digital_input(card,i0+6,rudder_trim_right,0);
+  if (ret == 1) {
+    printf("RUDDER TRIM RIGHT SWITCH \n");
+  }
+
+  /*  Rudder Trim Display Simulated by Servo 0 */
+  float servoval = 0.0;
+  if (*rudder_trim != FLT_MISS) {
+    servoval = *rudder_trim * 0.82 - 0.28;
+  }
+  ret = servo_outputf(card,0,&servoval,trim_min,trim_max);
+
+  }
+  
 }
