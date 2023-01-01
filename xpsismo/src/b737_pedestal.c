@@ -44,6 +44,9 @@ int adf1_tone_switch;
 int nav1_tfr_button;
 int nav1_test_button;
 
+int com1_tfr_button;
+int com1_test_button;
+
 int xpndr_sel_switch;
 int xpndr_src_switch;
 int xpndr_mode_select;
@@ -306,7 +309,7 @@ void b737_pedestal(void)
   int blank = 0;
   if (*avionics_on != 1) blank = 1;
 
-
+  if (0) {
   
   /*** ADF1 Panel ***/ 
   i0 = 0;
@@ -364,7 +367,6 @@ void b737_pedestal(void)
   temp = *adf1_freq_stdby * 10;
   ret = display_output(card, d0+8, 5, &temp, 1, blank);
 
-  if (0) {
   
   /*** NAV1 Panel ***/ 
   i0 = 0;
@@ -393,6 +395,7 @@ void b737_pedestal(void)
     if (*nav1_freq_stdby != INT_MISS) {
       integer = *nav1_freq_stdby / 100;
       decimal = *nav1_freq_stdby - integer * 100;
+      integer += updn;
       if (integer < nav_min) integer = nav_max;
       if (integer > nav_max) integer = nav_min;
       *nav1_freq_stdby = integer * 100 + decimal;
@@ -418,7 +421,60 @@ void b737_pedestal(void)
   ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, blank);
 
   }
+ 
   
+  /*** COM1 Panel ***/ 
+  i0 = 0;
+  o0 = 0;
+  d0 = 0;
+  
+  /* COM1 tfr button */
+  ret = digital_input(card,i0+0,&com1_tfr_button,0);
+  if (ret == 1) {
+    printf("COM1 TFR Button: %i \n",com1_tfr_button);
+    if (com1_tfr_button == 1) {
+      temp = *com1_freq_active;
+      *com1_freq_active = *com1_freq_stdby;
+      *com1_freq_stdby = temp;
+    }
+  }
+  /* COM1 Test Button */
+  ret = digital_input(card,i0+1,&com1_test_button,0);
+  if (ret == 1) {
+    printf("COM1 TEST Button: %i \n",com1_test_button);
+  }
+  /* COM1 Outer Encoder (1 MHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
+  if (ret == 1) {
+    if (*com1_freq_stdby != INT_MISS) {
+      integer = *com1_freq_stdby / 1000;
+      decimal = *com1_freq_stdby - integer * 1000;
+      integer += updn;
+      if (integer < nav_min) integer = nav_max;
+      if (integer > nav_max) integer = nav_min;
+      *com1_freq_stdby = integer * 1000 + decimal;
+      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
+    }
+  }
+  /* COM1 Inner Encoder (5 kHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  if (ret == 1) {
+    if (*com1_freq_stdby != INT_MISS) {
+      integer = *com1_freq_stdby / 1000;
+      decimal = *com1_freq_stdby - integer * 1000;
+      decimal += updn;
+      if (decimal < 0) decimal = 995;
+      if (decimal > 995) decimal = 0;
+      *com1_freq_stdby = integer * 1000 + decimal;
+      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
+    }
+  }
+  /* COM1 Displays */
+  ret = display_output(card, d0+0, 6, com1_freq_active, 3, blank);
+  ret = display_output(card, d0+8, 6, com1_freq_stdby, 3, blank);
+ 
   if (0) {
 
   /*** TRANSPONDER PANEL ***/
