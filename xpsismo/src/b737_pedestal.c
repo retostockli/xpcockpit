@@ -51,6 +51,19 @@ int xpndr_sel_switch;
 int xpndr_src_switch;
 int xpndr_mode_select;
 
+int cargofire_test;
+int cargofire_select_fwd_a;
+int cargofire_select_fwd_b;
+int cargofire_select_aft_a;
+int cargofire_select_aft_b;
+int cargofire_arm_fwd;
+int cargofire_arm_aft;
+int cargofire_disch;
+
+int cargofire_fault;
+int cargofire_test_fwd;
+int cargofire_test_aft;
+
 void b737_pedestal(void)
 {
 
@@ -264,18 +277,7 @@ void b737_pedestal(void)
   int *vhf3 = link_dataref_cmd_once("BetterPushback/disconnect");
   int *hf1 = link_dataref_cmd_once("BetterPushback/connect_first");
   int *hf2 = link_dataref_cmd_once("BetterPushback/cab_camera");
-  
-  /* unimplemented datarefs (not available in X-Plane and not in x737) */
-  int *wxsel = link_dataref_int("xpserver/wxradar/sel");
-  int *cargofire_fwd_select = link_dataref_int("xpserver/cargofire_fwd_select");
-  int *cargofire_fwd_armed = link_dataref_int("xpserver/cargofire_fwd_armed");
-  int *cargofire_aft_select = link_dataref_int("xpserver/cargofire_aft_select");
-  int *cargofire_aft_armed = link_dataref_int("xpserver/cargofire_aft_armed");
-  int *cargofire_disch = link_dataref_int("xpserver/cargofire_disch");
-  int *cargofire_test = link_dataref_int("xpserver/cargofire_test");
-  int *cargofire_fault = link_dataref_int("xpserver/cargofire_fault");
-
-
+ 
   int *stab_trim_mode;
   float *flt_dk_door;
   float *lock_fail;
@@ -422,6 +424,7 @@ void b737_pedestal(void)
 
   }
  
+  if (0) {
   
   /*** COM1 Panel ***/ 
   i0 = 0;
@@ -474,7 +477,9 @@ void b737_pedestal(void)
   /* COM1 Displays */
   ret = display_output(card, d0+0, 6, com1_freq_active, 3, blank);
   ret = display_output(card, d0+8, 6, com1_freq_stdby, 3, blank);
- 
+
+  }
+  
   if (0) {
 
   /*** TRANSPONDER PANEL ***/
@@ -664,5 +669,62 @@ void b737_pedestal(void)
   ret = servo_outputf(card,0,&servoval,trim_min,trim_max);
 
   }
-  
+
+  /*** CARGO FIRE PANEL ***/
+  i0 = 0;
+  o0 = 0;
+  d0 = 0;
+
+  /* TEST button */
+  ret = digital_input(card,i0+0,&cargofire_test,0);
+  if (ret == 1) {
+    printf("CARGO FIRE TEST BUTTON: %i \n",cargofire_test);
+  }  
+  /* SELECT FWD rotary */
+  ret = digital_input(card,i0+1,&cargofire_select_fwd_a,0);
+  if (ret == 1) {
+    printf("CARGO FIRE SELECT FWD A: %i \n",cargofire_select_fwd_a);
+  }  
+  ret = digital_input(card,i0+2,&cargofire_select_fwd_b,0);
+  if (ret == 1) {
+    printf("CARGO FIRE SELECT FWD B: %i \n",cargofire_select_fwd_b);
+  }  
+  /* SELECT AFT rotary */
+  ret = digital_input(card,i0+3,&cargofire_select_aft_a,0);
+  if (ret == 1) {
+    printf("CARGO FIRE SELECT AFT A: %i \n",cargofire_select_aft_a);
+  }  
+  ret = digital_input(card,i0+4,&cargofire_select_aft_b,0);
+  if (ret == 1) {
+    printf("CARGO FIRE SELECT AFT B: %i \n",cargofire_select_aft_b);
+  }
+  /* ARM FWD button */
+  ret = digital_input(card,i0+5,&cargofire_arm_fwd,1);
+  if (ret == 1) {
+    printf("CARGO FIRE ARM FWD: %i \n",cargofire_arm_fwd);
+  }
+  /* ARM AFT button */
+  ret = digital_input(card,i0+6,&cargofire_arm_aft,1);
+  if (ret == 1) {
+    printf("CARGO FIRE ARM AFT: %i \n",cargofire_arm_aft);
+  }
+  /* DISCH button */
+  ret = digital_input(card,i0+7,&cargofire_disch,0);
+  if (ret == 1) {
+    printf("CARGO FIRE DISCH: %i \n",cargofire_disch);
+  }
+
+  /* Annunciators */
+  cargofire_fault = cargofire_test;
+  cargofire_test_fwd = cargofire_test;
+  cargofire_test_aft = cargofire_test;
+  ret = digital_output(card,o0+0,&cargofire_fault);
+  ret = digital_output(card,o0+1,&cargofire_test_fwd);
+  ret = digital_output(card,o0+2,&cargofire_test_aft);
+  ret = digital_output(card,o0+3,&cargofire_arm_fwd);
+  ret = digital_output(card,o0+4,&cargofire_arm_fwd);
+  ret = digital_output(card,o0+5,&cargofire_arm_aft);
+  ret = digital_output(card,o0+6,&cargofire_arm_aft);
+  ret = digital_output(card,o0+7,&cargofire_disch);
+ 
 }
