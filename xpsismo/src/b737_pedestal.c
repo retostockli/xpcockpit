@@ -1,10 +1,8 @@
 /* This is the b737_pedestal.c code which connects the Boeing 737 center pedestal via the SISMO Ethernet Card
    to X-Plane
 
-   Copyright (C) 2021 Reto Stockli
+   Copyright (C) 2023 Reto Stockli
 
-   Additions for analog axes treatment by Hans Jansen 2011
-   Also several cosmetic changes and changes for Linux compilation
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
    either version 3 of the License, or (at your option) any later version.
@@ -64,6 +62,16 @@ int cargofire_fault;
 int cargofire_test_fwd;
 int cargofire_test_aft;
 
+int wxr_mode_test;
+int wxr_mode_wx;
+int wxr_mode_turb;
+
+int stab_trim_ovrd;
+int flt_deck_door_unlock;
+int flt_deck_door_auto;
+int flt_deck_door_deny;
+int flt_deck_door_pos;
+
 void b737_pedestal(void)
 {
 
@@ -80,6 +88,7 @@ void b737_pedestal(void)
   int i0; /* first input # per panel */
   int o0; /* first output # per panel */
   int d0; /* first display # per panel */
+  int a0; /* first analog # per panel */
 
   /* parameters */
   /* X-Plane frequencies are scaled by 10 kHz except for adf and dme */
@@ -146,7 +155,7 @@ void b737_pedestal(void)
   int *aileron_trim_left = link_dataref_cmd_hold("sim/flight_controls/aileron_trim_left");
   int *aileron_trim_right = link_dataref_cmd_hold("sim/flight_controls/aileron_trim_right");
 
-  /* FIRE SWITCHES ETC. (ONLY FOR x737) */
+  /* FIRE SWITCHES ETC */
   int *fire_test; 
   int *fire_test_ovht; 
   int *fire_test_fault; 
@@ -277,19 +286,26 @@ void b737_pedestal(void)
   int *vhf3 = link_dataref_cmd_once("BetterPushback/disconnect");
   int *hf1 = link_dataref_cmd_once("BetterPushback/connect_first");
   int *hf2 = link_dataref_cmd_once("BetterPushback/cab_camera");
- 
-  int *stab_trim_mode;
-  float *flt_dk_door;
+
+  /* WXR Gain and Tilt */
+  float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2);
+  float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2);
+  
+  float *flt_deck_door;
+  int *flt_deck_door_left;
+  int *flt_deck_door_right;
   float *lock_fail;
   float *auto_unlk;
   if ((acf_type == 2) || (acf_type == 3)) {
-    stab_trim_mode = link_dataref_int("xpserver/stab_trim_mode");
-    flt_dk_door = link_dataref_flt("laminar/B738/toggle_switch/flt_dk_door",0);
+    flt_deck_door = link_dataref_flt("laminar/B738/toggle_switch/flt_dk_door",0);
+    flt_deck_door_left = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_left");
+    flt_deck_door_right = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_right");
     lock_fail = link_dataref_flt("laminar/B738/annunciator/door_lock_fail",0);
     auto_unlk = link_dataref_flt("laminar/B738/annunciator/door_auto_unlk",0);
   } else {
-    stab_trim_mode = link_dataref_int("xpserver/stab_trim_mode");
-    flt_dk_door = link_dataref_flt("xpserver/flt_dk_door",0);
+    flt_deck_door = link_dataref_flt("xpserver/flt_dk_door",0);
+    flt_deck_door_left = link_dataref_int("xpserver/flt_dk_door_left");
+    flt_deck_door_right = link_dataref_int("xpserver/flt_dk_door_right");    
     lock_fail = link_dataref_flt("xpserver/lock_fail",0);
     auto_unlk = link_dataref_flt("xpserver/auto_unlk",0);
   }
@@ -315,7 +331,6 @@ void b737_pedestal(void)
   
   /*** ADF1 Panel ***/ 
   i0 = 0;
-  o0 = 0;
   d0 = 0;
   
   /* ADF1 tfr button */
@@ -372,7 +387,6 @@ void b737_pedestal(void)
   
   /*** NAV1 Panel ***/ 
   i0 = 0;
-  o0 = 0;
   d0 = 0;
   
   /* NAV1 tfr button */
@@ -428,7 +442,6 @@ void b737_pedestal(void)
   
   /*** COM1 Panel ***/ 
   i0 = 0;
-  o0 = 0;
   d0 = 0;
   
   /* COM1 tfr button */
@@ -484,7 +497,6 @@ void b737_pedestal(void)
 
   /*** TRANSPONDER PANEL ***/
   i0 = 0;
-  o0 = 0;
   d0 = 0;
 
   /* XPNDR IDENT button */
@@ -628,7 +640,7 @@ void b737_pedestal(void)
   /**** RUDDER TRIM PANEL ***/
   i0 = 0;
   o0 = 0;
-  d0 = 0;
+
   /* Aileron Trim Left switch 1 */
   ret = digital_input(card,i0+1,&temp,0);
   /* Aileron Trim Left switch 2 */
@@ -668,12 +680,10 @@ void b737_pedestal(void)
   }
   ret = servo_outputf(card,0,&servoval,trim_min,trim_max);
 
-  }
-
+  
   /*** CARGO FIRE PANEL ***/
   i0 = 0;
   o0 = 0;
-  d0 = 0;
 
   /* TEST button */
   ret = digital_input(card,i0+0,&cargofire_test,0);
@@ -726,5 +736,109 @@ void b737_pedestal(void)
   ret = digital_output(card,o0+5,&cargofire_arm_aft);
   ret = digital_output(card,o0+6,&cargofire_arm_aft);
   ret = digital_output(card,o0+7,&cargofire_disch);
+
+
+  /*** SELCAL PANEL ***/
+  /* Part of WXR PANEL */
+  i0 = 0;
+  o0 = 0;
+
+  ret = digital_input(card,i0+0,vhf1,0);
+  if (ret == 1) {
+    printf("SELCAL VHF1 BUTTON: %i \n",*vhf1);
+  }    
+  ret = digital_output(card,o0+0,vhf1);
+
+  ret = digital_input(card,i0+1,vhf2,0);
+  if (ret == 1) {
+    printf("SELCAL VHF2 BUTTON: %i \n",*vhf2);
+  }    
+  ret = digital_output(card,o0+1,vhf2);
+  
+  ret = digital_input(card,i0+2,vhf3,0);
+  if (ret == 1) {
+    printf("SELCAL VHF3 BUTTON: %i \n",*vhf3);
+  }    
+  ret = digital_output(card,o0+2,vhf3);
+
+  ret = digital_input(card,i0+3,hf1,0);
+  if (ret == 1) {
+    printf("SELCAL HF1 BUTTON: %i \n",*hf1);
+  }    
+  ret = digital_output(card,o0+3,hf1);
+  
+  ret = digital_input(card,i0+4,hf2,0);
+  if (ret == 1) {
+    printf("SELCAL HF2 BUTTON: %i \n",*hf2);
+  }    
+  ret = digital_output(card,o0+4,hf2);
+
+
+  /*** WXR PANEL ***/
+  /* Part of SELCAL PANEL */
+  i0 = 0;
+  a0 = 0;
+
+  /* WXR Mode Selector */
+  ret = digital_input(card,i0+5,&wxr_mode_test,0);
+  if (ret == 1) {
+    printf("WXR MODE TEST: %i \n",wxr_mode_test);
+  }    
+  ret = digital_input(card,i0+6,&wxr_mode_wx,0);
+  if (ret == 1) {
+    printf("WXR MODE WX: %i \n",wxr_mode_wx);
+  }    
+  ret = digital_input(card,i0+7,&wxr_mode_turb,0);
+  if (ret == 1) {
+    printf("WXR MODE WX/TURB: %i \n",wxr_mode_turb);
+  }
+
+  /* WXR Gain */
+  ret = analog_input(card,a0+0,wxr_gain,0.0,1.0);
+  if (ret == 1) {
+    printf("WXR Gain: %f \n",*wxr_gain);
+  }
+  
+  /* WXR Tilt */
+  ret = analog_input(card,a0+1,wxr_tilt,0.0,1.0);
+  if (ret == 1) {
+    printf("WXR Tilt: %f \n",*wxr_tilt);
+  }
+
+  }
+
+  /*** DOOR PANEL ***/
+  i0 = 0;
+  o0 = 0;
+
+  ret = digital_input(card,i0+0,&stab_trim_ovrd,0);
+  if (ret == 1) {
+    printf("STAB TRIM OVRD SWITCH: %i \n",stab_trim_ovrd);
+  }    
+
+  ret = digital_input(card,i0+1,&flt_deck_door_unlock,0);
+  if (ret == 1) {
+    printf("FLT DECK DOOR UNLOCKED: %i \n",flt_deck_door_unlock);
+  }    
+  ret = digital_input(card,i0+2,&flt_deck_door_auto,0);
+  if (ret == 1) {
+    printf("FLT DECK DOOR AUTO: %i \n",flt_deck_door_auto);
+  }    
+  ret = digital_input(card,i0+3,&flt_deck_door_deny,0);
+  if (ret == 1) {
+    printf("FLT DECK DOOR DENY: %i \n",flt_deck_door_deny);
+  }
+
+  flt_deck_door_pos = -flt_deck_door_unlock + flt_deck_door_deny; 
+  float flt_deck_door_pos_f = (float) flt_deck_door_pos;
+  ret = set_state_updnf(&flt_deck_door_pos_f,flt_deck_door,flt_deck_door_right,flt_deck_door_left);
+  if (ret != 0) {
+    printf("FLT DECK DOOR: %f %f %i %i \n",
+	   flt_deck_door_pos_f,*flt_deck_door,*flt_deck_door_right,*flt_deck_door_left);
+  }
  
+  ret = digital_outputf(card,o0+0,lock_fail);
+  ret = digital_outputf(card,o0+1,auto_unlk);
+  
+  
 }
