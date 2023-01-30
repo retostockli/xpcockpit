@@ -72,6 +72,44 @@ int flt_deck_door_auto;
 int flt_deck_door_deny;
 int flt_deck_door_pos;
 
+int acp1_micsel_vhf1;
+int acp1_micsel_vhf2;
+int acp1_micsel_vhf3;
+int acp1_micsel_hf1;
+int acp1_micsel_hf2;
+int acp1_micsel_flt;
+int acp1_micsel_svc;
+int acp1_micsel_pa;
+int acp1_rt_ic;
+int acp1_mask_boom;
+int acp1_sel_v;
+int acp1_sel_b;
+int acp1_sel_r;
+int acp1_sel_vbr;
+int acp1_alt_norm;
+
+float acp1_vol_vhf1;
+float acp1_vol_vhf2;
+float acp1_vol_pa;
+float acp1_vol_mkr;
+float acp1_vol_spkr;
+
+int fire_eng1_ovht_det_a; 
+int fire_eng1_ovht_det_b; 
+int fire_eng2_ovht_det_a;
+int fire_eng2_ovht_det_b;
+
+float fire_eng1_pulled_input;
+float fire_eng1_rotate_l_input;
+float fire_eng1_rotate_r_input;
+float fire_apu_pulled_input;
+float fire_apu_rotate_l_input;
+float fire_apu_rotate_r_input;
+float fire_eng2_pulled_input;
+float fire_eng2_rotate_l_input;
+float fire_eng2_rotate_r_input;
+int fire_bell_cutout;
+
 void b737_pedestal(void)
 {
 
@@ -92,9 +130,6 @@ void b737_pedestal(void)
 
   /* parameters */
   /* X-Plane frequencies are scaled by 10 kHz except for adf and dme */
-  int zero = 0;
-  int one = 1;
-  int ten = 10;
   int nav_min = 108; // MHz
   int nav_max = 117; // MHz
   int com_min = 118; // MHz
@@ -108,9 +143,6 @@ void b737_pedestal(void)
   float trim_max = 1.0;
 
   float flood_brightness;
-  float panel_brightness;
-
-  float fvalue;
 
 
 
@@ -159,8 +191,6 @@ void b737_pedestal(void)
   int *fire_test; 
   int *fire_test_ovht; 
   int *fire_test_fault; 
-  int *fire_eng1_ovht_det; 
-  int *fire_eng2_ovht_det;
   int *fire_eng_ext_test;
   int *fire_eng_ext_test_left;
   int *fire_eng_ext_test_right;
@@ -227,16 +257,6 @@ void b737_pedestal(void)
     fire_eng2_pulled = link_dataref_cmd_once("laminar/B738/fire/engine02/ext_switch_arm"); 
     fire_eng2_rotate_l = link_dataref_cmd_once("laminar/B738/fire/engine02/ext_switch_L"); 
     fire_eng2_rotate_r = link_dataref_cmd_once("laminar/B738/fire/engine02/ext_switch_R"); 
-
-    *fire_eng1_pulled = 0;
-    *fire_eng1_rotate_l = 0;
-    *fire_eng1_rotate_r = 0;
-    *fire_apu_pulled = 0;
-    *fire_apu_rotate_l = 0;
-    *fire_apu_rotate_r = 0;
-    *fire_eng2_pulled = 0;
-    *fire_eng2_rotate_l = 0;
-    *fire_eng2_rotate_r = 0;
     
     fire_eng1_pulled_status = link_dataref_flt("laminar/B738/fire/engine01/ext_switch/pos_arm",-2); 
     fire_eng1_rotate_status = link_dataref_flt("laminar/B738/fire/engine01/ext_switch/pos_disch",-2);
@@ -245,14 +265,8 @@ void b737_pedestal(void)
     fire_eng2_pulled_status = link_dataref_flt("laminar/B738/fire/engine02/ext_switch/pos_arm",-2); 
     fire_eng2_rotate_status = link_dataref_flt("laminar/B738/fire/engine02/ext_switch/pos_disch",-2);
    
-    /*
-    fire_eng1_ovht_det = link_dataref_int("");
-    fire_eng2_ovht_det = link_dataref_int("");
-    */
   } else if (acf_type == 1) {
     fire_test = link_dataref_int("x737/cockpit/fireSupPanel/fireWarnTestSw_state"); // 0: fault, 1: off, 2: ovht
-    fire_eng1_ovht_det = link_dataref_int("x737/cockpit/fireSupPanel/Eng1OvhtDetSw_state"); // 0: A, 1: NORMAL, 2: B
-    fire_eng2_ovht_det = link_dataref_int("x737/cockpit/fireSupPanel/Eng2OvhtDetSw_state"); // 0: A, 1: NORMAL, 2: B
     fire_eng_ext_test = link_dataref_int("x737/cockpit/fireSupPanel/fireExtTestSw_state"); //  0: '1', 1: center, 2: '2'
     fire_eng1_pulled = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle1Pulled_state"); // 0: down, 1: pulled
     fire_eng1_rotate = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle1Rotate_state"); // -1: 'L', 0: center, 1: 'R'
@@ -309,17 +323,6 @@ void b737_pedestal(void)
     lock_fail = link_dataref_flt("xpserver/lock_fail",0);
     auto_unlk = link_dataref_flt("xpserver/auto_unlk",0);
   }
-    
-  float *radio_volume1;
-  float *radio_volume2;
-  if ((acf_type == 2) || (acf_type == 3)) {
-    radio_volume1 = link_dataref_flt("laminar/B738/comm/audio_vol_com1",-1);
-    radio_volume2 = link_dataref_flt("laminar/B738/comm/audio_vol_com2",-1);
-  } else {
-    radio_volume1 = link_dataref_flt("sim/cockpit2/radios/actuators/audio_volume_com1",-1);
-    radio_volume2 = link_dataref_flt("sim/cockpit2/radios/actuators/audio_volume_com1",-1);
-  }
-  float *master_volume = link_dataref_flt("sim/operation/sound/master_volume_ratio",-1);
 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
@@ -467,8 +470,8 @@ void b737_pedestal(void)
       integer = *com1_freq_stdby / 1000;
       decimal = *com1_freq_stdby - integer * 1000;
       integer += updn;
-      if (integer < nav_min) integer = nav_max;
-      if (integer > nav_max) integer = nav_min;
+      if (integer < com_min) integer = com_max;
+      if (integer > com_max) integer = com_min;
       *com1_freq_stdby = integer * 1000 + decimal;
       printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
     }
@@ -805,8 +808,18 @@ void b737_pedestal(void)
     printf("WXR Tilt: %f \n",*wxr_tilt);
   }
 
-  }
+  /*** LIGHTS PANEL ***/
+  a0 = 0;
 
+  /* Panel Brightness: HARDWARE */
+
+  /* Flood Brightness */
+  ret = analog_input(card,a0+0,&flood_brightness,0.0,1.0);
+  if (ret == 1) {
+    printf("FLOOD LIGHT BRIGHTNESS: %f \n",flood_brightness);
+  }
+  
+  
   /*** DOOR PANEL ***/
   i0 = 0;
   o0 = 0;
@@ -840,5 +853,244 @@ void b737_pedestal(void)
   ret = digital_outputf(card,o0+0,lock_fail);
   ret = digital_outputf(card,o0+1,auto_unlk);
   
+
+  }
+
+  if (0) {
+
+  /*** AUDIO CONTROL PANEL 1 ***/
+  i0 = 0;
+  o0 = 0;
+  a0 = 0;
+
+  /* MIC Selectors */
+  ret = digital_input(card,i0+0,&acp1_micsel_vhf1,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR VHF1: %i \n",acp1_micsel_vhf1);
+  }    
+  ret = digital_output(card,o0+0,&acp1_micsel_vhf1);
+
+  ret = digital_input(card,i0+1,&acp1_micsel_vhf2,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR VHF2: %i \n",acp1_micsel_vhf2);
+  }    
+  ret = digital_output(card,o0+1,&acp1_micsel_vhf2);
   
+  ret = digital_input(card,i0+2,&acp1_micsel_vhf3,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR VHF3: %i \n",acp1_micsel_vhf3);
+  }    
+  ret = digital_output(card,o0+2,&acp1_micsel_vhf3);
+  
+  ret = digital_input(card,i0+3,&acp1_micsel_hf1,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR HF1: %i \n",acp1_micsel_hf1);
+  }    
+  ret = digital_output(card,o0+3,&acp1_micsel_hf1);
+  
+  ret = digital_input(card,i0+4,&acp1_micsel_hf2,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR HF2: %i \n",acp1_micsel_hf2);
+  }    
+  ret = digital_output(card,o0+4,&acp1_micsel_hf2);
+  
+  ret = digital_input(card,i0+5,&acp1_micsel_flt,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR FLT: %i \n",acp1_micsel_flt);
+  }    
+  ret = digital_output(card,o0+5,&acp1_micsel_flt);
+  
+  ret = digital_input(card,i0+6,&acp1_micsel_svc,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR SVC: %i \n",acp1_micsel_svc);
+  }    
+  ret = digital_output(card,o0+6,&acp1_micsel_svc);
+  
+  ret = digital_input(card,i0+7,&acp1_micsel_pa,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR PA: %i \n",acp1_micsel_pa);
+  }    
+  ret = digital_output(card,o0+7,&acp1_micsel_pa);
+
+  /* Other Switches */
+  ret = digital_input(card,i0+8,&acp1_rt_ic,0);
+  if (ret == 1) {
+    printf("ACP1 R/T I/C Switch: %i \n",acp1_rt_ic);
+  }    
+
+  ret = digital_input(card,i0+9,&acp1_mask_boom,0);
+  if (ret == 1) {
+    printf("ACP1 MASK/BOOM Switch: %i \n",acp1_mask_boom);
+  }    
+  
+  ret = digital_input(card,i0+10,&acp1_sel_v,0);
+  if (ret == 1) {
+    printf("ACP1 VBR Selector V: %i \n",acp1_sel_v);
+  }    
+  
+  ret = digital_input(card,i0+11,&acp1_sel_b,0);
+  if (ret == 1) {
+    printf("ACP1 VBR Selector B: %i \n",acp1_sel_b);
+  }    
+  ret = digital_input(card,i0+12,&acp1_sel_r,0);
+  if (ret == 1) {
+    printf("ACP1 VBR Selector R: %i \n",acp1_sel_r);
+  }
+
+  acp1_sel_vbr = acp1_sel_v + acp1_sel_b*2 + acp1_sel_r*3;
+  
+  ret = digital_input(card,i0+13,&acp1_alt_norm,0);
+  if (ret == 1) {
+    printf("ACP1 ALT / NORM Switch: %i \n",acp1_alt_norm);
+  }
+
+  /* Audio Volume Potentiometers */
+  ret = analog_input(card,a0+0,&acp1_vol_vhf1,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume VHF1: %f \n",acp1_vol_vhf1);
+  }
+  ret = analog_input(card,a0+1,&acp1_vol_vhf2,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume VHF2: %f \n",acp1_vol_vhf2);
+  }
+  ret = analog_input(card,a0+2,&acp1_vol_pa,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume PA: %f \n",acp1_vol_pa);
+  }
+  ret = analog_input(card,a0+3,&acp1_vol_mkr,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume MKR: %f \n",acp1_vol_mkr);
+  }
+  ret = analog_input(card,a0+4,&acp1_vol_spkr,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume SPKR: %f \n",acp1_vol_spkr);
+  }
+
+  }
+
+
+  if (0) {
+  
+  /*** FIRE MODULE ***/
+  i0 = 0;
+  o0 = 0;
+
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+  
+    /* annunciators */
+    ret = digital_outputf(card,o0+0,fire_eng1_ovht_ann);
+    ret = digital_outputf(card,o0+1,fire_wheelwell_ann);
+    ret = digital_outputf(card,o0+2,fire_fault_ann);
+    ret = digital_outputf(card,o0+3,fire_apu_det_inop_ann);
+    ret = digital_outputf(card,o0+4,fire_apu_bottle_disch_ann);
+    ret = digital_outputf(card,o0+5,fire_eng2_ovht_ann);
+    ret = digital_outputf(card,o0+6,fire_bottle_l_disch_ann);
+    ret = digital_outputf(card,o0+7,fire_bottle_r_disch_ann);
+    
+    /* fire handle lights */
+    ret = digital_outputf(card,o0+8,fire_eng1_ann);
+    ret = digital_outputf(card,o0+9,fire_apu_ann);
+    ret = digital_outputf(card,o0+10,fire_eng2_ann);
+    
+    /* discharge indicators */
+    ret = digital_outputf(card,o0+12,fire_eng1_test_ann);
+    ret = digital_outputf(card,o0+13,fire_apu_test_ann);
+    ret = digital_outputf(card,o0+14,fire_eng2_test_ann);
+
+    ret = digital_input(card,i0+0,&fire_eng1_ovht_det_a,0);
+    if (ret == 1) {
+      printf("ENG 1 OVHT DET A: %i \n",fire_eng1_ovht_det_a);
+    }
+    ret = digital_input(card,i0+1,&fire_eng1_ovht_det_b,0);
+    if (ret == 1) {
+      printf("ENG 1 OVHT DET B: %i \n",fire_eng1_ovht_det_b);
+    }
+    ret = digital_input(card,i0+2,fire_test_fault,0);
+    if (ret == 1) {
+      printf("FIRE TEST/FAULT: %i \n",*fire_test_fault);
+    }
+    ret = digital_input(card,i0+3,fire_test_ovht,0);
+    if (ret == 1) {
+      printf("FIRE TEST/OVHT: %i \n",*fire_test_ovht);
+    }
+    ret = digital_input(card,i0+4,&fire_eng2_ovht_det_a,0);
+    if (ret == 1) {
+      printf("ENG 2 OVHT DET A: %i \n",fire_eng2_ovht_det_a);
+    }
+    ret = digital_input(card,i0+5,&fire_eng2_ovht_det_b,0);
+    if (ret == 1) {
+      printf("ENG 2 OVHT DET B: %i \n",fire_eng2_ovht_det_b);
+    }
+    ret = digital_input(card,i0+6,fire_eng_ext_test_left,0);
+    if (ret == 1) {
+      printf("FIRE EXT TEST 1: %i \n",*fire_eng_ext_test_left);
+    }
+    ret = digital_input(card,i0+7,fire_eng_ext_test_right,0);
+    if (ret == 1) {
+      printf("FIRE EXT TEST 2: %i \n",*fire_eng_ext_test_right);
+    }
+    
+    /* Fire Handle ENG 1*/
+    ret = digital_inputf(card,i0+16,&fire_eng1_pulled_input,-1);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 PULLED: %f \n",fire_eng1_pulled_input);
+    }
+    ret = set_state_togglef(&fire_eng1_pulled_input, fire_eng1_pulled_status, fire_eng1_pulled);
+
+    ret = digital_inputf(card,i0+17,&fire_eng1_rotate_l_input,0);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 ROTATE LEFT: %f \n",fire_eng1_rotate_l_input);
+    }
+    ret = digital_inputf(card,i0+18,&fire_eng1_rotate_r_input,0);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 ROTATE RIGHT: %f \n",fire_eng1_rotate_r_input);
+    }
+    float fire_eng1_rotate_input = -fire_eng1_rotate_l_input + fire_eng1_rotate_r_input;
+    ret = set_state_updnf(&fire_eng1_rotate_input, fire_eng1_rotate_status, fire_eng1_rotate_r, fire_eng1_rotate_l);
+
+    /* Fire Handle APU */
+    ret = digital_inputf(card,i0+19,&fire_apu_pulled_input,-1);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 PULLED: %f \n",fire_apu_pulled_input);
+    }
+    ret = set_state_togglef(&fire_apu_pulled_input, fire_apu_pulled_status, fire_apu_pulled);
+
+    ret = digital_inputf(card,i0+20,&fire_apu_rotate_l_input,0);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 ROTATE LEFT: %f \n",fire_apu_rotate_l_input);
+    }
+    ret = digital_inputf(card,i0+21,&fire_apu_rotate_r_input,0);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 ROTATE RIGHT: %f \n",fire_apu_rotate_r_input);
+    }
+    float fire_apu_rotate_input = -fire_apu_rotate_l_input + fire_apu_rotate_r_input;
+    ret = set_state_updnf(&fire_apu_rotate_input, fire_apu_rotate_status, fire_apu_rotate_r, fire_apu_rotate_l);
+
+    /* Fire Handle ENG2 */
+    ret = digital_inputf(card,i0+24,&fire_eng2_pulled_input,-1);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 PULLED: %f \n",fire_eng2_pulled_input);
+    }
+    ret = set_state_togglef(&fire_eng2_pulled_input, fire_eng2_pulled_status, fire_eng2_pulled);
+
+    ret = digital_inputf(card,i0+25,&fire_eng2_rotate_l_input,0);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 ROTATE LEFT: %f \n",fire_eng2_rotate_l_input);
+    }
+    ret = digital_inputf(card,i0+26,&fire_eng2_rotate_r_input,0);
+    if (ret == 1) {
+      printf("FIRE HANDLE ENG 1 ROTATE RIGHT: %f \n",fire_eng2_rotate_r_input);
+    }
+    float fire_eng2_rotate_input = -fire_eng2_rotate_l_input + fire_eng2_rotate_r_input;
+    ret = set_state_updnf(&fire_eng2_rotate_input, fire_eng2_rotate_status, fire_eng2_rotate_r, fire_eng2_rotate_l);
+
+    ret = digital_input(card,i0+28,&fire_bell_cutout,0);
+    if (ret == 1) {
+      printf("FIRE BELL CUTOUT: %i \n",fire_bell_cutout);
+    }
+
+  }
+    
+  }
 }
+

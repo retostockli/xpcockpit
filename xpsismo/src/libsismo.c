@@ -519,6 +519,8 @@ int digital_inputf(int card, int input, float *fvalue, int type)
 /* Two types : */
 /* 0: pushbutton */
 /* 1: toggle switch */
+
+/* THIRD TYPE: -1: pushbutton inverse */
 int digital_input(int card, int input, int *value, int type)
 {
 
@@ -540,7 +542,18 @@ int digital_input(int card, int input, int *value, int type)
 	  } else {
 	    s = 0;
 	  }
-	  if (type == 0) {
+	  if (type == -1) {
+	    /* simple pushbutton / switch (inverse) */
+	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
+	      if ((1-*value) != sismo[card].inputs[input][s]) {
+		*value = 1-sismo[card].inputs[input][s];
+		retval = 1;
+		if (verbose > 1) printf("Pushbutton: Card %i Input %i Changed to %i \n",
+					card, input, *value);
+	      }
+	    }
+
+	  } else if (type == 0) {
 	    /* simple pushbutton / switch */
 	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
 	      if (*value != sismo[card].inputs[input][s]) {
