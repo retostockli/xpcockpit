@@ -444,7 +444,7 @@ void b737_pedestal(void)
   if (0) {
   
   /*** COM1 Panel ***/ 
-  i0 = 0;
+  i0 = 24+64+64+32;
   d0 = 0;
   
   /* COM1 tfr button */
@@ -808,8 +808,12 @@ void b737_pedestal(void)
     printf("WXR Tilt: %f \n",*wxr_tilt);
   }
 
+  }
+
+
+  if (0) {
   /*** LIGHTS PANEL ***/
-  a0 = 0;
+  a0 = 0+5;
 
   /* Panel Brightness: HARDWARE */
 
@@ -818,7 +822,10 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("FLOOD LIGHT BRIGHTNESS: %f \n",flood_brightness);
   }
+
+  }
   
+  if (0) {
   
   /*** DOOR PANEL ***/
   i0 = 0;

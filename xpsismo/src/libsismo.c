@@ -269,8 +269,8 @@ int read_sismo() {
 		//val = get_bit(sismoRecvBuffer[8+b],i);
 		val = 1-get_bit(sismoRecvBuffer[8+b],i); // we now use 1: input pressed and 0: input free
 		if (val != sismo[card].inputs[input][0]) {
+		  if (verbose > 2) printf("Card %i Input %i Changed from %i to: %i \n",card,input,sismo[card].inputs[input][0],val);
 		  sismo[card].inputs[input][0] = val; 
-		  if (verbose > 2) printf("Card %i Input %i Changed to: %i \n",card,input,val);
 		}
 	      }
 	    }
@@ -296,15 +296,16 @@ int read_sismo() {
 	    ninputs = 5;
 	    firstbyte = 16;
 	  }
-	  /* Analog Inputs from Analog Input Daughter (Inputs 5-15) */
+	  /* Analog Inputs from Analog Input Daughter (Inputs 5-14) 
+	     Last Input of Analog Input Daughter does not work (Input 11 of this card) */
 	  if (sismoRecvBuffer[4] == 0x03) {
 	    firstinput = 5;
-	    ninputs = 11;
+	    ninputs = 10;
 	    firstbyte = 8;
 	  }
 
 	  /* Analog Inputs are ordered in 10 bytes with 2 bytes per input */
-	  /* Located in bytes 16-25 */
+	  /* Located in bytes 16-25 on SC-MB and bytes 8-27 on Daughter */
 	  for (input=0;input<ninputs;input++) {
 	    val = sismoRecvBuffer[firstbyte+input*2] + 256 * sismoRecvBuffer[firstbyte+1+input*2];
 	    /* shift all inputs in history array by one */
@@ -387,7 +388,7 @@ int write_sismo() {
 	  for (output=0;output<64;output++) {
 	    set_bit(&sismoSendBuffer[4+output/8],output%8,sismo[card].outputs[output+firstoutput]);
 	    if (sismo[card].outputs_changed[output+firstoutput] == CHANGED) {
-	      if (verbose > 0) printf("Card %i Output %i changed to: %i \n",
+	      if (verbose > 2) printf("Card %i Output %i changed to: %i \n",
 				      card,output,sismo[card].outputs[output+firstoutput]);
 	      anychanged = 1;
 	      /* reset changed state since data will be sent to SISMO card */
@@ -396,7 +397,7 @@ int write_sismo() {
 	  }
 	  if (anychanged) {
 	    ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
-	    if (verbose > 0) printf("Sent %i bytes to card %i \n", ret,card);
+	    if (verbose > 2) printf("Sent %i bytes to card %i \n", ret,card);
 	  }
 	}
       }
@@ -434,9 +435,9 @@ int write_sismo() {
 	    sismoSendBuffer[4] = group+1;
 	    sismoSendBuffer[13] = DISPLAYBRIGHTNESS; /* Todo: make user-adjustable */
 	    for (display=0;display<8;display++) {
-	      set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8]);
+	      set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGED) {
-		if (verbose > 2) printf("Card %i Display %i changed to: %i \n",card,display+group*8,
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",card,bank,display+group*8,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
 		/* reset changed state since data will be sent to SISMO card */
@@ -445,7 +446,7 @@ int write_sismo() {
 	    }
 	    if (anychanged) {
 	      ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
-	      if (verbose > 1) printf("Sent %i bytes to card %i \n", ret,card);
+	      if (verbose > 2) printf("Sent %i bytes to card %i \n", ret,card);
 	    }
 	  }
 
