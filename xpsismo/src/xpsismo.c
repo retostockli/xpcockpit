@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 	b737_efis(0); /* captain */
 	b737_efis(1); /* copilot */
 	b737_mip();
-	//b737_pedestal();
+	b737_pedestal();
 	//      }
     }
 

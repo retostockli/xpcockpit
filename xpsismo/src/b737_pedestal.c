@@ -35,15 +35,71 @@
 #define min(A,B) ((A)<(B) ? (A) : (B)) 
 
 /* Common Variables */
-int adf1_tfr_button;
-int adf1_ant_switch;
-int adf1_tone_switch;
+int com1_tfr_button;
+int com1_test_button;
+
+int com2_tfr_button;
+int com2_test_button;
 
 int nav1_tfr_button;
 int nav1_test_button;
 
-int com1_tfr_button;
-int com1_test_button;
+int nav2_tfr_button;
+int nav2_test_button;
+
+int adf1_tfr_button;
+int adf1_ant_switch;
+int adf1_tone_switch;
+
+int adf2_tfr_button;
+int adf2_ant_switch;
+int adf2_tone_switch;
+
+
+int acp1_micsel_vhf1;
+int acp1_micsel_vhf2;
+int acp1_micsel_vhf3;
+int acp1_micsel_hf1;
+int acp1_micsel_hf2;
+int acp1_micsel_flt;
+int acp1_micsel_svc;
+int acp1_micsel_pa;
+int acp1_rt_ic;
+int acp1_mask_boom;
+int acp1_sel_v;
+int acp1_sel_b;
+int acp1_sel_r;
+int acp1_sel_vbr;
+int acp1_alt_norm;
+
+float acp1_vol_vhf1;
+float acp1_vol_vhf2;
+float acp1_vol_pa;
+float acp1_vol_mkr;
+float acp1_vol_spkr;
+
+
+int acp2_micsel_vhf1;
+int acp2_micsel_vhf2;
+int acp2_micsel_vhf3;
+int acp2_micsel_hf1;
+int acp2_micsel_hf2;
+int acp2_micsel_flt;
+int acp2_micsel_svc;
+int acp2_micsel_pa;
+int acp2_rt_ic;
+int acp2_mask_boom;
+int acp2_sel_v;
+int acp2_sel_b;
+int acp2_sel_r;
+int acp2_sel_vbr;
+int acp2_alt_norm;
+
+float acp2_vol_vhf1;
+float acp2_vol_vhf2;
+float acp2_vol_pa;
+float acp2_vol_mkr;
+float acp2_vol_spkr;
 
 int xpndr_sel_switch;
 int xpndr_src_switch;
@@ -72,28 +128,6 @@ int flt_deck_door_auto;
 int flt_deck_door_deny;
 int flt_deck_door_pos;
 
-int acp1_micsel_vhf1;
-int acp1_micsel_vhf2;
-int acp1_micsel_vhf3;
-int acp1_micsel_hf1;
-int acp1_micsel_hf2;
-int acp1_micsel_flt;
-int acp1_micsel_svc;
-int acp1_micsel_pa;
-int acp1_rt_ic;
-int acp1_mask_boom;
-int acp1_sel_v;
-int acp1_sel_b;
-int acp1_sel_r;
-int acp1_sel_vbr;
-int acp1_alt_norm;
-
-float acp1_vol_vhf1;
-float acp1_vol_vhf2;
-float acp1_vol_pa;
-float acp1_vol_mkr;
-float acp1_vol_spkr;
-
 int fire_eng1_ovht_det_a; 
 int fire_eng1_ovht_det_b; 
 int fire_eng2_ovht_det_a;
@@ -119,6 +153,7 @@ void b737_pedestal(void)
   int ret;
   int updn;
   int dp;
+  int one=1;
   int temp;
   int temp2;
   int integer; /* integer part of displays */
@@ -188,10 +223,10 @@ void b737_pedestal(void)
   int *aileron_trim_right = link_dataref_cmd_hold("sim/flight_controls/aileron_trim_right");
 
   /* FIRE SWITCHES ETC */
-  int *fire_test; 
+  //  int *fire_test; 
   int *fire_test_ovht; 
   int *fire_test_fault; 
-  int *fire_eng_ext_test;
+  //  int *fire_eng_ext_test;
   int *fire_eng_ext_test_left;
   int *fire_eng_ext_test_right;
   float *fire_eng1_ovht_ann;
@@ -209,15 +244,15 @@ void b737_pedestal(void)
   float *fire_apu_test_ann;
   float *fire_eng2_test_ann;
   int *fire_eng1_pulled;
-  int *fire_eng1_rotate; 
+  //  int *fire_eng1_rotate; 
   int *fire_eng1_rotate_l; 
   int *fire_eng1_rotate_r; 
   int *fire_apu_pulled;
-  int *fire_apu_rotate; 
+  //  int *fire_apu_rotate; 
   int *fire_apu_rotate_l; 
   int *fire_apu_rotate_r; 
   int *fire_eng2_pulled;
-  int *fire_eng2_rotate;
+  //  int *fire_eng2_rotate;
   int *fire_eng2_rotate_l;
   int *fire_eng2_rotate_r;
   float *fire_eng1_pulled_status;
@@ -266,14 +301,14 @@ void b737_pedestal(void)
     fire_eng2_rotate_status = link_dataref_flt("laminar/B738/fire/engine02/ext_switch/pos_disch",-2);
    
   } else if (acf_type == 1) {
-    fire_test = link_dataref_int("x737/cockpit/fireSupPanel/fireWarnTestSw_state"); // 0: fault, 1: off, 2: ovht
-    fire_eng_ext_test = link_dataref_int("x737/cockpit/fireSupPanel/fireExtTestSw_state"); //  0: '1', 1: center, 2: '2'
+    //    fire_test = link_dataref_int("x737/cockpit/fireSupPanel/fireWarnTestSw_state"); // 0: fault, 1: off, 2: ovht
+    //    fire_eng_ext_test = link_dataref_int("x737/cockpit/fireSupPanel/fireExtTestSw_state"); //  0: '1', 1: center, 2: '2'
     fire_eng1_pulled = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle1Pulled_state"); // 0: down, 1: pulled
-    fire_eng1_rotate = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle1Rotate_state"); // -1: 'L', 0: center, 1: 'R'
+    //    fire_eng1_rotate = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle1Rotate_state"); // -1: 'L', 0: center, 1: 'R'
     fire_apu_pulled = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle2Pulled_state"); // 0: down, 1: pulled
-    fire_apu_rotate = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle2Rotate_state"); // -1: 'L', 0: center, 1: 'R'
+    //    fire_apu_rotate = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle2Rotate_state"); // -1: 'L', 0: center, 1: 'R'
     fire_eng2_pulled = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle3Pulled_state"); // 0: down, 1: pulled
-    fire_eng2_rotate = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle3Rotate_state"); // -1: 'L', 0: center, 1: 'R'
+    //    fire_eng2_rotate = link_dataref_int("x737/cockpit/fireSupPanel/fireHandle3Rotate_state"); // -1: 'L', 0: center, 1: 'R'
     
     fire_eng1_ovht_ann = link_dataref_flt("x737/cockpit/fireSupPanel/Eng1OvhtDet_annunc",-1);
     fire_eng2_ovht_ann = link_dataref_flt("x737/cockpit/fireSupPanel/Eng2OvhtDet_annunc",-1);
@@ -305,29 +340,34 @@ void b737_pedestal(void)
   float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2);
   float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2);
   
-  float *flt_deck_door;
-  int *flt_deck_door_left;
-  int *flt_deck_door_right;
+  //  float *flt_deck_door;
+  //  int *flt_deck_door_left;
+  //  int *flt_deck_door_right;
   float *lock_fail;
   float *auto_unlk;
   if ((acf_type == 2) || (acf_type == 3)) {
-    flt_deck_door = link_dataref_flt("laminar/B738/toggle_switch/flt_dk_door",0);
-    flt_deck_door_left = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_left");
-    flt_deck_door_right = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_right");
+    //    flt_deck_door = link_dataref_flt("laminar/B738/toggle_switch/flt_dk_door",0);
+    //    flt_deck_door_left = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_left");
+    //    flt_deck_door_right = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_right");
     lock_fail = link_dataref_flt("laminar/B738/annunciator/door_lock_fail",0);
     auto_unlk = link_dataref_flt("laminar/B738/annunciator/door_auto_unlk",0);
   } else {
-    flt_deck_door = link_dataref_flt("xpserver/flt_dk_door",0);
-    flt_deck_door_left = link_dataref_int("xpserver/flt_dk_door_left");
-    flt_deck_door_right = link_dataref_int("xpserver/flt_dk_door_right");    
+    //    flt_deck_door = link_dataref_flt("xpserver/flt_dk_door",0);
+    //    flt_deck_door_left = link_dataref_int("xpserver/flt_dk_door_left");
+    //    flt_deck_door_right = link_dataref_int("xpserver/flt_dk_door_right");    
     lock_fail = link_dataref_flt("xpserver/lock_fail",0);
     auto_unlk = link_dataref_flt("xpserver/auto_unlk",0);
   }
 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
-  *avionics_on = 1;
-  
+  float *lights_test;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    lights_test = link_dataref_flt("laminar/B738/toggle_switch/bright_test",0);
+  } else {
+    lights_test = link_dataref_flt("xpserver/lights_test",0);
+  }
+    
   /*** Background Lighting ***/
 
   /* blank displays if avionics are off */
@@ -337,12 +377,223 @@ void b737_pedestal(void)
   /* turn off background lighting if avionics are off */
   o0 = 0;
   ret = digital_output(card,o0+24+6,avionics_on);
+
+
   
+  /*** COM1 Panel ***/ 
+  i0 = 64;
+  d0 = 32; 
   
-  if (0) {
+  /* COM1 tfr button */
+  ret = digital_input(card,i0+0,&com1_tfr_button,0);
+  if (ret == 1) {
+    printf("COM1 TFR Button: %i \n",com1_tfr_button);
+    if (com1_tfr_button == 1) {
+      temp = *com1_freq_active;
+      *com1_freq_active = *com1_freq_stdby;
+      *com1_freq_stdby = temp;
+    }
+  }
+  /* COM1 Test Button */
+  ret = digital_input(card,i0+1,&com1_test_button,0);
+  if (ret == 1) {
+    printf("COM1 TEST Button: %i \n",com1_test_button);
+  }
+  /* COM1 Outer Encoder (1 MHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
+  if (ret == 1) {
+    if (*com1_freq_stdby != INT_MISS) {
+      integer = *com1_freq_stdby / 1000;
+      decimal = *com1_freq_stdby - integer * 1000;
+      integer += updn;
+      if (integer < com_min) integer = com_max;
+      if (integer > com_max) integer = com_min;
+      *com1_freq_stdby = integer * 1000 + decimal;
+      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
+    }
+  }
+  /* COM1 Inner Encoder (5 kHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  if (ret == 1) {
+    if (*com1_freq_stdby != INT_MISS) {
+      integer = *com1_freq_stdby / 1000;
+      decimal = *com1_freq_stdby - integer * 1000;
+      decimal += updn;
+      if (decimal < 0) decimal = 995;
+      if (decimal > 995) decimal = 0;
+      *com1_freq_stdby = integer * 1000 + decimal;
+      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
+    }
+  }
+  /* COM1 Displays */
+  ret = display_output(card, d0+0, 6, com1_freq_active, 3, blank);
+  ret = display_output(card, d0+8, 6, com1_freq_stdby, 3, blank);
+
+
+
+  
+  /*** COM2 Panel ***/ 
+  i0 = 128;
+  d0 = 64; 
+  
+  /* COM2 tfr button */
+  ret = digital_input(card,i0+0,&com2_tfr_button,0);
+  if (ret == 1) {
+    printf("COM2 TFR Button: %i \n",com2_tfr_button);
+    if (com2_tfr_button == 1) {
+      temp = *com2_freq_active;
+      *com2_freq_active = *com2_freq_stdby;
+      *com2_freq_stdby = temp;
+    }
+  }
+  /* COM2 Test Button */
+  ret = digital_input(card,i0+1,&com2_test_button,0);
+  if (ret == 1) {
+    printf("COM2 TEST Button: %i \n",com2_test_button);
+  }
+  /* COM2 Outer Encoder (1 MHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
+  if (ret == 1) {
+    if (*com2_freq_stdby != INT_MISS) {
+      integer = *com2_freq_stdby / 1000;
+      decimal = *com2_freq_stdby - integer * 1000;
+      integer += updn;
+      if (integer < com_min) integer = com_max;
+      if (integer > com_max) integer = com_min;
+      *com2_freq_stdby = integer * 1000 + decimal;
+      printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
+    }
+  }
+  /* COM2 Inner Encoder (5 kHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  if (ret == 1) {
+    if (*com2_freq_stdby != INT_MISS) {
+      integer = *com2_freq_stdby / 1000;
+      decimal = *com2_freq_stdby - integer * 1000;
+      decimal += updn;
+      if (decimal < 0) decimal = 995;
+      if (decimal > 995) decimal = 0;
+      *com2_freq_stdby = integer * 1000 + decimal;
+      printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
+    }
+  }
+  /* COM2 Displays */
+  ret = display_output(card, d0+0, 6, com2_freq_active, 3, blank);
+  ret = display_output(card, d0+8, 6, com2_freq_stdby, 3, blank);
+
+
+  
+  /*** NAV1 Panel ***/ 
+  i0 = 64+8;
+  d0 = 32+16;
+  
+  /* NAV1 tfr button */
+  ret = digital_input(card,i0+0,&nav1_tfr_button,0);
+  if (ret == 1) {
+    printf("NAV1 TFR Button: %i \n",nav1_tfr_button);
+    if (nav1_tfr_button == 1) {
+      temp = *nav1_freq_active;
+      *nav1_freq_active = *nav1_freq_stdby;
+      *nav1_freq_stdby = temp;
+    }
+  }
+  /* NAV1 Test Button */
+  ret = digital_input(card,i0+1,&nav1_test_button,0);
+  if (ret == 1) {
+    printf("NAV1 TEST Button: %i \n",nav1_test_button);
+  }
+  /* NAV1 Outer Encoder (1 MHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
+  if (ret == 1) {
+    if (*nav1_freq_stdby != INT_MISS) {
+      integer = *nav1_freq_stdby / 100;
+      decimal = *nav1_freq_stdby - integer * 100;
+      integer += updn;
+      if (integer < nav_min) integer = nav_max;
+      if (integer > nav_max) integer = nav_min;
+      *nav1_freq_stdby = integer * 100 + decimal;
+      printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
+    }
+  }
+  /* NAV1 Inner Encoder (50 kHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  if (ret == 1) {
+    if (*nav1_freq_stdby != INT_MISS) {
+      integer = *nav1_freq_stdby / 100;
+      decimal = *nav1_freq_stdby - integer * 100;
+      decimal += updn;
+      if (decimal < 0) decimal = 95;
+      if (decimal > 95) decimal = 0;
+      *nav1_freq_stdby = integer * 100 + decimal;
+      printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
+    }
+  }
+  /* NAV1 Displays */
+  ret = display_output(card, d0+0, 5, nav1_freq_active, 2, blank);
+  ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, blank);
+
+  
+  /*** NAV2 Panel ***/ 
+  i0 = 128+8;
+  d0 = 64+16;
+  
+  /* NAV2 tfr button */
+  ret = digital_input(card,i0+0,&nav2_tfr_button,0);
+  if (ret == 1) {
+    printf("NAV2 TFR Button: %i \n",nav2_tfr_button);
+    if (nav2_tfr_button == 1) {
+      temp = *nav2_freq_active;
+      *nav2_freq_active = *nav2_freq_stdby;
+      *nav2_freq_stdby = temp;
+    }
+  }
+  /* NAV2 Test Button */
+  ret = digital_input(card,i0+1,&nav2_test_button,0);
+  if (ret == 1) {
+    printf("NAV2 TEST Button: %i \n",nav2_test_button);
+  }
+  /* NAV2 Outer Encoder (1 MHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
+  if (ret == 1) {
+    if (*nav2_freq_stdby != INT_MISS) {
+      integer = *nav2_freq_stdby / 100;
+      decimal = *nav2_freq_stdby - integer * 100;
+      integer += updn;
+      if (integer < nav_min) integer = nav_max;
+      if (integer > nav_max) integer = nav_min;
+      *nav2_freq_stdby = integer * 100 + decimal;
+      printf("NAV2 STDBY FREQ: %i \n",*nav2_freq_stdby);
+    }
+  }
+  /* NAV2 Inner Encoder (50 kHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  if (ret == 1) {
+    if (*nav2_freq_stdby != INT_MISS) {
+      integer = *nav2_freq_stdby / 100;
+      decimal = *nav2_freq_stdby - integer * 100;
+      decimal += updn;
+      if (decimal < 0) decimal = 95;
+      if (decimal > 95) decimal = 0;
+      *nav2_freq_stdby = integer * 100 + decimal;
+      printf("NAV2 STDBY FREQ: %i \n",*nav2_freq_stdby);
+    }
+  }
+  /* NAV2 Displays */
+  ret = display_output(card, d0+0, 5, nav2_freq_active, 2, blank);
+  ret = display_output(card, d0+8, 5, nav2_freq_stdby, 2, blank);
+
+
   
   /*** ADF1 Panel ***/ 
-  i0 = 0;
+  i0 = 96;
   d0 = 0;
   
   /* ADF1 tfr button */
@@ -397,118 +648,286 @@ void b737_pedestal(void)
   ret = display_output(card, d0+8, 5, &temp, 1, blank);
 
   
-  /*** NAV1 Panel ***/ 
-  i0 = 0;
-  d0 = 0;
+  /*** ADF2 Panel ***/ 
+  i0 = 128+32+16;
+  d0 = 16;
   
-  /* NAV1 tfr button */
-  ret = digital_input(card,i0+0,&nav1_tfr_button,0);
+  /* ADF2 tfr button */
+  ret = digital_input(card,i0+0,&adf2_tfr_button,0);
   if (ret == 1) {
-    printf("NAV1 TFR Button: %i \n",nav1_tfr_button);
-    if (nav1_tfr_button == 1) {
-      temp = *nav1_freq_active;
-      *nav1_freq_active = *nav1_freq_stdby;
-      *nav1_freq_stdby = temp;
+    printf("ADF2 TFR Button: %i \n",adf2_tfr_button);
+    if (adf2_tfr_button == 1) {
+      temp = *adf2_freq_active;
+      *adf2_freq_active = *adf2_freq_stdby;
+      *adf2_freq_stdby = temp;
     }
   }
-  /* NAV1 Test Button */
-  ret = digital_input(card,i0+1,&nav1_test_button,0);
+  /* ADF2 ANT switch */
+  ret = digital_input(card,i0+1,&adf2_ant_switch,0);
   if (ret == 1) {
-    printf("NAV1 TEST Button: %i \n",nav1_test_button);
+    printf("ADF2 ANT SWITCH: %i \n",adf2_ant_switch);
   }
-  /* NAV1 Outer Encoder (1 MHz step) */
-  updn = 0;
-  ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
+  /* ADF2 TONE switch */
+  ret = digital_input(card,i0+2,&adf2_tone_switch,0);
   if (ret == 1) {
-    if (*nav1_freq_stdby != INT_MISS) {
-      integer = *nav1_freq_stdby / 100;
-      decimal = *nav1_freq_stdby - integer * 100;
-      integer += updn;
-      if (integer < nav_min) integer = nav_max;
-      if (integer > nav_max) integer = nav_min;
-      *nav1_freq_stdby = integer * 100 + decimal;
-      printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
+    printf("ADF2 TONE SWITCH: %i \n",adf2_tone_switch);
+  }
+  /* ADF2 Outer Encoder (100 kHz step) */
+  updn = 0;
+  ret = encoder_input(card,i0+3,i0+4,&updn,100,1);
+  if (ret == 1) {
+    if (*adf2_freq_stdby != INT_MISS) {
+      *adf2_freq_stdby += updn;
+      *adf2_freq_stdby = min(max(*adf2_freq_stdby,adf_min),adf_max);
+      printf("ADF2 STDBY FREQ: %i \n",*adf2_freq_stdby);
     }
   }
-  /* NAV1 Inner Encoder (50 kHz step) */
+  /* ADF2 Inner Encoder (1 kHz step) */
   updn = 0;
-  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  ret = encoder_input(card,i0+5,i0+6,&updn,1,1);
   if (ret == 1) {
-    if (*nav1_freq_stdby != INT_MISS) {
-      integer = *nav1_freq_stdby / 100;
-      decimal = *nav1_freq_stdby - integer * 100;
+    if (*adf2_freq_stdby != INT_MISS) {
+      integer = *adf2_freq_stdby / 100;
+      decimal = *adf2_freq_stdby - integer * 100;
       decimal += updn;
-      if (decimal < 0) decimal = 95;
-      if (decimal > 95) decimal = 0;
-      *nav1_freq_stdby = integer * 100 + decimal;
-      printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
+      if (decimal < 0) decimal = 99;
+      if (decimal > 99) decimal = 0;
+      *adf2_freq_stdby = integer * 100 + decimal;
+      *adf2_freq_stdby = min(max(*adf2_freq_stdby,adf_min),adf_max);
+      printf("ADF2 STDBY FREQ: %i \n",*adf2_freq_stdby);
     }
   }
-  /* NAV1 Displays */
-  ret = display_output(card, d0+0, 5, nav1_freq_active, 2, blank);
-  ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, blank);
+  /* ADF2 Displays */
+  temp = *adf2_freq_active * 10;
+  ret = display_output(card, d0+0, 5, &temp, 1, blank);
+  temp = *adf2_freq_stdby * 10;
+  ret = display_output(card, d0+8, 5, &temp, 1, blank);
 
-  }
- 
-  //  if (0) {
-  
-  /*** COM1 Panel ***/ 
-  i0 = 0;
-  d0 = 32+16;
-  
-  /* COM1 tfr button */
-  ret = digital_input(card,i0+0,&com1_tfr_button,0);
-  if (ret == 1) {
-    printf("COM1 TFR Button: %i \n",com1_tfr_button);
-    if (com1_tfr_button == 1) {
-      temp = *com1_freq_active;
-      *com1_freq_active = *com1_freq_stdby;
-      *com1_freq_stdby = temp;
-    }
-  }
-  /* COM1 Test Button */
-  ret = digital_input(card,i0+1,&com1_test_button,0);
-  if (ret == 1) {
-    printf("COM1 TEST Button: %i \n",com1_test_button);
-  }
-  /* COM1 Outer Encoder (1 MHz step) */
-  updn = 0;
-  ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
-  if (ret == 1) {
-    if (*com1_freq_stdby != INT_MISS) {
-      integer = *com1_freq_stdby / 1000;
-      decimal = *com1_freq_stdby - integer * 1000;
-      integer += updn;
-      if (integer < com_min) integer = com_max;
-      if (integer > com_max) integer = com_min;
-      *com1_freq_stdby = integer * 1000 + decimal;
-      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
-    }
-  }
-  /* COM1 Inner Encoder (5 kHz step) */
-  updn = 0;
-  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
-  if (ret == 1) {
-    if (*com1_freq_stdby != INT_MISS) {
-      integer = *com1_freq_stdby / 1000;
-      decimal = *com1_freq_stdby - integer * 1000;
-      decimal += updn;
-      if (decimal < 0) decimal = 995;
-      if (decimal > 995) decimal = 0;
-      *com1_freq_stdby = integer * 1000 + decimal;
-      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
-    }
-  }
-  /* COM1 Displays */
-  ret = display_output(card, d0+0, 6, com1_freq_active, 3, blank);
-  ret = display_output(card, d0+8, 6, com1_freq_stdby, 3, blank);
 
-  //  }
   
-  if (0) {
+  /*** AUDIO CONTROL PANEL 1 ***/
+  i0 = 96+8;
+  o0 = 32+8;
+  a0 = 5;
 
+  /* MIC Selectors */
+  ret = digital_input(card,i0+0,&acp1_micsel_vhf1,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR VHF1: %i \n",acp1_micsel_vhf1);
+  }    
+  ret = digital_output(card,o0+0,&acp1_micsel_vhf1);
+
+  ret = digital_input(card,i0+1,&acp1_micsel_vhf2,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR VHF2: %i \n",acp1_micsel_vhf2);
+  }    
+  ret = digital_output(card,o0+1,&acp1_micsel_vhf2);
+  
+  ret = digital_input(card,i0+2,&acp1_micsel_vhf3,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR VHF3: %i \n",acp1_micsel_vhf3);
+  }    
+  ret = digital_output(card,o0+2,&acp1_micsel_vhf3);
+  
+  ret = digital_input(card,i0+3,&acp1_micsel_hf1,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR HF1: %i \n",acp1_micsel_hf1);
+  }    
+  ret = digital_output(card,o0+3,&acp1_micsel_hf1);
+  
+  ret = digital_input(card,i0+4,&acp1_micsel_hf2,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR HF2: %i \n",acp1_micsel_hf2);
+  }    
+  ret = digital_output(card,o0+4,&acp1_micsel_hf2);
+  
+  ret = digital_input(card,i0+5,&acp1_micsel_flt,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR FLT: %i \n",acp1_micsel_flt);
+  }    
+  ret = digital_output(card,o0+5,&acp1_micsel_flt);
+  
+  ret = digital_input(card,i0+6,&acp1_micsel_svc,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR SVC: %i \n",acp1_micsel_svc);
+  }    
+  ret = digital_output(card,o0+6,&acp1_micsel_svc);
+  
+  ret = digital_input(card,i0+7,&acp1_micsel_pa,1);
+  if (ret == 1) {
+    printf("ACP1 MIC SELECTOR PA: %i \n",acp1_micsel_pa);
+  }    
+  ret = digital_output(card,o0+7,&acp1_micsel_pa);
+
+  /* Other Switches */
+  ret = digital_input(card,i0+8,&acp1_rt_ic,0);
+  if (ret == 1) {
+    printf("ACP1 R/T I/C Switch: %i \n",acp1_rt_ic);
+  }    
+
+  ret = digital_input(card,i0+9,&acp1_mask_boom,0);
+  if (ret == 1) {
+    printf("ACP1 MASK/BOOM Switch: %i \n",acp1_mask_boom);
+  }    
+  
+  ret = digital_input(card,i0+10,&acp1_sel_v,0);
+  if (ret == 1) {
+    printf("ACP1 VBR Selector V: %i \n",acp1_sel_v);
+  }    
+  
+  ret = digital_input(card,i0+11,&acp1_sel_b,0);
+  if (ret == 1) {
+    printf("ACP1 VBR Selector B: %i \n",acp1_sel_b);
+  }    
+  ret = digital_input(card,i0+12,&acp1_sel_r,0);
+  if (ret == 1) {
+    printf("ACP1 VBR Selector R: %i \n",acp1_sel_r);
+  }
+
+  acp1_sel_vbr = acp1_sel_v + acp1_sel_b*2 + acp1_sel_r*3;
+  
+  ret = digital_input(card,i0+13,&acp1_alt_norm,0);
+  if (ret == 1) {
+    printf("ACP1 ALT / NORM Switch: %i \n",acp1_alt_norm);
+  }
+
+  /* Audio Volume Potentiometers */
+  ret = analog_input(card,a0+0,&acp1_vol_vhf1,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume VHF1: %f \n",acp1_vol_vhf1);
+  }
+  ret = analog_input(card,a0+1,&acp1_vol_vhf2,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume VHF2: %f \n",acp1_vol_vhf2);
+  }
+  ret = analog_input(card,a0+2,&acp1_vol_pa,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume PA: %f \n",acp1_vol_pa);
+  }
+  ret = analog_input(card,a0+3,&acp1_vol_mkr,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume MKR: %f \n",acp1_vol_mkr);
+  }
+  ret = analog_input(card,a0+4,&acp1_vol_spkr,0.0,1.0);
+  if (ret == 1) {
+    //    printf("ACP1 Volume SPKR: %f \n",acp1_vol_spkr);
+  }
+
+
+
+  
+  /*** AUDIO CONTROL PANEL 2 ***/
+  i0 = 128+32;
+  o0 = 32+16;
+  a0 = 10;
+
+  /* MIC Selectors */
+  ret = digital_input(card,i0+0,&acp2_micsel_vhf1,1);
+  if (ret == 1) {
+    printf("ACP2 MIC SELECTOR VHF1: %i \n",acp2_micsel_vhf1);
+  }    
+  ret = digital_output(card,o0+0,&acp2_micsel_vhf1);
+
+  ret = digital_input(card,i0+1,&acp2_micsel_vhf2,1);
+  if (ret == 1) {
+    printf("ACP2 MIC SELECTOR VHF2: %i \n",acp2_micsel_vhf2);
+  }    
+  ret = digital_output(card,o0+1,&acp2_micsel_vhf2);
+  
+  ret = digital_input(card,i0+2,&acp2_micsel_vhf3,1);
+  if (ret == 1) {
+    printf("ACP2 MIC SELECTOR VHF3: %i \n",acp2_micsel_vhf3);
+  }    
+  ret = digital_output(card,o0+2,&acp2_micsel_vhf3);
+  
+  ret = digital_input(card,i0+3,&acp2_micsel_hf1,1);
+  if (ret == 1) {
+    printf("ACP2 MIC SELECTOR HF1: %i \n",acp2_micsel_hf1);
+  }    
+  ret = digital_output(card,o0+3,&acp2_micsel_hf1);
+  
+  ret = digital_input(card,i0+4,&acp2_micsel_hf2,1);
+  if (ret == 1) {
+    printf("ACP2 MIC SELECTOR HF2: %i \n",acp2_micsel_hf2);
+  }    
+  ret = digital_output(card,o0+4,&acp2_micsel_hf2);
+  
+  ret = digital_input(card,i0+5,&acp2_micsel_flt,1);
+  if (ret == 1) {
+    printf("ACP2 MIC SELECTOR FLT: %i \n",acp2_micsel_flt);
+  }    
+  ret = digital_output(card,o0+5,&acp2_micsel_flt);
+  
+  ret = digital_input(card,i0+6,&acp2_micsel_svc,1);
+  if (ret == 1) {
+    printf("ACP2 MIC SELECTOR SVC: %i \n",acp2_micsel_svc);
+  }    
+  ret = digital_output(card,o0+6,&acp2_micsel_svc);
+  
+  ret = digital_input(card,i0+7,&acp2_micsel_pa,1);
+  if (ret == 1) {
+    printf("ACP2 MIC SELECTOR PA: %i \n",acp2_micsel_pa);
+  }    
+  ret = digital_output(card,o0+7,&acp2_micsel_pa);
+
+  /* Other Switches */
+  ret = digital_input(card,i0+8,&acp2_rt_ic,0);
+  if (ret == 1) {
+    printf("ACP2 R/T I/C Switch: %i \n",acp2_rt_ic);
+  }    
+
+  ret = digital_input(card,i0+9,&acp2_mask_boom,0);
+  if (ret == 1) {
+    printf("ACP2 MASK/BOOM Switch: %i \n",acp2_mask_boom);
+  }    
+  
+  ret = digital_input(card,i0+10,&acp2_sel_v,0);
+  if (ret == 1) {
+    printf("ACP2 VBR Selector V: %i \n",acp2_sel_v);
+  }    
+  
+  ret = digital_input(card,i0+11,&acp2_sel_b,0);
+  if (ret == 1) {
+    printf("ACP2 VBR Selector B: %i \n",acp2_sel_b);
+  }    
+  ret = digital_input(card,i0+12,&acp2_sel_r,0);
+  if (ret == 1) {
+    printf("ACP2 VBR Selector R: %i \n",acp2_sel_r);
+  }
+
+  acp2_sel_vbr = acp2_sel_v + acp2_sel_b*2 + acp2_sel_r*3;
+  
+  ret = digital_input(card,i0+13,&acp2_alt_norm,0);
+  if (ret == 1) {
+    printf("ACP2 ALT / NORM Switch: %i \n",acp2_alt_norm);
+  }
+
+  /* Audio Volume Potentiometers */
+  ret = analog_input(card,a0+0,&acp2_vol_vhf1,0.0,1.0);
+  if (ret == 1) {
+    //printf("ACP2 Volume VHF1: %f \n",acp2_vol_vhf1);
+  }
+  ret = analog_input(card,a0+1,&acp2_vol_vhf2,0.0,1.0);
+  if (ret == 1) {
+    // printf("ACP2 Volume VHF2: %f \n",acp2_vol_vhf2);
+  }
+  ret = analog_input(card,a0+2,&acp2_vol_pa,0.0,1.0);
+  if (ret == 1) {
+    // printf("ACP2 Volume PA: %f \n",acp2_vol_pa);
+  }
+  ret = analog_input(card,a0+3,&acp2_vol_mkr,0.0,1.0);
+  if (ret == 1) {
+    // printf("ACP2 Volume MKR: %f \n",acp2_vol_mkr);
+  }
+  ret = analog_input(card,a0+4,&acp2_vol_spkr,0.0,1.0);
+  if (ret == 1) {
+    //printf("ACP2 Volume SPKR: %f \n",acp2_vol_spkr);
+  }
+
+
+  
   /*** TRANSPONDER PANEL ***/
-  i0 = 0;
+  i0 = 64+16;
   d0 = 0;
 
   /* XPNDR IDENT button */
@@ -619,6 +1038,10 @@ void b737_pedestal(void)
       *transponder_code += 1000*temp; 
       printf("TRANSPONDER CODE: %i\n",*transponder_code);
     }
+
+    /* Transponder 7 seg display is split into two parts
+       since there were no 4 display outputs in a row remaining.
+       The digits take place 6/7 and 14/15 of the ADF1 display unit */
     
     /* Digits 1's */
     temp = *transponder_code - (*transponder_code / 10) * 10;
@@ -631,7 +1054,12 @@ void b737_pedestal(void)
     ret = display_output(card, d0+8+6, 1, &temp, -1, blank);
     /* Digits 1000's */
     if (*transponder_fail != INT_MISS) {
-      dp = -1 + *transponder_fail; /* set major digit DP for transponder fail led */
+      /* set major digit DP for transponder fail led */
+      if (*lights_test == 1.0) {
+	dp = 0; 
+      } else {
+	dp = -1 + *transponder_fail; 
+      }
     } else {
       dp = -1;
     }
@@ -644,14 +1072,11 @@ void b737_pedestal(void)
     ret = display_output(card, d0+8+6, 2, &temp, -1, 1);
   }
 
-  }
 
-
-  if (0) {
   
   /**** RUDDER TRIM PANEL ***/
-  i0 = 0;
-  o0 = 0;
+  i0 = 8;
+  o0 = 32;
 
   /* Aileron Trim Left switch 1 */
   ret = digital_input(card,i0+1,&temp,0);
@@ -693,49 +1118,56 @@ void b737_pedestal(void)
   ret = servo_outputf(card,0,&servoval,trim_min,trim_max);
 
 
+  
   /*** SELCAL PANEL ***/
   /* Part of WXR PANEL */
-  i0 = 0;
-  o0 = 0;
+  i0 = 24;
+  o0 = 32+24;
 
   ret = digital_input(card,i0+0,vhf1,0);
   if (ret == 1) {
     printf("SELCAL VHF1 BUTTON: %i \n",*vhf1);
   }    
-  ret = digital_output(card,o0+0,vhf1);
 
   ret = digital_input(card,i0+1,vhf2,0);
   if (ret == 1) {
     printf("SELCAL VHF2 BUTTON: %i \n",*vhf2);
   }    
-  ret = digital_output(card,o0+1,vhf2);
   
   ret = digital_input(card,i0+2,vhf3,0);
   if (ret == 1) {
     printf("SELCAL VHF3 BUTTON: %i \n",*vhf3);
   }    
-  ret = digital_output(card,o0+2,vhf3);
 
   ret = digital_input(card,i0+3,hf1,0);
   if (ret == 1) {
     printf("SELCAL HF1 BUTTON: %i \n",*hf1);
   }    
-  ret = digital_output(card,o0+3,hf1);
   
   ret = digital_input(card,i0+4,hf2,0);
   if (ret == 1) {
     printf("SELCAL HF2 BUTTON: %i \n",*hf2);
   }    
-  ret = digital_output(card,o0+4,hf2);
 
+  if (*lights_test == 1.0) {
+    ret = digital_output(card,o0+0,&one);
+    ret = digital_output(card,o0+1,&one);
+    ret = digital_output(card,o0+2,&one);
+    ret = digital_output(card,o0+3,&one);
+    ret = digital_output(card,o0+4,&one);
+  } else {
+    ret = digital_output(card,o0+0,vhf1);
+    ret = digital_output(card,o0+1,vhf2);
+    ret = digital_output(card,o0+2,vhf3);
+    ret = digital_output(card,o0+3,hf1);
+    ret = digital_output(card,o0+4,hf2);
   }
 
 
-  if (0) {
   
   /*** WXR PANEL ***/
   /* Part of SELCAL PANEL */
-  i0 = 0;
+  i0 = 24;
   a0 = 0;
 
   /* WXR Mode Selector */
@@ -755,19 +1187,17 @@ void b737_pedestal(void)
   /* WXR Gain */
   ret = analog_input(card,a0+0,wxr_gain,0.0,1.0);
   if (ret == 1) {
-    printf("WXR Gain: %f \n",*wxr_gain);
+    //    printf("WXR Gain: %f \n",*wxr_gain);
   }
   
   /* WXR Tilt */
   ret = analog_input(card,a0+1,wxr_tilt,0.0,1.0);
   if (ret == 1) {
-    printf("WXR Tilt: %f \n",*wxr_tilt);
+    //    printf("WXR Tilt: %f \n",*wxr_tilt);
   }
 
-}
 
 
-  //  if (0) {
   /*** LIGHTS PANEL ***/
   a0 = 2;
 
@@ -780,13 +1210,12 @@ void b737_pedestal(void)
   }
   //ret = servo_outputf(card,0,&flood_brightness,0.0,1.0);
 
-  //  }
-  
-  if (0) {
+
+
   
   /*** DOOR PANEL ***/
   i0 = 0;
-  o0 = 0;
+  o0 = 32;
 
   ret = digital_input(card,i0+0,&stab_trim_ovrd,0);
   if (ret == 1) {
@@ -806,6 +1235,8 @@ void b737_pedestal(void)
     printf("FLT DECK DOOR DENY: %i \n",flt_deck_door_deny);
   }
 
+  /* NOT WORKING IN ZIBO MOD AS OF 2023/02/07 */
+  /*
   flt_deck_door_pos = -flt_deck_door_unlock + flt_deck_door_deny; 
   float flt_deck_door_pos_f = (float) flt_deck_door_pos;
   ret = set_state_updnf(&flt_deck_door_pos_f,flt_deck_door,flt_deck_door_right,flt_deck_door_left);
@@ -813,124 +1244,12 @@ void b737_pedestal(void)
     printf("FLT DECK DOOR: %f %f %i %i \n",
 	   flt_deck_door_pos_f,*flt_deck_door,*flt_deck_door_right,*flt_deck_door_left);
   }
+  */
  
   ret = digital_outputf(card,o0+0,lock_fail);
   ret = digital_outputf(card,o0+1,auto_unlk);
   
 
-  }
-
-  if (0) {
-
-  /*** AUDIO CONTROL PANEL 1 ***/
-  i0 = 0;
-  o0 = 0;
-  a0 = 5+5;
-
-  /* MIC Selectors */
-  ret = digital_input(card,i0+0,&acp1_micsel_vhf1,1);
-  if (ret == 1) {
-    printf("ACP1 MIC SELECTOR VHF1: %i \n",acp1_micsel_vhf1);
-  }    
-  ret = digital_output(card,o0+0,&acp1_micsel_vhf1);
-
-  ret = digital_input(card,i0+1,&acp1_micsel_vhf2,1);
-  if (ret == 1) {
-    printf("ACP1 MIC SELECTOR VHF2: %i \n",acp1_micsel_vhf2);
-  }    
-  ret = digital_output(card,o0+1,&acp1_micsel_vhf2);
-  
-  ret = digital_input(card,i0+2,&acp1_micsel_vhf3,1);
-  if (ret == 1) {
-    printf("ACP1 MIC SELECTOR VHF3: %i \n",acp1_micsel_vhf3);
-  }    
-  ret = digital_output(card,o0+2,&acp1_micsel_vhf3);
-  
-  ret = digital_input(card,i0+3,&acp1_micsel_hf1,1);
-  if (ret == 1) {
-    printf("ACP1 MIC SELECTOR HF1: %i \n",acp1_micsel_hf1);
-  }    
-  ret = digital_output(card,o0+3,&acp1_micsel_hf1);
-  
-  ret = digital_input(card,i0+4,&acp1_micsel_hf2,1);
-  if (ret == 1) {
-    printf("ACP1 MIC SELECTOR HF2: %i \n",acp1_micsel_hf2);
-  }    
-  ret = digital_output(card,o0+4,&acp1_micsel_hf2);
-  
-  ret = digital_input(card,i0+5,&acp1_micsel_flt,1);
-  if (ret == 1) {
-    printf("ACP1 MIC SELECTOR FLT: %i \n",acp1_micsel_flt);
-  }    
-  ret = digital_output(card,o0+5,&acp1_micsel_flt);
-  
-  ret = digital_input(card,i0+6,&acp1_micsel_svc,1);
-  if (ret == 1) {
-    printf("ACP1 MIC SELECTOR SVC: %i \n",acp1_micsel_svc);
-  }    
-  ret = digital_output(card,o0+6,&acp1_micsel_svc);
-  
-  ret = digital_input(card,i0+7,&acp1_micsel_pa,1);
-  if (ret == 1) {
-    printf("ACP1 MIC SELECTOR PA: %i \n",acp1_micsel_pa);
-  }    
-  ret = digital_output(card,o0+7,&acp1_micsel_pa);
-
-  /* Other Switches */
-  ret = digital_input(card,i0+8,&acp1_rt_ic,0);
-  if (ret == 1) {
-    printf("ACP1 R/T I/C Switch: %i \n",acp1_rt_ic);
-  }    
-
-  ret = digital_input(card,i0+9,&acp1_mask_boom,0);
-  if (ret == 1) {
-    printf("ACP1 MASK/BOOM Switch: %i \n",acp1_mask_boom);
-  }    
-  
-  ret = digital_input(card,i0+10,&acp1_sel_v,0);
-  if (ret == 1) {
-    printf("ACP1 VBR Selector V: %i \n",acp1_sel_v);
-  }    
-  
-  ret = digital_input(card,i0+11,&acp1_sel_b,0);
-  if (ret == 1) {
-    printf("ACP1 VBR Selector B: %i \n",acp1_sel_b);
-  }    
-  ret = digital_input(card,i0+12,&acp1_sel_r,0);
-  if (ret == 1) {
-    printf("ACP1 VBR Selector R: %i \n",acp1_sel_r);
-  }
-
-  acp1_sel_vbr = acp1_sel_v + acp1_sel_b*2 + acp1_sel_r*3;
-  
-  ret = digital_input(card,i0+13,&acp1_alt_norm,0);
-  if (ret == 1) {
-    printf("ACP1 ALT / NORM Switch: %i \n",acp1_alt_norm);
-  }
-
-  /* Audio Volume Potentiometers */
-  ret = analog_input(card,a0+0,&acp1_vol_vhf1,0.0,1.0);
-  if (ret == 1) {
-    printf("ACP1 Volume VHF1: %f \n",acp1_vol_vhf1);
-  }
-  ret = analog_input(card,a0+1,&acp1_vol_vhf2,0.0,1.0);
-  if (ret == 1) {
-    printf("ACP1 Volume VHF2: %f \n",acp1_vol_vhf2);
-  }
-  ret = analog_input(card,a0+2,&acp1_vol_pa,0.0,1.0);
-  if (ret == 1) {
-    printf("ACP1 Volume PA: %f \n",acp1_vol_pa);
-  }
-  ret = analog_input(card,a0+3,&acp1_vol_mkr,0.0,1.0);
-  if (ret == 1) {
-    printf("ACP1 Volume MKR: %f \n",acp1_vol_mkr);
-  }
-  ret = analog_input(card,a0+4,&acp1_vol_spkr,0.0,1.0);
-  if (ret == 1) {
-    printf("ACP1 Volume SPKR: %f \n",acp1_vol_spkr);
-  }
-
-  }
 
   
   /*** FIRE MODULE ***/
@@ -1099,17 +1418,28 @@ void b737_pedestal(void)
   }
 
   /* Annunciators */
-  cargofire_fault = cargofire_test;
-  cargofire_test_fwd = cargofire_test;
-  cargofire_test_aft = cargofire_test;
-  ret = digital_output(card,o0+0,&cargofire_fault);
-  ret = digital_output(card,o0+1,&cargofire_test_fwd);
-  ret = digital_output(card,o0+2,&cargofire_test_aft);
-  ret = digital_output(card,o0+3,&cargofire_arm_fwd);
-  ret = digital_output(card,o0+4,&cargofire_arm_fwd);
-  ret = digital_output(card,o0+5,&cargofire_arm_aft);
-  ret = digital_output(card,o0+6,&cargofire_arm_aft);
-  ret = digital_output(card,o0+7,&cargofire_disch);
+  if (*lights_test == 1.0) {
+    ret = digital_output(card,o0+0,&one);
+    ret = digital_output(card,o0+1,&one);
+    ret = digital_output(card,o0+2,&one);
+    ret = digital_output(card,o0+3,&one);
+    ret = digital_output(card,o0+4,&one);
+    ret = digital_output(card,o0+5,&one);
+    ret = digital_output(card,o0+6,&one);
+    ret = digital_output(card,o0+7,&one);
+  } else {
+    cargofire_fault = cargofire_test;
+    cargofire_test_fwd = cargofire_test;
+    cargofire_test_aft = cargofire_test;
+    ret = digital_output(card,o0+0,&cargofire_fault);
+    ret = digital_output(card,o0+1,&cargofire_test_fwd);
+    ret = digital_output(card,o0+2,&cargofire_test_aft);
+    ret = digital_output(card,o0+3,&cargofire_arm_fwd);
+    ret = digital_output(card,o0+4,&cargofire_arm_fwd);
+    ret = digital_output(card,o0+5,&cargofire_arm_aft);
+    ret = digital_output(card,o0+6,&cargofire_arm_aft);
+    ret = digital_output(card,o0+7,&cargofire_disch);
+  }
 
 
 }

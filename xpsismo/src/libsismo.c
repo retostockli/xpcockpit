@@ -280,7 +280,7 @@ int read_sismo() {
 	      if (verbose > 2) printf("Card %i Input Bank %i # of History Values %i \n",
 				      card,bank,sismo[card].inputs_nsave[bank]);
 	    } else {
-	      if (verbose > 0) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
+	      if (verbose > 2) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
 				      card,bank,MAXSAVE);
 	    }
 	      
@@ -989,7 +989,7 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			updown = -1;
 		      }
 
-		      //printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
+		      printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
 		      
 		      if (updown != 0) {
 			/* add accelerator by using s as number of queued encoder changes */
