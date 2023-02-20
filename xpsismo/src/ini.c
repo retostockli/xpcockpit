@@ -173,6 +173,7 @@ int ini_sismodata()
       sismo[i].inputs_nsave[j] = 0;
     }
     for(j=0;j<MAXINPUTS;j++) {
+      sismo[i].inputs_updown[j] = 0;
       for(k=0;k<MAXSAVE;k++) {
 	sismo[i].inputs[j][k] = INPUTINITVAL;
       }

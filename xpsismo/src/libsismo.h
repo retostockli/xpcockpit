@@ -67,6 +67,7 @@ typedef struct {
   int nservos;           /* actual number of activated servos */
   int analoginputs[MAXANALOGINPUTS][MAXSAVE];
   char inputs[MAXINPUTS][MAXSAVE];
+  char inputs_updown[MAXINPUTS];  /* memory for last up/down command for encoder inputs */
   char inputs_nsave[MAXINPUTS/64]; /* number of history saves per input bank. Each bank has 64 inputs */
   char outputs[MAXOUTPUTS];
   char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */

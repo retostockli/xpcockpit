@@ -987,15 +987,26 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			updown = 1;
 		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
 			updown = -1;
+
+			/* in case a) an input was missed or b) the two optical rotary inputs were transmitted 
+			   concurrently due to timing issue, assume that the last direction is still valid */
+		      } else if ((obits[0] == 1) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
+			updown = sismo[card].inputs_updown[input1];
+		      } else if ((obits[0] == 0) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
+			updown = sismo[card].inputs_updown[input1];
 		      }
 
-		      printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
+		      // printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
 		      
 		      if (updown != 0) {
 			/* add accelerator by using s as number of queued encoder changes */
 			*value = *value + ((float) updown)  * multiplier * (float) (s*2+1);
 			retval = 1;
-		      }		    
+		      }
+
+		      /* store last updown value for later use */
+		      sismo[card].inputs_updown[input1] = updown;
+		      
 		    } else if (type == 2) {
 		      /* 2 bit gray type mechanical encoder */
 
