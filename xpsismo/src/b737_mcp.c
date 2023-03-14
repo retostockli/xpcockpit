@@ -243,7 +243,7 @@ void b737_mcp(void)
     ap_app = link_dataref_cmd_hold("sim/autopilot/approach");       // AP APP button
     ap_app_led = link_dataref_int("sim/cockpit2/autopilot/approach_status");
     ap_hdg_sel = link_dataref_cmd_hold("sim/autopilot/heading");   // AP HDG SEL button
-    ap_hdg_sel_led = link_dataref_int("sim/cockpit2/autopilot/heading_mode");
+    ap_hdg_sel_led = link_dataref_int("sim/cockpit2/autopilot/heading_status");
     ap_lvl_chg = link_dataref_cmd_hold("sim/autopilot/level_change");   // AP LVL CHG button
     ap_lvl_chg_led = link_dataref_int("xpserver/LED_LVLCHG_on"); 
     ap_vnav = link_dataref_cmd_hold("sim/autopilot/FMS");      // AP vertical NAV button
@@ -508,9 +508,17 @@ void b737_mcp(void)
   /* OUTPUTS */
   
   /* Flight Director A LED */
-  ret = digital_output(card,0,ap_fdir_a_led);
+  if (*ap_fdir_a_led == 2) {
+    ret = digital_output(card,0,&one);
+  } else {
+    ret = digital_output(card,0,ap_fdir_a_led);
+  }
   /* Flight Director B LED */
-  ret = digital_output(card,16,ap_fdir_b_led);
+  if (*ap_fdir_b_led == 2) {
+    ret = digital_output(card,16,&one);
+  } else {
+    ret = digital_output(card,16,ap_fdir_b_led);
+  }
   /* A/T ARM LED */
   if ((acf_type == 2) || (acf_type == 3)) {
     ret = digital_outputf(card,1,ap_at_arm_status);
@@ -526,7 +534,11 @@ void b737_mcp(void)
   /* VNAV LED */
   ret = digital_output(card,5,ap_vnav_led);
   /* HDG SEL LED */
-  ret = digital_output(card,6,ap_hdg_sel_led);
+  if (*ap_hdg_sel_led == 2) {
+    ret = digital_output(card,6,&one);
+  } else {
+    ret = digital_output(card,6,ap_hdg_sel_led);
+  }
   /* APP LED */
   ret = digital_output(card,7,ap_app_led);
   /* VOR LOC LED */
