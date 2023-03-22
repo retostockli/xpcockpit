@@ -1,5 +1,5 @@
 ## Graphics
-do.plot = TRUE
+do.plot = FALSE
 
 ## Parameters
 d2r = pi/180.
@@ -9,8 +9,10 @@ r2d = 180./pi
 R = 169.5   # Screen Radius
 d_0 = 27.0   # Distance of Projector lens from center of cylinder (positive is towards screen)
 tr = 0.49   # Projector Throw ratio
-h_0 = 15.0   # lower height of image above center of lens when projected on planar screen
-epsilon = 15.0  # degrees projector tilt (downwards for regular and upwards for ceiling mount)
+h_0 = 15.0   # lower height of image above center of lens when projected on planar screen from untilted projector
+
+epsilon = 7.5  # degrees projector tilt (downwards for regular and upwards for ceiling mount)
+#epsilon = 0.0  # degrees projector tilt (downwards for regular and upwards for ceiling mount)
 
 nmon = 1  # number of monitors
 
@@ -19,8 +21,8 @@ nx = 1920.0
 ny = 1080.0
 
 ## number of x and y grid points
-ngx = 100
-ngy = 100
+ngx = 101
+ngy = 101
     
 ## General Calculations independent of pixel position
 ar = nx / ny  # aspect ratio of projector image
@@ -89,6 +91,10 @@ for (gx in (1:ngx)) {
     
     z_2 = h_0 + py/(ny-1) * h
     alpha = atan(z_2/d_r)*r2d
+    if (epsilon != 0.0) {
+        ## rotate elevation angle by tilt
+        alpha = alpha - epsilon
+    }
     z_c = tan(alpha*d2r) * d_d
     phi = atan(z_2/d_d)*r2d
     z_e = tan(phi*d2r) * d_r
@@ -102,7 +108,9 @@ for (gx in (1:ngx)) {
         u = d_1 / cos(phi*d2r)   # image distance at line py when projector would be level
         u_k = d_1 / cos((phi-epsilon)*d2r)  # image distance at line py with tilt
 
-        h_k = cos(epsilon*d2r)*h # image height with tilt
+        g =  sin(epsilon*d2r)*h
+        g_k = tan((phi-epsilon)*d2r)*g
+        h_k = cos(epsilon*d2r)*h - g_k # changed image height with tilt
         
         ex = (ex-nx/2.0)*u/u_k + nx/2.0  # correct keystone in horizontal pixels
         ey = ey * h / h_k  # correct keystone in vertical pixels
