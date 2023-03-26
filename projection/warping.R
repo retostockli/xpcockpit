@@ -36,6 +36,18 @@ w_2 = R1*sin(beta*d2r)
 w = 2*w_2    # planar image width at screen distance
 h = w / ar  # planar image height at screen distance
 
+## Calculate Highest and Lowest Height and corresponding elevation angles
+## for trapezoid correction
+if (epsilon != 0.0) {
+    h_H = h_0 + h
+    h_L = h_0
+    alpha_H = atan(h_H/d_1)*r2d
+    alpha_L = atan(h_L/d_1)*r2d
+    g_H = tan((alpha_H-epsilon)*d2r)*d_1  ## Highest Image height with Tilt
+    g_L = tan((alpha_L-epsilon)*d2r)*d_1  ## Lowest Image height with Tilt
+    h_k = g_H - g_L
+}
+    
 ##print(paste(w,h))
 
 
@@ -54,9 +66,11 @@ for (mon in (0:(nmon-1))) {
 for (gy in (1:ngy)) {
 for (gx in (1:ngx)) {
 
+    ## Calculate Pixel position
     px = nx * (gx-1) / (ngx-1)
     py = ny * (gy-1) / (ngy-1)
-    
+
+ 
     ## Calculate horizontal position on hypothetical
     ## planar screen in distance d_1 from projector
     ## and respective horizontal projection angle
@@ -88,34 +102,40 @@ for (gx in (1:ngx)) {
     ## cylindrical screen again
     d_2 = sqrt((x_c-x_2)^2 + (y_c-y_2)^2)  # overshoot distance (should be 0 at screen edges)
     d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
-    
+
+    ## Calculate Elevation angle of pixel
     z_2 = h_0 + py/(ny-1) * h
     alpha = atan(z_2/d_r)*r2d
+
     if (epsilon != 0.0) {
         ## rotate elevation angle by tilt
-        alpha = alpha - epsilon
+        alpha_k = alpha - epsilon
+    } else {
+        alpha_k = alpha
     }
-    z_c = tan(alpha*d2r) * d_d
+
+    z_c = tan(alpha_k*d2r) * d_d
     phi = atan(z_2/d_d)*r2d
     z_e = tan(phi*d2r) * d_r
-    
-    ey = (z_e - h_0) / h * (ny-1)
+
     ex = px
-
-    ## Keystone calculator
+    ey = py
+    
+    ## Apply Keystone Correction
     ## image gets compressed in both horizontal and vertical dimensions with projector tilt
+    ## so uncompress and untrapezoid the image pixel right in the first place and place them
+    ## where they would be with a untilted projector
     if (epsilon != 0.0) {
-        u = d_1 / cos(phi*d2r)   # image distance at line py when projector would be level
-        u_k = d_1 / cos((phi-epsilon)*d2r)  # image distance at line py with tilt
+        u = d_1 / cos(alpha*d2r)   # image distance at line py when projector would be level
+        u_k = d_1 / cos((alpha-epsilon)*d2r)  # image distance at line py with tilt
 
-        g =  sin(epsilon*d2r)*h
-        g_k = tan((phi-epsilon)*d2r)*g
-        h_k = cos(epsilon*d2r)*h - g_k # changed image height with tilt
-        
         ex = (ex-nx/2.0)*u/u_k + nx/2.0  # correct keystone in horizontal pixels
         ey = ey * h / h_k  # correct keystone in vertical pixels
     }
 
+    ## Apply Cylindrical Warping Correction
+    ex = ex
+    ey = (z_e - h_0) / h * (ny-1) - py + ey
         
     ##print(paste(ex,ey))
     if (do.plot) {

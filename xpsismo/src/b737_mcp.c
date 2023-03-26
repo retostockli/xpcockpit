@@ -48,6 +48,9 @@ void b737_mcp(void)
   int one = 1;
   int zero = 0;
 
+  int ap_hdg_1;
+  int ap_hdg_2
+
   float *ap_altitude;  // autopilot altitude
   float *ap_heading; // autopilot heading
   float *ap_ias; // IAS autopilot
@@ -499,9 +502,9 @@ void b737_mcp(void)
   }
   
   if ((*ap_vspeed < 1000.) && (*ap_vspeed > -1000.)) {
-    ret = encoder_inputf(card, 21, 22, ap_vspeed, 50.0, 1);
+    ret = encoder_inputf(card, 21, 22, ap_vspeed, -50.0, 1);
   } else {
-    ret = encoder_inputf(card, 21, 22, ap_vspeed, 100.0, 1);
+    ret = encoder_inputf(card, 21, 22, ap_vspeed, -100.0, 1);
   }
   if (ret==1) printf("AP Vertical Speed: %f \n",*ap_vspeed);
 
