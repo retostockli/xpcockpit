@@ -94,8 +94,8 @@ for (gx in (1:ngx)) {
     ## Calculate Elevation angle of pixel
     z_2 = h_0 + py/(ny-1) * h
     alpha = atan(z_2/d_r)*r2d
-
-    z_c = tan(alpha_k*d2r) * d_d
+    
+    z_c = tan(alpha*d2r) * d_d
     phi = atan(z_2/d_d)*r2d
     z_e = tan(phi*d2r) * d_r
 
