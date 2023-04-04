@@ -112,7 +112,9 @@ XPlaneDataSource::~XPlaneDataSource()
   exit_beacon_client();
   
   /* cancel wxr udp socket */
-  exit_wxr();
+  if (wxr_type > 0) {
+    exit_wxr();
+  }
   
   /* free local dataref structure */
   clear_dataref();
@@ -150,7 +152,7 @@ void XPlaneDataSource::OnIdle()
   }
 
   /* WXR Data */
-  if ((connected==1) && (GetAcfType() >= 0)) {
+  if ((connected==1) && (GetAcfType() >= 0) && (wxr_type > 0)) {
     /* initialize UDP interface to read WXR data */
     init_wxr(XPlaneServerIP);
     
