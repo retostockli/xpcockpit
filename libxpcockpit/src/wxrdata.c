@@ -161,7 +161,7 @@ void write_wxr() {
     
     if (dt > WXR_CHECK_INTERVAL) {
       
-      printf("We did receive WXR data for %i seconds, send init string to X-Plane\n",
+      printf("We did not receive WXR data for %i seconds, send init string to X-Plane\n",
 	     (int) WXR_CHECK_INTERVAL);
       
       /* new time reference for next call is current time */

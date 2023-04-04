@@ -107,9 +107,22 @@ namespace OpenGC
 
     //  int *altimeter_pressure_unit = link_dataref_int("x737/systems/units/baroPressUnit");   
     int *altimeter_pressure_unit;
+    int *altimeter_set_std;
+    float *altimeter_pressure_preset;
+    int *altimeter_preset_show;
     int *no_vspeed;
     if ((acf_type == 2) || (acf_type == 3)) {
-      altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
+      if (is_captain) {
+	altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
+	altimeter_set_std = link_dataref_int("laminar/B738/EFIS/baro_set_std_pilot");
+	altimeter_preset_show = link_dataref_int("laminar/B738/EFIS/baro_sel_pilot_show");
+	altimeter_pressure_preset = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_pilot",-4);
+      } else {
+	altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/fo/baro_in_hpa");
+	altimeter_set_std = link_dataref_int("laminar/B738/EFIS/baro_set_std_copilot");
+	altimeter_preset_show = link_dataref_int("laminar/B738/EFIS/baro_sel_copilot_show");
+	altimeter_pressure_preset = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_copilot",-4);
+      }
       no_vspeed = link_dataref_int("laminar/B738/pfd/no_vspd");
     } else {
       altimeter_pressure_unit = link_dataref_int("xpserver/barometer_unit");
@@ -117,7 +130,6 @@ namespace OpenGC
 
     // angle of attack (degrees)
     float *aoa = link_dataref_flt("sim/flightmodel/position/alpha",-1);
-    
 
     //int *ap_athr_armed_rec;   
     //int *ap_athr_armed;   
@@ -323,21 +335,55 @@ namespace OpenGC
 
     // 3. Plot dialed barometric pressure in In Hg below the altitude tape
 
-    m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
-    glColor3ub(COLOR_GREEN);
-    glLineWidth(lineWidth);
 
-    if (*altimeter_pressure != FLT_MISS) {
-      if (roundf(*altimeter_pressure*100) == 2992) {
-	strcpy(buffer, "STD");
-	m_pFontManager->Print(153,25+0, &buffer[0], m_Font);
-      } else {
-	if (*altimeter_pressure_unit == 1) {
-	  snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure/0.029530);
-	  m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if (*altimeter_pressure != FLT_MISS) {
+	m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
+	glColor3ub(COLOR_GREEN);
+	glLineWidth(lineWidth);
+	if (*altimeter_set_std == 1) {
+	  strcpy(buffer, "STD");
+	  m_pFontManager->Print(153,25+0, &buffer[0], m_Font);
 	} else {
-	  snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure);
-	  m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  if (*altimeter_pressure_unit == 1) {
+	    snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure/0.029530);
+	    m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  } else {
+	    snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure);
+	    m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  }
+	}
+      }
+      if (*altimeter_pressure_preset != FLT_MISS) {
+	m_pFontManager->SetSize(m_Font, 0.7*fontWidth, 0.7*fontHeight);
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+	if (*altimeter_preset_show == 1) {
+	  if (*altimeter_pressure_unit == 1) {
+	    snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure_preset/0.029530);
+	    m_pFontManager->Print(155,18+0, &buffer[0], m_Font);
+	  } else {
+	    snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure_preset);
+	    m_pFontManager->Print(155,18+0, &buffer[0], m_Font);
+	  }
+	}
+      }
+    } else {
+      if (*altimeter_pressure != FLT_MISS) {
+	m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
+	glColor3ub(COLOR_GREEN);
+	glLineWidth(lineWidth);
+	if (roundf(*altimeter_pressure*100) == 2992) {
+	  strcpy(buffer, "STD");
+	  m_pFontManager->Print(153,25+0, &buffer[0], m_Font);
+	} else {
+	  if (*altimeter_pressure_unit == 1) {
+	    snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure/0.029530);
+	    m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  } else {
+	    snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure);
+	    m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  }
 	}
       }
     }
