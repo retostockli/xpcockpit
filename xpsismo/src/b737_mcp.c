@@ -49,7 +49,7 @@ void b737_mcp(void)
   int zero = 0;
 
   int ap_hdg_1;
-  int ap_hdg_2
+  int ap_hdg_2;
 
   float *ap_altitude;  // autopilot altitude
   float *ap_heading; // autopilot heading
