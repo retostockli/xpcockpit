@@ -6,6 +6,8 @@
 
 ## X-Plane 11: need to activate VULKAN in Graphics Settings
 ## However: With Vulkan, Cylindrical projection has limited rendering in corners
+## To have scenery only view: default_view 1 in X-Plane.prf
+## To have cylindrical projection: proj_cyl 1 in X-Plane.prf
 
 ## Graphics
 do.plot = FALSE
@@ -29,8 +31,8 @@ blending = c(FALSE,TRUE,TRUE,TRUE)
 epsilon = c(0.0,0.0,5.75,0.0)
 lateral_offset = c(0.0,-65.0,0.0,65.0)
 vertical_offset = c(0.0,0.0,0.0,0.0)
-gridtest = FALSE # display grid test pattern
-forwin = TRUE  # create for windows or for linux
+gridtest = TRUE # display grid test pattern
+forwin = FALSE  # create for windows or for linux
 
 
 outfile = "X-Plane Window Positions.prf"
