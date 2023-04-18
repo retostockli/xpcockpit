@@ -24,9 +24,9 @@ d_0 = 30.0   # Distance of Projector focal point from center of cylinder (positi
 tr = 0.49   # Projector Throw ratio
 h_0 = 15.0   # lower height of image above center of lens when projected on planar screen from untilted projector
 
-nmon = 4  # number of monitors
+nmon = 1  # number of monitors
 
-projection = c(FALSE,TRUE,TRUE,TRUE)
+projection = c(TRUE,TRUE,TRUE,TRUE)
 blending = c(FALSE,TRUE,TRUE,TRUE)
 epsilon = c(0.0,0.0,5.75,0.0)
 lateral_offset = c(0.0,-65.0,0.0,65.0)
@@ -77,10 +77,11 @@ if (do.plot) {
 xdif = array(0.0,dim=c(ngx,ngy))
 ydif = array(0.0,dim=c(ngx,ngy))
 
-## loop through grid
+## loop through monitors
 for (mon in (0:(nmon-1))) {
 
     if (projection[mon+1]) {
+        ## loop through grid
         for (gy in (1:ngy)) {
             for (gx in (1:ngx)) {
 
