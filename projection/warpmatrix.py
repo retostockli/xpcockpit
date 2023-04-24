@@ -31,16 +31,17 @@ h_0 = 15.0   # lower height of image above center of lens when projected on plan
 
 nmon = 1  # number of monitors
 
-projection = [True,True,True,True]
-blending = [False,True,True,True]
-epsilon = [0.0,0.0,5.75,0.0]
-lateral_offset = [0.0,-65.0,0.0,65.0]
-vertical_offset = [0.0,0.0,0.0,0.0]
+projection = [False,True,True,True]  # apply projection onto curved surface
+blending = [False,True,True,True]   # apply blending at sides
+cylindrical = [True,True,True,True]  # apply flat plane to cylinder warping
+epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
+lateral_offset = [0.0,-65.0,0.0,65.0]  # lateral offset [deg]
+vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
 gridtest = True # display grid test pattern
 forwin = False  # create for windows or for linux
 
 # define output file
-outfile = "X-Plane Window Positions_PYTHON.prf"
+outfile = "X-Plane Window Positions.prf"
 
 # pixel dimensions of projector
 nx = 1920
@@ -78,11 +79,83 @@ ydif = numpy.zeros((ngx, ngy))
 # loop through monitors
 for mon in range(0,nmon,1):
 
+    if cylindrical[mon]:
+        FOV = 2*gamma
+        f = 0.5 * nx * 1.0 / math.tan(0.5 * FOV / 180.0 * math.pi)
+        
+        # loop through grid
+        for gy in range(0,ngy,1):
+            for gx in range(0,ngx,1):
+
+                # SCREEN CENTER Coordinate System
+                # Graphic projection_geometry.pdf
+                # BUT where x1/y1 is at x0/x0
+                # AND where z1 is at center of screen
+
+                # Calculate Pixel position
+                px = float(nx) * float(gx) / float(ngx-1)
+                py = float(ny) * float(gy) / float(ngy-1)
+                xabs[gx,gy] = px
+                yabs[gx,gy] = py
+
+                # Calculate horizontal position on hypothetical
+                # planar screen in distance d_1+d_0 from screen center
+                # and respective horizontal projection angle
+                a = w * (px - 0.5 * float(nx)) / float(nx)
+                # Calculate horizontal view angle of pixel from screen center
+                theta = math.atan(a/(d_1+d_0))*r2d
+
+                # New X position in Cylindrical coordinates
+                xdif[gx,gy] = 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
+
+                # Calculate intersection of projected line with the cylindrical screen
+                # behind hypothetical planar screen. Cylinder is in (0,0) position
+                # https://mathworld.wolfram.com/Circle-LineIntersection.html
+                x_1 = 0
+                x_2 = d_1+d_0
+                y_1 = 0.0
+                y_2 = a
+                d_x = x_2-x_1
+                d_y = y_2-y_1
+                d_r = math.sqrt(math.pow(d_x,2.0)+math.pow(d_y,2.0))
+                D   = x_1*y_2-x_2*y_1
+                DSCR = math.pow(R,2.0)*math.pow(d_r,2.0) - math.pow(D,2.0)  # Discriminant: if > 0 (true for our problem: intersection)
+
+                if d_y < 0:
+                    sgn_dy = -1.0
+                else:
+                    sgn_dy = 1.0
+
+                x_c = (D*d_y + sgn_dy + d_x * math.sqrt(DSCR))/math.pow(d_r,2.0)
+                y_c = (-D*d_x + d_y * math.sqrt(DSCR))/math.pow(d_r,2.0)
+
+                # now calculate how much we need to shift pixel coordinates to match
+                # cylindrical screen again
+                d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
+
+                # Calculate Elevation angle of pixel (relative to screen center height)
+                z_2 = (py-0.5*float(ny))/float(ny) * h
+                # Calculate Elevation of pixel at Planar Screen
+                alpha = math.atan(z_2/d_r)*r2d
+                # Calculate Elevation of pixel at Cylinder
+                z_c = math.tan(alpha*d2r) * R
+
+                # New Y position in Cylindrical coordinates
+                ydif[gx,gy] = float(ny) * z_c / h + 0.5 * float(ny) - py
+
+#                print(str(px)+" "+str(theta)+" "+str(xdif[gx,gy])+" "+str(ydif[gx,gy]))
+                print(str(px)+" "+str(theta)+" "+str(z_2)+" "+str(z_c)+" "+str(h/2))
+                
+
+
     if projection[mon]:
         # loop through grid
         for gy in range(0,ngy,1):
             for gx in range(0,ngx,1):
 
+                # PROJECTOR CENTER Coordinate System
+                # Graphic projection_geometry.pdf
+                
                 # Calculate Pixel position
                 px = float(nx) * float(gx) / float(ngx-1)
                 py = float(ny) * float(gy) / float(ngy-1)
@@ -92,7 +165,8 @@ for mon in range(0,nmon,1):
                 # Calculate horizontal position on hypothetical
                 # planar screen in distance d_1 from projector
                 # and respective horizontal projection angle
-                a = w * (px - (float(nx) -1.0)/2.0) / (float(nx)-1.0)
+                a = w * (px - 0.5 * float(nx)) / float(nx)
+                # Calculate horizontal view angle for pixel from projector
                 theta = math.atan(a/d_1)*r2d
 
                 # Calculate intersection of projected line with the cylindrical screen
@@ -122,7 +196,7 @@ for mon in range(0,nmon,1):
                 d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
 
                 # Calculate Elevation angle of pixel
-                z_2 = h_0 + py/float(ny-1) * h
+                z_2 = h_0 + py/float(ny) * h
                 alpha = math.atan(z_2/d_r)*r2d
 
                 z_c = math.tan(alpha*d2r) * d_d
@@ -146,7 +220,7 @@ for mon in range(0,nmon,1):
 
                 # Apply Cylindrical Warping Correction
                 ex = ex
-                ey = (z_e - h_0) / h * float(ny-1) - py + ey
+                ey = (z_e - h_0) / h * float(ny) - py + ey
 
                 xdif[gx,gy] = ex - px
                 ydif[gx,gy] = ey - py
@@ -201,7 +275,7 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_j 4"+"\n")
 
     # write grid per monitor
-    if projection[mon]:
+    if (projection[mon] or cylindrical[mon]):
         for gx in range(0,ngx,1):
             for gy in range(0,ngy,1):
                 con.write("monitor/"+str(mon)+"/proj/grid_os_x/"+str(gx)+"/"+str(gy)+" "+str(format(xdif[gx,gy],('.6f')))+"\n")
