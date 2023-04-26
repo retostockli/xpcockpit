@@ -11,11 +11,11 @@
 
 # Import Libraries
 import math
-import numpy
+import numpy as np
 import matplotlib.pyplot as plot
 
 # Graphics
-doplot = True
+doplot = False
 
 # Parameters
 d2r = math.pi/180.
@@ -29,15 +29,16 @@ d_0 = 30.0   # Distance of Projector focal point from center of cylinder (positi
 tr = 0.49   # Projector Throw ratio
 h_0 = 15.0   # lower height of image above center of lens when projected on planar screen from untilted projector
 
-nmon = 1  # number of monitors
+nmon = 3  # number of monitors
 
+cylindrical = [True,True,True,True]  # apply flat plane to cylinder warping
+#cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
 projection = [False,True,True,True]  # apply projection onto curved surface
 blending = [False,True,True,True]   # apply blending at sides
-cylindrical = [True,True,True,True]  # apply flat plane to cylinder warping
-epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
-lateral_offset = [0.0,-65.0,0.0,65.0]  # lateral offset [deg]
+epsilon = [0.0,5.75,0.0,0.0]         # projector tilt [deg]
+lateral_offset = [0.0,0.0,65.0,65.0]  # lateral offset [deg]
 vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-gridtest = True # display grid test pattern
+gridtest = False # display grid test pattern
 forwin = False  # create for windows or for linux
 
 # define output file
@@ -59,6 +60,7 @@ con.write("num_monitors "+str(nmon)+"\n")
 
 
 # General Calculations independent of pixel position
+
 ar =  float(nx) / float(ny)  # aspect ratio of projector image
 beta = math.atan(1.0/(2.0*tr))*r2d
 beta1 = 180.-beta
@@ -67,36 +69,39 @@ gamma = 180.-beta1-delta
 R_1 = R*math.sin(gamma*d2r)/math.sin(beta1*d2r)
 d_1 = R_1*math.cos(beta*d2r)
 w_2 = R_1*math.sin(beta*d2r)
-w = 2.0*w_2    # planar image width at screen distance
-h = w / ar  # planar image height at screen distance
 
-## reset projection grid
-xabs = numpy.zeros((ngx, ngy))
-yabs = numpy.zeros((ngx, ngy))
-xdif = numpy.zeros((ngx, ngy))
-ydif = numpy.zeros((ngx, ngy))
+w = 2.0*w_2    # planar image width at screen distance
+h = w / ar     # planar image height at screen distance
 
 # loop through monitors
 for mon in range(0,nmon,1):
 
-    if cylindrical[mon]:
-        FOV = 2*gamma
-        f = 0.5 * nx * 1.0 / math.tan(0.5 * FOV / 180.0 * math.pi)
-        
-        # loop through grid
-        for gy in range(0,ngy,1):
-            for gx in range(0,ngx,1):
+    # calculate FOV of monitor
+    FOVx = 2.0*gamma
+    FOVy = 2.0*math.atan(0.5*h/(d_1+d_0))*r2d
 
-                # SCREEN CENTER Coordinate System
+    ## reset projection grid
+    xabs = np.zeros((ngx, ngy))
+    yabs = np.zeros((ngx, ngy))
+    xdif = np.zeros((ngx, ngy))
+    ydif = np.zeros((ngx, ngy))
+    
+    # loop through grid
+    for gy in range(0,ngy,1):
+        for gx in range(0,ngx,1):
+            
+            # Calculate Pixel position of grid point
+            px = float(nx) * float(gx) / float(ngx-1)
+            py = float(ny) * float(gy) / float(ngy-1)
+            xabs[gx,gy] = px
+            yabs[gx,gy] = py
+            
+            if cylindrical[mon]:
+
+    # SCREEN CENTER Coordinate System
                 # Graphic projection_geometry.pdf
                 # BUT where x1/y1 is at x0/x0
                 # AND where z1 is at center of screen
-
-                # Calculate Pixel position
-                px = float(nx) * float(gx) / float(ngx-1)
-                py = float(ny) * float(gy) / float(ngy-1)
-                xabs[gx,gy] = px
-                yabs[gx,gy] = py
 
                 # Calculate horizontal position on hypothetical
                 # planar screen in distance d_1+d_0 from screen center
@@ -106,7 +111,7 @@ for mon in range(0,nmon,1):
                 theta = math.atan(a/(d_1+d_0))*r2d
 
                 # New X position in Cylindrical coordinates
-                xdif[gx,gy] = 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
+                xdif[gx,gy] += 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
 
                 # Calculate intersection of projected line with the cylindrical screen
                 # behind hypothetical planar screen. Cylinder is in (0,0) position
@@ -133,34 +138,31 @@ for mon in range(0,nmon,1):
                 # cylindrical screen again
                 d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
 
-                # Calculate Elevation angle of pixel (relative to screen center height)
-                z_2 = (py-0.5*float(ny))/float(ny) * h
                 # Calculate Elevation of pixel at Planar Screen
+                z_2 = (py-0.5*float(ny))/float(ny) * h
+                # Calculate Elevation angle of pixel (relative to screen center height)
                 alpha = math.atan(z_2/d_r)*r2d
                 # Calculate Elevation of pixel at Cylinder
                 z_c = math.tan(alpha*d2r) * R
 
                 # New Y position in Cylindrical coordinates
-                ydif[gx,gy] = float(ny) * z_c / h + 0.5 * float(ny) - py
+                ydif[gx,gy] += float(ny) * z_c / h + 0.5 * float(ny) - py
 
-#                print(str(px)+" "+str(theta)+" "+str(xdif[gx,gy])+" "+str(ydif[gx,gy]))
-                print(str(px)+" "+str(theta)+" "+str(z_2)+" "+str(z_c)+" "+str(h/2))
+                # print(str(px)+" "+str(theta)+" "+str(xdif[gx,gy])+" "+str(ydif[gx,gy]))
+                # print(str(px)+" "+str(theta)+" "+str(z_2)+" "+str(z_c)+" "+str(h/2))
+
+                # New FOVy due to larger vertical rendering at distance of cylinder center
+                if (gx == (ngx-1)/2) and (gy == (ngy-1)):
+                    FOVy = 2.0*math.atan(z_c/(d_1+d_0))*r2d
                 
-
-
-    if projection[mon]:
-        # loop through grid
-        for gy in range(0,ngy,1):
-            for gx in range(0,ngx,1):
+                # update grid coordinates for projector calculation
+                px += xdif[gx,gy]
+                py += ydif[gx,gy]
+                
+            if projection[mon]:
 
                 # PROJECTOR CENTER Coordinate System
                 # Graphic projection_geometry.pdf
-                
-                # Calculate Pixel position
-                px = float(nx) * float(gx) / float(ngx-1)
-                py = float(ny) * float(gy) / float(ngy-1)
-                xabs[gx,gy] = px
-                yabs[gx,gy] = py
 
                 # Calculate horizontal position on hypothetical
                 # planar screen in distance d_1 from projector
@@ -213,7 +215,7 @@ for mon in range(0,nmon,1):
                 if epsilon[mon] != 0.0:
                     alpha_0 = math.atan(z_2/d_1)*r2d  # elevation angle at center line of projection
                     u = d_1 / math.cos(alpha_0*d2r)   # image distance at line py when projector would be level
-                    u_k = d_1 / math.cos((alpha_0-epsilon[mon+1])*d2r)  # image distance at line py with tilt
+                    u_k = d_1 / math.cos((alpha_0-epsilon[mon])*d2r)  # image distance at line py with tilt
 
                     ex = (ex-float(nx)/2.0)*u/u_k +  float(nx)/2.0  # correct keystone in horizontal pixels
                     ey = ey * u / u_k  # correct keystone in vertical pixels
@@ -222,8 +224,8 @@ for mon in range(0,nmon,1):
                 ex = ex
                 ey = (z_e - h_0) / h * float(ny) - py + ey
 
-                xdif[gx,gy] = ex - px
-                ydif[gx,gy] = ey - py
+                xdif[gx,gy] += ex - px
+                ydif[gx,gy] += ey - py
 
     # End loop of xy grid
 
@@ -253,9 +255,12 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/m_is_fullscreen wmgr_mode_fullscreen"+"\n")
     con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_normal_visuals"+"\n")
     con.write("monitor/"+str(mon)+"/proj/window_2d_off 1"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/diff_FOV 0"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/FOVx_renopt "+str(format(gamma*2,('.6f')))+"\n")
-    con.write("monitor/"+str(mon)+"/proj/FOVy_renopt "+str(format(gamma*2*9/16,('.6f')))+"\n")
+    if cylindrical[mon]:
+        con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")
+    else:
+        con.write("monitor/"+str(mon)+"/proj/diff_FOV 0"+"\n")    
+    con.write("monitor/"+str(mon)+"/proj/FOVx_renopt "+str(format(FOVx,('.6f')))+"\n")
+    con.write("monitor/"+str(mon)+"/proj/FOVy_renopt "+str(format(FOVy,('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/os_x_rat 0.000000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/os_y_rat 0.000000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/off_vrt_deg "+str(format(vertical_offset[mon],('.6f')))+"\n")
