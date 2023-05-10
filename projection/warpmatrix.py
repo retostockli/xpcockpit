@@ -14,8 +14,11 @@ import math
 import numpy as np
 import matplotlib.pyplot as plot
 
+# Settings
+setting = 2
+
 # Graphics
-doplot = False
+doplot = True
 
 # Parameters
 d2r = math.pi/180.
@@ -29,17 +32,36 @@ d_0 = 30.0   # Distance of Projector focal point from center of cylinder (positi
 tr = 0.49   # Projector Throw ratio
 h_0 = 15.0   # lower height of image above center of lens when projected on planar screen from untilted projector
 
-nmon = 3  # number of monitors
-
-cylindrical = [True,True,True,True]  # apply flat plane to cylinder warping
-#cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
-projection = [False,True,True,True]  # apply projection onto curved surface
-blending = [False,True,True,True]   # apply blending at sides
-epsilon = [0.0,5.75,0.0,0.0]         # projector tilt [deg]
-lateral_offset = [0.0,0.0,65.0,65.0]  # lateral offset [deg]
-vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-gridtest = False # display grid test pattern
-forwin = False  # create for windows or for linux
+if setting == 1:
+    nmon = 4  # number of monitors
+    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
+    projection = [False,True,True,True]  # apply projection onto curved surface
+    blending = [False,True,True,True]   # apply blending at sides
+    epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-65.0,0.0,65.0]  # lateral offset [deg]
+    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    gridtest = False # display grid test pattern
+    forwin = False  # create for windows or for linux
+elif setting == 2:
+    nmon = 4  # number of monitors
+    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
+    projection = [False,False,False,False]  # apply projection onto curved surface
+    blending = [False,False,False,False]   # apply blending at sides
+    epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-65.0,0.0,65.0]  # lateral offset [deg]
+    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    gridtest = False # display grid test pattern
+    forwin = False  # create for windows or for linux
+elif setting == 3:
+    nmon = 1  # number of monitors
+    cylindrical = [True]  # apply flat plane to cylinder warping
+    projection = [True]  # apply projection onto curved surfae
+    blending = [False]   # apply blending at sides
+    epsilon = [5.75]         # projector tilt [deg]
+    lateral_offset = [0.0]  # lateral offset [deg]
+    vertical_offset = [0.0]    # vertical offset [deg]
+    gridtest = False # display grid test pattern
+    forwin = False  # create for windows or for linux
 
 # define output file
 outfile = "X-Plane Window Positions.prf"
