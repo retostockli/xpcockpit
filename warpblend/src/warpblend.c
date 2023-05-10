@@ -300,7 +300,7 @@ int read_warpfile(const char warpfile[],const char smonitor[])
   float vx[nrow][ncol][2];
   float vy[nrow][ncol][2];
 
-  Bool has_blend;
+  Bool has_blend = False;
   int side;
   int dist;
   float top[2];
