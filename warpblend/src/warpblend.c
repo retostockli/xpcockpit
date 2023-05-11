@@ -38,6 +38,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <stdbool.h>
 #include "warpblend.h"
 
 typedef struct {
@@ -51,10 +52,14 @@ typedef struct {
 } vertexDataRec;
 
 vertexDataRec *warpData = NULL;
+XImage *blendImage;
+unsigned char *imageData;
+
+Display *xDpy = NULL;
+int screenId;
 
 int read_warpfile(const char warpfile[],const char smonitor[]);
 char** str_split(char* a_str, const char a_delim);
-
 
 static inline float transformPoint(vertex2f *vec)
 {
@@ -89,17 +94,15 @@ int main(int ac, char **av)
   //    char warpfile[] = "../data/X-Plane Window Positions.prf";
     char warpfile[] = "../data/X-Plane Window Positions Blend.prf";
 
-    Display *xDpy = XOpenDisplay(NULL);
-    int screenId;
     GC gc;
     XGCValues values;
     Pixmap blendPixmap;
 
     int nvDpyId = -1;
-    Bool blendAfterWarp = True;
-    Bool unwarp = False;
-    Bool unblend = False;
-    Bool test = False;
+    bool blendAfterWarp = True;
+    bool unwarp = False;
+    bool unblend = False;
+    bool test = False;
     int numVertices = 0;
     int monitor = -1;
     char smonitor[2];
@@ -107,6 +110,7 @@ int main(int ac, char **av)
     int a;
 
 
+    xDpy = XOpenDisplay(NULL);
     if (!xDpy) {
         fprintf (stderr, "Could not open X Display %s!\n", XDisplayName(NULL));
         return 1;
@@ -283,11 +287,11 @@ int read_warpfile(const char warpfile[],const char smonitor[])
   char str1[40];
   int ret;
 
-  Bool isX;
-  Bool isY;
-  Bool isT;
-  Bool isB;
-  Bool isA;
+  bool isX;
+  bool isY;
+  bool isT;
+  bool isB;
+  bool isA;
   
   int col;
   int row;
@@ -296,11 +300,17 @@ int read_warpfile(const char warpfile[],const char smonitor[])
   int c;
   int r;
   int i;
+  int x;
+  int y;
+  unsigned long pixval;
+  unsigned char bytval;
+  int nChannels = 4;
+  
   /* first value is vertex coordinate and second value is warped coordinate */
   float vx[nrow][ncol][2];
   float vy[nrow][ncol][2];
 
-  Bool has_blend = False;
+  bool has_blend = False;
   int side;
   int dist;
   float top[2];
@@ -313,6 +323,10 @@ int read_warpfile(const char warpfile[],const char smonitor[])
     return -1;
   }
 
+  /***********************************************************************************************/
+  /***** PLEASE MAKE NX/NY DYNAMIC AS X-PLANE PREFS MAY NOT BE THE ACTUAL MONITOR RESOLUTION *****/
+  /***********************************************************************************************/
+  
   c = 0;
   r = 0;
   while (fgets(buf,sizeof(buf),fptr)!=NULL) {
@@ -432,6 +446,26 @@ int read_warpfile(const char warpfile[],const char smonitor[])
   printf("Number of Warp Grid Cols read: %i (of %i)\n",c,ncol);
   printf("Number of Warp Grid Rows read: %i (of %i)\n",r,nrow);
 
+  if (has_blend) {
+    imageData = (unsigned char*) malloc (nx * ny * nChannels);
+    int bitmap_pad = nChannels * 8;
+    int bytes_per_line = nx*4; //displayWidth * nChannels;
+    unsigned int imageDepth = DefaultDepth(xDpy, screenId);
+
+    XImage *blendImage = XCreateImage(xDpy, CopyFromParent, imageDepth, ZPixmap, 0, (char*)imageData,
+				      nx, ny, bitmap_pad , bytes_per_line);
+
+    for (y=0;y<ny;y++) {
+      for (x=0;x<nx;x++) {
+	bytval = 0x7f;
+	XPutPixel(blendImage, x, y, pixval);
+      }
+    }
+
+
+  }
+
+  
   if (c != ncol) return -1;
   if (r != nrow) return -1;
 
