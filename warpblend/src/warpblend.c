@@ -52,14 +52,19 @@ typedef struct {
 } vertexDataRec;
 
 vertexDataRec *warpData = NULL;
-XImage *blendImage;
-unsigned char *imageData;
+XImage *blendImage = NULL;
+unsigned char *imageData = NULL;
+Pixmap blendPixmap;
 
 Display *xDpy = NULL;
 int screenId;
 
+float xval[8];
+float yval[8];
+
 int read_warpfile(const char warpfile[],const char smonitor[]);
 char** str_split(char* a_str, const char a_delim);
+float interpolate(float input);
 
 static inline float transformPoint(vertex2f *vec)
 {
@@ -96,7 +101,6 @@ int main(int ac, char **av)
 
     GC gc;
     XGCValues values;
-    Pixmap blendPixmap;
 
     int nvDpyId = -1;
     bool blendAfterWarp = True;
@@ -235,30 +239,38 @@ int main(int ac, char **av)
     } else {
       printf("No Warping since Warp Matrix contains 0 Vertices \n");
     }
-     
-    // Start with a 32x32 pixmap.
-    blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
-				32, 32, DefaultDepth(xDpy,screenId));
-    
-    printf("Default Color Depth: %d\n",DefaultDepth(xDpy,screenId));
-      
-    values.foreground = 0x77777777;
-    gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
-    
-    // Fill it fully with grey.
-    XFillRectangle(xDpy, blendPixmap, gc, 0, 0, 32, 32);
-    
-    values.foreground = 0xffffffff;
-    XChangeGC(xDpy, gc, GCForeground, &values);
-    
-    // Fill everything but a one-pixel border with white.
-    XFillRectangle(xDpy, blendPixmap, gc, 1, 1, 30, 30);
-      
+
     if (nvDpyId < 0 || unblend) {
       printf("Reset Blending ...\n");
-      XFreePixmap(xDpy,blendPixmap);
-      blendPixmap = None;
+      //XFreePixmap(xDpy,blendPixmap);
+      //blendPixmap = None;
+    } else {
+
+      if (test) {
+    
+	// Test with a 32x32 pixmap.
+	blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
+				    32, 32, DefaultDepth(xDpy,screenId));
+	
+	values.foreground = 0x77777777;
+	gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
+	
+	// Fill it fully with grey.
+	XFillRectangle(xDpy, blendPixmap, gc, 0, 0, 32, 32);
+
+	// Make white inner area (not blended)
+	values.foreground = 0xffffffff;
+	XChangeGC(xDpy, gc, GCForeground, &values);
+	
+	// Fill everything but a one-pixel border with white.
+	XFillRectangle(xDpy, blendPixmap, gc, 1, 1, 30, 30);
+      } else if (imageData == NULL) {
+	printf("No Blending ...\n");
+	//XFreePixmap(xDpy,blendPixmap);
+	//blendPixmap = None;
+      }
     }
+
 
     printf("Blend After Warp : %i \n",blendAfterWarp);
     //     Apply it to the display. blendAfterWarp is FALSE, so the edges will be
@@ -302,7 +314,7 @@ int read_warpfile(const char warpfile[],const char smonitor[])
   int i;
   int x;
   int y;
-  unsigned long pixval;
+  unsigned long int pixval;
   unsigned char bytval;
   int nChannels = 4;
   
@@ -450,18 +462,52 @@ int read_warpfile(const char warpfile[],const char smonitor[])
     imageData = (unsigned char*) malloc (nx * ny * nChannels);
     int bitmap_pad = nChannels * 8;
     int bytes_per_line = nx*4; //displayWidth * nChannels;
-    unsigned int imageDepth = DefaultDepth(xDpy, screenId);
 
-    XImage *blendImage = XCreateImage(xDpy, CopyFromParent, imageDepth, ZPixmap, 0, (char*)imageData,
-				      nx, ny, bitmap_pad , bytes_per_line);
+    XImage *blendImage = XCreateImage(xDpy, CopyFromParent, DefaultDepth(xDpy, screenId), ZPixmap,
+				      0, (char*)imageData, nx, ny, bitmap_pad , bytes_per_line);
 
+
+    /* fill alpha values into linear interpolation abscissa vector */
+    yval[0] = alpha[0][3];
+    yval[1] = alpha[0][2];
+    yval[2] = alpha[0][1];
+    yval[3] = alpha[0][0];
+    yval[4] = alpha[1][0];
+    yval[5] = alpha[1][1];
+    yval[6] = alpha[1][2];
+    yval[7] = alpha[1][3];
+    
     for (y=0;y<ny;y++) {
+      /* fill screen coordinate values into linear interpolation ordinate vector */
+      xval[0] = 0.0;
+      xval[1] = 0.33 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      xval[2] = 0.66 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      xval[3] = 1.00 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      xval[4] = (float) (nx - 1) - 1.00 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+      xval[5] = (float) (nx - 1) - 0.66 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+      xval[6] = (float) (nx - 1) - 0.33 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+      xval[7] = (float) (nx - 1);
+      //      printf("%i %f %f \n",y,xval[3],xval[4]);
+      
       for (x=0;x<nx;x++) {
-	bytval = 0x7f;
+	/* perform linear interpolation of tranparency between x-plane's blending steps */
+	bytval = (unsigned char) (interpolate((float) x) * 255.0);
+	//if (y == 500) printf("%i ",bytval);
+	pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
+	  256 * (unsigned long) bytval + (unsigned long) bytval;
 	XPutPixel(blendImage, x, y, pixval);
       }
     }
 
+    /* create empty pixmap */
+    blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
+				nx, ny, DefaultDepth(xDpy,screenId));
+
+    /* copy xImage data to pixmap */
+    XGCValues values; // graphics context values
+    GC gc; // the graphics context
+    gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
+    XPutImage(xDpy, blendPixmap, gc, blendImage, 0, 0, 0, 0, nx, ny);
 
   }
 
@@ -671,4 +717,34 @@ char** str_split(char* a_str, const char a_delim)
     }
 
   return result;
+}
+
+float interpolate(float input)
+{
+  int left;
+  int right;
+  float val;
+  int n=sizeof(xval)/sizeof(float);
+
+  left = n-2;
+  right = n-1;
+  for (int i=1;i<(n-1);i++) {
+    if (input < xval[i]) {
+      left = i-1;
+      right = i;
+      break;
+    }
+  }
+
+  if (input < xval[0]) {
+    val = yval[0];
+  } else if (input > xval[n-1]) {
+    val = yval[n-1];
+  } else {
+    val = ((xval[right] - input) * yval[left] + (input - xval[left]) * yval[right]) / (xval[right] - xval[left]);
+  }
+  
+  //  printf("%f %i %i %f \n",xval,left,right,val);
+
+  return val;
 }
