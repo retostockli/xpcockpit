@@ -42,13 +42,13 @@
 #include "warpblend.h"
 
 typedef struct {
-    float x, y;
+  float x, y;
 } vertex2f;
 
 typedef struct {
-    vertex2f pos;
-    vertex2f tex;
-    vertex2f tex2;
+  vertex2f pos;
+  vertex2f tex;
+  vertex2f tex2;
 } vertexDataRec;
 
 vertexDataRec *warpData = NULL;
@@ -66,228 +66,234 @@ int read_warpfile(const char warpfile[],const char smonitor[]);
 char** str_split(char* a_str, const char a_delim);
 float interpolate(float input);
 
-static inline float transformPoint(vertex2f *vec)
-{
-    float w, oneOverW;
-    float x_in, y_in;
+static inline float transformPoint(vertex2f *vec) {
+  float w, oneOverW;
+  float x_in, y_in;
 
-    // Sample projection matrix generated from a trapezoid projection
-    static const float mat[3][3] =
+  // Sample projection matrix generated from a trapezoid projection
+  static const float mat[3][3] =
     {
-        { 0.153978257544863,-0.097906833257365,0.19921875 },
-        { -0.227317623368679,0.222788944798964,0.25 },
-        { -0.585236541598693,-0.135471643796181,1 }
+     { 0.153978257544863,-0.097906833257365,0.19921875 },
+     { -0.227317623368679,0.222788944798964,0.25 },
+     { -0.585236541598693,-0.135471643796181,1 }
     };
 
-    x_in = vec->x;
-    y_in = vec->y;
+  x_in = vec->x;
+  y_in = vec->y;
 
-    vec->x = x_in * mat[0][0] + y_in * mat[0][1] + mat[0][2];
-    vec->y = x_in * mat[1][0] + y_in * mat[1][1] + mat[1][2];
-    w      = x_in * mat[2][0] + y_in * mat[2][1] + mat[2][2];
+  vec->x = x_in * mat[0][0] + y_in * mat[0][1] + mat[0][2];
+  vec->y = x_in * mat[1][0] + y_in * mat[1][1] + mat[1][2];
+  w      = x_in * mat[2][0] + y_in * mat[2][1] + mat[2][2];
 
-    oneOverW = 1.0 / w;
+  oneOverW = 1.0 / w;
 
-    vec->x *= oneOverW;
-    vec->y *= oneOverW;
+  vec->x *= oneOverW;
+  vec->y *= oneOverW;
 
-    return oneOverW;
+  return oneOverW;
 }
 
-int main(int ac, char **av)
-{
-  //    char warpfile[] = "../data/X-Plane Window Positions.prf";
-    char warpfile[] = "../data/X-Plane Window Positions Blend.prf";
+int main(int ac, char **av) {
+  char warpfile[] = "X-Plane Window Positions.prf";
+  
+  GC gc;
+  XGCValues values;
 
-    GC gc;
-    XGCValues values;
+  int nvDpyId = -1;
+  bool blendAfterWarp = False;
+  bool warp = False;
+  bool unwarp = False;
+  bool blend = False;
+  bool unblend = False;
+  bool test = False;
+  int numVertices = 0;
+  int monitor = -1;
+  char smonitor[2];
+  int ret;
+  int a;
 
-    int nvDpyId = -1;
-    bool blendAfterWarp = True;
-    bool unwarp = False;
-    bool unblend = False;
-    bool test = False;
-    int numVertices = 0;
-    int monitor = -1;
-    char smonitor[2];
-    int ret;
-    int a;
 
+  xDpy = XOpenDisplay(NULL);
+  if (!xDpy) {
+    fprintf (stderr, "Could not open X Display %s!\n", XDisplayName(NULL));
+    return 1;
+  }
 
-    xDpy = XOpenDisplay(NULL);
-    if (!xDpy) {
-        fprintf (stderr, "Could not open X Display %s!\n", XDisplayName(NULL));
-        return 1;
-    }
+  screenId = XDefaultScreen(xDpy);
 
-    screenId = XDefaultScreen(xDpy);
-
-    for (a=1;a<ac;a++) {
-      if (a == 1) {
-	if (strspn(av[a], "0123456789") == strlen(av[a])) {
-	  nvDpyId = atoi(av[a]);
-	  printf("DPY ID: %i\n",nvDpyId);
-	} else {
-	  printf("Please supply the DPY-# as first argument\n");
-	  return 1;
-	}
-      }
-      if (a == 2) {
-	if (strspn(av[a], "0123456789") == strlen(av[a])) {
-	  monitor = atoi(av[2]);
-	  printf("Monitor #: %i\n",monitor);
-	}
-      }
-      if (strcmp("--blend-after-warp", av[a]) == 0) blendAfterWarp = True;
-      if (strcmp("--unwarp", av[a]) == 0) unwarp = True;
-      if (strcmp("--unblend", av[a]) == 0) unblend = True;
-      if (strcmp("--test", av[a]) == 0) test = True;
-      if (strcmp("--help",av[a]) == 0) {
-        printf("Usage: ./nv-warpblend-xplane DPI [monitor] [--blend-after-warp] [--unwarp] [--unblend]\n");
-        printf ("DPY is the Display Port, see 'nvidia-settings -q CurrentMetaMode' \n");
-        printf ("Monitor is the monitor number in X-Plane Window position.prf \n");
-        return 1;
+  for (a=1;a<ac;a++) {
+    if (a == 1) {
+      if (strspn(av[a], "0123456789") == strlen(av[a])) {
+	nvDpyId = atoi(av[a]);
+	printf("DPY ID: %i\n",nvDpyId);
+      } else {
+	printf("Please supply the DPY-# as first argument\n");
+	return 1;
       }
     }
-
-    if (!(unwarp || unblend) && (monitor == -1)) {
-      printf("Please provide the X-Plane Monitor number as second argument \n");
+    if (a == 2) {
+      if (strspn(av[a], "0123456789") == strlen(av[a])) {
+	monitor = atoi(av[2]);
+	printf("Monitor #: %i\n",monitor);
+      }
+    }
+    if (strcmp("--warp", av[a]) == 0) warp = True;
+    if (strcmp("--unwarp", av[a]) == 0) unwarp = True;
+    if (strcmp("--blend", av[a]) == 0) blend = True;
+    if (strcmp("--unblend", av[a]) == 0) unblend = True;
+    if (strcmp("--blend-after-warp", av[a]) == 0) blendAfterWarp = True;
+    if (strcmp("--test", av[a]) == 0) test = True;
+    if (strcmp("--help",av[a]) == 0) {
+      printf("Usage: ./warpblend DPI [monitor] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test]\n");
+      printf ("DPY is the Display Port, see 'nvidia-settings -q CurrentMetaMode' \n");
+      printf ("Monitor is the monitor number in X-Plane Window position.prf \n");
+      printf ("Option --test does not require any other option. It generates a Test warping and blending. \n");
       return 1;
     }
+  }
 
-    sprintf(smonitor,"%d",monitor);
+  if (!(unwarp || unblend || test) && (monitor == -1)) {
+    printf("Please provide the X-Plane Monitor number as second argument \n");
+    return 1;
+  }
 
-    if (unwarp) {
-      /* Reset Warping to Regular Screen / Texture Coordinates */
-      printf("Reset Warping ...\n");
-      if(warpData != NULL)
-	free(warpData);
-      warpData = NULL;
-      numVertices = 0;
-    } else {
-      if (test) {
-	/* Sample Warping Grid for Testing */
-	numVertices = 6;
-	warpData = (vertexDataRec*)malloc(numVertices * sizeof(vertexDataRec));      
-	printf("number of Vertices allocated: %d\n",numVertices);
+  sprintf(smonitor,"%d",monitor);
 
-	// Start with two screen-aligned triangles, and warp them using the sample
-	// keystone matrix in transformPoint. Make sure we save W for correct
-	// perspective and pass it through as the last texture coordinate component.
-	warpData[0].pos.x = 0.0f;
-	warpData[0].pos.y = 0.0f;
-	warpData[0].tex.x = 0.0f;
-	warpData[0].tex.y = 0.0f;
-	warpData[0].tex2.x = 0.0f;
-	warpData[0].tex2.y = transformPoint(&warpData[0].pos);
-
-	warpData[1].pos.x = 1.0f;
-	warpData[1].pos.y = 0.0f;
-	warpData[1].tex.x = 1.0f;
-	warpData[1].tex.y = 0.0f;
-	warpData[1].tex2.x = 0.0f;
-	warpData[1].tex2.y = transformPoint(&warpData[1].pos);
-
-	warpData[2].pos.x = 0.0f;
-	warpData[2].pos.y = 1.0f;
-	warpData[2].tex.x = 0.0f;
-	warpData[2].tex.y = 1.0f;
-	warpData[2].tex2.x = 0.0f;
-	warpData[2].tex2.y = transformPoint(&warpData[2].pos);
-
-	warpData[3].pos.x = 1.0f;
-	warpData[3].pos.y = 0.0f;
-	warpData[3].tex.x = 1.0f;
-	warpData[3].tex.y = 0.0f;
-	warpData[3].tex2.x = 0.0f;
-	warpData[3].tex2.y = transformPoint(&warpData[3].pos);
-
-	warpData[4].pos.x = 1.0f;
-	warpData[4].pos.y = 1.0f;
-	warpData[4].tex.x = 1.0f;
-	warpData[4].tex.y = 1.0f;
-	warpData[4].tex2.x = 0.0f;
-	warpData[4].tex2.y = transformPoint(&warpData[4].pos);
-
-	warpData[5].pos.x = 0.0f;
-	warpData[5].pos.y = 1.0f;
-	warpData[5].tex.x = 0.0f;
-	warpData[5].tex.y = 1.0f;
-	warpData[5].tex2.x = 0.0f;
-	warpData[5].tex2.y = transformPoint(&warpData[5].pos);      
+  if (warp || blend ) {
+    printf("Reading X-Plane Monitor File with Warp / Blend Information: %s\n",warpfile);
+    numVertices = read_warpfile(warpfile,smonitor);
+    if (numVertices == 0) return 1;
+  }
       
-      } else {
-	printf("Reading X-Plane Monitor File with Warp / Blend Grid: %s\n",warpfile);
-	numVertices = read_warpfile(warpfile,smonitor);
-      }
-    }
-
-    // Prime the random number generator, since the helper functions need it.
-    srand(time(NULL));
+  /**** WARPING ****/
     
-    // Apply our transformed warp data to the chosen display.
-    if(numVertices > 0 || unwarp) {
-      ret = XNVCTRLSetScanoutWarping(xDpy,
-				     screenId,
-				     nvDpyId,
-				     NV_CTRL_WARP_DATA_TYPE_MESH_TRIANGLES_XYUVRQ,
-				     //NV_CTRL_WARP_DATA_TYPE_MESH_TRIANGLESTRIP_XYUVRQ,
-				     numVertices, // 6 vertices for two triangles
-				     (float *)warpData);
-
-      if ((ret != 0) && (!unwarp)) printf("Warp failed with return value: %i\n",ret);
-    } else {
-      printf("No Warping since Warp Matrix contains 0 Vertices \n");
+  if (unwarp) {
+    /* Reset Warping to Regular Screen / Texture Coordinates */
+    printf("Reset Warping ...\n");
+    if(warpData != NULL)
+      free(warpData);
+    warpData = NULL;
+    numVertices = 0;
+  } else if (warp) {
+    if (numVertices == 0) {
+      printf("No Warp Information in X-Plane Monitor File ...\n");
     }
+  } else if (test) {
+    printf("Create Test Warping ...\n");
+    /* Sample Warping Grid for Testing */
+    numVertices = 6;
+    warpData = (vertexDataRec*)malloc(numVertices * sizeof(vertexDataRec));      
+      
+    // Start with two screen-aligned triangles, and warp them using the sample
+    // keystone matrix in transformPoint. Make sure we save W for correct
+    // perspective and pass it through as the last texture coordinate component.
+    warpData[0].pos.x = 0.0f;
+    warpData[0].pos.y = 0.0f;
+    warpData[0].tex.x = 0.0f;
+    warpData[0].tex.y = 0.0f;
+    warpData[0].tex2.x = 0.0f;
+    warpData[0].tex2.y = transformPoint(&warpData[0].pos);
+      
+    warpData[1].pos.x = 1.0f;
+    warpData[1].pos.y = 0.0f;
+    warpData[1].tex.x = 1.0f;
+    warpData[1].tex.y = 0.0f;
+    warpData[1].tex2.x = 0.0f;
+    warpData[1].tex2.y = transformPoint(&warpData[1].pos);
+      
+    warpData[2].pos.x = 0.0f;
+    warpData[2].pos.y = 1.0f;
+    warpData[2].tex.x = 0.0f;
+    warpData[2].tex.y = 1.0f;
+    warpData[2].tex2.x = 0.0f;
+    warpData[2].tex2.y = transformPoint(&warpData[2].pos);
+      
+    warpData[3].pos.x = 1.0f;
+    warpData[3].pos.y = 0.0f;
+    warpData[3].tex.x = 1.0f;
+    warpData[3].tex.y = 0.0f;
+    warpData[3].tex2.x = 0.0f;
+    warpData[3].tex2.y = transformPoint(&warpData[3].pos);
+      
+    warpData[4].pos.x = 1.0f;
+    warpData[4].pos.y = 1.0f;
+    warpData[4].tex.x = 1.0f;
+    warpData[4].tex.y = 1.0f;
+    warpData[4].tex2.x = 0.0f;
+    warpData[4].tex2.y = transformPoint(&warpData[4].pos);
+      
+    warpData[5].pos.x = 0.0f;
+    warpData[5].pos.y = 1.0f;
+    warpData[5].tex.x = 0.0f;
+    warpData[5].tex.y = 1.0f;
+    warpData[5].tex2.x = 0.0f;
+    warpData[5].tex2.y = transformPoint(&warpData[5].pos);            
+  }
 
-    if (nvDpyId < 0 || unblend) {
-      printf("Reset Blending ...\n");
-      //XFreePixmap(xDpy,blendPixmap);
-      //blendPixmap = None;
-    } else {
-
-      if (test) {
+  // Prime the random number generator, since the helper functions need it.
+  srand(time(NULL));
     
-	// Test with a 32x32 pixmap.
-	blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
-				    32, 32, DefaultDepth(xDpy,screenId));
-	
-	values.foreground = 0x77777777;
-	gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
-	
-	// Fill it fully with grey.
-	XFillRectangle(xDpy, blendPixmap, gc, 0, 0, 32, 32);
+  // Apply our transformed warp data to the chosen display.
+  if (warp || unwarp || test) {
+    ret = XNVCTRLSetScanoutWarping(xDpy,
+				   screenId,
+				   nvDpyId,
+				   NV_CTRL_WARP_DATA_TYPE_MESH_TRIANGLES_XYUVRQ,
+				   //NV_CTRL_WARP_DATA_TYPE_MESH_TRIANGLESTRIP_XYUVRQ,
+				   numVertices, // 6 vertices for two triangles
+				   (float *)warpData);
 
-	// Make white inner area (not blended)
-	values.foreground = 0xffffffff;
-	XChangeGC(xDpy, gc, GCForeground, &values);
-	
-	// Fill everything but a one-pixel border with white.
-	XFillRectangle(xDpy, blendPixmap, gc, 1, 1, 30, 30);
-      } else if (imageData == NULL) {
-	printf("No Blending ...\n");
-	//XFreePixmap(xDpy,blendPixmap);
-	//blendPixmap = None;
-      }
+    if ((ret != 0) && (!unwarp)) printf("Warp failed with return value: %i\n",ret);
+  } 
+
+  
+  /**** BLENDING ****/
+
+  if (unblend) {
+    printf("Reset Blending ...\n");
+  } else if (blend) {
+    if (imageData == NULL) {
+      printf("No Blend Information in X-Plane Monitor File ...\n");
     }
+  } else if (test) {
+    printf("Create Test Blending ...\n");
+      
+    // Test with a 32x32 pixmap.
+    blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
+				32, 32, DefaultDepth(xDpy,screenId));
+      
+    values.foreground = 0x77777777;
+    gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
+      
+    // Fill it fully with grey.
+    XFillRectangle(xDpy, blendPixmap, gc, 0, 0, 32, 32);
+      
+    // Make white inner area (not blended)
+    values.foreground = 0xffffffff;
+    XChangeGC(xDpy, gc, GCForeground, &values);
+      
+    // Fill everything but a one-pixel border with white.
+    XFillRectangle(xDpy, blendPixmap, gc, 1, 1, 30, 30);
+  }
 
-
-    printf("Blend After Warp : %i \n",blendAfterWarp);
+  if (blend || unblend || test) {
+    printf("Blend After Warp Flag : %i \n",blendAfterWarp);
     //     Apply it to the display. blendAfterWarp is FALSE, so the edges will be
     //     blended in warped space.
     ret = XNVCTRLSetScanoutIntensity(xDpy,
-			       screenId,
-			       nvDpyId,
-			       blendPixmap,
-    			       blendAfterWarp);
-    
+				     screenId,
+				     nvDpyId,
+				     blendPixmap,
+				     blendAfterWarp);
+      
     if ((ret != 0) && (!unblend)) printf("Blend failed with return value: %i\n",ret);
-          
-    return 0;
+
+  }
+    
+  return 0;
 }
 
-int read_warpfile(const char warpfile[],const char smonitor[])
-{
+int read_warpfile(const char warpfile[],const char smonitor[]) {
   int ncol=101;
   int nrow=101;
   int nx;
@@ -342,97 +348,97 @@ int read_warpfile(const char warpfile[],const char smonitor[])
   c = 0;
   r = 0;
   while (fgets(buf,sizeof(buf),fptr)!=NULL) {
-      buf[strlen(buf)-1] = 0;
-      char **tokens;
-      char *str;
+    buf[strlen(buf)-1] = 0;
+    char **tokens;
+    char *str;
 
-      isX = False;
-      isY = False;
-      isT = False;
-      isB = False;
-      isA = False;
+    isX = False;
+    isY = False;
+    isT = False;
+    isB = False;
+    isA = False;
       
-      tokens = str_split(buf, '/');
+    tokens = str_split(buf, '/');
       
-      if (tokens) {
-	for (i = 0; *(tokens + i); i++) {
+    if (tokens) {
+      for (i = 0; *(tokens + i); i++) {
 	  
-	  if ((i == 1) && (strcmp(*(tokens + i),smonitor)!=0)) break;
-	  if (i == 2) {
-	    if (strstr(*(tokens + i),"m_x_res_full")!=0) {
-	      //printf("%i : %s\n",i, *(tokens + i));
-	      str = strtok(*(tokens + i)," ");
-	      str = strtok(NULL," ");
-	      nx = atoi(str);
-	      printf("X-Res: %i \n",nx);
-	    } 
-	    if (strstr(*(tokens + i),"m_y_res_full")!=0) {
-	      //printf("%i : %s\n",i, *(tokens + i));
-	      str = strtok(*(tokens + i)," ");
-	      str = strtok(NULL," ");
-	      ny = atoi(str);
-	      printf("Y-Res: %i \n",ny);
-	    } 
-	  } else if (i == 3) {
-	    if (strcmp(*(tokens + i),"grid_os_x")==0) isX = True;
-	    if (strcmp(*(tokens + i),"grid_os_y")==0) isY = True;
-	    if (strcmp(*(tokens + i),"gradient_width_top")==0) isT = True;
-	    if (strcmp(*(tokens + i),"gradient_width_bot")==0) isB = True;
-	    if (strcmp(*(tokens + i),"gradient_alpha")==0) isA = True;
-	    if (strstr(*(tokens + i),"gradient_on")) {
-	      str = strtok(*(tokens + i)," ");
-	      str = strtok(NULL," ");
-	      has_blend = atoi(str);
-	      printf("Blending Enabled: %i \n",has_blend);
-	    }
-	  } else if (i == 4) {
-	    if (isX || isY) {
-	      col = atoi(*(tokens + i));
-	    } else if (isA) {
-	      side = atoi(*(tokens + i));
-	    } else if (isT || isB) {
-	      str = strtok(*(tokens + i)," ");
-	      side = atoi(str);
-	      str = strtok(NULL," ");
-	      val = atof(str);
-	      if (isT) {
-		top[side] = val;
-	      } else {
-		bot[side] = val;
-	      }
-	    }
-	  } else if (i == 5) {
-	    // We read horizontal or vertical shifts in pixels
-	    if (isX || isY) {
-	      //printf("%i : %s\n",i, *(tokens + i));
-	      str = strtok(*(tokens + i)," ");
-	      row = nrow - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
-	      str = strtok(NULL," ");
-	      val = atof(str);
-	      if (isX) {
-		vx[row][col][1] = (float) col / (float) (ncol-1);
-		vx[row][col][0] = (val + (float) col / (float) (ncol-1) * (float) nx) / (float) nx;
-		//if ((col == 0) && (row == 0)) printf("X: %f %f \n",vx[row][col][0],vx[row][col][1]);
-		c++;
-	      } else {
-		vy[row][col][1] = (float) row / (float) (nrow-1);
-		// Inverse vertical shift.
-		vy[row][col][0] = (-val + (float) row / (float) (nrow-1) * (float) ny) / (float) ny;
-		//if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
-		r++;
-	      }
-	    } else if (isA) {
-	      str = strtok(*(tokens + i)," ");
-	      dist = atoi(str);
-	      str = strtok(NULL," ");
-	      val = atof(str);
-	      alpha[side][dist] = val;
+	if ((i == 1) && (strcmp(*(tokens + i),smonitor)!=0)) break;
+	if (i == 2) {
+	  if (strstr(*(tokens + i),"m_x_res_full")!=0) {
+	    //printf("%i : %s\n",i, *(tokens + i));
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    nx = atoi(str);
+	    printf("X-Res: %i \n",nx);
+	  } 
+	  if (strstr(*(tokens + i),"m_y_res_full")!=0) {
+	    //printf("%i : %s\n",i, *(tokens + i));
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    ny = atoi(str);
+	    printf("Y-Res: %i \n",ny);
+	  } 
+	} else if (i == 3) {
+	  if (strcmp(*(tokens + i),"grid_os_x")==0) isX = True;
+	  if (strcmp(*(tokens + i),"grid_os_y")==0) isY = True;
+	  if (strcmp(*(tokens + i),"gradient_width_top")==0) isT = True;
+	  if (strcmp(*(tokens + i),"gradient_width_bot")==0) isB = True;
+	  if (strcmp(*(tokens + i),"gradient_alpha")==0) isA = True;
+	  if (strstr(*(tokens + i),"gradient_on")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    has_blend = atoi(str);
+	    printf("Blending Enabled: %i \n",has_blend);
+	  }
+	} else if (i == 4) {
+	  if (isX || isY) {
+	    col = atoi(*(tokens + i));
+	  } else if (isA) {
+	    side = atoi(*(tokens + i));
+	  } else if (isT || isB) {
+	    str = strtok(*(tokens + i)," ");
+	    side = atoi(str);
+	    str = strtok(NULL," ");
+	    val = atof(str);
+	    if (isT) {
+	      top[side] = val;
+	    } else {
+	      bot[side] = val;
 	    }
 	  }
-	  free(*(tokens + i));
+	} else if (i == 5) {
+	  // We read horizontal or vertical shifts in pixels
+	  if (isX || isY) {
+	    //printf("%i : %s\n",i, *(tokens + i));
+	    str = strtok(*(tokens + i)," ");
+	    row = nrow - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
+	    str = strtok(NULL," ");
+	    val = atof(str);
+	    if (isX) {
+	      vx[row][col][1] = (float) col / (float) (ncol-1);
+	      vx[row][col][0] = (val + (float) col / (float) (ncol-1) * (float) nx) / (float) nx;
+	      //if ((col == 0) && (row == 0)) printf("X: %f %f \n",vx[row][col][0],vx[row][col][1]);
+	      c++;
+	    } else {
+	      vy[row][col][1] = (float) row / (float) (nrow-1);
+	      // Inverse vertical shift.
+	      vy[row][col][0] = (-val + (float) row / (float) (nrow-1) * (float) ny) / (float) ny;
+	      //if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
+	      r++;
+	    }
+	  } else if (isA) {
+	    str = strtok(*(tokens + i)," ");
+	    dist = atoi(str);
+	    str = strtok(NULL," ");
+	    val = atof(str);
+	    alpha[side][dist] = val;
+	  }
 	}
-	free(tokens);
-      } /* if we have / separated string */
+	free(*(tokens + i));
+      }
+      free(tokens);
+    } /* if we have / separated string */
   } /* while not EOF */
   
   fclose(fptr);
@@ -671,8 +677,7 @@ int read_warpfile(const char warpfile[],const char smonitor[])
   return nv;
 }
 
-char** str_split(char* a_str, const char a_delim)
-{
+char** str_split(char* a_str, const char a_delim) {
   char** result    = 0;
   size_t count     = 0;
   char* tmp        = a_str;
