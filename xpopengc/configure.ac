@@ -5,7 +5,7 @@ AC_PREREQ([2.50])
 AC_INIT([xpopengc], [0.82], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/main/main.cpp])
 AM_INIT_AUTOMAKE([-Wall subdir-objects])
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # Determine operating system
 AC_CANONICAL_HOST
