@@ -15,10 +15,10 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 2
+setting = 1
 
 # Graphics
-doplot = True
+doplot = False
 
 # Parameters
 d2r = math.pi/180.
@@ -33,26 +33,40 @@ tr = 0.49   # Projector Throw ratio
 h_0 = 15.0   # lower height of image above center of lens when projected on planar screen from untilted projector
 
 if setting == 1:
+    # Cylindrical + Projection + Blending
     nmon = 4  # number of monitors
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     blending = [False,True,True,True]   # apply blending at sides
     epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-65.0,0.0,65.0]  # lateral offset [deg]
+    lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 2:
+    # Projection + Blending
+    nmon = 4  # number of monitors
+    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
+    projection = [False,True,True,True]  # apply projection onto curved surface
+    blending = [False,True,True,True]   # apply blending at sides
+    epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
+    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    gridtest = False # display grid test pattern
+    forwin = False  # create for windows or for linux
+elif setting == 3:
+    # None
     nmon = 4  # number of monitors
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     blending = [False,False,False,False]   # apply blending at sides
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-65.0,0.0,65.0]  # lateral offset [deg]
+    lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
-elif setting == 3:
+elif setting == 4:
+    # Testing
     nmon = 1  # number of monitors
     cylindrical = [True]  # apply flat plane to cylinder warping
     projection = [True]  # apply projection onto curved surfae
@@ -174,8 +188,11 @@ for mon in range(0,nmon,1):
                 # print(str(px)+" "+str(theta)+" "+str(z_2)+" "+str(z_c)+" "+str(h/2))
 
                 # New FOVy due to larger vertical rendering at distance of cylinder center
-                if (gx == (ngx-1)/2) and (gy == (ngy-1)):
-                    FOVy = 2.0*math.atan(z_c/(d_1+d_0))*r2d
+                # BULLSHIT, FOVy does not change ...
+                #if (gx == (ngx-1)/2) and (gy == (ngy-1)):
+                #if (gx == (ngx-1)/4) and (gy == (ngy-1)):
+                #    FOVy = 2.0*math.atan(z_c/(d_1+d_0))*r2d
+                #    FOVy = 2.0*math.atan(z_c/R)*r2d
                 
                 # update grid coordinates for projector calculation
                 px += xdif[gx,gy]
@@ -251,6 +268,10 @@ for mon in range(0,nmon,1):
 
     # End loop of xy grid
 
+    print("Monitor: "+str(mon))
+    print("FOVx:    "+str(FOVx))
+    print("FOVy:    "+str(FOVy))
+    
     # write header per monitor
     if mon == 0:
         con.write("monitor/"+str(mon)+"/m_window_idx 0"+"\n")
