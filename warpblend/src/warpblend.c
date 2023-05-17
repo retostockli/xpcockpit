@@ -100,7 +100,7 @@ int main(int ac, char **av) {
   XGCValues values;
 
   int nvDpyId = -1;
-  bool blendAfterWarp = False;
+  bool blendAfterWarp = True;
   bool warp = False;
   bool unwarp = False;
   bool blend = False;
@@ -294,6 +294,10 @@ int main(int ac, char **av) {
 }
 
 int read_warpfile(const char warpfile[],const char smonitor[]) {
+
+  bool has_warp = True;
+  bool has_blend = True;
+  
   int ncol=101;
   int nrow=101;
   int nx;
@@ -327,8 +331,9 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
   /* first value is vertex coordinate and second value is warped coordinate */
   float vx[nrow][ncol][2];
   float vy[nrow][ncol][2];
+  float x0;
+  float x1;
 
-  bool has_blend = False;
   int side;
   int dist;
   float top[2];
@@ -460,10 +465,15 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
   
   c /= nrow;
   r /= ncol;
-  
-  printf("Number of Warp Grid Cols read: %i (of %i)\n",c,ncol);
-  printf("Number of Warp Grid Rows read: %i (of %i)\n",r,nrow);
 
+  if (c != ncol) has_warp = False;
+  if (r != nrow) has_warp = False;
+
+  if (!has_warp) {
+    printf("Number of Warp Grid Cols read: %i (of %i)\n",c,ncol);
+    printf("Number of Warp Grid Rows read: %i (of %i)\n",r,nrow);
+  }
+    
   if (has_blend) {
     imageData = (unsigned char*) malloc (nx * ny * nChannels);
     int bitmap_pad = nChannels * 8;
@@ -494,7 +504,18 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
       xval[6] = (float) (nx - 1) - 0.33 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
       xval[7] = (float) (nx - 1);
       //      printf("%i %f %f \n",y,xval[3],xval[4]);
-      
+
+      /* TRANSFORM BLENDING XVALS FROM DISPLAY TO TEXTURE COORDINATES SINCE BLENDAFTERWARP DOES NOT WORK */
+      if (has_warp) {
+	x0 = vx[0][0][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][0][0] * (float) y / (float) (ny-1);
+	x1 = vx[0][ncol-1][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][ncol-1][0] * (float) y / (float) (ny-1);
+	//printf("%f %f \n",x0,x1);
+	
+	for (i=0;i<8;i++) {
+	  xval[i] = -x0 / (x1-x0) * (float) (nx-1) + xval[i] * 1.0 / (x1-x0);
+	}
+      }
+	
       for (x=0;x<nx;x++) {
 	/* perform linear interpolation of tranparency between x-plane's blending steps */
 	bytval = (unsigned char) (interpolate((float) x) * 255.0);

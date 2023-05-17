@@ -316,6 +316,8 @@ AddAttributesToDisplayOfCurrentMetaMode(
             goto cleanup;
         }
 
+    
+
         // Put it back together with the new stuff in the middle
         sprintf(newMetaMode, "%s%s%s",
                 pCurrentMetaMode,
