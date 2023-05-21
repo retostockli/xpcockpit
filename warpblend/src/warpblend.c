@@ -127,8 +127,16 @@ int main(int ac, char **av) {
 	nvDpyId = atoi(av[a]);
 	printf("DPY ID: %i\n",nvDpyId);
       } else {
-	printf("Please supply the DPY-# as first argument\n");
-	return 1;
+	if (strcmp("--help",av[a]) == 0) {
+	  printf("Usage: ./warpblend DPI [monitor] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test]\n");
+	  printf ("DPY is the Display Port, see 'nvidia-settings -q CurrentMetaMode' \n");
+	  printf ("Monitor is the monitor number in X-Plane Window position.prf \n");
+	  printf ("Option --test does not require any other option. It generates a Test warping and blending. \n");
+	  return 1;
+	} else {
+	  printf("Please supply the DPY-# as first argument\n");
+	  return 1;
+	}
       }
     }
     if (a == 2) {
@@ -143,13 +151,6 @@ int main(int ac, char **av) {
     if (strcmp("--unblend", av[a]) == 0) unblend = True;
     if (strcmp("--blend-after-warp", av[a]) == 0) blendAfterWarp = True;
     if (strcmp("--test", av[a]) == 0) test = True;
-    if (strcmp("--help",av[a]) == 0) {
-      printf("Usage: ./warpblend DPI [monitor] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test]\n");
-      printf ("DPY is the Display Port, see 'nvidia-settings -q CurrentMetaMode' \n");
-      printf ("Monitor is the monitor number in X-Plane Window position.prf \n");
-      printf ("Option --test does not require any other option. It generates a Test warping and blending. \n");
-      return 1;
-    }
   }
 
   if (!(unwarp || unblend || test) && (monitor == -1)) {

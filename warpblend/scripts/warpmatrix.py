@@ -363,12 +363,12 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.650000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.330000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.800000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.450000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.650000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.330000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.800000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.450000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
 
     if doplot:
