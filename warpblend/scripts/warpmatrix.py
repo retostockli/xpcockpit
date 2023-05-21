@@ -37,10 +37,14 @@ if setting == 1:
     nmon = 4  # number of monitors
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    blending = [False,True,True,True]   # apply blending at sides
     epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    blending = [False,True,True,True]   # apply blending at sides
+    blend_left_top = [0.0,0.0,287.0,234.0]
+    blend_left_bot = [0.0,0.0,341.0,318.0]
+    blend_right_top = [0.0,249.0,257.0,0.0]
+    blend_right_bot = [0.0,333.0,318.0,0.0]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 2:
@@ -48,10 +52,14 @@ elif setting == 2:
     nmon = 4  # number of monitors
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    blending = [False,True,True,True]   # apply blending at sides
     epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    blending = [False,True,True,True]   # apply blending at sides
+    blend_left_top = [0.0,0.0,287.0,234.0]
+    blend_left_bot = [0.0,0.0,341.0,318.0]
+    blend_right_top = [0.0,249.0,257.0,0.0]
+    blend_right_bot = [0.0,333.0,318.0,0.0]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 3:
@@ -59,10 +67,14 @@ elif setting == 3:
     nmon = 4  # number of monitors
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
-    blending = [False,False,False,False]   # apply blending at sides
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    blending = [False,False,False,False]   # apply blending at sides
+    blend_left_top = [0.0,0.0,0.0,0.0]
+    blend_left_bot = [0.0,0.0,0.0,0.0]
+    blend_right_top = [0.0,0.0,0.0,0.0]
+    blend_right_bot = [0.0,0.0,0.0,0.0]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 4:
@@ -70,10 +82,14 @@ elif setting == 4:
     nmon = 1  # number of monitors
     cylindrical = [True]  # apply flat plane to cylinder warping
     projection = [True]  # apply projection onto curved surfae
-    blending = [False]   # apply blending at sides
     epsilon = [5.75]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
+    blending = [False]   # apply blending at sides
+    blend_left_top = [0.0]
+    blend_left_bot = [0.0]
+    blend_right_top = [0.0]
+    blend_right_bot = [0.0]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 
@@ -340,12 +356,12 @@ for mon in range(0,nmon,1):
         con.write("monitor/"+str(mon)+"/proj/gradient_on 0"+"\n")
 
 
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_top/0 0.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_top/1 0.000000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_width_top/0 "+str(format(blend_left_top[mon],('.6f')))+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_width_top/1 "+str(format(blend_right_top[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/0 0.000000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/1 0.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 0.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 0.000000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon],('.6f')))+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.650000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.330000"+"\n")
