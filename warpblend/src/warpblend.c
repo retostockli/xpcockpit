@@ -485,25 +485,41 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
 
 
     /* fill alpha values into linear interpolation abscissa vector */
-    yval[0] = alpha[0][3];
-    yval[1] = alpha[0][2];
-    yval[2] = alpha[0][1];
-    yval[3] = alpha[0][0];
-    yval[4] = alpha[1][0];
-    yval[5] = alpha[1][1];
-    yval[6] = alpha[1][2];
-    yval[7] = alpha[1][3];
-    
+    if ((top[0] == 0.0) && (bot[0] == 0.0)) {
+      /* no blending on left side */
+      yval[0] = 1.0;
+      yval[1] = 1.0;
+      yval[2] = 1.0;
+      yval[3] = 1.0;
+    } else {
+      yval[0] = alpha[0][3];
+      yval[1] = alpha[0][2];
+      yval[2] = alpha[0][1];
+      yval[3] = alpha[0][0];
+    }
+    if ((top[1] == 0.0) && (bot[1] == 0.0)) {
+      /* no blending on right side */
+      yval[4] = 1.0;
+      yval[5] = 1.0;
+      yval[6] = 1.0;
+      yval[7] = 1.0;
+    } else {
+      yval[4] = alpha[1][0];
+      yval[5] = alpha[1][1];
+      yval[6] = alpha[1][2];
+      yval[7] = alpha[1][3];
+    }
+     
     for (y=0;y<ny;y++) {
       /* fill screen coordinate values into linear interpolation ordinate vector */
       xval[0] = 0.0;
-      xval[1] = 0.33 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      xval[1] = 0.40 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
       xval[2] = 0.66 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
       xval[3] = 1.00 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-      xval[4] = (float) (nx - 1) - 1.00 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-      xval[5] = (float) (nx - 1) - 0.66 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-      xval[6] = (float) (nx - 1) - 0.33 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-      xval[7] = (float) (nx - 1);
+      xval[4] = (float) nx - 1.00 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+      xval[5] = (float) nx - 0.66 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+      xval[6] = (float) nx - 0.40 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+      xval[7] = (float) nx;
       //      printf("%i %f %f \n",y,xval[3],xval[4]);
 
       /* TRANSFORM BLENDING XVALS FROM DISPLAY TO TEXTURE COORDINATES SINCE BLENDAFTERWARP DOES NOT WORK */
@@ -520,7 +536,7 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
       for (x=0;x<nx;x++) {
 	/* perform linear interpolation of tranparency between x-plane's blending steps */
 	bytval = (unsigned char) (interpolate((float) x) * 255.0);
-	//if (y == 500) printf("%i ",bytval);
+	if (y == 500) printf("%i ",bytval);
 	pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
 	  256 * (unsigned long) bytval + (unsigned long) bytval;
 	XPutPixel(blendImage, x, y, pixval);

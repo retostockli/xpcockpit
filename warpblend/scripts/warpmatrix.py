@@ -15,10 +15,10 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 1
+setting = 3
 
 # Graphics
-doplot = False
+doplot = True
 
 # Parameters
 d2r = math.pi/180.
@@ -39,7 +39,8 @@ if setting == 1:
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
-    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+#    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    vertical_offset = [0.0,-5.0,-5.0,-5.0]    # vertical offset [deg]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
@@ -69,7 +70,8 @@ elif setting == 3:
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
-    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+#    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    vertical_offset = [0.0,-5.0,-5.0,-5.0]    # vertical offset [deg]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0,0.0,0.0]
     blend_left_bot = [0.0,0.0,0.0,0.0]
@@ -81,10 +83,10 @@ elif setting == 4:
     # Testing
     nmon = 1  # number of monitors
     cylindrical = [True]  # apply flat plane to cylinder warping
-    projection = [True]  # apply projection onto curved surfae
-    epsilon = [5.75]         # projector tilt [deg]
+    projection = [False]  # apply projection onto curved surfae
+    epsilon = [0.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
-    vertical_offset = [0.0]    # vertical offset [deg]
+    vertical_offset = [-25.0]    # vertical offset [deg]
     blending = [False]   # apply blending at sides
     blend_left_top = [0.0]
     blend_left_bot = [0.0]
@@ -114,16 +116,16 @@ con.write("num_monitors "+str(nmon)+"\n")
 # General Calculations independent of pixel position
 
 ar =  float(nx) / float(ny)  # aspect ratio of projector image
-beta = math.atan(1.0/(2.0*tr))*r2d
-beta1 = 180.-beta
-delta = math.asin(d_0/R*math.sin(beta1*d2r))*r2d
-gamma = 180.-beta1-delta
-R_1 = R*math.sin(gamma*d2r)/math.sin(beta1*d2r)
-d_1 = R_1*math.cos(beta*d2r)
-w_2 = R_1*math.sin(beta*d2r)
+beta = math.atan(1.0/(2.0*tr))*r2d # Maximum horizontal FOV from Projector [deg]
+beta1 = 180.-beta   # well ... check out the drawing yourself
+delta = math.asin(d_0/R*math.sin(beta1*d2r))*r2d  # same here
+gamma = 180.-beta1-delta  # Maximum horizontal FOV from Screen Center [deg]
+R_1 = R*math.sin(gamma*d2r)/math.sin(beta1*d2r) # Maximum Distance of Projector to screen edge
+d_1 = R_1*math.cos(beta*d2r) # distance of projector to hypothetical planar screen in front of cylindrical screen
+w_2 = R_1*math.sin(beta*d2r) # half of hypothetical planar image width at screen distance
 
-w = 2.0*w_2    # planar image width at screen distance
-h = w / ar     # planar image height at screen distance
+w = 2.0*w_2    # planar image width at screen distance (as if projection would be on planar scren)
+h = w / ar     # planar image height at screen distance (as if projection ... )
 
 # loop through monitors
 for mon in range(0,nmon,1):
@@ -150,7 +152,7 @@ for mon in range(0,nmon,1):
             
             if cylindrical[mon]:
 
-    # SCREEN CENTER Coordinate System
+                # SCREEN CENTER Coordinate System
                 # Graphic projection_geometry.pdf
                 # BUT where x1/y1 is at x0/x0
                 # AND where z1 is at center of screen
@@ -159,17 +161,28 @@ for mon in range(0,nmon,1):
                 # planar screen in distance d_1+d_0 from screen center
                 # and respective horizontal projection angle
                 a = w * (px - 0.5 * float(nx)) / float(nx)
+
+                # Vertically tilted Projection
+                if (vertical_offset[mon] != 0.0):
+                    # vertical distance from screen top
+                    #b = (float(ny)-py)/float(ny) * h
+                    b = (py-0.5*float(ny))/float(ny) * h
+                    d_v = math.sin(vertical_offset[mon]*d2r)*b
+                    #print(str(b) + " " +str(d_v))
+                else:
+                    d_v = 0.0
+
                 # Calculate horizontal view angle of pixel from screen center
-                theta = math.atan(a/(d_1+d_0))*r2d
+                theta = math.atan(a/(d_1+d_0+d_v))*r2d
 
-                # New X position in Cylindrical coordinates
+                # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
                 xdif[gx,gy] += 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
-
+                
                 # Calculate intersection of projected line with the cylindrical screen
                 # behind hypothetical planar screen. Cylinder is in (0,0) position
                 # https://mathworld.wolfram.com/Circle-LineIntersection.html
                 x_1 = 0
-                x_2 = d_1+d_0
+                x_2 = d_1+d_0+d_v
                 y_1 = 0.0
                 y_2 = a
                 d_x = x_2-x_1
@@ -200,6 +213,10 @@ for mon in range(0,nmon,1):
                 # New Y position in Cylindrical coordinates
                 ydif[gx,gy] += float(ny) * z_c / h + 0.5 * float(ny) - py
 
+                if ((gx == 0) and (gy == (ngy-1))) or ((gx == 0) and (gy == ((ngy-1)/2))) or ((gx == 0) and (gy == 0)):
+                    print(str(x_c)+" "+str(y_c)+" "+str(z_c))
+
+                
                 # print(str(px)+" "+str(theta)+" "+str(xdif[gx,gy])+" "+str(ydif[gx,gy]))
                 # print(str(px)+" "+str(theta)+" "+str(z_2)+" "+str(z_c)+" "+str(h/2))
 
@@ -363,12 +380,12 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.800000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.450000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.660000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.330000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.800000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.450000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.660000"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.330000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
 
     if doplot:
