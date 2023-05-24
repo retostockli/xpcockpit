@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 3
+setting = 4
 
 # Graphics
 doplot = True
@@ -84,9 +84,9 @@ elif setting == 4:
     nmon = 1  # number of monitors
     cylindrical = [True]  # apply flat plane to cylinder warping
     projection = [False]  # apply projection onto curved surfae
-    epsilon = [0.0]         # projector tilt [deg]
+    epsilon = [5.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
-    vertical_offset = [-25.0]    # vertical offset [deg]
+    vertical_offset = [-5.0]    # vertical offset [deg]
     blending = [False]   # apply blending at sides
     blend_left_top = [0.0]
     blend_left_bot = [0.0]
@@ -141,10 +141,12 @@ for mon in range(0,nmon,1):
     ydif = np.zeros((ngx, ngy))
     
     # loop through grid
+    # grid: gy goes from top to bottom and gx from left to right
     for gy in range(0,ngy,1):
         for gx in range(0,ngx,1):
+#        for gx in range(0,1,1):
             
-            # Calculate Pixel position of grid point
+            # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             px = float(nx) * float(gx) / float(ngx-1)
             py = float(ny) * float(gy) / float(ngy-1)
             xabs[gx,gy] = px
@@ -152,6 +154,9 @@ for mon in range(0,nmon,1):
             
             if cylindrical[mon]:
 
+                # Input is a planar image in x/y coordinates
+                # Output is a cylindrical image in degrees and height
+                
                 # SCREEN CENTER Coordinate System
                 # Graphic projection_geometry.pdf
                 # BUT where x1/y1 is at x0/x0
@@ -161,14 +166,16 @@ for mon in range(0,nmon,1):
                 # planar screen in distance d_1+d_0 from screen center
                 # and respective horizontal projection angle
                 a = w * (px - 0.5 * float(nx)) / float(nx)
+                # Calculate Elevation of pixel on hypothetical Planar Screen
+                b = (py-0.5*float(ny))/float(ny) * h
 
                 # Vertically tilted Projection
                 if (vertical_offset[mon] != 0.0):
-                    # vertical distance from screen top
-                    #b = (float(ny)-py)/float(ny) * h
-                    b = (py-0.5*float(ny))/float(ny) * h
-                    d_v = math.sin(vertical_offset[mon]*d2r)*b
-                    #print(str(b) + " " +str(d_v))
+                    alpha_1 = math.atan(b/(d_1+d_0))*r2d
+                    e = math.tan(-vertical_offset[mon]*d2r)*(d_0+d_1)
+                    f = math.cos(-vertical_offset[mon]*d2r)*(b+e)
+                    d_v = f / math.tan((-vertical_offset[mon] + alpha_1)*d2r) - (d_1+d_0)
+                    #print(str(gy) + " " +str(d_v)+" "+str(f)+" "+str(b+e))
                 else:
                     d_v = 0.0
 
@@ -177,6 +184,7 @@ for mon in range(0,nmon,1):
 
                 # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
                 xdif[gx,gy] += 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
+
                 
                 # Calculate intersection of projected line with the cylindrical screen
                 # behind hypothetical planar screen. Cylinder is in (0,0) position
@@ -203,22 +211,29 @@ for mon in range(0,nmon,1):
                 # cylindrical screen again
                 d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
 
-                # Calculate Elevation of pixel at Planar Screen
-                z_2 = (py-0.5*float(ny))/float(ny) * h
-                # Calculate Elevation angle of pixel (relative to screen center height)
-                alpha = math.atan(z_2/d_r)*r2d
-                # Calculate Elevation of pixel at Cylinder
-                z_c = math.tan(alpha*d2r) * R
+                if (vertical_offset[mon] != 0.0):
+                    # Calculate Elevation of pixel (relative to screen center height, shifted by z_0 due to tilt)
+                    z_0 = math.sin(-vertical_offset[mon]*d2r) * (d_1 + d_0)
+                    alpha = math.atan(f/d_r)*r2d
+                    z_c = math.tan(alpha*d2r) * R - z_0
+                    #print(str(gy) + " " +str(z_c))
+                else:
+                    # Calculate Elevation angle of pixel (relative to screen center height)
+                    alpha = math.atan(b/d_r)*r2d
+                    # Calculate Elevation of pixel at cylinder
+                    z_c = math.tan(alpha*d2r) * R
 
                 # New Y position in Cylindrical coordinates
                 ydif[gx,gy] += float(ny) * z_c / h + 0.5 * float(ny) - py
 
-                if ((gx == 0) and (gy == (ngy-1))) or ((gx == 0) and (gy == ((ngy-1)/2))) or ((gx == 0) and (gy == 0)):
-                    print(str(x_c)+" "+str(y_c)+" "+str(z_c))
+                #print(str(gy) + " " +str(xabs[gx,gy]+xdif[gx,gy]) + " " +str(yabs[gx,gy]+ydif[gx,gy]))
+
+#                if ((gx == 0) and (gy == (ngy-1))) or ((gx == 0) and (gy == ((ngy-1)/2))) or ((gx == 0) and (gy == 0)):
+#                    print(str(x_c)+" "+str(y_c)+" "+str(z_c))
 
                 
                 # print(str(px)+" "+str(theta)+" "+str(xdif[gx,gy])+" "+str(ydif[gx,gy]))
-                # print(str(px)+" "+str(theta)+" "+str(z_2)+" "+str(z_c)+" "+str(h/2))
+                # print(str(px)+" "+str(theta)+" "+str(b)+" "+str(z_c)+" "+str(h/2))
 
                 # New FOVy due to larger vertical rendering at distance of cylinder center
                 # BULLSHIT, FOVy does not change ...
@@ -233,6 +248,9 @@ for mon in range(0,nmon,1):
                 
             if projection[mon]:
 
+                # INPUT IS IN CYLINDRICAL COORDINATES ALREADY
+                # SO X IS in degrees and Y is in height
+                
                 # PROJECTOR CENTER Coordinate System
                 # Graphic projection_geometry.pdf
 
@@ -240,6 +258,8 @@ for mon in range(0,nmon,1):
                 # planar screen in distance d_1 from projector
                 # and respective horizontal projection angle
                 a = w * (px - 0.5 * float(nx)) / float(nx)
+                # Calculate elevation of pixel at hypothetical planar screen
+                b = h_0 + py/float(ny) * h                
                 # Calculate horizontal view angle for pixel from projector
                 theta = math.atan(a/d_1)*r2d
 
@@ -269,12 +289,12 @@ for mon in range(0,nmon,1):
                 d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
                 d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
 
-                # Calculate Elevation angle of pixel
-                z_2 = h_0 + py/float(ny) * h
-                alpha = math.atan(z_2/d_r)*r2d
+                # calculate elevation angle of pixel
+                alpha = math.atan(b/d_r)*r2d
 
+                # calculate elevation of pixel at cylinder
                 z_c = math.tan(alpha*d2r) * d_d
-                phi = math.atan(z_2/d_d)*r2d
+                phi = math.atan(b/d_d)*r2d
                 z_e = math.tan(phi*d2r) * d_r
 
                 ex = px
@@ -285,7 +305,7 @@ for mon in range(0,nmon,1):
                 # so uncompress and untrapezoid the image pixel right in the first place and place them
                 # where they would be with a untilted projector
                 if epsilon[mon] != 0.0:
-                    alpha_0 = math.atan(z_2/d_1)*r2d  # elevation angle at center line of projection
+                    alpha_0 = math.atan(b/d_1)*r2d  # elevation angle at center line of projection
                     u = d_1 / math.cos(alpha_0*d2r)   # image distance at line py when projector would be level
                     u_k = d_1 / math.cos((alpha_0-epsilon[mon])*d2r)  # image distance at line py with tilt
 
