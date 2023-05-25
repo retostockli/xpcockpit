@@ -278,7 +278,7 @@ int main(int ac, char **av) {
   }
 
   if (blend || unblend || test) {
-    printf("Blend After Warp Flag : %i \n",blendAfterWarp);
+    //printf("Blend After Warp Flag : %i \n",blendAfterWarp);
     //     Apply it to the display. blendAfterWarp is FALSE, so the edges will be
     //     blended in warped space.
     ret = XNVCTRLSetScanoutIntensity(xDpy,
@@ -536,7 +536,7 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
       for (x=0;x<nx;x++) {
 	/* perform linear interpolation of tranparency between x-plane's blending steps */
 	bytval = (unsigned char) (interpolate((float) x) * 255.0);
-	if (y == 500) printf("%i ",bytval);
+	//if (y == 500) printf("%i ",bytval);
 	pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
 	  256 * (unsigned long) bytval + (unsigned long) bytval;
 	XPutPixel(blendImage, x, y, pixval);

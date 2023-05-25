@@ -15,10 +15,10 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 4
+setting = 5
 
 # Graphics
-doplot = True
+doplot = False
 
 # Parameters
 d2r = math.pi/180.
@@ -80,18 +80,33 @@ elif setting == 3:
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 4:
-    # Testing
+    # Testing Single Monitor
     nmon = 1  # number of monitors
-    cylindrical = [True]  # apply flat plane to cylinder warping
-    projection = [False]  # apply projection onto curved surfae
-    epsilon = [5.0]         # projector tilt [deg]
+    cylindrical = [False]  # apply flat plane to cylinder warping
+    projection = [True]  # apply projection onto curved surfae
+    epsilon = [5.75]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
-    vertical_offset = [-5.0]    # vertical offset [deg]
+    vertical_offset = [0.0]    # vertical offset [deg]
     blending = [False]   # apply blending at sides
     blend_left_top = [0.0]
     blend_left_bot = [0.0]
     blend_right_top = [0.0]
     blend_right_bot = [0.0]
+    gridtest = False # display grid test pattern
+    forwin = False  # create for windows or for linux
+elif setting == 5:
+    # Testing Two Monitors
+    nmon = 2  # number of monitors
+    cylindrical = [False,True]  # apply flat plane to cylinder warping
+    projection = [False,True]  # apply projection onto curved surfae
+    epsilon = [0.0,5.75]         # projector tilt [deg]
+    lateral_offset = [0.0,0.0]  # lateral offset [deg]
+    vertical_offset = [0.0,-5.0]    # vertical offset [deg]
+    blending = [False,False]   # apply blending at sides
+    blend_left_top = [0.0,0.0]
+    blend_left_bot = [0.0,0.0]
+    blend_right_top = [0.0,0.0]
+    blend_right_bot = [0.0,0.0]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 
@@ -262,41 +277,92 @@ for mon in range(0,nmon,1):
                 b = h_0 + py/float(ny) * h                
                 # Calculate horizontal view angle for pixel from projector
                 theta = math.atan(a/d_1)*r2d
+                # Calculate horizontal view angle for pixel from screen center
+                psi = gamma * a / w_2
 
-                # Calculate intersection of projected line with the cylindrical screen
-                # behind hypothetical planar screen. Cylinder is in (0,0) position
-                # https://mathworld.wolfram.com/Circle-LineIntersection.html
-                x_1 = d_0
-                x_2 = d_1+d_0
-                y_1 = 0.0
-                y_2 = a
-                d_x = x_2-x_1
-                d_y = y_2-y_1
-                d_r = math.sqrt(math.pow(d_x,2.0)+math.pow(d_y,2.0))
-                D   = x_1*y_2-x_2*y_1
-                DSCR = math.pow(R,2.0)*math.pow(d_r,2.0) - math.pow(D,2.0)  # Discriminant: if > 0 (true for our problem: intersection)
+                if (False):
+                    # Variant assuming input in planar coordinates
+                    # DO NOT USE ANY MORE
+                    
+                    # Calculate intersection of projected line with the cylindrical screen
+                    # behind hypothetical planar screen. Cylinder is in (0,0) position
+                    # https://mathworld.wolfram.com/Circle-LineIntersection.html
+                    x_1 = d_0
+                    x_2 = d_1+d_0
+                    y_1 = 0.0
+                    y_2 = a
+                    d_x = x_2-x_1
+                    d_y = y_2-y_1
+                    d_r = math.sqrt(math.pow(d_x,2.0)+math.pow(d_y,2.0))
+                    D   = x_1*y_2-x_2*y_1
+                    DSCR = math.pow(R,2.0)*math.pow(d_r,2.0) - math.pow(D,2.0)  # Discriminant: if > 0 (true for our problem: intersection)
+                    
+                    if d_y < 0:
+                        sgn_dy = -1.0
+                    else:
+                        sgn_dy = 1.0
+                        
+                    x_c = (D*d_y + sgn_dy + d_x * math.sqrt(DSCR))/math.pow(d_r,2.0)
+                    y_c = (-D*d_x + d_y * math.sqrt(DSCR))/math.pow(d_r,2.0)
+                   
+                    # now calculate how much we need to shift pixel coordinates to match
+                    # cylindrical screen again
+                    d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
+                    d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
 
-                if d_y < 0:
-                    sgn_dy = -1.0
+                    # calculate elevation angle of pixel
+                    alpha = math.atan(b/d_r)*r2d
+                    
+                    # calculate elevation of pixel at cylinder
+                    z_c = math.tan(alpha*d2r) * d_d
+                    phi = math.atan(b/d_d)*r2d
+                    z_e = math.tan(phi*d2r) * d_r
+
                 else:
-                    sgn_dy = 1.0
+                    # Variant assuming input in cylindrical coordinates
+                    
+                    # Calculate intersection of projected line with the cylindrical screen
+                    # behind hypothetical planar screen. Cylinder is in (0,0) position
+                    # https://mathworld.wolfram.com/Circle-LineIntersection.html
+                    x_1 = 0.0
+                    x_2 = d_1+d_0
+                    y_1 = 0.0
+                    y_2 = a
+                    d_x = x_2-x_1
+                    d_y = y_2-y_1
+                    d_r = math.sqrt(math.pow(d_x,2.0)+math.pow(d_y,2.0))
+                    D   = x_1*y_2-x_2*y_1
+                    DSCR = math.pow(R,2.0)*math.pow(d_r,2.0) - math.pow(D,2.0)  # Discriminant: if > 0 (true for our problem: intersection)
+                    
+                    if d_y < 0:
+                        sgn_dy = -1.0
+                    else:
+                        sgn_dy = 1.0
 
-                x_c = (D*d_y + sgn_dy + d_x * math.sqrt(DSCR))/math.pow(d_r,2.0)
-                y_c = (-D*d_x + d_y * math.sqrt(DSCR))/math.pow(d_r,2.0)
+                    # this is where we need to have the pixel on the cylinder in cylindrical coordinates
+                    x_c = (D*d_y + sgn_dy + d_x * math.sqrt(DSCR))/math.pow(d_r,2.0)
+                    y_c = (-D*d_x + d_y * math.sqrt(DSCR))/math.pow(d_r,2.0)
 
-                # now calculate how much we need to shift pixel coordinates to match
-                # cylindrical screen again
-                d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
-                d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
+                    # calculate horizontal view angle from projector center
+                    theta = math.atan(y_c/(x_c-d_0))*r2d
+                    # calculate new horizontal pixel position to reach that view angle
+                    a = math.tan(theta*d2r) * d_1
+                    
+                    # now calculate how much we need to shift pixel coordinates to match
+                    # cylindrical screen again. Origin is projector center
+                    d_2 = math.sqrt(math.pow(x_c-d_1-d_0,2.0) + math.pow(y_c-a,2.0))  # overshoot distance (should be 0 at screen edges)
+                    d_r = math.sqrt(math.pow(d_1,2.0)+math.pow(a,2.0))
+                    d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
 
-                # calculate elevation angle of pixel
-                alpha = math.atan(b/d_r)*r2d
+                    # calculate elevation angle of pixel on hypothetical planar screen
+                    alpha = math.atan(b/d_r)*r2d
+                    
+                    # calculate elevation of pixel at cylinder
+                    z_c = math.tan(alpha*d2r) * d_d
+                    phi = math.atan(b/d_d)*r2d
+                    z_e = math.tan(phi*d2r) * d_r
 
-                # calculate elevation of pixel at cylinder
-                z_c = math.tan(alpha*d2r) * d_d
-                phi = math.atan(b/d_d)*r2d
-                z_e = math.tan(phi*d2r) * d_r
-
+                    
                 ex = px
                 ey = py
 
