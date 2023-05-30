@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 5
+setting = 3
 
 # Graphics
 doplot = False
@@ -35,6 +35,7 @@ h_0 = 15.0   # lower height of image above center of lens when projected on plan
 if setting == 1:
     # Cylindrical + Projection + Blending
     nmon = 4  # number of monitors
+    ceiling = False  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
@@ -51,6 +52,7 @@ if setting == 1:
 elif setting == 2:
     # Projection + Blending
     nmon = 4  # number of monitors
+    ceiling = False  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
@@ -66,6 +68,7 @@ elif setting == 2:
 elif setting == 3:
     # None
     nmon = 4  # number of monitors
+    ceiling = False  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
@@ -82,11 +85,12 @@ elif setting == 3:
 elif setting == 4:
     # Testing Single Monitor
     nmon = 1  # number of monitors
-    cylindrical = [False]  # apply flat plane to cylinder warping
-    projection = [True]  # apply projection onto curved surfae
-    epsilon = [5.75]         # projector tilt [deg]
+    ceiling = False  # projector ceiling mount instead of table mount
+    cylindrical = [True]  # apply flat plane to cylinder warping
+    projection = [False]  # apply projection onto curved surfae
+    epsilon = [0.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
-    vertical_offset = [0.0]    # vertical offset [deg]
+    vertical_offset = [-5.0]    # vertical offset [deg]
     blending = [False]   # apply blending at sides
     blend_left_top = [0.0]
     blend_left_bot = [0.0]
@@ -97,11 +101,12 @@ elif setting == 4:
 elif setting == 5:
     # Testing Two Monitors
     nmon = 2  # number of monitors
+    ceiling = False  # projector ceiling mount instead of table mount
     cylindrical = [False,True]  # apply flat plane to cylinder warping
     projection = [False,True]  # apply projection onto curved surfae
     epsilon = [0.0,5.75]         # projector tilt [deg]
     lateral_offset = [0.0,0.0]  # lateral offset [deg]
-    vertical_offset = [0.0,-5.0]    # vertical offset [deg]
+    vertical_offset = [-5.0,-5.0]    # vertical offset [deg]
     blending = [False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0]
     blend_left_bot = [0.0,0.0]
@@ -156,7 +161,8 @@ for mon in range(0,nmon,1):
     ydif = np.zeros((ngx, ngy))
     
     # loop through grid
-    # grid: gy goes from top to bottom and gx from left to right
+    # grid vertical: gy goes from bottom to top
+    # grid horizontal: gx from left to right
     for gy in range(0,ngy,1):
         for gx in range(0,ngx,1):
 #        for gx in range(0,1,1):
@@ -166,7 +172,10 @@ for mon in range(0,nmon,1):
             py = float(ny) * float(gy) / float(ngy-1)
             xabs[gx,gy] = px
             yabs[gx,gy] = py
-            
+
+            # 1. Transformation from planar to cylindrical rendering
+            # --> This has nothing to do with the projector orientation and mount etc.
+            # --> This is needed since X-Plane renders on a plane but we need a cylindrical rendering
             if cylindrical[mon]:
 
                 # Input is a planar image in x/y coordinates
@@ -187,15 +196,18 @@ for mon in range(0,nmon,1):
                 # Vertically tilted Projection
                 if (vertical_offset[mon] != 0.0):
                     alpha_1 = math.atan(b/(d_1+d_0))*r2d
-                    e = math.tan(-vertical_offset[mon]*d2r)*(d_0+d_1)
-                    f = math.cos(-vertical_offset[mon]*d2r)*(b+e)
-                    d_v = f / math.tan((-vertical_offset[mon] + alpha_1)*d2r) - (d_1+d_0)
-                    #print(str(gy) + " " +str(d_v)+" "+str(f)+" "+str(b+e))
+                    e = math.tan(vertical_offset[mon]*d2r)*(d_0+d_1)
+                    f = math.cos(vertical_offset[mon]*d2r)*(b+e)
+                    d_v = f / math.tan((vertical_offset[mon] + alpha_1)*d2r) - (d_1+d_0)
+                    #if (gx==0):
+                    #    print(str(gy) + " " +str(d_v)+" "+str(f)+" "+str(b+e))
                 else:
                     d_v = 0.0
 
                 # Calculate horizontal view angle of pixel from screen center
                 theta = math.atan(a/(d_1+d_0+d_v))*r2d
+                #if (gx==0):
+                #    print(str(gy) + " " +str(0.5 * float(nx) * theta / gamma)+ " " +str(0.5 * float(nx) - px))
 
                 # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
                 xdif[gx,gy] += 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
@@ -228,7 +240,7 @@ for mon in range(0,nmon,1):
 
                 if (vertical_offset[mon] != 0.0):
                     # Calculate Elevation of pixel (relative to screen center height, shifted by z_0 due to tilt)
-                    z_0 = math.sin(-vertical_offset[mon]*d2r) * (d_1 + d_0)
+                    z_0 = math.sin(vertical_offset[mon]*d2r) * (d_1 + d_0)
                     alpha = math.atan(f/d_r)*r2d
                     z_c = math.tan(alpha*d2r) * R - z_0
                     #print(str(gy) + " " +str(z_c))
@@ -249,18 +261,14 @@ for mon in range(0,nmon,1):
                 
                 # print(str(px)+" "+str(theta)+" "+str(xdif[gx,gy])+" "+str(ydif[gx,gy]))
                 # print(str(px)+" "+str(theta)+" "+str(b)+" "+str(z_c)+" "+str(h/2))
-
-                # New FOVy due to larger vertical rendering at distance of cylinder center
-                # BULLSHIT, FOVy does not change ...
-                #if (gx == (ngx-1)/2) and (gy == (ngy-1)):
-                #if (gx == (ngx-1)/4) and (gy == (ngy-1)):
-                #    FOVy = 2.0*math.atan(z_c/(d_1+d_0))*r2d
-                #    FOVy = 2.0*math.atan(z_c/R)*r2d
                 
                 # update grid coordinates for projector calculation
                 px += xdif[gx,gy]
                 py += ydif[gx,gy]
-                
+
+            # 2. Warping the planar projection of a regular table or ceiling mounted projector
+            # onto a cylindrical screen. This is needed since the projector image is only ok
+            # on a flat screen. We need to squeeze it onto a cylinder.
             if projection[mon]:
 
                 # INPUT IS IN CYLINDRICAL COORDINATES ALREADY
@@ -366,7 +374,7 @@ for mon in range(0,nmon,1):
                 ex = px
                 ey = py
 
-                # Apply Keystone Correction
+                # 3. Apply Keystone Correction
                 # image gets compressed in both horizontal and vertical dimensions with projector tilt
                 # so uncompress and untrapezoid the image pixel right in the first place and place them
                 # where they would be with a untilted projector
@@ -433,7 +441,7 @@ for mon in range(0,nmon,1):
     else:
         con.write("monitor/"+str(mon)+"/proj/grid_os_on_test 0"+"\n")
 
-    if projection[mon]:
+    if (projection[mon] or cylindrical[mon]):
         con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 1"+"\n")
     else:
         con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 0"+"\n")
