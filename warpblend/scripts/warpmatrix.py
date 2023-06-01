@@ -25,6 +25,7 @@ d2r = math.pi/180.
 r2d = 180./math.pi
 
 # Dimensions (in cm)
+# Please see projector_setup.pdf
 R = 169.0   # Screen Radius
 d_0 = 30.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
 # Projector focal point may be behind projector lens. For me it is around 2-4 cm behind
@@ -176,13 +177,13 @@ for mon in range(0,nmon,1):
             # 1. Transformation from planar to cylindrical rendering
             # --> This has nothing to do with the projector orientation and mount etc.
             # --> This is needed since X-Plane renders on a plane but we need a cylindrical rendering
+            # Please see planar_to_cylindrical.pdf
             if cylindrical[mon]:
 
                 # Input is a planar image in x/y coordinates
                 # Output is a cylindrical image in degrees and height
                 
                 # SCREEN CENTER Coordinate System
-                # Graphic projection_geometry.pdf
                 # BUT where x1/y1 is at x0/x0
                 # AND where z1 is at center of screen
 
@@ -272,13 +273,13 @@ for mon in range(0,nmon,1):
             # 2. Warping the planar projection of a regular table or ceiling mounted projector
             # onto a cylindrical screen. This is needed since the projector image is only ok
             # on a flat screen. We need to squeeze it onto a cylinder.
+            # Please see projection_geometry.pdf
             if projection[mon]:
 
                 # INPUT IS IN CYLINDRICAL COORDINATES ALREADY
                 # SO X IS in degrees and Y is in height
                 
                 # PROJECTOR CENTER Coordinate System
-                # Graphic projection_geometry.pdf
 
                 # Calculate horizontal position on hypothetical
                 # planar screen in distance d_1 from projector
