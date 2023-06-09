@@ -41,8 +41,8 @@ if setting == 1:
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,5.75,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
-#    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_offset = [0.0,-5.0,-5.0,-5.0]    # vertical offset [deg]
+    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+#    vertical_offset = [0.0,-5.0,-5.0,-5.0]    # vertical offset [deg]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
