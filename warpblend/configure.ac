@@ -59,8 +59,14 @@ CFLAGS="$CFLAGS -pthread"
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h stdbool.h assert.h string.h ctype.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
 
-AC_CHECK_LIB([X11],[main])
-AC_CHECK_HEADERS([X11/Xlib.h X11/Xutil.h])
+
+HAVE_XLIB=yes
+AC_CHECK_LIB([X11],[main],,unset HAVE_XLIB)
+AC_CHECK_HEADERS([X11/Xlib.h X11/Xutil.h],,unset HAVE_XLIB)
+
+if test -z "$HAVE_XLIB"; then
+    AC_MSG_ERROR([Can't find X11 library or headers. Please try installing 'libx11-dev'.])
+fi
 
 HAVE_XNVCtrl=yes
 AC_CHECK_LIB([XNVCtrl],[main],,unset HAVE_XNVCtrl)
