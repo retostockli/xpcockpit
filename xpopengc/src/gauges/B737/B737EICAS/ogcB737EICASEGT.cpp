@@ -72,7 +72,7 @@ B737EICASEGT::~B737EICASEGT()
 
     float value;
 
-    float *engn_egt_c = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c",8,-1,0);
+    float *engn_egt_c = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c",16,-1,0);
 
     switch (currentEngine)
       {

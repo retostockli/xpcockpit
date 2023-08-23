@@ -70,7 +70,7 @@ namespace OpenGC
     float value;
     int rev;
 
-    float *engn_n1 = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_N1_",8,-1,-1);
+    float *engn_n1 = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_N1_",16,-1,-1);
     int *reverser = link_dataref_int_arr("sim/cockpit/warnings/annunciators/reverser_on",8,-1);
     switch (currentEngine)
       {

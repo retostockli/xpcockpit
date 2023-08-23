@@ -72,7 +72,7 @@ namespace OpenGC
 
     float value;
 
-    float *engn_ff = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_FF_",8,-1,-2);
+    float *engn_ff = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_FF_",16,-1,-2);
 
     switch (currentEngine)
       {
