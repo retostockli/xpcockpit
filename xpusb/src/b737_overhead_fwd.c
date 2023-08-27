@@ -1507,7 +1507,7 @@ void b737_overhead_fwd(void)
     /* Ignitior Switch for first engine */
     device = mastercard;
     card = 0;
-    int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on",8,-1);
+    int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on",16,-1);
     for (int i=0;i<8;i++) {
       ignition_on[i] = 3;
       ret = digital_input(device,card,27,&ival,0);
@@ -1532,7 +1532,7 @@ void b737_overhead_fwd(void)
     /* Fuel Pump */
     device = mastercard;
     card = 1;
-    int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on",8,-1);
+    int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on",16,-1);
     ret = digital_input(device,card,67,&ival,0);
     if (ival != INT_MISS) {
       for (int i=0;i<8;i++) {
