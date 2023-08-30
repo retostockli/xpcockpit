@@ -542,10 +542,10 @@ void b737_overhead_fwd(void)
 
     /* Blue Annunciators */
     float *l_ram_door = link_dataref_flt("laminar/B738/annunciator/ram_door_open1",-1);
-    ival = *l_ram_door >= 0.25;
+    ival = *l_ram_door >= 0.15;
     ret = mastercard_display(device,card,32,1,&ival,0);
     float *r_ram_door = link_dataref_flt("laminar/B738/annunciator/ram_door_open2",-1);
-    ival = *r_ram_door >= 0.25;
+    ival = *r_ram_door >= 0.15;
     ret = mastercard_display(device,card,33,1,&ival,0);
     /* Yellow / Green Annunciators */
     float *dual_bleed = link_dataref_flt("laminar/B738/annunciator/dual_bleed",-1);
@@ -804,22 +804,22 @@ void b737_overhead_fwd(void)
     /* Blue Annunciators */
     float *wing_anti_ice1 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_L",-1);
     ival = 0;
-    if (*wing_anti_ice1 >= 0.25) ival = 2;
+    if (*wing_anti_ice1 >= 0.15) ival = 2;
     if (*wing_anti_ice1 == 1.0) ival = 1;
     ret = mastercard_display(device,card,34,1,&ival,0);
     float *wing_anti_ice2 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_R",-1);
     ival = 0;
-    if (*wing_anti_ice2 >= 0.25) ival = 2;
+    if (*wing_anti_ice2 >= 0.15) ival = 2;
     if (*wing_anti_ice2 == 1.0) ival = 1;
     ret = mastercard_display(device,card,35,1,&ival,0);
     float *cowl_valve_open1 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_0",-1);
     ival = 0;
-    if (*cowl_valve_open1 >= 0.25) ival = 2;
+    if (*cowl_valve_open1 >= 0.15) ival = 2;
     if (*cowl_valve_open1 == 1.0) ival = 1;
     ret = mastercard_display(device,card,36,1,&ival,0);
     float *cowl_valve_open2 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_1",-1);
     ival = 0;
-    if (*cowl_valve_open2 >= 0.25) ival = 2;
+    if (*cowl_valve_open2 >= 0.15) ival = 2;
     if (*cowl_valve_open2 == 1.0) ival = 1;
     ret = mastercard_display(device,card,37,1,&ival,0);
 
@@ -1149,49 +1149,49 @@ void b737_overhead_fwd(void)
 
     float *grd_pwr_avail = link_dataref_flt("laminar/B738/annunciator/ground_power_avail",-1);
     ival = 0;
-    if (*grd_pwr_avail >= 0.25) ival = 2;
+    if (*grd_pwr_avail >= 0.15) ival = 2;
     if (*grd_pwr_avail == 1.0) ival = 1;
     ret = mastercard_display(device,card,39,1,&ival,0);
 
     float *apu_gen_off_bus = link_dataref_flt("laminar/B738/annunciator/apu_gen_off_bus",-1);
     ival = 0;
-    if (*apu_gen_off_bus >= 0.25) ival = 2;
+    if (*apu_gen_off_bus >= 0.15) ival = 2;
     if (*apu_gen_off_bus == 1.0) ival = 1;
     ret = mastercard_display(device,card,40,1,&ival,0);
     
     float *transfer_bus_off_1 = link_dataref_flt("laminar/B738/annunciator/trans_bus_off1",-1);
     ival = 0;
-    if (*transfer_bus_off_1 >= 0.25) ival = 2;
+    if (*transfer_bus_off_1 >= 0.15) ival = 2;
     if (*transfer_bus_off_1 == 1.0) ival = 1;
     ret = mastercard_display(device,card,41,1,&ival,0);
 
     float *source_off_1 = link_dataref_flt("laminar/B738/annunciator/source_off1",-1);
     ival = 0;
-    if (*source_off_1 >= 0.25) ival = 2;
+    if (*source_off_1 >= 0.15) ival = 2;
     if (*source_off_1 == 1.0) ival = 1;
     ret = mastercard_display(device,card,42,1,&ival,0);
 
     float *gen_off_bus_1 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus1",-1);
     ival = 0;
-    if (*gen_off_bus_1 >= 0.25) ival = 2;
+    if (*gen_off_bus_1 >= 0.15) ival = 2;
     if (*gen_off_bus_1 == 1.0) ival = 1;
     ret = mastercard_display(device,card,43,1,&ival,0);
 
     float *transfer_bus_off_2 = link_dataref_flt("laminar/B738/annunciator/trans_bus_off2",-1);
     ival = 0;
-    if (*transfer_bus_off_2 >= 0.25) ival = 2;
+    if (*transfer_bus_off_2 >= 0.15) ival = 2;
     if (*transfer_bus_off_2 == 1.0) ival = 1;
     ret = mastercard_display(device,card,44,1,&ival,0);
 
     float *source_off_2 = link_dataref_flt("laminar/B738/annunciator/source_off2",-1);
     ival = 0;
-    if (*source_off_2 >= 0.25) ival = 2;
+    if (*source_off_2 >= 0.15) ival = 2;
     if (*source_off_2 == 1.0) ival = 1;
     ret = mastercard_display(device,card,45,1,&ival,0);
 
     float *gen_off_bus_2 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus2",-1);
     ival = 0;
-    if (*gen_off_bus_2 >= 0.25) ival = 2;
+    if (*gen_off_bus_2 >= 0.15) ival = 2;
     if (*gen_off_bus_2 == 1.0) ival = 1;
     ret = mastercard_display(device,card,46,1,&ival,0);
 
@@ -1199,11 +1199,11 @@ void b737_overhead_fwd(void)
     ret = mastercard_displayf(device,card,47,1,lights_test,0);
 
     float *apu_low_oil = link_dataref_flt("laminar/B738/annunciator/apu_low_oil",-1);
-    ival = *apu_low_oil >= 0.25;
+    ival = *apu_low_oil >= 0.15;
     ret = mastercard_display(device,card,48,1,&ival,0);
 
     float *apu_fault = link_dataref_flt("laminar/B738/annunciator/apu_fault",-1);
-    ival = *apu_fault >= 0.25;
+    ival = *apu_fault >= 0.15;
     ret = mastercard_display(device,card,49,1,&ival,0);
 
     /* YELLOW OVER SPEED ANNUNCIATOR NOT YET AVAILABLE IN ZIBO MOD */
@@ -1266,63 +1266,63 @@ void b737_overhead_fwd(void)
 
     float *eng_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/eng1_valve_closed",-1);
     ival = 0;
-    if (*eng_valve_closed_1 >= 0.25) ival = 2;
+    if (*eng_valve_closed_1 >= 0.15) ival = 2;
     if (*eng_valve_closed_1 == 1.0) ival = 1;
     ret = mastercard_display(device,card,51,1,&ival,0);
     
     float *spar_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/spar1_valve_closed",-1);
     ival = 0;
-    if (*spar_valve_closed_1 >= 0.25) ival = 2;
+    if (*spar_valve_closed_1 >= 0.15) ival = 2;
     if (*spar_valve_closed_1 == 1.0) ival = 1;
     ret = mastercard_display(device,card,52,1,&ival,0);
     
     float *bypass_filter_1 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_1",-1);
     ival = 0;
-    if (*bypass_filter_1 >= 0.25) ival = 2;
+    if (*bypass_filter_1 >= 0.15) ival = 2;
     if (*bypass_filter_1 == 1.0) ival = 1;
     ret = mastercard_display(device,card,53,1,&ival,0);
     
     float *eng_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/eng2_valve_closed",-1);
     ival = 0;
-    if (*eng_valve_closed_2 >= 0.25) ival = 2;
+    if (*eng_valve_closed_2 >= 0.15) ival = 2;
     if (*eng_valve_closed_2 == 1.0) ival = 1;
     ret = mastercard_display(device,card,54,1,&ival,0);
     
     float *spar_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/spar2_valve_closed",-1);
     ival = 0;
-    if (*spar_valve_closed_2 >= 0.25) ival = 2;
+    if (*spar_valve_closed_2 >= 0.15) ival = 2;
     if (*spar_valve_closed_2 == 1.0) ival = 1;
     ret = mastercard_display(device,card,55,1,&ival,0);
     
     float *bypass_filter_2 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_2",-1);
     ival = 0;
-    if (*bypass_filter_2 >= 0.25) ival = 2;
+    if (*bypass_filter_2 >= 0.15) ival = 2;
     if (*bypass_filter_2 == 1.0) ival = 1;
     ret = mastercard_display(device,card,56,1,&ival,0);
     
     float *cross_feed_valve = link_dataref_flt("laminar/B738/annunciator/crossfeed",-1);
     ival = 0;
-    if (*cross_feed_valve >= 0.25) ival = 2;
+    if (*cross_feed_valve >= 0.15) ival = 2;
     if (*cross_feed_valve == 1.0) ival = 1;
     ret = mastercard_display(device,card,57,1,&ival,0);
     
     float *low_press_ctr_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c1",-1);
-    ival = *low_press_ctr_1 >= 0.25;
+    ival = *low_press_ctr_1 >= 0.15;
     ret = mastercard_display(device,card,58,1,&ival,0);
     float *low_press_ctr_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c2",-1);
-    ival = *low_press_ctr_2 >= 0.25;
+    ival = *low_press_ctr_2 >= 0.15;
     ret = mastercard_display(device,card,59,1,&ival,0);
     float *low_press_aft_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l1",-1);
-    ival = *low_press_aft_1 >= 0.25;
+    ival = *low_press_aft_1 >= 0.15;
     ret = mastercard_display(device,card,60,1,&ival,0);
     float *low_press_fwd_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l2",-1);
-    ival = *low_press_fwd_1 >= 0.25;
+    ival = *low_press_fwd_1 >= 0.15;
     ret = mastercard_display(device,card,61,1,&ival,0);
     float *low_press_fwd_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r2",-1);
-    ival = *low_press_fwd_2 >= 0.25;
+    ival = *low_press_fwd_2 >= 0.15;
     ret = mastercard_display(device,card,62,1,&ival,0);
     float *low_press_aft_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r1",-1);
-    ival = *low_press_aft_2 >= 0.25;
+    ival = *low_press_aft_2 >= 0.15;
     ret = mastercard_display(device,card,63,1,&ival,0);
 
     

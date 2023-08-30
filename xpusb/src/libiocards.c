@@ -390,14 +390,14 @@ int copy_iocardsdata(void)
 }
 
 /* wrapper for digital_output when supplying floating point value 
-   Values < 0.25 are set to 0 output and values >= 0.25 are set to 1 output */
+   Values < 0.15 are set to 0 output and values >= 0.15 are set to 1 output */
 int digital_outputf(int device, int card, int output, float *fvalue) {
 
   int value;
   
   if (*fvalue == FLT_MISS) {
     value = INT_MISS;
-  } else if (*fvalue >= 0.25) {
+  } else if (*fvalue >= 0.15) {
     value = 1;
   } else {
     value = 0;
