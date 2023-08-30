@@ -137,9 +137,13 @@ void b737_throttle(void)
     flap_ratio = link_dataref_flt("sim/flightmodel/controls/flaprqst", -4);
   }
   int *propmode = link_dataref_int_arr("sim/flightmodel/engine/ENGN_propmode",16,-1);
-  float *parkbrake_xplane;;
+  float *parkbrake_xplane;
+  int *parkbrake_button;
   if (acf_type == 4) {
     parkbrake_xplane = link_dataref_flt("mgdornier/do328/parking_brake_ratio",-1);
+  } else if (acf_type == 3) {
+    parkbrake_xplane = link_dataref_flt("laminar/B738/parking_brake_pos",-1);
+    parkbrake_button = link_dataref_cmd_once("laminar/B738/push_button/park_brake_on_off");
   } else {
     parkbrake_xplane = link_dataref_flt("sim/flightmodel/controls/parkbrake",-1);
   }
@@ -737,13 +741,23 @@ void b737_throttle(void)
   }
   if (parkbrake_mode == 1) {
     /* Manual Park Brake */
-    *parkbrake_xplane = (float) parkbrake;
-
-    //printf("M: %f \n",*parkbrake_xplane);
-    
     /* disable Park Brake servo */
     value = -1.0;
     ret = servos_output(device_dcmotor,2,&value,minval,maxval,0,1023);
+
+    if ((acf_type == 2) || (acf_type == 3)) {
+      float fval = (float) parkbrake;
+      ret = set_state_togglef(parkbrake_xplane,&fval,parkbrake_button);
+      if (ret != 0) {
+	printf("Park Brake Toggle: %f %i %i \n",*parkbrake_xplane,parkbrake,*parkbrake_button);
+      }
+
+    } else {
+      *parkbrake_xplane = (float) parkbrake;
+    }
+      
+    //printf("M: %f \n",*parkbrake_xplane);
+    
   }
   if (parkbrake_mode == 2) {
     /* Auto Park Brake */
