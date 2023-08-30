@@ -349,8 +349,8 @@ void b737_pedestal(void)
     //    flt_deck_door = link_dataref_flt("laminar/B738/toggle_switch/flt_dk_door",0);
     //    flt_deck_door_left = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_left");
     //    flt_deck_door_right = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_right");
-    lock_fail = link_dataref_flt("laminar/B738/annunciator/door_lock_fail",0);
-    auto_unlk = link_dataref_flt("laminar/B738/annunciator/door_auto_unlk",0);
+    lock_fail = link_dataref_flt("laminar/B738/annunciator/door_lock_fail",-1);
+    auto_unlk = link_dataref_flt("laminar/B738/annunciator/door_auto_unlk",-1);
   } else {
     //    flt_deck_door = link_dataref_flt("xpserver/flt_dk_door",0);
     //    flt_deck_door_left = link_dataref_int("xpserver/flt_dk_door_left");

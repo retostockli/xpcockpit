@@ -98,7 +98,7 @@ void b737_throttle(void)
   float maxspeedbrake;
   float minspeedbrake_x737 = 0.0;
   float maxspeedbrake_x737 = 1.0;
-  float minspeedbrake_zibo = -0.5;
+  float minspeedbrake_zibo = 0.0;
   float maxspeedbrake_zibo = 1.0;
   float minspeedbrake_xplane = -0.5;
   float maxspeedbrake_xplane = 1.0;

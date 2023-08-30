@@ -112,52 +112,52 @@ void b737_mip(void)
     int *guarded_covers = link_dataref_int("laminar/B738/guarded_covers");
     *guarded_covers = 1;
 
-    float *ap_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/ap_warn1",0);
-    float *ap_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/ap_disconnect1",0);
-    float *ap_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/ap_warn2",0);
-    float *ap_prst_disc_fo = link_dataref_flt("laminar/B738/annunciator/ap_disconnect2",0);
-    float *at_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/at_fms_warn1",0);
-    float *at_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/at_disconnect1",0);
-    float *at_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/at_fms_warn2",0);
-    float *at_prst_disc_fo = link_dataref_flt("laminar/B738/annunciator/at_disconnect2",0);
-    float *fmc_prst = link_dataref_flt("laminar/B738/fmc/fmc_message_warn",0);
+    float *ap_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/ap_warn1",-1);
+    float *ap_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/ap_disconnect1",-1);
+    float *ap_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/ap_warn2",-1);
+    float *ap_prst_disc_fo = link_dataref_flt("laminar/B738/annunciator/ap_disconnect2",-1);
+    float *at_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/at_fms_warn1",-1);
+    float *at_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/at_disconnect1",-1);
+    float *at_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/at_fms_warn2",-1);
+    float *at_prst_disc_fo = link_dataref_flt("laminar/B738/annunciator/at_disconnect2",-1);
+    float *fmc_prst = link_dataref_flt("laminar/B738/fmc/fmc_message_warn",-1);
 
-    float *speedbrake_armed = link_dataref_flt("laminar/B738/annunciator/speedbrake_armed",0);
-    float *speedbrake_extend = link_dataref_flt("laminar/B738/annunciator/speedbrake_extend",0);
-    float *stab_outoftrim = link_dataref_flt("laminar/B738/annunciator/stab_out_of_trim",0);
+    float *speedbrake_armed = link_dataref_flt("laminar/B738/annunciator/speedbrake_armed",-1);
+    float *speedbrake_extend = link_dataref_flt("laminar/B738/annunciator/speedbrake_extend",-1);
+    float *stab_outoftrim = link_dataref_flt("laminar/B738/annunciator/stab_out_of_trim",-1);
 
-    float *sixpack_flt_cont = link_dataref_flt("laminar/B738/annunciator/six_pack_flt_cont",0);
-    float *sixpack_elec = link_dataref_flt("laminar/B738/annunciator/six_pack_elec",0);
-    float *sixpack_irs = link_dataref_flt("laminar/B738/annunciator/six_pack_irs",0);
-    float *sixpack_apu = link_dataref_flt("laminar/B738/annunciator/six_pack_apu",0);
-    float *sixpack_fuel = link_dataref_flt("laminar/B738/annunciator/six_pack_fuel",0);
-    float *sixpack_ovht = link_dataref_flt("laminar/B738/annunciator/six_pack_fire",0);
+    float *sixpack_flt_cont = link_dataref_flt("laminar/B738/annunciator/six_pack_flt_cont",-1);
+    float *sixpack_elec = link_dataref_flt("laminar/B738/annunciator/six_pack_elec",-1);
+    float *sixpack_irs = link_dataref_flt("laminar/B738/annunciator/six_pack_irs",-1);
+    float *sixpack_apu = link_dataref_flt("laminar/B738/annunciator/six_pack_apu",-1);
+    float *sixpack_fuel = link_dataref_flt("laminar/B738/annunciator/six_pack_fuel",-1);
+    float *sixpack_ovht = link_dataref_flt("laminar/B738/annunciator/six_pack_fire",-1);
 
-    float *sixpack_anti_ice = link_dataref_flt("laminar/B738/annunciator/six_pack_ice",0);
-    float *sixpack_eng = link_dataref_flt("laminar/B738/annunciator/six_pack_eng",0);
-    float *sixpack_hyd = link_dataref_flt("laminar/B738/annunciator/six_pack_hyd",0);
-    float *sixpack_ovhd = link_dataref_flt("laminar/B738/annunciator/six_pack_overhead",0);
-    float *sixpack_doors = link_dataref_flt("laminar/B738/annunciator/six_pack_doors",0);
-    float *sixpack_air_cond = link_dataref_flt("laminar/B738/annunciator/six_pack_air_cond",0);
+    float *sixpack_anti_ice = link_dataref_flt("laminar/B738/annunciator/six_pack_ice",-1);
+    float *sixpack_eng = link_dataref_flt("laminar/B738/annunciator/six_pack_eng",-1);
+    float *sixpack_hyd = link_dataref_flt("laminar/B738/annunciator/six_pack_hyd",-1);
+    float *sixpack_ovhd = link_dataref_flt("laminar/B738/annunciator/six_pack_overhead",-1);
+    float *sixpack_doors = link_dataref_flt("laminar/B738/annunciator/six_pack_doors",-1);
+    float *sixpack_air_cond = link_dataref_flt("laminar/B738/annunciator/six_pack_air_cond",-1);
 
-    float *master_caution_light = link_dataref_flt("laminar/B738/annunciator/master_caution_light",0);
-    float *fire_bell_light_capt = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",0);
-    float *fire_bell_light_fo = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",0);
+    float *master_caution_light = link_dataref_flt("laminar/B738/annunciator/master_caution_light",-1);
+    float *fire_bell_light_capt = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",-1);
+    float *fire_bell_light_fo = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
 
-    float *below_gs = link_dataref_flt("laminar/B738/annunciator/below_gs",0);
-    float *gpws_inop = link_dataref_flt("laminar/B738/annunciator/gpws",0);
+    float *below_gs = link_dataref_flt("laminar/B738/annunciator/below_gs",-1);
+    float *gpws_inop = link_dataref_flt("laminar/B738/annunciator/gpws",-1);
 
-    float *nose_gear_transit = link_dataref_flt("laminar/B738/annunciator/nose_gear_transit",0);
-    float *nose_gear_safe = link_dataref_flt("laminar/B738/annunciator/nose_gear_safe",0);
-    float *left_gear_transit = link_dataref_flt("laminar/B738/annunciator/left_gear_transit",0);
-    float *left_gear_safe = link_dataref_flt("laminar/B738/annunciator/left_gear_safe",0);
-    float *right_gear_transit = link_dataref_flt("laminar/B738/annunciator/right_gear_transit",0);
-    float *right_gear_safe = link_dataref_flt("laminar/B738/annunciator/right_gear_safe",0);
+    float *nose_gear_transit = link_dataref_flt("laminar/B738/annunciator/nose_gear_transit",-1);
+    float *nose_gear_safe = link_dataref_flt("laminar/B738/annunciator/nose_gear_safe",-1);
+    float *left_gear_transit = link_dataref_flt("laminar/B738/annunciator/left_gear_transit",-1);
+    float *left_gear_safe = link_dataref_flt("laminar/B738/annunciator/left_gear_safe",-1);
+    float *right_gear_transit = link_dataref_flt("laminar/B738/annunciator/right_gear_transit",-1);
+    float *right_gear_safe = link_dataref_flt("laminar/B738/annunciator/right_gear_safe",-1);
 
-    float *auto_brake_disarm = link_dataref_flt("laminar/B738/annunciator/auto_brake_disarm",0);
-    float *anti_skid_inop = link_dataref_flt("laminar/B738/annunciator/anti_skid_inop",0);
-    float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",0);
-    float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",0);
+    float *auto_brake_disarm = link_dataref_flt("laminar/B738/annunciator/auto_brake_disarm",-1);
+    float *anti_skid_inop = link_dataref_flt("laminar/B738/annunciator/anti_skid_inop",-1);
+    float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-1);
+    float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-1);
 
     float *flaps_position = link_dataref_flt("sim/cockpit2/controls/flap_handle_deploy_ratio",-3);
     float *brake_pressure = link_dataref_flt("laminar/B738/brake/brake_press",0);
@@ -204,7 +204,7 @@ void b737_mip(void)
     int *mfd_eng = link_dataref_cmd_hold("laminar/B738/LDU_control/push_button/MFD_ENG");
     int *mfd_sys = link_dataref_cmd_hold("laminar/B738/LDU_control/push_button/MFD_SYS");
 
-    int *gpws_test = link_dataref_cmd_hold("laminar/B738/push_button/gpws_test");
+    int *gpws_test = link_dataref_cmd_once("laminar/B738/push_button/gpws_test");
     float *gpws_flap_pos = link_dataref_flt("laminar/B738/toggle_switch/gpws_flap_pos",0);
     int *gpws_flap = link_dataref_cmd_once("laminar/B738/toggle_switch/gpws_flap");
     float *gpws_gear_pos = link_dataref_flt("laminar/B738/toggle_switch/gpws_gear_pos",0);
