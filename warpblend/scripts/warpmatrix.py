@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 1
+setting = 3
 
 # Graphics
 doplot = False
@@ -36,7 +36,7 @@ h_0 = 15.0   # lower height of image above center of lens when projected on plan
 if setting == 1:
     # Cylindrical + Projection + Blending
     nmon = 4  # number of monitors
-    ceiling = False  # projector ceiling mount instead of table mount
+    ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
@@ -53,7 +53,7 @@ if setting == 1:
 elif setting == 2:
     # Projection + Blending
     nmon = 4  # number of monitors
-    ceiling = False  # projector ceiling mount instead of table mount
+    ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
@@ -67,6 +67,22 @@ elif setting == 2:
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 3:
+    # Projection
+    nmon = 4  # number of monitors
+    ceiling = True  # projector ceiling mount instead of table mount
+    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
+    projection = [False,True,True,True]  # apply projection onto curved surface
+    epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
+    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    blending = [False,False,False,False]   # apply blending at sides
+    blend_left_top = [0.0,0.0,287.0,234.0]
+    blend_left_bot = [0.0,0.0,341.0,318.0]
+    blend_right_top = [0.0,249.0,257.0,0.0]
+    blend_right_bot = [0.0,333.0,318.0,0.0]
+    gridtest = True # display grid test pattern
+    forwin = False  # create for windows or for linux
+elif setting == 4:
     # None
     nmon = 4  # number of monitors
     ceiling = False  # projector ceiling mount instead of table mount
@@ -75,7 +91,7 @@ elif setting == 3:
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
 #    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_offset = [0.0,-5.0,-5.0,-5.0]    # vertical offset [deg]
+    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0,0.0,0.0]
     blend_left_bot = [0.0,0.0,0.0,0.0]
@@ -83,10 +99,10 @@ elif setting == 3:
     blend_right_bot = [0.0,0.0,0.0,0.0]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
-elif setting == 4:
+elif setting == 5:
     # Testing Single Monitor
     nmon = 1  # number of monitors
-    ceiling = False  # projector ceiling mount instead of table mount
+    ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [True]  # apply flat plane to cylinder warping
     projection = [False]  # apply projection onto curved surfae
     epsilon = [0.0]         # projector tilt [deg]
@@ -99,10 +115,10 @@ elif setting == 4:
     blend_right_bot = [0.0]
     gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
-elif setting == 5:
+elif setting == 6:
     # Testing Two Monitors
     nmon = 2  # number of monitors
-    ceiling = False  # projector ceiling mount instead of table mount
+    ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True]  # apply flat plane to cylinder warping
     projection = [False,True]  # apply projection onto curved surfae
     epsilon = [0.0,6.42]         # projector tilt [deg]
