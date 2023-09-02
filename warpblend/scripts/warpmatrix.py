@@ -90,7 +90,6 @@ elif setting == 4:
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
-#    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0,0.0,0.0]
@@ -103,11 +102,11 @@ elif setting == 5:
     # Testing Single Monitor
     nmon = 1  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
-    cylindrical = [True]  # apply flat plane to cylinder warping
-    projection = [False]  # apply projection onto curved surfae
+    cylindrical = [False]  # apply flat plane to cylinder warping
+    projection = [True]  # apply projection onto curved surfae
     epsilon = [0.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
-    vertical_offset = [-5.0]    # vertical offset [deg]
+    vertical_offset = [0.0]    # vertical offset [deg]
     blending = [False]   # apply blending at sides
     blend_left_top = [0.0]
     blend_left_bot = [0.0]
@@ -123,7 +122,7 @@ elif setting == 6:
     projection = [False,True]  # apply projection onto curved surfae
     epsilon = [0.0,6.42]         # projector tilt [deg]
     lateral_offset = [0.0,0.0]  # lateral offset [deg]
-    vertical_offset = [-5.0,-5.0]    # vertical offset [deg]
+    vertical_offset = [0.0,0.0]    # vertical offset [deg]
     blending = [False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0]
     blend_left_bot = [0.0,0.0]
@@ -415,6 +414,13 @@ for mon in range(0,nmon,1):
 
     # End loop of xy grid
 
+    # inverse y array for ceiling mount
+    if ceiling:
+        ydif = -np.flip(ydif,axis=1)
+
+#    print(ydif[50,0])
+#    print(ydif[50,100])
+        
     print("Monitor: "+str(mon))
     print("FOVx:    "+str(FOVx))
     print("FOVy:    "+str(FOVy))
