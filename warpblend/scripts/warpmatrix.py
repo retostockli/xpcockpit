@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 3
+setting = 1
 
 # Graphics
 doplot = False
@@ -26,7 +26,7 @@ r2d = 180./math.pi
 
 # Dimensions (in cm)
 # Please see projector_setup.pdf
-R = 169.0   # Screen Radius
+R = 169.5   # Screen Radius
 d_0 = 30.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
 # Projector focal point may be behind projector lens. For me it is around 2-4 cm behind
 # as it seems. No documentation found.
@@ -42,7 +42,6 @@ if setting == 1:
     epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-#    vertical_offset = [0.0,-5.0,-5.0,-5.0]    # vertical offset [deg]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
@@ -73,6 +72,7 @@ elif setting == 3:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
+#    epsilon = [0.0,0.0,8.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     blending = [False,False,False,False]   # apply blending at sides
@@ -80,12 +80,12 @@ elif setting == 3:
     blend_left_bot = [0.0,0.0,341.0,318.0]
     blend_right_top = [0.0,249.0,257.0,0.0]
     blend_right_bot = [0.0,333.0,318.0,0.0]
-    gridtest = True # display grid test pattern
+    gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 4:
     # None
     nmon = 4  # number of monitors
-    ceiling = False  # projector ceiling mount instead of table mount
+    ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
@@ -414,9 +414,10 @@ for mon in range(0,nmon,1):
 
     # End loop of xy grid
 
-    # inverse y array for ceiling mount
+    # inverse x and y array for ceiling mount
     if ceiling:
         ydif = -np.flip(ydif,axis=1)
+        xdif = np.flip(xdif,axis=1)
 
 #    print(ydif[50,0])
 #    print(ydif[50,100])
