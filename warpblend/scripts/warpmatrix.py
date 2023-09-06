@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 4
+setting = 3
 
 # Graphics
 doplot = False
@@ -27,11 +27,10 @@ r2d = 180./math.pi
 # Dimensions (in cm)
 # Please see projector_setup.pdf
 R = 169.5   # Screen Radius
-d_0 = 30.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
+d_0 = 27.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
 # Projector focal point may be behind projector lens. For me it is around 2-4 cm behind
 # as it seems. No documentation found.
 tr = 0.49   # Projector Throw ratio
-h_0 = 15.0   # lower height of image above center of lens when projected on planar screen from untilted projector
 
 if setting == 1:
     # Cylindrical + Projection + Blending
@@ -39,6 +38,7 @@ if setting == 1:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
+    h_0 = [10.0,10.0,10.0,10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
@@ -56,6 +56,7 @@ elif setting == 2:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
+    h_0 = [10.0,10.0,10.0,10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
@@ -73,11 +74,12 @@ elif setting == 3:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-#    epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
-    epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
+    h_0 = [10.0,10.0,15.0,10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
+    epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
+    epsilon = [0.0,0.0,6.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,0.0,15.0,0.0]    # vertical shift [pixel]
+    vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
@@ -91,6 +93,7 @@ elif setting == 4:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
+    h_0 = [10.0,10.0,10.0,10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
@@ -108,6 +111,7 @@ elif setting == 5:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False]  # apply flat plane to cylinder warping
     projection = [True]  # apply projection onto curved surfae
+    h_0 = [10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
@@ -125,6 +129,7 @@ elif setting == 6:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True]  # apply flat plane to cylinder warping
     projection = [False,True]  # apply projection onto curved surfae
+    h_0 = [10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,6.42]         # projector tilt [deg]
     lateral_offset = [0.0,0.0]  # lateral offset [deg]
     vertical_offset = [0.0,0.0]    # vertical offset [deg]
@@ -307,7 +312,7 @@ for mon in range(0,nmon,1):
                 # and respective horizontal projection angle
                 a = w * (px - 0.5 * float(nx)) / float(nx)
                 # Calculate elevation of pixel at hypothetical planar screen
-                b = h_0 + py/float(ny) * h                
+                b = h_0[mon] + py/float(ny) * h                
                 # Calculate horizontal view angle for pixel from projector
                 theta = math.atan(a/d_1)*r2d
                 # Calculate horizontal view angle for pixel from screen center
@@ -413,7 +418,7 @@ for mon in range(0,nmon,1):
 
                 # Apply Cylindrical Warping Correction
                 ex = ex
-                ey = (z_e - h_0) / h * float(ny) - py + ey
+                ey = (z_e - h_0[mon]) / h * float(ny) - py + ey
 
                 xdif[gx,gy] += ex - px
                 ydif[gx,gy] += ey - py
