@@ -62,7 +62,7 @@ int screenId;
 float xval[8];
 float yval[8];
 
-int read_warpfile(const char warpfile[],const char smonitor[]);
+int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool blend);
 char** str_split(char* a_str, const char a_delim);
 float interpolate(float input);
 
@@ -158,11 +158,11 @@ int main(int ac, char **av) {
     return 1;
   }
 
-  sprintf(smonitor,"%d",monitor);
 
   if (warp || blend ) {
+    sprintf(smonitor,"%d",monitor);
     printf("Reading X-Plane Monitor File with Warp / Blend Information: %s\n",warpfile);
-    numVertices = read_warpfile(warpfile,smonitor);
+    numVertices = read_warpfile(warpfile,smonitor,warp,blend);
     if (numVertices == 0) return 1;
   }
       
@@ -294,7 +294,7 @@ int main(int ac, char **av) {
   return 0;
 }
 
-int read_warpfile(const char warpfile[],const char smonitor[]) {
+int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool blend) {
 
   bool has_warp = True;
   bool has_blend = True;
@@ -307,8 +307,6 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
   int nv;
   FILE *fptr;
   char buf[256];
-  char str1[40];
-  int ret;
 
   bool isX;
   bool isY;
@@ -395,7 +393,7 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
 	    str = strtok(*(tokens + i)," ");
 	    str = strtok(NULL," ");
 	    has_blend = atoi(str);
-	    printf("Blending Enabled: %i \n",has_blend);
+	    printf("Blending Information in File: %i \n",has_blend);
 	  }
 	} else if (i == 4) {
 	  if (isX || isY) {
@@ -543,172 +541,179 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
       }
     }
 
-    /* create empty pixmap */
-    blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
-				nx, ny, DefaultDepth(xDpy,screenId));
-
-    /* copy xImage data to pixmap */
-    XGCValues values; // graphics context values
-    GC gc; // the graphics context
-    gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
-    XPutImage(xDpy, blendPixmap, gc, blendImage, 0, 0, 0, 0, nx, ny);
-
+    if (blend) {
+      /* create empty pixmap */
+      blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
+				  nx, ny, DefaultDepth(xDpy,screenId));
+      
+      /* copy xImage data to pixmap */
+      XGCValues values; // graphics context values
+      GC gc; // the graphics context
+      gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
+      XPutImage(xDpy, blendPixmap, gc, blendImage, 0, 0, 0, 0, nx, ny);
+    }
+      
   }
 
   
   if (c != ncol) return -1;
   if (r != nrow) return -1;
 
-  if (True) {
-    /* Triangles */
-    
-    nr = (nrow-1)*(ncol-1);
-    nv = nr*6;
+  nv = 0;
   
-    if(warpData != NULL)
-      free(warpData);
-    warpData = (vertexDataRec*)malloc(nv * sizeof(vertexDataRec));
+  if (warp) {
+  
+    if (True) {
+      /* Triangles */
+    
+      nr = (nrow-1)*(ncol-1);
+      nv = nr*6;
+  
+      if(warpData != NULL)
+	free(warpData);
+      warpData = (vertexDataRec*)malloc(nv * sizeof(vertexDataRec));
 
-    printf("number of Vertices allocated: %d\n",nv);
+      printf("number of Vertices allocated: %d\n",nv);
 
-    i=0;
-    for(r=0; r<(nrow-1); r++) {
-      for(c=0; c<(ncol-1); c++) {
+      i=0;
+      for(r=0; r<(nrow-1); r++) {
+	for(c=0; c<(ncol-1); c++) {
       
-	warpData[i * 6].pos.x = vx[r][c][0];
-	warpData[i * 6].pos.y = vy[r][c][0];
-	warpData[i * 6].tex.x = vx[r][c][1];
-	warpData[i * 6].tex.y = vy[r][c][1];
-	warpData[i * 6].tex2.x = 0.0f;	
-	warpData[i * 6].tex2.y = 1.0f;
+	  warpData[i * 6].pos.x = vx[r][c][0];
+	  warpData[i * 6].pos.y = vy[r][c][0];
+	  warpData[i * 6].tex.x = vx[r][c][1];
+	  warpData[i * 6].tex.y = vy[r][c][1];
+	  warpData[i * 6].tex2.x = 0.0f;	
+	  warpData[i * 6].tex2.y = 1.0f;
       
-	warpData[i * 6 + 1].pos.x = vx[r][c+1][0];
-	warpData[i * 6 + 1].pos.y = vy[r][c+1][0];
-	warpData[i * 6 + 1].tex.x = vx[r][c+1][1];
-	warpData[i * 6 + 1].tex.y = vy[r][c+1][1];
-	warpData[i * 6 + 1].tex2.x = 0.0f;
-	warpData[i * 6 + 1].tex2.y = 1.0f;
+	  warpData[i * 6 + 1].pos.x = vx[r][c+1][0];
+	  warpData[i * 6 + 1].pos.y = vy[r][c+1][0];
+	  warpData[i * 6 + 1].tex.x = vx[r][c+1][1];
+	  warpData[i * 6 + 1].tex.y = vy[r][c+1][1];
+	  warpData[i * 6 + 1].tex2.x = 0.0f;
+	  warpData[i * 6 + 1].tex2.y = 1.0f;
       
-	warpData[i * 6 + 2].pos.x = vx[r+1][c][0];
-	warpData[i * 6 + 2].pos.y = vy[r+1][c][0];
-	warpData[i * 6 + 2].tex.x = vx[r+1][c][1];
-	warpData[i * 6 + 2].tex.y = vy[r+1][c][1];
-	warpData[i * 6 + 2].tex2.x = 0.0f;
-	warpData[i * 6 + 2].tex2.y = 1.0f;
+	  warpData[i * 6 + 2].pos.x = vx[r+1][c][0];
+	  warpData[i * 6 + 2].pos.y = vy[r+1][c][0];
+	  warpData[i * 6 + 2].tex.x = vx[r+1][c][1];
+	  warpData[i * 6 + 2].tex.y = vy[r+1][c][1];
+	  warpData[i * 6 + 2].tex2.x = 0.0f;
+	  warpData[i * 6 + 2].tex2.y = 1.0f;
       
-	warpData[i * 6 + 3].pos.x = vx[r][c+1][0];
-	warpData[i * 6 + 3].pos.y = vy[r][c+1][0];
-	warpData[i * 6 + 3].tex.x = vx[r][c+1][1];
-	warpData[i * 6 + 3].tex.y = vy[r][c+1][1];
-	warpData[i * 6 + 3].tex2.x = 0.0f;
-	warpData[i * 6 + 3].tex2.y = 1.0f;
+	  warpData[i * 6 + 3].pos.x = vx[r][c+1][0];
+	  warpData[i * 6 + 3].pos.y = vy[r][c+1][0];
+	  warpData[i * 6 + 3].tex.x = vx[r][c+1][1];
+	  warpData[i * 6 + 3].tex.y = vy[r][c+1][1];
+	  warpData[i * 6 + 3].tex2.x = 0.0f;
+	  warpData[i * 6 + 3].tex2.y = 1.0f;
       
-	warpData[i * 6 + 4].pos.x = vx[r+1][c+1][0];
-	warpData[i * 6 + 4].pos.y = vy[r+1][c+1][0];
-	warpData[i * 6 + 4].tex.x = vx[r+1][c+1][1];
-	warpData[i * 6 + 4].tex.y = vy[r+1][c+1][1];
-	warpData[i * 6 + 4].tex2.x = 0.0f;
-	warpData[i * 6 + 4].tex2.y = 1.0f;
+	  warpData[i * 6 + 4].pos.x = vx[r+1][c+1][0];
+	  warpData[i * 6 + 4].pos.y = vy[r+1][c+1][0];
+	  warpData[i * 6 + 4].tex.x = vx[r+1][c+1][1];
+	  warpData[i * 6 + 4].tex.y = vy[r+1][c+1][1];
+	  warpData[i * 6 + 4].tex2.x = 0.0f;
+	  warpData[i * 6 + 4].tex2.y = 1.0f;
       
-	warpData[i * 6 + 5].pos.x = vx[r+1][c][0];
-	warpData[i * 6 + 5].pos.y = vy[r+1][c][0];
-	warpData[i * 6 + 5].tex.x = vx[r+1][c][1];
-	warpData[i * 6 + 5].tex.y = vy[r+1][c][1];
-	warpData[i * 6 + 5].tex2.x = 0.0f;
-	warpData[i * 6 + 5].tex2.y = 1.0f;
+	  warpData[i * 6 + 5].pos.x = vx[r+1][c][0];
+	  warpData[i * 6 + 5].pos.y = vy[r+1][c][0];
+	  warpData[i * 6 + 5].tex.x = vx[r+1][c][1];
+	  warpData[i * 6 + 5].tex.y = vy[r+1][c][1];
+	  warpData[i * 6 + 5].tex2.x = 0.0f;
+	  warpData[i * 6 + 5].tex2.y = 1.0f;
 
-	i++;
+	  i++;
+	}
       }
+    
+      printf("Assigned %i of %i Warp Rectangles \n",i,nr);
+
+    } else {
+      /* Triangle Strip */
+    
+      nv = (ncol * (nrow-1) * 2) + 2 * (nrow - 2);
+
+      if(warpData != NULL)
+	free(warpData);
+      warpData = (vertexDataRec*)malloc(nv * sizeof(vertexDataRec));
+
+      printf("number of Vertices allocated: %d\n",nv);
+  
+      i = 0; //vertex index
+      for(r=0; r<nrow-1; ++r)
+	{
+	  double v1x,v1y,v2x,v2y,v3x,v3y,v4x,v4y;
+	  float t1x,t1y,t2x,t2y,t3x,t3y,t4x,t4y;
+
+	  for(c=0; c<ncol; ++c)
+	    {
+	      // vertex coordinates
+	      v1x=vx[r][c][0];
+	      v1y=vy[r][c][0];
+	      v2x=vx[r][c+1][0];
+	      v2y=vy[r][c+1][0];
+	      v3x=vx[r+1][c+1][0];
+	      v3y=vy[r+1][c+1][0];
+	      v4x=vx[r+1][c][0];
+	      v4y=vy[r+1][c][0];
+
+	      // texture coordinates of the visual image
+	      t1x=vx[r][c][1];
+	      t1y=vy[r][c][1];
+	      t2x=vx[r][c+1][1];
+	      t2y=vy[r][c+1][1];
+	      t3x=vx[r+1][c+1][1];
+	      t3y=vy[r+1][c+1][1];
+	      t4x=vx[r+1][c][1];
+	      t4y=vy[r+1][c][1];
+
+
+	      if(c == 0 && r > 0)
+		{
+		  // Add padding at beginning of row except the first
+		  //printf("Front padding: %d %d\n",c,r);
+		  warpData[i].pos.x = v1x;
+		  warpData[i].pos.y = v1y;
+		  warpData[i].tex.x = t1x;
+		  warpData[i].tex.y = t1y;
+		  warpData[i].tex2.x = 0.;
+		  warpData[i].tex2.y = 0.;//transformPoint(&warpData[i].pos);
+		  i++;
+		}
+
+	      // Add vertices to warpData
+	      warpData[i].pos.x = v1x;
+	      warpData[i].pos.y = v1y;
+	      warpData[i].tex.x = t1x;
+	      warpData[i].tex.y = t1y;
+	      warpData[i].tex2.x = 0.;
+	      warpData[i].tex2.y = 0.;//transformPoint(&warpData[i].pos);
+	      i++;
+	      warpData[i].pos.x = v4x;
+	      warpData[i].pos.y = v4y;
+	      warpData[i].tex.x = t4x;
+	      warpData[i].tex.y = t4y;
+	      warpData[i].tex2.x = 0.;
+	      warpData[i].tex2.y = 0.;//transformPoint(&warpData[i].pos);
+	      i++;
+	    }
+
+	  if(r < nrow - 2)
+	    {
+	      // Add padding at end of row except the last
+	      //printf("End padding: %d %d\n",c,r);
+	      warpData[i].pos.x = v4x;
+	      warpData[i].pos.y = v4y;
+	      warpData[i].tex.x = t4x;
+	      warpData[i].tex.y = t4y;
+	      warpData[i].tex2.x = 0.;
+	      warpData[i].tex2.y = 0.; //transformPoint(&warpData[i].pos);
+	      i++;
+	    }
+
+	}
+      printf("Assigned %i vertices of %i \n",i,nv);
+
     }
-    
-    printf("Assigned %i of %i Warp Rectangles \n",i,nr);
-
-  } else {
-    /* Triangle Strip */
-    
-    nv = (ncol * (nrow-1) * 2) + 2 * (nrow - 2);
-
-    if(warpData != NULL)
-      free(warpData);
-    warpData = (vertexDataRec*)malloc(nv * sizeof(vertexDataRec));
-
-    printf("number of Vertices allocated: %d\n",nv);
-  
-    i = 0; //vertex index
-    for(r=0; r<nrow-1; ++r)
-      {
-        double v1x,v1y,v2x,v2y,v3x,v3y,v4x,v4y;
-        float t1x,t1y,t2x,t2y,t3x,t3y,t4x,t4y;
-        float b1x,b1y,b2x,b2y,b3x,b3y,b4x,b4y;
-
-        for(c=0; c<ncol; ++c)
-	  {
-            // vertex coordinates
-            v1x=vx[r][c][0];
-            v1y=vy[r][c][0];
-            v2x=vx[r][c+1][0];
-            v2y=vy[r][c+1][0];
-            v3x=vx[r+1][c+1][0];
-            v3y=vy[r+1][c+1][0];
-            v4x=vx[r+1][c][0];
-            v4y=vy[r+1][c][0];
-
-            // texture coordinates of the visual image
-            t1x=vx[r][c][1];
-            t1y=vy[r][c][1];
-            t2x=vx[r][c+1][1];
-            t2y=vy[r][c+1][1];
-            t3x=vx[r+1][c+1][1];
-            t3y=vy[r+1][c+1][1];
-            t4x=vx[r+1][c][1];
-            t4y=vy[r+1][c][1];
-
-
-            if(c == 0 && r > 0)
-	      {
-                // Add padding at beginning of row except the first
-                //printf("Front padding: %d %d\n",c,r);
-                warpData[i].pos.x = v1x;
-                warpData[i].pos.y = v1y;
-                warpData[i].tex.x = t1x;
-                warpData[i].tex.y = t1y;
-                warpData[i].tex2.x = 0.;
-                warpData[i].tex2.y = 0.;//transformPoint(&warpData[i].pos);
-                i++;
-	      }
-
-            // Add vertices to warpData
-            warpData[i].pos.x = v1x;
-            warpData[i].pos.y = v1y;
-            warpData[i].tex.x = t1x;
-            warpData[i].tex.y = t1y;
-            warpData[i].tex2.x = 0.;
-            warpData[i].tex2.y = 0.;//transformPoint(&warpData[i].pos);
-            i++;
-            warpData[i].pos.x = v4x;
-            warpData[i].pos.y = v4y;
-            warpData[i].tex.x = t4x;
-            warpData[i].tex.y = t4y;
-            warpData[i].tex2.x = 0.;
-            warpData[i].tex2.y = 0.;//transformPoint(&warpData[i].pos);
-            i++;
-	  }
-
-        if(r < nrow - 2)
-	  {
-            // Add padding at end of row except the last
-            //printf("End padding: %d %d\n",c,r);
-            warpData[i].pos.x = v4x;
-            warpData[i].pos.y = v4y;
-            warpData[i].tex.x = t4x;
-            warpData[i].tex.y = t4y;
-            warpData[i].tex2.x = 0.;
-            warpData[i].tex2.y = 0.; //transformPoint(&warpData[i].pos);
-            i++;
-	  }
-
-      }
-    printf("Assigned %i vertices of %i \n",i,nv);
 
   }
   

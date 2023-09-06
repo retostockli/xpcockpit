@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Settings
-setting = 1
+setting = 4
 
 # Graphics
 doplot = False
@@ -39,25 +39,27 @@ if setting == 1:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
+    epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
     blend_right_top = [0.0,249.0,257.0,0.0]
     blend_right_bot = [0.0,333.0,318.0,0.0]
     gridtest = False # display grid test pattern
-    forwin = False  # create for windows or for linux
+    forwin = True  # create for windows or for linux
 elif setting == 2:
     # Projection + Blending
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
+    epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
@@ -71,16 +73,17 @@ elif setting == 3:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
-#    epsilon = [0.0,0.0,8.0,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
+#    epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
+    epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    vertical_shift = [0.0,0.0,15.0,0.0]    # vertical shift [pixel]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
     blend_right_top = [0.0,249.0,257.0,0.0]
     blend_right_bot = [0.0,333.0,318.0,0.0]
-    gridtest = False # display grid test pattern
+    gridtest = True # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 4:
     # None
@@ -89,14 +92,15 @@ elif setting == 4:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-62.0,0.0,62.5]  # lateral offset [deg]
+    lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0,0.0,0.0]
     blend_left_bot = [0.0,0.0,0.0,0.0]
     blend_right_top = [0.0,0.0,0.0,0.0]
     blend_right_bot = [0.0,0.0,0.0,0.0]
-    gridtest = False # display grid test pattern
+    gridtest = True # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 5:
     # Testing Single Monitor
@@ -107,6 +111,7 @@ elif setting == 5:
     epsilon = [0.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
+    vertical_shift = [0.0]    # vertical shift [pixel]
     blending = [False]   # apply blending at sides
     blend_left_top = [0.0]
     blend_left_bot = [0.0]
@@ -123,6 +128,7 @@ elif setting == 6:
     epsilon = [0.0,6.42]         # projector tilt [deg]
     lateral_offset = [0.0,0.0]  # lateral offset [deg]
     vertical_offset = [0.0,0.0]    # vertical offset [deg]
+    vertical_shift = [0.0,0.0]    # vertical shift [pixel]
     blending = [False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0]
     blend_left_bot = [0.0,0.0]
@@ -414,6 +420,9 @@ for mon in range(0,nmon,1):
 
     # End loop of xy grid
 
+    # add vertical shift if needed
+    ydif += vertical_shift[mon]
+    
     # inverse x and y array for ceiling mount
     if ceiling:
         ydif = -np.flip(ydif,axis=1)
@@ -433,7 +442,7 @@ for mon in range(0,nmon,1):
         con.write("monitor/"+str(mon)+"/m_window_idx -1"+"\n")
 
     if forwin:
-        con.write("monitor/"+str(mon)+"/m_monitor ",mon+"\n")
+        con.write("monitor/"+str(mon)+"/m_monitor "+str(mon)+"\n")
     else:
         con.write("monitor/"+str(mon)+"/m_monitor 0"+"\n")
 
