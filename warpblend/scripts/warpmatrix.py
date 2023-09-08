@@ -14,11 +14,14 @@ import math
 import numpy as np
 import matplotlib.pyplot as plot
 
+# Testing a function
+test = True
+
 # Settings
-setting = 3
+setting = 5
 
 # Graphics
-doplot = False
+doplot = True
 
 # Parameters
 d2r = math.pi/180.
@@ -112,7 +115,7 @@ elif setting == 5:
     cylindrical = [False]  # apply flat plane to cylinder warping
     projection = [True]  # apply projection onto curved surfae
     h_0 = [10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
-    epsilon = [0.0]         # projector tilt [deg]
+    epsilon = [7.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
     vertical_shift = [0.0]    # vertical shift [pixel]
@@ -192,7 +195,10 @@ for mon in range(0,nmon,1):
     # grid horizontal: gx from left to right
     for gy in range(0,ngy,1):
         for gx in range(0,ngx,1):
-#        for gx in range(0,1,1):
+#    for gy in range(ngy-1,ngy,1):
+#        for gx in range(10,13,1):
+#    for gy in range(ngy-1,ngy,1):
+#        for gx in range(ngx-13,ngx-10,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             px = float(nx) * float(gx) / float(ngx-1)
@@ -267,6 +273,9 @@ for mon in range(0,nmon,1):
                 # now calculate how much we need to shift pixel coordinates to match
                 # cylindrical screen again
                 d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
+                # Projected image can be behind screen
+                if (x_c-x_2)<0.0:
+                    d_2 = -d_2
 
                 if (omega != 0.0):
                     # Calculate Elevation of pixel (relative to screen center height, shifted by z_0 due to tilt)
@@ -292,11 +301,37 @@ for mon in range(0,nmon,1):
                 # print(str(px)+" "+str(theta)+" "+str(xdif[gx,gy])+" "+str(ydif[gx,gy]))
                 # print(str(px)+" "+str(theta)+" "+str(b)+" "+str(z_c)+" "+str(h/2))
                 
-                # update grid coordinates for projector calculation
+                # update grid coordinates for keystone and projection calculation
                 px += xdif[gx,gy]
                 py += ydif[gx,gy]
 
-            # 2. Warping the planar projection of a regular table or ceiling mounted projector
+            # 2. Apply Keystone Correction
+            # image gets compressed in both horizontal and vertical dimensions with projector tilt
+            # so uncompress and untrapezoid the image pixel right in the first place and place them
+            # where they would be with a untilted projector
+            if (epsilon[mon] != 0.0) and (test):
+                ex = px
+                ey = py
+
+                # Calculate elevation of pixel at hypothetical planar screen
+                b = h_0[mon] + py/float(ny) * h                
+
+                alpha_0 = math.atan(b/d_1)*r2d  # elevation angle at center line of projection
+                u = d_1 / math.cos(alpha_0*d2r)   # image distance at line py when projector would be level
+                u_k = d_1 / math.cos((alpha_0-epsilon[mon])*d2r)  # image distance at line py with tilt
+                
+                ex = (ex-float(nx)/2.0)*u/u_k +  float(nx)/2.0  # correct keystone in horizontal pixels
+                ey = ey * u / u_k  # correct keystone in vertical pixels
+
+                xdif[gx,gy] += ex - px
+                ydif[gx,gy] += ey - py
+
+                # update grid coordinates for projector calculation
+                px += xdif[gx,gy]
+                py += ydif[gx,gy]
+                
+                
+            # 3. Warping the planar projection of a regular table or ceiling mounted projector
             # onto a cylindrical screen. This is needed since the projector image is only ok
             # on a flat screen. We need to squeeze it onto a cylinder.
             # Please see projection_geometry.pdf
@@ -318,6 +353,7 @@ for mon in range(0,nmon,1):
                 # Calculate horizontal view angle for pixel from screen center
                 psi = gamma * a / w_2
 
+ 
                 if (False):
                     # Variant assuming input in planar coordinates
                     # DO NOT USE ANY MORE
@@ -346,6 +382,9 @@ for mon in range(0,nmon,1):
                     # now calculate how much we need to shift pixel coordinates to match
                     # cylindrical screen again
                     d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
+                    # Projected image can be behind screen
+                    if (x_c-x_2)<0.0:
+                        d_2 = -d_2
                     d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
 
                     # calculate elevation angle of pixel
@@ -389,6 +428,9 @@ for mon in range(0,nmon,1):
                     # now calculate how much we need to shift pixel coordinates to match
                     # cylindrical screen again. Origin is projector center
                     d_2 = math.sqrt(math.pow(x_c-d_1-d_0,2.0) + math.pow(y_c-a_1,2.0))  # overshoot distance (should be 0 at screen edges)
+                    # Projected image can be behind screen
+                    if (x_c-d_1-d_0)<0.0:
+                        d_2 = -d_2
                     d_r = math.sqrt(math.pow(d_1,2.0)+math.pow(a_1,2.0))
                     d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
 
@@ -400,6 +442,7 @@ for mon in range(0,nmon,1):
                     phi = math.atan(b/d_d)*r2d
                     z_e = math.tan(phi*d2r) * d_r
 
+#                print(str(gx)+" "+str(px)+" "+str(py)+" "+str(d_2)+" "+str(d_r))
                     
                 ex = px
                 ey = py
@@ -408,7 +451,7 @@ for mon in range(0,nmon,1):
                 # image gets compressed in both horizontal and vertical dimensions with projector tilt
                 # so uncompress and untrapezoid the image pixel right in the first place and place them
                 # where they would be with a untilted projector
-                if epsilon[mon] != 0.0:
+                if (epsilon[mon] != 0.0) and (not test):
                     alpha_0 = math.atan(b/d_1)*r2d  # elevation angle at center line of projection
                     u = d_1 / math.cos(alpha_0*d2r)   # image distance at line py when projector would be level
                     u_k = d_1 / math.cos((alpha_0-epsilon[mon])*d2r)  # image distance at line py with tilt
@@ -524,6 +567,7 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
 
     if doplot:
+        plot.figure(figsize=(10,6))
         plot.scatter(xabs+xdif,yabs+ydif,color="red",marker=".")
         plot.show()
 
