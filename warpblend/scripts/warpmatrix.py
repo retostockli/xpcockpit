@@ -21,7 +21,7 @@ test = True
 setting = 5
 
 # Graphics
-doplot = True
+doplot = False
 
 # Parameters
 d2r = math.pi/180.
