@@ -18,7 +18,7 @@ import matplotlib.pyplot as plot
 test = True
 
 # Settings
-setting = 3
+setting = 5
 
 # Graphics
 doplot = False
@@ -33,6 +33,7 @@ R = 169.5   # Screen Radius
 d_0 = 27.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
 # Projector focal point may be behind projector lens. For me it is around 2-4 cm behind
 # as it seems. No documentation found.
+h_0 = 10.0   # lower height of image above center of lens when projected on planar screen from untilted projector
 tr = 0.49   # Projector Throw ratio
 
 if setting == 1:
@@ -41,7 +42,6 @@ if setting == 1:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    h_0 = [10.0,10.0,10.0,10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
@@ -59,7 +59,6 @@ elif setting == 2:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    h_0 = [10.0,10.0,10.0,10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
@@ -77,7 +76,6 @@ elif setting == 3:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    h_0 = [10.0,10.0,-20.0,10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,0.0,6.42,0.0]         # projector tilt [deg]
     epsilon = [0.0,0.0,5.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
@@ -96,7 +94,6 @@ elif setting == 4:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
-    h_0 = [10.0,10.0,10.0,10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
@@ -113,9 +110,8 @@ elif setting == 5:
     nmon = 1  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False]  # apply flat plane to cylinder warping
-    projection = [True]  # apply projection onto curved surfae
-    h_0 = [10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
-    epsilon = [7.0]         # projector tilt [deg]
+    projection = [False]  # apply projection onto curved surfae
+    epsilon = [10.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
     vertical_shift = [0.0]    # vertical shift [pixel]
@@ -132,7 +128,6 @@ elif setting == 6:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True]  # apply flat plane to cylinder warping
     projection = [False,True]  # apply projection onto curved surfae
-    h_0 = [10.0]   # lower height of image above center of lens when projected on planar screen from untilted projector
     epsilon = [0.0,6.42]         # projector tilt [deg]
     lateral_offset = [0.0,0.0]  # lateral offset [deg]
     vertical_offset = [0.0,0.0]    # vertical offset [deg]
@@ -193,12 +188,10 @@ for mon in range(0,nmon,1):
     # loop through grid
     # grid vertical: gy goes from bottom to top
     # grid horizontal: gx from left to right
+#    for gy in range(0,ngy,1):
+#        for gx in range(0,ngx,1):
     for gy in range(0,ngy,1):
-        for gx in range(0,ngx,1):
-#    for gy in range(ngy-1,ngy,1):
-#        for gx in range(10,13,1):
-#    for gy in range(ngy-1,ngy,1):
-#        for gx in range(ngx-13,ngx-10,1):
+        for gx in range(ngx-1,ngx,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             px = float(nx) * float(gx) / float(ngx-1)
@@ -309,20 +302,43 @@ for mon in range(0,nmon,1):
             # image gets compressed in both horizontal and vertical dimensions with projector tilt
             # so uncompress and untrapezoid the image pixel right in the first place and place them
             # where they would be with a untilted projector
-            if (epsilon[mon] != 0.0) and (test):
+            if (epsilon[mon] != 0.0):
                 ex = px
                 ey = py
 
+                # Calculate horizontal position on hypothetical
+                # planar screen in distance d_1 from projector
+                # and respective horizontal projection angle
+                a = w * (px - 0.5 * float(nx)) / float(nx)
                 # Calculate elevation of pixel at hypothetical planar screen
-                b = h_0[mon] + py/float(ny) * h                
+                b = h_0 + py/float(ny) * h                
 
-                alpha_0 = math.atan(b/d_1)*r2d  # elevation angle at center line of projection
-                u = d_1 / math.cos(alpha_0*d2r)   # image distance at line py when projector would be level
-                u_k = d_1 / math.cos((alpha_0-epsilon[mon])*d2r)  # image distance at line py with tilt
+                e = math.cos(epsilon[mon]*d2r)*d_1
+                f = math.sin(epsilon[mon]*d2r)*b
+                d_v = e + f - d_1
+
+                # Calculate horizontal view angle for pixel at vertical plane distance from projector
+                theta = math.atan(a/d_1)*r2d
+
+                # calculate horizontal over/undershoot due to tilted plane distance
+                a_1 = math.tan((theta)*d2r)*(d_1+d_v)
                 
-                ex = (ex-float(nx)/2.0)*u/u_k +  float(nx)/2.0  # correct keystone in horizontal pixels
-                ey = ey * u / u_k  # correct keystone in vertical pixels
+                alpha_h = math.atan(h_0/d_1)*r2d  # minimum elevation angle at h_0
+                # new minimum height of projected tilted image onto vertical plane
+                h_1 = math.tan((alpha_h - epsilon[mon])*d2r)*d_1 
+                
+                alpha = math.atan(b/d_1)*r2d  # elevation angle in tilted coordinates
+                alpha_1 = math.atan((b+-h_0+h_1)/d_1)*r2d # new elevation angle in horizontal coordinates
 
+                b_1 = math.tan((alpha_1 + epsilon[mon])*d2r)*d_1
+                
+#                ex = (ex-float(nx)/2.0)*u/u_k +  float(nx)/2.0  # correct keystone in horizontal pixels
+                ex = a_1 / w * float(nx) + 0.5 * float(nx)
+                ey = (b_1 - h_0) / h * float(ny)  # correct keystone in vertical pixels
+                
+                print(str(gy)+" "+str(ey)+" "+str(py)+" "+str(ex)+" "+str(px))
+            
+ 
                 xdif[gx,gy] += ex - px
                 ydif[gx,gy] += ey - py
 
@@ -347,58 +363,76 @@ for mon in range(0,nmon,1):
                 # and respective horizontal projection angle
                 a = w * (px - 0.5 * float(nx)) / float(nx)
                 # Calculate elevation of pixel at hypothetical planar screen
-                b = h_0[mon] + py/float(ny) * h
+                b = h_0 + py/float(ny) * h
                 
                 # Vertically tilted Projection
                 if epsilon[mon] != 0.0:
-                    alpha_1 = math.atan(b/(d_1))*r2d
-                    e = math.tan(epsilon[mon]*d2r)*(d_1)
-                    f = math.cos(epsilon[mon]*d2r)*(b+e)
-                    d_v = f / math.tan((epsilon[mon] + alpha_1)*d2r) - d_1
-#                    if (gx==0):
-#                        print(str(gy) + " " +str(d_v)+" "+str(f)+" "+str(b+e))
+                    e = math.cos(epsilon[mon]*d2r)*d_1
+                    f = math.sin(epsilon[mon]*d2r)*b
+                    d_v = e + f - d_1
+#                    print(str(gy) + " " +str(d_v)+" "+str(e)+" "+str(f)+" "+str(d_1))
                 else:
                     d_v = 0.0
                     
                 # Calculate horizontal view angle for pixel from projector
-#                theta = math.atan(a/d_1)*r2d
                 theta = math.atan(a/(d_1+d_v))*r2d
 
- 
-                if (False):
-                    # Variant assuming input in planar coordinates
-                    # DO NOT USE ANY MORE
-                    
-                    # Calculate intersection of projected line with the cylindrical screen
-                    # behind hypothetical planar screen. Cylinder is in (0,0) position
-                    # https://mathworld.wolfram.com/Circle-LineIntersection.html
-                    x_1 = d_0
-                    x_2 = d_1+d_0
-                    y_1 = 0.0
-                    y_2 = a
-                    d_x = x_2-x_1
-                    d_y = y_2-y_1
-                    d_r = math.sqrt(math.pow(d_x,2.0)+math.pow(d_y,2.0))
-                    D   = x_1*y_2-x_2*y_1
-                    DSCR = math.pow(R,2.0)*math.pow(d_r,2.0) - math.pow(D,2.0)  # Discriminant: if > 0 (true for our problem: intersection)
-                    
-                    if d_y < 0:
-                        sgn_dy = -1.0
-                    else:
-                        sgn_dy = 1.0
-                        
-                    x_c = (D*d_y + sgn_dy + d_x * math.sqrt(DSCR))/math.pow(d_r,2.0)
-                    y_c = (-D*d_x + d_y * math.sqrt(DSCR))/math.pow(d_r,2.0)
-                   
-                    # now calculate how much we need to shift pixel coordinates to match
-                    # cylindrical screen again
-                    d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
-                    # Projected image can be behind screen
-                    if (x_c-x_2)<0.0:
-                        d_2 = -d_2
-                    d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
 
-                    # calculate elevation angle of pixel
+                # Variant assuming input in cylindrical coordinates
+                
+                # Calculate intersection of projected line with the cylindrical screen
+                # behind hypothetical planar screen. Cylinder is in (0,0) position
+                # https://mathworld.wolfram.com/Circle-LineIntersection.html
+                x_1 = 0.0
+                x_2 = d_1+d_0+d_v
+                y_1 = 0.0
+                y_2 = a
+                d_x = x_2-x_1
+                d_y = y_2-y_1
+                d_r = math.sqrt(math.pow(d_x,2.0)+math.pow(d_y,2.0))
+                D   = x_1*y_2-x_2*y_1
+                DSCR = math.pow(R,2.0)*math.pow(d_r,2.0) - math.pow(D,2.0)  # Discriminant: if > 0 (true for our problem: intersection)
+                
+                if d_y < 0:
+                    sgn_dy = -1.0
+                else:
+                    sgn_dy = 1.0
+                    
+                # this is where we need to have the pixel on the cylinder in cylindrical coordinates
+                x_c = (D*d_y + sgn_dy + d_x * math.sqrt(DSCR))/math.pow(d_r,2.0)
+                y_c = (-D*d_x + d_y * math.sqrt(DSCR))/math.pow(d_r,2.0)
+                
+                # calculate adjusted horizontal view angle from projector center
+                theta_1 = math.atan(y_c/(x_c-d_0))*r2d
+                # calculate new horizontal pixel position to reach that view angle
+                a_1 = math.tan(theta_1*d2r) * (d_1+d_v)
+                print(str(gy) + " " +str(a)+" "+str(a_1)+" "+str(d_v))
+                
+                # now calculate how much we need to shift pixel coordinates to match
+                # cylindrical screen again. Origin is projector center
+                d_2 = math.sqrt(math.pow(x_c-d_1-d_0-d_v,2.0) + math.pow(y_c-a_1,2.0))  # overshoot distance (should be 0 at screen edges)
+                # Projected image can be behind screen
+                if (x_c-d_1-d_0-d_v)<0.0:
+                    d_2 = -d_2
+
+                d_r = math.sqrt(math.pow(d_1+d_v,2.0)+math.pow(a_1,2.0))
+                d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
+                    
+                if epsilon[mon] != 0.0:
+                    # calculate elevation angle of pixel on hypothetical planar screen
+                    
+                    #### DAS GEHT NICHT, WEIL f HAT SICH JA VERHAENDERT???
+                    alpha = math.atan(f/d_r)*r2d
+                    # Calculate Elevation of pixel (relative to screen center height, shifted by z_0 due to tilt)
+                    z_0 = math.sin(epsilon[mon]*d2r) * d_1
+                    
+                    # calculate elevation of pixel at cylinder
+                    z_c = math.tan(alpha*d2r) * d_d - z_0
+                    phi = math.atan(b/d_d)*r2d
+                    z_e = math.tan(phi*d2r) * d_r
+                    
+                else:
+                    # calculate elevation angle of pixel on hypothetical planar screen
                     alpha = math.atan(b/d_r)*r2d
                     
                     # calculate elevation of pixel at cylinder
@@ -406,87 +440,14 @@ for mon in range(0,nmon,1):
                     phi = math.atan(b/d_d)*r2d
                     z_e = math.tan(phi*d2r) * d_r
 
-                else:
-                    # Variant assuming input in cylindrical coordinates
-                    
-                    # Calculate intersection of projected line with the cylindrical screen
-                    # behind hypothetical planar screen. Cylinder is in (0,0) position
-                    # https://mathworld.wolfram.com/Circle-LineIntersection.html
-                    x_1 = 0.0
-                    x_2 = d_1+d_0+d_v
-                    y_1 = 0.0
-                    y_2 = a
-                    d_x = x_2-x_1
-                    d_y = y_2-y_1
-                    d_r = math.sqrt(math.pow(d_x,2.0)+math.pow(d_y,2.0))
-                    D   = x_1*y_2-x_2*y_1
-                    DSCR = math.pow(R,2.0)*math.pow(d_r,2.0) - math.pow(D,2.0)  # Discriminant: if > 0 (true for our problem: intersection)
-                    
-                    if d_y < 0:
-                        sgn_dy = -1.0
-                    else:
-                        sgn_dy = 1.0
-
-                    # this is where we need to have the pixel on the cylinder in cylindrical coordinates
-                    x_c = (D*d_y + sgn_dy + d_x * math.sqrt(DSCR))/math.pow(d_r,2.0)
-                    y_c = (-D*d_x + d_y * math.sqrt(DSCR))/math.pow(d_r,2.0)
-
-                    # calculate adjusted horizontal view angle from projector center
-                    theta_1 = math.atan(y_c/(x_c-d_0))*r2d
-                    # calculate new horizontal pixel position to reach that view angle
-                    a_1 = math.tan(theta_1*d2r) * (d_1+d_v)
-                    
-                    # now calculate how much we need to shift pixel coordinates to match
-                    # cylindrical screen again. Origin is projector center
-                    d_2 = math.sqrt(math.pow(x_c-d_1-d_0-d_v,2.0) + math.pow(y_c-a_1,2.0))  # overshoot distance (should be 0 at screen edges)
-                    # Projected image can be behind screen
-                    if (x_c-d_1-d_0-d_v)<0.0:
-                        d_2 = -d_2
-                    d_r = math.sqrt(math.pow(d_1+d_v,2.0)+math.pow(a_1,2.0))
-                    d_d = d_r + d_2 # total horizontal distance from projector to cylindrical screen
-
-                    if epsilon[mon] != 0.0:
-                        # calculate elevation angle of pixel on hypothetical planar screen
-
-#### DAS GEHT NICHT, WEIL f HAT SICH JA VERHAENDERT???
-                        alpha = math.atan(f/d_r)*r2d
-                        # Calculate Elevation of pixel (relative to screen center height, shifted by z_0 due to tilt)
-                        z_0 = math.sin(epsilon[mon]*d2r) * d_1
-                          
-                        # calculate elevation of pixel at cylinder
-                        z_c = math.tan(alpha*d2r) * d_d - z_0
-                        phi = math.atan(b/d_d)*r2d
-                        z_e = math.tan(phi*d2r) * d_r
-
-                    else:
-                        # calculate elevation angle of pixel on hypothetical planar screen
-                        alpha = math.atan(b/d_r)*r2d
-                        
-                        # calculate elevation of pixel at cylinder
-                        z_c = math.tan(alpha*d2r) * d_d
-                        phi = math.atan(b/d_d)*r2d
-                        z_e = math.tan(phi*d2r) * d_r
-
 #                print(str(gx)+" "+str(px)+" "+str(py)+" "+str(d_2)+" "+str(d_r))
                     
                 ex = px
                 ey = py
 
-                # 3. Apply Keystone Correction
-                # image gets compressed in both horizontal and vertical dimensions with projector tilt
-                # so uncompress and untrapezoid the image pixel right in the first place and place them
-                # where they would be with a untilted projector
-                if (epsilon[mon] != 0.0) and (not test):
-                    alpha_0 = math.atan(b/d_1)*r2d  # elevation angle at center line of projection
-                    u = d_1 / math.cos(alpha_0*d2r)   # image distance at line py when projector would be level
-                    u_k = d_1 / math.cos((alpha_0-epsilon[mon])*d2r)  # image distance at line py with tilt
-
-                    ex = (ex-float(nx)/2.0)*u/u_k +  float(nx)/2.0  # correct keystone in horizontal pixels
-                    ey = ey * u / u_k  # correct keystone in vertical pixels
-
                 # Apply Cylindrical Warping Correction
                 ex = ex
-                ey = (z_e - h_0[mon]) / h * float(ny) - py + ey
+                ey = (z_e - h_0) / h * float(ny) - py + ey
 
                 xdif[gx,gy] += ex - px
                 ydif[gx,gy] += ey - py
