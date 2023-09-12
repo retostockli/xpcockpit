@@ -1,3 +1,4 @@
+from __future__ import print_function
 # GTX970 Output Numbering
 # DVI0 (DVI-I-1): 0
 # HDMI/HP (DP-1): 1
@@ -13,6 +14,30 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plot
+
+def LinePlaneCollision(planeNormal, planePoint, rayDirection, rayPoint, epsilon=1e-6):
+
+	ndotu = planeNormal.dot(rayDirection)
+	if abs(ndotu) < epsilon:
+		raise RuntimeError("no intersection or line is within plane")
+
+	w = rayPoint - planePoint
+	si = -planeNormal.dot(w) / ndotu
+	Psi = w + si * rayDirection + planePoint
+	return Psi
+
+#Define plane
+planeNormal = np.array([0, 0, 1])
+planePoint = np.array([0, 0, 5]) #Any point on the plane
+
+#Define ray
+rayDirection = np.array([0, -1, -1])
+rayPoint = np.array([0, 0, 10]) #Any point along the ray
+
+Psi = LinePlaneCollision(planeNormal, planePoint, rayDirection, rayPoint)
+print ("intersection at", Psi)
+
+
 
 # Testing a function
 test = True
@@ -110,7 +135,7 @@ elif setting == 5:
     nmon = 1  # number of monitors
     ceiling = False  # projector ceiling mount instead of table mount
     cylindrical = [False]  # apply flat plane to cylinder warping
-    projection = [False]  # apply projection onto curved surfae
+    projection = [True]  # apply projection onto curved surfae
     epsilon = [5.5]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
@@ -304,7 +329,7 @@ for mon in range(0,nmon,1):
             # image gets compressed in both horizontal and vertical dimensions with projector tilt
             # so uncompress and untrapezoid the image pixel right in the first place and place them
             # where they would be with a untilted projector
-            if (epsilon[mon] != 0.0):
+            if (epsilon[mon] != 0.0) and (False):
                 ex = px
                 ey = py
 
@@ -323,21 +348,34 @@ for mon in range(0,nmon,1):
                 f = math.sin(epsilon[mon]*d2r)*b
                 d_v = e + f - d_1
 
-                d_r = math.sqrt(math.pow(d_1,2.0)+math.pow(a,2.0))
-                d_r_v = math.sqrt(math.pow(d_1+d_v,2.0)+math.pow(a,2.0))
 
-                
-                # minimum elevation angle at h_0
-                alpha_h = math.atan(h_0/d_1)*r2d 
-                # new minimum height of projected tilted image onto vertical plane
-                h_1 = math.tan((alpha_h - epsilon[mon])*d2r)*d_1 
+                if test:
+                    d_r = math.sqrt(math.pow(d_1,2.0)+math.pow(a,2.0))
+                    d_r_v = math.sqrt(math.pow(d_1+d_v,2.0)+math.pow(a,2.0))
 
-                alpha = math.atan(b/d_1)*r2d  # elevation angle in tilted coordinates
-                alpha_1 = math.atan((b-h_0+h_1)/d_1)*r2d # new elevation angle in horizontal coordinates
-
-                # calculate horizontal/vertical over/undershoot due to tilted plane distance
-                a_1 = math.tan(theta*d2r)*(d_1+d_v)
-                b_1 = math.tan((alpha_1 + epsilon[mon])*d2r)*d_1
+                    # minimum elevation angle at h_0
+                    alpha_h = math.atan(h_0/d_r)*r2d 
+                    # new minimum height of projected tilted image onto vertical plane
+                    h_1 = math.tan((alpha_h - epsilon[mon])*d2r)*d_r 
+                    
+                    alpha = math.atan(b/d_r)*r2d  # elevation angle in tilted coordinates
+                    alpha_1 = math.atan((b-h_0+h_1)/d_r)*r2d # new elevation angle in horizontal coordinates
+                    
+                    # calculate horizontal/vertical over/undershoot due to tilted plane distance
+                    a_1 = math.tan(theta*d2r)*(d_r_v)
+                    b_1 = math.tan((alpha_1 + epsilon[mon])*d2r)*d_r
+                else:
+                    # minimum elevation angle at h_0
+                    alpha_h = math.atan(h_0/d_1)*r2d 
+                    # new minimum height of projected tilted image onto vertical plane
+                    h_1 = math.tan((alpha_h - epsilon[mon])*d2r)*d_1 
+                    
+                    alpha = math.atan(b/d_1)*r2d  # elevation angle in tilted coordinates
+                    alpha_1 = math.atan((b-h_0+h_1)/d_1)*r2d # new elevation angle in horizontal coordinates
+                    
+                    # calculate horizontal/vertical over/undershoot due to tilted plane distance
+                    a_1 = math.tan(theta*d2r)*(d_1+d_v)
+                    b_1 = math.tan((alpha_1 + epsilon[mon])*d2r)*d_1
                   
                 ex = a_1 / w * float(nx) + 0.5 * float(nx) # correct keystone in horizontal pixels
                 ey = (b_1 - h_0) / h * float(ny)  # correct keystone in vertical pixels
@@ -438,11 +476,24 @@ for mon in range(0,nmon,1):
 
 
                 # now calculate keystone correction: transform new coordinates on vertical
-                # hypotetical planar screen to tilted hypothetical planar screen
+                # hypotetical planar screen to tilted hypothetical planar screen: intersect
+                # projector ray with tilted plane
 
-                b_2 = math.tan((alpha_1+epsilon[mon])*d2r)*d_r
+                # Calculate distance difference of projector line from vertical hypothetical planar screen
+                e = math.cos(epsilon[mon]*d2r)*d_1
+                f = math.sin(epsilon[mon]*d2r)*b
+                d_v = e + f - d_1
+
+                #Define plane
+                planeNormal = np.array([-e, 0.0, -math.sin(epsilon[mon]*d2r)*d_1])
+                planePoint = np.array([e+d_0, 0.0, math.sin(epsilon[mon]*d2r)*d_1]) # Any point on the plane
+
+                #Define ray
+                rayDirection = np.array([d_0+d_1, a_1, b_1])
+                rayPoint = np.array([d_0, 0.0, 0.0]) # Any point along the ray
                 
-                
+                cp = LinePlaneCollision(planeNormal, planePoint, rayDirection, rayPoint)
+                print ("intersection at", cp)
                 
                 # Apply Cylindrical Warping Correction
                 ex = a_1 / w * float(nx) + 0.5 * float(nx)
