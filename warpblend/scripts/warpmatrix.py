@@ -67,7 +67,7 @@ def LineCircleCollision(linePoint1,linePoint2,circleRadius):
 test = False
 
 # Settings
-setting = 3
+setting = 1
 
 # Graphics
 doplot = False
@@ -94,8 +94,9 @@ if setting == 1:
     epsilon = [0.0,0.0,5.45,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
+    vertical_shift = [0.0,10.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.006,1.0,0.98]    # vertical scale [-]
+    vertical_scale = [1.0,0.98,1.0,0.965]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
@@ -147,7 +148,7 @@ elif setting == 4:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
@@ -156,7 +157,7 @@ elif setting == 4:
     blend_left_bot = [0.0,0.0,0.0,0.0]
     blend_right_top = [0.0,0.0,0.0,0.0]
     blend_right_bot = [0.0,0.0,0.0,0.0]
-    gridtest = True # display grid test pattern
+    gridtest = False # display grid test pattern
     forwin = False  # create for windows or for linux
 elif setting == 5:
     # Testing Single Monitor
@@ -289,59 +290,23 @@ for mon in range(0,nmon,1):
                 # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
                 xdif[gx,gy] += 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
 
-                
                 # Calculate intersection of projected line with the cylindrical screen
-                # behind hypothetical planar screen. Cylinder is in (0,0) position
-                # https://mathworld.wolfram.com/Circle-LineIntersection.html
-                x_1 = 0
-                x_2 = d_1+d_0+d_v
-                y_1 = 0.0
-                y_2 = a
-                d_x = x_2-x_1
-                d_y = y_2-y_1
-                d_r = math.sqrt(math.pow(d_x,2.0)+math.pow(d_y,2.0))
-                D   = x_1*y_2-x_2*y_1
-                DSCR = math.pow(R,2.0)*math.pow(d_r,2.0) - math.pow(D,2.0)  # Discriminant: if > 0 (true for our problem: intersection)
+                linePoint1 = np.array([0.0,0.0])
+                linePoint2 = np.array([d_0+d_1,a])
+                circleRadius = R
+                col = LineCircleCollision(linePoint1,linePoint2,circleRadius)
+                x_c = col[0]
+                y_c = col[1]
 
-                if d_y < 0:
-                    sgn_dy = -1.0
-                else:
-                    sgn_dy = 1.0
-
-                x_c = (D*d_y + sgn_dy + d_x * math.sqrt(DSCR))/math.pow(d_r,2.0)
-                y_c = (-D*d_x + d_y * math.sqrt(DSCR))/math.pow(d_r,2.0)
-
-                # now calculate how much we need to shift pixel coordinates to match
-                # cylindrical screen again
-                d_2 = math.sqrt(math.pow(x_c-x_2,2.0) + math.pow(y_c-y_2,2.0))  # overshoot distance (should be 0 at screen edges)
-                # Projected image can be behind screen
-                if (x_c-x_2)<0.0:
-                    d_2 = -d_2
-
-                if (omega != 0.0):
-                    # Calculate Elevation of pixel (relative to screen center height, shifted by z_0 due to tilt)
-                    z_0 = math.sin(omega*d2r) * (d_1 + d_0)
-                    alpha = math.atan(f/d_r)*r2d
-                    z_c = math.tan(alpha*d2r) * R - z_0
-                    #print(str(gy) + " " +str(z_c))
-                else:
-                    # Calculate Elevation angle of pixel (relative to screen center height)
-                    alpha = math.atan(b/d_r)*r2d
-                    # Calculate Elevation of pixel at cylinder
-                    z_c = math.tan(alpha*d2r) * R
+                # Calculate Elevation angle of pixel (relative to screen center height)
+                d_r = math.sqrt(math.pow(d_0+d_1,2.0)+math.pow(a,2.0))
+                alpha = math.atan(b/d_r)*r2d
+                # Calculate Elevation of pixel at cylinder
+                z_c = math.tan(alpha*d2r) * R
 
                 # New Y position in Cylindrical coordinates
                 ydif[gx,gy] += float(ny) * z_c / h + 0.5 * float(ny) - py
-
-                #print(str(gy) + " " +str(xabs[gx,gy]+xdif[gx,gy]) + " " +str(yabs[gx,gy]+ydif[gx,gy]))
-
-#                if ((gx == 0) and (gy == (ngy-1))) or ((gx == 0) and (gy == ((ngy-1)/2))) or ((gx == 0) and (gy == 0)):
-#                    print(str(x_c)+" "+str(y_c)+" "+str(z_c))
-
-                
-                # print(str(px)+" "+str(theta)+" "+str(xdif[gx,gy])+" "+str(ydif[gx,gy]))
-                # print(str(px)+" "+str(theta)+" "+str(b)+" "+str(z_c)+" "+str(h/2))
-                
+        
                 # update grid coordinates for keystone and projection calculation
                 px += xdif[gx,gy]
                 py += ydif[gx,gy]
