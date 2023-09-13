@@ -5,6 +5,12 @@ from __future__ import print_function
 # DVI1 (DVI-D-0): 2
 # HDMI (HDMI-0): 3
 
+# GTX4080 Output Numbering
+# DP-3: DPY-5
+# DP-5: DPY-7
+# DP-1: DPY-2
+# HDMI-0: DPY-0
+
 # X-Plane 11: need to activate VULKAN in Graphics Settings
 # However: With Vulkan, Cylindrical projection has limited rendering in corners
 # To have scenery only view: default_view 1 in X-Plane.prf
@@ -61,10 +67,10 @@ def LineCircleCollision(linePoint1,linePoint2,circleRadius):
 test = False
 
 # Settings
-setting = 5
+setting = 3
 
 # Graphics
-doplot = True
+doplot = False
 
 # Parameters
 d2r = math.pi/180.
@@ -73,10 +79,10 @@ r2d = 180./math.pi
 # Dimensions (in cm)
 # Please see projector_setup.pdf
 R = 169.5   # Screen Radius
-d_0 = 27.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
+d_0 = 28.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
 # Projector focal point may be behind projector lens. For me it is around 2-4 cm behind
 # as it seems. No documentation found.
-h_0 = 15.0   # lower height of image above center of lens when projected on planar screen from untilted projector
+h_0 = 12.5   # lower height of image above center of lens when projected on planar screen from untilted projector
 tr = 0.49   # Projector Throw ratio
 
 if setting == 1:
@@ -89,6 +95,7 @@ if setting == 1:
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,1.006,1.0,0.98]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
@@ -106,6 +113,7 @@ elif setting == 2:
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,1.006,1.0,0.98]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
@@ -120,9 +128,11 @@ elif setting == 3:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,5.45,0.0]         # projector tilt [deg]
+    epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,1.006,1.0,0.98]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0,287.0,234.0]
     blend_left_bot = [0.0,0.0,341.0,318.0]
@@ -140,6 +150,7 @@ elif setting == 4:
     lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0,0.0,0.0]
     blend_left_bot = [0.0,0.0,0.0,0.0]
@@ -157,6 +168,7 @@ elif setting == 5:
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
     vertical_shift = [0.0]    # vertical shift [pixel]
+    vertical_scale = [1.0]    # vertical scale [-]
     blending = [False]   # apply blending at sides
     blend_left_top = [0.0]
     blend_left_bot = [0.0]
@@ -174,6 +186,7 @@ elif setting == 6:
     lateral_offset = [0.0,0.0]  # lateral offset [deg]
     vertical_offset = [0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,1.0]    # vertical scale [-]
     blending = [False,False]   # apply blending at sides
     blend_left_top = [0.0,0.0]
     blend_left_bot = [0.0,0.0]
@@ -214,6 +227,8 @@ w_2 = R_1*math.sin(beta*d2r) # half of hypothetical planar image width at screen
 w = 2.0*w_2    # planar image width at screen distance (as if projection would be on planar scren)
 h = w / ar     # planar image height at screen distance (as if projection ... )
 
+print(w,h)
+
 # loop through monitors
 for mon in range(0,nmon,1):
 
@@ -240,7 +255,12 @@ for mon in range(0,nmon,1):
             py = float(ny) * float(gy) / float(ngy-1)
             xabs[gx,gy] = px
             yabs[gx,gy] = py
-
+   
+            # add vertical shift and scale if needed
+            ey = py * vertical_scale[mon] + vertical_shift[mon]
+            ydif[gx,gy] = ey - py
+            py = ey
+            
             # 1. Transformation from planar to cylindrical rendering
             # --> This has nothing to do with the projector orientation and mount etc.
             # --> This is needed since X-Plane renders on a plane but we need a cylindrical rendering
@@ -255,10 +275,7 @@ for mon in range(0,nmon,1):
                 # SCREEN CENTER Coordinate System
                 # BUT where x1/y1 is at x0/x0
                 # AND where z1 is at center of screen
-
-                # assign vertical tilt angle of camera (negative = down)
-                omega = vertical_offset[mon]
-                
+               
                 # Calculate horizontal position on hypothetical
                 # planar screen in distance d_1+d_0 from screen center
                 # and respective horizontal projection angle
@@ -266,21 +283,8 @@ for mon in range(0,nmon,1):
                 # Calculate Elevation of pixel on hypothetical Planar Screen
                 b = (py-0.5*float(ny))/float(ny) * h
 
-                # Vertically tilted Projection
-                if (omega != 0.0):
-                    alpha_1 = math.atan(b/(d_1+d_0))*r2d
-                    e = math.tan(omega*d2r)*(d_0+d_1)
-                    f = math.cos(omega*d2r)*(b+e)
-                    d_v = f / math.tan((omega + alpha_1)*d2r) - (d_1+d_0)
-                    #if (gx==0):
-                    #    print(str(gy) + " " +str(d_v)+" "+str(f)+" "+str(b+e))
-                else:
-                    d_v = 0.0
-
                 # Calculate horizontal view angle of pixel from screen center
-                theta = math.atan(a/(d_1+d_0+d_v))*r2d
-                #if (gx==0):
-                #    print(str(gy) + " " +str(0.5 * float(nx) * theta / gamma)+ " " +str(0.5 * float(nx) - px))
+                theta = math.atan(a/(d_1+d_0))*r2d
 
                 # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
                 xdif[gx,gy] += 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
@@ -495,9 +499,6 @@ for mon in range(0,nmon,1):
                 ydif[gx,gy] += ey - py
 
     # End loop of xy grid
-    
-    # add vertical shift if needed
-    ydif += vertical_shift[mon]
     
     # inverse x and y array for ceiling mount
     if ceiling:
