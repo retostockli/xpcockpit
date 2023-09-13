@@ -76,7 +76,7 @@ R = 169.5   # Screen Radius
 d_0 = 27.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
 # Projector focal point may be behind projector lens. For me it is around 2-4 cm behind
 # as it seems. No documentation found.
-h_0 = 10.0   # lower height of image above center of lens when projected on planar screen from untilted projector
+h_0 = 15.0   # lower height of image above center of lens when projected on planar screen from untilted projector
 tr = 0.49   # Projector Throw ratio
 
 if setting == 1:
@@ -150,7 +150,7 @@ elif setting == 4:
 elif setting == 5:
     # Testing Single Monitor
     nmon = 1  # number of monitors
-    ceiling = True  # projector ceiling mount instead of table mount
+    ceiling = False  # projector ceiling mount instead of table mount
     cylindrical = [False]  # apply flat plane to cylinder warping
     projection = [True]  # apply projection onto curved surfae
     epsilon = [5.45]         # projector tilt [deg]
@@ -342,7 +342,8 @@ for mon in range(0,nmon,1):
                 px += xdif[gx,gy]
                 py += ydif[gx,gy]
 
-            # 2. Apply Keystone Correction
+            # 2. Apply Keystone Correction === TESTING ONLY
+            # Keystone correction is directly implemented in warping below
             # image gets compressed in both horizontal and vertical dimensions with projector tilt
             # so uncompress and untrapezoid the image pixel right in the first place and place them
             # where they would be with a untilted projector
@@ -453,6 +454,8 @@ for mon in range(0,nmon,1):
                 # calculate new vertical pixel position of shifted pixel at hypothetical planar screen
                 b_1 = math.tan(alpha_1*d2r) * d_r
 
+                # print(a_1,b_1)
+                
                 if epsilon[mon] != 0.0:
                     # now calculate keystone correction: transform new coordinates on vertical
                     # hypotetical planar screen to tilted hypothetical planar screen: intersect
@@ -474,7 +477,9 @@ for mon in range(0,nmon,1):
                     
                     a_2 = cp[1]
                     b_2 = f / math.sin(epsilon[mon]*d2r)
-                    
+
+                    # print(a_2,b_2)
+                                        
                     # Apply Cylindrical Warping Correction with tilted plane
                     ex = a_2 / w * float(nx) + 0.5 * float(nx)
                     ey = (b_2 - h_0) / h * float(ny)
@@ -484,6 +489,8 @@ for mon in range(0,nmon,1):
                     ex = a_1 / w * float(nx) + 0.5 * float(nx)
                     ey = (b_1 - h_0) / h * float(ny)                                         
 
+                # print(ex,ey)
+                
                 xdif[gx,gy] += ex - px
                 ydif[gx,gy] += ey - py
 
