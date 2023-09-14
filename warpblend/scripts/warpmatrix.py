@@ -93,17 +93,17 @@ if setting == 1:
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
-    blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
-    blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
-    blend_right_top = [  0.0, 224.0, 236.0,   0.0]
-    blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
+    blend_left_top =  [  0.0,   0.0, 279.0, 282.0]
+    blend_left_bot =  [  0.0,   0.0, 192.0, 197.0]
+    blend_right_top = [  0.0, 283.0, 287.0,   0.0]
+    blend_right_bot = [  0.0, 192.0, 205.0,   0.0]
     gridtest = False # display grid test pattern
-    blendtest = True  # cut blend sharp for testing
+    blendtest = False  # cut blend sharp for testing
     forwin = True  # create for windows or for linux
 elif setting == 2:
     # Projection + Blending
@@ -112,7 +112,7 @@ elif setting == 2:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
@@ -131,7 +131,7 @@ elif setting == 3:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
@@ -150,7 +150,7 @@ elif setting == 4:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
@@ -169,7 +169,7 @@ elif setting == 5:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
@@ -587,12 +587,12 @@ for mon in range(0,nmon,1):
             con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
     else:
             con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.660000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.330000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.800000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.450000"+"\n")
             con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
             con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.660000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.330000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.800000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.450000"+"\n")
             con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
 
     if doplot:
