@@ -85,24 +85,25 @@ d_0 = 28.0   # Distance of Projector focal point from center of cylinder (positi
 h_0 = 12.5   # lower height of image above center of lens when projected on planar screen from untilted projector
 tr = 0.49   # Projector Throw ratio
 
+# vertical offset [deg] is not implemented, but could be implemented in planar to cylindrical projection
 if setting == 1:
     # Cylindrical + Projection + Blending
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    epsilon = [0.0,0.0,5.45,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
+    epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,10.0,0.0,0.0]    # vertical shift [pixel]
-    vertical_scale = [1.0,1.006,1.0,0.98]    # vertical scale [-]
-    vertical_scale = [1.0,0.98,1.0,0.965]    # vertical scale [-]
+    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
-    blend_left_top = [0.0,0.0,287.0,234.0]
-    blend_left_bot = [0.0,0.0,341.0,318.0]
-    blend_right_top = [0.0,249.0,257.0,0.0]
-    blend_right_bot = [0.0,333.0,318.0,0.0]
+    blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
+    blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
+    blend_right_top = [  0.0, 224.0, 236.0,   0.0]
+    blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
     gridtest = False # display grid test pattern
+    blendtest = True  # cut blend sharp for testing
     forwin = True  # create for windows or for linux
 elif setting == 2:
     # Projection + Blending
@@ -110,17 +111,18 @@ elif setting == 2:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    epsilon = [0.0,0.0,5.45,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
+    epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
-    vertical_scale = [1.0,1.006,1.0,0.98]    # vertical scale [-]
+    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
-    blend_left_top = [0.0,0.0,287.0,234.0]
-    blend_left_bot = [0.0,0.0,341.0,318.0]
-    blend_right_top = [0.0,249.0,257.0,0.0]
-    blend_right_bot = [0.0,333.0,318.0,0.0]
+    blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
+    blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
+    blend_right_top = [  0.0, 224.0, 236.0,   0.0]
+    blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
     gridtest = False # display grid test pattern
+    blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
 elif setting == 3:
     # Projection
@@ -128,21 +130,21 @@ elif setting == 3:
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
-    epsilon = [0.0,0.0,5.45,0.0]         # projector tilt [deg]
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
-    lateral_offset = [0.0,-64.0,0.0,63.75]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
-    vertical_scale = [1.0,1.006,1.0,0.98]    # vertical scale [-]
+    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
-    blend_left_top = [0.0,0.0,287.0,234.0]
-    blend_left_bot = [0.0,0.0,341.0,318.0]
-    blend_right_top = [0.0,249.0,257.0,0.0]
-    blend_right_bot = [0.0,333.0,318.0,0.0]
+    blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
+    blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
+    blend_right_top = [  0.0, 224.0, 236.0,   0.0]
+    blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
     gridtest = True # display grid test pattern
+    blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
 elif setting == 4:
-    # None
+    # None (use this for X-Plane when using warpblend with NVIDIA directly)
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
@@ -158,8 +160,28 @@ elif setting == 4:
     blend_right_top = [0.0,0.0,0.0,0.0]
     blend_right_bot = [0.0,0.0,0.0,0.0]
     gridtest = False # display grid test pattern
+    blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
 elif setting == 5:
+    # Only Testing Grid
+    nmon = 4  # number of monitors
+    ceiling = True  # projector ceiling mount instead of table mount
+    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
+    projection = [False,False,False,False]  # apply projection onto curved surface
+    epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
+    lateral_offset = [0.0,-68.5,0.0,68.25]  # lateral offset [deg]
+    vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
+    vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
+    blending = [False,False,False,False]   # apply blending at sides
+    blend_left_top = [0.0,0.0,0.0,0.0]
+    blend_left_bot = [0.0,0.0,0.0,0.0]
+    blend_right_top = [0.0,0.0,0.0,0.0]
+    blend_right_bot = [0.0,0.0,0.0,0.0]
+    gridtest = True # display grid test pattern
+    blendtest = False  # cut blend sharp for testing
+    forwin = False  # create for windows or for linux
+elif setting == 6:
     # Testing Single Monitor
     nmon = 1  # number of monitors
     ceiling = False  # projector ceiling mount instead of table mount
@@ -176,8 +198,9 @@ elif setting == 5:
     blend_right_top = [0.0]
     blend_right_bot = [0.0]
     gridtest = False # display grid test pattern
+    blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
-elif setting == 6:
+elif setting == 7:
     # Testing Two Monitors
     nmon = 2  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
@@ -194,6 +217,7 @@ elif setting == 6:
     blend_right_top = [0.0,0.0]
     blend_right_bot = [0.0,0.0]
     gridtest = False # display grid test pattern
+    blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
 
 # define output file
@@ -256,11 +280,6 @@ for mon in range(0,nmon,1):
             py = float(ny) * float(gy) / float(ngy-1)
             xabs[gx,gy] = px
             yabs[gx,gy] = py
-   
-            # add vertical shift and scale if needed
-            ey = py * vertical_scale[mon] + vertical_shift[mon]
-            ydif[gx,gy] = ey - py
-            py = ey
             
             # 1. Transformation from planar to cylindrical rendering
             # --> This has nothing to do with the projector orientation and mount etc.
@@ -310,6 +329,15 @@ for mon in range(0,nmon,1):
                 # update grid coordinates for keystone and projection calculation
                 px += xdif[gx,gy]
                 py += ydif[gx,gy]
+
+   
+            # 2. Add vertical shift and scale if needed
+            # This has to go after planar to cylindrical projection
+            # since that projection works in original input coordinates
+            # where horizon is centered in image
+            ey = py * vertical_scale[mon] + vertical_shift[mon]
+            ydif[gx,gy] += ey - py
+            py += ydif[gx,gy]
 
             # 2. Apply Keystone Correction === TESTING ONLY
             # Keystone correction is directly implemented in warping below
@@ -548,14 +576,24 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/1 0.000000"+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon],('.6f')))+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.660000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.330000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.660000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.330000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
+    if blendtest:
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
+    else:
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.660000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.330000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.660000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.330000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
 
     if doplot:
         plot.figure(figsize=(10,6))

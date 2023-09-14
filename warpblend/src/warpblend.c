@@ -511,12 +511,25 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
     for (y=0;y<ny;y++) {
       /* fill screen coordinate values into linear interpolation ordinate vector */
       xval[0] = 0.0;
-      xval[1] = 0.40 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-      xval[2] = 0.66 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      if (yval[2] == 0.0) {
+	/* blend test mode with hard blend at blend start */
+	xval[1] = 1.0;
+	xval[2] = 0.999 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      } else {
+	xval[1] = 0.40 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+	xval[2] = 0.66 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      }
       xval[3] = 1.00 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      
       xval[4] = (float) nx - 1.00 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-      xval[5] = (float) nx - 0.66 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-      xval[6] = (float) nx - 0.40 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+      if (yval[6] == 0.0) {
+	/* blend test mode with hard blend at blend start */
+	xval[5] = (float) nx - 0.999 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+	xval[6] = (float) nx-1;
+      } else {
+	xval[5] = (float) nx - 0.66 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+	xval[6] = (float) nx - 0.40 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+      }
       xval[7] = (float) nx;
       //      printf("%i %f %f \n",y,xval[3],xval[4]);
 
