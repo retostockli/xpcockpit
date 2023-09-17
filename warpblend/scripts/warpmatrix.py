@@ -29,7 +29,6 @@ def LinePlaneCollision(planeNormal, planePoint, rayDirection, rayPoint, epsilon=
 
 	w = rayPoint - planePoint
 	si = -planeNormal.dot(w) / ndotu
-#	Psi = w + si * rayDirection + planePoint
 	Psi = rayPoint + si * rayDirection
 	return Psi
 
@@ -67,7 +66,7 @@ def LineCircleCollision(linePoint1,linePoint2,circleRadius):
 test = False
 
 # Settings
-setting = 1
+setting = 3
 
 # Graphics
 doplot = False
@@ -95,8 +94,8 @@ if setting == 1:
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
-    vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
+    vertical_shift = [0.0,10.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,1.0,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top =  [  0.0,   0.0, 279.0, 282.0]
     blend_left_bot =  [  0.0,   0.0, 192.0, 197.0]
@@ -123,7 +122,7 @@ elif setting == 2:
     blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
-    forwin = False  # create for windows or for linux
+    forwin = True  # create for windows or for linux
 elif setting == 3:
     # Projection
     nmon = 4  # number of monitors
@@ -140,9 +139,9 @@ elif setting == 3:
     blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
     blend_right_top = [  0.0, 224.0, 236.0,   0.0]
     blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
-    gridtest = True # display grid test pattern
+    gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
-    forwin = False  # create for windows or for linux
+    forwin = True  # create for windows or for linux
 elif setting == 4:
     # None (use this for X-Plane when using warpblend with NVIDIA directly)
     nmon = 4  # number of monitors
