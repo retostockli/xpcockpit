@@ -69,7 +69,7 @@ test = False
 setting = 6
 
 # Graphics
-doplot = True
+doplot = False
 
 # Parameters
 d2r = math.pi/180.
@@ -258,7 +258,8 @@ for mon in range(0,nmon,1):
 
     # calculate FOV of monitor
     FOVx = 2.0*gamma
-    FOVy = 2.0*math.atan(0.5*h/(d_1+d_0))*r2d
+#    FOVy = 2.0*math.atan(0.5*h/(d_1+d_0))*r2d
+    FOVy = 2.0*math.atan(0.5*h/R)*r2d
 
     ## reset projection grid
     xabs = np.zeros((ngx, ngy))
