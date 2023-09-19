@@ -66,10 +66,10 @@ def LineCircleCollision(linePoint1,linePoint2,circleRadius):
 test = False
 
 # Settings
-setting = 3
+setting = 6
 
 # Graphics
-doplot = False
+doplot = True
 
 # Parameters
 d2r = math.pi/180.
@@ -184,9 +184,9 @@ elif setting == 6:
     # Testing Single Monitor
     nmon = 1  # number of monitors
     ceiling = False  # projector ceiling mount instead of table mount
-    cylindrical = [False]  # apply flat plane to cylinder warping
-    projection = [True]  # apply projection onto curved surfae
-    epsilon = [5.45]         # projector tilt [deg]
+    cylindrical = [True]  # apply flat plane to cylinder warping
+    projection = [False]  # apply projection onto curved surfae
+    epsilon = [0.0]         # projector tilt [deg]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
     vertical_shift = [0.0]    # vertical shift [pixel]
@@ -271,8 +271,8 @@ for mon in range(0,nmon,1):
     # grid horizontal: gx from left to right
     for gy in range(0,ngy,1):
         for gx in range(0,ngx,1):
-#    for gy in range(0,1,1):
-#        for gx in range(50,51,1):
+#    for gy in range(0,ngy,1):
+#        for gx in range(20,21,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             px = float(nx) * float(gx) / float(ngx-1)
@@ -302,29 +302,54 @@ for mon in range(0,nmon,1):
                 # Calculate Elevation of pixel on hypothetical Planar Screen
                 b = (py-0.5*float(ny))/float(ny) * h
 
-                # Calculate horizontal view angle of pixel from screen center
-                theta = math.atan(a/(d_1+d_0))*r2d
-
-                # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
-                xdif[gx,gy] += 0.5 * float(nx) * theta / gamma + 0.5 * float(nx) - px
-
-                # Calculate intersection of projected line with the cylindrical screen
-                linePoint1 = np.array([0.0,0.0])
-                linePoint2 = np.array([d_0+d_1,a])
-                circleRadius = R
-                col = LineCircleCollision(linePoint1,linePoint2,circleRadius)
-                x_c = col[0]
-                y_c = col[1]
-
-                # Calculate Elevation angle of pixel (relative to screen center height)
-                d_r = math.sqrt(math.pow(d_0+d_1,2.0)+math.pow(a,2.0))
-                alpha = math.atan(b/d_r)*r2d
-                # Calculate Elevation of pixel at cylinder
-                z_c = math.tan(alpha*d2r) * R
-
-                # New Y position in Cylindrical coordinates
-                ydif[gx,gy] += float(ny) * z_c / h + 0.5 * float(ny) - py
-        
+                if test:
+                        #f = R
+                        f = d_0 + d_1
+                        
+                        # Calculate horizontal view angle of pixel from screen center
+                        theta = math.atan(a/f)*r2d
+                        theta_max = math.atan(w_2/f)*r2d
+                        
+                        a_1 = theta / theta_max * w_2
+                        b_1 = b * R / math.sqrt(a*a + R*R)
+                        
+                        ex = a_1 * float(nx) / w + 0.5*float(nx)
+                        ey = b_1 * float(ny) / h + 0.5*float(ny)
+                        
+                        xdif[gx,gy] = ex - px
+                        ydif[gx,gy] = ey - py
+                        
+                else:
+                        # focal length (distance of image plane from center of cylinder
+                        f = R
+                        #f = d_0 + d_1
+                        
+                        # Calculate horizontal view angle of pixel from screen center
+                        theta = math.atan(a/f)*r2d
+                        theta_max = math.atan(w_2/f)*r2d
+                        
+                        # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
+                        xdif[gx,gy] += 0.5 * float(nx) * theta / theta_max + 0.5 * float(nx) - px
+                        
+                        # Calculate intersection of projected line with the cylindrical screen
+                        linePoint1 = np.array([0.0,0.0])
+                        linePoint2 = np.array([f,a])
+                        circleRadius = R
+                        col = LineCircleCollision(linePoint1,linePoint2,circleRadius)
+                        x_c = col[0]
+                        y_c = col[1]
+                        
+                        # Calculate Elevation angle of pixel (relative to screen center height)
+                        d_r = math.sqrt(math.pow(f,2.0)+math.pow(a,2.0))
+                        alpha = math.atan(b/d_r)*r2d
+                        # Calculate Elevation of pixel at cylinder
+                        z_c = math.tan(alpha*d2r) * R
+                        
+                        # New Y position in Cylindrical coordinates
+                        ydif[gx,gy] += float(ny) * z_c / h + 0.5 * float(ny) - py
+                       
+                        #print(gx,gy,blax,xdif[gx,gy],blay,ydif[gx,gy])
+         
                 # update grid coordinates for keystone and projection calculation
                 px += xdif[gx,gy]
                 py += ydif[gx,gy]
@@ -343,7 +368,7 @@ for mon in range(0,nmon,1):
             # image gets compressed in both horizontal and vertical dimensions with projector tilt
             # so uncompress and untrapezoid the image pixel right in the first place and place them
             # where they would be with a untilted projector
-            if (epsilon[mon] != 0.0) and test:
+            if (epsilon[mon] != 0.0) and False:
               
                 # minimum elevation angle at h_0
                 alpha_h = math.atan(h_0/d_1)*r2d 
@@ -595,7 +620,7 @@ for mon in range(0,nmon,1):
             con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
 
     if doplot:
-        plot.figure(figsize=(10,6))
+        plot.figure(figsize=(16,10))
         plot.scatter(xabs+xdif,yabs+ydif,color="red",marker=".")
         plot.show()
 
