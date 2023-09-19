@@ -63,10 +63,10 @@ def LineCircleCollision(linePoint1,linePoint2,circleRadius):
 
     
 # Testing a function
-test = False
+test = True
 
 # Settings
-setting = 6
+setting = 1
 
 # Graphics
 doplot = False
@@ -94,8 +94,8 @@ if setting == 1:
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,10.0,0.0,7.0]    # vertical shift [pixel]
-    vertical_scale = [1.0,1.0,1.0,0.970]    # vertical scale [-]
+    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top =  [  0.0,   0.0, 279.0, 282.0]
     blend_left_bot =  [  0.0,   0.0, 192.0, 197.0]
@@ -258,8 +258,8 @@ for mon in range(0,nmon,1):
 
     # calculate FOV of monitor
     FOVx = 2.0*gamma
-#    FOVy = 2.0*math.atan(0.5*h/(d_1+d_0))*r2d
-    FOVy = 2.0*math.atan(0.5*h/R)*r2d
+    FOVy = 2.0*math.atan(0.5*h/(d_1+d_0))*r2d
+#    FOVy = 2.0*math.atan(0.5*h/R)*r2d
 
     ## reset projection grid
     xabs = np.zeros((ngx, ngy))
@@ -270,10 +270,10 @@ for mon in range(0,nmon,1):
     # loop through grid
     # grid vertical: gy goes from bottom to top
     # grid horizontal: gx from left to right
-    for gy in range(0,ngy,1):
-        for gx in range(0,ngx,1):
 #    for gy in range(0,ngy,1):
-#        for gx in range(20,21,1):
+#        for gx in range(0,ngx,1):
+    for gy in range(0,1,1):
+        for gx in range(0,1,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             px = float(nx) * float(gx) / float(ngx-1)
@@ -304,26 +304,31 @@ for mon in range(0,nmon,1):
                 b = (py-0.5*float(ny))/float(ny) * h
 
                 if test:
+                        # simple calculation where plane is tangent to cylinder
                         #f = R
                         f = d_0 + d_1
+                        #f = 1.1*(d_0 + d_1)
                         
                         # Calculate horizontal view angle of pixel from screen center
                         theta = math.atan(a/f)*r2d
                         theta_max = math.atan(w_2/f)*r2d
                         
                         a_1 = theta / theta_max * w_2
-                        b_1 = b * R / math.sqrt(a*a + R*R)
+                        b_1 = b * f / math.sqrt(a*a + f*f)
+
+                        print(gy,b_1/b,2*theta_max)
                         
                         ex = a_1 * float(nx) / w + 0.5*float(nx)
                         ey = b_1 * float(ny) / h + 0.5*float(ny)
                         
-                        xdif[gx,gy] = ex - px
-                        ydif[gx,gy] = ey - py
+                        xdif[gx,gy] += ex - px
+                        ydif[gx,gy] += ey - py
                         
                 else:
+                        # Calculation where plane is not tangent of cylinder
                         # focal length (distance of image plane from center of cylinder
-                        f = R
-                        #f = d_0 + d_1
+                        #f = R
+                        f = d_0 + d_1
                         
                         # Calculate horizontal view angle of pixel from screen center
                         theta = math.atan(a/f)*r2d
@@ -349,7 +354,7 @@ for mon in range(0,nmon,1):
                         # New Y position in Cylindrical coordinates
                         ydif[gx,gy] += float(ny) * z_c / h + 0.5 * float(ny) - py
                        
-                        #print(gx,gy,blax,xdif[gx,gy],blay,ydif[gx,gy])
+                        #print(gx,gy,xdif[gx,gy],ydif[gx,gy])
          
                 # update grid coordinates for keystone and projection calculation
                 px += xdif[gx,gy]
@@ -417,7 +422,7 @@ for mon in range(0,nmon,1):
             # onto a cylindrical screen. This is needed since the projector image is only ok
             # on a flat screen. We need to squeeze it onto a cylinder.
             # Please see projection_geometry.pdf
-            if projection[mon] and not test:
+            if projection[mon]:
 
                 # INPUT IS IN CYLINDRICAL COORDINATES ALREADY
                 # SO X IS in degrees and Y is in height
@@ -556,7 +561,7 @@ for mon in range(0,nmon,1):
     if cylindrical[mon]:
         con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")
     else:
-        con.write("monitor/"+str(mon)+"/proj/diff_FOV 0"+"\n")    
+        con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")    
     con.write("monitor/"+str(mon)+"/proj/FOVx_renopt "+str(format(FOVx,('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/FOVy_renopt "+str(format(FOVy,('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/os_x_rat 0.000000"+"\n")
