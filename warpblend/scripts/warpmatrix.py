@@ -66,7 +66,7 @@ def LineCircleCollision(linePoint1,linePoint2,circleRadius):
 test = True
 
 # Settings
-setting = 1
+setting = 6
 
 # Graphics
 doplot = False
@@ -246,10 +246,11 @@ delta = math.asin(d_0/R*math.sin(beta1*d2r))*r2d  # same here
 gamma = 180.-beta1-delta  # Maximum horizontal FOV from Screen Center [deg]
 R_1 = R*math.sin(gamma*d2r)/math.sin(beta1*d2r) # Maximum Distance of Projector to screen edge
 d_1 = R_1*math.cos(beta*d2r) # distance of projector to hypothetical planar screen in front of cylindrical screen
-w_2 = R_1*math.sin(beta*d2r) # half of hypothetical planar image width at screen distance
+w_h = R_1*math.sin(beta*d2r) # half of hypothetical planar image width at screen distance
 
-w = 2.0*w_2    # planar image width at screen distance (as if projection would be on planar scren)
+w = 2.0*w_h    # planar image width at screen distance (as if projection would be on planar scren)
 h = w / ar     # planar image height at screen distance (as if projection ... )
+h_h = 0.5 * h
 
 print(w,h)
 
@@ -258,9 +259,31 @@ for mon in range(0,nmon,1):
 
     # calculate FOV of monitor
     FOVx = 2.0*gamma
-    FOVy = 2.0*math.atan(0.5*h/(d_1+d_0))*r2d
-#    FOVy = 2.0*math.atan(0.5*h/R)*r2d
+    # FOVx = 60.0
+    
+    # if cylindrical[mon]:
+            
+    # calculate larger FOVy for planar to cylindrical transformation
+    # need this also for the no projection file for X-Plane
+    f = w_h / math.tan(0.5*FOVx*d2r)
+    FOVy = 2.0*math.atan(h_h/f)*r2d
+    
+    d_r = math.sqrt(math.pow(f,2.0)+math.pow(w_h,2.0))
+    omega = math.atan(h_h/d_r)*r2d
+    omega_1 = FOVy/2.0
+    
+    FOVy_1 = FOVy * omega_1 / omega
+    
+    d_r = math.sqrt(math.pow(f,2.0)+math.pow(w_h,2.0))
+    h_1 = math.tan(omega_1*d2r) * d_r
+    
+#    print(FOVy,FOVy_1,FOVy_1/FOVy,h_h,h_1)
 
+    # else:
+    # regular FOVy proportional to FOVx through screen dimensions
+    # FOVy = 2.0*math.atan(0.5*h/(d_1+d_0))*r2d
+
+            
     ## reset projection grid
     xabs = np.zeros((ngx, ngy))
     yabs = np.zeros((ngx, ngy))
@@ -270,10 +293,10 @@ for mon in range(0,nmon,1):
     # loop through grid
     # grid vertical: gy goes from bottom to top
     # grid horizontal: gx from left to right
-#    for gy in range(0,ngy,1):
-#        for gx in range(0,ngx,1):
-    for gy in range(0,1,1):
-        for gx in range(0,1,1):
+    for gy in range(0,ngy,1):
+        for gx in range(0,ngx,1):
+#    for gy in range(0,1,1):
+#        for gx in range(0,1,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             px = float(nx) * float(gx) / float(ngx-1)
@@ -295,7 +318,7 @@ for mon in range(0,nmon,1):
                 # SCREEN CENTER Coordinate System
                 # BUT where x1/y1 is at x0/x0
                 # AND where z1 is at center of screen
-               
+                    
                 # Calculate horizontal position on hypothetical
                 # planar screen in distance d_1+d_0 from screen center
                 # and respective horizontal projection angle
@@ -306,20 +329,20 @@ for mon in range(0,nmon,1):
                 if test:
                         # simple calculation where plane is tangent to cylinder
                         #f = R
-                        f = d_0 + d_1
-                        #f = 1.1*(d_0 + d_1)
+                        #f = d_0 + d_1
+                        f = w_h / math.tan(0.5*FOVx*d2r)
                         
                         # Calculate horizontal view angle of pixel from screen center
                         theta = math.atan(a/f)*r2d
-                        theta_max = math.atan(w_2/f)*r2d
+                        theta_max = math.atan(w_h/f)*r2d
                         
-                        a_1 = theta / theta_max * w_2
+                        a_1 = theta / theta_max * w_h
                         b_1 = b * f / math.sqrt(a*a + f*f)
-
-                        print(gy,b_1/b,2*theta_max)
-                        
+                       
                         ex = a_1 * float(nx) / w + 0.5*float(nx)
                         ey = b_1 * float(ny) / h + 0.5*float(ny)
+
+#                        print(px,ex,py,ey)
                         
                         xdif[gx,gy] += ex - px
                         ydif[gx,gy] += ey - py
@@ -328,11 +351,12 @@ for mon in range(0,nmon,1):
                         # Calculation where plane is not tangent of cylinder
                         # focal length (distance of image plane from center of cylinder
                         #f = R
-                        f = d_0 + d_1
+                        #f = d_0 + d_1
+                        f = w_h / math.tan(0.5*FOVx*d2r)
                         
                         # Calculate horizontal view angle of pixel from screen center
                         theta = math.atan(a/f)*r2d
-                        theta_max = math.atan(w_2/f)*r2d
+                        theta_max = math.atan(w_h/f)*r2d
                         
                         # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
                         xdif[gx,gy] += 0.5 * float(nx) * theta / theta_max + 0.5 * float(nx) - px
@@ -446,7 +470,7 @@ for mon in range(0,nmon,1):
                 theta = math.atan(a/d_1)*r2d
                 # Calculate horizontal view angle for pixel from screen center
                 # assuming input from projector is in degrees FOVx
-                psi = a / w_2 * gamma
+                psi = a / w_h * gamma
 
                 # Calculate intersection of projected line with the cylindrical screen
                 linePoint1 = np.array([0.0,0.0])
