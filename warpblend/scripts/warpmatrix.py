@@ -273,15 +273,22 @@ for mon in range(0,nmon,1):
     omega_1 = FOVy/2.0
     
     FOVy_1 = FOVy * omega_1 / omega
+    print(FOVy,FOVy_1,FOVy_1/FOVy)
+
+#    FOVy = FOVy_1
     
     d_r = math.sqrt(math.pow(f,2.0)+math.pow(w_h,2.0))
     h_1 = math.tan(omega_1*d2r) * d_r
+
+    FOVy_1 = 2.0*math.atan(h_1/f)*r2d
+
+    FOVy = 57.5
     
-#    print(FOVy,FOVy_1,FOVy_1/FOVy,h_h,h_1)
+    print(FOVy,FOVy_1,FOVy_1/FOVy)
 
     # else:
     # regular FOVy proportional to FOVx through screen dimensions
-    # FOVy = 2.0*math.atan(0.5*h/(d_1+d_0))*r2d
+    # FOVy = 2.0*math.atan(h_h/(d_1+d_0))*r2d
 
             
     ## reset projection grid
@@ -330,7 +337,7 @@ for mon in range(0,nmon,1):
                         # simple calculation where plane is tangent to cylinder
                         #f = R
                         #f = d_0 + d_1
-                        f = w_h / math.tan(0.5*FOVx*d2r)
+                        f = w_h / math.tan(0.5*FOVx*d2r) #*1.15
                         
                         # Calculate horizontal view angle of pixel from screen center
                         theta = math.atan(a/f)*r2d
@@ -342,7 +349,7 @@ for mon in range(0,nmon,1):
                         ex = a_1 * float(nx) / w + 0.5*float(nx)
                         ey = b_1 * float(ny) / h + 0.5*float(ny)
 
-#                        print(px,ex,py,ey)
+                        #print(px,ex,py,ey)
                         
                         xdif[gx,gy] += ex - px
                         ydif[gx,gy] += ey - py
@@ -350,9 +357,9 @@ for mon in range(0,nmon,1):
                 else:
                         # Calculation where plane is not tangent of cylinder
                         # focal length (distance of image plane from center of cylinder
-                        #f = R
+                        f = R
                         #f = d_0 + d_1
-                        f = w_h / math.tan(0.5*FOVx*d2r)
+                        #f = w_h / math.tan(0.5*FOVx*d2r)
                         
                         # Calculate horizontal view angle of pixel from screen center
                         theta = math.atan(a/f)*r2d
@@ -383,8 +390,7 @@ for mon in range(0,nmon,1):
                 # update grid coordinates for keystone and projection calculation
                 px += xdif[gx,gy]
                 py += ydif[gx,gy]
-
-   
+  
             # 2. Add vertical shift and scale if needed
             # This has to go after planar to cylindrical projection
             # since that projection works in original input coordinates
