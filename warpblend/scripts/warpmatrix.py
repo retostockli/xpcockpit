@@ -61,7 +61,117 @@ def LineCircleCollision(linePoint1,linePoint2,circleRadius):
 
     return np.array([x_c,y_c])
 
-    
+def Extrap(xmin,ymin,xmax,ymax,x):
+
+        return (x - xmin) / (xmax - xmin) * (ymax - ymin) + ymin
+
+
+def PanoramaProj_inverse(thetaphi,FOVx,FOVy,vert_stretch):
+        # Formulas gracefully provided by Austin Meyer of X-Plane
+        # X-Plane Panorama Projection Inverse function: input is in normalized degrees horizontal
+        # and vertical from -1 to +1 and output is in normalized screen coordinates from -1 to 1
+        
+        fovratx = math.tan(0.5 * FOVx * d2r)
+        fovraty = math.tan(0.5 * FOVy * d2r)
+	# These are the angle limits that we WANT to see on screen at the borders of our screen.
+        max_theta = math.atan(fovratx)*r2d
+        max_psi = math.atan(fovraty)*r2d
+
+        # print(max_theta,max_psi)
+        
+	# Figure out the ray angle we are trying to "look through" for this pixel
+	# in our panorama projection - it's a straight LINEAR mapping of
+	# screen space to degrees in BOTH angles!
+        theta_rad_cylinder = Extrap(-1,-max_theta , 1, max_theta , thetaphi[0]) * d2r
+        psi_tan_cylinder = Extrap(-1,-fovraty , 1, fovraty , thetaphi[1])
+
+        # CYLINDRICAL RENDERING:
+        psi_rad_cylinder = math.atan(psi_tan_cylinder)
+
+        # SPHERICAL RENDERING
+        # psi_rad_cylinder = Extrap(-1,-max_psi , 1, max_psi , thetaphi[1]) * d2r
+
+        # print(theta_rad_cylinder,psi_rad_cylinder)
+        
+	# Now here's how we "back project" from panorama to planar projection: in planar projection
+	# you can think of the X and Y coordinates on screen
+        # (in normalized ratios from -fov-rat to fov-rat)
+	# to be in "tangent" space.
+	# So we can take our look vector, divide out Z (which is always the divisor
+        # of the two right triangles
+	# in eye space) and we get a pair of tangent ratios.
+        vec = np.zeros(3)
+        vec[0] = math.cos(psi_rad_cylinder) * math.sin(theta_rad_cylinder)
+        vec[1] = math.sin(psi_rad_cylinder)
+        vec[2] = math.cos(psi_rad_cylinder) * math.cos(theta_rad_cylinder)
+
+        # print(vec)
+        
+	# This is the tangent ratios that match our desired look vector (which was computed from degrees
+	# since the destination screen is mapped in degrees.)
+	# Since a planar projection is distributed IN tangent ratios,
+        # we can just do a linear lookup and we are done.
+        xy = np.zeros(2)
+        xy[0] = Extrap(-fovratx,-1 , fovratx,1 , vec[0]/vec[2])
+        xy[1] = Extrap(-fovraty,-1 , fovraty,1 , vec[1]/vec[2]) * vert_stretch
+
+        return xy
+
+def PanoramaProj_forward(xy,FOVx,FOVy,vert_stretch):
+        # Formulas gracefully provided by Austin Meyer of X-Plane
+        # X-Plane Panorama Projection forward function: input is in normalized screen coordinates
+        # from -1 to 1 and output normalized degrees horizontal and vertical from -1 to +1
+
+        fovratx = math.tan(0.5 * FOVx * d2r)
+        fovraty = math.tan(0.5 * FOVy * d2r)
+	# These are the angle limits that we WANT to see on screen at the borders of our screen.
+        max_theta = math.atan(fovratx)*r2d
+        max_psi = math.atan(fovraty)*r2d
+
+        # print(max_theta,max_psi)
+        
+	# Figure out the ray angle we are trying to "look through" for this pixel
+	# in our panorama projection - it's a straight LINEAR mapping of
+	# screen space to degrees in BOTH angles!
+        x_tan_cylinder = Extrap(-1,-fovratx , 1, fovratx , xy[0])
+        theta_rad_cylinder = math.atan(x_tan_cylinder)
+        y_tan_cylinder = Extrap(-1,-fovraty , 1, fovraty , xy[1]/vert_stretch)
+        psi_rad_cylinder = math.atan(y_tan_cylinder / math.sqrt(x_tan_cylinder*x_tan_cylinder + 1))
+
+        # print(theta_rad_cylinder,psi_rad_cylinder)
+        
+	# Now here's how we "back project" from panorama to planar projection: in planar projection
+	# you can think of the X and Y coordinates on screen
+        # (in normalized ratios from -fov-rat to fov-rat)
+	# to be in "tangent" space.
+	# So we can take our look vector, divide out Z (which is always the divisor
+        # of the two right triangles
+	# in eye space) and we get a pair of tangent ratios.
+        vec = np.zeros(3)
+        vec[0] = math.cos(psi_rad_cylinder) * math.sin(theta_rad_cylinder)
+        vec[1] = math.sin(psi_rad_cylinder)
+        vec[2] = math.cos(psi_rad_cylinder) * math.cos(theta_rad_cylinder)
+
+        # print(vec)
+        
+	# This is the tangent ratios that match our desired look vector (which was computed from degrees
+	# since the destination screen is mapped in degrees.)
+	# Since a planar projection is distributed IN tangent ratios,
+        # we can just do a linear lookup and we are done.
+        thetaphi = np.zeros(2)
+        thetaphi[0] = Extrap(-max_theta,-1 , max_theta,1 , theta_rad_cylinder * r2d)
+
+        # CYLINDRICAL RENDERING:
+        thetaphi[1] = Extrap(-fovraty,-1 , fovraty,1 , math.tan(psi_rad_cylinder))
+
+        # SPHERICAL RENDERING:
+        # thetaphi[1] = Extrap(-max_psi,-1 , max_psi,1 , psi_rad_cylinder * r2d) 
+
+        return thetaphi
+
+
+# --------- START OF MAIN CODE ------------
+
 # Testing a function
 test = True
 
@@ -259,7 +369,7 @@ for mon in range(0,nmon,1):
 
     # calculate FOV of monitor
     FOVx = 2.0*gamma
-    # FOVx = 60.0
+    FOVx = 80.0
     
     # if cylindrical[mon]:
             
@@ -267,13 +377,14 @@ for mon in range(0,nmon,1):
     # need this also for the no projection file for X-Plane
     f = w_h / math.tan(0.5*FOVx*d2r)
     FOVy = 2.0*math.atan(h_h/f)*r2d
+
+#    print(FOVx,FOVy)
     
     d_r = math.sqrt(math.pow(f,2.0)+math.pow(w_h,2.0))
     omega = math.atan(h_h/d_r)*r2d
     omega_1 = FOVy/2.0
     
     FOVy_1 = FOVy * omega_1 / omega
-    print(FOVy,FOVy_1,FOVy_1/FOVy)
 
 #    FOVy = FOVy_1
     
@@ -282,15 +393,45 @@ for mon in range(0,nmon,1):
 
     FOVy_1 = 2.0*math.atan(h_1/f)*r2d
 
-    FOVy = 57.5
-    
-    print(FOVy,FOVy_1,FOVy_1/FOVy)
 
     # else:
     # regular FOVy proportional to FOVx through screen dimensions
     # FOVy = 2.0*math.atan(h_h/(d_1+d_0))*r2d
 
-            
+    # THE SQUARES DON'T SEEM QUITE... SQUARE. THIS JUST APPLIES A LITTLE CORRECTION FACTOR TO MAKE THEM SQUARE. 
+    in_bl = [ -0.001, -0.001 ]
+    in_br = [  0.001, -0.001 ]
+    in_tl = [ -0.001,  0.001 ]
+    in_tr = [  0.001,  0.001 ]
+    
+    out_bl = PanoramaProj_inverse(in_bl,FOVx,FOVy,1.0);
+    out_br = PanoramaProj_inverse(in_br,FOVx,FOVy,1.0);
+    out_tl = PanoramaProj_inverse(in_tl,FOVx,FOVy,1.0);
+    out_tr = PanoramaProj_inverse(in_tr,FOVx,FOVy,1.0);
+    
+    dx = (out_tr[0]-out_tl[0]) + (out_br[0]-out_bl[0]);
+    dy = (out_tr[1]-out_br[1]) + (out_tl[1]-out_bl[1]);
+    
+    vert_stretch = dx / dy
+
+    print("Vert Stretch: ",vert_stretch)
+
+    # Vert Stretch corrects for flatteing of the image due to the
+    # cylindrical projection. Now we want to increase FOV to fill the
+    # whole screen at the edges after planar to cylindricl projection
+    # so calculate a new FOV and stetch y axis even more
+
+    xy = np.zeros(2)
+    xy[0] = 1.0
+    xy[1] = 1.0
+    thetaphi = PanoramaProj_forward(xy,FOVx,FOVy,vert_stretch)
+    print(thetaphi)
+    
+    FOVy_1 = 2.0 * math.atan(math.tan(0.5 * FOVy * d2r) / vert_stretch) * r2d
+    FOVy = FOVy_1
+
+    print(FOVy,FOVy_1)
+    
     ## reset projection grid
     xabs = np.zeros((ngx, ngy))
     yabs = np.zeros((ngx, ngy))
@@ -300,10 +441,10 @@ for mon in range(0,nmon,1):
     # loop through grid
     # grid vertical: gy goes from bottom to top
     # grid horizontal: gx from left to right
-    for gy in range(0,ngy,1):
-        for gx in range(0,ngx,1):
-#    for gy in range(0,1,1):
-#        for gx in range(0,1,1):
+#    for gy in range(0,ngy,1):
+#        for gx in range(0,ngx,1):
+    for gy in range(0,1,1):
+        for gx in range(0,1,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             px = float(nx) * float(gx) / float(ngx-1)
@@ -331,61 +472,25 @@ for mon in range(0,nmon,1):
                 # and respective horizontal projection angle
                 a = w * (px - 0.5 * float(nx)) / float(nx)
                 # Calculate Elevation of pixel on hypothetical Planar Screen
-                b = (py-0.5*float(ny))/float(ny) * h
+                b = h * (py - 0.5 * float(ny)) / float(ny)
+               
+                xy = np.zeros(2)
+                xy[0] = 2.0 * (px - 0.5 * float(nx)) / float(nx)
+                xy[1] = 2.0 * (py - 0.5 * float(ny)) / float(ny)
+                
+                thetaphi = PanoramaProj_forward(xy,FOVx,FOVy,vert_stretch)
 
-                if test:
-                        # simple calculation where plane is tangent to cylinder
-                        #f = R
-                        #f = d_0 + d_1
-                        f = w_h / math.tan(0.5*FOVx*d2r) #*1.15
-                        
-                        # Calculate horizontal view angle of pixel from screen center
-                        theta = math.atan(a/f)*r2d
-                        theta_max = math.atan(w_h/f)*r2d
-                        
-                        a_1 = theta / theta_max * w_h
-                        b_1 = b * f / math.sqrt(a*a + f*f)
-                       
-                        ex = a_1 * float(nx) / w + 0.5*float(nx)
-                        ey = b_1 * float(ny) / h + 0.5*float(ny)
-
-                        #print(px,ex,py,ey)
-                        
-                        xdif[gx,gy] += ex - px
-                        ydif[gx,gy] += ey - py
-                        
-                else:
-                        # Calculation where plane is not tangent of cylinder
-                        # focal length (distance of image plane from center of cylinder
-                        f = R
-                        #f = d_0 + d_1
-                        #f = w_h / math.tan(0.5*FOVx*d2r)
-                        
-                        # Calculate horizontal view angle of pixel from screen center
-                        theta = math.atan(a/f)*r2d
-                        theta_max = math.atan(w_h/f)*r2d
-                        
-                        # New X position in Cylindrical coordinates (nx is distributed over width 2*gamma)
-                        xdif[gx,gy] += 0.5 * float(nx) * theta / theta_max + 0.5 * float(nx) - px
-                        
-                        # Calculate intersection of projected line with the cylindrical screen
-                        linePoint1 = np.array([0.0,0.0])
-                        linePoint2 = np.array([f,a])
-                        circleRadius = R
-                        col = LineCircleCollision(linePoint1,linePoint2,circleRadius)
-                        x_c = col[0]
-                        y_c = col[1]
-                        
-                        # Calculate Elevation angle of pixel (relative to screen center height)
-                        d_r = math.sqrt(math.pow(f,2.0)+math.pow(a,2.0))
-                        alpha = math.atan(b/d_r)*r2d
-                        # Calculate Elevation of pixel at cylinder
-                        z_c = math.tan(alpha*d2r) * R
-                        
-                        # New Y position in Cylindrical coordinates
-                        ydif[gx,gy] += float(ny) * z_c / h + 0.5 * float(ny) - py
-                       
-                        #print(gx,gy,xdif[gx,gy],ydif[gx,gy])
+                thetaphi[1] *= 1./0.76604
+                
+                #print(thetaphi)
+                
+                ex = 0.5 * thetaphi[0] * float(nx) + 0.5*float(nx)
+                ey = 0.5 * thetaphi[1] * float(ny) + 0.5*float(ny)
+                
+                #print(px,py,ex,ey)
+                
+                xdif[gx,gy] += ex - px
+                ydif[gx,gy] += ey - py
          
                 # update grid coordinates for keystone and projection calculation
                 px += xdif[gx,gy]
@@ -395,59 +500,11 @@ for mon in range(0,nmon,1):
             # This has to go after planar to cylindrical projection
             # since that projection works in original input coordinates
             # where horizon is centered in image
-            ey = py * vertical_scale[mon] + vertical_shift[mon]
-            ydif[gx,gy] += ey - py
-            py += ydif[gx,gy]
-
-            # 2. Apply Keystone Correction === TESTING ONLY
-            # Keystone correction is directly implemented in warping below
-            # image gets compressed in both horizontal and vertical dimensions with projector tilt
-            # so uncompress and untrapezoid the image pixel right in the first place and place them
-            # where they would be with a untilted projector
-            if (epsilon[mon] != 0.0) and False:
-              
-                # minimum elevation angle at h_0
-                alpha_h = math.atan(h_0/d_1)*r2d 
-                # new minimum height of projected tilted image onto vertical plane
-                # equal h_0 without tilt epsilon
-                h_1 = math.tan((alpha_h - epsilon[mon])*d2r)*d_1 
- 
-                # Calculate horizontal position on hypothetical
-                # planar screen in distance d_1 from projector
-                # and respective horizontal projection angle
-                a = w * (px - 0.5 * float(nx)) / float(nx)
-                # Calculate elevation of pixel at hypothetical planar screen
-                b = h_1 + py/float(ny) * h                
-
-                # now calculate keystone correction: transform new coordinates on vertical
-                # hypotetical planar screen to tilted hypothetical planar screen: intersect
-                # projector ray with tilted plane
-                #Define plane
-                e = math.cos(epsilon[mon]*d2r)*d_1
-                planeNormal = np.array([-e, 0.0, math.sin(epsilon[mon]*d2r)*d_1])
-                planePoint = np.array([e+d_0, 0.0, -math.sin(epsilon[mon]*d2r)*d_1]) # Any point on the plane
-
-                #Define ray
-                rayDirection = np.array([d_1, a, b])
-                rayPoint = np.array([d_0, 0.0, 0.0]) # Any point along the ray
-                
-                cp = LinePlaneCollision(planeNormal, planePoint, rayDirection, rayPoint)
-#                print ("intersection at",d_0+d_1,a,b,cp[0],cp[1],cp[2])
-
-                # transform intersection to tilted plane coordinates
-                # Calculate distance difference of projector line from vertical hypothetical planar screen
-                f = cp[0] - e - d_0
-
-                a_1 = cp[1]
-                b_1 = f / math.sin(epsilon[mon]*d2r)
-
-                # Apply Cylindrical Warping Correction
-                ex = a_1 / w * float(nx) + 0.5 * float(nx)
-                ey = (b_1 - h_0) / h * float(ny) 
-
-                xdif[gx,gy] += ex - px
+            if (vertical_scale[mon] != 0.0) or (vertical_shift[mon] != 0.0):
+                ey = py * vertical_scale[mon] + vertical_shift[mon]
                 ydif[gx,gy] += ey - py
-                                
+                py += ydif[gx,gy]
+                               
             # 3. Warping the planar projection of a regular table or ceiling mounted projector
             # onto a cylindrical screen. This is needed since the projector image is only ok
             # on a flat screen. We need to squeeze it onto a cylinder.
@@ -470,7 +527,7 @@ for mon in range(0,nmon,1):
                 # and respective horizontal projection angle
                 a = w * (px - 0.5 * float(nx)) / float(nx)
                 # Calculate elevation of pixel at hypothetical planar screen
-                b = h_1 + py/float(ny) * h
+                b = h_1 + py / float(ny) * h
                    
                 # Calculate horizontal view angle for pixel from projector
                 theta = math.atan(a/d_1)*r2d
