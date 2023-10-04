@@ -1,14 +1,13 @@
-# GTX970 Output Numbering
-# DVI0 (DVI-I-1): 0
-# HDMI/HP (DP-1): 1
-# DVI1 (DVI-D-0): 2
-# HDMI (HDMI-0): 3
+# This code will generate a X-Plane Warp and Blend Preferenec file by specifying
+# projector and screen geometric boundary conditions.
+# The Preference file can then be used in X-Plane directly to drive X-Plane's internal
+# Warping Code. It can also be used to drive the NVIDIA native warping and blending
+# API found in the src/ directory. The latter comes with no FPS loss and runs fully on the GPU
+# while X-Plane's warping and blending uses a substantial amount of CPU. So if you're CPU limited
+# in X-Plane, you might want to try the native NVIDIA warping and blending.
 
-# GTX4080 Output Numbering
-# DP-3: DPY-5
-# DP-5: DPY-7
-# DP-1: DPY-2
-# HDMI-0: DPY-0
+# NOTE: The NVIDIA Warping and Blending presented here is only implemented on Linux so far.
+# It also exists on Windows, so please feel free to port the code in src/ to Windows.
 
 # View Settings in X-Plane:
 # To have scenery only view: default_view 1 in X-Plane.prf
@@ -28,13 +27,13 @@ setting = 6
 doplot = False
 
 
-# Dimensions in cm
+# Projector and Screen Dimensions [cm]
 # Please see projector_setup.pdf
-R = 169.5   # Cylindrical Screen Radius
+R = 169.5    # Cylindrical Screen Radius
 d_0 = 28.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
 # Projector focal point may be behind projector lens front. No documentation found.
 h_0 = 12.5   # lower height of image above center of lens when projected on planar screen from untilted projector
-tr = 0.49   # Projector Throw ratio (distance / width of screen)
+tr = 0.49    # Projector Throw ratio (distance / width of screen)
 
 # define output file
 outfile = "X-Plane Window Positions.prf"

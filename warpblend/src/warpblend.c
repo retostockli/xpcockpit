@@ -1,6 +1,9 @@
 /*
  * Copyright (c) 2013 NVIDIA Corporation
  *
+ * Changes and additions for 3 Projector Warping and Blending with the X-Plane
+ * Warp and Blend Configuration file by Reto Stockli, 2023
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -21,19 +24,34 @@
  * SOFTWARE.
  */
 
-/* Changes and additions for 3 Projector Warping and Blending with the X-Plane
-   Warp and Blend Configuration file by Reto Stockli, 2023 */
-
-/* NEEDED:
+/* 
+   Depends on (Linux):
    libxnvctrl-dev
 */
 
-/* Relative screen / texture coordinates go:
+/* 
+   This code reads the X-Plane Warping and Blending grid from the X-Plane
+   Preference file 'X-Plane Window Positions.prf' and applies the 
+   warping and blending grid to the native NVIDIA API. Note: The warping
+   grid needs to include the planar to cylindrical correction. This is not
+   the case if you create a warping grid in X-Plane and save it from there.
+*/
+
+/* 
+   Relative screen / texture coordinates go:
    y: top to bottom (0-1)
    x: left to right (0-1)
 
    triangles are constructed with:
    0: tl, 1: tr, 2: bl, 3: tr, 4: br, 5: bl
+*/
+
+/*
+  GTX4080 Output Numbering
+  DP-3: DPY-5
+  DP-5: DPY-7
+  DP-1: DPY-2
+  HDMI-0: DPY-0
 */
 
 #include <stdlib.h>
