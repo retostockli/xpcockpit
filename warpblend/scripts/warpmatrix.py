@@ -32,7 +32,10 @@ doplot = False
 R = 169.5    # Cylindrical Screen Radius
 d_0 = 28.0   # Distance of Projector focal point from center of cylinder (positive is towards screen)
 # Projector focal point may be behind projector lens front. No documentation found.
-h_0 = 12.5   # lower height of image above center of lens when projected on planar screen from untilted projector
+# Assume the position of the lens front if in doubt
+h_0 = 12.5   # lower height of image above focal point when projected on planar screen from untilted projector
+# a) Hypothetical planar screen is mounted at distance d_1 from lens.
+# b) If focal point is not known, assume lens center as reference to lower height of image
 tr = 0.49    # Projector Throw ratio (distance / width of screen)
 
 # define output file
