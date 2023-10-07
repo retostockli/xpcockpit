@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 6
+setting = 4
 
 # Plot Warping grid for Checking
 doplot = False
@@ -69,6 +69,7 @@ if setting == 1:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = True  # create for windows or for linux
+    savegrid = True # save proection grid or just FOV
 elif setting == 2:
     # Projection + Blending
     nmon = 4  # number of monitors
@@ -88,6 +89,7 @@ elif setting == 2:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = True  # create for windows or for linux
+    savegrid = True # save proection grid or just FOV
 elif setting == 3:
     # Projection
     nmon = 4  # number of monitors
@@ -107,11 +109,12 @@ elif setting == 3:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = True  # create for windows or for linux
+    savegrid = True # save proection grid or just FOV
 elif setting == 4:
     # None (use this for X-Plane when using warpblend with NVIDIA directly)
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
-    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
+    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
@@ -126,6 +129,7 @@ elif setting == 4:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
+    savegrid = False # save proection grid or just FOV
 elif setting == 5:
     # Only Testing Grid
     nmon = 4  # number of monitors
@@ -145,6 +149,7 @@ elif setting == 5:
     gridtest = True # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
+    savegrid = True # save proection grid or just FOV
 elif setting == 6:
     # Testing Single Monitor
     nmon = 1  # number of monitors
@@ -164,6 +169,7 @@ elif setting == 6:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
+    savegrid = True # save proection grid or just FOV
 elif setting == 7:
     # Testing Two Monitors
     nmon = 2  # number of monitors
@@ -183,6 +189,7 @@ elif setting == 7:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
+    savegrid = True # save proection grid or just FOV
 
 #----------- FUNCTIONS --------------
 
@@ -629,7 +636,7 @@ for mon in range(0,nmon,1):
     if cylindrical[mon]:
         con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")
     else:
-        con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")    
+        con.write("monitor/"+str(mon)+"/proj/diff_FOV 0"+"\n")    
     con.write("monitor/"+str(mon)+"/proj/FOVx_renopt "+str(format(FOVx,('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/FOVy_renopt "+str(format(FOVy,('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/os_x_rat 0.000000"+"\n")
@@ -642,7 +649,7 @@ for mon in range(0,nmon,1):
     else:
         con.write("monitor/"+str(mon)+"/proj/grid_os_on_test 0"+"\n")
 
-    if (projection[mon] or cylindrical[mon]):
+    if (projection[mon] or cylindrical[mon]) and savegrid:
         con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 1"+"\n")
     else:
         con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 0"+"\n")
@@ -651,7 +658,7 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_j 4"+"\n")
 
     # write grid per monitor
-    if (projection[mon] or cylindrical[mon]):
+    if (projection[mon] or cylindrical[mon]) and savegrid:
         for gx in range(0,ngx,1):
             for gy in range(0,ngy,1):
                 con.write("monitor/"+str(mon)+"/proj/grid_os_x/"+str(gx)+"/"+str(gy)+" "+str(format(xdif[gx,gy],('.6f')))+"\n")
