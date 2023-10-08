@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Name=Start OpenCockpits Cards
+GenericName=Start OpenCockpits Cards
+Exec=xterm -e "\\${HOME}/xpcockpit/scripts/xpusb.sh; \\$SHELL"
+Terminal=false
+Icon=/home/stockli/xpcockpit/applications/xpusb.png
+Type=Application

@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 1
+setting = 4
 
 # Plot Warping grid for Checking
 doplot = False
@@ -57,7 +57,7 @@ if setting == 1:
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
-    frustum = 0.0 #-52./540. # vertical shift of horizon in normalized image coordinates [-1..1]
+    frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
@@ -69,7 +69,7 @@ if setting == 1:
     blend_right_bot = [  0.0, 192.0, 205.0,   0.0]
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
-    forwin = True  # create for windows or for linux
+    forwin = False  # create for windows or for linux
     savegrid = True # save proection grid or just FOV
 elif setting == 2:
     # Projection + Blending
@@ -163,7 +163,7 @@ elif setting == 6:
     cylindrical = [True]  # apply flat plane to cylinder warping
     projection = [False]  # apply projection onto curved surfae
     epsilon = [0.0]         # projector tilt [deg]
-    frustum = 52./540. # vertical shift of horizon in normalized image coordinates [-1..1]
+    frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
     vertical_shift = [0.0]    # vertical shift [pixel]

@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Name=X-Plane
+GenericName=X-Plane 12 Flight Simulator
+Exec=xterm -e "\\${HOME}/xpcockpit/scripts/xplane12_multimonitor.bash; \\$SHELL"
+Terminal=false
+Icon=/home/stockli/xpcockpit/applications/xplane.png
+Type=Application

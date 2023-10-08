@@ -46,7 +46,7 @@ monitor/0/proj/gradient_alpha/1/1 0.800000
 monitor/0/proj/gradient_alpha/1/2 0.450000
 monitor/0/proj/gradient_alpha/1/3 0.000000
 monitor/1/m_window_idx -1
-monitor/1/m_monitor 1
+monitor/1/m_monitor 0
 monitor/1/m_window_bounds/0 0
 monitor/1/m_window_bounds/1 0
 monitor/1/m_window_bounds/2 1920
@@ -20492,7 +20492,7 @@ monitor/1/proj/gradient_alpha/1/1 0.800000
 monitor/1/proj/gradient_alpha/1/2 0.450000
 monitor/1/proj/gradient_alpha/1/3 0.000000
 monitor/2/m_window_idx -1
-monitor/2/m_monitor 2
+monitor/2/m_monitor 0
 monitor/2/m_window_bounds/0 0
 monitor/2/m_window_bounds/1 0
 monitor/2/m_window_bounds/2 1920
@@ -40938,7 +40938,7 @@ monitor/2/proj/gradient_alpha/1/1 0.800000
 monitor/2/proj/gradient_alpha/1/2 0.450000
 monitor/2/proj/gradient_alpha/1/3 0.000000
 monitor/3/m_window_idx -1
-monitor/3/m_monitor 3
+monitor/3/m_monitor 0
 monitor/3/m_window_bounds/0 0
 monitor/3/m_window_bounds/1 0
 monitor/3/m_window_bounds/2 1920

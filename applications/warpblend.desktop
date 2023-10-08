@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Name=Warping and Blending
+GenericName=Warping and Blending
+Exec=xterm -e "cd \\${HOME}/xpcockpit/warpblend/src; ./warpblend-on.sh; \\$SHELL"
+Terminal=false
+Icon=/home/stockli/xpcockpit/applications/warpblend.png
+Type=Application
