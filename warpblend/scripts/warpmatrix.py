@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 4
+setting = 1
 
 # Plot Warping grid for Checking
 doplot = False
@@ -57,6 +57,7 @@ if setting == 1:
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
+    frustum = 0.0 #-52./540. # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
@@ -77,6 +78,7 @@ elif setting == 2:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
+    frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
@@ -97,6 +99,7 @@ elif setting == 3:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
+    frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
@@ -115,8 +118,10 @@ elif setting == 4:
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
+#    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
+    frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
@@ -137,6 +142,7 @@ elif setting == 5:
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
+    frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
@@ -157,6 +163,7 @@ elif setting == 6:
     cylindrical = [True]  # apply flat plane to cylinder warping
     projection = [False]  # apply projection onto curved surfae
     epsilon = [0.0]         # projector tilt [deg]
+    frustum = 52./540. # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
     vertical_shift = [0.0]    # vertical shift [pixel]
@@ -177,6 +184,7 @@ elif setting == 7:
     cylindrical = [False,True]  # apply flat plane to cylinder warping
     projection = [False,True]  # apply projection onto curved surfae
     epsilon = [0.0,6.42]         # projector tilt [deg]
+    frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0,0.0]  # lateral offset [deg]
     vertical_offset = [0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0]    # vertical shift [pixel]
@@ -426,16 +434,16 @@ for mon in range(0,nmon,1):
         # Now we want to increase FOV to fill the
         # whole screen at the edges after planar to cylindricl projection
         # so calculate a new FOV and stetch y axis even more        
-        vert_stretch_1 = vert_stretch * thetaphi[1]
+        #vert_stretch_1 = vert_stretch * thetaphi[1]
         
-        print("Vert Stretch to fill Screen: ",vert_stretch_1)
+        #print("Vert Stretch to fill Screen: ",vert_stretch_1)
         
-        FOVy_1 = 2.0 * math.atan(math.tan(0.5 * FOVy * d2r) * vert_stretch / vert_stretch_1) * r2d
-        FOVy = FOVy_1
+        #FOVy_1 = 2.0 * math.atan(math.tan(0.5 * FOVy * d2r) * vert_stretch / vert_stretch_1) * r2d
+        #FOVy = FOVy_1
         
-        vert_stretch = vert_stretch_1
+        #vert_stretch = vert_stretch_1
 
-        print("New FOVy: ",FOVy)
+        #print("New FOVy: ",FOVy)
            
     ## reset projection grid
     xabs = np.zeros((ngx, ngy))
@@ -470,14 +478,14 @@ for mon in range(0,nmon,1):
                 
                 xy = np.zeros(2)
                 xy[0] = 2.0 * (px - 0.5 * float(nx)) / float(nx)
-                xy[1] = 2.0 * (py - 0.5 * float(ny)) / float(ny)
+                xy[1] = 2.0 * (py - 0.5 * float(ny)) / float(ny) + frustum
                 
                 thetaphi = PanoramaProj_forward(xy,FOVx,FOVy,vert_stretch)
                 
                 #print(thetaphi)
                 
                 ex = 0.5 * thetaphi[0] * float(nx) + 0.5*float(nx)
-                ey = 0.5 * thetaphi[1] * float(ny) + 0.5*float(ny)
+                ey = 0.5 * (thetaphi[1] - frustum) * float(ny) + 0.5*float(ny)
                 
                 #print(px,py,ex,ey)
                 
