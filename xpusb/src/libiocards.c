@@ -397,7 +397,7 @@ int digital_outputf(int device, int card, int output, float *fvalue) {
   
   if (*fvalue == FLT_MISS) {
     value = INT_MISS;
-  } else if (*fvalue >= 0.15) {
+  } else if (*fvalue >= 0.025) {
     value = 1;
   } else {
     value = 0;
