@@ -413,16 +413,16 @@ void b737_pedestal(void)
       printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
     }
   }
-  /* COM1 Inner Encoder (25 kHz step) */
+  /* COM1 Inner Encoder (5 kHz step) */
   updn = 0;
-  ret = encoder_input(card,i0+4,i0+5,&updn,25,1);
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
   if (ret == 1) {
     if (*com1_freq_stdby != INT_MISS) {
       integer = *com1_freq_stdby / 1000;
       decimal = *com1_freq_stdby - integer * 1000;
       decimal += updn;
-      if (decimal < 0) decimal = 975;
-      if (decimal > 975) decimal = 0;
+      if (decimal < 0) decimal = 995;
+      if (decimal > 995) decimal = 0;
       *com1_freq_stdby = integer * 1000 + decimal;
       printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
     }
@@ -467,16 +467,16 @@ void b737_pedestal(void)
       printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
     }
   }
-  /* COM2 Inner Encoder (25 kHz step) */
+  /* COM2 Inner Encoder (5 kHz step) */
   updn = 0;
-  ret = encoder_input(card,i0+4,i0+5,&updn,25,1);
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
   if (ret == 1) {
     if (*com2_freq_stdby != INT_MISS) {
       integer = *com2_freq_stdby / 1000;
       decimal = *com2_freq_stdby - integer * 1000;
       decimal += updn;
-      if (decimal < 0) decimal = 975;
-      if (decimal > 975) decimal = 0;
+      if (decimal < 0) decimal = 995;
+      if (decimal > 995) decimal = 0;
       *com2_freq_stdby = integer * 1000 + decimal;
       printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
     }
