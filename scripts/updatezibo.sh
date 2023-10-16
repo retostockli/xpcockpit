@@ -14,9 +14,10 @@ files=`ls $PREFIX*.$SUFFIX`
 
 for file in $files
 do
-    MAJOR=`echo $file | cut -d '_' -f 2`
-    MINOR=`echo $file | cut -d '_' -f 3`
-    REVISION=`echo $file | cut -d '_' -f 4 | cut -d '.' -f 1`
+    XPVER=`echo $file | cut -d '_' -f 2`
+    MAJOR=`echo $file | cut -d '_' -f 3`
+    MINOR=`echo $file | cut -d '_' -f 4`
+    REVISION=`echo $file | cut -d '_' -f 5 | cut -d '.' -f 1`
     
     echo Found ZIBO with Version: $MAJOR Minor: $MINOR Revision: $REVISION
     mv $DLDIR/$file $XPDIR-$MAJOR.$MINOR/

@@ -330,11 +330,11 @@ void b737_pedestal(void)
 
 
   /* TEMPORARY ASSIGNMENT TO BETTERPUSHBACK */
-  int *vhf1 = link_dataref_cmd_once("BetterPushback/start");
-  int *vhf2 = link_dataref_cmd_once("BetterPushback/stop");
-  int *vhf3 = link_dataref_cmd_once("BetterPushback/disconnect");
-  int *hf1 = link_dataref_cmd_once("BetterPushback/connect_first");
-  int *hf2 = link_dataref_cmd_once("BetterPushback/cab_camera");
+  int *vhf1 = link_dataref_cmd_once("sim/ground_ops/pushback_left");
+  int *vhf2 = link_dataref_cmd_once("sim/ground_ops/pushback_straight");
+  int *vhf3 = link_dataref_cmd_once("sim/ground_ops/pushback_right");
+  int *hf1 = link_dataref_cmd_once("sim/ground_ops/pushback_stop");
+  int *hf2 = link_dataref_int("xpserver/hf2");
 
   /* WXR Gain and Tilt */
   float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2);
