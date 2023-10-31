@@ -100,7 +100,7 @@ void b737_awm(void)
     int *belts = link_dataref_int("laminar/b738/fmodpack/play_seatbelt_no_smoke");
     float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
     float *mach_warn = link_dataref_flt("laminar/B738/fmod/mach_warn",0);
-    float *fire_bell = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",-1);
+    float *fire_bell = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
     float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
     
@@ -176,7 +176,7 @@ void b737_awm(void)
 #endif
     }
     if (*fire_bell != FLT_MISS) {
-      int fb = (int) (*fire_bell > 0.3);
+      int fb = (int) (*fire_bell > 0.5);
 #ifdef PIGPIO
       gpioWrite(FIRE_BELL_PIN, fb);
 #else

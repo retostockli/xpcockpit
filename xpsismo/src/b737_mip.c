@@ -256,10 +256,10 @@ void b737_mip(void)
     *nose_steer_alt = 0;
     *nose_steer_norm = 0;
     ret = digital_input(card,7,&temp,0);
-    if ((temp == 0) && (*nose_steer == 1.0)) {
+    if ((temp == 1) && (*nose_steer == 1.0)) {
       *nose_steer_alt = 1;
     }
-    if ((temp == 1) && (*nose_steer == 0.0)) {
+    if ((temp == 0) && (*nose_steer == 0.0)) {
       *nose_steer_norm = 1;
     }
 

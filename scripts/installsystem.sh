@@ -24,6 +24,8 @@ sudo apt install libxnvctrl-dev
 sudo apt install solaar
 sudo apt install python3-numpy
 sudo apt install python3-matplotlib
+sudo apt install libfreeimage3
+sudo apt install libzip4
 
 #sudo apt install libsecret-tools
 
