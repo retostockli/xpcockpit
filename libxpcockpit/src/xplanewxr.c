@@ -259,13 +259,14 @@ void *wxr_poll_thread_main()
       if ((strncmp(buffer,"xRAD",4)==0) || (strncmp(buffer,"RADR",4)==0)) {
 
 	/* CHECK IF WE HAVE XP12 or XP11 */
+	/* Each Radar Point has 13 bytes in XP11 and 24 bytes in XP12
 	/* assume not more than one packet per call is received */
-	if ((ret-5)/50 == 13) {
+	if ((((ret-5)/13)*13) == (ret-5)) {
 	  wxr_is_xp12 = 0;
 	} else {
 	  wxr_is_xp12 = 1;
 	}
-	   
+	
 	/* does it fit into read buffer? */
 	if (ret <= (wxrRecvBufferLen - wxrReadLeft)) {
 	  pthread_mutex_lock(&wxr_exit_cond_lock);

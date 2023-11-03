@@ -154,7 +154,8 @@ void B737NAV::Render()
 {
   
   int acf_type = m_pDataSource->GetAcfType();
-
+  bool is_captain = (this->GetArg() == 0);
+ 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
   int *irs_mode;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -163,16 +164,19 @@ void B737NAV::Render()
     irs_mode = link_dataref_int("xpserver/irs_mode");
     *irs_mode = 2;
   }
- 
+  
   if (*avionics_on == 1) {
-     
+    
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
     float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
-    float *track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
+    float *track_mag;
+    if (is_captain) {
+      track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
+    } else {
+      track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
+    }
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
-
-    bool is_captain = (this->GetArg() == 0);
 
     // Get Map Mode (APP/VOR/MAP/PLN)
     int *map_mode;
@@ -293,6 +297,17 @@ void B737NAV::Render()
     glVertex2f(5,m_PhysicalSize.y-10);
     glEnd();  
   } // Display powered?
+
+  float fps = GetFPS();
+  char buffer[5];
+
+  if (fps != FLT_MISS) {
+    glColor3ub(COLOR_RED);
+    snprintf( buffer, sizeof(buffer), "%i",(int) round(fps) );
+    this->m_pFontManager->SetSize(m_Font, 5, 5);
+    this->m_pFontManager->Print(m_PhysicalSize.x-15, m_PhysicalSize.y-10, &buffer[0], m_Font);    
+  }
+  
   
 }
 

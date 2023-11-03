@@ -48,6 +48,8 @@
 #include "ogcFontManager.h"
 #include "ogcNavDatabase.h"
 
+#define NFPS 10
+
 namespace OpenGC
 {
 
@@ -61,7 +63,7 @@ public:
   AppObject();
   virtual ~AppObject();
 
-  /** Call using atexit() in main() to clean up memory alloc */
+  /** Call using at exit() in main() to clean up memory alloc */
   void Cleanup();
 
   /** Setup and run the glass cockpit - enters message loop */
@@ -76,7 +78,7 @@ public:
    */
   void DispatchMessage(Message message, void* data);
   
-  /** Function for analyzing maximum possible frame rate */
+  /** Function for analyzing frame rate */
   void CheckFrameRate();
   
   /** Main pieces of the application */
@@ -143,7 +145,12 @@ protected:
 
   /** Whether or not to calculate frame rate */
   bool m_FrameTest;
-
+  struct timeval m_start;
+  struct timeval m_end;
+  float m_FPSArray[NFPS];
+  int m_FPSIndex;
+  float m_FPS;
+  
 };
 
 } // end namespace OpenGC

@@ -249,14 +249,15 @@ int read_sismo() {
 	  for (b=0;b<8;b++) {
 	    for (i=0;i<8;i++) {
 	      input = b*8+i + firstinput;
-	      val = get_bit(sismoRecvBuffer[8+b],i);
+	      //val = get_bit(sismoRecvBuffer[8+b],i);
+	      val = 1-get_bit(sismoRecvBuffer[8+b],i); // we now use 1: input pressed and 0: input free
 	      if (val != sismo[card].inputs[input][0]) any = 1;
 	    }
 	  }
 	  /* if any input changed make sure we capture the whole history of changed
 	     inputs, since during a single reception we can have several state changes */
 	  if (any) {
-	    //	    printf("%i %i \n",get_bit(sismoRecvBuffer[8+0],0),get_bit(sismoRecvBuffer[8+0],1));
+	    //	    printf("%i %i \n",1-get_bit(sismoRecvBuffer[8+0],0),1-get_bit(sismoRecvBuffer[8+0],1));
 	    for (b=0;b<8;b++) {
 	      for (i=0;i<8;i++) {
 		input = b*8+i + firstinput;
@@ -265,10 +266,11 @@ int read_sismo() {
 		  sismo[card].inputs[input][s+1] = sismo[card].inputs[input][s];
 		}
 		/* update input if changed */
-		val = get_bit(sismoRecvBuffer[8+b],i);
+		//val = get_bit(sismoRecvBuffer[8+b],i);
+		val = 1-get_bit(sismoRecvBuffer[8+b],i); // we now use 1: input pressed and 0: input free
 		if (val != sismo[card].inputs[input][0]) {
+		  if (verbose > 2) printf("Card %i Input %i Changed from %i to: %i \n",card,input,sismo[card].inputs[input][0],val);
 		  sismo[card].inputs[input][0] = val; 
-		  if (verbose > 2) printf("Card %i Input %i Changed to: %i \n",card,input,val);
 		}
 	      }
 	    }
@@ -278,7 +280,7 @@ int read_sismo() {
 	      if (verbose > 2) printf("Card %i Input Bank %i # of History Values %i \n",
 				      card,bank,sismo[card].inputs_nsave[bank]);
 	    } else {
-	      if (verbose > 0) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
+	      if (verbose > 2) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
 				      card,bank,MAXSAVE);
 	    }
 	      
@@ -294,15 +296,16 @@ int read_sismo() {
 	    ninputs = 5;
 	    firstbyte = 16;
 	  }
-	  /* Analog Inputs from Analog Input Daughter (Inputs 5-15) */
+	  /* Analog Inputs from Analog Input Daughter (Inputs 5-14) 
+	     Last Input of Analog Input Daughter does not work (Input 11 of this card) */
 	  if (sismoRecvBuffer[4] == 0x03) {
 	    firstinput = 5;
-	    ninputs = 11;
+	    ninputs = 10;
 	    firstbyte = 8;
 	  }
 
 	  /* Analog Inputs are ordered in 10 bytes with 2 bytes per input */
-	  /* Located in bytes 16-25 */
+	  /* Located in bytes 16-25 on SC-MB and bytes 8-27 on Daughter */
 	  for (input=0;input<ninputs;input++) {
 	    val = sismoRecvBuffer[firstbyte+input*2] + 256 * sismoRecvBuffer[firstbyte+1+input*2];
 	    /* shift all inputs in history array by one */
@@ -385,7 +388,7 @@ int write_sismo() {
 	  for (output=0;output<64;output++) {
 	    set_bit(&sismoSendBuffer[4+output/8],output%8,sismo[card].outputs[output+firstoutput]);
 	    if (sismo[card].outputs_changed[output+firstoutput] == CHANGED) {
-	      if (verbose > 0) printf("Card %i Output %i changed to: %i \n",
+	      if (verbose > 2) printf("Card %i Output %i changed to: %i \n",
 				      card,output,sismo[card].outputs[output+firstoutput]);
 	      anychanged = 1;
 	      /* reset changed state since data will be sent to SISMO card */
@@ -394,7 +397,7 @@ int write_sismo() {
 	  }
 	  if (anychanged) {
 	    ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
-	    if (verbose > 0) printf("Sent %i bytes to card %i \n", ret,card);
+	    if (verbose > 2) printf("Sent %i bytes to card %i \n", ret,card);
 	  }
 	}
       }
@@ -432,9 +435,9 @@ int write_sismo() {
 	    sismoSendBuffer[4] = group+1;
 	    sismoSendBuffer[13] = DISPLAYBRIGHTNESS; /* Todo: make user-adjustable */
 	    for (display=0;display<8;display++) {
-	      set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8]);
+	      set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGED) {
-		if (verbose > 2) printf("Card %i Display %i changed to: %i \n",card,display+group*8,
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",card,bank,display+group*8,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
 		/* reset changed state since data will be sent to SISMO card */
@@ -443,7 +446,7 @@ int write_sismo() {
 	    }
 	    if (anychanged) {
 	      ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
-	      if (verbose > 1) printf("Sent %i bytes to card %i \n", ret,card);
+	      if (verbose > 2) printf("Sent %i bytes to card %i \n", ret,card);
 	    }
 	  }
 
@@ -515,9 +518,10 @@ int digital_inputf(int card, int input, float *fvalue, int type)
 /* master card has 64 inputs (0..63)
    daughter card 1 and 2 have another 64 inputs (64..127 and 128..191) */
 /* Two types : */
-/* -1: pushbutton 1-value: 0 means pressed, 1 means unpressed */
 /* 0: pushbutton */
 /* 1: toggle switch */
+
+/* THIRD TYPE: -1: pushbutton inverse */
 int digital_input(int card, int input, int *value, int type)
 {
 
@@ -540,12 +544,12 @@ int digital_input(int card, int input, int *value, int type)
 	    s = 0;
 	  }
 	  if (type == -1) {
-	    /* simple pushbutton / switch INVERSE 1-value */
+	    /* simple pushbutton / switch (inverse) */
 	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
 	      if ((1-*value) != sismo[card].inputs[input][s]) {
 		*value = 1-sismo[card].inputs[input][s];
 		retval = 1;
-		if (verbose > 1) printf("Pushbutton INVERSE: Card %i Input %i Changed to %i \n",
+		if (verbose > 1) printf("Pushbutton: Card %i Input %i Changed to %i \n",
 					card, input, *value);
 	      }
 	    }
@@ -561,7 +565,7 @@ int digital_input(int card, int input, int *value, int type)
 	      }
 	    }
 
-	  } else {
+	  } else if (type == 1) {
 	    if (sismo[card].inputs_nsave[bank] != 0) {
 	      /* toggle state everytime you press button */
 	      if (s < (MAXSAVE-1)) {
@@ -584,6 +588,8 @@ int digital_input(int card, int input, int *value, int type)
 	      }
 	    }
 
+	  } else {
+	    printf("Unknown Digital Input Type %i (only use 0 and 1) \n",type);
 	  }
 	} else {
 	  if (verbose > 0) printf("Digital Input %i above maximum # of inputs %i of card %i \n",
@@ -606,14 +612,14 @@ int digital_input(int card, int input, int *value, int type)
 }
 
 /* wrapper for digital_output when supplying floating point value 
-   Values < 0.5 are set to 0 output and values >= 0.5 are set to 1 output */
+   Values < 0.15 are set to 0 output and values >= 0.15 are set to 1 output */
 int digital_outputf(int card, int output, float *fvalue) {
 
   int value;
   
   if (*fvalue == FLT_MISS) {
     value = INT_MISS;
-  } else if (*fvalue >= 0.5) {
+  } else if (*fvalue >= 0.025) {
     value = 1;
   } else {
     value = 0;
@@ -981,13 +987,26 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			updown = 1;
 		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
 			updown = -1;
+
+			/* in case a) an input was missed or b) the two optical rotary inputs were transmitted 
+			   concurrently due to timing issue, assume that the last direction is still valid */
+		      } else if ((obits[0] == 1) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
+			updown = sismo[card].inputs_updown[input1];
+		      } else if ((obits[0] == 0) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
+			updown = sismo[card].inputs_updown[input1];
 		      }
-	  
+
+		      // printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
+		      
 		      if (updown != 0) {
 			/* add accelerator by using s as number of queued encoder changes */
 			*value = *value + ((float) updown)  * multiplier * (float) (s*2+1);
 			retval = 1;
-		      }		    
+		      }
+
+		      /* store last updown value for later use */
+		      sismo[card].inputs_updown[input1] = updown;
+		      
 		    } else if (type == 2) {
 		      /* 2 bit gray type mechanical encoder */
 

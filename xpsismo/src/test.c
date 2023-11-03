@@ -31,8 +31,7 @@
 #include "common.h"
 #include "libsismo.h"
 #include "serverdata.h"
-
-int encodervalue;
+#include "test.h"
 
 void test(void)
 {
@@ -42,10 +41,10 @@ void test(void)
   int i;
   int one = 1;
   int zero = 0;
+  int display = 0;
 
   /* link integer data like a switch in the cockpit */
-  //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
-  int *value = link_dataref_int("xpserver/EFIS_capt_terr");
+  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
   /* link floating point dataref with precision 10e-3 to local variable. This means
      that we only transfer the variable if changed by 0.001 or more */
@@ -57,23 +56,21 @@ void test(void)
   if (*encodervalue == INT_MISS) *encodervalue = 0;
   
   /* read second digital input (#1) */
-  for (i=0;i<sismo[card].ninputs;i++) {
-    //for (i=0;i<70;i++) {
-    //    ret = digital_input(card, i, value, 0);
-    if (ret == 1) {
-      /* ret is 1 only if input has changed */
-      //printf("Digital Input %i changed to: %i \n",i,*value);
-    }
+  i=1;
+  ret = digital_input(card, i, value, 0);
+  if (ret == 1) {
+    /* ret is 1 only if input has changed */
+    printf("Digital Input %i changed to: %i \n",i,*value);
   }
  
   /* read first analog input (#0) */
   //  for (i=0;i<5;i++) {
-  i=2;
-    ret = analog_input(card,i,fvalue,0.0,1.0);
-    if (ret == 1) {
+  i=0;
+  ret = analog_input(card,i,fvalue,0.0,10.0);
+  if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-      printf("Analog Input %i changed to: %f \n",i,*fvalue);
-    }
+    //  printf("Analog Input %i changed to: %f \n",i,*fvalue);
+  }
     //  }
    
 
@@ -97,7 +94,7 @@ void test(void)
       ret = digital_output(card, i, &zero);
     }
   }
- 
+
 
   /*
   for (i=0;i<sismo[card].noutputs;i++) {
@@ -109,9 +106,16 @@ void test(void)
     }
   }
   */
-  
+
+  if (*fvalue != FLT_MISS) {
+    i = (int) *fvalue;
+    display = i + i*10 + i*100 + i*1000 + i*10000;
+  }
+
+  display = 123456;
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  ret = display_output(card, 0, 5, encodervalue, 2, 0);
+  ret = display_output(card, 64+0+0, 6, &display, 1, 0);
+  ret = display_output(card, 64+0+8, 6, &display, 1, 0);
 
 }

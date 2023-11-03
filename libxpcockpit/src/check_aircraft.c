@@ -50,7 +50,7 @@ void check_aircraft(void) {
     } else if (strcmp((const char*) tailnum,"ZB738")==0) {
       /* ZIBO MOD of B737-800 */
       acf_type = 3;
-    } else if (strcmp((const char*) tailnum,"NN816N")==0) {
+    } else if (strcmp((const char*) tailnum,"N816NN")==0) {
       /* Laminar B738-800 */
       acf_type = 2;
     } else if (strcmp((const char*) tailnum,"OY-GRL")==0) {

@@ -81,30 +81,30 @@ namespace OpenGC
     // Altitude above ground level (meters)
     float *altitude_agl = link_dataref_flt("sim/flightmodel/position/y_agl",0);
 
-    int *fd_roll_status;
-    int *fd_pitch_status;
+    float *fd_roll_status;
+    float *fd_pitch_status;
     float *fd_pitch;
     float *fd_roll;
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
-	fd_pitch_status = link_dataref_int("laminar/B738/autopilot/fd_pitch_pilot_show");
-	fd_roll_status = link_dataref_int("laminar/B738/autopilot/fd_roll_pilot_show");
+	fd_pitch_status = link_dataref_flt("laminar/B738/autopilot/fd_pitch_pilot_show",0);
+	fd_roll_status = link_dataref_flt("laminar/B738/autopilot/fd_roll_pilot_show",0);
 	fd_pitch = link_dataref_flt("laminar/B738/pfd/flight_director_pitch_pilot",-1);
 	fd_roll = link_dataref_flt("laminar/B738/pfd/flight_director_roll_pilot",-1);
       } else {
-	fd_pitch_status = link_dataref_int("laminar/B738/autopilot/fd_pitch_copilot_show");
-	fd_roll_status = link_dataref_int("laminar/B738/autopilot/fd_roll_copilot_show");
+	fd_pitch_status = link_dataref_flt("laminar/B738/autopilot/fd_pitch_copilot_show",0);
+	fd_roll_status = link_dataref_flt("laminar/B738/autopilot/fd_roll_copilot_show",0);
 	fd_pitch = link_dataref_flt("laminar/B738/pfd/flight_director_pitch_copilot",-1);
 	fd_roll = link_dataref_flt("laminar/B738/pfd/flight_director_roll_copilot",-1);
       }
     } else if (acf_type == 1) {
-      fd_pitch_status = link_dataref_int("x737/systems/afds/fdA_status");
-      fd_roll_status = link_dataref_int("x737/systems/afds/fdA_status");   
+      fd_pitch_status = link_dataref_flt("x737/systems/afds/fdA_status",0);
+      fd_roll_status = link_dataref_flt("x737/systems/afds/fdA_status",0);   
       fd_pitch = link_dataref_flt("x737/systems/afds/AP_A_pitch",-1);
       fd_roll = link_dataref_flt("x737/systems/afds/AP_A_roll",-1);
     } else {
-      fd_pitch_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");
-      fd_roll_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");   
+      fd_pitch_status = link_dataref_flt("sim/cockpit/autopilot/autopilot_mode",0);
+      fd_roll_status = link_dataref_flt("sim/cockpit/autopilot/autopilot_mode",0);   
       fd_pitch = link_dataref_flt("sim/cockpit/autopilot/flight_director_pitch",-1);
       fd_roll = link_dataref_flt("sim/cockpit/autopilot/flight_director_roll",-1);
     }

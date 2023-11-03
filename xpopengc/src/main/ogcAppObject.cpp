@@ -31,6 +31,8 @@
 #include "config.h"
 #endif
 #include <stdio.h>
+#include <sys/time.h>
+#include <math.h>
 
 //--------GL Stuff---------
 #include "ogcGLHeaders.h"
@@ -109,6 +111,13 @@ namespace OpenGC
     // Run a frame-rate test when loading OpenGC?
     m_FrameTest = false;
 
+    /* reset frame rate */
+    for (int i=0;i<NFPS;i++) {
+      m_FPSArray[i] = FLT_MISS;
+    }
+    m_FPS = FLT_MISS;
+    m_FPSIndex = 0;
+
     /*if (verbosity > 1)*/ printf("AppObject - constructed\n");
   }
 
@@ -177,10 +186,6 @@ namespace OpenGC
     if (verbosity > 0) printf ("====================\n");
 
     m_InitState = 1;
-  
-    // First, check the frame rate if the user wants to
-    if(m_FrameTest)
-      this->CheckFrameRate();
 
     // Now it's time to enter the event loop
     Fl::run();
@@ -193,15 +198,24 @@ namespace OpenGC
   AppObject
   ::IdleFunction()
   {
-    
+
+    // Check the frame rate if the user wants to
+    if(m_FrameTest) {
+      this->CheckFrameRate();
+      m_pRenderWindow->SetFPS(m_FPS);
+    }
+     
     // Every time we loop we grab some new data and re-render the window
     // Only render if things have changed from X-Plane or during init, so
     // all datarefs have been safely received
     m_pDataSource->OnIdle();
     //printf("%i \n",numreceived);
-    if ((numreceived > 0) || (m_InitState <= 100) || (wxr_newdata == 1)) {
-      //printf("%i %i \n",numreceived,m_InitState);
+    if ((numreceived > 0) || (m_InitState <= 100) ||
+	(wxr_newdata == 1) || (m_FrameTest)) {
+  
+       //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
+    
       Fl::flush();
     }
     if (m_InitState <= 100) m_InitState++;
@@ -321,7 +335,7 @@ namespace OpenGC
     
       if (verbosity > 0) printf("AppObject - Font path %s\n", m_FontPath);
       m_pFontManager->SetFontPath(m_FontPath);
-    
+     
       // Set up the network data
       strcpy(m_ip_address,iniparser_getstring(ini,"network:ServerIP", default_server_ip));
       m_port = iniparser_getint(ini,"network:ServerPort", default_server_port);
@@ -466,49 +480,41 @@ namespace OpenGC
     pGauge->SetPosition(xPos, yPos);
     pGauge->SetScale(xScale, yScale);
     pGauge->SetArg(arg);
+    pGauge->SetFPS(FLT_MISS);
     m_pRenderWindow->AddGauge(pGauge);
   }
 
+// calculate frame rate from timing and with running mean function
   void AppObject::CheckFrameRate()
-  {/*
-     double reps = 200;
-     
-     m_pDataSource->ILS_Glideslope_Alive = true;
-     m_pDataSource->Nav1_Valid = true;
-     
-     for(double i = 0; i < reps; i += 1.0)
-     {
-     // Pitch and bank bounce around
-     m_pDataSource->Pitch = 15 * sin( i * 3.14 / 180 );
-     m_pDataSource->Bank = 30 * sin( 2 * i * 3.14 / 180 );
-     
-     // ILS needles slew
-     m_pDataSource->Nav1_Localizer_Needle =  sin( i * 3.14 / 90 );
-     m_pDataSource->Nav1_Glideslope_Needle = sin( i * 3.14 / 90 );
-     
-     // Airspeed ramps from 0 to 250 and back down
-     m_pDataSource->IAS = 250 * sin( (i / reps) * 3.14 );
-     
-     // Altitude ramps from 7500 to 12500 and back down
-     m_pDataSource->Barometric_Alt_Feet = 7500 + 5000 * sin( (i / reps) * 3.14 );
-     
-     // Position slews around (Pittsburgh area)
-     m_pDataSource->Longitude = -80.0 + 10 * sin( (i / reps) * 3.14 );
-     m_pDataSource->Latitude = 40.27 + 10 * sin( (i / reps) * 3.14 );
-     
-     // Force the render window to update
-     m_pRenderWindow->redraw();
-     Fl::flush();
-     }
-     
-     // Reset the data source
-     m_pDataSource->InitializeData();
-     
-     m_pDataSource->ILS_Glideslope_Alive = false;
-     m_pDataSource->Nav1_Valid = false;
-     
-     m_FrameTest = false;
-   */
+  {
+
+    float fps;
+
+    fps = m_FPSArray[m_FPSIndex];
+
+    /* evaluate timer */
+    if (fps == FLT_MISS) {
+      fps = 0.0; // temporary value
+      gettimeofday(&m_start,NULL); // start count
+    } else {
+      gettimeofday(&m_end,NULL); // end count
+      fps = 1./(m_end.tv_sec - m_start.tv_sec + (m_end.tv_usec - m_start.tv_usec)/1000000.0);
+      gettimeofday(&m_start,NULL); // start count
+      
+    }
+
+    m_FPSArray[m_FPSIndex] = fps;
+    m_FPSIndex += 1;
+    if (m_FPSIndex == NFPS) m_FPSIndex = 0;
+
+    /* store running mean of fps */
+    fps = 0.0;
+    for (int i=0;i<NFPS;i++) {
+      fps += m_FPSArray[i];
+    }
+    fps /= (float) NFPS;
+    m_FPS = fps;
+    //printf("fps: %i \n",(int) round(fps));
   }
   
 } // end namespace OpenGC

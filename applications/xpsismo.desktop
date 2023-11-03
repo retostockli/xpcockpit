@@ -1,0 +1,10 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Name=Start SISMO Cards
+GenericName=Start SISMO Cards
+Exec=xterm -e "\\${HOME}/xpcockpit/scripts/xpsismo.sh; \\$SHELL"
+Terminal=false
+Icon=/home/stockli/xpcockpit/applications/xpsismo.png
+Type=Application
+

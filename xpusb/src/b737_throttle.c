@@ -98,7 +98,7 @@ void b737_throttle(void)
   float maxspeedbrake;
   float minspeedbrake_x737 = 0.0;
   float maxspeedbrake_x737 = 1.0;
-  float minspeedbrake_zibo = -0.5;
+  float minspeedbrake_zibo = 0.0;
   float maxspeedbrake_zibo = 1.0;
   float minspeedbrake_xplane = -0.5;
   float maxspeedbrake_xplane = 1.0;
@@ -127,7 +127,7 @@ void b737_throttle(void)
   int zero = 0;
 
   int *num_engines = link_dataref_int("sim/aircraft/engine/acf_num_engines");
-  float *throttle = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_thro", 8, -1, -2);
+  float *throttle = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_thro", 16, -1, -2);
   //  float *throttle_beta = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_beta_rev_ratio",8,-1,-2);
 
   float *flap_ratio;
@@ -136,10 +136,14 @@ void b737_throttle(void)
   } else {
     flap_ratio = link_dataref_flt("sim/flightmodel/controls/flaprqst", -4);
   }
-  int *propmode = link_dataref_int_arr("sim/flightmodel/engine/ENGN_propmode",8,-1);
-  float *parkbrake_xplane;;
+  int *propmode = link_dataref_int_arr("sim/flightmodel/engine/ENGN_propmode",16,-1);
+  float *parkbrake_xplane;
+  int *parkbrake_button;
   if (acf_type == 4) {
     parkbrake_xplane = link_dataref_flt("mgdornier/do328/parking_brake_ratio",-1);
+  } else if (acf_type == 3) {
+    parkbrake_xplane = link_dataref_flt("laminar/B738/parking_brake_pos",-1);
+    parkbrake_button = link_dataref_cmd_once("laminar/B738/push_button/park_brake_on_off");
   } else {
     parkbrake_xplane = link_dataref_flt("sim/flightmodel/controls/parkbrake",-1);
   }
@@ -178,10 +182,11 @@ void b737_throttle(void)
   }
   
   int *autothrottle_on;
+  float *speed_mode;
   float *lock_throttle;
   if ((acf_type == 2) || (acf_type == 3)) {
     // autothrottle_on = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
-    autothrottle_on = link_dataref_int("laminar/B738/autopilot/speed_mode");
+    speed_mode = link_dataref_flt("laminar/B738/autopilot/speed_mode",0);
     lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0);
   } else if (acf_type == 1) {
     autothrottle_on = link_dataref_int("x737/systems/athr/athr_active");
@@ -203,7 +208,7 @@ void b737_throttle(void)
     fuel_mixture_left = link_dataref_flt("x737/cockpit/tq/leftCutoffLeverPos",-2);
     fuel_mixture_right = link_dataref_flt("x737/cockpit/tq/rightCutoffLeverPos",-2);
   } else {
-    fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",8,-1,-2);
+    fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",16,-1,-2);
   }
   
      
@@ -571,8 +576,15 @@ void b737_throttle(void)
 
     printf("Auto Stabilizer Mode: %f %f \n",stabilizer,*stabilizer_xplane);
   }
-    
-  if ((*autothrottle_on >= 1) && (*lock_throttle == 1.0)) {
+
+  int at = 0;
+  if (acf_type == 3) {
+    if (*speed_mode >= 1.0) at = 1;
+  } else {
+    if (*autothrottle_on >= 1) at = 1;
+  }
+  
+  if ((at == 1) && (*lock_throttle == 1.0)) {
     /* on autopilot and autothrottle */
     
     /* DCMotors PLUS Card */
@@ -729,13 +741,23 @@ void b737_throttle(void)
   }
   if (parkbrake_mode == 1) {
     /* Manual Park Brake */
-    *parkbrake_xplane = (float) parkbrake;
-
-    //printf("M: %f \n",*parkbrake_xplane);
-    
     /* disable Park Brake servo */
     value = -1.0;
     ret = servos_output(device_dcmotor,2,&value,minval,maxval,0,1023);
+
+    if ((acf_type == 2) || (acf_type == 3)) {
+      float fval = (float) parkbrake;
+      ret = set_state_togglef(parkbrake_xplane,&fval,parkbrake_button);
+      if (ret != 0) {
+	printf("Park Brake Toggle: %f %i %i \n",*parkbrake_xplane,parkbrake,*parkbrake_button);
+      }
+
+    } else {
+      *parkbrake_xplane = (float) parkbrake;
+    }
+      
+    //printf("M: %f \n",*parkbrake_xplane);
+    
   }
   if (parkbrake_mode == 2) {
     /* Auto Park Brake */

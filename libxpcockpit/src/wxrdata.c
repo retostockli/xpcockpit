@@ -127,7 +127,6 @@ void init_wxr(char server_ip[]) {
 	}
   
 	int sendlen = 7+n;
-	//	int recvlen = (5+13*MAXRADAR)*100;
 	int recvlen = 50000;
 
 	allocate_wxrdata(sendlen,recvlen);
@@ -162,7 +161,7 @@ void write_wxr() {
     
     if (dt > WXR_CHECK_INTERVAL) {
       
-      printf("We did receive WXR data for %i seconds, send init string to X-Plane\n",
+      printf("We did not receive WXR data for %i seconds, send init string to X-Plane\n",
 	     (int) WXR_CHECK_INTERVAL);
       
       /* new time reference for next call is current time */
@@ -251,7 +250,7 @@ void read_wxr() {
       nrad = 1;
     } else {
       if (wxr_is_xp12) {
-	wxrBufferLen = 5+18*MAXRADAR;
+	wxrBufferLen = 5+24*MAXRADAR;
       } else {
 	wxrBufferLen = 5+13*MAXRADAR;
       }
@@ -306,21 +305,27 @@ void read_wxr() {
 	     float lat                       latitude of the scan point
 	     float bases_meters              the cloud basees in meters MSL
 	     float tops_meters               the cloud tops in meters MSL
-	     char clouds_ratio              cloud ratio this lat and lon ratio
-	     char precip_ratio              precip ratio at this lat and lon
+	     float clouds_ratio              cloud ratio this lat and lon ratio
+	     float precip_ratio              precip ratio at this lat and lon
 	  */
 	  if (wxr_is_xp12) {
-	    memcpy(&lon,&wxrBuffer[5+r*18+0],sizeof(lon));
-	    memcpy(&lat,&wxrBuffer[5+r*18+4],sizeof(lat));
-	    memcpy(&lev,&wxrBuffer[5+r*18+17],sizeof(lev));
-	    memcpy(&hgt,&wxrBuffer[5+r*18+13],sizeof(hgt));
+	    float cloud_base;
+	    float cloud_ratio;
+	    float precip_ratio;
+	    memcpy(&lon,&wxrBuffer[5+r*24+0],sizeof(lon));
+	    memcpy(&lat,&wxrBuffer[5+r*24+4],sizeof(lat));
+	    memcpy(&cloud_base,&wxrBuffer[5+r*24+8],sizeof(cloud_base));
+	    memcpy(&hgt,&wxrBuffer[5+r*24+12],sizeof(hgt));
+	    memcpy(&precip_ratio,&wxrBuffer[5+r*24+16],sizeof(precip_ratio));
+	    lev = (int) precip_ratio * 100.0;
+	    //printf("%i lon %f lat %f hgt %f base %f ratio %f \n",r,lon,lat,hgt,cloud_base,precip_ratio);
 	  } else {
 	    memcpy(&lon,&wxrBuffer[5+r*13+0],sizeof(lon));
 	    memcpy(&lat,&wxrBuffer[5+r*13+4],sizeof(lat));
 	    memcpy(&lev,&wxrBuffer[5+r*13+8],sizeof(lev));
 	    memcpy(&hgt,&wxrBuffer[5+r*13+9],sizeof(hgt));
+	    //printf("%i lon %f lat %f hgt %f lev %i \n",r,lon,lat,hgt,lev);
 	  }
-	  printf("%i lon %f lat %f hgt %f lev %i \n",r,lon,lat,hgt,lev);
 	  
 	}
 	  

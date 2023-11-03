@@ -112,7 +112,9 @@ XPlaneDataSource::~XPlaneDataSource()
   exit_beacon_client();
   
   /* cancel wxr udp socket */
-  exit_wxr();
+  if (wxr_type > 0) {
+    exit_wxr();
+  }
   
   /* free local dataref structure */
   clear_dataref();
@@ -138,8 +140,19 @@ void XPlaneDataSource::OnIdle()
   /* send data to X-Plane via TCP/IP */
   if (send_xpserver()<0) exit(-11);
 
+  /* set avionics dataref to missing if connection was lost
+     since this dataref is used to diagnose the connection
+     in some of the gauges */
+  int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
+  if (connected == 0) {
+    if (*avionics_on != INT_MISS) {
+      *avionics_on = INT_MISS;
+      numreceived = 1;
+    }
+  }
+
   /* WXR Data */
-  if ((connected==1) && (GetAcfType() >= 0)) {
+  if ((connected==1) && (GetAcfType() >= 0) && (wxr_type > 0)) {
     /* initialize UDP interface to read WXR data */
     init_wxr(XPlaneServerIP);
     

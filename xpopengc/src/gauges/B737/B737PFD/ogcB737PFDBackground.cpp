@@ -107,9 +107,22 @@ namespace OpenGC
 
     //  int *altimeter_pressure_unit = link_dataref_int("x737/systems/units/baroPressUnit");   
     int *altimeter_pressure_unit;
+    int *altimeter_set_std;
+    float *altimeter_pressure_preset;
+    int *altimeter_preset_show;
     int *no_vspeed;
     if ((acf_type == 2) || (acf_type == 3)) {
-      altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
+      if (is_captain) {
+	altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
+	altimeter_set_std = link_dataref_int("laminar/B738/EFIS/baro_set_std_pilot");
+	altimeter_preset_show = link_dataref_int("laminar/B738/EFIS/baro_sel_pilot_show");
+	altimeter_pressure_preset = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_pilot",-4);
+      } else {
+	altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/fo/baro_in_hpa");
+	altimeter_set_std = link_dataref_int("laminar/B738/EFIS/baro_set_std_copilot");
+	altimeter_preset_show = link_dataref_int("laminar/B738/EFIS/baro_sel_copilot_show");
+	altimeter_pressure_preset = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_copilot",-4);
+      }
       no_vspeed = link_dataref_int("laminar/B738/pfd/no_vspd");
     } else {
       altimeter_pressure_unit = link_dataref_int("xpserver/barometer_unit");
@@ -117,144 +130,156 @@ namespace OpenGC
 
     // angle of attack (degrees)
     float *aoa = link_dataref_flt("sim/flightmodel/position/alpha",-1);
-    
 
-    //int *ap_athr_armed_rec;   
-    //int *ap_athr_armed;   
-    //int *ap_n1_mode;   
-    //int *ap_mcpspd_mode;   
-    //int *ap_fmcspd_mode;
+    //float *ap_athr_armed_rec;   
+    //float *ap_athr_armed;   
+    //float *ap_n1_mode;   
+    //float *ap_mcpspd_mode;   
+    //float *ap_fmcspd_mode;
 
-    int *ap_spd_mode;
-    //int *ap_spd_mode_arm;
-    int *ap_spd_mode_rec;
-    int *ap_hdg_mode;   
-    int *ap_hdg_mode_arm;   
-    int *ap_hdg_mode_rec;   
-    int *ap_alt_mode;   
-    int *ap_alt_mode_arm;   
-    int *ap_alt_mode_rec;   
+    float *ap_spd_mode;
+    //float *ap_spd_mode_arm;
+    float *ap_spd_mode_rec;
+    float *ap_hdg_mode;   
+    float *ap_hdg_mode_arm;   
+    float *ap_hdg_mode_rec;   
+    float *ap_alt_mode;   
+    float *ap_alt_mode_arm;   
+    float *ap_alt_mode_rec;   
 
-    //int *ap_flare_mode;   
-    //int *ap_rollout_mode;   
+    //float *ap_flare_mode;   
+    //float *ap_rollout_mode;   
 
-    //int *ap_retard_mode;   
-    //int *ap_thrhld_mode;   
-    //int *ap_lnav_armed;   
-    //int *ap_vorloc_armed;   
-    //int *ap_pitchspd_mode;   
-    //int *ap_vvi_mode;
-    //int *ap_vs_mode;   
-    //int *ap_gs_armed;   
-    //int *ap_gs_mode;   
-    //int *ap_toga_mode;   
-    //int *ap_lnav_mode;   
-    //int *ap_vorloc_mode;   
-    int *ap_single_ch;
-    int *ap_autoland;
+    //float *ap_retard_mode;   
+    //float *ap_thrhld_mode;   
+    //float *ap_lnav_armed;   
+    //float *ap_vorloc_armed;   
+    //float *ap_pitchspd_mode;   
+    //float *ap_vvi_mode;
+    //float *ap_vs_mode;   
+    //float *ap_gs_armed;   
+    //float *ap_gs_mode;   
+    //float *ap_toga_mode;   
+    //float *ap_lnav_mode;   
+    //float *ap_vorloc_mode;   
+    float *ap_single_ch;
+    float *ap_autoland;
     if ((acf_type == 2) || (acf_type == 3)) {
-      //ap_athr_armed = link_dataref_int("laminar/B738/autopilot/autothrottle_status");   
-      //ap_athr_armed_rec = link_dataref_int("laminar/B738/autopilot/rec_thr2_modes");   
+      //ap_athr_armed = link_dataref_flt("laminar/B738/autopilot/autothrottle_status",0);   
+      //ap_athr_armed_rec = link_dataref_flt("laminar/B738/autopilot/rec_thr2_modes",0);   
 
-      ap_spd_mode     = link_dataref_int("laminar/B738/autopilot/pfd_spd_mode");   
-      // ap_spd_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_spd_mode_arm");   
-      ap_spd_mode_rec = link_dataref_int("laminar/B738/autopilot/rec_thr_modes");   
-      ap_hdg_mode     = link_dataref_int("laminar/B738/autopilot/pfd_hdg_mode");   
-      ap_hdg_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_hdg_mode_arm");   
-      ap_hdg_mode_rec = link_dataref_int("laminar/B738/autopilot/rec_hdg_modes");   
-      ap_alt_mode     = link_dataref_int("laminar/B738/autopilot/pfd_alt_mode");   
-      ap_alt_mode_arm = link_dataref_int("laminar/B738/autopilot/pfd_alt_mode_arm");   
-      ap_alt_mode_rec = link_dataref_int("laminar/B738/autopilot/rec_alt_modes");   
+      if (is_captain) {
+	ap_spd_mode     = link_dataref_flt_arr("laminar/B738/autopilot/pfd_spd_mode",2,0,0);   
+	// ap_spd_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_spd_mode_arm",2,0,0);   
+	ap_spd_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_thr_modes",2,0,0);   
+	ap_hdg_mode     = link_dataref_flt_arr("laminar/B738/autopilot/pfd_hdg_mode",2,0,0);   
+	ap_hdg_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_hdg_mode_arm",2,0,0);   
+	ap_hdg_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_hdg_modes",2,0,0);   
+	ap_alt_mode     = link_dataref_flt_arr("laminar/B738/autopilot/pfd_alt_mode",2,0,0);   
+	ap_alt_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_alt_mode_arm",2,0,0);   
+	ap_alt_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_alt_modes",2,0,0);   
+      } else {
+	ap_spd_mode     = link_dataref_flt_arr("laminar/B738/autopilot/pfd_spd_mode",2,1,0);   
+	// ap_spd_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_spd_mode_arm",2,1,0);   
+	ap_spd_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_thr_modes",2,1,0);   
+	ap_hdg_mode     = link_dataref_flt_arr("laminar/B738/autopilot/pfd_hdg_mode",2,1,0);   
+	ap_hdg_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_hdg_mode_arm",2,1,0);   
+	ap_hdg_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_hdg_modes",2,1,0);   
+	ap_alt_mode     = link_dataref_flt_arr("laminar/B738/autopilot/pfd_alt_mode",2,1,0);   
+	ap_alt_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_alt_mode_arm",2,1,0);   
+	ap_alt_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_alt_modes",2,1,0);   
+      }
+	  
+	
+      //ap_flare_mode = link_dataref_flt("laminar/B738/autopilot/flare_status",0);   
+      //ap_rollout_mode = link_dataref_flt("laminar/B738/autopilot/rollout_status",0);   
 
-      //ap_flare_mode = link_dataref_int("laminar/B738/autopilot/flare_status");   
-      //ap_rollout_mode = link_dataref_int("laminar/B738/autopilot/rollout_status");   
-
-      //ap_retard_mode = link_dataref_int("laminar/B738/autopilot/retard_status");   
-      //ap_thrhld_mode = link_dataref_int("laminar/B738/autopilot/thr_hld_pfd");   
-      //ap_lnav_armed = link_dataref_int("laminar/B738/autopilot/lnav_status");   
-      //ap_vorloc_armed = link_dataref_int("laminar/B738/autopilot/vorloc_status");   
-      //ap_pitchspd_mode = link_dataref_int("xpserver/PFD_PITCHSPD_mode_on");   
-      //ap_vvi_mode = link_dataref_int("laminar/B738/autopilot/vvi_status_pfd");
-      //ap_vs_mode = link_dataref_int("laminar/B738/autopilot/vs_status");   
-      //ap_gs_armed = link_dataref_int("laminar/B738/autopilot/gs_armed_pfd");   
-      //ap_gs_mode = link_dataref_int("xpserver/PFD_GS_mode_on");   
-      //ap_toga_mode = link_dataref_int("xpserver/PFD_TOGA_mode_on");   
-      //ap_lnav_mode = link_dataref_int("laminar/B738/autopilot/pfd_vorloc_lnav");   
-      //ap_vorloc_mode = link_dataref_int("laminar/B738/autopilot/pfd_vorloc_lnav");   
-      ap_single_ch = link_dataref_int("laminar/B738/autopilot/single_ch_status");
-      ap_autoland = link_dataref_int("laminar/B738/autopilot/autoland_status");
+      //ap_retard_mode = link_dataref_flt("laminar/B738/autopilot/retard_status",0);   
+      //ap_thrhld_mode = link_dataref_flt("laminar/B738/autopilot/thr_hld_pfd",0);   
+      //ap_lnav_armed = link_dataref_flt("laminar/B738/autopilot/lnav_status",0);   
+      //ap_vorloc_armed = link_dataref_flt("laminar/B738/autopilot/vorloc_status",0);   
+      //ap_pitchspd_mode = link_dataref_flt("xpserver/PFD_PITCHSPD_mode_on",0);   
+      //ap_vvi_mode = link_dataref_flt("laminar/B738/autopilot/vvi_status_pfd",0);
+      //ap_vs_mode = link_dataref_flt("laminar/B738/autopilot/vs_status",0);   
+      //ap_gs_armed = link_dataref_flt("laminar/B738/autopilot/gs_armed_pfd",0);   
+      //ap_gs_mode = link_dataref_flt("xpserver/PFD_GS_mode_on",0);   
+      //ap_toga_mode = link_dataref_flt("xpserver/PFD_TOGA_mode_on",0);   
+      //ap_lnav_mode = link_dataref_flt("laminar/B738/autopilot/pfd_vorloc_lnav",0);   
+      //ap_vorloc_mode = link_dataref_flt("laminar/B738/autopilot/pfd_vorloc_lnav",0);   
+      ap_single_ch = link_dataref_flt("laminar/B738/autopilot/single_ch_status",0);
+      ap_autoland = link_dataref_flt("laminar/B738/autopilot/autoland_status",0);
     } else if (acf_type == 1) {
       //ap_athr_armed = link_dataref_int("x737/systems/PFD/PFD_ATHR_ARMED_on");   
-      //ap_athr_armed_rec = link_dataref_int("xpserver/rec_thr2_modes");   
-      //ap_n1_mode = link_dataref_int("x737/systems/PFD/PFD_N1_mode_on");   
-      //ap_mcpspd_mode = link_dataref_int("x737/systems/PFD/PFD_MCPSPD_mode_on");   
-      //ap_fmcspd_mode = link_dataref_int("x737/systems/PFD/PFD_FMCSPD_mode_on");   
-      //ap_retard_mode = link_dataref_int("x737/systems/PFD/PFD_RETARD_mode_on");   
-      //ap_thrhld_mode = link_dataref_int("x737/systems/PFD/PFD_THRHLD_mode_on");   
-      //ap_lnav_armed = link_dataref_int("x737/systems/PFD/PFD_LNAVARMED_mode_on");   
-      //ap_vorloc_armed = link_dataref_int("x737/systems/PFD/PFD_VORLOCARMED_mode_on");   
-      //ap_pitchspd_mode = link_dataref_int("x737/systems/PFD/PFD_PITCHSPD_mode_on");   
-      //ap_vvi_mode = link_dataref_int("x737/systems/PFD/PFD_VSARMED_mode_on");
-      //ap_vs_mode = link_dataref_int("x737/systems/PFD/PFD_VS_mode_on");   
-      //ap_gs_armed = link_dataref_int("x737/systems/PFD/PFD_GSARMED_mode_on");   
-      //ap_gs_mode = link_dataref_int("x737/systems/PFD/PFD_GS_mode_on");   
-      //ap_flare_mode = link_dataref_int("x737/systems/PFD/PFD_FLARE_mode_on");   
-      //ap_toga_mode = link_dataref_int("x737/systems/PFD/PFD_TOGA_mode_on");   
-      //ap_lnav_mode = link_dataref_int("x737/systems/PFD/PFD_LNAV_mode_on");   
-      //ap_vorloc_mode = link_dataref_int("x737/systems/PFD/PFD_VORLOC_mode_on");   
-      ap_single_ch = link_dataref_int("x737/systems/afds/SINGLE_CH_warning");
-      ap_autoland = link_dataref_int("xpserver/autoland_status");
+      //ap_athr_armed_rec = link_dataref_int("xpserver/rec_thr2_modes",0);   
+      //ap_n1_mode = link_dataref_int("x737/systems/PFD/PFD_N1_mode_on",0);   
+      //ap_mcpspd_mode = link_dataref_int("x737/systems/PFD/PFD_MCPSPD_mode_on",0);   
+      //ap_fmcspd_mode = link_dataref_int("x737/systems/PFD/PFD_FMCSPD_mode_on",0);   
+      //ap_retard_mode = link_dataref_int("x737/systems/PFD/PFD_RETARD_mode_on",0);   
+      //ap_thrhld_mode = link_dataref_int("x737/systems/PFD/PFD_THRHLD_mode_on",0);   
+      //ap_lnav_armed = link_dataref_int("x737/systems/PFD/PFD_LNAVARMED_mode_on",0);   
+      //ap_vorloc_armed = link_dataref_int("x737/systems/PFD/PFD_VORLOCARMED_mode_on",0);   
+      //ap_pitchspd_mode = link_dataref_int("x737/systems/PFD/PFD_PITCHSPD_mode_on",0);   
+      //ap_vvi_mode = link_dataref_int("x737/systems/PFD/PFD_VSARMED_mode_on",0);
+      //ap_vs_mode = link_dataref_int("x737/systems/PFD/PFD_VS_mode_on",0);   
+      //ap_gs_armed = link_dataref_int("x737/systems/PFD/PFD_GSARMED_mode_on",0);   
+      //ap_gs_mode = link_dataref_int("x737/systems/PFD/PFD_GS_mode_on",0);   
+      //ap_flare_mode = link_dataref_int("x737/systems/PFD/PFD_FLARE_mode_on",0);   
+      //ap_toga_mode = link_dataref_int("x737/systems/PFD/PFD_TOGA_mode_on",0);   
+      //ap_lnav_mode = link_dataref_int("x737/systems/PFD/PFD_LNAV_mode_on",0);   
+      //ap_vorloc_mode = link_dataref_int("x737/systems/PFD/PFD_VORLOC_mode_on",0);   
+      ap_single_ch = link_dataref_flt("x737/systems/afds/SINGLE_CH_warning",0);
+      ap_autoland = link_dataref_flt("xpserver/autoland_status",0);
     } else {
-      //ap_athr_armed = link_dataref_int("xpserver/PFD_ATHR_ARMED_on");   
-      //ap_athr_armed_rec = link_dataref_int("xpserver/rec_thr2_modes");   
-      //ap_thrhld_mode = link_dataref_int("xpserver/PFD_THRHLD_mode_on");   
-      //ap_lnav_armed = link_dataref_int("xpserver/PFD_LNAVARMED_mode_on");   
-      //ap_vorloc_armed = link_dataref_int("xpserver/PFD_VORLOCARMED_mode_on");   
-      //ap_pitchspd_mode = link_dataref_int("xpserver/PFD_PITCHSPD_mode_on");   
-      //ap_vvi_mode = link_dataref_int("xpserver/PFD_VSARMED_mode_on");
-      //ap_vs_mode = link_dataref_int("xpserver/PFD_VS_mode_on");   
-      //ap_gs_armed = link_dataref_int("xpserver/PFD_GSARMED_mode_on");   
-      //ap_gs_mode = link_dataref_int("xpserver/PFD_GS_mode_on");   
-      //ap_flare_mode = link_dataref_int("xpserver/PFD_FLARE_mode_on");   
-      //ap_toga_mode = link_dataref_int("xpserver/PFD_TOGA_mode_on");   
-      //ap_lnav_mode = link_dataref_int("xpserver/PFD_LNAV_mode_on");   
-      //ap_hdg_mode = link_dataref_int("xpserver/PFD_HDG_mode_on");   
-      //ap_hdg_mode_rec = link_dataref_int("xpserver/PFD_HDG_mode_on");   
-      //ap_vorloc_mode = link_dataref_int("xpserver/PFD_VORLOC_mode_on");   
-      ap_single_ch = link_dataref_int("xpserver/SINGLE_CH_warning");
-      ap_autoland = link_dataref_int("xpserver/autoland_status");
+      //ap_athr_armed = link_dataref_flt("xpserver/PFD_ATHR_ARMED_on");   
+      //ap_athr_armed_rec = link_dataref_flt("xpserver/rec_thr2_modes");   
+      //ap_thrhld_mode = link_dataref_flt("xpserver/PFD_THRHLD_mode_on");   
+      //ap_lnav_armed = link_dataref_flt("xpserver/PFD_LNAVARMED_mode_on");   
+      //ap_vorloc_armed = link_dataref_flt("xpserver/PFD_VORLOCARMED_mode_on");   
+      //ap_pitchspd_mode = link_dataref_flt("xpserver/PFD_PITCHSPD_mode_on");   
+      //ap_vvi_mode = link_dataref_flt("xpserver/PFD_VSARMED_mode_on");
+      //ap_vs_mode = link_dataref_flt("xpserver/PFD_VS_mode_on");   
+      //ap_gs_armed = link_dataref_flt("xpserver/PFD_GSARMED_mode_on");   
+      //ap_gs_mode = link_dataref_flt("xpserver/PFD_GS_mode_on");   
+      //ap_flare_mode = link_dataref_flt("xpserver/PFD_FLARE_mode_on");   
+      //ap_toga_mode = link_dataref_flt("xpserver/PFD_TOGA_mode_on");   
+      //ap_lnav_mode = link_dataref_flt("xpserver/PFD_LNAV_mode_on");   
+      //ap_hdg_mode = link_dataref_flt("xpserver/PFD_HDG_mode_on");   
+      //ap_hdg_mode_rec = link_dataref_flt("xpserver/PFD_HDG_mode_on");   
+      //ap_vorloc_mode = link_dataref_flt("xpserver/PFD_VORLOC_mode_on");   
+      ap_single_ch = link_dataref_flt("xpserver/SINGLE_CH_warning",0);
+      ap_autoland = link_dataref_flt("xpserver/autoland_status",0);
     }
   
     //  int *ap_vnav_armed = link_dataref_int("x737/systems/afds/VNAV");   
     //  int *ap_lvlchg_armed = link_dataref_int("x737/systems/afds/LVLCHG");   
 
-    int *fd_a_status;
-    int *fd_b_status;
-    int *cmd_a_status;
-    int *cmd_b_status;
-    int *cmd_rec;
+    float *fd_a_status;
+    float *fd_b_status;
+    float *cmd_a_status;
+    float *cmd_b_status;
+    float *cmd_rec;
     if ((acf_type == 2) || (acf_type == 3)) {
-      fd_a_status = link_dataref_int("laminar/B738/autopilot/master_capt_status");   
-      fd_b_status = link_dataref_int("laminar/B738/autopilot/master_fo_status");
-      cmd_a_status = link_dataref_int("laminar/B738/autopilot/cmd_a_status");
-      cmd_b_status = link_dataref_int("laminar/B738/autopilot/cmd_b_status");
+      fd_a_status = link_dataref_flt("laminar/B738/autopilot/master_capt_status",0);   
+      fd_b_status = link_dataref_flt("laminar/B738/autopilot/master_fo_status",0);
+      cmd_a_status = link_dataref_flt("laminar/B738/autopilot/cmd_a_status",0);
+      cmd_b_status = link_dataref_flt("laminar/B738/autopilot/cmd_b_status",0);
       if (is_captain) {
-	cmd_rec = link_dataref_int("laminar/B738/autopilot/rec_cmd_modes");
+	cmd_rec = link_dataref_flt("laminar/B738/autopilot/rec_cmd_modes",0);
       } else {
-	cmd_rec = link_dataref_int("laminar/B738/autopilot/rec_cmd_modes_fo");
+	cmd_rec = link_dataref_flt("laminar/B738/autopilot/rec_cmd_modes_fo",0);
       }
     } else if (acf_type == 1) {
-      fd_a_status = link_dataref_int("x737/systems/afds/fdA_status");   
-      fd_b_status = link_dataref_int("x737/systems/afds/fdB_status");   
-      cmd_a_status = link_dataref_int("x737/systems/afds/CMD_A");
-      cmd_b_status = link_dataref_int("x737/systems/afds/CMD_B");
-      cmd_rec = link_dataref_int("xpserver/CMD_REC");
+      fd_a_status = link_dataref_flt("x737/systems/afds/fdA_status",0);   
+      fd_b_status = link_dataref_flt("x737/systems/afds/fdB_status",0);   
+      cmd_a_status = link_dataref_flt("x737/systems/afds/CMD_A",0);
+      cmd_b_status = link_dataref_flt("x737/systems/afds/CMD_B",0);
+      cmd_rec = link_dataref_flt("xpserver/CMD_REC",0);
     } else {
-      fd_a_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");   
-      fd_b_status = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");
-      cmd_a_status = link_dataref_int("xpserver/CMD_A");
-      cmd_b_status = link_dataref_int("xpserver/CMD_B");
-      cmd_rec = link_dataref_int("xpserver/CMD_REC");
+      fd_a_status = link_dataref_flt("sim/cockpit/autopilot/autopilot_mode",0);   
+      fd_b_status = link_dataref_flt("sim/cockpit/autopilot/autopilot_mode",0);
+      cmd_a_status = link_dataref_flt("xpserver/CMD_A",0);
+      cmd_b_status = link_dataref_flt("xpserver/CMD_B",0);
+      cmd_rec = link_dataref_flt("xpserver/CMD_REC",0);
     }
     
     int *nav1_CDI = link_dataref_int("sim/cockpit/radios/nav1_CDI");   
@@ -323,21 +348,55 @@ namespace OpenGC
 
     // 3. Plot dialed barometric pressure in In Hg below the altitude tape
 
-    m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
-    glColor3ub(COLOR_GREEN);
-    glLineWidth(lineWidth);
 
-    if (*altimeter_pressure != FLT_MISS) {
-      if (roundf(*altimeter_pressure*100) == 2992) {
-	strcpy(buffer, "STD");
-	m_pFontManager->Print(153,25+0, &buffer[0], m_Font);
-      } else {
-	if (*altimeter_pressure_unit == 1) {
-	  snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure/0.029530);
-	  m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if (*altimeter_pressure != FLT_MISS) {
+	m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
+	glColor3ub(COLOR_GREEN);
+	glLineWidth(lineWidth);
+	if (*altimeter_set_std == 1) {
+	  strcpy(buffer, "STD");
+	  m_pFontManager->Print(153,25+0, &buffer[0], m_Font);
 	} else {
-	  snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure);
-	  m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  if (*altimeter_pressure_unit == 1) {
+	    snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure/0.029530);
+	    m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  } else {
+	    snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure);
+	    m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  }
+	}
+      }
+      if (*altimeter_pressure_preset != FLT_MISS) {
+	m_pFontManager->SetSize(m_Font, 0.7*fontWidth, 0.7*fontHeight);
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+	if (*altimeter_preset_show == 1) {
+	  if (*altimeter_pressure_unit == 1) {
+	    snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure_preset/0.029530);
+	    m_pFontManager->Print(155,18+0, &buffer[0], m_Font);
+	  } else {
+	    snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure_preset);
+	    m_pFontManager->Print(155,18+0, &buffer[0], m_Font);
+	  }
+	}
+      }
+    } else {
+      if (*altimeter_pressure != FLT_MISS) {
+	m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
+	glColor3ub(COLOR_GREEN);
+	glLineWidth(lineWidth);
+	if (roundf(*altimeter_pressure*100) == 2992) {
+	  strcpy(buffer, "STD");
+	  m_pFontManager->Print(153,25+0, &buffer[0], m_Font);
+	} else {
+	  if (*altimeter_pressure_unit == 1) {
+	    snprintf(buffer, sizeof(buffer), "%4.0f hPa", *altimeter_pressure/0.029530);
+	    m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  } else {
+	    snprintf(buffer, sizeof(buffer), "%4.2f In", *altimeter_pressure);
+	    m_pFontManager->Print(150,25+0, &buffer[0], m_Font);
+	  }
 	}
       }
     }

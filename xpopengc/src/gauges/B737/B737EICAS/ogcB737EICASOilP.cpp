@@ -69,7 +69,7 @@ namespace OpenGC
     float value;
 
     /* oil pressure comes in psi/100 */
-    float *engn_oilpressure = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_oil_press",8,-1,-2);
+    float *engn_oilpressure = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_oil_press",16,-1,-2);
 
     switch (currentEngine)
       {

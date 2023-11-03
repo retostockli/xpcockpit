@@ -86,7 +86,7 @@ int set_state_toggle(int *new_state, int *old_state, int *toggle)
 	  ret = 1;
 	} else if (*new_state < *old_state) {
 	  *toggle = 1;
-	  ret =-1;
+	  ret = 1;
 	} else {
 	  /* nothing to do */
 	}

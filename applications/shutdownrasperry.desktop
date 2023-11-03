@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Name=Shutdown Rasperry
+GenericName=Shutdown Rasperry
+Exec=xterm -e "\\${HOME}/xpcockpit/scripts/shutdownrasperry.sh; \\$SHELL"
+Terminal=false
+Icon=/home/stockli/xpcockpit/applications/shutdownrasperry.png
+Type=Application

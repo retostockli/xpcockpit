@@ -260,18 +260,18 @@ void b737_efis(int copilot)
   if (*efis_wxr == INT_MISS) *efis_wxr = 0;
   ret = digital_input(card,40+offset,efis_wxr,1);  // WXR --> toggle switch
   if (ret == 1) printf("WXR: %i \n",*efis_wxr);
-  ret = digital_input(card,41+offset,efis_sta,-1);  // STA
+  ret = digital_input(card,41+offset,efis_sta,0);  // STA
   if (ret == 1) printf("STA: %i \n",*efis_sta);
-  ret = digital_input(card,42+offset,efis_wpt,-1);  // WPT
-  ret = digital_input(card,43+offset,efis_apt,-1);  // ARPT
-  ret = digital_input(card,44+offset,efis_data,-1);  // DATA
-  ret = digital_input(card,45+offset,efis_pos,-1);  // POS
-  ret = digital_input(card,52+offset,efis_fpv,-1);  // FPV
-  ret = digital_input(card,53+offset,efis_mtrs,-1);  // MTRS
-  ret = digital_input(card,34+offset,efis_rst,-1);  // RST
-  ret = digital_input(card,39+offset,efis_std,-1);  // STD
-  ret = digital_input(card,104+offset1,efis_ctr,-1);  // CTR
-  ret = digital_input(card,105+offset1,efis_tfc,-1);  // TFC
+  ret = digital_input(card,42+offset,efis_wpt,0);  // WPT
+  ret = digital_input(card,43+offset,efis_apt,0);  // ARPT
+  ret = digital_input(card,44+offset,efis_data,0);  // DATA
+  ret = digital_input(card,45+offset,efis_pos,0);  // POS
+  ret = digital_input(card,52+offset,efis_fpv,0);  // FPV
+  ret = digital_input(card,53+offset,efis_mtrs,0);  // MTRS
+  ret = digital_input(card,34+offset,efis_rst,0);  // RST
+  ret = digital_input(card,39+offset,efis_std,0);  // STD
+  ret = digital_input(card,104+offset1,efis_ctr,0);  // CTR
+  ret = digital_input(card,105+offset1,efis_tfc,0);  // TFC
 
   /* Special Handling for TERR since we cycle through TERR modes */
   temp = 0;
@@ -289,8 +289,8 @@ void b737_efis(int copilot)
   }
 
   /* EFIS VOR1/OFF/ADF1 selector */
-  ret = digital_input(card,32+offset,&temp,-1); // VOR1
-  ret = digital_input(card,33+offset,&temp2,-1); // ADF1
+  ret = digital_input(card,32+offset,&temp,0); // VOR1
+  ret = digital_input(card,33+offset,&temp2,0); // ADF1
   if ((acf_type == 2) || (acf_type == 3)) {
     if (*efis1_sel != INT_MISS) {
       if (*efis1_sel < (temp + (1-temp2) - 1)) {
@@ -305,8 +305,8 @@ void b737_efis(int copilot)
   }
 
   /* EFIS VOR2/OFF/ADF2 selector */
-  ret = digital_input(card,54+offset,&temp,-1); // VOR2
-  ret = digital_input(card,55+offset,&temp2,-1); // ADF2
+  ret = digital_input(card,54+offset,&temp,0); // VOR2
+  ret = digital_input(card,55+offset,&temp2,0); // ADF2
   if ((acf_type == 2) || (acf_type == 3)) {
     if (*efis2_sel != INT_MISS) {
       if (*efis2_sel < (temp + (1-temp2) - 1)) {
@@ -323,7 +323,7 @@ void b737_efis(int copilot)
   /* BARO IN/HPA */
   if (*altimeter_pressure_unit != INT_MISS) {
     if ((acf_type == 2) || (acf_type == 3)) {
-      ret = digital_input(card,108+offset1,&temp,-1);
+      ret = digital_input(card,108+offset1,&temp,0);
       if ((*altimeter_pressure_unit == 1) && (temp == 0)) {
 	printf("Altimeter Pressure Unit: in Hg \n");
 	*altimeter_pressure_unit_dn = 1;
@@ -333,7 +333,7 @@ void b737_efis(int copilot)
 	printf("Altimeter Pressure Unit: hPa \n");
       }
     } else {
-      ret = digital_input(card,108+offset1,altimeter_pressure_unit,-1);
+      ret = digital_input(card,108+offset1,altimeter_pressure_unit,0);
       if (ret == 1) {
 	if (*altimeter_pressure_unit == 0) printf("Altimeter Pressure Unit: in Hg \n");
 	if (*altimeter_pressure_unit == 1) printf("Altimeter Pressure Unit: hPa \n");
@@ -357,19 +357,19 @@ void b737_efis(int copilot)
   }
 
   /* MAP MODE SELECTOR */
-  ret = digital_input(card,51+offset,&temp,-1); // APP
+  ret = digital_input(card,51+offset,&temp,0); // APP
   if (temp == 1) {
     *map_mode = 0;
   } else {
-    ret = digital_input(card,50+offset,&temp,-1); // VOR
+    ret = digital_input(card,50+offset,&temp,0); // VOR
     if (temp == 1) {
       *map_mode = 1;
     } else {
-      ret = digital_input(card,49+offset,&temp,-1); // MAP
+      ret = digital_input(card,49+offset,&temp,0); // MAP
       if (temp == 1) {
 	*map_mode = 2;
       } else {
-	ret = digital_input(card,48+offset,&temp,-1); // PLN
+	ret = digital_input(card,48+offset,&temp,0); // PLN
 	if (temp == 1) {
 	  *map_mode = 3;
 	}
@@ -378,35 +378,35 @@ void b737_efis(int copilot)
   }
 
   /* MAP RANGE SELECTOR */
-  ret = digital_input(card,63+offset,&temp,-1);
+  ret = digital_input(card,63+offset,&temp,0);
   if (temp == 1) {
       *navrangesel = 0; // 5 nm
   } else {
-    ret = digital_input(card,62+offset,&temp,-1);
+    ret = digital_input(card,62+offset,&temp,0);
     if (temp == 1) {
 	*navrangesel = 1; // 10 nm
     } else {
-      ret = digital_input(card,61+offset,&temp,-1);
+      ret = digital_input(card,61+offset,&temp,0);
       if (temp == 1) {
 	*navrangesel = 2; // 20 nm
       } else {
-	ret = digital_input(card,60+offset,&temp,-1);
+	ret = digital_input(card,60+offset,&temp,0);
 	if (temp == 1) {
 	  *navrangesel = 3; // 40 nm
 	} else {
-	  ret = digital_input(card,59+offset,&temp,-1);
+	  ret = digital_input(card,59+offset,&temp,0);
 	  if (temp == 1) {
 	    *navrangesel = 4; // 80 nm
 	  } else {
-	    ret = digital_input(card,58+offset,&temp,-1);
+	    ret = digital_input(card,58+offset,&temp,0);
 	    if (temp == 1) {
 	      *navrangesel = 5; // 160 nm
 	    } else {
-	      ret = digital_input(card,57+offset,&temp,-1);
+	      ret = digital_input(card,57+offset,&temp,0);
 	      if (temp == 1) {
 		*navrangesel = 6; // 320 nm
 	      } else {
-		ret = digital_input(card,56+offset,&temp,-1);
+		ret = digital_input(card,56+offset,&temp,0);
 		if (temp == 1) {
 		  *navrangesel = 7; // 640 nm
 		}

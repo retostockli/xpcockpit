@@ -42,6 +42,7 @@ float autobrake_pos;
 
 void b737_mip(void)
 {
+  int card = 1; /* SISMO card according to ini file */
 
   /* In the SISMO MIP all switches are inverted (0=on; 1=off) */
   
@@ -49,7 +50,6 @@ void b737_mip(void)
   int temp;
   int temp2;
   //  float fvalue;
-  int card = 1;
   int one = 1;
   //  int zero = 0;
 
@@ -88,14 +88,14 @@ void b737_mip(void)
   }
 
   temp = (*gear_handle_position == 0.0);
-  ret = digital_input(card,22,&temp,-1);
+  ret = digital_input(card,22,&temp,0);
   if (temp == 1) {
     if (ret==1) printf("gear handle up \n");
     *gear_handle_down = 0;
     *gear_handle_position = 0.0;
   } else {
     temp = (*gear_handle_position == 1.0);
-    ret = digital_input(card,23,&temp,-1);
+    ret = digital_input(card,23,&temp,0);
     if (temp == 1) {
       if (ret==1) printf("gear handle down \n");
       *gear_handle_down = 1;
@@ -112,52 +112,52 @@ void b737_mip(void)
     int *guarded_covers = link_dataref_int("laminar/B738/guarded_covers");
     *guarded_covers = 1;
 
-    float *ap_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/ap_warn1",0);
-    float *ap_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/ap_disconnect1",0);
-    float *ap_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/ap_warn2",0);
-    float *ap_prst_disc_fo = link_dataref_flt("laminar/B738/annunciator/ap_disconnect2",0);
-    float *at_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/at_fms_warn1",0);
-    float *at_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/at_disconnect1",0);
-    float *at_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/at_fms_warn2",0);
-    float *at_prst_disc_fo = link_dataref_flt("laminar/B738/annunciator/at_disconnect2",0);
-    float *fmc_prst = link_dataref_flt("laminar/B738/fmc/fmc_message_warn",0);
+    float *ap_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/ap_warn1",-1);
+    float *ap_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/ap_disconnect1",-1);
+    float *ap_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/ap_warn2",-1);
+    float *ap_prst_disc_fo = link_dataref_flt("laminar/B738/annunciator/ap_disconnect2",-1);
+    float *at_prst_warn_capt = link_dataref_flt("laminar/B738/annunciator/at_fms_warn1",-1);
+    float *at_prst_disc_capt = link_dataref_flt("laminar/B738/annunciator/at_disconnect1",-1);
+    float *at_prst_warn_fo = link_dataref_flt("laminar/B738/annunciator/at_fms_warn2",-1);
+    float *at_prst_disc_fo = link_dataref_flt("laminar/B738/annunciator/at_disconnect2",-1);
+    float *fmc_prst = link_dataref_flt("laminar/B738/fmc/fmc_message_warn",-1);
 
-    float *speedbrake_armed = link_dataref_flt("laminar/B738/annunciator/speedbrake_armed",0);
-    float *speedbrake_extend = link_dataref_flt("laminar/B738/annunciator/speedbrake_extend",0);
-    float *stab_outoftrim = link_dataref_flt("laminar/B738/annunciator/stab_out_of_trim",0);
+    float *speedbrake_armed = link_dataref_flt("laminar/B738/annunciator/speedbrake_armed",-1);
+    float *speedbrake_extend = link_dataref_flt("laminar/B738/annunciator/speedbrake_extend",-1);
+    float *stab_outoftrim = link_dataref_flt("laminar/B738/annunciator/stab_out_of_trim",-1);
 
-    float *sixpack_flt_cont = link_dataref_flt("laminar/B738/annunciator/six_pack_flt_cont",0);
-    float *sixpack_elec = link_dataref_flt("laminar/B738/annunciator/six_pack_elec",0);
-    float *sixpack_irs = link_dataref_flt("laminar/B738/annunciator/six_pack_irs",0);
-    float *sixpack_apu = link_dataref_flt("laminar/B738/annunciator/six_pack_apu",0);
-    float *sixpack_fuel = link_dataref_flt("laminar/B738/annunciator/six_pack_fuel",0);
-    float *sixpack_ovht = link_dataref_flt("laminar/B738/annunciator/six_pack_fire",0);
+    float *sixpack_flt_cont = link_dataref_flt("laminar/B738/annunciator/six_pack_flt_cont",-1);
+    float *sixpack_elec = link_dataref_flt("laminar/B738/annunciator/six_pack_elec",-1);
+    float *sixpack_irs = link_dataref_flt("laminar/B738/annunciator/six_pack_irs",-1);
+    float *sixpack_apu = link_dataref_flt("laminar/B738/annunciator/six_pack_apu",-1);
+    float *sixpack_fuel = link_dataref_flt("laminar/B738/annunciator/six_pack_fuel",-1);
+    float *sixpack_ovht = link_dataref_flt("laminar/B738/annunciator/six_pack_fire",-1);
 
-    float *sixpack_anti_ice = link_dataref_flt("laminar/B738/annunciator/six_pack_ice",0);
-    float *sixpack_eng = link_dataref_flt("laminar/B738/annunciator/six_pack_eng",0);
-    float *sixpack_hyd = link_dataref_flt("laminar/B738/annunciator/six_pack_hyd",0);
-    float *sixpack_ovhd = link_dataref_flt("laminar/B738/annunciator/six_pack_overhead",0);
-    float *sixpack_doors = link_dataref_flt("laminar/B738/annunciator/six_pack_doors",0);
-    float *sixpack_air_cond = link_dataref_flt("laminar/B738/annunciator/six_pack_air_cond",0);
+    float *sixpack_anti_ice = link_dataref_flt("laminar/B738/annunciator/six_pack_ice",-1);
+    float *sixpack_eng = link_dataref_flt("laminar/B738/annunciator/six_pack_eng",-1);
+    float *sixpack_hyd = link_dataref_flt("laminar/B738/annunciator/six_pack_hyd",-1);
+    float *sixpack_ovhd = link_dataref_flt("laminar/B738/annunciator/six_pack_overhead",-1);
+    float *sixpack_doors = link_dataref_flt("laminar/B738/annunciator/six_pack_doors",-1);
+    float *sixpack_air_cond = link_dataref_flt("laminar/B738/annunciator/six_pack_air_cond",-1);
 
-    float *master_caution_light = link_dataref_flt("laminar/B738/annunciator/master_caution_light",0);
-    float *fire_bell_light_capt = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",0);
-    float *fire_bell_light_fo = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",0);
+    float *master_caution_light = link_dataref_flt("laminar/B738/annunciator/master_caution_light",-1);
+    float *fire_bell_light_capt = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun",-1);
+    float *fire_bell_light_fo = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
 
-    float *below_gs = link_dataref_flt("laminar/B738/annunciator/below_gs",0);
-    float *gpws_inop = link_dataref_flt("laminar/B738/annunciator/gpws",0);
+    float *below_gs = link_dataref_flt("laminar/B738/annunciator/below_gs",-1);
+    float *gpws_inop = link_dataref_flt("laminar/B738/annunciator/gpws",-1);
 
-    float *nose_gear_transit = link_dataref_flt("laminar/B738/annunciator/nose_gear_transit",0);
-    float *nose_gear_safe = link_dataref_flt("laminar/B738/annunciator/nose_gear_safe",0);
-    float *left_gear_transit = link_dataref_flt("laminar/B738/annunciator/left_gear_transit",0);
-    float *left_gear_safe = link_dataref_flt("laminar/B738/annunciator/left_gear_safe",0);
-    float *right_gear_transit = link_dataref_flt("laminar/B738/annunciator/right_gear_transit",0);
-    float *right_gear_safe = link_dataref_flt("laminar/B738/annunciator/right_gear_safe",0);
+    float *nose_gear_transit = link_dataref_flt("laminar/B738/annunciator/nose_gear_transit",-1);
+    float *nose_gear_safe = link_dataref_flt("laminar/B738/annunciator/nose_gear_safe",-1);
+    float *left_gear_transit = link_dataref_flt("laminar/B738/annunciator/left_gear_transit",-1);
+    float *left_gear_safe = link_dataref_flt("laminar/B738/annunciator/left_gear_safe",-1);
+    float *right_gear_transit = link_dataref_flt("laminar/B738/annunciator/right_gear_transit",-1);
+    float *right_gear_safe = link_dataref_flt("laminar/B738/annunciator/right_gear_safe",-1);
 
-    float *auto_brake_disarm = link_dataref_flt("laminar/B738/annunciator/auto_brake_disarm",0);
-    float *anti_skid_inop = link_dataref_flt("laminar/B738/annunciator/anti_skid_inop",0);
-    float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",0);
-    float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",0);
+    float *auto_brake_disarm = link_dataref_flt("laminar/B738/annunciator/auto_brake_disarm",-1);
+    float *anti_skid_inop = link_dataref_flt("laminar/B738/annunciator/anti_skid_inop",-1);
+    float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-1);
+    float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-1);
 
     float *flaps_position = link_dataref_flt("sim/cockpit2/controls/flap_handle_deploy_ratio",-3);
     float *brake_pressure = link_dataref_flt("laminar/B738/brake/brake_press",0);
@@ -204,7 +204,7 @@ void b737_mip(void)
     int *mfd_eng = link_dataref_cmd_hold("laminar/B738/LDU_control/push_button/MFD_ENG");
     int *mfd_sys = link_dataref_cmd_hold("laminar/B738/LDU_control/push_button/MFD_SYS");
 
-    int *gpws_test = link_dataref_cmd_hold("laminar/B738/push_button/gpws_test");
+    int *gpws_test = link_dataref_cmd_once("laminar/B738/push_button/gpws_test");
     float *gpws_flap_pos = link_dataref_flt("laminar/B738/toggle_switch/gpws_flap_pos",0);
     int *gpws_flap = link_dataref_cmd_once("laminar/B738/toggle_switch/gpws_flap");
     float *gpws_gear_pos = link_dataref_flt("laminar/B738/toggle_switch/gpws_gear_pos",0);
@@ -242,37 +242,37 @@ void b737_mip(void)
     /* INPUTS */
 
     /* AFDS Lights Test */
-    ret = digital_input(card,0,&afds_test_1_capt,-1);
-    ret = digital_input(card,1,&afds_test_2_capt,-1);
-    ret = digital_input(card,2,&afds_test_1_fo,-1);
-    ret = digital_input(card,3,&afds_test_2_fo,-1);
+    ret = digital_input(card,0,&afds_test_1_capt,0);
+    ret = digital_input(card,1,&afds_test_2_capt,0);
+    ret = digital_input(card,2,&afds_test_1_fo,0);
+    ret = digital_input(card,3,&afds_test_2_fo,0);
 
     /* AFDS RESET: single button assignment for CAPT and FO */
-    ret = digital_input(card,4,ap_prst_button,-1);
-    ret = digital_input(card,5,at_prst_button,-1);
-    ret = digital_input(card,6,fmc_prst_button,-1);
+    ret = digital_input(card,4,ap_prst_button,0);
+    ret = digital_input(card,5,at_prst_button,0);
+    ret = digital_input(card,6,fmc_prst_button,0);
 
     /* Nose Wheel Alt/Norm */
     *nose_steer_alt = 0;
     *nose_steer_norm = 0;
     ret = digital_input(card,7,&temp,0);
-    if ((temp == 0) && (*nose_steer == 1.0)) {
+    if ((temp == 1) && (*nose_steer == 1.0)) {
       *nose_steer_alt = 1;
     }
-    if ((temp == 1) && (*nose_steer == 0.0)) {
+    if ((temp == 0) && (*nose_steer == 0.0)) {
       *nose_steer_norm = 1;
     }
 
     /* CAPT Main Display Selector */
-    ret = digital_input(card,8,&temp,-1);
+    ret = digital_input(card,8,&temp,0);
     if (temp == 1) capt_main_du_pos = -1.0; 
-    ret = digital_input(card,9,&temp,-1);
+    ret = digital_input(card,9,&temp,0);
     if (temp == 1) capt_main_du_pos = 0.0; 
-    ret = digital_input(card,10,&temp,-1);
+    ret = digital_input(card,10,&temp,0);
     if (temp == 1) capt_main_du_pos = 1.0; 
-    ret = digital_input(card,11,&temp,-1);
+    ret = digital_input(card,11,&temp,0);
     if (temp == 1) capt_main_du_pos = 2.0; 
-    ret = digital_input(card,12,&temp,-1);
+    ret = digital_input(card,12,&temp,0);
     if (temp == 1) capt_main_du_pos = 3.0; 
    
     ret = set_state_updnf(&capt_main_du_pos,capt_main_du,capt_main_du_right,capt_main_du_left);
@@ -282,11 +282,11 @@ void b737_mip(void)
     }
 
     /* CAPT Lower Display Selector */
-    ret = digital_input(card,13,&temp,-1);
+    ret = digital_input(card,13,&temp,0);
     if (temp == 1) capt_lower_du_pos = -1.0; 
-    ret = digital_input(card,14,&temp,-1);
+    ret = digital_input(card,14,&temp,0);
     if (temp == 1) capt_lower_du_pos = 0.0; 
-    ret = digital_input(card,15,&temp,-1);
+    ret = digital_input(card,15,&temp,0);
     if (temp == 1) capt_lower_du_pos = 1.0; 
    
     ret = set_state_updnf(&capt_lower_du_pos,capt_lower_du,capt_lower_du_right,capt_lower_du_left);
@@ -297,17 +297,17 @@ void b737_mip(void)
 
     
     /* Recall: sixpack pushbutton */
-    ret = digital_input(card,16,recall,-1);
+    ret = digital_input(card,16,recall,0);
 
     /* fire warn pushbutton */
-    ret = digital_input(card,17,fire_warn,-1);
+    ret = digital_input(card,17,fire_warn,0);
 
     /* master caution pushbutton */
-    ret = digital_input(card,18,master_caution,-1);
+    ret = digital_input(card,18,master_caution,0);
 
     /* lights test switch */
-    ret = digital_input(card,20,&temp,-1);
-    ret = digital_input(card,19,&temp2,-1);
+    ret = digital_input(card,20,&temp,0);
+    ret = digital_input(card,19,&temp2,0);
     if (temp == 1) lights_test_pos = 1.0; 
     if (temp2 == 1) lights_test_pos = -1.0;
     if ((temp == 0) && (temp2 == 0)) lights_test_pos = 0.0;
@@ -319,15 +319,15 @@ void b737_mip(void)
 
     
     /* FO Main Display Selector */
-    ret = digital_input(card,24,&temp,-1);
+    ret = digital_input(card,24,&temp,0);
     if (temp == 1) fo_main_du_pos = 3.0; 
-    ret = digital_input(card,25,&temp,-1);
+    ret = digital_input(card,25,&temp,0);
     if (temp == 1) fo_main_du_pos = 2.0; 
-    ret = digital_input(card,26,&temp,-1);
+    ret = digital_input(card,26,&temp,0);
     if (temp == 1) fo_main_du_pos = 1.0; 
-    ret = digital_input(card,27,&temp,-1);
+    ret = digital_input(card,27,&temp,0);
     if (temp == 1) fo_main_du_pos = 0.0; 
-    ret = digital_input(card,28,&temp,-1);
+    ret = digital_input(card,28,&temp,0);
     if (temp == 1) fo_main_du_pos = -1.0; 
    
     ret = set_state_updnf(&fo_main_du_pos,fo_main_du,fo_main_du_left,fo_main_du_right);
@@ -337,11 +337,11 @@ void b737_mip(void)
     }
 
     /* FO Lower Display Selector */
-    ret = digital_input(card,29,&temp,-1);
+    ret = digital_input(card,29,&temp,0);
     if (temp == 1) fo_lower_du_pos = 1.0; 
-    ret = digital_input(card,30,&temp,-1);
+    ret = digital_input(card,30,&temp,0);
     if (temp == 1) fo_lower_du_pos = 0.0; 
-    ret = digital_input(card,31,&temp,-1);
+    ret = digital_input(card,31,&temp,0);
     if (temp == 1) fo_lower_du_pos = -1.0; 
    
     ret = set_state_updnf(&fo_lower_du_pos,fo_lower_du,fo_lower_du_left,fo_lower_du_right);
@@ -361,19 +361,19 @@ void b737_mip(void)
     }
 
     /* SPD REF Rotary Switch */
-    ret = digital_input(card,35,&temp,-1);
+    ret = digital_input(card,35,&temp,0);
     if (temp == 1) spd_ref_pos = 6.0; 
-    ret = digital_input(card,36,&temp,-1);
+    ret = digital_input(card,36,&temp,0);
     if (temp == 1) spd_ref_pos = 5.0; 
-    ret = digital_input(card,38,&temp,-1);
+    ret = digital_input(card,38,&temp,0);
     if (temp == 1) spd_ref_pos = 4.0; 
-    ret = digital_input(card,39,&temp,-1);
+    ret = digital_input(card,39,&temp,0);
     if (temp == 1) spd_ref_pos = 3.0; 
-    ret = digital_input(card,41,&temp,-1);
+    ret = digital_input(card,41,&temp,0);
     if (temp == 1) spd_ref_pos = 2.0; 
-    ret = digital_input(card,42,&temp,-1);
+    ret = digital_input(card,42,&temp,0);
     if (temp == 1) spd_ref_pos = 1.0; 
-    ret = digital_input(card,44,&temp,-1);
+    ret = digital_input(card,44,&temp,0);
     if (temp == 1) spd_ref_pos = 0.0; 
 
     ret = set_state_updnf(&spd_ref_pos,spd_ref,spd_ref_right,spd_ref_left);
@@ -383,21 +383,21 @@ void b737_mip(void)
     }
 
     /* MFD Pushbuttons */
-    ret = digital_input(card,37,mfd_eng,-1);
-    ret = digital_input(card,53,mfd_sys,-1);
+    ret = digital_input(card,37,mfd_eng,0);
+    ret = digital_input(card,53,mfd_sys,0);
 
     /* GPWS */
-    ret = digital_input(card,43,gpws_test,-1);
+    ret = digital_input(card,43,gpws_test,0);
 
-    ret = digital_input(card,45,&temp,-1);
+    ret = digital_input(card,45,&temp,0);
     if ((temp == 1) && (*gpws_flap_pos == 0.0)) *gpws_flap = 1;
     if ((temp == 0) && (*gpws_flap_pos == 1.0)) *gpws_flap = 1;
       
-    ret = digital_input(card,46,&temp,-1);
+    ret = digital_input(card,46,&temp,0);
     if ((temp == 1) && (*gpws_gear_pos == 0.0)) *gpws_gear = 1;
     if ((temp == 0) && (*gpws_gear_pos == 1.0)) *gpws_gear = 1;
       
-    ret = digital_input(card,47,&temp,-1);
+    ret = digital_input(card,47,&temp,0);
     if ((temp == 1) && (*gpws_terr_pos == 0.0)) *gpws_terr = 1;
     if ((temp == 0) && (*gpws_terr_pos == 1.0)) *gpws_terr = 1;
 
@@ -409,13 +409,13 @@ void b737_mip(void)
     }
 
     /* N1 Set Source Rotary Switch */
-    ret = digital_input(card,51,&temp,-1);
+    ret = digital_input(card,51,&temp,0);
     if (temp == 1) n1_set_source_pos = 1.0; 
-    ret = digital_input(card,52,&temp,-1);
+    ret = digital_input(card,52,&temp,0);
     if (temp == 1) n1_set_source_pos = 0.0; 
-    ret = digital_input(card,54,&temp,-1);
+    ret = digital_input(card,54,&temp,0);
     if (temp == 1) n1_set_source_pos = -1.0; 
-    ret = digital_input(card,55,&temp,-1);
+    ret = digital_input(card,55,&temp,0);
     if (temp == 1) n1_set_source_pos = -2.0; 
 
     ret = set_state_updnf(&n1_set_source_pos,n1_set_source,n1_set_source_right,n1_set_source_left);
@@ -425,17 +425,17 @@ void b737_mip(void)
     }
 
     /* Autobrake Rotary Switch */
-    ret = digital_input(card,56,&temp,-1);
+    ret = digital_input(card,56,&temp,0);
     if (temp == 1) autobrake_pos = 0.0; 
-    ret = digital_input(card,57,&temp,-1);
+    ret = digital_input(card,57,&temp,0);
     if (temp == 1) autobrake_pos = 1.0; 
-    ret = digital_input(card,58,&temp,-1);
+    ret = digital_input(card,58,&temp,0);
     if (temp == 1) autobrake_pos = 2.0; 
-    ret = digital_input(card,59,&temp,-1);
+    ret = digital_input(card,59,&temp,0);
     if (temp == 1) autobrake_pos = 3.0; 
-    ret = digital_input(card,60,&temp,-1);
+    ret = digital_input(card,60,&temp,0);
     if (temp == 1) autobrake_pos = 4.0; 
-    ret = digital_input(card,61,&temp,-1);
+    ret = digital_input(card,61,&temp,0);
     if (temp == 1) autobrake_pos = 5.0; 
 
     ret = set_state_updnf(&autobrake_pos,autobrake,autobrake_up,autobrake_dn);
@@ -445,16 +445,16 @@ void b737_mip(void)
     }
 
     /* Fuel Flow Switch */
-    ret = digital_input(card,62,fuel_flow_reset,-1);
-    ret = digital_input(card,63,fuel_flow_used,-1);
+    ret = digital_input(card,62,fuel_flow_reset,0);
+    ret = digital_input(card,63,fuel_flow_used,0);
 
     /* ISFD */
-    ret = digital_input(card,64,isfd_baro_rst,-1);
-    ret = digital_input(card,65,isfd_baro_minus,-1);
-    ret = digital_input(card,66,isfd_baro_plus,-1);
-    ret = digital_input(card,67,isfd_baro_app,-1);
-    ret = digital_input(card,68,isfd_baro_hpin,-1);
-    ret = digital_input(card,69,isfd_baro_std,-1);
+    ret = digital_input(card,64,isfd_baro_rst,0);
+    ret = digital_input(card,65,isfd_baro_minus,0);
+    ret = digital_input(card,66,isfd_baro_plus,0);
+    ret = digital_input(card,67,isfd_baro_app,0);
+    ret = digital_input(card,68,isfd_baro_hpin,0);
+    ret = digital_input(card,69,isfd_baro_std,0);
 
     temp = 0;
     ret = encoder_input(card, 70, 71, &temp, -1, 1);
@@ -466,11 +466,11 @@ void b737_mip(void)
     }
 
     /* MIC Button */
-    ret = digital_input(card,72,mic_capt,-1);
+    ret = digital_input(card,72,mic_capt,0);
     if (ret == 1) {
       printf("MIC CAPTAIN\n");
     }
-    ret = digital_input(card,80,mic_fo,-1);
+    ret = digital_input(card,80,mic_fo,0);
     if (ret == 1) {
       printf("MIC COPILOT\n");
     }
@@ -482,11 +482,11 @@ void b737_mip(void)
     }
     
     /* Clock Button */
-    ret = digital_input(card,73,clock_capt,-1);
+    ret = digital_input(card,73,clock_capt,0);
     if (ret == 1) {
       printf("CLOCK CAPTAIN\n");
     }
-     ret = digital_input(card,81,clock_fo,-1);
+     ret = digital_input(card,81,clock_fo,0);
     if (ret == 1) {
       printf("CLOCK COPILOT\n");
     }

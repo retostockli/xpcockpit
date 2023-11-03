@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([src/xpclient.c])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
 # AM_CONFIG_HEADER does more than AC_CONFIG_HEADERS
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs
 # AC_PROG_CC redefines CFLAGS, so save original CFLAGS and reapply them

@@ -1130,18 +1130,6 @@ void B737FMC::Render()
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
 
-      // grey FMC plate
-      /*
-	glColor3ub(COLOR_GRAY40);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	glBegin(GL_POLYGON);
-	glVertex2f( 0, 0);
-	glVertex2f( m_PhysicalSize.x, 0);
-	glVertex2f( m_PhysicalSize.y, m_PhysicalSize.y);
-	glVertex2f( 0, m_PhysicalSize.y);
-	glEnd();
-      */
-
       int message = 0;
       int exec = 0;
       if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
@@ -1226,6 +1214,17 @@ void B737FMC::Render()
     glVertex2f(2,m_PhysicalSize.y-4);
     glEnd();  
   }
+
+  float fps = GetFPS();
+  char buffer[10];
+
+  if (fps != FLT_MISS) {
+    glColor3ub(COLOR_RED);
+    snprintf( buffer, sizeof(buffer), "%i",(int) round(fps) );
+    this->m_pFontManager->SetSize(m_Font, 5, 5);
+    this->m_pFontManager->Print(m_PhysicalSize.x-15, m_PhysicalSize.y-10, &buffer[0], m_Font);    
+  }
+
 }
 
 } // end namespace OpenGC

@@ -90,9 +90,9 @@ namespace OpenGC
       ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0); 
     }
     
-    int *alt_disagree;
+    float *alt_disagree;
     if ((acf_type == 2) || (acf_type == 3)) {
-      alt_disagree = link_dataref_int("laminar/B738/autopilot/alt_disagree");
+      alt_disagree = link_dataref_flt("laminar/B738/autopilot/alt_disagree",0);
     }
 
     if (*pressure_altitude != FLT_MISS) {
@@ -422,7 +422,7 @@ namespace OpenGC
       */
 
       if ((acf_type == 2) || (acf_type == 3)) {
-	if (*alt_disagree == 1) {
+	if (*alt_disagree == 1.0) {
 	  glColor3ub(COLOR_ORANGE);
 	  m_pFontManager->SetSize(m_Font, 0.95*fontWidth, fontHeight);
 	  snprintf(buffer, sizeof(buffer), "ALT");

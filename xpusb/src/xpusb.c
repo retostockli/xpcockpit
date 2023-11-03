@@ -145,7 +145,6 @@ int main (int argc, char **argv)
       }
       if (strcmp("boeing737",argv[1]) == 0) {
 	//	if (acf_type >= 0) {
-	  b737_pedestal();
 	  b737_throttle();
 	  b737_yokerudder();
 	  b737_overhead_fwd();
@@ -173,9 +172,9 @@ int main (int argc, char **argv)
       if (strcmp(argv[1],"test") == 0) {
 	// iocard_test();
 	// usbkeys_test();
-	//usbservos_test();
+	usbservos_test();
 	// dcmotorsplus_test();
-	bu0836_test();
+	//bu0836_test();
 	// dcmotorsplus_test();
       }
       /*** user-space modules end here ***/
