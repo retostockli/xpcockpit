@@ -295,28 +295,35 @@ void b737_mcp(void)
   /* INPUTS */
   
   /* Flight Director Capain */
+  /*
   if ((acf_type == 0) && (*ap_fdir_a != INT_MISS)) {
     *ap_fdir_a = *ap_fdir_a / 2;
   }
+  */
   ret = digital_input(card,2,ap_fdir_a,0);
   if (ret==1) {
     printf("Flight Director Captain: %i \n",*ap_fdir_a);
   }
+  /*
   if ((acf_type == 0) && (*ap_fdir_a != INT_MISS)) {
     *ap_fdir_a = 2* *ap_fdir_a;
-  }
+    }*/
 
   /* Flight Director Copilot */
+  /*
   if ((acf_type == 0) && (*ap_fdir_b != INT_MISS)) {
     *ap_fdir_b = *ap_fdir_b / 2;
   }
+  */
   ret = digital_input(card,29,ap_fdir_b,0);
   if (ret==1) {
     printf("Flight Director First Officer: %i \n",*ap_fdir_b);
   }
+  /*
   if ((acf_type == 0) && (*ap_fdir_b != INT_MISS)) {
     *ap_fdir_b = 2* *ap_fdir_b;
   }
+  */
   
   /* AT ARM SWITCH */
   /* only change at_arm if switch has changed */

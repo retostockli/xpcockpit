@@ -230,13 +230,23 @@ void b737_efis(int copilot)
     efis_ctr = link_dataref_int("xpserver/EFIS_CTR");
     efis_tfc = link_dataref_int("xpserver/EFIS_TFC");
   } else {
-    //    efis_wxr = link_dataref_int("sim/cockpit/switches/EFIFS_shows_weather");
-    efis_sta = link_dataref_int("sim/cockpit/switches/EFIS_shows_VORs");
-    efis_wpt = link_dataref_int("sim/cockpit/switches/EFIS_shows_waypoints");
-    efis_apt = link_dataref_int("sim/cockpit/switches/EFIS_shows_airports");
-    efis_data = link_dataref_int("sim/cockpit/switches/EFIS_shows_NDBs");
-    efis_pos = link_dataref_int("sim/cockpit/switches/EFIS_shows_tcas");
-    //    efis_terr = link_dataref_int("xpserver/EFIS_TERR");
+    if (copilot) {
+      //    efis_wxr = link_dataref_int("sim/cockpit/switches/EFIFS_shows_weather");
+      efis_sta = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on_copilot");
+      efis_wpt = link_dataref_int("sim/cockpit2/EFIS/EFIS_fix_on_copilot");
+      efis_apt = link_dataref_int("sim/cockpit2/EFIS/EFIS_airport_on_copilot");
+      efis_data = link_dataref_int("sim/cockpit2/EFIS/EFIS_ndb_on_copilot");
+      efis_pos = link_dataref_int("sim/cockpit2/EFIS/EFIS_tcas_on_copilot");
+      //efis_terr = link_dataref_int("xpser");
+    } else {
+      //    efis_wxr = link_dataref_int("sim/cockpit/switches/EFIFS_shows_weather");
+      efis_sta = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on");
+      efis_wpt = link_dataref_int("sim/cockpit2/EFIS/EFIS_fix_on");
+      efis_apt = link_dataref_int("sim/cockpit2/EFIS/EFIS_airport_on");
+      efis_data = link_dataref_int("sim/cockpit2/EFIS/EFIS_ndb_on");
+      efis_pos = link_dataref_int("sim/cockpit2/EFIS/EFIS_tcas_on");
+      //efis_terr = link_dataref_int("xpser");
+    }
     efis_fpv = link_dataref_int("xpserver/EFIS_FPV");
     efis_mtrs = link_dataref_int("xpserver/EFIS_MTRS");
     efis_rst = link_dataref_int("xpserver/EFIS_RST");
@@ -260,19 +270,40 @@ void b737_efis(int copilot)
   if (*efis_wxr == INT_MISS) *efis_wxr = 0;
   ret = digital_input(card,40+offset,efis_wxr,1);  // WXR --> toggle switch
   if (ret == 1) printf("WXR: %i \n",*efis_wxr);
-  ret = digital_input(card,41+offset,efis_sta,0);  // STA
-  if (ret == 1) printf("STA: %i \n",*efis_sta);
-  ret = digital_input(card,42+offset,efis_wpt,0);  // WPT
-  ret = digital_input(card,43+offset,efis_apt,0);  // ARPT
-  ret = digital_input(card,44+offset,efis_data,0);  // DATA
-  ret = digital_input(card,45+offset,efis_pos,0);  // POS
-  ret = digital_input(card,52+offset,efis_fpv,0);  // FPV
-  ret = digital_input(card,53+offset,efis_mtrs,0);  // MTRS
-  ret = digital_input(card,34+offset,efis_rst,0);  // RST
-  ret = digital_input(card,39+offset,efis_std,0);  // STD
-  ret = digital_input(card,104+offset1,efis_ctr,0);  // CTR
-  ret = digital_input(card,105+offset1,efis_tfc,0);  // TFC
-
+  if ((acf_type == 2) || (acf_type == 3)) {
+    ret = digital_input(card,41+offset,efis_sta,0);  // STA
+    if (ret == 1) printf("STA: %i \n",*efis_sta);
+    ret = digital_input(card,42+offset,efis_wpt,0);  // WPT
+    ret = digital_input(card,43+offset,efis_apt,0);  // ARPT
+    ret = digital_input(card,44+offset,efis_data,0);  // DATA
+    ret = digital_input(card,45+offset,efis_pos,0);  // POS
+    ret = digital_input(card,52+offset,efis_fpv,0);  // FPV
+    ret = digital_input(card,53+offset,efis_mtrs,0);  // MTRS
+    ret = digital_input(card,34+offset,efis_rst,0);  // RST
+    ret = digital_input(card,39+offset,efis_std,0);  // STD
+    ret = digital_input(card,104+offset1,efis_ctr,0);  // CTR
+    ret = digital_input(card,105+offset1,efis_tfc,0);  // TFC
+  } else {
+    if (*efis_sta == INT_MISS) *efis_sta = 0;
+    if (*efis_wpt == INT_MISS) *efis_wpt = 0;
+    if (*efis_apt == INT_MISS) *efis_apt = 0;
+    if (*efis_data == INT_MISS) *efis_data = 0;
+    if (*efis_pos == INT_MISS) *efis_pos = 0;
+    ret = digital_input(card,41+offset,efis_sta,1);  // STA
+    if (ret == 1) printf("STA: %i \n",*efis_sta);
+    ret = digital_input(card,42+offset,efis_wpt,1);  // WPT
+    ret = digital_input(card,43+offset,efis_apt,1);  // ARPT
+    ret = digital_input(card,44+offset,efis_data,1);  // DATA
+    ret = digital_input(card,45+offset,efis_pos,1);  // POS
+    ret = digital_input(card,52+offset,efis_fpv,1);  // FPV
+    ret = digital_input(card,53+offset,efis_mtrs,1);  // MTRS
+    ret = digital_input(card,34+offset,efis_rst,1);  // RST
+    ret = digital_input(card,39+offset,efis_std,1);  // STD
+    ret = digital_input(card,104+offset1,efis_ctr,1);  // CTR
+    ret = digital_input(card,105+offset1,efis_tfc,1);  // TFC
+  }
+    
+    
   /* Special Handling for TERR since we cycle through TERR modes */
   temp = 0;
   ret = digital_input(card,46+offset,&temp,1);  // TERR --> toggle switch
