@@ -534,6 +534,9 @@ void b737_pedestal(void)
       printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
     }
   }
+
+  if (*nav1_freq_stdby < nav_min *100) *nav1_freq_stdby = nav_min*100;
+  
   /* NAV1 Displays */
   ret = display_output(card, d0+0, 5, nav1_freq_active, 2, blank);
   ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, blank);
@@ -586,6 +589,10 @@ void b737_pedestal(void)
       printf("NAV2 STDBY FREQ: %i \n",*nav2_freq_stdby);
     }
   }
+
+  if (*nav2_freq_stdby < nav_min *100) *nav2_freq_stdby = nav_min*100;
+
+  
   /* NAV2 Displays */
   ret = display_output(card, d0+0, 5, nav2_freq_active, 2, blank);
   ret = display_output(card, d0+8, 5, nav2_freq_stdby, 2, blank);
