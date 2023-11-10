@@ -120,12 +120,19 @@ namespace OpenGC
       // nav_shows_data = link_dataref_int("x737/cockpit/EFISCTRL_0/DATA_on");
       // nav_shows_pos = link_dataref_int("x737/cockpit/EFISCTRL_0/POS_on");
     } else {
-      nav_shows_fix = link_dataref_int("sim/cockpit2/EFIS/EFIS_fix_on");
-      nav_shows_apt = link_dataref_int("sim/cockpit2/EFIS/EFIS_airport_on");
-      nav_shows_vor = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on");
-      nav_shows_ndb = link_dataref_int("sim/cockpit2/EFIS/EFIS_ndb_on");
+      if (is_captain) {
+	nav_shows_vor = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on");
+	nav_shows_fix = link_dataref_int("sim/cockpit2/EFIS/EFIS_fix_on");
+	nav_shows_apt = link_dataref_int("sim/cockpit2/EFIS/EFIS_airport_on");
+	nav_shows_ndb = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on");
+      } else {
+	nav_shows_vor = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on_copilot");
+	nav_shows_fix = link_dataref_int("sim/cockpit2/EFIS/EFIS_fix_on_copilot");
+	nav_shows_apt = link_dataref_int("sim/cockpit2/EFIS/EFIS_airport_on_copilot");
+	nav_shows_ndb = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on_copilot");
+      }
     }
-        
+    
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if (heading_map != FLT_MISS) {

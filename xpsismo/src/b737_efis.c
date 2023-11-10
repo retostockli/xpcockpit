@@ -235,7 +235,7 @@ void b737_efis(int copilot)
       efis_sta = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on_copilot");
       efis_wpt = link_dataref_int("sim/cockpit2/EFIS/EFIS_fix_on_copilot");
       efis_apt = link_dataref_int("sim/cockpit2/EFIS/EFIS_airport_on_copilot");
-      efis_data = link_dataref_int("sim/cockpit2/EFIS/EFIS_ndb_on_copilot");
+      efis_data = link_dataref_int("xpserver/EFIS_DATA");
       efis_pos = link_dataref_int("sim/cockpit2/EFIS/EFIS_tcas_on_copilot");
       //efis_terr = link_dataref_int("xpser");
     } else {
@@ -243,7 +243,7 @@ void b737_efis(int copilot)
       efis_sta = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on");
       efis_wpt = link_dataref_int("sim/cockpit2/EFIS/EFIS_fix_on");
       efis_apt = link_dataref_int("sim/cockpit2/EFIS/EFIS_airport_on");
-      efis_data = link_dataref_int("sim/cockpit2/EFIS/EFIS_ndb_on");
+      efis_data = link_dataref_int("xpserver/EFIS_DATA");
       efis_pos = link_dataref_int("sim/cockpit2/EFIS/EFIS_tcas_on");
       //efis_terr = link_dataref_int("xpser");
     }
