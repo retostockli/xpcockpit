@@ -376,11 +376,11 @@ void b737_efis(int copilot)
   if ((acf_type == 2) || (acf_type == 3)) {
     if (*minimum_mode != INT_MISS) {
       ret = digital_input(card,106+offset1,&temp,0); // not inverse
-      if ((*minimum_mode == 1) && (temp == 0)) {
+      if ((*minimum_mode == 1) && (temp == 1)) {
 	*minimum_mode_up = 1;
 	printf("Minimums Mode: Radio \n");
       }
-      if ((*minimum_mode == 0) && (temp == 1)) {
+      if ((*minimum_mode == 0) && (temp == 0)) {
 	*minimum_mode_dn = 1;
 	printf("Minimums Mode: Baro \n");
       }

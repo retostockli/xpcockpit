@@ -547,21 +547,29 @@ void b737_mcp(void)
   
   /* Flight Director A LED */
   if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
-    if (*ap_fdir_a_led == 2) {
-      ret = digital_output(card,0,&one);
+    if (*avionics_on == 1) {
+      if (*ap_fdir_a_led == 2) {
+	ret = digital_output(card,0,&one);
+      } else {
+	ret = digital_outputf(card,0,ap_fdir_a_led);
+      }
     } else {
-      ret = digital_outputf(card,0,ap_fdir_a_led);
-    }
+      ret = digital_output(card,0,&zero);
+    }  
   } else {
     ret = digital_output(card,0,ap_fdir_a_status);
   }
   /* Flight Director B LED */
   if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
-    if (*ap_fdir_b_led == 2) {
-      ret = digital_output(card,16,&one);
+    if (*avionics_on == 1) {
+      if (*ap_fdir_b_led == 2) {
+ 	ret = digital_output(card,16,&one);
+      } else {
+	ret = digital_outputf(card,16,ap_fdir_b_led);
+      }
     } else {
-      ret = digital_outputf(card,16,ap_fdir_b_led);
-    }
+      ret = digital_output(card,16,&zero);
+    }   
   } else {
     ret = digital_output(card,16,ap_fdir_b_status);
   }
