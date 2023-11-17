@@ -195,6 +195,12 @@ void b737_pedestal(void)
   int *adf1_freq_stdby = link_dataref_int("sim/cockpit/radios/adf1_stdby_freq_hz");
   int *adf2_freq_stdby = link_dataref_int("sim/cockpit/radios/adf2_stdby_freq_hz"); 
 
+  int *com1_fine_up = link_dataref_cmd_once("sim/radios/stby_com1_fine_up_833");
+  int *com1_fine_dn = link_dataref_cmd_once("sim/radios/stby_com1_fine_down_833");
+  int *com1_coarse_up = link_dataref_cmd_once("sim/radios/stby_com1_coarse_up_833");
+  int *com1_coarse_dn = link_dataref_cmd_once("sim/radios/stby_com1_coarse_down_833");
+
+  
   int *transponder_code = link_dataref_int("sim/cockpit/radios/transponder_code");
   int *transponder_fail = link_dataref_int("sim/operation/failures/rel_xpndr");
 
@@ -403,6 +409,14 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
   if (ret == 1) {
+    if (updn == 1) {
+      *com1_coarse_up = 1;
+    } else {
+      *com1_coarse_dn = 1;
+    }
+  }
+  /*
+  if (ret == 1) {
     if (*com1_freq_stdby != INT_MISS) {
       integer = *com1_freq_stdby / 1000;
       decimal = *com1_freq_stdby - integer * 1000;
@@ -413,8 +427,18 @@ void b737_pedestal(void)
       printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
     }
   }
+  */
   /* COM1 Inner Encoder (5 kHz step) */
+  ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   updn = 0;
+  if (ret == 1) {
+    if (updn == 1) {
+      *com1_fine_up = 1;
+    } else {
+      *com1_fine_dn = 1;
+    }
+  }
+  /*
   ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
   if (ret == 1) {
     if (*com1_freq_stdby != INT_MISS) {
@@ -427,6 +451,7 @@ void b737_pedestal(void)
       printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
     }
   }
+  */
   /* COM1 Displays */
   ret = display_output(card, d0+0, 6, com1_freq_active, 3, blank);
   ret = display_output(card, d0+8, 6, com1_freq_stdby, 3, blank);
