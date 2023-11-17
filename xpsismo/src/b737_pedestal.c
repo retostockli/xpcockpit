@@ -663,7 +663,7 @@ void b737_pedestal(void)
   }
   /* ADF2 Outer Encoder (100 kHz step) */
   updn = 0;
-  ret = encoder_input(card,i0+3,i0+4,&updn,100,1);
+  ret = encoder_input(card,i0+3,i0+4,&updn,1,1);
   if (ret == 1) {
     if (updn == 1) {
       *adf2_coarse_up = 1;
