@@ -199,11 +199,31 @@ void b737_pedestal(void)
   int *com1_fine_dn = link_dataref_cmd_once("sim/radios/stby_com1_fine_down_833");
   int *com1_coarse_up = link_dataref_cmd_once("sim/radios/stby_com1_coarse_up_833");
   int *com1_coarse_dn = link_dataref_cmd_once("sim/radios/stby_com1_coarse_down_833");
+  int *com2_fine_up = link_dataref_cmd_once("sim/radios/stby_com2_fine_up_833");
+  int *com2_fine_dn = link_dataref_cmd_once("sim/radios/stby_com2_fine_down_833");
+  int *com2_coarse_up = link_dataref_cmd_once("sim/radios/stby_com2_coarse_up_833");
+  int *com2_coarse_dn = link_dataref_cmd_once("sim/radios/stby_com2_coarse_down_833");
+  int *nav1_fine_up = link_dataref_cmd_once("sim/radios/stby_nav1_fine_up");
+  int *nav1_fine_dn = link_dataref_cmd_once("sim/radios/stby_nav1_fine_down");
+  int *nav1_coarse_up = link_dataref_cmd_once("sim/radios/stby_nav1_coarse_up");
+  int *nav1_coarse_dn = link_dataref_cmd_once("sim/radios/stby_nav1_coarse_down");
+  int *nav2_fine_up = link_dataref_cmd_once("sim/radios/stby_nav2_fine_up");
+  int *nav2_fine_dn = link_dataref_cmd_once("sim/radios/stby_nav2_fine_down");
+  int *nav2_coarse_up = link_dataref_cmd_once("sim/radios/stby_nav2_coarse_up");
+  int *nav2_coarse_dn = link_dataref_cmd_once("sim/radios/stby_nav2_coarse_down");
+  int *adf1_fine_up = link_dataref_cmd_once("sim/radios/stby_adf1_tens_up");
+  int *adf1_fine_dn = link_dataref_cmd_once("sim/radios/stby_adf1_tens_down");
+  int *adf1_coarse_up = link_dataref_cmd_once("sim/radios/stby_adf1_hundreds_thous_up");
+  int *adf1_coarse_dn = link_dataref_cmd_once("sim/radios/stby_adf1_hundreds_thous_down");
+  int *adf2_fine_up = link_dataref_cmd_once("sim/radios/stby_adf2_tens_up");
+  int *adf2_fine_dn = link_dataref_cmd_once("sim/radios/stby_adf2_tens_down");
+  int *adf2_coarse_up = link_dataref_cmd_once("sim/radios/stby_adf2_hundreds_thous_up");
+  int *adf2_coarse_dn = link_dataref_cmd_once("sim/radios/stby_adf2_hundreds_thous_down");
 
   
   int *transponder_code = link_dataref_int("sim/cockpit/radios/transponder_code");
   int *transponder_fail = link_dataref_int("sim/operation/failures/rel_xpndr");
-
+  
   int *transponder_ident;
   float *transponder_mode_f;
   int *transponder_mode_up;
@@ -404,7 +424,7 @@ void b737_pedestal(void)
   ret = digital_input(card,i0+1,&com1_test_button,0);
   if (ret == 1) {
     printf("COM1 TEST Button: %i \n",com1_test_button);
-  }
+  } 
   /* COM1 Outer Encoder (1 MHz step) */
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
@@ -415,22 +435,9 @@ void b737_pedestal(void)
       *com1_coarse_dn = 1;
     }
   }
-  /*
-  if (ret == 1) {
-    if (*com1_freq_stdby != INT_MISS) {
-      integer = *com1_freq_stdby / 1000;
-      decimal = *com1_freq_stdby - integer * 1000;
-      integer += updn;
-      if (integer < com_min) integer = com_max;
-      if (integer > com_max) integer = com_min;
-      *com1_freq_stdby = integer * 1000 + decimal;
-      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
-    }
-  }
-  */
   /* COM1 Inner Encoder (5 kHz step) */
-  ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   if (ret == 1) {
     if (updn == 1) {
       *com1_fine_up = 1;
@@ -438,20 +445,6 @@ void b737_pedestal(void)
       *com1_fine_dn = 1;
     }
   }
-  /*
-  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
-  if (ret == 1) {
-    if (*com1_freq_stdby != INT_MISS) {
-      integer = *com1_freq_stdby / 1000;
-      decimal = *com1_freq_stdby - integer * 1000;
-      decimal += updn;
-      if (decimal < 0) decimal = 995;
-      if (decimal > 995) decimal = 0;
-      *com1_freq_stdby = integer * 1000 + decimal;
-      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
-    }
-  }
-  */
   /* COM1 Displays */
   ret = display_output(card, d0+0, 6, com1_freq_active, 3, blank);
   ret = display_output(card, d0+8, 6, com1_freq_stdby, 3, blank);
@@ -482,28 +475,20 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
   if (ret == 1) {
-    if (*com2_freq_stdby != INT_MISS) {
-      integer = *com2_freq_stdby / 1000;
-      decimal = *com2_freq_stdby - integer * 1000;
-      integer += updn;
-      if (integer < com_min) integer = com_max;
-      if (integer > com_max) integer = com_min;
-      *com2_freq_stdby = integer * 1000 + decimal;
-      printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
+    if (updn == 1) {
+      *com2_coarse_up = 1;
+    } else {
+      *com2_coarse_dn = 1;
     }
   }
   /* COM2 Inner Encoder (5 kHz step) */
   updn = 0;
-  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
-  if (ret == 1) {
-    if (*com2_freq_stdby != INT_MISS) {
-      integer = *com2_freq_stdby / 1000;
-      decimal = *com2_freq_stdby - integer * 1000;
-      decimal += updn;
-      if (decimal < 0) decimal = 995;
-      if (decimal > 995) decimal = 0;
-      *com2_freq_stdby = integer * 1000 + decimal;
-      printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
+  ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
+ if (ret == 1) {
+    if (updn == 1) {
+      *com2_fine_up = 1;
+    } else {
+      *com2_fine_dn = 1;
     }
   }
   /* COM2 Displays */
@@ -535,33 +520,22 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
   if (ret == 1) {
-    if (*nav1_freq_stdby != INT_MISS) {
-      integer = *nav1_freq_stdby / 100;
-      decimal = *nav1_freq_stdby - integer * 100;
-      integer += updn;
-      if (integer < nav_min) integer = nav_max;
-      if (integer > nav_max) integer = nav_min;
-      *nav1_freq_stdby = integer * 100 + decimal;
-      printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
+    if (updn == 1) {
+      *nav1_coarse_up = 1;
+    } else {
+      *nav1_coarse_dn = 1;
     }
   }
   /* NAV1 Inner Encoder (50 kHz step) */
   updn = 0;
-  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   if (ret == 1) {
-    if (*nav1_freq_stdby != INT_MISS) {
-      integer = *nav1_freq_stdby / 100;
-      decimal = *nav1_freq_stdby - integer * 100;
-      decimal += updn;
-      if (decimal < 0) decimal = 95;
-      if (decimal > 95) decimal = 0;
-      *nav1_freq_stdby = integer * 100 + decimal;
-      printf("NAV1 STDBY FREQ: %i \n",*nav1_freq_stdby);
+    if (updn == 1) {
+      *nav1_fine_up = 1;
+    } else {
+      *nav1_fine_dn = 1;
     }
-  }
-
-  if (*nav1_freq_stdby < nav_min *100) *nav1_freq_stdby = nav_min*100;
-  
+  }  
   /* NAV1 Displays */
   ret = display_output(card, d0+0, 5, nav1_freq_active, 2, blank);
   ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, blank);
@@ -590,34 +564,22 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
   if (ret == 1) {
-    if (*nav2_freq_stdby != INT_MISS) {
-      integer = *nav2_freq_stdby / 100;
-      decimal = *nav2_freq_stdby - integer * 100;
-      integer += updn;
-      if (integer < nav_min) integer = nav_max;
-      if (integer > nav_max) integer = nav_min;
-      *nav2_freq_stdby = integer * 100 + decimal;
-      printf("NAV2 STDBY FREQ: %i \n",*nav2_freq_stdby);
+    if (updn == 1) {
+      *nav2_coarse_up = 1;
+    } else {
+      *nav2_coarse_dn = 1;
     }
   }
   /* NAV2 Inner Encoder (50 kHz step) */
   updn = 0;
-  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   if (ret == 1) {
-    if (*nav2_freq_stdby != INT_MISS) {
-      integer = *nav2_freq_stdby / 100;
-      decimal = *nav2_freq_stdby - integer * 100;
-      decimal += updn;
-      if (decimal < 0) decimal = 95;
-      if (decimal > 95) decimal = 0;
-      *nav2_freq_stdby = integer * 100 + decimal;
-      printf("NAV2 STDBY FREQ: %i \n",*nav2_freq_stdby);
+    if (updn == 1) {
+      *nav2_fine_up = 1;
+    } else {
+      *nav2_fine_dn = 1;
     }
-  }
-
-  if (*nav2_freq_stdby < nav_min *100) *nav2_freq_stdby = nav_min*100;
-
-  
+  }  
   /* NAV2 Displays */
   ret = display_output(card, d0+0, 5, nav2_freq_active, 2, blank);
   ret = display_output(card, d0+8, 5, nav2_freq_stdby, 2, blank);
@@ -650,29 +612,24 @@ void b737_pedestal(void)
   }
   /* ADF1 Outer Encoder (100 kHz step) */
   updn = 0;
-  ret = encoder_input(card,i0+3,i0+4,&updn,100,1);
+  ret = encoder_input(card,i0+3,i0+4,&updn,1,1);
   if (ret == 1) {
-    if (*adf1_freq_stdby != INT_MISS) {
-      *adf1_freq_stdby += updn;
-      *adf1_freq_stdby = min(max(*adf1_freq_stdby,adf_min),adf_max);
-      printf("ADF1 STDBY FREQ: %i \n",*adf1_freq_stdby);
+    if (updn == 1) {
+      *adf1_coarse_up = 1;
+    } else {
+      *adf1_coarse_dn = 1;
     }
   }
   /* ADF1 Inner Encoder (1 kHz step) */
   updn = 0;
   ret = encoder_input(card,i0+5,i0+6,&updn,1,1);
   if (ret == 1) {
-    if (*adf1_freq_stdby != INT_MISS) {
-      integer = *adf1_freq_stdby / 100;
-      decimal = *adf1_freq_stdby - integer * 100;
-      decimal += updn;
-      if (decimal < 0) decimal = 99;
-      if (decimal > 99) decimal = 0;
-      *adf1_freq_stdby = integer * 100 + decimal;
-      *adf1_freq_stdby = min(max(*adf1_freq_stdby,adf_min),adf_max);
-      printf("ADF1 STDBY FREQ: %i \n",*adf1_freq_stdby);
+    if (updn == 1) {
+      *adf1_fine_up = 1;
+    } else {
+      *adf1_fine_dn = 1;
     }
-  }
+  }  
   /* ADF1 Displays */
   temp = *adf1_freq_active * 10;
   ret = display_output(card, d0+0, 5, &temp, 1, blank);
@@ -708,27 +665,22 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+3,i0+4,&updn,100,1);
   if (ret == 1) {
-    if (*adf2_freq_stdby != INT_MISS) {
-      *adf2_freq_stdby += updn;
-      *adf2_freq_stdby = min(max(*adf2_freq_stdby,adf_min),adf_max);
-      printf("ADF2 STDBY FREQ: %i \n",*adf2_freq_stdby);
+    if (updn == 1) {
+      *adf2_coarse_up = 1;
+    } else {
+      *adf2_coarse_dn = 1;
     }
   }
   /* ADF2 Inner Encoder (1 kHz step) */
   updn = 0;
   ret = encoder_input(card,i0+5,i0+6,&updn,1,1);
   if (ret == 1) {
-    if (*adf2_freq_stdby != INT_MISS) {
-      integer = *adf2_freq_stdby / 100;
-      decimal = *adf2_freq_stdby - integer * 100;
-      decimal += updn;
-      if (decimal < 0) decimal = 99;
-      if (decimal > 99) decimal = 0;
-      *adf2_freq_stdby = integer * 100 + decimal;
-      *adf2_freq_stdby = min(max(*adf2_freq_stdby,adf_min),adf_max);
-      printf("ADF2 STDBY FREQ: %i \n",*adf2_freq_stdby);
+    if (updn == 1) {
+      *adf2_fine_up = 1;
+    } else {
+      *adf2_fine_dn = 1;
     }
-  }
+  } 
   /* ADF2 Displays */
   temp = *adf2_freq_active * 10;
   ret = display_output(card, d0+0, 5, &temp, 1, blank);
