@@ -298,8 +298,8 @@ void b737_efis(int copilot)
     if (*efis_data == INT_MISS) *efis_data = 0;
     if (*efis_pos == INT_MISS) *efis_pos = 0;
     ret = digital_input(card,41+offset,efis_sta,1);  // STA
-    if (ret == 1) printf("STA: %i \n",*efis_sta);
     ret = digital_input(card,42+offset,efis_wpt,1);  // WPT
+    if (ret == 1) printf("STA: %i \n",*efis_wpt);
     ret = digital_input(card,43+offset,efis_apt,1);  // ARPT
     ret = digital_input(card,44+offset,efis_data,1);  // DATA
     ret = digital_input(card,45+offset,efis_pos,1);  // POS
