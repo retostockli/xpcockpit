@@ -97,7 +97,11 @@ void b737_efis(int copilot)
       navrangesel = link_dataref_int("laminar/B738/EFIS/capt/map_range");
     }
   } else {
-    navrangesel = link_dataref_int("sim/cockpit2/EFIS/map_range");
+    if (copilot) {
+      navrangesel = link_dataref_int("xpserver/map_range_fo");
+    } else {
+      navrangesel = link_dataref_int("xpserver/map_range_capt");
+    }
   }
 
   // Get Map Mode (APP/VOR/MAP/PLN)
@@ -109,7 +113,11 @@ void b737_efis(int copilot)
       map_mode = link_dataref_int("laminar/B738/EFIS_control/capt/map_mode_pos");
     }
   } else {
-    map_mode = link_dataref_int("sim/cockpit2/EFIS/map_mode");
+    if (copilot) {
+      map_mode = link_dataref_int("xpserver/map_mode_fo");
+    } else {
+      map_mode = link_dataref_int("xpserver/map_mode_capt");
+    }
   }
   
   int *minimum_mode;
