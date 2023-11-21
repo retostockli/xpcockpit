@@ -63,7 +63,11 @@ void b737_efis(int copilot)
       altimeter_pressure = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_pilot",-2);
     }
   } else {
-    altimeter_pressure = link_dataref_flt("sim/cockpit/misc/barometer_setting",-2);
+    if (copilot) {
+      altimeter_pressure = link_dataref_flt("sim/cockpit/misc/barometer_setting2",-2);
+    } else {
+      altimeter_pressure = link_dataref_flt("sim/cockpit/misc/barometer_setting",-2);
+    }
   }
   
   int *altimeter_pressure_unit;
