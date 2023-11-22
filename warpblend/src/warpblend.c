@@ -38,11 +38,11 @@
 */
 
 /* 
-   Relative screen / texture coordinates go:
+   Relative screen / texture coordinates are:
    y: top to bottom (0-1)
    x: left to right (0-1)
 
-   triangles are constructed with:
+   triangles are constructed with these indices:
    0: tl, 1: tr, 2: bl, 3: tr, 4: br, 5: bl
 */
 
@@ -129,11 +129,12 @@ int main(int ac, char **av) {
   char smonitor[2];
   int ret;
   int a;
+  char *str = NULL;
 
 
   xDpy = XOpenDisplay(NULL);
   if (!xDpy) {
-    fprintf (stderr, "Could not open X Display %s!\n", XDisplayName(NULL));
+    printf ("Could not open X Display %s!\n", XDisplayName(NULL));
     return 1;
   }
 
@@ -177,13 +178,24 @@ int main(int ac, char **av) {
   }
 
 
-  if (warp || blend ) {
+  if ((warp || blend ) && (!test)) {
     sprintf(smonitor,"%d",monitor);
     printf("Reading X-Plane Monitor File with Warp / Blend Information: %s\n",warpfile);
     numVertices = read_warpfile(warpfile,smonitor,warp,blend);
-    if (numVertices == 0) return 1;
   }
-      
+
+  if (test) {
+    /* DOES NOT WORK YET TO GET DISPLAY / SCREEN SIZE */
+    /*
+    ret = XNVCTRLQueryStringAttribute(xDpy, screenId, 0,
+				      //NV_CTRL_STRING_CURRENT_METAMODE_VERSION_2,
+				      NV_CTRL_STRING_SCREEN_RECTANGLE,
+				      &str);
+    if (!ret) {
+      printf("Display Coordinates: %s\n", str);
+    }
+    */
+  }
   /**** WARPING ****/
     
   if (unwarp) {
@@ -193,11 +205,12 @@ int main(int ac, char **av) {
       free(warpData);
     warpData = NULL;
     numVertices = 0;
-  } else if (warp) {
+  } else if (warp && (!test)) {
     if (numVertices == 0) {
-      printf("No Warp Information in X-Plane Monitor File ...\n");
+      printf("No Warp Information in X-Plane Monitor File ... aborting \n");
+      return 1;
     }
-  } else if (test) {
+  } else if (warp && test) {
     printf("Create Test Warping ...\n");
     /* Sample Warping Grid for Testing */
     numVertices = 6;
@@ -253,7 +266,7 @@ int main(int ac, char **av) {
   srand(time(NULL));
     
   // Apply our transformed warp data to the chosen display.
-  if (warp || unwarp || test) {
+  if (warp || unwarp) {
     ret = XNVCTRLSetScanoutWarping(xDpy,
 				   screenId,
 				   nvDpyId,
@@ -270,33 +283,39 @@ int main(int ac, char **av) {
 
   if (unblend) {
     printf("Reset Blending ...\n");
-  } else if (blend) {
+  } else if (blend && (!test)) {
     if (imageData == NULL) {
-      printf("No Blend Information in X-Plane Monitor File ...\n");
+      printf("No Blend Information in X-Plane Monitor File ... aborting \n");
+      return 1;
     }
-  } else if (test) {
+  } else if (blend && test) {
     printf("Create Test Blending ...\n");
       
     // Test with a 32x32 pixmap.
     blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
-				32, 32, DefaultDepth(xDpy,screenId));
-      
-    values.foreground = 0x77777777;
+    				64, 36, DefaultDepth(xDpy,screenId));
+    //    blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
+    //				1920, 1080, DefaultDepth(xDpy,screenId));
+    
+    //values.foreground = 0x77777777;
+    values.foreground = 0x00000000;
     gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
       
     // Fill it fully with grey.
-    XFillRectangle(xDpy, blendPixmap, gc, 0, 0, 32, 32);
+    XFillRectangle(xDpy, blendPixmap, gc, 0, 0, 64, 36);
+    //XFillRectangle(xDpy, blendPixmap, gc, 0, 0, 1920, 1080);
       
     // Make white inner area (not blended)
     values.foreground = 0xffffffff;
     XChangeGC(xDpy, gc, GCForeground, &values);
       
     // Fill everything but a one-pixel border with white.
-    XFillRectangle(xDpy, blendPixmap, gc, 1, 1, 30, 30);
+    XFillRectangle(xDpy, blendPixmap, gc, 4, 6, 56, 24);
+    //XFillRectangle(xDpy, blendPixmap, gc, 300, 150, 1500,700);
   }
 
-  if (blend || unblend || test) {
-    //printf("Blend After Warp Flag : %i \n",blendAfterWarp);
+  if (blend || unblend) {
+    // printf("Blend After Warp Flag : %i \n",blendAfterWarp);
     //     Apply it to the display. blendAfterWarp is FALSE, so the edges will be
     //     blended in warped space.
     ret = XNVCTRLSetScanoutIntensity(xDpy,
@@ -305,7 +324,10 @@ int main(int ac, char **av) {
 				     blendPixmap,
 				     blendAfterWarp);
       
-    if ((ret != 0) && (!unblend)) printf("Blend failed with return value: %i\n",ret);
+    if ((ret != 0) && (!unblend)) {
+      printf("Blend failed with return value: %i\n",ret);
+      return 1;
+    }
 
   }
     
