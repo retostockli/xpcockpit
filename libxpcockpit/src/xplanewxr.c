@@ -65,6 +65,13 @@ int wxr_is_xp12;
 /* set up udp server socket with given server address and port */
 int init_wxr_server()
 {
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    return -1;
+  }
+#endif
 
   /* Create a UDP socket */
   if ((wxrSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -102,19 +109,19 @@ int init_wxr_server()
   struct timeval tv;
   tv.tv_sec = 1;
   tv.tv_usec = 0;
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0) {
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, (void*)&tv, sizeof tv) < 0) {
       printf("XPLANEWXR: Client Socket set Timeout failed\n");
       return -1;
   }
 
   int optval;
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, (void*)&optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseaddr failed\n");
       return -1;
   } 
 
   /*
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, (void*)&optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseport failed\n");
       return -1;
       }
@@ -126,6 +133,13 @@ int init_wxr_server()
 /* set up udp socket with given server address and port */
 int init_wxr_client(void)
 {
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    return -1;
+  }
+#endif
   
   /* Create a UDP socket */
   if ((wxrSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -159,19 +173,19 @@ int init_wxr_client(void)
   struct timeval tv;
   tv.tv_sec = 1;
   tv.tv_usec = 0;
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0) {
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, (void*)&tv, sizeof tv) < 0) {
       printf("XPLANEWXR: Client Socket set Timeout failed\n");
       return -1;
   }
 
   int optval;
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, (void*)&optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseaddr failed\n");
       return -1;
   }
 
   /*
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, (void*)&optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseport failed\n");
       return -1;
       }
@@ -206,6 +220,7 @@ void exit_wxr_server(void)
 
 #ifdef WIN
   closesocket(wxrSocket);
+  WSACleanup();
 #else
   close(wxrSocket);
 #endif
@@ -223,6 +238,7 @@ void exit_wxr_client(void)
 
 #ifdef WIN
   closesocket(wxrSocket);
+  WSACleanup();
 #else
   close(wxrSocket);
 #endif
@@ -233,7 +249,8 @@ void *wxr_poll_thread_main()
 /* thread handles udp receive on the server socket by use of blocking read and a read buffer */
 {
   int ret = 0;
-  unsigned char buffer[wxrRecvBufferLen];
+  //unsigned char buffer[wxrRecvBufferLen];
+  char buffer[wxrRecvBufferLen];
   struct sockaddr_in wxrAddr;     /* address structure */
 
   printf("XPLANEWXR: Receive thread running \n");
@@ -258,9 +275,9 @@ void *wxr_poll_thread_main()
       /* are we reading WXR data ? */
       if ((strncmp(buffer,"xRAD",4)==0) || (strncmp(buffer,"RADR",4)==0)) {
 
-	/* CHECK IF WE HAVE XP12 or XP11 */
-	/* Each Radar Point has 13 bytes in XP11 and 24 bytes in XP12
-	/* assume not more than one packet per call is received */
+	/* CHECK IF WE HAVE XP12 or XP11
+	   Each Radar Point has 13 bytes in XP11 and 24 bytes in XP12
+	   assume not more than one packet per call is received */
 	if ((((ret-5)/13)*13) == (ret-5)) {
 	  wxr_is_xp12 = 0;
 	} else {
@@ -355,7 +372,7 @@ int recv_wxr_from_client(void) {
 
 
 /* send datagram to UDP client */
-int send_wxr_to_client(char client_ip[],int client_port,unsigned char data[], int len) {
+int send_wxr_to_client(char client_ip[], int client_port, char data[], int len) {
 
   int n;
 

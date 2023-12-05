@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpserver], [0.1], [Reto Stockli])
+AC_INIT([libxpcockpit], [0.2], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/handleserver.c])
 
 # produce makefiles (turn on warnings on automake!)
@@ -32,13 +32,16 @@ linux*)
 darwin*)
 	os=mac
 	AC_DEFINE([MAC],[1],[Define if Host Type is Apple])
+    	LIBS="$LIBS -framework IOKit -framework CoreFoundation"
         ;;
 mingw*)
 	os=win
 	AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
+	LDFLAGS="$LDFLAGS -static"
+    	LIBS="$LIBS -lws2_32 -lsetupapi"
 	;;
 *)
-        AC_MSG_ERROR([Unsupported operating system. Currently only Linux and Darwin/OSX are supported.])
+        AC_MSG_ERROR([Unsupported operating system. Currently only Linux, Darwin/OSX and MinGW are supported.])
 esac
 
 AM_CONDITIONAL([OS_LIN], [test "x$os" = xlin])
@@ -57,10 +60,15 @@ AC_MSG_RESULT([$debugit])
 
 if test x"$debugit" = x"yes"; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -O0"
+# DEBUGGGING WITH LEAK CHECK AND OUT OF BOUNDS CHECK
+#    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address"
+# REGULAR DEBUGGING FOR GDB
+    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized"
+# DEBUGING WITH GPROF SYMBOLS
+#    CFLAGS="$CFLAGS -g -pg -Wall"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
-    CFLAGS="$CFLAGS -O3"
+    CFLAGS="$CFLAGS -O2"
 fi
 
 # do not allow multiple definitions
@@ -93,7 +101,10 @@ fi
 
 # Checks for library functions.
 AC_CHECK_FUNCS([inet_ntoa memset pow select socket strchr strtol malloc])
-AC_CHECK_LIB([m],[roundf])
+AC_CHECK_LIB(m,roundf,,AC_MSG_ERROR([Could not find the math library]))
+if test "x$os" = xwin; then
+    AC_CHECK_LIB([ws2_32],[socket])
+fi
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 

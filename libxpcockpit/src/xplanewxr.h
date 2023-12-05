@@ -49,7 +49,7 @@ void exit_wxr_server(void);
 void exit_wxr_client(void);
 int send_wxr_to_server(void);
 int recv_wxr_from_server(void);
-int send_wxr_to_client(char client_ip[],int client_port,unsigned char data[], int len);
+int send_wxr_to_client(char client_ip[], int client_port, char data[], int len);
 int recv_wxr_from_client(void);
 
 void allocate_wxrdata(int sendlen,int recvlen);

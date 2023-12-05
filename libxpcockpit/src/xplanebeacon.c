@@ -70,6 +70,14 @@ void *xpbeacon_poll_thread_main();
 int initialize_beacon_client(int init_verbose)
 {
 
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    return -1;
+  }
+#endif
+  
   xplanebeacon_verbose = init_verbose;
   
   struct sockaddr_in clientAddr;     /* Client address structure */
@@ -87,7 +95,7 @@ int initialize_beacon_client(int init_verbose)
   } else {
   
     u_int one = 1;
-    if (setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) < 0) {
+    if (setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_REUSEADDR, (void*) &one, sizeof(one)) < 0) {
       printf("X-Plane Beacon Client Reusing ADDR failed");
       return -1;
     }    
@@ -160,6 +168,7 @@ void exit_beacon_client(void)
 
 #ifdef WIN
   closesocket(XPlaneBeaconSocket);
+  WSACleanup();
 #else
   close(XPlaneBeaconSocket);
 #endif
@@ -183,7 +192,8 @@ void *xpbeacon_poll_thread_main()
 
   int ret = 0;
   int bufferlen = 1000;
-  unsigned char buffer[bufferlen];
+  //unsigned char buffer[bufferlen];
+  char buffer[bufferlen];
   struct sockaddr_in serverAddr;     /* Server address structure */
   int addrlen = sizeof(serverAddr);
 

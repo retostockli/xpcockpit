@@ -37,11 +37,21 @@ void b737_aftoverhead(void)
   int zero = 0;
   int ret;
   int temp;
+  float fvalue;
 
 
   temp = 1;
   
-  ret = digital_output(card,0,&temp);
+  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  ret = digital_output(card,0,value);
+  //ret = digital_output(card,0,&temp);
+
+  int i=0;
+  ret = analog_input(card,i,&fvalue,0.0,10.0);
+  if (ret == 1) {
+    /* ret is 1 only if analog input has changed */
+    printf("Analog Input %i changed to: %f \n",i,fvalue);
+  }
 
  
 }
