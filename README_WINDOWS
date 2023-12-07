@@ -65,17 +65,25 @@ https://www.msys2.org
 Start the MSYS2 command line with the UCRT environment and install the following packages:
 pacman -S mingw-w64-ucrt-x86_64-gcc
 pacman -S git
+pacman -S emacs
+pacman -S mc
+pacman -S automake
+pacman -S autoconf
+pacman -S make
+pacman -S mingw-w64-ucrt-x86_64-ftgl
+pacman -S mingw-w64-ucrt-x86_64-fltk
+pacman -S mingw-w64-ucrt-x86_64-freetype
 
+Then get the sources of xpcockpit:
 git clone git@github.com:retostockli/xpcockpit
+cd xpcockpit
+git checkout <BRANCH>   (BRANCH: master or 737)
+git pull origin <BRANCH>
 
-
-
-For this, check out the xpcockpit master branch on github
-at:
-
-https://github.com/retostockli/xpcockpit
-
-Reto Stockli
+Then compile individual packages by jumping into the respective directory and follow the README
+1. libxpcockpit
+2. xpserver
+3. xpsismo etc.
 
 
 

@@ -94,8 +94,8 @@ int initialize_beacon_client(int init_verbose)
     return -1; 
   } else {
   
-    u_int one = 1;
-    if (setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_REUSEADDR, (void*) &one, sizeof(one)) < 0) {
+    int one = 1;
+    if (setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_REUSEADDR, (char*) &one, sizeof(one)) < 0) {
       printf("X-Plane Beacon Client Reusing ADDR failed");
       return -1;
     }    
