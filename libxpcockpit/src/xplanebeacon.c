@@ -162,11 +162,15 @@ Group) */
     }
  
     /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
+#ifdef WIN
+    int tv = 1000;
+    setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#else
     struct timeval tv;
     tv.tv_sec = 1;
     tv.tv_usec = 0;
-    setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-   
+    setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+#endif
     xpbeacon_poll_thread_exit_code = 0;
     if (pthread_create(&xpbeacon_poll_thread, NULL, &xpbeacon_poll_thread_main, NULL)>0) {
       printf("X-Plane Beacon Client Read Poll thread could not be created.\n");
