@@ -71,6 +71,10 @@ int initialize_beacon_client(int init_verbose)
 {
 
 #ifdef WIN
+  int err;
+  char msgbuf [256];   // for a message up to 255 bytes.
+  msgbuf [0] = '\0';    // Microsoft doesn't guarantee this on man page.
+
   WSADATA wsaData;
   if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
     fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
@@ -103,12 +107,31 @@ int initialize_beacon_client(int init_verbose)
     /* Construct the server address structure */
     memset(&clientAddr, 0, sizeof(clientAddr));            /* Zero out structure */
     clientAddr.sin_family      = AF_INET;                  /* Internet address family */
-    clientAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broadcast Group) */
+    //   clientAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broacast Group) */
+    clientAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); /* Server IP address (X-Plane Broadcast \
+Group) */
     clientAddr.sin_port        = htons(49707);             /* Server port (X-Plane Broadcast Port) */
+
+
 
     /* bind socket to broadcast group */
     if (bind(XPlaneBeaconSocket, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0) {
       printf("X-Plane Beacon Client Bind failed\n");
+
+#ifdef WIN
+      err = WSAGetLastError ();
+      FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,   // flags
+		     NULL,                // lpsource
+		     err,                 // message id
+		     MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),    // languageid
+		     msgbuf,              // output buffer
+		     sizeof (msgbuf),     // size of msgbuf, bytes
+		     NULL);               // va_list of arguments
+      if (! *msgbuf)
+	sprintf (msgbuf, "%d", err);  // provide error # if no string available
+    printf("BLA Bind Error: %s \n",msgbuf);
+#endif
+      
       return -1;
     }
 
