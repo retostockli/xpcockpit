@@ -108,8 +108,9 @@ int initialize_beacon_client(int init_verbose)
     memset(&clientAddr, 0, sizeof(clientAddr));            /* Zero out structure */
     clientAddr.sin_family      = AF_INET;                  /* Internet address family */
     //clientAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broacast Group) */
-    clientAddr.sin_addr.s_addr = inet_addr("0.0.0.0"); /* Server IP address (X-Plane Broadcast \
+    //clientAddr.sin_addr.s_addr = inet_addr("0.0.0.0"); /* Server IP address (X-Plane Broadcast \
 Group) */
+    clientAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any local address receiving */
     clientAddr.sin_port        = htons(49707);             /* Server port (X-Plane Broadcast Port) */
 
 
@@ -241,7 +242,7 @@ void *xpbeacon_poll_thread_main()
 #endif
     if (ret == -1) {
 #ifdef WIN
-      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR)) { // just no data yet ...
+      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR) || (wsaerr == WSAETIMEDOUT) { // just no data yet ...
 #else
       if ((errno == EWOULDBLOCK) || (errno == EINTR)) { /* just no data yet or our own timeout */
 #endif
