@@ -292,7 +292,7 @@ void *xpbeacon_poll_thread_main()
 	  strcpy(XPlaneBeaconIP,inet_ntoa(serverAddr.sin_addr));   /* Server IP address */
 	  XPlaneBeaconPort = ntohs(serverAddr.sin_port);     /* Server port */
 	  
-	  if (xplanebeacon_verbose > 1) printf("X-Plane Beacon IP: %s and Port: %i \n",XPlaneBeaconIP,XPlaneBeaconPort);
+	  if (xplanebeacon_verbose > 0) printf("X-Plane Beacon IP: %s and Port: %i \n",XPlaneBeaconIP,XPlaneBeaconPort);
 	}
       }
     } else {
