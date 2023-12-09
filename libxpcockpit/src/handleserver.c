@@ -257,6 +257,7 @@ int check_xpserver(void)
 	if (handleserver_verbose > 0) printf("HANDLESERVER: Checking for X-Plane server \n");
 	if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
 #ifdef WIN
+	  int wsaerr = WSAGetLastError();
 	  if (wsaerr == WSAEINPROGRESS) { 
 #else
 	  if (errno == EINPROGRESS) { 
@@ -281,6 +282,7 @@ int check_xpserver(void)
 		lon = sizeof(int); 
 		if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
 #ifdef WIN
+		  int wsaerr = WSAGetLastError();
 		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d\n", wsaerr); 
 #else
 		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
