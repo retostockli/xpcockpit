@@ -107,8 +107,8 @@ int initialize_beacon_client(int init_verbose)
     /* Construct the server address structure */
     memset(&clientAddr, 0, sizeof(clientAddr));            /* Zero out structure */
     clientAddr.sin_family      = AF_INET;                  /* Internet address family */
-    //   clientAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broacast Group) */
-    clientAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); /* Server IP address (X-Plane Broadcast \
+    //clientAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broacast Group) */
+    clientAddr.sin_addr.s_addr = inet_addr("0.0.0.0"); /* Server IP address (X-Plane Broadcast \
 Group) */
     clientAddr.sin_port        = htons(49707);             /* Server port (X-Plane Broadcast Port) */
 
@@ -227,8 +227,15 @@ void *xpbeacon_poll_thread_main()
     /* read call goes here (1 s timeout for blocking operation) */
     ret = recvfrom(XPlaneBeaconSocket, buffer, bufferlen, 
 		   0, (struct sockaddr *) &serverAddr, &addrlen);
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
     if (ret == -1) {
+#ifdef WIN
+      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR)) { // just no data yet ...
+#else
       if ((errno == EWOULDBLOCK) || (errno == EINTR)) { /* just no data yet or our own timeout */
+#endif
 	//printf("UDP Poll Timeout \n");
 	xpbeacon_poll_timeout_counter += 1;
 	if ((xpbeacon_poll_timeout_counter == XPBEACON_POLL_MAX_TIMEOUT) && (XPlaneBeaconPort != 0)) {
@@ -237,15 +244,18 @@ void *xpbeacon_poll_thread_main()
 	  XPlaneBeaconPort = 0;
 	}
       } else {
+#ifdef WIN
+	printf("X-Plane Beacon Client Receive Error %i \n",wsaerr);
+#else
 	printf("X-Plane Beacon Client Receive Error %i \n",errno);
+#endif
 	//xpbeacon_poll_thread_exit_code = 1;
 	//break;
       } 
     } else if (ret > 0) {
       /* read is ok */
       /* are we reading BEACON data ? */
-      if (strncmp(buffer,"BECN",4)==0) {
-
+	if (strncmp(buffer,"BECN",4)==0) {
 	/* Fill X-Plane Beacon Structure */
 	memcpy(&becn.beacon_major_version,&buffer[5],sizeof(becn.beacon_major_version));
 	if (xplanebeacon_verbose > 2) printf("X-Plane Major Version Number: %d\n",becn.beacon_major_version);
