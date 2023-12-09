@@ -106,19 +106,35 @@ int init_wxr_server()
   }
 
   /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
-  struct timeval tv;
-  tv.tv_sec = 1;
-  tv.tv_usec = 0;
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, (void*)&tv, sizeof tv) < 0) {
+#ifdef WIN
+  int tv = 1000;
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv))<0) {
       printf("XPLANEWXR: Client Socket set Timeout failed\n");
       return -1;
   }
+#else
+  struct timeval tv;
+  tv.tv_sec = 1;
+  tv.tv_usec = 0;
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+      printf("XPLANEWXR: Client Socket set Timeout failed\n");
+      return -1;
+  }
+#endif
 
-  int optval;
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, (void*)&optval, sizeof(optval)) < 0) {
+#ifdef WIN
+  char optval = 0;
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseaddr failed\n");
       return -1;
-  } 
+  }
+#else
+  int optval = 0;
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+      printf("XPLANEWXR: Client Socket set Reuseaddr failed\n");
+      return -1;
+  }
+#endif
 
   /*
   if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, (void*)&optval, sizeof(optval)) < 0) {
@@ -170,19 +186,36 @@ int init_wxr_client(void)
   }
 
   /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
-  struct timeval tv;
-  tv.tv_sec = 1;
-  tv.tv_usec = 0;
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, (void*)&tv, sizeof tv) < 0) {
+#ifdef WIN
+  int tv = 1000;
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv))<0) {
       printf("XPLANEWXR: Client Socket set Timeout failed\n");
       return -1;
   }
+#else
+  struct timeval tv;
+  tv.tv_sec = 1;
+  tv.tv_usec = 0;
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+      printf("XPLANEWXR: Client Socket set Timeout failed\n");
+      return -1;
+  }
+#endif
 
-  int optval;
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, (void*)&optval, sizeof(optval)) < 0) {
+#ifdef WIN
+  char optval = 0;
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseaddr failed\n");
       return -1;
   }
+#else
+  int optval = 0;
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+      printf("XPLANEWXR: Client Socket set Reuseaddr failed\n");
+      return -1;
+  }
+#endif
+
 
   /*
   if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, (void*)&optval, sizeof(optval)) < 0) {

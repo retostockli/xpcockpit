@@ -224,13 +224,18 @@ void *xpbeacon_poll_thread_main()
   struct sockaddr_in serverAddr;     /* Server address structure */
   int addrlen = sizeof(serverAddr);
 
+  memset(&serverAddr, 0, sizeof(serverAddr));            /* Zero out structure */
+  serverAddr.sin_family      = AF_INET;                  /* Internet address family */
+  serverAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broacast Group) */
+  serverAddr.sin_port        = htons(49707);             /* Server port (X-Plane Broadcast Port) */
+
   if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Receive thread running \n");
 
   while (!xpbeacon_poll_thread_exit_code) {
 
     /* read call goes here (1 s timeout for blocking operation) */
     ret = recvfrom(XPlaneBeaconSocket, buffer, bufferlen, 
-		   0, (struct sockaddr *) &serverAddr, &addrlen);
+    		   0, (struct sockaddr *) &serverAddr, &addrlen);
 #ifdef WIN
     int wsaerr = WSAGetLastError();
 #endif
