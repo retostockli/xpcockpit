@@ -71,10 +71,6 @@ int initialize_beacon_client(int init_verbose)
 {
 
 #ifdef WIN
-  int err;
-  char msgbuf [256];   // for a message up to 255 bytes.
-  msgbuf [0] = '\0';    // Microsoft doesn't guarantee this on man page.
-
   WSADATA wsaData;
   if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
     fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
@@ -118,21 +114,6 @@ Group) */
     /* bind socket to broadcast group */
     if (bind(XPlaneBeaconSocket, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0) {
       printf("X-Plane Beacon Client Bind failed\n");
-
-#ifdef WIN
-      err = WSAGetLastError ();
-      FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,   // flags
-		     NULL,                // lpsource
-		     err,                 // message id
-		     MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),    // languageid
-		     msgbuf,              // output buffer
-		     sizeof (msgbuf),     // size of msgbuf, bytes
-		     NULL);               // va_list of arguments
-      if (! *msgbuf)
-	sprintf (msgbuf, "%d", err);  // provide error # if no string available
-    printf("BLA Bind Error: %s \n",msgbuf);
-#endif
-      
       return -1;
     }
 
@@ -294,7 +275,7 @@ void *xpbeacon_poll_thread_main()
 	  strcpy(XPlaneBeaconIP,inet_ntoa(serverAddr.sin_addr));   /* Server IP address */
 	  XPlaneBeaconPort = ntohs(serverAddr.sin_port);     /* Server port */
 	  
-	  if (xplanebeacon_verbose > 0) printf("X-Plane Beacon IP: %s and Port: %i \n",XPlaneBeaconIP,XPlaneBeaconPort);
+	  if (xplanebeacon_verbose > 1) printf("X-Plane Beacon IP: %s and Port: %i \n",XPlaneBeaconIP,XPlaneBeaconPort);
 	}
       }
     } else {

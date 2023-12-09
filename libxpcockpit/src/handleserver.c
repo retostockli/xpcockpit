@@ -203,6 +203,9 @@ int check_xpserver(void)
   struct timeval tv; 
   int valopt; 
   socklen_t lon; 
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
 
   if (socketStatus == status_Error) {
     if (handleserver_verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
@@ -253,16 +256,25 @@ int check_xpserver(void)
 	/* Check for and establish a connection to the X-Plane server */
 	if (handleserver_verbose > 0) printf("HANDLESERVER: Checking for X-Plane server \n");
 	if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
+#ifdef WIN
+	  if (wsaerr == WSAEINPROGRESS) { 
+#else
 	  if (errno == EINPROGRESS) { 
-	    if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
+#endif
+	  if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
 	    do { 
 	      tv.tv_sec = 0; 
 	      tv.tv_usec = 500000; /* 500 ms timeout for connect */
 	      FD_ZERO(&myset); 
 	      FD_SET(clntSock, &myset); 
 	      res = select(clntSock+1, NULL, &myset, NULL, &tv); 
+#ifdef WIN
+	      if (res < 0 && errno != WSAEINTR) { 
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
+#else
 	      if (res < 0 && errno != EINTR) { 
 		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+#endif
 		break;
 	      } else if (res > 0) { 
 		// Socket selected for write 
@@ -289,7 +301,11 @@ int check_xpserver(void)
 	      } 
 	    } while (1);
 	  } else { 
+#ifdef WIN
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", errno); 
+#else
 	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+#endif
 	  } 
 
 	  /* After a failed Connect we have to reinitialize the socket. Why? */
