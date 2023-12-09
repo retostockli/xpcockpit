@@ -242,7 +242,7 @@ void *xpbeacon_poll_thread_main()
 #endif
     if (ret == -1) {
 #ifdef WIN
-      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR) || (wsaerr == WSAETIMEDOUT) { // just no data yet ...
+      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR) || (wsaerr == WSAETIMEDOUT)) { // just no data yet ...
 #else
       if ((errno == EWOULDBLOCK) || (errno == EINTR)) { /* just no data yet or our own timeout */
 #endif
