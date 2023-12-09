@@ -262,7 +262,7 @@ int check_xpserver(void)
 #else
 	  if (errno == EINPROGRESS) { 
 #endif
-	  if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
+	    if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
 	    do { 
 	      tv.tv_sec = 0; 
 	      tv.tv_usec = 500000; /* 500 ms timeout for connect */
@@ -270,6 +270,7 @@ int check_xpserver(void)
 	      FD_SET(clntSock, &myset); 
 	      res = select(clntSock+1, NULL, &myset, NULL, &tv); 
 #ifdef WIN
+	      int wsaerr = WSAGetLastError();
 	      if (res < 0 && wsaerr != WSAEINTR) { 
 		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
 #else
