@@ -269,7 +269,7 @@ int check_xpserver(void)
 	      FD_SET(clntSock, &myset); 
 	      res = select(clntSock+1, NULL, &myset, NULL, &tv); 
 #ifdef WIN
-	      if (res < 0 && errno != WSAEINTR) { 
+	      if (res < 0 && wsaerr != WSAEINTR) { 
 		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
 #else
 	      if (res < 0 && errno != EINTR) { 
@@ -280,12 +280,11 @@ int check_xpserver(void)
 		// Socket selected for write 
 		lon = sizeof(int); 
 		if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+#ifdef WIN
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d\n", wsaerr); 
+#else
 		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
-		  break;
-		} 
-		// Check the value returned... 
-		if (valopt) { 
-		  if (handleserver_verbose > 2) printf("HANDLESERVER: No connection %d - %s\n", valopt, strerror(valopt)); 
+#endif
 		  break;
 		} 
 		/* yeah, we found the xpserver plugin running in X-Plane ... */
