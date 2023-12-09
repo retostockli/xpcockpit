@@ -271,7 +271,6 @@ int check_xpserver(void)
 	      res = select(clntSock+1, NULL, &myset, NULL, &tv); 
 #ifdef WIN
 	      int wsaerr = WSAGetLastError();
-	      printf("%i %i \n",res,wsaerr);
 	      if (res < 0 && wsaerr != WSAEINTR) { 
 		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
 #else
@@ -305,7 +304,7 @@ int check_xpserver(void)
 	    } while (1);
 	  } else { 
 #ifdef WIN
-	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", errno); 
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
 #else
 	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
 #endif
