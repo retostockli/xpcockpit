@@ -128,7 +128,7 @@ void b737_throttle(void)
 
   int *num_engines = link_dataref_int("sim/aircraft/engine/acf_num_engines");
   float *throttle = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_thro", 16, -1, -2);
-  //  float *throttle_beta = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_beta_rev_ratio",8,-1,-2);
+  float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",16,-1,-2);
 
   float *flap_ratio;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -136,7 +136,7 @@ void b737_throttle(void)
   } else {
     flap_ratio = link_dataref_flt("sim/flightmodel/controls/flaprqst", -4);
   }
-  int *propmode = link_dataref_int_arr("sim/flightmodel/engine/ENGN_propmode",16,-1);
+  //int *propmode = link_dataref_int_arr("sim/flightmodel/engine/ENGN_propmode",16,-1);
   float *parkbrake_xplane;
   int *parkbrake_button;
   if (acf_type == 4) {
@@ -591,23 +591,23 @@ void b737_throttle(void)
     
     /* Auto Throttle for engine 1 (first engine on left wing) */
     en = 0;
-    if ((*(throttle+en) != FLT_MISS) && (throttle0 != FLT_MISS)) {
+    if ((*(throttle_actuator+en) != FLT_MISS) && (throttle0 != FLT_MISS)) {
       
       value = 0.0;
       
-      if (*(throttle+en) > (throttle0+0.02)) {
+      if (*(throttle_actuator+en) > (throttle0+0.02)) {
 	if (throttle0 < maxval)	{
-	  value = max(min(pow((fabs(*(throttle+en) - throttle0))*2.0,0.5),maxval),0.25*maxval);
-	  //printf("+++ Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle+en),value);
+	  value = max(min(pow((fabs(*(throttle_actuator+en) - throttle0))*2.0,0.5),maxval),0.25*maxval);
+	  //printf("+++ Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle_actuator+en),value);
 	  ret = digital_output(device_dcmotor,card,0,&one); /* activate motor for thrust lever for engine 1 */
 	} else {
 	  ret = digital_output(device_dcmotor,card,0,&zero); /* deactivate motor for thrust lever for engine 1 */
 	}
       }
-      if (*(throttle+en) < (throttle0-0.02)) {
+      if (*(throttle_actuator+en) < (throttle0-0.02)) {
 	if (throttle0 > minval)	{
-	  value = -max(min(pow((fabs(*(throttle+en) - throttle0))*2.0,0.5),maxval),0.25*maxval);
-	  //printf("--- Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle+en),value);
+	  value = -max(min(pow((fabs(*(throttle_actuator+en) - throttle0))*2.0,0.5),maxval),0.25*maxval);
+	  //printf("--- Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle_actuator+en),value);
 	  ret = digital_output(device_dcmotor,card,0,&one); /* activate motor for thrust lever for engine 1 */
 	} else {
 	  ret = digital_output(device_dcmotor,card,0,&zero); /* deactivate motor for thrust lever for engine 1 */
@@ -626,23 +626,23 @@ void b737_throttle(void)
     } else {
       en = 1;
     }
-    if ((*(throttle+en) != FLT_MISS) && (throttle1 != FLT_MISS)) {
+    if ((*(throttle_actuator+en) != FLT_MISS) && (throttle1 != FLT_MISS)) {
       
       value = 0.0;
       
-      if (*(throttle+en) > (throttle1+0.02)) {
+      if (*(throttle_actuator+en) > (throttle1+0.02)) {
 	if (throttle1 < maxval)	{
-	  value = max(min(pow((fabs(*(throttle+en) - throttle1))*2.0,0.5),maxval),0.25*maxval);
-	  // printf("+++ Engine 2 Throttle: %f of %f: motor %f \n",throttle1,*(throttle+en),value);
+	  value = max(min(pow((fabs(*(throttle_actuator+en) - throttle1))*2.0,0.5),maxval),0.25*maxval);
+	  // printf("+++ Engine 2 Throttle: %f of %f: motor %f \n",throttle1,*(throttle_actuator+en),value);
 	  ret = digital_output(device_dcmotor,card,1,&one); /* activate motor for thrust lever for engine 2 */
 	} else {
 	  ret = digital_output(device_dcmotor,card,1,&zero); /* deactivate motor for thrust lever for engine 2 */
 	}
       }
-      if (*(throttle+en) < (throttle1-0.02)) {
+      if (*(throttle_actuator+en) < (throttle1-0.02)) {
 	if (throttle1 > minval)	{
-	  value = -max(min(pow((fabs(*(throttle+en) - throttle1))*2.0,0.5),maxval),0.25*maxval);
-	  // printf("--- Engine 2 Throttle: %f of %f: motor %f \n",throttle1,*(throttle+en),value);
+	  value = -max(min(pow((fabs(*(throttle_actuator+en) - throttle1))*2.0,0.5),maxval),0.25*maxval);
+	  // printf("--- Engine 2 Throttle: %f of %f: motor %f \n",throttle1,*(throttle_actuator+en),value);
 	  ret = digital_output(device_dcmotor,card,1,&one); /* activate motor for thrust lever for engine 2 */
 	} else {
 	  ret = digital_output(device_dcmotor,card,1,&zero); /* deactivate motor for thrust lever for engine 2 */
@@ -665,35 +665,37 @@ void b737_throttle(void)
     ret = motors_output(device_dcmotor,0,&value,maxval);
     ret = motors_output(device_dcmotor,1,&value,maxval);
 
+    /* THIS IS NOW HANDLED THROUGH JOYSTICK INPUTS */
+    
     /* reverse power currently only implemented for x737 */
-    if (*num_engines != INT_MISS) {
-      for (i=0;i<*num_engines;i++) {
-	if ((i<(*num_engines/2)) || (*num_engines == 1)) {
-	  /* engines on left wing */
-	  /* or single engine */
-	  /* or first half minus one if uneven # of engines */
-	  if ((throttle0 < 0.05) && (reverser0 > 0.05)) {
-	    *(throttle+i) = reverser0;
-	    // *(throttle_beta+i) = -1-reverser0;
-	    *(propmode+i) = 3;
-	  } else {
-	    *(throttle+i) = throttle0;
-	    // *(throttle_beta+i) = throttle0;
-	    *(propmode+i) = 1;
-	  }
-	} else {
-	  if ((throttle1 < 0.05) && (reverser1 > 0.05)) {
-	    *(throttle+i) = reverser1;
-	    //	    *(throttle_beta+i) = -1-reverser1;
-	    *(propmode+i) = 3;
-	  } else {
-	    *(throttle+i) = throttle1;
-	    //  *(throttle_beta+i) = throttle1;
-	    *(propmode+i) = 1;
-	  }
-	}
-      }
-     }
+    /* if (*num_engines != INT_MISS) { */
+    /*   for (i=0;i<*num_engines;i++) { */
+    /* 	if ((i<(*num_engines/2)) || (*num_engines == 1)) { */
+    /* 	  /\* engines on left wing *\/ */
+    /* 	  /\* or single engine *\/ */
+    /* 	  /\* or first half minus one if uneven # of engines *\/ */
+    /* 	  if ((throttle0 < 0.05) && (reverser0 > 0.05)) { */
+    /* 	    *(throttle+i) = reverser0; */
+    /* 	    // *(throttle_beta+i) = -1-reverser0; */
+    /* 	    *(propmode+i) = 3; */
+    /* 	  } else { */
+    /* 	    *(throttle+i) = throttle0; */
+    /* 	    // *(throttle_beta+i) = throttle0; */
+    /* 	    *(propmode+i) = 1; */
+    /* 	  } */
+    /* 	} else { */
+    /* 	  if ((throttle1 < 0.05) && (reverser1 > 0.05)) { */
+    /* 	    *(throttle+i) = reverser1; */
+    /* 	    //	    *(throttle_beta+i) = -1-reverser1; */
+    /* 	    *(propmode+i) = 3; */
+    /* 	  } else { */
+    /* 	    *(throttle+i) = throttle1; */
+    /* 	    //  *(throttle_beta+i) = throttle1; */
+    /* 	    *(propmode+i) = 1; */
+    /* 	  } */
+    /* 	} */
+    /*   } */
+    /*  } */
 
     //    printf("T %f B %f P %i \n",*throttle,*throttle_beta,*propmode);
 
