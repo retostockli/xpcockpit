@@ -104,7 +104,7 @@ int initialize_beacon_client(int init_verbose)
     memset(&clientAddr, 0, sizeof(clientAddr));            /* Zero out structure */
     clientAddr.sin_family      = AF_INET;                  /* Internet address family */
     //clientAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broacast Group) */
-    //clientAddr.sin_addr.s_addr = inet_addr("0.0.0.0"); /* Server IP address (X-Plane Broadcast \
+    //clientAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); /* Server IP address (X-Plane Broadcast \
 Group) */
     clientAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any local address receiving */
     clientAddr.sin_port        = htons(49707);             /* Server port (X-Plane Broadcast Port) */

@@ -83,7 +83,7 @@ int init_udp_server(char server_ip[],int server_port)
     printf("HANDLEUDP: Cannot initialize client UDP socket \n");
     return -1; 
   } else {
-
+    
     /* Construct the server address structure */
     memset(&udpServerAddr, 0, sizeof(udpServerAddr));           /* Zero out structure */
     udpServerAddr.sin_family      = AF_INET;                  /* Internet address family */
