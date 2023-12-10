@@ -1,10 +1,7 @@
 Short Introduction for Windows Users
 ------------------------------------
 
-WINDOWS BUILD CURRENTLY BROKEN AND NOT 
-PART OF THE DISTRIBUTION SINCE I DO NOT HAVE ANY WINDOwS
-MACHINE TO TEST. PLEASE ASK ME IF YOU REALLY WANT
-TO HAVE THE THING RUNNING ON WINDOWS.
+
 
 xpcockpit-windows.zip is the windows build for the open source xpopengc OpenGC-based 
 Glass Cockpit and the xpserver plugin for x-plane. It is made for those
@@ -13,6 +10,9 @@ development platform. However, if you want to change, extend or add new
 gauges to xpopengc, it is needed to do basic programming in C++ and
 you will need to get familiar with the minGW programming environment
 through MSYS2 on Windows.
+
+I. How to try with the precompiled xpserver - xpopengc version for testing
+==========================================================================
 
 How-to install:
 1. Go to xpserver/plugins/. Copy the xpserver subdirectory there into the X-Plane 
@@ -51,14 +51,39 @@ k.xpserver).
 You can now start to test other gauges, move them around on the screen
 and modify their size. You can also use many gauges on one single call.
 
-Have fun. Of course, the real way to work with this is to write your own
+Have fun. 
+
+II. How to compile from source and develop your own xpcockpit stuff on Windows
+==============================================================================
+
+The real way to work with this is to write your own
 gauges. Install MSYS2 on Windows with the full gnu development tools and
-start crafting. For this, check out the xpcockpit master branch on github
-at:
+start crafting:
 
-https://github.com/retostockli/xpcockpit
+https://www.msys2.org
 
-Reto Stockli
+Start the MSYS2 command line with the UCRT environment and install the following packages:
+pacman -S mingw-w64-ucrt-x86_64-gcc
+pacman -S git
+pacman -S emacs
+pacman -S mc
+pacman -S automake
+pacman -S autoconf
+pacman -S make
+pacman -S mingw-w64-ucrt-x86_64-ftgl
+pacman -S mingw-w64-ucrt-x86_64-fltk
+pacman -S mingw-w64-ucrt-x86_64-freetype
+
+Then get the sources of xpcockpit:
+git clone git@github.com:retostockli/xpcockpit
+cd xpcockpit
+git checkout <BRANCH>   (BRANCH: master or 737)
+git pull origin <BRANCH>
+
+Then compile individual packages by jumping into the respective directory and follow the README
+1. libxpcockpit
+2. xpserver
+3. xpsismo etc.
 
 
 

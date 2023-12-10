@@ -313,7 +313,7 @@ int read_sismo() {
 	      sismo[card].analoginputs[input+firstinput][s+1] = sismo[card].analoginputs[input+firstinput][s];
 	    }
 	    if (val != sismo[card].analoginputs[input+firstinput][0]) {
-	      if (verbose > 2) printf("Card %i Analog Input %i Changed to %i \n",
+	      if (verbose > 3) printf("Card %i Analog Input %i Changed to %i \n",
 				      card,input+firstinput,sismo[card].analoginputs[input+firstinput][0]);
 	    }
 	    sismo[card].analoginputs[input+firstinput][0] = val;			      

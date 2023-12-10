@@ -21,20 +21,26 @@
 
 #include <stdio.h>   
 #include <stdlib.h>  
-#include <sys/socket.h> 
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <stdbool.h>
 #include <unistd.h>   
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <assert.h>
+#include <pthread.h>
+
+#ifdef WIN
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <arpa/inet.h>
+#include <sys/socket.h> 
+#include <sys/ioctl.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <arpa/inet.h>
-#include <assert.h>
-#include <pthread.h>
+#endif
 
 #include "handleudp.h"
 #include "common.h"
@@ -64,6 +70,13 @@ pthread_mutex_t udp_exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 /* set up udp server socket with given server address and port */
 int init_udp_server(char server_ip[],int server_port)
 {
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    return -1;
+  }
+#endif
   
   /* Create a UDP socket */
   if ((serverSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -89,7 +102,11 @@ int init_udp_server(char server_ip[],int server_port)
 
     /* set to blocking (0). Non-blocking (1) is not suitable for the threaded reading */
     unsigned long nSetSocketType = 0;
+#ifdef WIN
+    if (ioctlsocket(serverSocket,FIONBIO,&nSetSocketType) < 0) {
+#else
     if (ioctl(serverSocket,FIONBIO,&nSetSocketType) < 0) {
+#endif
       printf("HANDLEUDP: Server set to non-blocking failed\n");
       return -1;
     } else {
@@ -101,7 +118,7 @@ int init_udp_server(char server_ip[],int server_port)
   struct timeval tv;
   tv.tv_sec = 1;
   tv.tv_usec = 0;
-  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (void*)&tv, sizeof tv);
  
   return 0;
 }
@@ -117,7 +134,8 @@ void *udpclient_thread_main()
   while (!udp_poll_thread_exit_code) {
 
     /* read call goes here (1 s timeout for blocking operation) */
-    ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
+    ret = recv(serverSocket, (char*) buffer, UDPRECVBUFLEN, 0);
+    //ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
     if (ret == -1) {
       if (errno == EWOULDBLOCK) { // just no data yet ...
 	if (verbose > 3) printf("HANDLEUDP: No data yet. \n");
@@ -186,12 +204,18 @@ void exit_udp(void)
 {
   udp_poll_thread_exit_code = 1;
   pthread_join(udp_poll_thread, NULL);
+
+#ifdef WIN
+  closesocket(serverSocket);
+  WSACleanup();
+#else
   close(serverSocket);
+#endif
 }
 
 
 /* send datagram to UDP client */
-int send_udp(char client_ip[],int client_port,unsigned char data[], int len) {
+int send_udp(char client_ip[], int client_port, unsigned char data[], int len) {
 
   int n;
 
@@ -209,9 +233,9 @@ int send_udp(char client_ip[],int client_port,unsigned char data[], int len) {
   printf("%s \n",udpClientAddr.sin_zero);
   */
   
-  n = sendto(serverSocket, data, len, 
-	     MSG_CONFIRM, (struct sockaddr *) &udpClientAddr, 
-	     sizeof(udpClientAddr));
+  n = sendto(serverSocket, (char*) data, len, 0,
+  //n = sendto(serverSocket, data, len, 0,
+	     (struct sockaddr *) &udpClientAddr, sizeof(udpClientAddr));
 
   return n;
 }
@@ -235,7 +259,7 @@ int recv_udp() {
 	       0, (struct sockaddr *) &udpClientAddr, 
 	       &len);
   */
-  n = recv(serverSocket, udpRecvBuffer, UDPRECVBUFLEN, 0);
+  n = recv(serverSocket, (char*) udpRecvBuffer, UDPRECVBUFLEN, 0);
 
   return n;
 }

@@ -34,8 +34,12 @@
 #include "xplanewxr.h"
 #include "wxrdata.h"
 
+#ifndef min
 #define min(a,b) (((a)<(b))?(a):(b))
+#endif
+#ifndef max
 #define max(a,b) (((a)>(b))?(a):(b))
+#endif
 
 #define WXR_CHECK_INTERVAL 30.0
 
@@ -237,7 +241,6 @@ void read_wxr() {
   float lon;
   float lat;
   float hgt;
-  short hgt2;
   char lev;
 
   char *wxrBuffer;
@@ -310,7 +313,7 @@ void read_wxr() {
 	  */
 	  if (wxr_is_xp12) {
 	    float cloud_base;
-	    float cloud_ratio;
+	    //float cloud_ratio;
 	    float precip_ratio;
 	    memcpy(&lon,&wxrBuffer[5+r*24+0],sizeof(lon));
 	    memcpy(&lat,&wxrBuffer[5+r*24+4],sizeof(lat));

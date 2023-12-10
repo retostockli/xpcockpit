@@ -203,6 +203,9 @@ int check_xpserver(void)
   struct timeval tv; 
   int valopt; 
   socklen_t lon; 
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
 
   if (socketStatus == status_Error) {
     if (handleserver_verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
@@ -253,7 +256,12 @@ int check_xpserver(void)
 	/* Check for and establish a connection to the X-Plane server */
 	if (handleserver_verbose > 0) printf("HANDLESERVER: Checking for X-Plane server \n");
 	if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
+#ifdef WIN
+	  int wsaerr = WSAGetLastError();
+	  if (wsaerr == WSAEINPROGRESS) { 
+#else
 	  if (errno == EINPROGRESS) { 
+#endif
 	    if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
 	    do { 
 	      tv.tv_sec = 0; 
@@ -261,19 +269,25 @@ int check_xpserver(void)
 	      FD_ZERO(&myset); 
 	      FD_SET(clntSock, &myset); 
 	      res = select(clntSock+1, NULL, &myset, NULL, &tv); 
+#ifdef WIN
+	      int wsaerr = WSAGetLastError();
+	      if (res < 0 && wsaerr != WSAEINTR) { 
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
+#else
 	      if (res < 0 && errno != EINTR) { 
 		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+#endif
 		break;
 	      } else if (res > 0) { 
 		// Socket selected for write 
 		lon = sizeof(int); 
 		if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+#ifdef WIN
+		  int wsaerr = WSAGetLastError();
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d\n", wsaerr); 
+#else
 		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
-		  break;
-		} 
-		// Check the value returned... 
-		if (valopt) { 
-		  if (handleserver_verbose > 2) printf("HANDLESERVER: No connection %d - %s\n", valopt, strerror(valopt)); 
+#endif
 		  break;
 		} 
 		/* yeah, we found the xpserver plugin running in X-Plane ... */
@@ -289,7 +303,11 @@ int check_xpserver(void)
 	      } 
 	    } while (1);
 	  } else { 
+#ifdef WIN
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
+#else
 	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+#endif
 	  } 
 
 	  /* After a failed Connect we have to reinitialize the socket. Why? */
