@@ -219,9 +219,9 @@ int check_xpserver(void)
       strncpy(XPlaneServerIP,XPlaneBeaconIP,sizeof(XPlaneServerIP));
     }
 
-    /* Do we have a Beacon signal or a manually defined IP address? */
+    /* Do we have a Beacon signal from X-Plane or a manually defined IP address? */
     if (strcmp(XPlaneServerIP,"")!=0) {
-
+      
       /* Construct the server address structure */
       memset(&ServAddr, 0, sizeof(ServAddr));            /* Zero out structure */
       ServAddr.sin_family      = AF_INET;                /* Internet address family */
@@ -258,9 +258,9 @@ int check_xpserver(void)
 	if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
 #ifdef WIN
 	  int wsaerr = WSAGetLastError();
-	  if (wsaerr == WSAEINPROGRESS) { 
+	  if ((wsaerr == WSAEINPROGRESS) || (wsaerr == WSAEWOULDBLOCK)) { 
 #else
-	  if (errno == EINPROGRESS) { 
+	    if ((errno == EINPROGRESS) || (errno == EWOULDBLOCK)) { 
 #endif
 	    if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
 	    do { 

@@ -153,6 +153,7 @@ Group) */
     tv.tv_usec = 0;
     setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 #endif
+    
     xpbeacon_poll_thread_exit_code = 0;
     if (pthread_create(&xpbeacon_poll_thread, NULL, &xpbeacon_poll_thread_main, NULL)>0) {
       printf("X-Plane Beacon Client Read Poll thread could not be created.\n");

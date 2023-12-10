@@ -186,7 +186,7 @@ to find headers in <directory>/include/freetype and libraries in <directory>/lib
                 [FREETYPEDIR=$with_freetype])
 if test -z "$FREETYPEDIR" ; then
     AC_MSG_RESULT([no])
-    CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2" 
+    CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2 -I/mingw64/include/freetype2" 
 else
     AC_MSG_RESULT([$FREETYPEDIR])
     LIBS="$LIBS -L$FREETYPEDIR/lib"

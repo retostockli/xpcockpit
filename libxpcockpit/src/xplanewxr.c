@@ -137,7 +137,7 @@ int init_wxr_server()
 #endif
 
   /*
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, (void*)&optval, sizeof(optval)) < 0) {
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseport failed\n");
       return -1;
       }
@@ -203,7 +203,7 @@ int init_wxr_client(void)
 #endif
 
 #ifdef WIN
-  char optval = 0;
+  const char optval = 0;
   if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseaddr failed\n");
       return -1;
@@ -216,14 +216,12 @@ int init_wxr_client(void)
   }
 #endif
 
-
   /*
-  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, (void*)&optval, sizeof(optval)) < 0) {
+  if (setsockopt(wxrSocket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
       printf("XPLANEWXR: Client Socket set Reuseport failed\n");
       return -1;
       }
   */
-   
   return 0;
 }
 
@@ -295,11 +293,22 @@ void *wxr_poll_thread_main()
     ret = recvfrom(wxrSocket, buffer, wxrRecvBufferLen, 
            0, (struct sockaddr *) &wxrAddr, &addrlen);
     //ret = recv(wxrSocket, buffer, wxrRecvBufferLen, 0);
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
     if (ret == -1) {
+#ifdef WIN
+      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR)) { // just no data yet ...
+#else
       if ((errno == EWOULDBLOCK) || (errno == EINTR)) { // just no data yet or our own timeout ;-)
+#endif
 	//printf("UDP Poll Timeout \n");
       } else {
+#ifdef WIN
+	printf("XPLANEWXR: Receive Error %i \n",wsaerr);
+#else
 	printf("XPLANEWXR: Receive Error %i \n",errno);
+#endif
 	//wxr_poll_thread_exit_code = 1;
 	//break;
       } 

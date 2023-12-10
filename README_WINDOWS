@@ -62,17 +62,24 @@ start crafting:
 
 https://www.msys2.org
 
-Start the MSYS2 command line with the UCRT environment and install the following packages:
-pacman -S mingw-w64-ucrt-x86_64-gcc
+
+
+Start the MSYS2 command line with the regular w64-x86_64 (not UCRT) environment:
+Under Options select the terminal xterm-256color and enter the following command on the command
+line (This fixes the mouse issue in mc):
+infocmp xterm-256color|sed -E 's/(kmous=\\E\[)</\1M/'|tic -o ~/.terminfo -
+
+Install the following packages:
+pacman -S mingw-w64-x86_64-gcc
 pacman -S git
-pacman -S emacs
+pacman -S mingw-w64-x86_64-emacs
 pacman -S mc
 pacman -S automake
 pacman -S autoconf
 pacman -S make
-pacman -S mingw-w64-ucrt-x86_64-ftgl
-pacman -S mingw-w64-ucrt-x86_64-fltk
-pacman -S mingw-w64-ucrt-x86_64-freetype
+pacman -S mingw-w64-x86_64-ftgl
+pacman -S mingw-w64-x86_64-fltk
+pacman -S mingw-w64-x86_64-freetype
 
 Then get the sources of xpcockpit:
 git clone git@github.com:retostockli/xpcockpit
@@ -83,7 +90,9 @@ git pull origin <BRANCH>
 Then compile individual packages by jumping into the respective directory and follow the README
 1. libxpcockpit
 2. xpserver
-3. xpsismo etc.
+3. xpsismo
+4. xpopengc --> might need to specify the freetype path: e.g. --with-freetype=/mingw64
+5. xpusb
 
 
 

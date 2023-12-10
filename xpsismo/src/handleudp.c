@@ -115,11 +115,16 @@ int init_udp_server(char server_ip[],int server_port)
   }
 
   /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
+#ifdef WIN
+  int tv = 1000;
+  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#else
   struct timeval tv;
   tv.tv_sec = 1;
   tv.tv_usec = 0;
-  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (void*)&tv, sizeof tv);
- 
+  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+#endif
+
   return 0;
 }
 
@@ -134,19 +139,36 @@ void *udpclient_thread_main()
   while (!udp_poll_thread_exit_code) {
 
     /* read call goes here (1 s timeout for blocking operation) */
-    ret = recv(serverSocket, (char*) buffer, UDPRECVBUFLEN, 0);
-    //ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
+    //ret = recv(serverSocket, (char*) buffer, UDPRECVBUFLEN, 0);
+    ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
     if (ret == -1) {
-      if (errno == EWOULDBLOCK) { // just no data yet ...
+#ifdef WIN
+      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR)) { // just no data yet ...
+#else
+      if ((errno == EWOULDBLOCK) || (errno == EINTR)) { /* just no data yet or our own timeout */
+#endif
 	if (verbose > 3) printf("HANDLEUDP: No data yet. \n");
       } else {
-	printf("HANDLEUDP: Receive Error. \n");
+#ifdef WIN
+	if (wsaerr != WSAETIMEDOUT) {
+	  printf("HANDLEUDP: Receive Error %i \n",wsaerr);
+	  udp_poll_thread_exit_code = 1;
+	  break;
+	}
+#else
+	printf("HANDLEUDP: Receive Error %i \n",errno);
 	udp_poll_thread_exit_code = 1;
 	break;
+#endif
       } 
     } else if ((ret > 0) && (ret <= UDPRECVBUFLEN)) {
       /* read is ok */
-      
+
+	printf("%i \n",ret);
+	
       /* does it fit into read buffer? */
       if (ret <= (UDPRECVBUFLEN - udpReadLeft)) {
 	pthread_mutex_lock(&udp_exit_cond_lock);
@@ -233,8 +255,8 @@ int send_udp(char client_ip[], int client_port, unsigned char data[], int len) {
   printf("%s \n",udpClientAddr.sin_zero);
   */
   
-  n = sendto(serverSocket, (char*) data, len, 0,
-  //n = sendto(serverSocket, data, len, 0,
+  //n = sendto(serverSocket, (char*) data, len, 0,
+  n = sendto(serverSocket, data, len, 0,
 	     (struct sockaddr *) &udpClientAddr, sizeof(udpClientAddr));
 
   return n;
