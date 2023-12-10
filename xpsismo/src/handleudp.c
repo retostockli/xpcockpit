@@ -167,7 +167,7 @@ void *udpclient_thread_main()
     } else if ((ret > 0) && (ret <= UDPRECVBUFLEN)) {
       /* read is ok */
 
-	printf("%i \n",ret);
+	//printf("%i \n",ret);
 	
       /* does it fit into read buffer? */
       if (ret <= (UDPRECVBUFLEN - udpReadLeft)) {
