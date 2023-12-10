@@ -127,7 +127,7 @@ void b737_throttle(void)
   int zero = 0;
 
   int *num_engines = link_dataref_int("sim/aircraft/engine/acf_num_engines");
-  float *throttle = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_thro", 16, -1, -2);
+  //float *throttle = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_thro", 16, -1, -2);
   float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",16,-1,-2);
 
   float *flap_ratio;

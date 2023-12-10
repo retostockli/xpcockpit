@@ -59,6 +59,7 @@ void b737_mcp(void)
   int *ap_spd_is_mach;
   int *ap_vspeed_show;
   float *ap_vspeed_show_f;
+
   
   if ((acf_type == 2) || (acf_type == 3)) {
     ap_altitude = link_dataref_flt("laminar/B738/autopilot/mcp_alt_dial",0); 
@@ -67,6 +68,8 @@ void b737_mcp(void)
   } else {
     ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0);
   }
+
+  
   if ((acf_type == 2) || (acf_type == 3)) {
     ap_heading = link_dataref_flt("laminar/B738/autopilot/mcp_hdg_dial",0);      
   } else if (acf_type == 1) {  
