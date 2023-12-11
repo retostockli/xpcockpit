@@ -194,6 +194,15 @@ else
 fi
 
 AC_CHECK_LIB(z, main)
+if test "x$os" = xwin; then
+    AC_CHECK_LIB(bz2, main)
+    AC_CHECK_LIB(brotlicommon, main)
+    AC_CHECK_LIB(brotlidec, main)
+    AC_CHECK_LIB(png, main)
+    AC_CHECK_LIB(graphite2, main)
+    AC_CHECK_LIB(harfbuzz, main)
+fi
+
 AC_CHECK_LIB(freetype, main, , unset HAVE_FREETYPE)
 AC_CHECK_HEADER(ft2build.h, , unset HAVE_FREETYPE)
 #AC_CHECK_HEADER(freetype.h, , unset HAVE_FREETYPE,

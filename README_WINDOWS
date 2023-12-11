@@ -94,5 +94,15 @@ Then compile individual packages by jumping into the respective directory and fo
 4. xpopengc --> might need to specify the freetype path: e.g. --with-freetype=/mingw64
 5. xpusb
 
+Compilation works as follows:
+First time after cloning the github:
+autoreconf
+automake --add-missing
+./configure --prefix=xyz
+
+With all those, please specify an appropriate prefix. For libxpcockpit it is simplest to specify
+the prefix as the directory where the library is residing, such as $HOME/xpcockpit/libxpcockpit
+This way the library is automatically found by other modules such as xpsismo or xpopengc.
+You can of course always define another library path --with-libxpcockpit=xyz.
 
 
