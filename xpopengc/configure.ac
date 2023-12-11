@@ -283,10 +283,10 @@ AC_SUBST(AM_CXXFLAGS)
 AC_SUBST(AM_CPPFLAGS)
 AC_SUBST(AM_LDFLAGS)
 
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
-AC_MSG_NOTICE([opengc will be installed in $prefix])
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
+AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 
 # Define Packagename for CPP directive in C-based datasource code
 AC_DEFINE([XPOPENGC],[],[CPP directive in C-based datasource code])

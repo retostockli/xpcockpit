@@ -5,12 +5,6 @@ AC_PREREQ([2.50])
 AC_INIT([xpserver], [0.62], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/xpserver.c])
 
-# set installation prefix to current directory if none was given
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
-AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
-
 # produce makefiles (turn on warnings on automake!)
 AM_INIT_AUTOMAKE([-Wall])
 
@@ -106,6 +100,12 @@ fi
 # Checks for library functions.
 AC_CHECK_FUNCS([inet_ntoa memset pow select socket strchr strtol malloc])
 AC_CHECK_LIB([m],[roundf])
+
+# set installation prefix to current directory if none was given
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
+AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 

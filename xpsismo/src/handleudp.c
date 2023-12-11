@@ -1,7 +1,6 @@
-/* This is the handleserver.c code which communicates flight data to/from the X-Plane 
-   flight simulator via TCP/IP interface
+/* This is the handleudp.c code which communicates to SISMO Cards via the UDP protocol
 
-   Copyright (C) 2009 - 2014  Reto Stockli
+   Copyright (C) 2009 - 2023  Reto Stockli
    Adaptation to Linux compilation by Hans Jansen
 
    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -80,7 +79,7 @@ int init_udp_server(char server_ip[],int server_port)
   
   /* Create a UDP socket */
   if ((serverSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    printf("HANDLEUDP: Cannot initialize client UDP socket \n");
+    printf("SISMOUDP: Cannot initialize client UDP socket \n");
     return -1; 
   } else {
     
@@ -107,10 +106,10 @@ int init_udp_server(char server_ip[],int server_port)
 #else
     if (ioctl(serverSocket,FIONBIO,&nSetSocketType) < 0) {
 #endif
-      printf("HANDLEUDP: Server set to non-blocking failed\n");
+      printf("SISMOUDP: Server set to non-blocking failed\n");
       return -1;
     } else {
-      printf("HANDLEUDP: Server Socket ready\n");
+      printf("SISMOUDP: Server Socket ready\n");
     }
   }
 
@@ -134,12 +133,11 @@ void *udpclient_thread_main()
   int ret = 0;
   unsigned char buffer[UDPRECVBUFLEN];
 
-  printf("HANDLEUDP: Receive thread running \n");
+  printf("SISMOUDP: Receive thread running \n");
 
   while (!udp_poll_thread_exit_code) {
 
     /* read call goes here (1 s timeout for blocking operation) */
-    //ret = recv(serverSocket, (char*) buffer, UDPRECVBUFLEN, 0);
     ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
 #ifdef WIN
     int wsaerr = WSAGetLastError();
@@ -150,18 +148,18 @@ void *udpclient_thread_main()
 #else
       if ((errno == EWOULDBLOCK) || (errno == EINTR)) { /* just no data yet or our own timeout */
 #endif
-	if (verbose > 3) printf("HANDLEUDP: No data yet. \n");
+	if (verbose > 3) printf("SISMOUDP: No data yet. \n");
       } else {
 #ifdef WIN
 	if (wsaerr != WSAETIMEDOUT) {
-	  printf("HANDLEUDP: Receive Error %i \n",wsaerr);
-	  udp_poll_thread_exit_code = 1;
-	  break;
+	  printf("SISMOUDP: Receive Error %i \n",wsaerr);
+	  //udp_poll_thread_exit_code = 1;
+	  //break;
 	}
 #else
-	printf("HANDLEUDP: Receive Error %i \n",errno);
-	udp_poll_thread_exit_code = 1;
-	break;
+	printf("SISMOUDP: Receive Error %i \n",errno);
+	//udp_poll_thread_exit_code = 1;
+	//break;
 #endif
       } 
     } else if ((ret > 0) && (ret <= UDPRECVBUFLEN)) {
@@ -176,13 +174,13 @@ void *udpclient_thread_main()
 	udpReadLeft += ret;
 	pthread_mutex_unlock(&udp_exit_cond_lock);
 	
-	if (verbose > 3) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
+	if (verbose > 3) printf("SISMOUDP: receive buffer position: %i \n",udpReadLeft);
       } else {
-	if (verbose > 0) printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
+	if (verbose > 0) printf("SISMOUDP: receive buffer full: %i \n",udpReadLeft);
       }
     } else if ((ret > 0) && (ret > UDPRECVBUFLEN)) {
       /* too many bytes were read */
-      printf("HANDLEUDP: too big udp packet of %i bytes does not fit in read buffer \n",ret);
+      printf("SISMOUDP: too big udp packet of %i bytes does not fit in read buffer \n",ret);
     } else {
       /* nothing read */
     }
@@ -193,7 +191,7 @@ void *udpclient_thread_main()
   } /* while loop */
   
   /* thread was killed */
-  if (verbose > 0) printf("HANDLEUDP: Asynchronous receive thread shutting down \n");
+  if (verbose > 0) printf("SISMOUDP: Asynchronous receive thread shutting down \n");
 
   return 0;
 }
@@ -214,7 +212,7 @@ int init_udp_receive() {
   udp_poll_thread_exit_code = 0;
   ret = pthread_create(&udp_poll_thread, NULL, &udpclient_thread_main, NULL);
   if (ret>0) {
-    printf("HANDLEUDP: poll thread could not be created.\n");
+    printf("SISMOUDP: poll thread could not be created.\n");
     return -1;
   }
 
@@ -255,7 +253,6 @@ int send_udp(char client_ip[], int client_port, unsigned char data[], int len) {
   printf("%s \n",udpClientAddr.sin_zero);
   */
   
-  //n = sendto(serverSocket, (char*) data, len, 0,
   n = sendto(serverSocket, data, len, 0,
 	     (struct sockaddr *) &udpClientAddr, sizeof(udpClientAddr));
 
@@ -281,7 +278,7 @@ int recv_udp() {
 	       0, (struct sockaddr *) &udpClientAddr, 
 	       &len);
   */
-  n = recv(serverSocket, (char*) udpRecvBuffer, UDPRECVBUFLEN, 0);
+  n = recv(serverSocket, udpRecvBuffer, UDPRECVBUFLEN, 0);
 
   return n;
 }

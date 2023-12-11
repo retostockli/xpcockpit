@@ -1,6 +1,6 @@
-/* This is the handleserver.h header to the handleserver.c code
+/* This is the handleudp.h header to the handleudp.c code
 
-   Copyright (C) 2009 - 2014  Reto Stockli
+   Copyright (C) 2009 - 2023  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 

@@ -1,7 +1,7 @@
 /* This is the libsismo.h header to the libsismo.c code which contains all functions to interact with
    the SISMO SOLUCIONES hardware
 
-   Copyright (C) 2020 Reto Stockli
+   Copyright (C) 2020-2023 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -14,7 +14,7 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. */
 
-#define MAXCARDS 5           /* maximum number of cards that we expect */
+#define MAXCARDS 10          /* maximum number of cards that we expect */
 #define RECVMSGLEN 30        /* number of bytes in received UDP packet */
 #define SENDMSGLEN 28        /* number of bytes in sent UDP packet */
 #define MAXANALOGINPUTS 5+10         /* 5 on master and 10 on daughter */

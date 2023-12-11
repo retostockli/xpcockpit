@@ -78,9 +78,9 @@ CFLAGS="$CFLAGS -fno-common"
 CFLAGS="$CFLAGS -pthread"
 
 # set installation prefix to current directory if none was given
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
 AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 
 # Checks for libraries.

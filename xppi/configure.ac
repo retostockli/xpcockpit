@@ -121,9 +121,9 @@ if test -z "$HAVE_LIBXPCOCKPIT"; then
 fi
 
 # set installation prefix to current directory if none was given
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
 AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 
 AC_CONFIG_FILES([Makefile
