@@ -10,6 +10,7 @@ AC_CONFIG_HEADERS([config.h])
 # Determine operating system
 AC_CANONICAL_HOST
 AC_MSG_CHECKING([operating system])
+
 case $host_os in
 linux*)
     os=lin
@@ -22,7 +23,7 @@ darwin*)
 mingw*)
     os=win
     AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
-    LDFLAGS="$LDFLAGS -static"
+#    LDFLAGS="$LDFLAGS -static"
     LIBS="$LIBS -mconsole -mwindows -lws2_32 -lsetupapi -lole32 -luuid -lcomctl32"
     ;;
 **)
@@ -194,14 +195,14 @@ else
 fi
 
 AC_CHECK_LIB(z, main)
-if test "x$os" = xwin; then
-    AC_CHECK_LIB(bz2, main)
-    AC_CHECK_LIB(brotlicommon, main)
-    AC_CHECK_LIB(brotlidec, main)
-    AC_CHECK_LIB(png, main)
-    AC_CHECK_LIB(graphite2, main)
-    AC_CHECK_LIB(harfbuzz, main)
-fi
+#if test "x$os" = xwin; then
+#    AC_CHECK_LIB(bz2, main)
+#    AC_CHECK_LIB(brotlicommon, main)
+#    AC_CHECK_LIB(brotlidec, main)
+#    AC_CHECK_LIB(png, main)
+#    AC_CHECK_LIB(graphite2, main)
+#    AC_CHECK_LIB(harfbuzz, main)
+#fi
 
 AC_CHECK_LIB(freetype, main, , unset HAVE_FREETYPE)
 AC_CHECK_HEADER(ft2build.h, , unset HAVE_FREETYPE)
