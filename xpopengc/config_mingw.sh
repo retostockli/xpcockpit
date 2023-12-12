@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./configure --enable-debug --build x86_64-pc-linux-gnu --host x86_64-w64-mingw32
+./configure --prefix=$HOME/xpcockpit/xpopengc --enable-debug --build x86_64-pc-linux-gnu --host x86_64-w64-mingw32
 
 # First compile FLTK for minGW and install in minGW directories
 # cd fltk-*

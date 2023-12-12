@@ -203,9 +203,6 @@ int check_xpserver(void)
   struct timeval tv; 
   int valopt; 
   socklen_t lon; 
-#ifdef WIN
-    int wsaerr = WSAGetLastError();
-#endif
 
   if (socketStatus == status_Error) {
     if (handleserver_verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
