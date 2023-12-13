@@ -597,7 +597,7 @@ void b737_throttle(void)
       
       if (*(throttle_actuator+en) > (throttle0+0.02)) {
 	if (throttle0 < maxval)	{
-	  value = max(min(pow((fabs(*(throttle_actuator+en) - throttle0))*2.0,0.5),maxval),0.25*maxval);
+	  value = max(min(pow((fabs(*(throttle_actuator+en) - throttle0))*2.0,0.5),maxval),0.45*maxval);
 	  //printf("+++ Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle_actuator+en),value);
 	  ret = digital_output(device_dcmotor,card,0,&one); /* activate motor for thrust lever for engine 1 */
 	} else {
@@ -606,7 +606,7 @@ void b737_throttle(void)
       }
       if (*(throttle_actuator+en) < (throttle0-0.02)) {
 	if (throttle0 > minval)	{
-	  value = -max(min(pow((fabs(*(throttle_actuator+en) - throttle0))*2.0,0.5),maxval),0.25*maxval);
+	  value = -max(min(pow((fabs(*(throttle_actuator+en) - throttle0))*2.0,0.5),maxval),0.45*maxval);
 	  //printf("--- Engine 1 Throttle: %f of %f: motor %f \n",throttle0,*(throttle_actuator+en),value);
 	  ret = digital_output(device_dcmotor,card,0,&one); /* activate motor for thrust lever for engine 1 */
 	} else {
@@ -632,7 +632,7 @@ void b737_throttle(void)
       
       if (*(throttle_actuator+en) > (throttle1+0.02)) {
 	if (throttle1 < maxval)	{
-	  value = max(min(pow((fabs(*(throttle_actuator+en) - throttle1))*2.0,0.5),maxval),0.25*maxval);
+	  value = max(min(pow((fabs(*(throttle_actuator+en) - throttle1))*2.0,0.5),maxval),0.45*maxval);
 	  // printf("+++ Engine 2 Throttle: %f of %f: motor %f \n",throttle1,*(throttle_actuator+en),value);
 	  ret = digital_output(device_dcmotor,card,1,&one); /* activate motor for thrust lever for engine 2 */
 	} else {
@@ -641,7 +641,7 @@ void b737_throttle(void)
       }
       if (*(throttle_actuator+en) < (throttle1-0.02)) {
 	if (throttle1 > minval)	{
-	  value = -max(min(pow((fabs(*(throttle_actuator+en) - throttle1))*2.0,0.5),maxval),0.25*maxval);
+	  value = -max(min(pow((fabs(*(throttle_actuator+en) - throttle1))*2.0,0.5),maxval),0.45*maxval);
 	  // printf("--- Engine 2 Throttle: %f of %f: motor %f \n",throttle1,*(throttle_actuator+en),value);
 	  ret = digital_output(device_dcmotor,card,1,&one); /* activate motor for thrust lever for engine 2 */
 	} else {
