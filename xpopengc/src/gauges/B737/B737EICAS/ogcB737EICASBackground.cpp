@@ -152,7 +152,7 @@ namespace OpenGC
       if (fps > 0) {
 	snprintf(buf, sizeof(buf), "%i", fps);
       }
-      m_pFontManager->Print(185, 190, buf, m_Font);
+      m_pFontManager->Print(5, 190, buf, m_Font);
     }
 
 

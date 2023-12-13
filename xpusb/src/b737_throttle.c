@@ -579,6 +579,7 @@ void b737_throttle(void)
   int at = 0;
   if (acf_type == 3) {
     if (*speed_mode >= 1.0) at = 1;
+    //printf("%f %f \n",*speed_mode,*lock_throttle);
   } else {
     if (*autothrottle_on >= 1) at = 1;
   }
@@ -663,27 +664,30 @@ void b737_throttle(void)
     value = 0.0;
     ret = motors_output(device_dcmotor,0,&value,maxval);
     ret = motors_output(device_dcmotor,1,&value,maxval);
+
+    /* DOES NOT CURRENTLY WORK WITH ZIBO AUTOTHROTTLE */
+    /* STEERING VIA JOYSTICK INPUT */
     
-    if (*num_engines != INT_MISS) {
-      for (i=0;i<*num_engines;i++) {
-	if ((i<(*num_engines/2)) || (*num_engines == 1)) {
-	  /* engines on left wing */
-	  /* or single engine */
-	  /* or first half minus one if uneven # of engines */
-	  if ((throttle0 < 0.05) && (reverser0 > 0.05)) {
-	    *(throttle+i) = -reverser0;
-	  } else {
-	    *(throttle+i) = throttle0;
-	  }
-	} else {
-	  if ((throttle1 < 0.05) && (reverser1 > 0.05)) {
-	    *(throttle+i) = -reverser1;
-	  } else {
-	    *(throttle+i) = throttle1;
-	  }
-	}
-      }
-     }
+    /* if (*num_engines != INT_MISS) { */
+    /*   for (i=0;i<*num_engines;i++) { */
+    /* 	if ((i<(*num_engines/2)) || (*num_engines == 1)) { */
+    /* 	  /\* engines on left wing *\/ */
+    /* 	  /\* or single engine *\/ */
+    /* 	  /\* or first half minus one if uneven # of engines *\/ */
+    /* 	  if ((throttle0 < 0.05) && (reverser0 > 0.05)) { */
+    /* 	    *(throttle+i) = -reverser0; */
+    /* 	  } else { */
+    /* 	    *(throttle+i) = throttle0; */
+    /* 	  } */
+    /* 	} else { */
+    /* 	  if ((throttle1 < 0.05) && (reverser1 > 0.05)) { */
+    /* 	    *(throttle+i) = -reverser1; */
+    /* 	  } else { */
+    /* 	    *(throttle+i) = throttle1; */
+    /* 	  } */
+    /* 	} */
+    /*   } */
+    /*  } */
 
     //    printf("T %f B %f P %i \n",*throttle,*throttle_beta,*propmode);
 
