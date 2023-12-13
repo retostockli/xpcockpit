@@ -547,7 +547,7 @@ void b737_throttle(void)
       
       if (*stabilizer_xplane > (stabilizer+difstabilizer)) {
 	if (stabilizer < maxstabilizer)	{
-	  value = -max(min(pow((fabs(*stabilizer_xplane - stabilizer))*2.0,0.5),maxval),0.4*maxval);
+	  value = -max(min(pow((fabs(*stabilizer_xplane - stabilizer))*2.0,0.5),maxval),0.45*maxval);
 	  //	  printf("Stabilizer Trim: %f of %f: motor %f \n",stabilizer,*stabilizer_xplane,value);
 	  ret = digital_output(device_dcmotor,card,2,&one); /* activate motor for stabilizer trim */
 	} else {
@@ -556,7 +556,7 @@ void b737_throttle(void)
       }
       if (*stabilizer_xplane < (stabilizer-difstabilizer)) {
 	if (stabilizer > minstabilizer)	{
-	  value = max(min(pow((fabs(*stabilizer_xplane - stabilizer))*2.0,0.5),maxval),0.4*maxval);
+	  value = max(min(pow((fabs(*stabilizer_xplane - stabilizer))*2.0,0.5),maxval),0.45*maxval);
 	  //	  printf("Stabilizer Trim: %f of %f: motor %f \n",stabilizer,*stabilizer_xplane,value);
 	  ret = digital_output(device_dcmotor,card,2,&one); /* activate motor for stabilizer trim */
 	} else {
