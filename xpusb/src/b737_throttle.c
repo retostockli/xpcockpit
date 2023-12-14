@@ -135,10 +135,10 @@ void b737_throttle(void)
   float *zibo_reverser0;
   float *zibo_reverser1;
   if ((acf_type == 2) || (acf_type == 3)) {
-    float *zibo_throttle0 = link_dataref_flt("laminar/B738/engine/thrust1_leveler", -2);
-    float *zibo_throttle1 = link_dataref_flt("laminar/B738/engine/thrust2_leveler", -2);
-    float *zibo_reverser0 = link_dataref_flt("laminar/B738/flt_ctrls/reverse_lever1", -2);
-    float *zibo_reverser1 = link_dataref_flt("laminar/B738/flt_ctrls/reverse_lever2", -2);
+    zibo_throttle0 = link_dataref_flt("laminar/B738/engine/thrust1_leveler", -2);
+    zibo_throttle1 = link_dataref_flt("laminar/B738/engine/thrust2_leveler", -2);
+    zibo_reverser0 = link_dataref_flt("laminar/B738/flt_ctrls/reverse_lever1", -2);
+    zibo_reverser1 = link_dataref_flt("laminar/B738/flt_ctrls/reverse_lever2", -2);
   }
   
   float *flap_ratio;
@@ -677,10 +677,10 @@ void b737_throttle(void)
     ret = motors_output(device_dcmotor,1,&value,maxval);
 
     if ((acf_type == 2) || (acf_type == 3)) {
-      zibo_reverser0 = reverser0;
-      zibo_throttle0 = throttle0;
-      zibo_reverser1 = reverser1;
-      zibo_throttle1 = throttle1;
+      *zibo_reverser0 = reverser0;
+      *zibo_throttle0 = throttle0;
+      *zibo_reverser1 = reverser1;
+      *zibo_throttle1 = throttle1;
     } else {
       if (*num_engines != INT_MISS) {
 	for (i=0;i<*num_engines;i++) {
@@ -703,7 +703,6 @@ void b737_throttle(void)
 	}
       }
     }
-  }
 
   } // manual throttle
 
