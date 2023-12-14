@@ -130,6 +130,17 @@ void b737_throttle(void)
   float *throttle = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_jet_rev_ratio", 16, -1, -2);
   float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",16, -1, -2);
 
+  float *zibo_throttle0;
+  float *zibo_throttle1;
+  float *zibo_reverser0;
+  float *zibo_reverser1;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    float *zibo_throttle0 = link_dataref_flt("laminar/B738/engine/thrust1_leveler", -2);
+    float *zibo_throttle1 = link_dataref_flt("laminar/B738/engine/thrust2_leveler", -2);
+    float *zibo_reverser0 = link_dataref_flt("laminar/B738/flt_ctrls/reverse_lever1", -2);
+    float *zibo_reverser1 = link_dataref_flt("laminar/B738/flt_ctrls/reverse_lever2", -2);
+  }
+  
   float *flap_ratio;
   if ((acf_type == 2) || (acf_type == 3)) {
     flap_ratio = link_dataref_flt("laminar/B738/flt_ctrls/flap_lever", -4);
@@ -665,31 +676,34 @@ void b737_throttle(void)
     ret = motors_output(device_dcmotor,0,&value,maxval);
     ret = motors_output(device_dcmotor,1,&value,maxval);
 
-    /* DOES NOT CURRENTLY WORK WITH ZIBO AUTOTHROTTLE */
-    /* STEERING VIA JOYSTICK INPUT */
-    
-    /* if (*num_engines != INT_MISS) { */
-    /*   for (i=0;i<*num_engines;i++) { */
-    /* 	if ((i<(*num_engines/2)) || (*num_engines == 1)) { */
-    /* 	  /\* engines on left wing *\/ */
-    /* 	  /\* or single engine *\/ */
-    /* 	  /\* or first half minus one if uneven # of engines *\/ */
-    /* 	  if ((throttle0 < 0.05) && (reverser0 > 0.05)) { */
-    /* 	    *(throttle+i) = -reverser0; */
-    /* 	  } else { */
-    /* 	    *(throttle+i) = throttle0; */
-    /* 	  } */
-    /* 	} else { */
-    /* 	  if ((throttle1 < 0.05) && (reverser1 > 0.05)) { */
-    /* 	    *(throttle+i) = -reverser1; */
-    /* 	  } else { */
-    /* 	    *(throttle+i) = throttle1; */
-    /* 	  } */
-    /* 	} */
-    /*   } */
-    /*  } */
-
-    //    printf("T %f B %f P %i \n",*throttle,*throttle_beta,*propmode);
+    if ((acf_type == 2) || (acf_type == 3)) {
+      zibo_reverser0 = reverser0;
+      zibo_throttle0 = throttle0;
+      zibo_reverser1 = reverser1;
+      zibo_throttle1 = throttle1;
+    } else {
+      if (*num_engines != INT_MISS) {
+	for (i=0;i<*num_engines;i++) {
+	  if ((i<(*num_engines/2)) || (*num_engines == 1)) {
+	    /* engines on left wing */
+	    /* or single engine */
+	    /* or first half minus one if uneven # of engines */
+	    if ((throttle0 < 0.05) && (reverser0 > 0.05)) {
+	      *(throttle+i) = -reverser0;
+	    } else {
+	      *(throttle+i) = throttle0;
+	    }
+	  } else {
+	    if ((throttle1 < 0.05) && (reverser1 > 0.05)) {
+	      *(throttle+i) = -reverser1;
+	    } else {
+	      *(throttle+i) = throttle1;
+	    }
+	  }
+	}
+      }
+    }
+  }
 
   } // manual throttle
 
