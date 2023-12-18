@@ -25,6 +25,7 @@
 #include <float.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <sys/time.h>
 
 #include "common.h"
 #include "iniparser.h"
@@ -34,6 +35,10 @@
 #include "handleserver.h"
 #include "serverdata.h"
 #include "xplanebeacon.h"
+
+#define CHECK_INTERVAL 1.0 /* Check every x seconds for SISMO Cards presence */ 
+struct timeval sismo_t2;
+struct timeval sismo_t1;
 
 /* this routine parses the usbiocards.ini file and reads its values */
 int ini_read(char* programPath, char* iniName)
@@ -112,6 +117,8 @@ int ini_read(char* programPath, char* iniName)
     sismoserver_port = iniparser_getint(ini,"sismoserver:Port", default_sismoserver_port);
     printf("SISMOSERVER Address %s Port %i \n",sismoserver_ip, sismoserver_port);
 
+    printf("\n");
+    printf("SISMO Cards Specified in ini file:\n");
     ncards = 0;
     for(i=0;i<MAXCARDS;i++) {
       sprintf(tmp,"card%i:Address",i);
@@ -122,15 +129,14 @@ int ini_read(char* programPath, char* iniName)
       sismo[i].mac[0] = iniparser_getint(ini,tmp, default_sismocard_mac);
       sprintf(tmp,"card%i:Mac2",i);
       sismo[i].mac[1] = iniparser_getint(ini,tmp, default_sismocard_mac);
-      printf("%02x:%02x \n",sismo[i].mac[0],sismo[i].mac[1]);
       if (sismo[i].port == default_sismocard_port) {
-	printf("SISMOCARD %i NA \n",i);
+	//printf("SISMOCARD %i Not Defined \n",i);
       } else {
-	printf("SISMOCARD %i Address %s Port %i Mac %02x:%02x \n",i,sismo[i].ip, sismo[i].port,
+	printf("SISMOCARD %i IP Address %s Port %i Mac %02x:%02x \n",i,sismo[i].ip, sismo[i].port,
 	       sismo[i].mac[0],sismo[i].mac[1]);
 	ncards++;
       }
-
+      
       /* only mark as connected once we receive the first packet */
       sismo[i].connected = 0;
 
@@ -192,6 +198,9 @@ int ini_sismodata()
     }
  }
 
+  /* get current time of day */
+  gettimeofday(&sismo_t1,NULL);
+ 
   return 0;
 }
 
@@ -223,6 +232,29 @@ int reset_sismodata()
       */
     }
   }
+  
+  /* get current time of day */
+  gettimeofday(&sismo_t2,NULL);
+  
+  float dt = ((sismo_t2.tv_sec - sismo_t1.tv_sec) + (sismo_t2.tv_usec - sismo_t1.tv_usec) / 1000000.0);
+  
+  if (dt > CHECK_INTERVAL) {
+    
+    /* new time reference for next call is current time */
+    sismo_t1.tv_sec = sismo_t2.tv_sec;
+    sismo_t1.tv_usec = sismo_t2.tv_usec;
+
+    for(i=0;i<MAXCARDS;i++) {
+      if ((sismo[i].connected == 0) && (strcmp(sismo[i].ip,"NA")!=0)) {
+	printf("\033[1;31m");
+	printf("WARNING: SISMO Card %i not reachable under IP Address %s and Port %i\n",
+	       i,sismo[i].ip,sismo[i].port);
+	printf("\033[0m");
+      }
+    }
+    
+  }
+    
   return 0;
 }
 

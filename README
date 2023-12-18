@@ -1,5 +1,5 @@
 2022/09/18
-.
+
 This is the xpcockpit Project by Reto Stockli, supported by Hans Jansen.
 
 It enables to connect custom hardware to X-Plane by use of a C library
@@ -25,16 +25,22 @@ The project is aimed at the following crowd:
 - Friends of good wine and cheese
 
 HOW TO START:
-- first compile and install the library libxpopencockpits
+- first compile and install the library libxpcockpit
 - then compile and install ther x-plane plugin xpserver
-- then compile (and optionally install) any of the clients
+- then compile (and optionally install) any of the clients like xpsismo or xpopengc
 
 Information on compiling and installing those items are found in the respective subdirectories
 
 ---------------------------------------------------------------------------------------------
-NEW: for existing users of xpcockpit: the library is a new thing. I've realized that a lot of
+NEWS: 
+1. For existing users of xpcockpit: the library is a new thing. I've realized that a lot of
 the data handling code was replicated in each client, so I've packed everything in a library,
 which has to be compiled only once. The clients then all link to this library.
+
+2. Changes in install location: per default modules are not installed in their project root 
+directories any more. Please use ./configure --prefix=xyz to choose an appropriate install
+location. You will also have to use --with-libxpcockpit= for modules like xpsismo, xpopengc
+and others to find libxpcockpit. It searches in the libxpcockpit project root directory by default.
 ---------------------------------------------------------------------------------------------
 
 

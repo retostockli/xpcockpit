@@ -82,10 +82,10 @@ namespace OpenGC
 
     // Get the barometric altitude (feet)
     float *pressure_altitude;
-    if ((acf_type == 3) || (acf_type == 2)) {
+    if ((acf_type == 2) || (acf_type == 3)) {
       pressure_altitude = link_dataref_flt("laminar/B738/gauges/standby_altitude_ft",0);
     } else {
-      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+      pressure_altitude = link_dataref_flt("sim/cockpit2/gauges/indicators/altitude_ft_stby",0);
     }
       
     if (*pressure_altitude != FLT_MISS) {

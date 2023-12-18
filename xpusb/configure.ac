@@ -94,16 +94,12 @@ else
     fi
 fi
 
-# on linux, check for udev, rt and math library
+# on linux, check for udev, rt library
 if test "x$os" = xlin; then
     if test "x$HAVE_HIDAPI" = xyes; then
 	AC_CHECK_LIB(udev,main,,AC_MSG_ERROR([Could not find the udev library]))
     fi
     AC_CHECK_LIB(rt,clock_gettime,,AC_MSG_ERROR([Could not find the rt library]))
-fi
-AC_CHECK_LIB(m,main,,AC_MSG_ERROR([Could not find the math library]))
-if test "x$os" = xwin; then
-    AC_CHECK_LIB([ws2_32],[socket])
 fi
 
 # do not allow multiple definitions
@@ -114,6 +110,7 @@ CFLAGS="$CFLAGS -pthread"
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
+
 if test "x$os" = xwin; then
 AC_CHECK_HEADERS([winsock2.h])
 else
@@ -129,7 +126,7 @@ AC_TYPE_UINT8_T
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol malloc])
-AC_CHECK_LIB([m],[roundf])
+AC_CHECK_LIB(m,roundf,,AC_MSG_ERROR([Could not find the math library]))
 if test "x$os" = xwin; then
     AC_CHECK_LIB([ws2_32],[socket])
 fi
@@ -165,9 +162,9 @@ fi
 
 
 # set installation prefix to current directory if none was given
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
 AC_MSG_NOTICE([xpusb will be installed in $prefix])
 
 AC_CONFIG_FILES([Makefile

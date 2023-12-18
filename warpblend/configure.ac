@@ -88,9 +88,10 @@ AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol malloc])
 AC_CHECK_LIB([m],[roundf])
 
 # set installation prefix to current directory if none was given
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
+
 AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 
 AC_CONFIG_FILES([Makefile

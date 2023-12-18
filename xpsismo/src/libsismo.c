@@ -1,7 +1,7 @@
 /* This is the libsismo.c code which contains all functions to interact with
    the SISMO SOLUCIONES hardware
 
-   Copyright (C) 2020 Reto Stockli
+   Copyright (C) 2020-2023 Reto Stockli
 
    Additions for analog axes treatment by Hans Jansen 2011
    Also several cosmetic changes and changes for Linux compilation
@@ -47,7 +47,6 @@ unsigned char sismoSendBuffer[SENDMSGLEN];
 
 int ncards;
 sismo_struct sismo[MAXCARDS];
-
 
 /*Function to return the digit of n-th position of num. Position starts from 0*/
 int get_digit(int num, int n)
@@ -313,7 +312,7 @@ int read_sismo() {
 	      sismo[card].analoginputs[input+firstinput][s+1] = sismo[card].analoginputs[input+firstinput][s];
 	    }
 	    if (val != sismo[card].analoginputs[input+firstinput][0]) {
-	      if (verbose > 2) printf("Card %i Analog Input %i Changed to %i \n",
+	      if (verbose > 3) printf("Card %i Analog Input %i Changed to %i \n",
 				      card,input+firstinput,sismo[card].analoginputs[input+firstinput][0]);
 	    }
 	    sismo[card].analoginputs[input+firstinput][0] = val;			      

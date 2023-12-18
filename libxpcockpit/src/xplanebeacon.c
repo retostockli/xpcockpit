@@ -70,6 +70,14 @@ void *xpbeacon_poll_thread_main();
 int initialize_beacon_client(int init_verbose)
 {
 
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    return -1;
+  }
+#endif
+  
   xplanebeacon_verbose = init_verbose;
   
   struct sockaddr_in clientAddr;     /* Client address structure */
@@ -86,8 +94,8 @@ int initialize_beacon_client(int init_verbose)
     return -1; 
   } else {
   
-    u_int one = 1;
-    if (setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) < 0) {
+    int one = 1;
+    if (setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_REUSEADDR, (char*) &one, sizeof(one)) < 0) {
       printf("X-Plane Beacon Client Reusing ADDR failed");
       return -1;
     }    
@@ -95,8 +103,12 @@ int initialize_beacon_client(int init_verbose)
     /* Construct the server address structure */
     memset(&clientAddr, 0, sizeof(clientAddr));            /* Zero out structure */
     clientAddr.sin_family      = AF_INET;                  /* Internet address family */
-    clientAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broadcast Group) */
+    //clientAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broacast Group) */
+    //clientAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); /* Server IP address (X-Plane Broadcast Group) */
+    clientAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any local address receiving */
     clientAddr.sin_port        = htons(49707);             /* Server port (X-Plane Broadcast Port) */
+
+
 
     /* bind socket to broadcast group */
     if (bind(XPlaneBeaconSocket, (struct sockaddr *) &clientAddr, sizeof(clientAddr)) < 0) {
@@ -131,11 +143,16 @@ int initialize_beacon_client(int init_verbose)
     }
  
     /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
+#ifdef WIN
+    int tv = 1000;
+    setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#else
     struct timeval tv;
     tv.tv_sec = 1;
     tv.tv_usec = 0;
-    setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-   
+    setsockopt(XPlaneBeaconSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+#endif
+    
     xpbeacon_poll_thread_exit_code = 0;
     if (pthread_create(&xpbeacon_poll_thread, NULL, &xpbeacon_poll_thread_main, NULL)>0) {
       printf("X-Plane Beacon Client Read Poll thread could not be created.\n");
@@ -160,6 +177,7 @@ void exit_beacon_client(void)
 
 #ifdef WIN
   closesocket(XPlaneBeaconSocket);
+  WSACleanup();
 #else
   close(XPlaneBeaconSocket);
 #endif
@@ -183,9 +201,15 @@ void *xpbeacon_poll_thread_main()
 
   int ret = 0;
   int bufferlen = 1000;
-  unsigned char buffer[bufferlen];
+  //unsigned char buffer[bufferlen];
+  char buffer[bufferlen];
   struct sockaddr_in serverAddr;     /* Server address structure */
   int addrlen = sizeof(serverAddr);
+
+  memset(&serverAddr, 0, sizeof(serverAddr));            /* Zero out structure */
+  serverAddr.sin_family      = AF_INET;                  /* Internet address family */
+  serverAddr.sin_addr.s_addr = inet_addr("239.255.1.1"); /* Server IP address (X-Plane Broacast Group) */
+  serverAddr.sin_port        = htons(49707);             /* Server port (X-Plane Broadcast Port) */
 
   if (xplanebeacon_verbose > 0) printf("X-Plane Beacon Client Receive thread running \n");
 
@@ -193,9 +217,16 @@ void *xpbeacon_poll_thread_main()
 
     /* read call goes here (1 s timeout for blocking operation) */
     ret = recvfrom(XPlaneBeaconSocket, buffer, bufferlen, 
-		   0, (struct sockaddr *) &serverAddr, &addrlen);
+    		   0, (struct sockaddr *) &serverAddr, &addrlen);
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
     if (ret == -1) {
+#ifdef WIN
+      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR)) { // just no data yet ...
+#else
       if ((errno == EWOULDBLOCK) || (errno == EINTR)) { /* just no data yet or our own timeout */
+#endif
 	//printf("UDP Poll Timeout \n");
 	xpbeacon_poll_timeout_counter += 1;
 	if ((xpbeacon_poll_timeout_counter == XPBEACON_POLL_MAX_TIMEOUT) && (XPlaneBeaconPort != 0)) {
@@ -204,15 +235,20 @@ void *xpbeacon_poll_thread_main()
 	  XPlaneBeaconPort = 0;
 	}
       } else {
+#ifdef WIN
+	if (wsaerr != WSAETIMEDOUT) {
+	  printf("X-Plane Beacon Client Receive Error %i \n",wsaerr);
+	}
+#else
 	printf("X-Plane Beacon Client Receive Error %i \n",errno);
+#endif
 	//xpbeacon_poll_thread_exit_code = 1;
 	//break;
       } 
     } else if (ret > 0) {
       /* read is ok */
       /* are we reading BEACON data ? */
-      if (strncmp(buffer,"BECN",4)==0) {
-
+	if (strncmp(buffer,"BECN",4)==0) {
 	/* Fill X-Plane Beacon Structure */
 	memcpy(&becn.beacon_major_version,&buffer[5],sizeof(becn.beacon_major_version));
 	if (xplanebeacon_verbose > 2) printf("X-Plane Major Version Number: %d\n",becn.beacon_major_version);

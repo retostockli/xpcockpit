@@ -6,7 +6,7 @@ AC_INIT([xpsismo], [0.30], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/xpsismo.c])
 
 # produce makefiles (turn on warnings on automake!)
-AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_INIT_AUTOMAKE([-Wall])
 
 # AM_CONFIG_HEADER does more than AC_CONFIG_HEADERS
 AC_CONFIG_HEADERS([config.h])
@@ -27,10 +27,13 @@ linux*)
 darwin*)
     os=mac
     AC_DEFINE([MAC],[1],[Define if Host Type is Apple])
+    LIBS="$LIBS -framework IOKit -framework CoreFoundation"
     ;;
 mingw*)
     os=win
     AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
+    LDFLAGS="$LDFLAGS -static"
+    LIBS="$LIBS -lws2_32 -lsetupapi"
     ;;
 *)
     AC_MSG_ERROR([Unsupported operating system. Currently only Linux, OSX and MinGW are supported.])
@@ -51,7 +54,12 @@ AC_MSG_RESULT([$HAVE_DEBUG])
 
 if test "x$HAVE_DEBUG" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -O0"
+# DEBUGGGING WITH LEAK CHECK AND OUT OF BOUNDS CHECK
+#    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address"
+# REGULAR DEBUGGING FOR GDB
+    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized"
+# DEBUGING WITH GPROF SYMBOLS
+#    CFLAGS="$CFLAGS -g -pg -Wall"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CFLAGS="$CFLAGS -O2"
@@ -65,6 +73,7 @@ CFLAGS="$CFLAGS -pthread"
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
+
 if test "x$os" = xwin; then
 AC_CHECK_HEADERS([winsock2.h])
 else
@@ -80,7 +89,7 @@ AC_TYPE_UINT8_T
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday memmove memset pow socket strchr strtol])
-AC_CHECK_LIB([m],[roundf])
+AC_CHECK_LIB(m,roundf,,AC_MSG_ERROR([Could not find the math library]))
 if test "x$os" = xwin; then
     AC_CHECK_LIB([ws2_32],[socket])
 fi
@@ -115,9 +124,9 @@ if test -z "$HAVE_LIBXPCOCKPIT"; then
 fi
 
 # set installation prefix to current directory if none was given
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
 AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 
 AC_CONFIG_FILES([Makefile

@@ -68,6 +68,7 @@ namespace OpenGC
   {
     GaugeComponent::Render();
 
+    float *time = link_dataref_flt("sim/time/framerate_period",-3);
     float *tat = link_dataref_flt("sim/weather/temperature_ambient_c",-1);
     int *oilpress1 = link_dataref_int_arr("sim/cockpit/warnings/annunciators/oil_pressure_low",8,0);
     int *oilpress2 = link_dataref_int_arr("sim/cockpit/warnings/annunciators/oil_pressure_low",8,1);
@@ -145,6 +146,15 @@ namespace OpenGC
       }
       m_pFontManager->Print(90, 190, buf, m_Font);
     }
+
+    if (*time != FLT_MISS) {
+      int fps = (int) 1.0 / *time;
+      if (fps > 0) {
+	snprintf(buf, sizeof(buf), "%i", fps);
+      }
+      m_pFontManager->Print(5, 190, buf, m_Font);
+    }
+
 
     // warning annunciators
     m_pFontManager->SetSize(m_Font,3.0,3.0);

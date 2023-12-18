@@ -1,7 +1,7 @@
 /* This is the handleserver.c code which communicates flight data to/from the X-Plane 
    flight simulator via TCP/IP interface
 
-   Copyright (C) 2009 - 2022  Reto Stockli
+   Copyright (C) 2009 - 2023  Reto Stockli
    Adaptation to Linux compilation by Hans Jansen
 
    This program is free software: you can redistribute it and/or modify it under the 
@@ -214,11 +214,20 @@ int check_xpserver(void)
     /* Use Auto-detected X-Plane Server IP if selected */
     if (XPlaneServerManual == 0) {
       strncpy(XPlaneServerIP,XPlaneBeaconIP,sizeof(XPlaneServerIP));
+    } else {
+      if ((strcmp(XPlaneServerIP,"")!=0) && (strcmp(XPlaneBeaconIP,"")!=0) &&
+	  (strcmp(XPlaneServerIP,XPlaneBeaconIP)!=0) && (strcmp(XPlaneServerIP,"127.0.0.1")!=0)) {
+	printf("\033[1;31m");
+	printf("HANDLESERVER: WARNING ... \n");
+	printf("IP Address %s of X-Plane Beacon and manually entered IP Address %s differ!\n",
+	       XPlaneBeaconIP,XPlaneServerIP);
+	printf("\033[0m");
+      }
     }
 
-    /* Do we have a Beacon signal or a manually defined IP address? */
+    /* Do we have a Beacon signal from X-Plane or a manually defined IP address? */
     if (strcmp(XPlaneServerIP,"")!=0) {
-
+      
       /* Construct the server address structure */
       memset(&ServAddr, 0, sizeof(ServAddr));            /* Zero out structure */
       ServAddr.sin_family      = AF_INET;                /* Internet address family */
@@ -251,9 +260,16 @@ int check_xpserver(void)
 	  }     
 
 	/* Check for and establish a connection to the X-Plane server */
-	if (handleserver_verbose > 0) printf("HANDLESERVER: Checking for X-Plane server \n");
+	if (handleserver_verbose > 0)
+	  printf("HANDLESERVER: Checking for X-Plane and plugin XPSERVER at IP %s and Port %i \n",
+		 XPlaneServerIP,XPlaneServerPort);
 	if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
-	  if (errno == EINPROGRESS) { 
+#ifdef WIN
+	  int wsaerr = WSAGetLastError();
+	  if ((wsaerr == WSAEINPROGRESS) || (wsaerr == WSAEWOULDBLOCK)) { 
+#else
+	    if ((errno == EINPROGRESS) || (errno == EWOULDBLOCK)) { 
+#endif
 	    if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
 	    do { 
 	      tv.tv_sec = 0; 
@@ -261,25 +277,31 @@ int check_xpserver(void)
 	      FD_ZERO(&myset); 
 	      FD_SET(clntSock, &myset); 
 	      res = select(clntSock+1, NULL, &myset, NULL, &tv); 
+#ifdef WIN
+	      int wsaerr = WSAGetLastError();
+	      if (res < 0 && wsaerr != WSAEINTR) { 
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
+#else
 	      if (res < 0 && errno != EINTR) { 
 		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+#endif
 		break;
 	      } else if (res > 0) { 
 		// Socket selected for write 
 		lon = sizeof(int); 
 		if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+#ifdef WIN
+		  int wsaerr = WSAGetLastError();
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d\n", wsaerr); 
+#else
 		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
-		  break;
-		} 
-		// Check the value returned... 
-		if (valopt) { 
-		  if (handleserver_verbose > 2) printf("HANDLESERVER: No connection %d - %s\n", valopt, strerror(valopt)); 
+#endif
 		  break;
 		} 
 		/* yeah, we found the xpserver plugin running in X-Plane ... */
 		if (handleserver_verbose > 0) {
-		  printf("HANDLESERVER: Connected to X-Plane. \n");
-		  printf("X-Plane Server Plugin Address:Port is %s:%i \n",XPlaneServerIP, XPlaneServerPort);
+		  printf("HANDLESERVER: Connected to X-Plane and plugin XPSERVER at IP %s and Port %i \n",
+			 XPlaneServerIP,XPlaneServerPort);
 		}
 		socketStatus = status_Connected;
 		break; 
@@ -289,7 +311,11 @@ int check_xpserver(void)
 	      } 
 	    } while (1);
 	  } else { 
+#ifdef WIN
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
+#else
 	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+#endif
 	  } 
 
 	  /* After a failed Connect we have to reinitialize the socket. Why? */

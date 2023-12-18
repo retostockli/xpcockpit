@@ -40,6 +40,7 @@ void iocard_test(void)
   int ret = 0;
   int card = 0;
   int device = 0;
+  int temp = 0;
 
   
   // int intensitycommand;
@@ -63,17 +64,23 @@ void iocard_test(void)
 
   /* link floating point dataref with precision 10e-1 to local variable. This means
      that we only transfer the variable if changed by 0.1 or more */
-  float *parkbrake = link_dataref_flt("sim/flightmodel/controls/parkbrake",-1);
+  //float *parkbrake = link_dataref_flt("sim/flightmodel/controls/parkbrake",-1);
   // float *parkbrake = link_dataref_flt("laminar/B738/parking_brake_pos",-1);
   
   /* digital input onto a x-plane floating point variable */
   /* thus transform binary 0/1 input to dataref state 0.0 and 1.0 */
+  /*
   ret = digital_inputf(device,card,0,parkbrake,0);
   if (ret == 1) {
     printf("Digital Input #0 has value: %f \n",*parkbrake);
   }
+  */
   /* transform floating point dataref variable onto a binary 0/1 LED output */
-  ret = digital_outputf(device,card,15,parkbrake);
+  //ret = digital_outputf(device,card,15,parkbrake);
+
+  temp = 88888;
+  //ret = digital_output(device,card,11,&temp);
+  ret = mastercard_display(device,card,0,5,&temp,0);
   
   // mastercard 1, input board # 1 (0-35)
   // mastercard 1, input board # 2 (36-71)

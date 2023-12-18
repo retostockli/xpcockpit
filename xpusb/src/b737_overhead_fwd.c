@@ -55,7 +55,8 @@ void b737_overhead_fwd(void)
   int device;
   int card;
   int one = 1;
-
+  int zero = 0;
+  
   /* Switch Covers and related switch states*/
   char buffer[100];
   int cover;
@@ -895,13 +896,29 @@ void b737_overhead_fwd(void)
     ret = digital_outputf(device,card,22,window_ovht_r_side_ann);
 
     float *window_heat_l_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_l_side",-1);
-    ret = digital_outputf(device,card,23,window_heat_l_side_ann);
+    if (*avionics_on) {
+      ret = digital_outputf(device,card,23,window_heat_l_side_ann);
+    } else {
+      ret = digital_output(device,card,23,&zero);
+    }
     float *window_heat_l_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_l_fwd",-1);
-    ret = digital_outputf(device,card,24,window_heat_l_fwd_ann);
+    if (*avionics_on) {
+      ret = digital_outputf(device,card,24,window_heat_l_fwd_ann);
+    } else {
+      ret = digital_output(device,card,24,&zero);
+    }
     float *window_heat_r_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_r_fwd",-1);
-    ret = digital_outputf(device,card,25,window_heat_r_fwd_ann);
+    if (*avionics_on) {
+      ret = digital_outputf(device,card,25,window_heat_r_fwd_ann);
+    } else {
+      ret = digital_output(device,card,25,&zero);
+    }
     float *window_heat_r_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_r_side",-1);
-    ret = digital_outputf(device,card,26,window_heat_r_side_ann);
+    if (*avionics_on) {
+      ret = digital_outputf(device,card,26,window_heat_r_side_ann);
+    } else {
+      ret = digital_output(device,card,26,&zero);
+    }
 
     /* ------------- */
     /*  CENTER Panel */
@@ -1268,61 +1285,74 @@ void b737_overhead_fwd(void)
     ival = 0;
     if (*eng_valve_closed_1 >= 0.025) ival = 2;
     if (*eng_valve_closed_1 == 1.0) ival = 1;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,51,1,&ival,0);
     
     float *spar_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/spar1_valve_closed",-1);
     ival = 0;
     if (*spar_valve_closed_1 >= 0.025) ival = 2;
     if (*spar_valve_closed_1 == 1.0) ival = 1;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,52,1,&ival,0);
     
     float *bypass_filter_1 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_1",-1);
     ival = 0;
     if (*bypass_filter_1 >= 0.025) ival = 2;
     if (*bypass_filter_1 == 1.0) ival = 1;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,53,1,&ival,0);
     
     float *eng_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/eng2_valve_closed",-1);
     ival = 0;
     if (*eng_valve_closed_2 >= 0.025) ival = 2;
     if (*eng_valve_closed_2 == 1.0) ival = 1;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,54,1,&ival,0);
     
     float *spar_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/spar2_valve_closed",-1);
     ival = 0;
     if (*spar_valve_closed_2 >= 0.025) ival = 2;
     if (*spar_valve_closed_2 == 1.0) ival = 1;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,55,1,&ival,0);
     
     float *bypass_filter_2 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_2",-1);
     ival = 0;
     if (*bypass_filter_2 >= 0.025) ival = 2;
     if (*bypass_filter_2 == 1.0) ival = 1;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,56,1,&ival,0);
     
     float *cross_feed_valve = link_dataref_flt("laminar/B738/annunciator/crossfeed",-1);
     ival = 0;
     if (*cross_feed_valve >= 0.025) ival = 2;
     if (*cross_feed_valve == 1.0) ival = 1;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,57,1,&ival,0);
     
     float *low_press_ctr_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c1",-1);
     ival = *low_press_ctr_1 >= 0.025;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,58,1,&ival,0);
     float *low_press_ctr_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c2",-1);
     ival = *low_press_ctr_2 >= 0.025;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,59,1,&ival,0);
     float *low_press_aft_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l1",-1);
     ival = *low_press_aft_1 >= 0.025;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,60,1,&ival,0);
     float *low_press_fwd_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l2",-1);
     ival = *low_press_fwd_1 >= 0.025;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,61,1,&ival,0);
     float *low_press_fwd_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r2",-1);
     ival = *low_press_fwd_2 >= 0.025;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,62,1,&ival,0);
     float *low_press_aft_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r1",-1);
     ival = *low_press_aft_2 >= 0.025;
+    if (*avionics_on == 0) ival =0;
     ret = mastercard_display(device,card,63,1,&ival,0);
 
     
@@ -1490,7 +1520,11 @@ void b737_overhead_fwd(void)
     ret = digital_output(device,card,42,&ival);
     /* AUTO SLAT FAIL */
     float *auto_slat_fail = link_dataref_flt("laminar/B738/annunciator/auto_slat_fail",-1);
-    ret = digital_outputf(device,card,43,auto_slat_fail);
+    if (*avionics_on == 1) {
+      ret = digital_outputf(device,card,43,auto_slat_fail);
+    } else {
+      ret = digital_output(device,card,43,&zero);
+    }
     /* YAW DAMPER */
     float *yaw_damper_on = link_dataref_flt("laminar/B738/annunciator/yaw_damp",-1);
     ret = digital_outputf(device,card,44,yaw_damper_on);
@@ -1517,7 +1551,7 @@ void b737_overhead_fwd(void)
     /* Ignitior Switch for first engine */
     device = mastercard;
     card = 0;
-    int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on",16,-1);
+    int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on", 16,-1);
     for (int i=0;i<8;i++) {
       ignition_on[i] = 3;
       ret = digital_input(device,card,27,&ival,0);
@@ -1542,7 +1576,7 @@ void b737_overhead_fwd(void)
     /* Fuel Pump */
     device = mastercard;
     card = 1;
-    int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on",16,-1);
+    int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on", 16,-1);
     ret = digital_input(device,card,67,&ival,0);
     if (ival != INT_MISS) {
       for (int i=0;i<8;i++) {

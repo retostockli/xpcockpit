@@ -91,9 +91,9 @@ namespace OpenGC
     // indicated air speed (knots)
     float *speed_knots;
     if (is_captain) {
-      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
+      speed_knots = link_dataref_flt("sim/cockpit2/gauges/indicators/airspeed_kts_pilot",-1);
     } else {
-      speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed2",-1);
+      speed_knots = link_dataref_flt("sim/cockpit2/gauges/indicators/airspeed_kts_copilot",-1);
     }
     
     if (*speed_knots != FLT_MISS) {

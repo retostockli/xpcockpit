@@ -93,9 +93,9 @@ namespace OpenGC
     // Get the barometric altitude (feet)
     float *pressure_altitude;
     if (is_captain) {
-      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+      pressure_altitude = link_dataref_flt("sim/cockpit2/gauges/indicators/altitude_ft_pilot",0);
     } else {
-      pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind_copilot",0);
+      pressure_altitude = link_dataref_flt("sim/cockpit2/gauges/indicators/altitude_ft_copilot",0);
     }
 
     if (*pressure_altitude != FLT_MISS) {

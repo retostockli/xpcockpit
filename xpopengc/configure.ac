@@ -10,6 +10,7 @@ AC_CONFIG_HEADERS([config.h])
 # Determine operating system
 AC_CANONICAL_HOST
 AC_MSG_CHECKING([operating system])
+
 case $host_os in
 linux*)
     os=lin
@@ -22,7 +23,7 @@ darwin*)
 mingw*)
     os=win
     AC_DEFINE([WIN],[1],[Define if Host Type is Windows])
-    LDFLAGS="$LDFLAGS -static"
+#    LDFLAGS="$LDFLAGS -static"
     LIBS="$LIBS -mconsole -mwindows -lws2_32 -lsetupapi -lole32 -luuid -lcomctl32"
     ;;
 **)
@@ -186,7 +187,7 @@ to find headers in <directory>/include/freetype and libraries in <directory>/lib
                 [FREETYPEDIR=$with_freetype])
 if test -z "$FREETYPEDIR" ; then
     AC_MSG_RESULT([no])
-    CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2" 
+    CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2 -I/mingw64/include/freetype2" 
 else
     AC_MSG_RESULT([$FREETYPEDIR])
     LIBS="$LIBS -L$FREETYPEDIR/lib"
@@ -194,6 +195,15 @@ else
 fi
 
 AC_CHECK_LIB(z, main)
+#if test "x$os" = xwin; then
+#    AC_CHECK_LIB(bz2, main)
+#    AC_CHECK_LIB(brotlicommon, main)
+#    AC_CHECK_LIB(brotlidec, main)
+#    AC_CHECK_LIB(png, main)
+#    AC_CHECK_LIB(graphite2, main)
+#    AC_CHECK_LIB(harfbuzz, main)
+#fi
+
 AC_CHECK_LIB(freetype, main, , unset HAVE_FREETYPE)
 AC_CHECK_HEADER(ft2build.h, , unset HAVE_FREETYPE)
 #AC_CHECK_HEADER(freetype.h, , unset HAVE_FREETYPE,
@@ -283,10 +293,10 @@ AC_SUBST(AM_CXXFLAGS)
 AC_SUBST(AM_CPPFLAGS)
 AC_SUBST(AM_LDFLAGS)
 
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
-AC_MSG_NOTICE([opengc will be installed in $prefix])
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
+AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 
 # Define Packagename for CPP directive in C-based datasource code
 AC_DEFINE([XPOPENGC],[],[CPP directive in C-based datasource code])

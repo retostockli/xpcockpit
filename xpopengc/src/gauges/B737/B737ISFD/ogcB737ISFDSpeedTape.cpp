@@ -60,7 +60,7 @@ namespace OpenGC
     GaugeComponent::Render();
   
     // indicated air speed (knots)
-    float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
+    float *speed_knots = link_dataref_flt("sim/cockpit2/gauges/indicators/calibrated_airspeed_kts_stby",-1);
           
     if (*speed_knots != FLT_MISS) {
 

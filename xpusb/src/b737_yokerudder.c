@@ -113,6 +113,8 @@ void b737_yokerudder(void)
   if ((acf_type == 2) || (acf_type == 3)) {
     stab_trim_up = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_up");
     stab_trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down");
+    //    stab_trim_up = link_dataref_cmd_hold("laminar/B738/flight_controls/pitch_trim_up");
+    //    stab_trim_down = link_dataref_cmd_hold("laminar/B738/flight_controls/pitch_trim_down");
     ap_disconnect = link_dataref_cmd_hold("laminar/B738/autopilot/capt_disco_press");
   } else if (acf_type == 1) {
     stab_trim_up = link_dataref_cmd_hold("x737/trim/CAPT_STAB_TRIM_UP_ALL");
@@ -123,10 +125,7 @@ void b737_yokerudder(void)
     stab_trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down");
     ap_disconnect = link_dataref_cmd_hold("sim/autopilot/servos_off_any");
   }
-
-  /* temporary dataref for stab trim main elec */
-  int *stab_trim_me = link_dataref_int("xpserver/stab_trim_me");
-  
+ 
   /* read potentiometer from analog input #1 on BU0836A card, scale it to the range 0-100 */
   ret1 = axis_input(device,3,&value1,minval,maxval);
   ret2 = axis_input(device,5,&value2,minval,maxval);
@@ -149,20 +148,17 @@ void b737_yokerudder(void)
   /* yoke buttons */
   ret = digital_input(device,card,0,&button,0);
   if (button == 1) {
-    // printf("stab trim down \n");
-    if (*stab_trim_me == 1) {
-      *stab_trim_down = 1;
-    }
+    printf("stab trim down \n");
+    *stab_trim_down = 1;
+ 
   } else {
     *stab_trim_down = 0;
   }
    
   ret = digital_input(device,card,1,&button,0);
   if (button == 1) {
-    // printf("stab trim up \n");
-    if (*stab_trim_me == 1) {
-      *stab_trim_up = 1;
-    }
+    printf("stab trim up \n");
+    *stab_trim_up = 1;
   } else {
     *stab_trim_up = 0;
   }

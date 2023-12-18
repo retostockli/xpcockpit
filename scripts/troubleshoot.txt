@@ -1,0 +1,9 @@
+Sound
+
+https://www.fmod.com/docs/2.00/api/platforms-linux.html
+https://askubuntu.com/questions/1407885/how-to-uninstall-pipewire-and-go-back-to-pulseaudio
+
+list cards with aplay -L
+
+set default:
+export FMOD_ALSA_DEVICE=hw:CARD=Audio,DEV=0

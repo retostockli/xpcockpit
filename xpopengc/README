@@ -76,6 +76,12 @@ https://www.ngdc.noaa.gov/mgg/shorelines/data/gshhg/latest/
 
 and set GSHHGPath under "general" in the ini file to the directory where GSHHG files are stored
 
+STATIC LINKING FOR DISTRIBUTION
+===============================
+You might want to fully static linking xpopengc with all libraries for distribution
+of the binary. This seems to not work on MSYS2 / mingw64 on Windows. It might
+work when cross compiling for Windows on Linux using mingw. Please re-
+introduce the LDFLAGS -static in the configure.ac if you want to try ...
 
 
 

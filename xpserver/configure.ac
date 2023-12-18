@@ -80,13 +80,8 @@ fi
 
 AM_CONDITIONAL([XPL32], [test "x$use32bit" = xyes])
 
-# set installation prefix to current directory if none was given
-if test "x$prefix" = xNONE; then
-    prefix=`pwd`;
-fi
-AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
-
 # Checks for libraries.
+
 # none needed
 
 # Substitution
@@ -105,6 +100,12 @@ fi
 # Checks for library functions.
 AC_CHECK_FUNCS([inet_ntoa memset pow select socket strchr strtol malloc])
 AC_CHECK_LIB([m],[roundf])
+
+# set installation prefix to current directory if none was given
+#if test "x$prefix" = xNONE; then
+#    prefix=`pwd`;
+#fi
+AC_MSG_NOTICE([$PACKAGE_NAME will be installed in $prefix])
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 

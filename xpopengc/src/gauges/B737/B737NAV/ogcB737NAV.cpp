@@ -187,7 +187,11 @@ void B737NAV::Render()
 	map_mode = link_dataref_int("laminar/B738/EFIS_control/fo/map_mode_pos");
       }
     } else {
-      map_mode = link_dataref_int("sim/cockpit2/EFIS/map_mode");
+      if (is_captain) {
+	map_mode = link_dataref_int("xpserver/map_mode_capt");
+      } else {
+	map_mode = link_dataref_int("xpserver/map_mode_fo");
+      }
     }
 
     if (*map_mode != INT_MISS) {
@@ -242,10 +246,14 @@ void B737NAV::Render()
 	rangesel = link_dataref_int("laminar/B738/EFIS/fo/map_range");
       }
     } else {
-      rangesel = link_dataref_int("sim/cockpit2/EFIS/map_range");
+      if (is_captain) {
+	rangesel = link_dataref_int("xpserver/map_range_capt");
+      } else {
+	rangesel = link_dataref_int("xpserver/map_range_fo");
+      }
     }
 
-    //printf("%i \n",*rangesel);
+    //  printf("%i %i\n",*map_mode,*rangesel);
      
     if (*rangesel == 0) {
       m_MapRange = 5.0;

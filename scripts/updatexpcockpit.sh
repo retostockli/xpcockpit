@@ -12,7 +12,7 @@ fi
 cd libxpcockpit
 autoreconf
 automake --add-missing
-./configure
+./configure --prefix=${HOME}/xpcockpit/libxpcockpit
 make 
 if [ $? != 0 ]
 then
@@ -24,7 +24,7 @@ cd ..
 cd xpopengc
 autoreconf
 automake --add-missing
-./configure
+./configure --prefix=${HOME}/xpcockpit/xpopengc
 make 
 if [ $? != 0 ]
 then
@@ -41,7 +41,7 @@ cd ..
 cd xppi
 autoreconf
 automake --add-missing
-./configure
+./configure --prefix=${HOME}/xpcockpit/xppi
 make
 if [ $? != 0 ]
 then

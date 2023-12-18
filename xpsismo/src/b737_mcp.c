@@ -59,6 +59,7 @@ void b737_mcp(void)
   int *ap_spd_is_mach;
   int *ap_vspeed_show;
   float *ap_vspeed_show_f;
+
   
   if ((acf_type == 2) || (acf_type == 3)) {
     ap_altitude = link_dataref_flt("laminar/B738/autopilot/mcp_alt_dial",0); 
@@ -67,6 +68,8 @@ void b737_mcp(void)
   } else {
     ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0);
   }
+
+  
   if ((acf_type == 2) || (acf_type == 3)) {
     ap_heading = link_dataref_flt("laminar/B738/autopilot/mcp_hdg_dial",0);      
   } else if (acf_type == 1) {  
@@ -114,8 +117,10 @@ void b737_mcp(void)
   int *ap_cws_b;
   float *ap_cws_b_led;
   int *ap_fdir_a;
+  int *ap_fdir_a_status;
   float *ap_fdir_a_led;
   int *ap_fdir_b;
+  int *ap_fdir_b_status;
   float *ap_fdir_b_led;
   int *ap_engage;
   float *ap_disengage_status;
@@ -238,9 +243,9 @@ void b737_mcp(void)
     ap_cws_b = link_dataref_cmd_hold("sim/autopilot/CWSB");     // MCP CWS B mode
     ap_cws_b_led = link_dataref_flt("xpserver/ap_cws_b_led",0);     // MCP CWS B mode
     ap_fdir_a = link_dataref_int("sim/cockpit2/autopilot/flight_director_mode");    // Flight Director mode CA (A)
-    ap_fdir_a_led = link_dataref_flt("xpserver/LED_FDA_MA_on",0);
-    ap_fdir_b = link_dataref_int("xpserver/fdB_status");    // Flight Director mode FO (B)
-    ap_fdir_b_led = link_dataref_flt("xpserver/LED_FDB_MA_on",0);
+    ap_fdir_a_status = link_dataref_int("sim/cockpit2/autopilot/flight_director_master_pilot");
+    ap_fdir_b = link_dataref_int("sim/cockpit2/autopilot/flight_director2_mode");    // Flight Director mode FO (B)
+    ap_fdir_b_status = link_dataref_int("sim/cockpit2/autopilot/flight_director_master_copilot");
     ap_engage = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");    // AP engage/disengage mode
     ap_vs_arm = link_dataref_cmd_hold("sim/autopilot/vertical_speed");   // VS hold MODE (orange)
     ap_vs_engage = link_dataref_int("sim/cockpit2/autopilot/vvi_status");  // VS hold MODE (green)
@@ -292,20 +297,36 @@ void b737_mcp(void)
 
   /* INPUTS */
   
-  /* Flight Director Captain */
+  /* Flight Director Capain */
+  /*
+  if ((acf_type == 0) && (*ap_fdir_a != INT_MISS)) {
+    *ap_fdir_a = *ap_fdir_a / 2;
+  }
+  */
   ret = digital_input(card,2,ap_fdir_a,0);
   if (ret==1) {
     printf("Flight Director Captain: %i \n",*ap_fdir_a);
   }
-  if (acf_type == 0) {
+  /*
+  if ((acf_type == 0) && (*ap_fdir_a != INT_MISS)) {
     *ap_fdir_a = 2* *ap_fdir_a;
-  }
+    }*/
 
   /* Flight Director Copilot */
+  /*
+  if ((acf_type == 0) && (*ap_fdir_b != INT_MISS)) {
+    *ap_fdir_b = *ap_fdir_b / 2;
+  }
+  */
   ret = digital_input(card,29,ap_fdir_b,0);
   if (ret==1) {
     printf("Flight Director First Officer: %i \n",*ap_fdir_b);
   }
+  /*
+  if ((acf_type == 0) && (*ap_fdir_b != INT_MISS)) {
+    *ap_fdir_b = 2* *ap_fdir_b;
+  }
+  */
   
   /* AT ARM SWITCH */
   /* only change at_arm if switch has changed */
@@ -528,17 +549,34 @@ void b737_mcp(void)
   /* OUTPUTS */
   
   /* Flight Director A LED */
-  if (*ap_fdir_a_led == 2) {
-    ret = digital_output(card,0,&one);
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+    if (*avionics_on == 1) {
+      if (*ap_fdir_a_led == 2) {
+	ret = digital_output(card,0,&one);
+      } else {
+	ret = digital_outputf(card,0,ap_fdir_a_led);
+      }
+    } else {
+      ret = digital_output(card,0,&zero);
+    }  
   } else {
-    ret = digital_outputf(card,0,ap_fdir_a_led);
+    ret = digital_output(card,0,ap_fdir_a_status);
   }
   /* Flight Director B LED */
-  if (*ap_fdir_b_led == 2) {
-    ret = digital_output(card,16,&one);
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+    if (*avionics_on == 1) {
+      if (*ap_fdir_b_led == 2) {
+ 	ret = digital_output(card,16,&one);
+      } else {
+	ret = digital_outputf(card,16,ap_fdir_b_led);
+      }
+    } else {
+      ret = digital_output(card,16,&zero);
+    }   
   } else {
-    ret = digital_outputf(card,16,ap_fdir_b_led);
+    ret = digital_output(card,16,ap_fdir_b_status);
   }
+  
   /* A/T ARM LED */
   if ((acf_type == 2) || (acf_type == 3)) {
     ret = digital_outputf(card,1,ap_at_arm_status);
