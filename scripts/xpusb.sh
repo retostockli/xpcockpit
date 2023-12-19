@@ -2,3 +2,7 @@
 
 cd ~/xpcockpit/xpusb/bin
 ./xpusb boeing737
+
+
+
+
