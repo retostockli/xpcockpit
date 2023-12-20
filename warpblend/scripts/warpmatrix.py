@@ -21,11 +21,13 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 6
+setting = 4
 
 # Plot Warping grid for Checking
 doplot = False
 
+# Utilize new X-Plane >= 12.08 Window Position File Format
+newformat = True
 
 # Projector and Screen Dimensions [cm]
 # Please see projector_setup.pdf
@@ -46,8 +48,12 @@ nx = 1920
 ny = 1080
 
 # number of x and y grid points for warping grid (101 is needed for X-Plane 11 / 12)
-ngx = 101
-ngy = 101
+if newformat:
+    ngx = 40
+    ngy = 40
+else:
+    ngx = 101
+    ngy = 101
 
 # vertical offset [deg] is not implemented, but could be implemented in planar to cylindrical projection
 if setting == 1:
@@ -176,7 +182,7 @@ elif setting == 6:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
-    savegrid = True # save proection grid or just FOV
+    savegrid = False # save proection grid or just FOV
 elif setting == 7:
     # Testing Two Monitors
     nmon = 2  # number of monitors
@@ -639,8 +645,14 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/m_x_res_full "+str(nx)+"\n")
     con.write("monitor/"+str(mon)+"/m_y_res_full "+str(ny)+"\n")
     con.write("monitor/"+str(mon)+"/m_is_fullscreen wmgr_mode_fullscreen"+"\n")
-    con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_normal_visuals"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/window_2d_off 1"+"\n")
+    if (mon == 0) and (nmon > 1):
+        con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_panel_only"+"\n")
+    else:
+        con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_normal_visuals"+"\n")
+    if newformat:
+        con.write("monitor/"+str(mon)+"/proj/proj_cylinder 0"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/proj_sphere 0"+"\n")        
+    con.write("monitor/"+str(mon)+"/proj/window_2d_off 0"+"\n")
     if cylindrical[mon]:
         con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")
     else:
@@ -652,61 +664,114 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/off_vrt_deg "+str(format(vertical_offset[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/off_lat_deg "+str(format(lateral_offset[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/off_phi_deg 0.000000"+"\n")
-    if gridtest:
-        con.write("monitor/"+str(mon)+"/proj/grid_os_on_test 1"+"\n")
-    else:
-        con.write("monitor/"+str(mon)+"/proj/grid_os_on_test 0"+"\n")
+    if newformat:
+        if gridtest:
+            con.write("monitor/"+str(mon)+"/proj/grid_rat_config 1"+"\n")
+        else:
+            con.write("monitor/"+str(mon)+"/proj/grid_rat_config 0"+"\n")           
+        if (projection[mon] or cylindrical[mon]) and savegrid:
+            con.write("monitor/"+str(mon)+"/proj/grid_rat_render 1"+"\n")
+        else:
+            con.write("monitor/"+str(mon)+"/proj/grid_rat_render 0"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_rat_drag_dim_i 4"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_rat_drag_dim_j 4"+"\n")
 
-    if (projection[mon] or cylindrical[mon]) and savegrid:
-        con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 1"+"\n")
     else:
-        con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 0"+"\n")
-
-    con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_i 4"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_j 4"+"\n")
+        if gridtest:
+            con.write("monitor/"+str(mon)+"/proj/grid_os_on_test 1"+"\n")
+        else:
+            con.write("monitor/"+str(mon)+"/proj/grid_os_on_test 0"+"\n")           
+        if (projection[mon] or cylindrical[mon]) and savegrid:
+            con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 1"+"\n")
+        else:
+            con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 0"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_i 4"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_j 4"+"\n")
 
     # write grid per monitor
-    if (projection[mon] or cylindrical[mon]) and savegrid:
+    if newformat:
         for gx in range(0,ngx,1):
             for gy in range(0,ngy,1):
-                con.write("monitor/"+str(mon)+"/proj/grid_os_x/"+str(gx)+"/"+str(gy)+" "+str(format(xdif[gx,gy],('.6f')))+"\n")
-
+                con.write("monitor/"+str(mon)+"/proj/grid_ini_x"+str(gx)+"/"+str(gy)+" "
+                          +str(format(xabs[gx,gy]/float(nx),('.6f')))+"\n")
         for gx in range(0,ngx,1):
             for gy in range(0,ngy,1):
-                con.write("monitor/"+str(mon)+"/proj/grid_os_y/"+str(gx)+"/"+str(gy)+" "+str(format(ydif[gx,gy],('.6f')))+"\n")
+                con.write("monitor/"+str(mon)+"/proj/grid_ini_y"+str(gx)+"/"+str(gy)+" "
+                          +str(format(yabs[gx,gy]/float(ny),('.6f')))+"\n")
+        for gx in range(0,ngx,1):
+            for gy in range(0,ngy,1):
+                con.write("monitor/"+str(mon)+"/proj/grid_off_x"+str(gx)+"/"+str(gy)+" "
+                          +str(format(0.0,('.6f')))+"\n")
+        for gx in range(0,ngx,1):
+            for gy in range(0,ngy,1):
+                con.write("monitor/"+str(mon)+"/proj/grid_off_y"+str(gx)+"/"+str(gy)+" "
+                          +str(format(0.0,('.6f')))+"\n")
+    else:
+        if (projection[mon] or cylindrical[mon]) and savegrid:
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                    con.write("monitor/"+str(mon)+"/proj/grid_os_x/"+str(gx)+"/"+str(gy)+" "+str(format(xdif[gx,gy],('.6f')))+"\n")
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                    con.write("monitor/"+str(mon)+"/proj/grid_os_y/"+str(gx)+"/"+str(gy)+" "+str(format(ydif[gx,gy],('.6f')))+"\n")
 
 
     # write blending per monitor
-    if blending[mon]:
-        con.write("monitor/"+str(mon)+"/proj/gradient_on 1"+"\n")
+
+    if newformat:
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_config 0"+"\n")
+        if blending[mon]:
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_lft 1"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_rgt 1"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_bot 1"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_top 1"+"\n")
+        else:
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_lft 0"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_rgt 0"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_bot 0"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_top 0"+"\n")
+
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_lft -15.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_rgt 15.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_bot -15.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_top 15.00000"+"\n")
+
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft 1.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt 1.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot 1.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top 1.00000"+"\n")
+        
     else:
-        con.write("monitor/"+str(mon)+"/proj/gradient_on 0"+"\n")
+        if blending[mon]:
+            con.write("monitor/"+str(mon)+"/proj/gradient_on 1"+"\n")
+        else:
+            con.write("monitor/"+str(mon)+"/proj/gradient_on 0"+"\n")
 
 
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_top/0 "+str(format(blend_left_top[mon],('.6f')))+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_top/1 "+str(format(blend_right_top[mon],('.6f')))+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/0 0.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/1 0.000000"+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon],('.6f')))+"\n")
-    con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon],('.6f')))+"\n")
-    if blendtest:
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
-    else:
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.800000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.450000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.800000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.450000"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/0 "+str(format(blend_left_top[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/1 "+str(format(blend_right_top[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/0 0.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/1 0.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon],('.6f')))+"\n")
+        if blendtest:
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
+        else:
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.800000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.450000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.800000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.450000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
 
     if doplot:
         plot.figure(figsize=(16,10))
