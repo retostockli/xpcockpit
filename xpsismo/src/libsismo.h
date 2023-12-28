@@ -72,6 +72,7 @@ typedef struct {
   char outputs[MAXOUTPUTS];
   char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
   char displays[MAXDISPLAYS];
+  char displays_brightness[MAXDISPLAYS]; /* 0 .. 15 */
   char displays_changed[MAXDISPLAYS]; /* unchanged = 0, changed = 1 */
   int servos[MAXSERVOS];
   char servos_changed[MAXSERVOS]; /* unchanged = 0, changed = 1 */
@@ -88,8 +89,8 @@ int digital_outputf(int card, int output, float *fvalue);
 int digital_output(int card, int output, int *value);
 int servo_output(int card, int servo, int *value, int minval, int maxval);
 int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxval);
-int display_outputf(int card, int pos, int n, float *fvalue, int dp, int blank);
-int display_output(int card, int pos, int n, int *value, int dp, int blank);
+int display_outputf(int card, int pos, int n, float *fvalue, int dp, int brightness);
+int display_output(int card, int pos, int n, int *value, int dp, int brightness);
 int analog_input(int card, int input, float *value, float minval, float maxval);
 int encoder_input(int card, int input1, int input2, int *value, int multiplier, int type);
 int encoder_inputf(int card, int input1, int input2, float *value, float multiplier, int type);

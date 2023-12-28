@@ -190,6 +190,7 @@ int ini_sismodata()
     }
     for(j=0;j<MAXDISPLAYS;j++) {
       sismo[i].displays[j] = DISPLAYSINITVAL;
+      sismo[i].displays_brightness[j] = DISPLAYBRIGHTNESS;
       sismo[i].displays_changed[j] = CHANGED;
     }
     for(j=0;j<MAXSERVOS;j++) {

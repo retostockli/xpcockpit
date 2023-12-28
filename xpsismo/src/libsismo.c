@@ -432,8 +432,12 @@ int write_sismo() {
 	    sismoSendBuffer[2] = sendto;
 	    sismoSendBuffer[3] = 0x01;
 	    sismoSendBuffer[4] = group+1;
-	    sismoSendBuffer[13] = DISPLAYBRIGHTNESS; /* Todo: make user-adjustable */
+	    sismoSendBuffer[13] = DISPLAYBRIGHTNESS; /* Can only be adjusted per group */
 	    for (display=0;display<8;display++) {
+	      if (sismo[card].displays_brightness[display+group*8+firstdisplay] != DISPLAYBRIGHTNESS) {
+		/* Change Brightness if one display in the group does not have standard / maximum brightness */
+		sismoSendBuffer[13] = sismo[card].displays_brightness[display+group*8+firstdisplay];
+	      }
 	      set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGED) {
 		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",card,bank,display+group*8,
@@ -737,18 +741,21 @@ int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxv
 
 
 /* wrapper for floating point output to display */
-int display_outputf(int card, int pos, int n, float *fvalue, int dp, int blank)
+int display_outputf(int card, int pos, int n, float *fvalue, int dp, int brightness)
 {
 
   int value = INT_MISS;
   if (*fvalue != FLT_MISS) value = (int) lroundf(*fvalue);
-  return display_output(card, pos, n, &value, dp, blank);
+  return display_output(card, pos, n, &value, dp, brightness);
 }
 
 /* fill 7 segment displays starting from display position pos and the next n displays  */
 /* put a decimal point at position dp (or set dp < 0 for no decimal point */
-/* set blank to 1 if you want to blank the range pos to pos+n-1 */
-int display_output(int card, int pos, int n, int *value, int dp, int blank)
+/* brightness goes from 0 .. 15. Set it to 0 for blanking. Brightness can only */
+/* be adjusted per display group of 8. Brightness will be adjusted according to the */
+/* brightness of the last display in the group. Blanking works per display (range) */
+/* addressed in this call */
+int display_output(int card, int pos, int n, int *value, int dp, int brightness)
 {
   int retval = 0;
   int tempval;
@@ -764,8 +771,10 @@ int display_output(int card, int pos, int n, int *value, int dp, int blank)
 	if ((n>0) && (pos>=0) && ((pos+n-1)<sismo[card].ndisplays)) {
 
 	  if (*value != INT_MISS) {
-	  
-	    if (blank == 1) {
+	    if ((brightness > 0) && (brightness <= 15)) {
+	      sismo[card].displays_brightness[pos+count] = brightness;
+	    }
+	    if (brightness == 0) {
 	      /* blank all values in range */
 	      for (count=0;count<n;count++) {
 		if (sismo[card].displays[pos+count] != -1) {
