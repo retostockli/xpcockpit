@@ -652,7 +652,7 @@ for mon in range(0,nmon,1):
     if newformat:
         con.write("monitor/"+str(mon)+"/proj/proj_cylinder 0"+"\n")
         con.write("monitor/"+str(mon)+"/proj/proj_sphere 0"+"\n")        
-    con.write("monitor/"+str(mon)+"/proj/window_2d_off 0"+"\n")
+    con.write("monitor/"+str(mon)+"/proj/window_2d_off 1"+"\n")
     if cylindrical[mon]:
         con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")
     else:
