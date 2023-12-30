@@ -71,16 +71,21 @@ B737EICASEGT::~B737EICASEGT()
     GaugeComponent::Render();
 
     float value;
-
-    float *engn_egt_c = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c",16,-1,0);
-
+    int acf_type = m_pDataSource->GetAcfType();
+    float *engn_egt_c = link_dataref_flt_arr("sim/cockpit2/engine/indicators/EGT_deg_cel",16,-1,0);
     switch (currentEngine)
       {
-      case 1: 
+      case 1:
+	if ((acf_type == 2) || (acf_type == 3)) {
+	  engn_egt_c = link_dataref_flt("laminar/B738/engine/eng1_egt",0);
+	}
 	value = *(engn_egt_c+0);
 	break;
       case 2: 
 	value = *(engn_egt_c+1) ;
+	if ((acf_type == 2) || (acf_type == 3)) {
+	  engn_egt_c = link_dataref_flt("laminar/B738/engine/eng2_egt",0);
+	}
 	break;
       case 3: 
 	value = *(engn_egt_c+2) ;
