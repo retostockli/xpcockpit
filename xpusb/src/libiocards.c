@@ -268,6 +268,9 @@ int initialize_iocardsdata(void)
   int card;
   struct timeval time_new;
 
+  /* reset interval counter */
+  interval_counter = 0;
+  
   /* set initialize stage */
   initial = 1;
   printf("LIBIOCARDS: Initialization started \n");	
@@ -320,7 +323,11 @@ int copy_iocardsdata(void)
   int device;
   int count;
   int card;
- 
+
+  /* update interval counter for up/down states */
+  interval_counter++;
+  if (interval_counter >= (INTERVAL_UPDN / INTERVAL)) interval_counter = 0;
+  
   for (device=0;device<MAXDEVICES;device++) {
 
     /* only copy new to old input data if the input data was read at least once */

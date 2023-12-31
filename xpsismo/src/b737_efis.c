@@ -84,8 +84,6 @@ void b737_efis(int copilot)
       altimeter_pressure_unit_up = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/baro_in_hpa_up");
       altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
     }
-    *altimeter_pressure_unit_dn = 0;
-    *altimeter_pressure_unit_up = 0;
   } else if (acf_type == 1) {
     altimeter_pressure_unit = link_dataref_int("x737/systems/units/baroPressUnit");
   } else {
@@ -140,8 +138,6 @@ void b737_efis(int copilot)
       minimum_mode_up = link_dataref_cmd_once("laminar/B738/EFIS_control/cpt/minimums_up");
       altimeter_minimum = link_dataref_flt("laminar/B738/pfd/dh_pilot",0);
     }
-    *minimum_mode_dn = 0;
-    *minimum_mode_up = 0;
   } else {
     altimeter_minimum = link_dataref_flt("sim/cockpit/misc/radio_altimeter_minimum",0);
   }
@@ -159,8 +155,6 @@ void b737_efis(int copilot)
       efis1_sel_up = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/vor1_off_up");
       efis1_sel_dn = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/vor1_off_dn");
     }
-    *efis1_sel_up = 0;
-    *efis1_sel_dn = 0;
   } else {
     efis1_sel = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
   }
@@ -178,8 +172,6 @@ void b737_efis(int copilot)
       efis2_sel_up = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/vor2_off_up");
       efis2_sel_dn = link_dataref_cmd_once("laminar/B738/EFIS_control/capt/vor2_off_dn");
     }
-    *efis2_sel_up = 0;
-    *efis2_sel_dn = 0;
   } else {
     efis2_sel = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
   }

@@ -233,8 +233,6 @@ void b737_pedestal(void)
     transponder_mode_f = link_dataref_flt("laminar/B738/knob/transponder_pos",0);
     transponder_mode_up = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_up");
     transponder_mode_dn = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_dn");
-    *transponder_mode_up = 0;
-    *transponder_mode_dn = 0;
     transponder_ident = link_dataref_cmd_once("laminar/B738/push_button/transponder_ident_dn");
   } else {
     transponder_ident = link_dataref_cmd_once("sim/transponder/transponder_ident");

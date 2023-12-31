@@ -169,6 +169,9 @@ int ini_sismodata()
 {
   int i,j,k;
 
+  /* reset interval counter */
+  interval_counter = 0;
+
   for(i=0;i<MAXCARDS;i++) {
     for(j=0;j<MAXANALOGINPUTS;j++) {
       for(k=0;k<MAXSAVE;k++) {
@@ -211,6 +214,10 @@ int reset_sismodata()
      or writes the output etc. */
   
   int i,j;
+
+  /* update interval counter for up/down states */
+  interval_counter++;
+  if (interval_counter >= (INTERVAL_UPDN / INTERVAL)) interval_counter = 0;
   
   for(i=0;i<MAXCARDS;i++) {
 

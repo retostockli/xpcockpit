@@ -54,8 +54,8 @@ void iocard_test(void)
 
   // unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum",  40, -1);  
   // int *digitalinput = link_dataref_int("xpserver/custominput");
-  // int *encoder = link_dataref_int("xpserver/customencoder");
-  // double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
+  int *encoder = link_dataref_int("xpserver/customencoder");
+  double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
   //float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, 0);
   //float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 1, 0);
 
@@ -127,9 +127,9 @@ void iocard_test(void)
   //     printf("Digital Output #15 has value: %i \n",*digitaloutput); // hans
   //ret = digital_output(device,card,11,digitaloutput);
 
-/*
+
   float updn = 0.;
-  ret = mastercard_encoder(device,card,1,&updn,1.0,2,3);
+  ret = mastercard_encoder(device,card,0,&updn,1.0,0,3);
   if (*encoder != INT_MISS) {
     if (ret == 1) {
       *encoder = *encoder + (int) updn;
@@ -138,11 +138,29 @@ void iocard_test(void)
   } else {
     *encoder = 0;
   }
-*/
+
 
   // mastercard 1, display II card (max 64 displays)
   
   /* update 1 displays with display value */
   //ret = mastercard_display(device,card,0,1,digitalinput,0);
+
+
+  /* only run for Laminar 737 or ZIBO 737 */
+  if ((acf_type == 2) || (acf_type == 3)) {
+    float *transponder_mode_f = link_dataref_flt("laminar/B738/knob/transponder_pos",0);;
+    int *transponder_mode_up = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_up");;
+    int *transponder_mode_dn = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_dn");;
+    
+    float xpndr_mode_select_f = (float) *encoder;
+    if (xpndr_mode_select_f < 1.0) xpndr_mode_select_f = 1.0;
+    if (xpndr_mode_select_f > 5.0) xpndr_mode_select_f = 5.0;
+    ret = set_state_updnf(&xpndr_mode_select_f,transponder_mode_f,transponder_mode_up,transponder_mode_dn);
+    if (ret != 0) {
+      printf("XPNDR MODE: %f %f %i %i \n",
+	     xpndr_mode_select_f,*transponder_mode_f,*transponder_mode_up,*transponder_mode_dn);
+    }
+   
+  }
   
 }
