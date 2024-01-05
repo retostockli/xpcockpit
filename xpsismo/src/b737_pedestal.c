@@ -158,6 +158,7 @@ void b737_pedestal(void)
   int temp2;
   int integer; /* integer part of displays */
   int decimal; /* decimal part of displays */
+  int lasttwo; /* last two digits of displays */
   int i0; /* first input # per panel */
   int o0; /* first output # per panel */
   int d0; /* first display # per panel */
@@ -232,8 +233,6 @@ void b737_pedestal(void)
     transponder_mode_f = link_dataref_flt("laminar/B738/knob/transponder_pos",0);
     transponder_mode_up = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_up");
     transponder_mode_dn = link_dataref_cmd_once("laminar/B738/knob/transponder_mode_dn");
-    *transponder_mode_up = 0;
-    *transponder_mode_dn = 0;
     transponder_ident = link_dataref_cmd_once("laminar/B738/push_button/transponder_ident_dn");
   } else {
     transponder_ident = link_dataref_cmd_once("sim/transponder/transponder_ident");
@@ -397,8 +396,8 @@ void b737_pedestal(void)
   /*** Background Lighting ***/
 
   /* blank displays if avionics are off */
-  int blank = 0;
-  if (*avionics_on != 1) blank = 1;
+  int display_brightness = 10;
+  if (*avionics_on != 1) display_brightness = 0;
 
   /* turn off background lighting if avionics are off */
   o0 = 0;
@@ -437,17 +436,37 @@ void b737_pedestal(void)
   }
   /* COM1 Inner Encoder (5 kHz step) */
   updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  if (ret == 1) {
+    if (*com1_freq_stdby != INT_MISS) {
+      integer = *com1_freq_stdby / 1000;
+      decimal = *com1_freq_stdby - integer * 1000;
+      decimal += updn;
+      lasttwo = decimal - decimal/100*100;
+      /* 8.33 kHz frequencies do not cover all 5kHz display steps */
+      if ((lasttwo == 20) || (lasttwo == 45) || (lasttwo == 70) || (lasttwo == 95)) decimal += updn;
+      if (decimal < 0) decimal = 990;
+      if (decimal > 990) decimal = 0;
+      *com1_freq_stdby = integer * 1000 + decimal;
+      //printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
+    }
+  }
+  /* Does Not Work at High Turn Speeds
   ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   if (ret == 1) {
     if (updn == 1) {
+      printf("COM1 UP %i \n",*com1_fine_up);
       *com1_fine_up = 1;
     } else {
       *com1_fine_dn = 1;
+      printf("COM1 DN %i \n",*com1_fine_dn);
     }
   }
+  */
+  
   /* COM1 Displays */
-  ret = display_output(card, d0+0, 6, com1_freq_active, 3, blank);
-  ret = display_output(card, d0+8, 6, com1_freq_stdby, 3, blank);
+  ret = display_output(card, d0+0, 6, com1_freq_active, 3, display_brightness);
+  ret = display_output(card, d0+8, 6, com1_freq_stdby, 3, display_brightness);
 
 
 
@@ -483,17 +502,35 @@ void b737_pedestal(void)
   }
   /* COM2 Inner Encoder (5 kHz step) */
   updn = 0;
+  ret = encoder_input(card,i0+4,i0+5,&updn,5,1);
+  if (ret == 1) {
+    if (*com2_freq_stdby != INT_MISS) {
+      integer = *com2_freq_stdby / 1000;
+      decimal = *com2_freq_stdby - integer * 1000;
+      decimal += updn;
+      lasttwo = decimal - decimal/100*100;
+      /* 8.33 kHz frequencies do not cover all 5kHz display steps */
+      if ((lasttwo == 20) || (lasttwo == 45) || (lasttwo == 70) || (lasttwo == 95)) decimal += updn;
+      if (decimal < 0) decimal = 990;
+      if (decimal > 990) decimal = 0;
+      *com2_freq_stdby = integer * 1000 + decimal;
+      //printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
+    }
+  }
+  /* Does Not Work at High Turn Speeds
   ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
- if (ret == 1) {
+  if (ret == 1) {
     if (updn == 1) {
       *com2_fine_up = 1;
     } else {
       *com2_fine_dn = 1;
     }
   }
+  */
+  
   /* COM2 Displays */
-  ret = display_output(card, d0+0, 6, com2_freq_active, 3, blank);
-  ret = display_output(card, d0+8, 6, com2_freq_stdby, 3, blank);
+  ret = display_output(card, d0+0, 6, com2_freq_active, 3, display_brightness);
+  ret = display_output(card, d0+8, 6, com2_freq_stdby, 3, display_brightness);
 
 
   
@@ -537,8 +574,8 @@ void b737_pedestal(void)
     }
   }  
   /* NAV1 Displays */
-  ret = display_output(card, d0+0, 5, nav1_freq_active, 2, blank);
-  ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, blank);
+  ret = display_output(card, d0+0, 5, nav1_freq_active, 2, display_brightness);
+  ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, display_brightness);
 
   
   /*** NAV2 Panel ***/ 
@@ -581,8 +618,8 @@ void b737_pedestal(void)
     }
   }  
   /* NAV2 Displays */
-  ret = display_output(card, d0+0, 5, nav2_freq_active, 2, blank);
-  ret = display_output(card, d0+8, 5, nav2_freq_stdby, 2, blank);
+  ret = display_output(card, d0+0, 5, nav2_freq_active, 2, display_brightness);
+  ret = display_output(card, d0+8, 5, nav2_freq_stdby, 2, display_brightness);
 
 
   
@@ -632,9 +669,9 @@ void b737_pedestal(void)
   }  
   /* ADF1 Displays */
   temp = *adf1_freq_active * 10;
-  ret = display_output(card, d0+0, 5, &temp, 1, blank);
+  ret = display_output(card, d0+0, 5, &temp, 1, display_brightness);
   temp = *adf1_freq_stdby * 10;
-  ret = display_output(card, d0+8, 5, &temp, 1, blank);
+  ret = display_output(card, d0+8, 5, &temp, 1, display_brightness);
 
   
   /*** ADF2 Panel ***/ 
@@ -683,9 +720,9 @@ void b737_pedestal(void)
   } 
   /* ADF2 Displays */
   temp = *adf2_freq_active * 10;
-  ret = display_output(card, d0+0, 5, &temp, 1, blank);
+  ret = display_output(card, d0+0, 5, &temp, 1, display_brightness);
   temp = *adf2_freq_stdby * 10;
-  ret = display_output(card, d0+8, 5, &temp, 1, blank);
+  ret = display_output(card, d0+8, 5, &temp, 1, display_brightness);
 
 
   
@@ -1189,13 +1226,13 @@ void b737_pedestal(void)
     
     /* Digits 1's */
     temp = *transponder_code - (*transponder_code / 10) * 10;
-    ret = display_output(card, d0+6, 1, &temp, -1, blank);
+    ret = display_output(card, d0+6, 1, &temp, -1, display_brightness);
     /* Digits 10's */
     temp = *transponder_code / 10 - (*transponder_code / 100) * 10;
-    ret = display_output(card, d0+7, 1, &temp, -1, blank);
+    ret = display_output(card, d0+7, 1, &temp, -1, display_brightness);
     /* Digits 100's */
     temp = *transponder_code / 100 - (*transponder_code / 1000)*10;
-    ret = display_output(card, d0+8+6, 1, &temp, -1, blank);
+    ret = display_output(card, d0+8+6, 1, &temp, -1, display_brightness);
     /* Digits 1000's */
     if (*transponder_fail != INT_MISS) {
       /* set major digit DP for transponder fail led */
@@ -1208,12 +1245,12 @@ void b737_pedestal(void)
       dp = -1;
     }
     temp = *transponder_code / 1000;
-    ret = display_output(card, d0+8+7, 1, &temp, dp, blank);
+    ret = display_output(card, d0+8+7, 1, &temp, dp, display_brightness);
 
   } else {
     temp = 0;
-    ret = display_output(card, d0+6, 2, &temp, -1, 1);
-    ret = display_output(card, d0+8+6, 2, &temp, -1, 1);
+    ret = display_output(card, d0+6, 2, &temp, -1, 0);
+    ret = display_output(card, d0+8+6, 2, &temp, -1, 0);
   }
 
 

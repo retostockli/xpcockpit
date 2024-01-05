@@ -69,7 +69,7 @@ namespace OpenGC
     GaugeComponent::Render();
 
     float *time = link_dataref_flt("sim/time/framerate_period",-3);
-    float *tat = link_dataref_flt("sim/weather/temperature_ambient_c",-1);
+    float *tat = link_dataref_flt("sim/weather/aircraft/temperature_ambient_deg_c",-1);
     int *oilpress1 = link_dataref_int_arr("sim/cockpit/warnings/annunciators/oil_pressure_low",8,0);
     int *oilpress2 = link_dataref_int_arr("sim/cockpit/warnings/annunciators/oil_pressure_low",8,1);
 

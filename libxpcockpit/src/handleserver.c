@@ -1079,6 +1079,27 @@ int receive_xpserver(void) {
 		  }
 		  break;
 		case XPTYPE_CMD_ONCE:
+		  if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
+		  if (changed == 1) {
+		    if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
+		      first = MARK_DATA + i;
+		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		      send_left += sizeof(int);
+
+		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i command %s: %i \n", 
+					      i, serverdata[i].datarefname,*(int *) serverdata[i].data);
+		  
+		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
+		      *(int *) serverdata[i].data = 0; /* RESET CMD ONCE after send */
+		      memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(int));
+		      send_left += sizeof(int);
+		  
+		    } else {
+		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i command %s \n",
+					      i, serverdata[i].datarefname);
+		    }
+		  }
+		  break;
 		case XPTYPE_CMD_HOLD:
 		  if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
 		  if (changed == 1) {

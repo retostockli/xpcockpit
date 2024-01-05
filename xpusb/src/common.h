@@ -17,10 +17,17 @@
 
 #include "check_aircraft.h"
 
+/* Loop interval (ms) */
 #define INTERVAL 5
+/* State check interval (ms) for Up/Down commands
+   Needs feedback time from flight simulator states */
+#define INTERVAL_UPDN 100
 
 /* verbosity of xpusb (0-4) */
 extern int verbose;
+
+/* time step counter */
+extern int interval_counter;
 
 /* prototype functions */
 int set_state_updnf(float *new_statef, float *old_statef, int *up, int *dn);

@@ -79,8 +79,6 @@ namespace OpenGC
     
     int acf_type = m_pDataSource->GetAcfType();
 
-    //    float *ias = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
-    //    float *tat = link_dataref_flt("sim/weather/temperature_ambient_c",-1);
     float *ap_speed;
     int *ap_speed_is_mach;
     float *ap_altitude;

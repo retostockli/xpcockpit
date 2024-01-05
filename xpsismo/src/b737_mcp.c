@@ -292,8 +292,8 @@ void b737_mcp(void)
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
   /* blank displays if avionics are off */
-  int blank = 0;
-  if (*avionics_on != 1) blank = 1;
+  int display_brightness = 15;
+  if (*avionics_on != 1) display_brightness = 0;
 
   /* INPUTS */
   
@@ -536,6 +536,7 @@ void b737_mcp(void)
   
   ret = encoder_inputf(card, 19, 20, ap_altitude, 100.0, 1);
   if ((ret==1) && (*ap_altitude != FLT_MISS)) {
+    if (*ap_altitude < 0.0) *ap_altitude = 0.0;
     printf("AP Altitude: %f \n",*ap_altitude);
   }
   
@@ -652,17 +653,26 @@ void b737_mcp(void)
   ret = digital_output(card,17,avionics_on);
 
   /* DISPLAYS */
-  ret = display_outputf(card, 0, 3, ap_course1, -1, blank);
-  ret = display_outputf(card, 21, 3, ap_course2, -1, blank);
+  ret = display_outputf(card, 0, 3, ap_course1, -1, display_brightness);
+  ret = display_outputf(card, 21, 3, ap_course2, -1, display_brightness);
   if (*ap_spd_is_mach == 1) {
     float ftemp = *ap_ias * 100.0;
     ret = display_outputf(card,3,4, ap_ias, -1, 1);  // clear all digits
-    ret = display_outputf(card,4,3, &ftemp, 2, blank); // mach spd in two first digits
+    ret = display_outputf(card,4,3, &ftemp, 2, display_brightness); // mach spd in two first digits
   } else {
-    ret = display_outputf(card,3,4, ap_ias, -1, blank);
+    ret = display_outputf(card,3,4, ap_ias, -1, display_brightness);
   }
-  ret = display_outputf(card, 8, 3, ap_heading, -1, blank);
-  ret = display_outputf(card, 11, 5, ap_altitude, -1, blank);
+  ret = display_outputf(card, 8, 3, ap_heading, -1, display_brightness);
+  if (*ap_heading != FLT_MISS) {
+    /* HDG always has leading zeros */
+    if (*ap_heading < 100.0) {
+      ret = display_output(card, 10, 1, &zero, -1, display_brightness);
+      if (*ap_heading < 10.0) {
+	ret = display_output(card, 9, 1, &zero, -1, display_brightness);
+      } 
+    }
+  }
+  ret = display_outputf(card, 11, 5, ap_altitude, -1, display_brightness);
 
   int ap_vs_show = 0;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -671,9 +681,9 @@ void b737_mcp(void)
     if (*ap_vspeed_show >= 1) ap_vs_show = 1;
   }
   if (ap_vs_show == 1) {
-    ret = display_outputf(card, 16, 5, ap_vspeed, -1, blank);
+    ret = display_outputf(card, 16, 5, ap_vspeed, -1, display_brightness);
   } else {
-    ret = display_outputf(card, 16, 5, ap_vspeed, -1, one);
+    ret = display_outputf(card, 16, 5, ap_vspeed, -1, zero);
   }
   
 }

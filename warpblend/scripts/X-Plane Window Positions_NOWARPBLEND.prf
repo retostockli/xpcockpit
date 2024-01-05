@@ -16,7 +16,7 @@ monitor/0/m_refresh_rate 0
 monitor/0/m_x_res_full 1920
 monitor/0/m_y_res_full 1080
 monitor/0/m_is_fullscreen wmgr_mode_fullscreen
-monitor/0/m_usage wmgr_usage_normal_visuals
+monitor/0/m_usage wmgr_usage_panel_only
 monitor/0/proj/window_2d_off 1
 monitor/0/proj/diff_FOV 0
 monitor/0/proj/FOVx_renopt 77.606139

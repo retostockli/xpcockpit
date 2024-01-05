@@ -14,12 +14,14 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#include <stdio.h>
 #include <math.h>
 #include "serverdata.h"
 #include "common.h"
 
 /* allocation of global variables from common.h */
 int verbose;
+int interval_counter;
 
 int set_state_updnf(float *new_statef, float *old_statef, int *up, int *dn)
 {
@@ -34,13 +36,16 @@ int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
 {
 
   int ret = 0;
+
+  //printf("%i \n",interval_counter);
   
   if ((new_state) && (old_state) && (up) && (dn)) {
     if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
 
-      if ((*up == 1) || (*dn == 1)) {
+      //      if ((*up == 1) || (*dn == 1)) {
 	/* we just upped or downed, so wait for a cycle */
-      } else {
+      //      } else {
+      if (interval_counter == 0) {
 	if (*new_state > *old_state) {
 	  *up = 1;
 	  *dn = 0;
@@ -78,9 +83,10 @@ int set_state_toggle(int *new_state, int *old_state, int *toggle)
   if ((new_state) && (old_state) && (toggle)) {
     if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
 
-      if (*toggle == 1) {
+      //      if (*toggle == 1) {
 	/* we just upped or downed, so wait for a cycle */
-      } else {
+      //      } else {
+      if (interval_counter == 0) {
 	if (*new_state > *old_state) {
 	  *toggle = 1;
 	  ret = 1;
@@ -106,10 +112,12 @@ int set_switch_cover(float *switch_cover_pos, int *switch_cover_toggle, int on)
      assume it is closed as soon as the floating point value is < 1 */
   int value;
   if (*switch_cover_pos != FLT_MISS) {
-    if (on == 1) {
-      value = *switch_cover_pos > 0.0;
-    } else {
-      value = *switch_cover_pos == 1.0;
+    if (interval_counter == 0) {
+      if (on == 1) {
+	value = *switch_cover_pos > 0.0;
+      } else {
+	value = *switch_cover_pos == 1.0;
+      }
     }
   } else {
     value = INT_MISS;

@@ -169,6 +169,9 @@ int ini_sismodata()
 {
   int i,j,k;
 
+  /* reset interval counter */
+  interval_counter = 0;
+
   for(i=0;i<MAXCARDS;i++) {
     for(j=0;j<MAXANALOGINPUTS;j++) {
       for(k=0;k<MAXSAVE;k++) {
@@ -190,6 +193,7 @@ int ini_sismodata()
     }
     for(j=0;j<MAXDISPLAYS;j++) {
       sismo[i].displays[j] = DISPLAYSINITVAL;
+      sismo[i].displays_brightness[j] = DISPLAYBRIGHTNESS;
       sismo[i].displays_changed[j] = CHANGED;
     }
     for(j=0;j<MAXSERVOS;j++) {
@@ -210,6 +214,10 @@ int reset_sismodata()
      or writes the output etc. */
   
   int i,j;
+
+  /* update interval counter for up/down states */
+  interval_counter++;
+  if (interval_counter >= (INTERVAL_UPDN / INTERVAL)) interval_counter = 0;
   
   for(i=0;i<MAXCARDS;i++) {
 

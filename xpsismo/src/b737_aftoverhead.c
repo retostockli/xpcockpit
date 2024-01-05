@@ -38,20 +38,37 @@ void b737_aftoverhead(void)
   int ret;
   int temp;
   float fvalue;
+  int display;
+  int i;
+  int outvalue;
 
 
   temp = 1;
-  
-  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
-  ret = digital_output(card,0,value);
-  //ret = digital_output(card,0,&temp);
 
-  int i=0;
+  int *invalue = link_dataref_int("xpserver/test");
+  
+  outvalue = 1;
+  ret = digital_output(card,0,&outvalue);
+  outvalue = 1;
+  ret = digital_output(card,1,&outvalue);
+
+  i=0;
   ret = analog_input(card,i,&fvalue,0.0,10.0);
   if (ret == 1) {
     /* ret is 1 only if analog input has changed */
     printf("Analog Input %i changed to: %f \n",i,fvalue);
   }
 
- 
+  i=0;
+  ret = digital_input(card, i, invalue, 0);
+  if (ret == 1) {
+    /* ret is 1 only if input has changed */
+    printf("Digital Input %i changed to: %i \n",i,*invalue);
+  }
+
+  display = 88888;
+  
+  /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
+  ret = display_output(card, 0, 5, &display, 0, 15);
+
 }
