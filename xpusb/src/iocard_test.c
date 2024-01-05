@@ -78,8 +78,9 @@ void iocard_test(void)
   /* transform floating point dataref variable onto a binary 0/1 LED output */
   //ret = digital_outputf(device,card,15,parkbrake);
 
+  temp = 1;
+  ret = digital_output(device,card,11,&temp);
   temp = 88888;
-  //ret = digital_output(device,card,11,&temp);
   ret = mastercard_display(device,card,0,5,&temp,0);
   
   // mastercard 1, input board # 1 (0-35)

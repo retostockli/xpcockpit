@@ -69,7 +69,7 @@ void test(void)
   ret = analog_input(card,i,fvalue,0.0,10.0);
   if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-    //  printf("Analog Input %i changed to: %f \n",i,*fvalue);
+    printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
     //  }
    
@@ -85,15 +85,8 @@ void test(void)
   //ret = servo_output(card,0,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
-
-
-  for (i=0;i<sismo[card].noutputs;i++) {
-    if ((i>=0) && (i<=20)) {
-      ret = digital_output(card, i, &one);
-    } else {
-      ret = digital_output(card, i, &zero);
-    }
-  }
+  ret = digital_output(card, 0, &one);
+  //ret = digital_output(card, 0, &zero);
 
 
   /*
@@ -107,15 +100,9 @@ void test(void)
   }
   */
 
-  if (*fvalue != FLT_MISS) {
-    i = (int) *fvalue;
-    display = i + i*10 + i*100 + i*1000 + i*10000;
-  }
-
-  display = 123456;
+  display = 88888;
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  ret = display_output(card, 64+0+0, 6, &display, 1, 0);
-  ret = display_output(card, 64+0+8, 6, &display, 1, 0);
+  ret = display_output(card, 0, 5, &display, 0, 0);
 
 }
