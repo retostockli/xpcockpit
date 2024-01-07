@@ -96,7 +96,7 @@ void b737_awm(void)
     //float *config_warn = link_dataref_flt("laminar/B738/toggle_switch/bright_test",0);
  
     /* link integer data like a switch in the cockpit */
-    int *ap_disconnect = link_dataref_int("laminar/b738/fmodpack/fmod_ap_disconnect");
+    float *ap_disconnect = link_dataref_int("laminar/b738/fmodpack/fmod_ap_disconnect",0);
     int *belts = link_dataref_int("laminar/b738/fmodpack/play_seatbelt_no_smoke");
     float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
     float *mach_warn = link_dataref_flt("laminar/B738/fmod/mach_warn",0);
@@ -104,11 +104,11 @@ void b737_awm(void)
     float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
     
-    if (*ap_disconnect != INT_MISS) {
+    if (*ap_disconnect != FLT_MISS) {
 #ifdef PIGPIO
-      gpioWrite(AP_DISC_PIN, *ap_disconnect);
+      gpioWrite(AP_DISC_PIN, (int) *ap_disconnect);
 #else
-      digitalWrite(AP_DISC_PIN, *ap_disconnect);
+      digitalWrite(AP_DISC_PIN, (int) *ap_disconnect);
 #endif
     } else {
 #ifdef PIGPIO
