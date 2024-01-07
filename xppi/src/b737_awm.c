@@ -105,7 +105,6 @@ void b737_awm(void)
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
     
     if (*ap_disconnect != FLT_MISS) {
-      printf("%f %i \n",*ap_disconnect, (int) *ap_disconnect);
 #ifdef PIGPIO
       gpioWrite(AP_DISC_PIN, (int) *ap_disconnect);
 #else
