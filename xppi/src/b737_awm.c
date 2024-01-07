@@ -96,7 +96,7 @@ void b737_awm(void)
     //float *config_warn = link_dataref_flt("laminar/B738/toggle_switch/bright_test",0);
  
     /* link integer data like a switch in the cockpit */
-    float *ap_disconnect = link_dataref_int("laminar/b738/fmodpack/fmod_ap_disconnect",0);
+    float *ap_disconnect = link_dataref_flt("laminar/b738/fmodpack/fmod_ap_disconnect",0);
     int *belts = link_dataref_int("laminar/b738/fmodpack/play_seatbelt_no_smoke");
     float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
     float *mach_warn = link_dataref_flt("laminar/B738/fmod/mach_warn",0);
