@@ -772,7 +772,12 @@ int display_output(int card, int pos, int n, int *value, int dp, int brightness)
 
 	  if (*value != INT_MISS) {
 	    if ((brightness > 0) && (brightness <= 15)) {
-	      sismo[card].displays_brightness[pos+count] = brightness;
+	      for (count=0;count<n;count++) {
+		if (sismo[card].displays_brightness[pos+count] != brightness) {
+		  sismo[card].displays_brightness[pos+count] = brightness;
+		  sismo[card].displays_changed[pos+count] = CHANGED;
+		}
+	      }
 	    }
 	    if (brightness == 0) {
 	      /* blank all values in range */
