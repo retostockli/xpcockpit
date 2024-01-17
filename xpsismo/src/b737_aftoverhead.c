@@ -17,6 +17,7 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -167,14 +168,77 @@ void b737_aftoverhead(void)
     /* CLR Key Light */
     float *irs_clr = link_dataref_flt("laminar/B738/irs_clr_light",0);
     ret = digital_outputf(card,o0+7,irs_clr);
-    
-    display = 888888;
-    //display = 999999;
-    
-    /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-    ret = display_output(card, 0, 6, &display, 0, display_brightness);
-    ret = display_output(card, 8, 6, &display, 0, display_brightness);
 
-  }
+    char *irs_val;
+    if (*sys_disp == 0) {
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",100,-1);
+    } else {
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",100,-1);
+    }
+      
+    char substr[2];
+
+    if ((strncmp(irs_val,"N",1)==0) || (strncmp(irs_val,"S",1)==0)) {
+      /* VALID IRS ENTRY */
+      /* N/S Digits */
+      if (strncmp(irs_val,"N",1)==0) {
+	display = 16;
+      } else {
+	display = 8;
+      }
+      display += 7; /* Decimal Points */
+      ret = display_output(card,0,1,&display,-10,display_brightness);
+      for (i=1;i<5;i++) {
+	substr[0] = irs_val[i];
+	substr[1]='\0';
+	display = atoi(substr);
+	ret = display_output(card,i,1,&display,0,display_brightness);
+      }
+      substr[0] = irs_val[6];
+      substr[1]='\0';
+      display = atoi(substr);
+      ret = display_output(card,5,1,&display,0,display_brightness);
+
+      /* W/E Digits */
+      if (strncmp(irs_val+7,"E",1)==0) {
+	display = 16;
+      } else {
+	display = 8;
+      }
+      if (strncmp(irs_val+8,"1",1)==0) {
+	display += 1;
+      } else {
+	/* DO NOT PRINT LEADING 0 if W/E Degrees are less than 100 */
+      }
+      display += 6; /* Decimal Points */
+      ret = display_output(card,8,1,&display,-10,display_brightness);
+    
+      for (i=9;i<13;i++) {
+	substr[0] = irs_val[i];
+	substr[1]='\0';
+	display = atoi(substr);
+	ret = display_output(card,i,1,&display,0,display_brightness);
+      }
+      substr[0] = irs_val[14];
+      substr[1]='\0';
+      display = atoi(substr);
+      ret = display_output(card,14,1,&display,0,display_brightness);
+
+    } else {
+      /* BLANK DISPLAYS */
+      display = 0;
+      ret = display_output(card, 0, 16, &display, 0, 0);
+    }
+      
+      
+    /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
+    //ret = display_output(card, 0, 6, &display, 0, display_brightness);
+    //ret = display_output(card, 8, 6, &display, 0, display_brightness);
+
+    //    display = 64;
+    
+    //    ret = display_output(card,1,1,&display,-10,display_brightness);
+    
+    }
     
 }

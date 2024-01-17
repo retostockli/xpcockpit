@@ -32,6 +32,8 @@
 #define UNCHANGED 0          /* flag for unchanged input / output */
 #define CHANGED 1            /* flag for changed input / output. 
 				Can actually also be > 1 for e.g. analog inputs that change faster than xpsismo cycle */
+#define UNCHANGEDBINARY 2         /* flag for changed display, with value to be interpreted as binary data (0x00 - 0xff) */ 
+#define CHANGEDBINARY 3         /* flag for changed display, with value to be interpreted as binary data (0x00 - 0xff) */ 
 
 /* XPSERVER */
 //extern char xpserver_ip[30];

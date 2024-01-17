@@ -438,7 +438,19 @@ int write_sismo() {
 		/* Change Brightness if one display in the group does not have standard / maximum brightness */
 		sismoSendBuffer[13] = sismo[card].displays_brightness[display+group*8+firstdisplay];
 	      }
-	      set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
+	      if ((sismo[card].displays_changed[display+group*8+firstdisplay] == UNCHANGEDBINARY) ||
+		  (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGEDBINARY)) {
+		sismoSendBuffer[5+display] = sismo[card].displays[display+group*8+firstdisplay];
+	      } else {
+		set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
+	      }
+	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGEDBINARY) {
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %04x \n",card,bank,display+group*8,
+					sismo[card].displays[display+group*8+firstdisplay]);
+		anychanged = 1;
+		/* reset changed state since data will be sent to SISMO card */
+		sismo[card].displays_changed[display+group*8+firstdisplay] = UNCHANGEDBINARY;
+	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGED) {
 		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",card,bank,display+group*8,
 					sismo[card].displays[display+group*8+firstdisplay]);
@@ -755,6 +767,8 @@ int display_outputf(int card, int pos, int n, float *fvalue, int dp, int brightn
 /* be adjusted per display group of 8. Brightness will be adjusted according to the */
 /* brightness of the last display in the group. Blanking works per display (range) */
 /* addressed in this call */
+/* Set dp to -10 and n to 1 to send a binary value to a single 7 segment display, e.g. */
+/* to lighten individual segments. See SISMO manual */
 int display_output(int card, int pos, int n, int *value, int dp, int brightness)
 {
   int retval = 0;
@@ -775,7 +789,11 @@ int display_output(int card, int pos, int n, int *value, int dp, int brightness)
 	      for (count=0;count<n;count++) {
 		if (sismo[card].displays_brightness[pos+count] != brightness) {
 		  sismo[card].displays_brightness[pos+count] = brightness;
-		  sismo[card].displays_changed[pos+count] = CHANGED;
+		  if ((n==1) && (dp==-10)) {
+		    sismo[card].displays_changed[pos+count] = CHANGEDBINARY;
+		  } else {
+		    sismo[card].displays_changed[pos+count] = CHANGED;
+		  }
 		}
 	      }
 	    }
@@ -788,65 +806,74 @@ int display_output(int card, int pos, int n, int *value, int dp, int brightness)
 		}
 	      }
 	    } else {
-	      /* generate temporary storage of input value */
-	      tempval = *value;
-
-	      /* reverse negative numbers: find treatment for - sign */
-	      /* use first digit for negative sign */
-	      if (tempval < 0) {
-		tempval = -tempval;
-		negative = 1;
-	      } else {
-		negative = 0;
-	      }
-
-	      /* read individual digits from integer */
-	      /* blank leftmost 0 values except if it is the first one */ 
-	      count = 0;
-	      while ((tempval) && (count<n))
-		{
-		  single = tempval % 10;
-		  if (dp == count) single += 10;
-		  if (sismo[card].displays[pos+count] != single) {
-		    sismo[card].displays[pos+count] = single;
-		    sismo[card].displays_changed[pos+count] = CHANGED;
-		  }
-		  tempval /= 10;
-		  count++;
+	      if ((n==1) && (dp==-10)) {
+		/* Special Case for single digit driven by binary value 0x00-0xff */
+		if (sismo[card].displays[pos] != *value) {
+		  sismo[card].displays[pos] = *value;
+		  sismo[card].displays_changed[pos] = CHANGEDBINARY;
 		}
-	      while (count<n)
-		{
-		  if (negative) {
-		    if (count > dp) {
-		      single = -10;
-		      if (sismo[card].displays[pos+count] != single) {
-			sismo[card].displays[pos+count] = single;
-			sismo[card].displays_changed[pos+count] = CHANGED;
-		      }
-		      negative = 0;
+	      } else {
+		/* Regular Case with integer number distributed over n 7-segment displays */
+		/* generate temporary storage of input value */
+		tempval = *value;
+
+		/* reverse negative numbers: find treatment for - sign */
+		/* use first digit for negative sign */
+		if (tempval < 0) {
+		  tempval = -tempval;
+		  negative = 1;
+		} else {
+		  negative = 0;
+		}
+
+		/* read individual digits from integer */
+		/* blank leftmost 0 values except if it is the first one */ 
+		count = 0;
+		while ((tempval) && (count<n))
+		  {
+		    single = tempval % 10;
+		    if (dp == count) single += 10;
+		    if (sismo[card].displays[pos+count] != single) {
+		      sismo[card].displays[pos+count] = single;
+		      sismo[card].displays_changed[pos+count] = CHANGED;
 		    }
-		  } else {
-		    if ((count == 0) || (dp >= count)) {
-		      /* do not blank leftmost 0 display or if it has a decimal point */
-		      /* this allows to display for instance 0.04 */
-		      single = 0;
-		      if (dp == count) single += 10;
-		      if (sismo[card].displays[pos+count] != single) {
-			sismo[card].displays[pos+count] = single;
-			sismo[card].displays_changed[pos+count] = CHANGED;
+		    tempval /= 10;
+		    count++;
+		  }
+		while (count<n)
+		  {
+		    if (negative) {
+		      if (count > dp) {
+			single = -10;
+			if (sismo[card].displays[pos+count] != single) {
+			  sismo[card].displays[pos+count] = single;
+			  sismo[card].displays_changed[pos+count] = CHANGED;
+			}
+			negative = 0;
 		      }
 		    } else {
-		      /* blank all other displays in front of number */
-		      single = -1;
-		      if (sismo[card].displays[pos+count] != single) {
-			sismo[card].displays[pos+count] = single;
-			sismo[card].displays_changed[pos+count] = CHANGED;
+		      if ((count == 0) || (dp >= count)) {
+			/* do not blank leftmost 0 display or if it has a decimal point */
+			/* this allows to display for instance 0.04 */
+			single = 0;
+			if (dp == count) single += 10;
+			if (sismo[card].displays[pos+count] != single) {
+			  sismo[card].displays[pos+count] = single;
+			  sismo[card].displays_changed[pos+count] = CHANGED;
+			}
+		      } else {
+			/* blank all other displays in front of number */
+			single = -1;
+			if (sismo[card].displays[pos+count] != single) {
+			  sismo[card].displays[pos+count] = single;
+			  sismo[card].displays_changed[pos+count] = CHANGED;
+			}
 		      }
 		    }
+		    count++;
 		  }
-		  count++;
-		}
 
+	      } /* Regular multi-segment or binary display access */
 	    } /* do not blank, but print values */
 
 	  }
