@@ -58,7 +58,8 @@ void b737_aftoverhead(void)
   int i0;
   int o0;
   char datarefname[100];
-  int *datarefptr[nRows][nCols];
+  int *datarefptr[nRows][nCols];    
+  char substr[2];
 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
@@ -93,7 +94,7 @@ void b737_aftoverhead(void)
     display_brightness = (int) fvalue;
     if (ret == 1) {
       /* ret is 1 only if analog input has changed */
-      //printf("Analog Input %i changed to: %f %i \n",i,fvalue);
+      //printf("Analog Input %i changed to: %f \n",i,fvalue);
     }
 
     /* SYS DISPL Switch */
@@ -175,60 +176,132 @@ void b737_aftoverhead(void)
     } else {
       irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",100,-1);
     }
-      
-    char substr[2];
 
-    if ((strncmp(irs_val,"N",1)==0) || (strncmp(irs_val,"S",1)==0)) {
-      /* VALID IRS ENTRY */
-      /* N/S Digits */
-      if (strncmp(irs_val,"N",1)==0) {
-	display = 16;
-      } else {
-	display = 8;
-      }
-      display += 7; /* Decimal Points */
-      ret = display_output(card,0,1,&display,-10,display_brightness);
-      for (i=1;i<5;i++) {
-	substr[0] = irs_val[i];
-	substr[1]='\0';
-	display = atoi(substr);
-	ret = display_output(card,i,1,&display,0,display_brightness);
-      }
-      substr[0] = irs_val[6];
-      substr[1]='\0';
-      display = atoi(substr);
-      ret = display_output(card,5,1,&display,0,display_brightness);
+    float *irs_left1_show = link_dataref_flt("laminar/B738/irs_left1_show",0);
+    float *irs_left2_show = link_dataref_flt("laminar/B738/irs_left2_show",0);
+    float *irs_left1 = link_dataref_flt("laminar/B738/irs_left1",0);
+    float *irs_left2 = link_dataref_flt("laminar/B738/irs_left2",0);
+    float *irs_right1_show = link_dataref_flt("laminar/B738/irs_right1_show",0);
+    float *irs_right2_show = link_dataref_flt("laminar/B738/irs_right2_show",0);
+    float *irs_right1 = link_dataref_flt("laminar/B738/irs_right1",0);
+    float *irs_right2 = link_dataref_flt("laminar/B738/irs_right2",0);
 
-      /* W/E Digits */
-      if (strncmp(irs_val+7,"E",1)==0) {
-	display = 16;
-      } else {
-	display = 8;
-      }
-      if (strncmp(irs_val+8,"1",1)==0) {
-	display += 1;
-      } else {
-	/* DO NOT PRINT LEADING 0 if W/E Degrees are less than 100 */
-      }
-      display += 6; /* Decimal Points */
-      ret = display_output(card,8,1,&display,-10,display_brightness);
+    float *irs_entry_len = link_dataref_flt("laminar/B738/irs_entry_len",0);
+    float *irs_entry_pos_show = link_dataref_flt("laminar/B738/irs_entry_pos_show",0);
+    float *irs_entry = link_dataref_flt_arr("laminar/B738/irs_entry",11,-1,0);
     
-      for (i=9;i<13;i++) {
-	substr[0] = irs_val[i];
-	substr[1]='\0';
-	display = atoi(substr);
-	ret = display_output(card,i,1,&display,0,display_brightness);
+    /* Check IRS Display Mode */
+    if ((*irs_left1_show == 1.0) || (*irs_left2_show == 1.0) ||
+	(*irs_right1_show == 1.0) || (*irs_right2_show == 1.0)) {
+      /* IRS does not show Coordinates */
+      
+      if (*irs_left1_show == 1.0) {
+	if (*irs_left1 == 88.0) {
+	  display = 888;
+	  ret = display_output(card,0,3,&display,0,display_brightness);
+	} else {
+	}
+      } else {
+	display = 0;
+	ret = display_output(card,0,3,&display,0,0);
       }
-      substr[0] = irs_val[14];
-      substr[1]='\0';
-      display = atoi(substr);
-      ret = display_output(card,14,1,&display,0,display_brightness);
+	
+      if (*irs_left2_show == 1.0) {
+	temp = (int) *irs_left2;
+	display = temp/100;
+	ret = display_output(card,3,1,&display,0,display_brightness);
+	display = temp/10 - temp/100*10;
+	ret = display_output(card,4,1,&display,0,display_brightness);
+ 	display = temp - temp/10*10;
+	ret = display_output(card,5,1,&display,0,display_brightness);
+     } else {
+	display = 0;
+	ret = display_output(card,3,3,&display,0,0);
+      }
+	
+      if (*irs_right1_show == 1.0) {
+	if (*irs_right1 == 188.0) {
+	  display = 888;
+	  ret = display_output(card,8,3,&display,0,display_brightness);
+	} else {
+	}
+      } else {
+	display = 0;
+	ret = display_output(card,8,3,&display,0,0);
+      }
+	
+      if (*irs_right2_show == 1.0) {
+	temp = (int) *irs_right2;
+	display = temp/100;
+	ret = display_output(card,11,1,&display,0,display_brightness);
+	display = temp/10 - temp/100*10;
+	ret = display_output(card,12,1,&display,0,display_brightness);
+ 	display = temp - temp/10*10;
+	ret = display_output(card,13,1,&display,0,display_brightness);
+     } else {
+	display = 0;
+	ret = display_output(card,11,3,&display,0,0);
+      }
+	
+    } else if (*irs_entry_pos_show == 1.0) {
+      /* Show manually entered IRS coordinates */
 
     } else {
-      /* BLANK DISPLAYS */
-      display = 0;
-      ret = display_output(card, 0, 16, &display, 0, 0);
+      /* IRS shows coordinates */
+      if ((strncmp(irs_val,"N",1)==0) || (strncmp(irs_val,"S",1)==0)) {
+	/* VALID IRS ENTRY */
+
+	/* N/S Digits */
+	if (strncmp(irs_val,"N",1)==0) {
+	  display = 16;
+	} else {
+	  display = 8;
+	}
+	display += 7; /* Decimal Points */
+	ret = display_output(card,0,1,&display,-10,display_brightness);
+	for (i=1;i<5;i++) {
+	  substr[0] = irs_val[i];
+	  substr[1]='\0';
+	  display = atoi(substr);
+	  ret = display_output(card,i,1,&display,0,display_brightness);
+	}
+	substr[0] = irs_val[6];
+	substr[1]='\0';
+	display = atoi(substr);
+	ret = display_output(card,5,1,&display,0,display_brightness);
+    
+	/* W/E Digits */
+	if (strncmp(irs_val+7,"E",1)==0) {
+	  display = 16;
+	} else {
+	  display = 8;
+	}
+	if (strncmp(irs_val+8,"1",1)==0) {
+	  display += 1;
+	} else {
+	  /* DO NOT PRINT LEADING 0 if W/E Degrees are less than 100 */
+	}
+	display += 6; /* Decimal Points */
+	ret = display_output(card,8,1,&display,-10,display_brightness);
+    
+	for (i=9;i<13;i++) {
+	  substr[0] = irs_val[i];
+	  substr[1]='\0';
+	  display = atoi(substr);
+	  ret = display_output(card,i,1,&display,0,display_brightness);
+	}
+	substr[0] = irs_val[14];
+	substr[1]='\0';
+	display = atoi(substr);
+	ret = display_output(card,14,1,&display,0,display_brightness);
+
+      } else {
+	/* blank IRS display if no coordinates */
+	display = 0;
+	ret = display_output(card,0,14,&display,0,0);
+      }
     }
+
       
       
     /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
