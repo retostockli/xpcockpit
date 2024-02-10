@@ -331,42 +331,43 @@ void b737_mcp(void)
   /* AT ARM SWITCH */
   /* only change at_arm if switch has changed */
   /* safe algorithm for solenoid relais */
-  if ((ap_at_arm_status_save != 0.0) && (ap_at_arm_status_save != 1.0)) ap_at_arm_status_save = 0.0;
-  ret = digital_inputf(card,3,&ap_at_arm_status_save,0);
-  if (ret==1) {
-    //printf("%f %i \n",*ap_at_arm_status,*ap_at_arm);
-    if ((acf_type == 2) || (acf_type == 3)) {
-      *ap_at_arm = 0;
-      if ((*ap_at_arm_status == 0.0) && (ap_at_arm_status_save == 1.0)) {
-	*ap_at_arm = 1;
-	printf("ARMING AT\n");
-      }
-      if ((*ap_at_arm_status == 1.0) && (ap_at_arm_status_save == 0.0)) {
-	*ap_at_arm = 1;
-	printf("DISARMING AT\n");
+  if (interval_counter == 0) {
+    ret = digital_inputf(card,3,&ap_at_arm_status_save,0);
+    if (ret==1) {
+      //printf("%f %i \n",*ap_at_arm_status,*ap_at_arm);
+      if ((acf_type == 2) || (acf_type == 3)) {
+	*ap_at_arm = 0;
+	if ((*ap_at_arm_status == 0.0) && (ap_at_arm_status_save == 1.0)) {
+	  *ap_at_arm = 1;
+	  printf("ARMING AT\n");
+	}
+	if ((*ap_at_arm_status == 1.0) && (ap_at_arm_status_save == 0.0)) {
+	  *ap_at_arm = 1;
+	  printf("DISARMING AT\n");
+	}
+      } else {
+	//printf("%f \n",ap_at_arm_status_save);
+	//*ap_at_arm_status = ap_at_arm_status_save;
       }
     } else {
-      //printf("%f \n",ap_at_arm_status_save);
-      //*ap_at_arm_status = ap_at_arm_status_save;
-    }
-  } else {
-    //printf("%f %i \n",*ap_at_arm_status,ap_at_arm_status_save);
-    /* trigger AT solenoid to disarm AT if software AT status changes to off 
-       and if switch is still in on position (temp==1).
-       Only trigger after command has been executed, means
-       that after *ap_at_arm is back to 0 */
-    if ((acf_type == 2) || (acf_type == 3)) {
-      if ((*ap_at_arm_status == 0.0) && (ap_at_arm_status_save == 1.0) && (*ap_at_arm == 0)) {
-	printf("AT was Disarmed by X-Plane\n");
-	ret = digital_output(card, 21, &one);
+      //printf("%f %i \n",*ap_at_arm_status,ap_at_arm_status_save);
+      /* trigger AT solenoid to disarm AT if software AT status changes to off 
+	 and if switch is still in on position (temp==1).
+	 Only trigger after command has been executed, means
+	 that after *ap_at_arm is back to 0 */
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if ((*ap_at_arm_status == 0.0) && (ap_at_arm_status_save == 1.0) && (*ap_at_arm == 0)) {
+	  printf("AT was Disarmed by X-Plane\n");
+	  ret = digital_output(card, 21, &one);
+	} else {
+	  ret = digital_output(card, 21, &zero);
+	}
       } else {
+	if (*ap_at_arm == 1) {
+	  ret = digital_output(card, 21, &one);
+	} else {
 	ret = digital_output(card, 21, &zero);
-      }
-    } else {
-      if (*ap_at_arm == 1) {
-	ret = digital_output(card, 21, &one);
-      } else {
-	ret = digital_output(card, 21, &zero);
+	}
       }
     }
   }
