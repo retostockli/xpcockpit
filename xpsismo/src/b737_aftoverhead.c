@@ -81,10 +81,16 @@ void b737_aftoverhead(void)
   //ret = digital_output(card,o0+X,avionics_on);
 
 
+  int one=1;
+  for (i=0;i<32;i++) {
+    ret = digital_output(card,i,&one);
+  }
+      
+
 
   /*** IRS DISPLAY PANEL ***/
-  i0 = 0;
-  o0 = 0;
+  i0 = 40;
+  o0 = 24;
  
   if ((acf_type == 2) || (acf_type == 3)) {
     
@@ -301,8 +307,6 @@ void b737_aftoverhead(void)
 	ret = display_output(card,0,14,&display,0,0);
       }
     }
-
-      
       
     /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
     //ret = display_output(card, 0, 6, &display, 0, display_brightness);
