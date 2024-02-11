@@ -44,11 +44,11 @@
    9: HAT Right
    10: HAT Pushbutton
 
-   16: MIC F/O
-   17: INT MIC F/O
-
-   
+   16: INT MIC F/O
+   17: MIC F/O
 */
+
+int view_is_copilot;
 
 
 void b737_yokerudder(void)
@@ -69,6 +69,8 @@ void b737_yokerudder(void)
   float value1,value2;
   int ret1,ret2;
 
+  if ((view_is_copilot != 0) && (view_is_copilot != 1)) view_is_copilot = 0;
+  
   float* left_brake;
   float* right_brake;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -86,6 +88,8 @@ void b737_yokerudder(void)
   
   int* viewmode = link_dataref_int("xpserver/viewmode");
 
+  float *pilot_position = link_dataref_flt("sim/graphics/view/pilots_head_x",-2);
+  
   int* forward_with_nothing = link_dataref_cmd_once("sim/view/forward_with_nothing");
   int* forward_with_panel = link_dataref_cmd_once("sim/view/forward_with_panel");
   int* circle = link_dataref_cmd_once("sim/view/circle");
@@ -179,8 +183,10 @@ void b737_yokerudder(void)
   }
  
   /* INT MIC button on Yoke resets view to default */
+  /* CAPTAIN */
   ret = digital_input(device,card,2,&button,0);
   if ((ret == 1) && (button == 1)) {
+    view_is_copilot = 0;
     *viewmode=0;
     *view_horizontal=0.0;
     *view_vertical=0.0;
@@ -189,9 +195,10 @@ void b737_yokerudder(void)
     *circle=0;
     *free_camera=0;
   }
-  
+  /* COPILOT */
   ret = digital_input(device,card,16,&button,0);
   if ((ret == 1) && (button == 1)) {
+    view_is_copilot = 1;
     *viewmode=0;
     *view_horizontal=0.0;
     *view_vertical=0.0;
@@ -201,7 +208,12 @@ void b737_yokerudder(void)
     *free_camera=0;
   }
   
-
+  if (view_is_copilot == 0) {
+    *pilot_position = -0.4;
+  } else {
+    *pilot_position = 0.4;
+  }
+  
   ret = digital_input(device,card,10,&button,0);
   if ((ret == 1) && (button == 1)) {
     *viewmode=*viewmode + 1;
