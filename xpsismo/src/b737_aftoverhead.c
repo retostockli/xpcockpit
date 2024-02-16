@@ -80,9 +80,20 @@ void b737_aftoverhead(void)
   //o0 = 0;
   //ret = digital_output(card,o0+X,avionics_on);
 
+  float servoval = 1.5;
+  ret = servo_outputf(card,0,&servoval, 0.0,1.0);
 
-  int one=1;
+  int one=0;
   for (i=0;i<32;i++) {
+    ret = digital_output(card,i,&one);
+  }
+      
+  for (i=32;i<64;i++) {
+    ret = digital_output(card,i,&one);
+  }
+
+  one = 0;
+  for (i=64;i<96;i++) {
     ret = digital_output(card,i,&one);
   }
       
