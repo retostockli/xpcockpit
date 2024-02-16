@@ -62,7 +62,7 @@ monitor/1/m_y_res_full 1080
 monitor/1/m_is_fullscreen wmgr_mode_fullscreen
 monitor/1/m_usage wmgr_usage_normal_visuals
 monitor/1/proj/window_2d_off 1
-monitor/1/proj/diff_FOV 1
+monitor/1/proj/diff_FOV 0
 monitor/1/proj/FOVx_renopt 77.606139
 monitor/1/proj/FOVy_renopt 48.675548
 monitor/1/proj/os_x_rat 0.000000
@@ -106,7 +106,7 @@ monitor/2/m_y_res_full 1080
 monitor/2/m_is_fullscreen wmgr_mode_fullscreen
 monitor/2/m_usage wmgr_usage_normal_visuals
 monitor/2/proj/window_2d_off 1
-monitor/2/proj/diff_FOV 1
+monitor/2/proj/diff_FOV 0
 monitor/2/proj/FOVx_renopt 77.606139
 monitor/2/proj/FOVy_renopt 48.675548
 monitor/2/proj/os_x_rat 0.000000
@@ -150,13 +150,13 @@ monitor/3/m_y_res_full 1080
 monitor/3/m_is_fullscreen wmgr_mode_fullscreen
 monitor/3/m_usage wmgr_usage_normal_visuals
 monitor/3/proj/window_2d_off 1
-monitor/3/proj/diff_FOV 1
+monitor/3/proj/diff_FOV 0
 monitor/3/proj/FOVx_renopt 77.606139
 monitor/3/proj/FOVy_renopt 48.675548
 monitor/3/proj/os_x_rat 0.000000
 monitor/3/proj/os_y_rat 0.000000
 monitor/3/proj/off_vrt_deg 0.000000
-monitor/3/proj/off_lat_deg 67.900000
+monitor/3/proj/off_lat_deg 68.300000
 monitor/3/proj/off_phi_deg 0.000000
 monitor/3/proj/grid_os_on_test 0
 monitor/3/proj/grid_os_on_render 0

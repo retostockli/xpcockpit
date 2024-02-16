@@ -21,13 +21,13 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 3
+setting = 1
 
 # Plot Warping grid for Checking
 doplot = False
 
 # Utilize new X-Plane >= 12.08 Window Position File Format
-newformat = True
+newformat = False
 
 # Projector and Screen Dimensions [cm]
 # Please see projector_setup.pdf
@@ -64,9 +64,9 @@ if setting == 1:
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,68.3]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top =  [  0.0,   0.0, 279.0, 282.0]
@@ -85,9 +85,9 @@ elif setting == 2:
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,68.3]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
@@ -106,9 +106,9 @@ elif setting == 3:
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,68.3]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
@@ -123,12 +123,12 @@ elif setting == 4:
     # None (use this for X-Plane when using warpblend with NVIDIA directly)
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
-    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
-#    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
+#    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
+    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,68.3]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
