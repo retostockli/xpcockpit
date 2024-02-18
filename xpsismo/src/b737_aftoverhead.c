@@ -42,6 +42,30 @@ float disp_sel;
 float elt;
 float irs_l;
 float irs_r;
+float pass_oxy;
+
+int acp3_micsel_vhf1;
+int acp3_micsel_vhf2;
+int acp3_micsel_vhf3;
+int acp3_micsel_hf1;
+int acp3_micsel_hf2;
+int acp3_micsel_flt;
+int acp3_micsel_svc;
+int acp3_micsel_pa;
+int acp3_rt_ic;
+int acp3_mask_boom;
+int acp3_sel_v;
+int acp3_sel_b;
+int acp3_sel_r;
+int acp3_sel_vbr;
+int acp3_alt_norm;
+
+float acp3_vol_vhf1;
+float acp3_vol_vhf2;
+float acp3_vol_pa;
+float acp3_vol_mkr;
+float acp3_vol_spkr;
+
 
 /* 3D array with 3 Columns x 4 Rows x 4 Chars */
 const char zibo[nRows][nCols][5] = {{"_1","_2","_3"},{"_4","_5","_6"},{"_7","_8","_9"},{"_ent","_0","_clr"}};
@@ -61,6 +85,7 @@ void b737_aftoverhead(void)
   int outvalue;
   int i0;
   int o0;
+  int a0;
   char datarefname[100];
   int *datarefptr[nRows][nCols];    
   char substr[2];
@@ -81,20 +106,13 @@ void b737_aftoverhead(void)
   if (*avionics_on != 1) display_brightness = 0;
 
   /* turn off background lighting if avionics are off */
-  //o0 = 0;
-  //ret = digital_output(card,o0+X,avionics_on);
+  ret = digital_output(card,40,avionics_on);
+  ret = digital_output(card,41,avionics_on);
 
-  float servoval = 0.5;
-  ret = servo_outputf(card,0,&servoval, 0.0,1.0);
 
-  /*** CENTER SWITCHES ***/
+  /*** CENTER SWITCHES (DOME WHITE DIRECTLY WIRED TO DIGITAL RELAY ***/
   i0=40;
   int *service_interphone = link_dataref_int("xpserver/service_interphone");
-  int *dome_white = link_dataref_int("xpserver/dome_white");
-  int *dome_white_dim = link_dataref_int("xpserver/dome_white_dim");
-
-  ret = digital_input(card, i0+0, dome_white_dim, 0);
-  ret = digital_input(card, i0+1, dome_white, 0);
   ret = digital_input(card, i0+2, service_interphone, 0);
 
   
@@ -493,15 +511,242 @@ void b737_aftoverhead(void)
 	ret = display_output(card,0,14,&display,0,0);
       }
     }
-      
-    /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-    //ret = display_output(card, 0, 6, &display, 0, display_brightness);
-    //ret = display_output(card, 8, 6, &display, 0, display_brightness);
+  }
 
-    //    display = 64;
-    
-    //    ret = display_output(card,1,1,&display,-10,display_brightness);
-    
+  /*** AUDIO CONTROL PANEL (Observer, Nr. 3) ***/
+  i0 = 48;
+  o0 = 32;
+  a0 = 0;
+
+  /* MIC Selectors */
+  ret = digital_input(card,i0+0,&acp3_micsel_vhf1,1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR VHF1: %i \n",acp3_micsel_vhf1);
+    if (acp3_micsel_vhf1 == 1) {
+      //acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
     }
+  }    
+  ret = digital_output(card,o0+0,&acp3_micsel_vhf1);
+
+  ret = digital_input(card,i0+1,&acp3_micsel_vhf2,1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR VHF2: %i \n",acp3_micsel_vhf2);
+    if (acp3_micsel_vhf2 == 1) {
+      acp3_micsel_vhf1 = 0;
+      //acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(card,o0+1,&acp3_micsel_vhf2);
+  
+  ret = digital_input(card,i0+2,&acp3_micsel_vhf3,1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR VHF3: %i \n",acp3_micsel_vhf3);
+    if (acp3_micsel_vhf3 == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      //acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(card,o0+2,&acp3_micsel_vhf3);
+  
+  ret = digital_input(card,i0+3,&acp3_micsel_hf1,1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR HF1: %i \n",acp3_micsel_hf1);
+    if (acp3_micsel_hf1 == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      //acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(card,o0+3,&acp3_micsel_hf1);
+  
+  ret = digital_input(card,i0+4,&acp3_micsel_hf2,1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR HF2: %i \n",acp3_micsel_hf2);
+    if (acp3_micsel_hf2 == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      //acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(card,o0+4,&acp3_micsel_hf2);
+  
+  ret = digital_input(card,i0+5,&acp3_micsel_flt,1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR FLT: %i \n",acp3_micsel_flt);
+    if (acp3_micsel_flt == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      //acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(card,o0+5,&acp3_micsel_flt);
+  
+  ret = digital_input(card,i0+6,&acp3_micsel_svc,1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR SVC: %i \n",acp3_micsel_svc);
+    if (acp3_micsel_svc == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      //acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(card,o0+6,&acp3_micsel_svc);
+  
+  ret = digital_input(card,i0+7,&acp3_micsel_pa,1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR PA: %i \n",acp3_micsel_pa);
+    if (acp3_micsel_pa == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      //acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(card,o0+7,&acp3_micsel_pa);
+
+  /* Other Switches */
+  ret = digital_input(card,i0+8,&acp3_rt_ic,0);
+  if (ret == 1) {
+    printf("ACP3 R/T I/C Switch: %i \n",acp3_rt_ic);
+  }    
+
+  ret = digital_input(card,i0+9,&acp3_mask_boom,0);
+  if (ret == 1) {
+    printf("ACP3 MASK/BOOM Switch: %i \n",acp3_mask_boom);
+  }    
+  
+  ret = digital_input(card,i0+10,&acp3_sel_v,0);
+  if (ret == 1) {
+    printf("ACP3 VBR Selector V: %i \n",acp3_sel_v);
+  }    
+  
+  ret = digital_input(card,i0+11,&acp3_sel_b,0);
+  if (ret == 1) {
+    printf("ACP3 VBR Selector B: %i \n",acp3_sel_b);
+  }    
+  ret = digital_input(card,i0+12,&acp3_sel_r,0);
+  if (ret == 1) {
+    printf("ACP3 VBR Selector R: %i \n",acp3_sel_r);
+  }
+
+  acp3_sel_vbr = acp3_sel_v + acp3_sel_b*2 + acp3_sel_r*3;
+  
+  ret = digital_input(card,i0+13,&acp3_alt_norm,0);
+  if (ret == 1) {
+    printf("ACP3 ALT / NORM Switch: %i \n",acp3_alt_norm);
+  }
+
+  /* Audio Volume Potentiometers */
+  ret = analog_input(card,a0+0,&acp3_vol_vhf1,0.0,1.0);
+  if (ret == 1) {
+    //  printf("ACP3 Volume VHF1: %f \n",acp3_vol_vhf1);
+  }
+  ret = analog_input(card,a0+1,&acp3_vol_vhf2,0.0,1.0);
+  if (ret == 1) {
+    //  printf("ACP3 Volume VHF2: %f \n",acp3_vol_vhf2);
+  }
+  ret = analog_input(card,a0+2,&acp3_vol_pa,0.0,1.0);
+  if (ret == 1) {
+    //  printf("ACP3 Volume PA: %f \n",acp3_vol_pa);
+  }
+  ret = analog_input(card,a0+3,&acp3_vol_spkr,0.0,1.0);
+  if (ret == 1) {
+    //  printf("ACP3 Volume SPKR: %f \n",acp3_vol_spkr);
+  }
+
+  /*** ENGINE / EEC Panel ***/
+  if ((acf_type == 2) || (acf_type == 3)) {
+    /* Switches: 4/5 */
+    /* ANNs: */
+    i0=4;
+    o0=0;
+    ret = digital_output(card,o0+0,&one);
+
+  }
+
+  /*** CREW OXYGEN Panel ***/
+  if ((acf_type == 2) || (acf_type == 3)) {
+    i0=32;
+    o0=16;
+    float *pass_oxy_status = link_dataref_flt("laminar/B738/one_way_switch/pax_oxy_pos",0);
+    int *pass_oxy_norm = link_dataref_cmd_once("laminar/B738/one_way_switch/pax_oxy_norm");
+    int *pass_oxy_on = link_dataref_cmd_once("laminar/B738/one_way_switch/pax_oxy_on");
+    ret = digital_inputf(card, i0+0, &pass_oxy, 0);
+    ret = set_state_updnf(&pass_oxy, pass_oxy_status, pass_oxy_on, pass_oxy_norm);
+
+    float *pass_oxy_ann = link_dataref_flt("laminar/B738/annunciator/pax_oxy",-2);
+    ret = digital_outputf(card,o0+3,pass_oxy_ann);
+
+    float servoval = 1.0;
+    ret = servo_outputf(card,0,&servoval, 0.0,1.0);
+  }
+
+  /*** FLIGHT RECORDER & STALL WARNING Panel ***/
+  if ((acf_type == 2) || (acf_type == 3)) {
+    i0=33;
+    o0=16;
+    int *mach_warn1 = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn1_test");
+    int *mach_warn2 = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn2_test");
+    int *stall_warn1 = link_dataref_cmd_hold("laminar/B738/push_button/stall_test1_press");
+    int *stall_warn2 = link_dataref_cmd_hold("laminar/B738/push_button/stall_test2_press");
+
+    ret = digital_input(card, i0+0, mach_warn2, 0);
+    ret = digital_input(card, i0+1, mach_warn1, 0);
+    ret = digital_input(card, i0+3, stall_warn2, 0);
+    ret = digital_input(card, i0+4, stall_warn1, 0);
+
+    /* NOT YET IMPLEMENTED IN ZIBO 737 */
+    //ret = digital_input(card, i0+2, flight_recorder, 0);
+    ret = digital_outputf(card,o0+4,lights_test);
+
+    float *stall_test1 = link_dataref_flt("laminar/B738/push_button/stall_test1",0);
+    float *stall_test2 = link_dataref_flt("laminar/B738/push_button/stall_test2",0);
+    ret = digital_outputf(card, 56, stall_test1);
+    ret = digital_outputf(card, 57, stall_test2);
     
+  }
+
 }
