@@ -85,7 +85,7 @@ void test(void)
   //ret = servo_output(card,0,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
-  ret = digital_output(card, 0, &one);
+  ret = digital_output(card, 32, &one);
   //ret = digital_output(card, 0, &zero);
 
 

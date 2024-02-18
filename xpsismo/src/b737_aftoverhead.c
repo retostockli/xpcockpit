@@ -39,6 +39,9 @@ int col;
 int counter;
 int keyvalue[nRows][nCols];
 float disp_sel;
+float elt;
+float irs_l;
+float irs_r;
 
 /* 3D array with 3 Columns x 4 Rows x 4 Chars */
 const char zibo[nRows][nCols][5] = {{"_1","_2","_3"},{"_4","_5","_6"},{"_7","_8","_9"},{"_ent","_0","_clr"}};
@@ -48,6 +51,7 @@ void b737_aftoverhead(void)
   int card = 4; /* SISMO card according to ini file */
 
   int zero = 0;
+  int one = 1;
   int ret;
   int temp;
   float fvalue;
@@ -80,33 +84,204 @@ void b737_aftoverhead(void)
   //o0 = 0;
   //ret = digital_output(card,o0+X,avionics_on);
 
-  float servoval = 1.5;
+  float servoval = 0.5;
   ret = servo_outputf(card,0,&servoval, 0.0,1.0);
 
-  int one=0;
-  for (i=0;i<32;i++) {
-    ret = digital_output(card,i,&one);
+  /*** CENTER SWITCHES ***/
+  i0=40;
+  int *service_interphone = link_dataref_int("xpserver/service_interphone");
+  int *dome_white = link_dataref_int("xpserver/dome_white");
+  int *dome_white_dim = link_dataref_int("xpserver/dome_white_dim");
+
+  ret = digital_input(card, i0+0, dome_white_dim, 0);
+  ret = digital_input(card, i0+1, dome_white, 0);
+  ret = digital_input(card, i0+2, service_interphone, 0);
+
+  
+  /*** PSEU & GEAR ANNUNCIATORS ***/
+  if ((acf_type == 2) || (acf_type == 3)) {
+    o0 = 16;
+    ret = digital_outputf(card,o0+1,lights_test);
+
+    float *nose_gear= link_dataref_flt("laminar/B738/annunciator/nose_gear_safe",-1);
+    float *left_gear = link_dataref_flt("laminar/B738/annunciator/left_gear_safe",-1);
+    float *right_gear = link_dataref_flt("laminar/B738/annunciator/right_gear_safe",-1);
+    
+    ret = digital_outputf(card,o0+5,nose_gear);
+    ret = digital_outputf(card,o0+6,left_gear);
+    ret = digital_outputf(card,o0+7,right_gear);  
   }
-      
-  for (i=32;i<64;i++) {
-    ret = digital_output(card,i,&one);
+    
+
+  /*** ELT PANEL ***/
+  if ((acf_type == 2) || (acf_type == 3)) {
+    i0 = 44;
+    o0 = 18;
+    float *elt_status = link_dataref_flt("laminar/B738/toggle_switch/elt",0);
+    int *elt_off = link_dataref_cmd_once("laminar/B738/toggle_switch/elt_arm");
+    int *elt_on = link_dataref_cmd_once("laminar/B738/toggle_switch/elt_on");
+    ret = digital_inputf(card, i0+0, &elt, 0);
+    ret = set_state_updnf(&elt, elt_status, elt_on, elt_off);
+    
+    float *elt_ann = link_dataref_flt("laminar/B738/annunciator/elt",-2);
+    ret = digital_outputf(card,o0,elt_ann);
   }
 
-  one = 0;
-  for (i=64;i<96;i++) {
-    ret = digital_output(card,i,&one);
-  }
-      
+  /*** FLAPS PANEL ***/
+  if ((acf_type == 2) || (acf_type == 3)) {
+    i0 = 43;
+    o0 = 64;
+    int *flaps_test =  link_dataref_cmd_hold("laminar/B738/push_button/flaps_test");
+    ret = digital_input(card, i0+0, flaps_test, 0);
 
+    float *flaps_test_ann = link_dataref_flt("laminar/B738/annunciator/flaps_test",-2);
+    if (*flaps_test_ann > 0.05) {
+      for (i=0;i<32;i++) {
+ 	ret = digital_output(card,o0+i,&one);
+      }
+    } else {
+      float *slats_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-2);
+      float *slats_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-2);
+      float *slats1 = link_dataref_flt("laminar/B738/controls/slat1_deploy_ratio",-3);
+      float *slats2 = link_dataref_flt("laminar/B738/controls/slat2_deploy_ratio",-3);
+
+      /* SLATS ANNUNCIATORS */
+      if (*slats_transit > 0.05) {
+	ret = digital_output(card,o0+0,&one);
+	ret = digital_output(card,o0+1,&one);
+	ret = digital_output(card,o0+2,&one);
+	ret = digital_output(card,o0+16,&one);
+	ret = digital_output(card,o0+17,&one);
+	ret = digital_output(card,o0+18,&one);
+      } else {
+	ret = digital_output(card,o0+0,&zero);
+	ret = digital_output(card,o0+1,&zero);
+	ret = digital_output(card,o0+2,&zero);
+	ret = digital_output(card,o0+16,&zero);
+	ret = digital_output(card,o0+17,&zero);
+	ret = digital_output(card,o0+18,&zero);
+      }
+	
+      if (*slats2 == 0.5) {
+	ret = digital_output(card,o0+5,&one);
+	ret = digital_output(card,o0+6,&one);
+	ret = digital_output(card,o0+7,&one);
+	ret = digital_output(card,o0+21,&one);
+	ret = digital_output(card,o0+22,&one);
+	ret = digital_output(card,o0+23,&one);
+      } else {
+	ret = digital_output(card,o0+5,&zero);
+	ret = digital_output(card,o0+6,&zero);
+	ret = digital_output(card,o0+7,&zero);
+	ret = digital_output(card,o0+21,&zero);
+	ret = digital_output(card,o0+22,&zero);
+	ret = digital_output(card,o0+23,&zero);
+      }
+      
+      if (*slats2 == 1.0) {
+	ret = digital_output(card,o0+8,&one);
+	ret = digital_output(card,o0+9,&one);
+	ret = digital_output(card,o0+10,&one);
+	ret = digital_output(card,o0+24,&one);
+	ret = digital_output(card,o0+25,&one);
+	ret = digital_output(card,o0+26,&one);
+      } else {
+	ret = digital_output(card,o0+8,&zero);
+	ret = digital_output(card,o0+9,&zero);
+	ret = digital_output(card,o0+10,&zero);
+	ret = digital_output(card,o0+24,&zero);
+	ret = digital_output(card,o0+25,&zero);
+	ret = digital_output(card,o0+26,&zero);
+      }
+
+      /* FLAPS ANNUNCIATORS */
+      if ((*slats1 > 0.0) && (*slats1 < 1.0)) {
+	ret = digital_output(card,o0+3,&one);
+	ret = digital_output(card,o0+4,&one);
+	ret = digital_output(card,o0+19,&one);
+	ret = digital_output(card,o0+20,&one);
+      } else {
+	ret = digital_output(card,o0+3,&zero);
+	ret = digital_output(card,o0+4,&zero);
+	ret = digital_output(card,o0+19,&zero);
+	ret = digital_output(card,o0+20,&zero);
+      }
+      if (*slats1 == 1.0) {
+	ret = digital_output(card,o0+11,&one);
+	ret = digital_output(card,o0+12,&one);
+	ret = digital_output(card,o0+27,&one);
+	ret = digital_output(card,o0+28,&one);
+      } else {
+	ret = digital_output(card,o0+11,&zero);
+	ret = digital_output(card,o0+12,&zero);
+	ret = digital_output(card,o0+27,&zero);
+	ret = digital_output(card,o0+28,&zero);
+      }
+    }
+    
+
+  }
+
+  /*** IRS Selector PANEL ***/
+  if ((acf_type == 5) || (acf_type == 5)) {
+    i0 = 24;
+    o0 = 8;
+    float *irs_l_status = link_dataref_flt("laminar/B738/toggle_switch/irs_left",0);
+    int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left");
+    int *irs_l_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_right");
+
+    ret = digital_input(card, i0+0, &temp, 0);
+    if (temp == 1) irs_l = 0.0;
+    ret = digital_input(card, i0+1, &temp, 0);
+    if (temp == 1) irs_l = 1.0;
+    ret = digital_input(card, i0+2, &temp, 0);
+    if (temp == 1) irs_l = 2.0;
+    ret = digital_input(card, i0+3, &temp, 0);
+    if (temp == 1) irs_l = 3.0;
+    ret = set_state_updnf(&irs_l, irs_l_status, irs_l_right, irs_l_left);
+
+    float *irs_r_status = link_dataref_flt("laminar/B738/toggle_switch/irs_right",0);
+    int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left");
+    int *irs_r_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_right");
+
+    ret = digital_input(card, i0+4, &temp, 0);
+    if (temp == 1) irs_r = 0.0;
+    ret = digital_input(card, i0+5, &temp, 0);
+    if (temp == 1) irs_r = 1.0;
+    ret = digital_input(card, i0+6, &temp, 0);
+    if (temp == 1) irs_r = 2.0;
+    ret = digital_input(card, i0+7, &temp, 0);
+    if (temp == 1) irs_r = 3.0;
+    ret = set_state_updnf(&irs_r, irs_r_status, irs_r_right, irs_r_left);
+    
+    float *align_left = link_dataref_flt("laminar/B738/annunciator/irs_align_left",-2);
+    float *align_right = link_dataref_flt("laminar/B738/annunciator/irs_align_right",-2);
+    float *fail_left = link_dataref_flt("laminar/B738/annunciator/irs_align_fail_left",-2);
+    float *fail_right = link_dataref_flt("laminar/B738/annunciator/irs_align_fail_right",-2);
+    float *on_dc_left = link_dataref_flt("laminar/B738/annunciator/irs_on_dc_left",-2);
+    float *on_dc_right = link_dataref_flt("laminar/B738/annunciator/irs_on_dc_right",-2);
+    float *dc_fail_left = link_dataref_flt("laminar/B738/annunciator/irs_dc_fail_left",-2);
+    float *dc_fail_right = link_dataref_flt("laminar/B738/annunciator/irs_dc_fail_right",-2);
+    float *gps = link_dataref_flt("laminar/B738/annunciator/gps",-2);
+
+    ret = digital_outputf(card,o0+0,align_left);
+    ret = digital_outputf(card,o0+1,fail_left);
+    ret = digital_outputf(card,o0+2,on_dc_left);
+    ret = digital_outputf(card,o0+3,dc_fail_left);
+    ret = digital_outputf(card,o0+4,align_right);
+    ret = digital_outputf(card,o0+5,fail_right);
+    ret = digital_outputf(card,o0+6,on_dc_right);
+    ret = digital_outputf(card,o0+7,dc_fail_right);
+    ret = digital_outputf(card,o0+8,gps);
+  }
 
   /*** IRS DISPLAY PANEL ***/
-  i0 = 40;
-  o0 = 24;
+  if ((acf_type == 4) || (acf_type == 5)) {
+    i0 = 8;
+    o0 = 32+24;
  
-  if ((acf_type == 2) || (acf_type == 3)) {
-    
     /* BRT Potentiometer driving 7 segment brightness */
-    i=1;
+    i=4;
     ret = analog_input(card,i,&fvalue,5.0,15.0);
     display_brightness = (int) fvalue;
     if (ret == 1) {

@@ -276,7 +276,7 @@ int read_sismo() {
 	    /* update number of history values per input bank */
 	    if (sismo[card].inputs_nsave[bank] < MAXSAVE) {
 	      sismo[card].inputs_nsave[bank] += 1;
-	      if (verbose > 2) printf("Card %i Input Bank %i # of History Values %i \n",
+	      if (verbose > 3) printf("Card %i Input Bank %i # of History Values %i \n",
 				      card,bank,sismo[card].inputs_nsave[bank]);
 	    } else {
 	      if (verbose > 2) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
@@ -388,7 +388,7 @@ int write_sismo() {
 	    set_bit(&sismoSendBuffer[4+output/8],output%8,sismo[card].outputs[output+firstoutput]);
 	    if (sismo[card].outputs_changed[output+firstoutput] == CHANGED) {
 	      if (verbose > 2) printf("Card %i Output %i changed to: %i \n",
-				      card,output,sismo[card].outputs[output+firstoutput]);
+				      card,output+firstoutput,sismo[card].outputs[output+firstoutput]);
 	      anychanged = 1;
 	      /* reset changed state since data will be sent to SISMO card */
 	      sismo[card].outputs_changed[output+firstoutput] = UNCHANGED;
@@ -445,14 +445,14 @@ int write_sismo() {
 		set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
 	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGEDBINARY) {
-		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %04x \n",card,bank,display+group*8,
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %04x \n",card,bank,display+group*8+firstdisplay,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
 		/* reset changed state since data will be sent to SISMO card */
 		sismo[card].displays_changed[display+group*8+firstdisplay] = UNCHANGEDBINARY;
 	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGED) {
-		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",card,bank,display+group*8,
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",card,bank,display+group*8+firstdisplay,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
 		/* reset changed state since data will be sent to SISMO card */
