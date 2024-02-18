@@ -21,13 +21,13 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 1
+setting = 3
 
 # Plot Warping grid for Checking
 doplot = False
 
 # Utilize new X-Plane >= 12.08 Window Position File Format
-newformat = False
+newformat = True
 
 # Projector and Screen Dimensions [cm]
 # Please see projector_setup.pdf
@@ -99,7 +99,7 @@ elif setting == 2:
     forwin = False  # create for windows or for linux
     savegrid = True # save proection grid or just FOV
 elif setting == 3:
-    # Projection + Cylindrical (XP12)
+    # Projection + Cylindrical (grid testing with X-Plane)
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
