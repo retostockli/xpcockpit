@@ -445,14 +445,16 @@ int write_sismo() {
 		set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
 	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGEDBINARY) {
-		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %04x \n",card,bank,display+group*8+firstdisplay,
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %04x \n",
+					card,bank,display+group*8+firstdisplay,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
 		/* reset changed state since data will be sent to SISMO card */
 		sismo[card].displays_changed[display+group*8+firstdisplay] = UNCHANGEDBINARY;
 	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGED) {
-		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",card,bank,display+group*8+firstdisplay,
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",
+					card,bank,display+group*8+firstdisplay,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
 		/* reset changed state since data will be sent to SISMO card */
@@ -711,7 +713,7 @@ int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxv
   int retval = 0;
   int data;
   int servominval = 0;
-  int servomaxval = 255;
+  int servomaxval = 254; // I think that 255 is park position
 
   if (fvalue != NULL) {
 
