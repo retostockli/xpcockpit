@@ -812,29 +812,44 @@ void b737_aftoverhead(void)
 
   }
 
-  /*** FLIGHT RECORDER & STALL WARNING Panel ***/
+  /*** FLIGHT RECORDER & STALL / MACH WARNING Panel ***/
+  int *mach_warn1_test;
+  int *mach_warn2_test;
+  int *stall_warn1_test;
+  int *stall_warn2_test;
   if ((acf_type == 2) || (acf_type == 3)) {
     i0=33;
     o0=16;
-    int *mach_warn1 = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn1_test");
-    int *mach_warn2 = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn2_test");
-    int *stall_warn1 = link_dataref_cmd_hold("laminar/B738/push_button/stall_test1_press");
-    int *stall_warn2 = link_dataref_cmd_hold("laminar/B738/push_button/stall_test2_press");
-
-    ret = digital_input(card, i0+0, mach_warn2, 0);
-    ret = digital_input(card, i0+1, mach_warn1, 0);
-    ret = digital_input(card, i0+3, stall_warn2, 0);
-    ret = digital_input(card, i0+4, stall_warn1, 0);
-
-    /* NOT YET IMPLEMENTED IN ZIBO 737 */
-    //ret = digital_input(card, i0+2, flight_recorder, 0);
-    ret = digital_outputf(card,o0+4,lights_test);
-
-    float *stall_test1 = link_dataref_flt("laminar/B738/push_button/stall_test1",0);
-    float *stall_test2 = link_dataref_flt("laminar/B738/push_button/stall_test2",0);
-    ret = digital_outputf(card, 56, stall_test1);
-    ret = digital_outputf(card, 57, stall_test2);
-    
+    mach_warn1_test = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn1_test");
+    mach_warn2_test = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn2_test");
+    stall_warn1_test = link_dataref_cmd_hold("laminar/B738/push_button/stall_test1_press");
+    stall_warn2_test = link_dataref_cmd_hold("laminar/B738/push_button/stall_test2_press");
+  } else {
+    mach_warn1_test = link_dataref_int("xpserver/mach_warn1_test");
+    mach_warn2_test = link_dataref_int("xpserver/mach_warn2_test");
+    stall_warn1_test = link_dataref_int("xpserver/stall_warn1_test");
+    stall_warn2_test = link_dataref_int("xpserver/stall_warn2_test");
   }
+  
+  ret = digital_input(card, i0+0, mach_warn2_test, 0);
+  ret = digital_input(card, i0+1, mach_warn1_test, 0);
+  ret = digital_input(card, i0+3, stall_warn2_test, 0);
+  ret = digital_input(card, i0+4, stall_warn1_test, 0);
+
+  int *stall_warn = link_dataref_int("sim/cockpit2/annunciators/stall_warning");
+  if (((*stall_warn == 1) && (*stall_warn2_test == 0)) || (*stall_warn1_test == 1)) {
+    ret = digital_output(card, 56, &one);
+  } else {
+    ret = digital_output(card, 56, &zero);
+  }
+  if (((*stall_warn == 1) && (*stall_warn1_test == 0)) || (*stall_warn2_test == 1)) {
+    ret = digital_output(card, 57, &one);
+  } else {
+    ret = digital_output(card, 57, &zero);
+  }
+  
+  /* NOT YET IMPLEMENTED IN ZIBO 737 */
+  //ret = digital_input(card, i0+2, flight_recorder, 0);
+  ret = digital_outputf(card,o0+4,lights_test);
 
 }
