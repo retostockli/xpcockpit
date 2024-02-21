@@ -934,42 +934,44 @@ void b737_overhead_fwd(void)
 
     device = mastercard;
     card = 1;
+      
     /* Chimes Only / No Smoking */
-    /* For now we assign IRS MODE */
-    int test;
-    int test2;
-    ret = digital_input(device,card,7,&test,0);
-    if (ret == 1) {
-      printf("IRS NAV: %i \n",test);
-    }
-    ret = digital_input(device,card,8,&test2,0);
-    if (ret == 1) {
-      printf("IRS OFF: %i \n",test2);
-    }
+      
+    /* /\* For now we assign IRS MODE *\/ */
+    /* int test; */
+    /* int test2; */
+    /* ret = digital_input(device,card,7,&test,0); */
+    /* if (ret == 1) { */
+    /*   printf("IRS NAV: %i \n",test); */
+    /* } */
+    /* ret = digital_input(device,card,8,&test2,0); */
+    /* if (ret == 1) { */
+    /*   printf("IRS OFF: %i \n",test2); */
+    /* } */
 
-    int irs_l_pos = INT_MISS;
-    if ((test != INT_MISS) && (test2 != INT_MISS)) {
-      irs_l_pos = (1-test2) + test;
-    } 
-    int *irs_l = link_dataref_int("laminar/B738/toggle_switch/irs_left");
-    int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left");
-    int *irs_l_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_right");
-    ret = set_state_updn(&irs_l_pos,irs_l,irs_l_right,irs_l_left);
-    if (ret == 1) {
-      printf("IRS L POS: %i \n",irs_l_pos);
-    }
+    /* int irs_l_pos = INT_MISS; */
+    /* if ((test != INT_MISS) && (test2 != INT_MISS)) { */
+    /*   irs_l_pos = (1-test2) + test; */
+    /* }  */
+    /* int *irs_l = link_dataref_int("laminar/B738/toggle_switch/irs_left"); */
+    /* int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left"); */
+    /* int *irs_l_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_right"); */
+    /* ret = set_state_updn(&irs_l_pos,irs_l,irs_l_right,irs_l_left); */
+    /* if (ret == 1) { */
+    /*   printf("IRS L POS: %i \n",irs_l_pos); */
+    /* } */
 
-    int irs_r_pos = INT_MISS;
-    if ((test != INT_MISS) && (test2 != INT_MISS)) {
-      irs_r_pos = (1-test2) + test;
-    } 
-    int *irs_r = link_dataref_int("laminar/B738/toggle_switch/irs_right");
-    int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left");
-    int *irs_r_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_right");
-    ret = set_state_updn(&irs_r_pos,irs_r,irs_r_right,irs_r_left);
-    if (ret == 1) {
-      printf("IRS R POS: %i \n",irs_r_pos);
-    }
+    /* int irs_r_pos = INT_MISS; */
+    /* if ((test != INT_MISS) && (test2 != INT_MISS)) { */
+    /*   irs_r_pos = (1-test2) + test; */
+    /* }  */
+    /* int *irs_r = link_dataref_int("laminar/B738/toggle_switch/irs_right"); */
+    /* int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left"); */
+    /* int *irs_r_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_right"); */
+    /* ret = set_state_updn(&irs_r_pos,irs_r,irs_r_right,irs_r_left); */
+    /* if (ret == 1) { */
+    /*   printf("IRS R POS: %i \n",irs_r_pos); */
+    /* } */
 
     /* Fasten Seat Belts */
     int *belts_up = link_dataref_cmd_once("laminar/B738/toggle_switch/seatbelt_sign_up");
