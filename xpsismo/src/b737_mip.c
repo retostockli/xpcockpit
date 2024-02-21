@@ -156,8 +156,8 @@ void b737_mip(void)
 
     float *auto_brake_disarm = link_dataref_flt("laminar/B738/annunciator/auto_brake_disarm",-1);
     float *anti_skid_inop = link_dataref_flt("laminar/B738/annunciator/anti_skid_inop",-1);
-    float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-1);
-    float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-1);
+    float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-2);
+    float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-2);
 
     float *flaps_position = link_dataref_flt("sim/cockpit2/controls/flap_handle_deploy_ratio",-3);
     float *brake_pressure = link_dataref_flt("laminar/B738/brake/brake_press",0);
