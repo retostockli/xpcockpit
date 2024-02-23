@@ -782,15 +782,25 @@ void b737_aftoverhead(void)
     /* ANNs: */
     i0=4;
     o0=0;
-    ret = digital_output(card,o0+0,&one);
-    ret = digital_output(card,o0+1,&one);
-    ret = digital_output(card,o0+2,&one);
-    ret = digital_output(card,o0+3,&one);
-    ret = digital_output(card,o0+4,&one);
-    ret = digital_output(card,o0+5,&one);
-    ret = digital_output(card,o0+6,&one);
-    ret = digital_output(card,o0+7,&one);
-
+    if (*avionics_on != 1) {
+      ret = digital_output(card,o0+0,&one);
+      ret = digital_output(card,o0+1,&one);
+      ret = digital_output(card,o0+2,&one);
+      ret = digital_output(card,o0+3,&one);
+      ret = digital_output(card,o0+4,&one);
+      ret = digital_output(card,o0+5,&one);
+      ret = digital_output(card,o0+6,&one);
+      ret = digital_output(card,o0+7,&one);
+    } else {
+      ret = digital_output(card,o0+0,&zero);
+      ret = digital_output(card,o0+1,&zero);
+      ret = digital_output(card,o0+2,&zero);
+      ret = digital_output(card,o0+3,&zero);
+      ret = digital_output(card,o0+4,&zero);
+      ret = digital_output(card,o0+5,&zero);
+      ret = digital_output(card,o0+6,&zero);
+      ret = digital_output(card,o0+7,&zero);
+    }
   }
 
   /*** CREW OXYGEN Panel ***/

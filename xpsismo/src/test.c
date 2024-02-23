@@ -69,7 +69,7 @@ void test(void)
   ret = analog_input(card,i,fvalue,0.0,10.0);
   if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-    printf("Analog Input %i changed to: %f \n",i,*fvalue);
+    //printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
     //  }
    
@@ -85,8 +85,10 @@ void test(void)
   //ret = servo_output(card,0,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
-  ret = digital_output(card, 32, &one);
-  //ret = digital_output(card, 0, &zero);
+  for (i=0;i<64;i++) {
+    ret = digital_output(card, i, &one);
+  //ret = digital_output(card, i, &zero);
+  }
 
 
   /*
