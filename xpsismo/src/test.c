@@ -76,8 +76,7 @@ void test(void)
 
   /* read encoder at inputs 70 and 71 */
 
-  //ret = encoder_input(card, 0, 1, encodervalue, -1, 1);
-  ret = encoder_input(card, 132, 133, encodervalue, -1, 1);
+  ret = encoder_input(card, 0, 1, encodervalue, -1, 1);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);

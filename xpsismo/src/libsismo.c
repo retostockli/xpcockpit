@@ -174,12 +174,6 @@ int read_sismo() {
       /* card found */
       if (card >= 0) {
 
-	/*
-	gettimeofday(&t2,NULL);
-	float dt = ((t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0)*1000.0;
-	t1 = t2;
-	printf("%i %f ms\n",card,dt);
-	*/
 	
 	if (sismo[card].connected == 0) {
 	  /* initialize card configuration status with information we read from the UDP packet */
@@ -234,16 +228,26 @@ int read_sismo() {
 	  if (sismoRecvBuffer[4] == 0x00) {
 	    bank = 0;
 	    firstinput = 0;
+
+	    /*
+	      gettimeofday(&t2,NULL);
+	      float dt = ((t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0)*1000.0;
+	      t1 = t2;
+	      printf("D %i %f ms\n",card,dt);
+	    */
+
 	  }
 	  /* Digital Input from Daughter Digital Input 1 (Inputs 64-127) */
 	  if (sismoRecvBuffer[4] == 0x01) {
 	    bank = 1;
 	    firstinput = 64;
+
 	  }
 	  /* Digital Input from Daughter Digital Input 2 (Inputs 128-191) */
 	  if (sismoRecvBuffer[4] == 0x02) {
 	    bank = 2;
 	    firstinput = 128;
+	
 	  }
 
 	  /* Digital Inputs are ordered in 8 bytes with 8 bits each = 64 inputs */
@@ -294,6 +298,13 @@ int read_sismo() {
 	}
 	  
 	if ((sismoRecvBuffer[4] == 0x00) || (sismoRecvBuffer[4] == 0x03)) {
+
+	  /*
+	  gettimeofday(&t2,NULL);
+	  float dt = ((t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0)*1000.0;
+	  t1 = t2;
+	  printf("A %i %f ms\n",card,dt);
+	  */
 
 	  /* Analog Input from Master (Inputs 0-4) */
 	  if (sismoRecvBuffer[4] == 0x00) {
