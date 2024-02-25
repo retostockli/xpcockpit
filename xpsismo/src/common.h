@@ -17,7 +17,7 @@
 
 #include "check_aircraft.h"
 
-#define INTERVAL 10 /* Polling interval (seconds) for both xpserver plugin and sismo cards */
+#define INTERVAL 5 /* Polling interval (seconds) for both xpserver plugin and sismo cards */
 /* State check interval (ms) for Up/Down commands
    Needs feedback time from flight simulator states */
 #define INTERVAL_UPDN 100

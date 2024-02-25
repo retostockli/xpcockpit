@@ -448,7 +448,7 @@ void b737_pedestal(void)
       if (decimal < 0) decimal = 990;
       if (decimal > 990) decimal = 0;
       *com1_freq_stdby = integer * 1000 + decimal;
-      //printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
+      printf("COM1 STDBY FREQ: %i \n",*com1_freq_stdby);
     }
   }
   /* Does Not Work at High Turn Speeds
@@ -514,7 +514,7 @@ void b737_pedestal(void)
       if (decimal < 0) decimal = 990;
       if (decimal > 990) decimal = 0;
       *com2_freq_stdby = integer * 1000 + decimal;
-      //printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
+      printf("COM2 STDBY FREQ: %i \n",*com2_freq_stdby);
     }
   }
   /* Does Not Work at High Turn Speeds
