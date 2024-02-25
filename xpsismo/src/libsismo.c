@@ -1038,7 +1038,7 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			updown = sismo[card].inputs_updown[input1];
 		      }
 
-		      // printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
+		      printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
 		      
 		      if (updown != 0) {
 			/* add accelerator by using s as number of queued encoder changes */
