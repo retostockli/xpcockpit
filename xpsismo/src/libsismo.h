@@ -35,11 +35,6 @@
 #define UNCHANGEDBINARY 2         /* flag for changed display, with value to be interpreted as binary data (0x00 - 0xff) */ 
 #define CHANGEDBINARY 3         /* flag for changed display, with value to be interpreted as binary data (0x00 - 0xff) */ 
 
-/* XPSERVER */
-//extern char xpserver_ip[30];
-//extern int xpserver_port;
-//extern char clientname[100];
-
 /* SISMO UDP SERVER (this code here) */
 extern char sismoserver_ip[30];
 extern int sismoserver_port;

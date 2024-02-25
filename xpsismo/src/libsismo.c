@@ -35,9 +35,8 @@
 #include "handleudp.h"
 #include "serverdata.h"
 
-//char xpserver_ip[30];
-//int xpserver_port;
-//char clientname[100];
+struct timeval t2;
+struct timeval t1;
 
 char sismoserver_ip[30];
 int sismoserver_port;
@@ -175,6 +174,13 @@ int read_sismo() {
       /* card found */
       if (card >= 0) {
 
+	/*
+	gettimeofday(&t2,NULL);
+	float dt = ((t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0)*1000.0;
+	t1 = t2;
+	printf("%i %f ms\n",card,dt);
+	*/
+	
 	if (sismo[card].connected == 0) {
 	  /* initialize card configuration status with information we read from the UDP packet */
 	  sismo[card].connected = 1;
