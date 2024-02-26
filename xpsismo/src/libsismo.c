@@ -1071,7 +1071,7 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		      }
 			
 		      //printf("updn: %i %i %i %i %i %i %f \n",updown,s,obits[0],obits[1],nbits[0],nbits[1],dt);
-		      printf("%i %i %f \n",nbits[0],nbits[1],dt);
+		      //printf("%i %i %f \n",nbits[0],nbits[1],dt);
 		      
 		      if (updown != 0) {
 			/* ADD ACCELERATION WITH SPEED OF TURNING ENCODER */
