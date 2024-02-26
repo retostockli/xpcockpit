@@ -1059,9 +1059,9 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			   concurrently due to timing issue, assume that the last direction is still valid.
 			   ONLY USE WITH FAST TURNING DT < 100 ms */
 		      } else if ((obits[0] == 1) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			if (dt < 100.0) updown = sismo[card].inputs_updown[input1];
+			if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
 		      } else if ((obits[0] == 0) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			if (dt < 100.0) updown = sismo[card].inputs_updown[input1];
+			if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
 		      }
 
 		      if (updown != 0) {
@@ -1071,7 +1071,7 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		      }
 			
 		      //printf("updn: %i %i %i %i %i %i %f \n",updown,s,obits[0],obits[1],nbits[0],nbits[1],dt);
-		      //printf("%i %i %f \n",nbits[0],nbits[1],dt);
+		      printf("%i %i %f \n",nbits[0],nbits[1],dt);
 		      
 		      if (updown != 0) {
 			/* ADD ACCELERATION WITH SPEED OF TURNING ENCODER */
@@ -1079,10 +1079,11 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			/* NO ACCELERATION WITH TURNING SPEED */
 			//*value = *value + ((float) updown)  * multiplier;
 			retval = 1;
+			
+			/* store last updown value for later use */
+			sismo[card].inputs_updown[input1] = updown;
 		      }
 
-		      /* store last updown value for later use */
-		      sismo[card].inputs_updown[input1] = updown;
 		      
 		    } else if (type == 2) {
 		      /* 2 bit gray type mechanical encoder */
