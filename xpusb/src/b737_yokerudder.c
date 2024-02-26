@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include "common.h"
 #include "libiocards.h"
@@ -30,6 +31,7 @@
 #define max(A,B) ((A)>(B) ? (A) : (B)) 
 #define min(A,B) ((A)<(B) ? (A) : (B))
 
+struct timeval time_viewmodebutton; 
 
 /* Yoke Buttons
    0: Stab Trim down
@@ -65,6 +67,8 @@ void b737_yokerudder(void)
 
   float brakescale;
 
+  struct timeval newtime;
+  
   int button;
   float value1,value2;
   int ret1,ret2;
@@ -207,21 +211,34 @@ void b737_yokerudder(void)
     *circle=0;
     *free_camera=0;
   }
-  
-  if (view_is_copilot == 0) {
-    *pilot_position = -0.4;
-  } else {
-    *pilot_position = 0.4;
+
+  if (*viewmode == 0) {
+    /* Only fix pilot position in forward with nothing else view mode */
+    if (view_is_copilot == 0) {
+      *pilot_position = -0.4; // meters
+    } else {
+      *pilot_position = 0.4;  // meters
+    }
   }
   
   ret = digital_input(device,card,10,&button,0);
   if ((ret == 1) && (button == 1)) {
-    *viewmode=*viewmode + 1;
-    if (*viewmode == 3) {
-      *viewmode = 0;
-    }
-    printf("Viewmode has value %i \n",*viewmode);
+    /* we have a bouncing effect on the yoke viewmode pushbutton so check time since last press */
+    gettimeofday(&newtime,NULL);
+    float dt = ((newtime.tv_sec - time_viewmodebutton.tv_sec) +
+		(newtime.tv_usec - time_viewmodebutton.tv_usec) / 1000000.0)*1000.0;
+    /* only execute command if last press is more than 200 milliseconds away */
+    if (dt > 200.0) {
+      *viewmode=*viewmode + 1;
+      if (*viewmode == 3) {
+	*viewmode = 0;
+      }
+      printf("Viewmode has value %i \n",*viewmode);
 
+      time_viewmodebutton.tv_sec = newtime.tv_sec;
+      time_viewmodebutton.tv_usec = newtime.tv_usec;
+    }
+      
     if (*viewmode == 0) {
       *forward_with_nothing = 1;
       *forward_with_panel = 0;

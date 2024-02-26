@@ -428,7 +428,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *com1_coarse_up = 1;
     } else {
       *com1_coarse_dn = 1;
@@ -444,7 +444,10 @@ void b737_pedestal(void)
       decimal += updn;
       lasttwo = decimal - decimal/100*100;
       /* 8.33 kHz frequencies do not cover all 5kHz display steps */
-      if ((lasttwo == 20) || (lasttwo == 45) || (lasttwo == 70) || (lasttwo == 95)) decimal += updn;
+      if ((lasttwo == 20) || (lasttwo == 45) || (lasttwo == 70) || (lasttwo == 95)) {
+	if (updn > 0 ) decimal += 5;
+	if (updn < 0 ) decimal -= 5;
+      }
       if (decimal < 0) decimal = 990;
       if (decimal > 990) decimal = 0;
       *com1_freq_stdby = integer * 1000 + decimal;
@@ -454,7 +457,7 @@ void b737_pedestal(void)
   /* Does Not Work at High Turn Speeds
   ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       printf("COM1 UP %i \n",*com1_fine_up);
       *com1_fine_up = 1;
     } else {
@@ -494,7 +497,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *com2_coarse_up = 1;
     } else {
       *com2_coarse_dn = 1;
@@ -510,7 +513,10 @@ void b737_pedestal(void)
       decimal += updn;
       lasttwo = decimal - decimal/100*100;
       /* 8.33 kHz frequencies do not cover all 5kHz display steps */
-      if ((lasttwo == 20) || (lasttwo == 45) || (lasttwo == 70) || (lasttwo == 95)) decimal += updn;
+      if ((lasttwo == 20) || (lasttwo == 45) || (lasttwo == 70) || (lasttwo == 95)) {
+	if (updn > 0 ) decimal += 5;
+	if (updn < 0 ) decimal -= 5;
+      }
       if (decimal < 0) decimal = 990;
       if (decimal > 990) decimal = 0;
       *com2_freq_stdby = integer * 1000 + decimal;
@@ -520,7 +526,7 @@ void b737_pedestal(void)
   /* Does Not Work at High Turn Speeds
   ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *com2_fine_up = 1;
     } else {
       *com2_fine_dn = 1;
@@ -557,7 +563,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *nav1_coarse_up = 1;
     } else {
       *nav1_coarse_dn = 1;
@@ -567,7 +573,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *nav1_fine_up = 1;
     } else {
       *nav1_fine_dn = 1;
@@ -601,7 +607,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *nav2_coarse_up = 1;
     } else {
       *nav2_coarse_dn = 1;
@@ -611,7 +617,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+4,i0+5,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *nav2_fine_up = 1;
     } else {
       *nav2_fine_dn = 1;
@@ -651,7 +657,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+3,i0+4,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *adf1_coarse_up = 1;
     } else {
       *adf1_coarse_dn = 1;
@@ -661,7 +667,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+5,i0+6,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *adf1_fine_up = 1;
     } else {
       *adf1_fine_dn = 1;
@@ -702,7 +708,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+3,i0+4,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *adf2_coarse_up = 1;
     } else {
       *adf2_coarse_dn = 1;
@@ -712,7 +718,7 @@ void b737_pedestal(void)
   updn = 0;
   ret = encoder_input(card,i0+5,i0+6,&updn,1,1);
   if (ret == 1) {
-    if (updn == 1) {
+    if (updn >= 1) {
       *adf2_fine_up = 1;
     } else {
       *adf2_fine_dn = 1;

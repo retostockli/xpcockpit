@@ -38,6 +38,9 @@
 struct timeval t2;
 struct timeval t1;
 
+#define max(A,B) ((A)>(B) ? (A) : (B)) 
+#define min(A,B) ((A)<(B) ? (A) : (B)) 
+
 char sismoserver_ip[30];
 int sismoserver_port;
 
@@ -1007,6 +1010,8 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
   char nbits[2]; /* bit arrays for 2 bit encoder */
   int s;
   int bank;
+  struct timeval newtime;
+  float dt; /* time interval since last encoder read in milliseconds */
 
   if (value != NULL) {
 
@@ -1027,6 +1032,10 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		       (sismo[card].inputs[input2][s] != sismo[card].inputs[input2][s+1])) &&
 		      (sismo[card].inputs[input1][s+1] != INPUTINITVAL) &&
 		      (sismo[card].inputs[input2][s+1] != INPUTINITVAL)) {
+
+		    gettimeofday(&newtime,NULL);
+		    dt = ((newtime.tv_sec - sismo[card].inputs_time[input1].tv_sec) +
+			  (newtime.tv_usec - sismo[card].inputs_time[input1].tv_usec) / 1000000.0)*1000.0;
 		  
 		    if (type == 1) {
 		      /* 2 bit optical encoder */
@@ -1046,20 +1055,29 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			updown = 1;
 		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
 			updown = -1;
-
 			/* in case a) an input was missed or b) the two optical rotary inputs were transmitted 
-			   concurrently due to timing issue, assume that the last direction is still valid */
+			   concurrently due to timing issue, assume that the last direction is still valid.
+			   ONLY USE WITH FAST TURNING DT < 100 ms */
 		      } else if ((obits[0] == 1) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			updown = sismo[card].inputs_updown[input1];
+			if (dt < 100.0) updown = sismo[card].inputs_updown[input1];
 		      } else if ((obits[0] == 0) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			updown = sismo[card].inputs_updown[input1];
+			if (dt < 100.0) updown = sismo[card].inputs_updown[input1];
 		      }
 
-		      // printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
+		      if (updown != 0) {
+			/* Update last encoder time with current postion after successful detent */
+			sismo[card].inputs_time[input1].tv_sec = newtime.tv_sec;
+			sismo[card].inputs_time[input1].tv_usec = newtime.tv_usec;
+		      }
+			
+		      //printf("updn: %i %i %i %i %i %i %f \n",updown,s,obits[0],obits[1],nbits[0],nbits[1],dt);
+		      //printf("%i %i %f \n",nbits[0],nbits[1],dt);
 		      
 		      if (updown != 0) {
-			/* add accelerator by using s as number of queued encoder changes */
-			*value = *value + ((float) updown)  * multiplier * (float) (s*2+1);
+			/* ADD ACCELERATION WITH SPEED OF TURNING ENCODER */
+			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (60.0/max(dt,1.0)));
+			/* NO ACCELERATION WITH TURNING SPEED */
+			//*value = *value + ((float) updown)  * multiplier;
 			retval = 1;
 		      }
 
