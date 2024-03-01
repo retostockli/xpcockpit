@@ -1079,6 +1079,8 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			/* NO ACCELERATION WITH TURNING SPEED */
 			//*value = *value + ((float) updown)  * multiplier;
 			retval = 1;
+
+			//printf("UPDN %i %f \n",updown,*value);
 			
 			/* store last updown value for later use */
 			sismo[card].inputs_updown[input1] = updown;
