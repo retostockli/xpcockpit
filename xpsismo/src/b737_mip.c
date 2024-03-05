@@ -617,5 +617,7 @@ void b737_mip(void)
     }
     
   }
+  //float servoval = 0.1;
+  //ret = servo_outputf(card,0,&servoval, 0.0,1.0);
     
 }
