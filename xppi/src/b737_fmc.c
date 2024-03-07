@@ -7,7 +7,7 @@
    Please respect the original author's license and always reference the original code
    when distributing this code here.
 
-   Copyright (C) 2021 Reto Stockli
+   Copyright (C) 2021-2024 Reto Stockli
 
    Additions for analog axes treatment by Hans Jansen 2011
    Also several cosmetic changes and changes for Linux compilation
