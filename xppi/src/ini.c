@@ -173,6 +173,9 @@ void exit_pi(int ret)
   clear_dataref();
 
 #ifdef PIGPIO
+  /* fix for running soft pwm in fmc: turn off background lighting */
+  gpioPWM(19, 0);
+  
   /* free gpio handling */
   gpioTerminate();
 #endif

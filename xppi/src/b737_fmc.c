@@ -45,8 +45,8 @@
 #define nCols 9
 #define nRows 8
 
-#define FMC_PWM_RANGE 360
-#define FMC_PWM_FREQ 40
+#define FMC_PWM_RANGE 100
+#define FMC_PWM_FREQ 500
 
 // columns are outputs. All are set to HIGH except the column being scanned.
 
@@ -298,7 +298,7 @@ void b737_fmc()
     
     // Only update key brightness PWM if it has changed
     /* PWM behaves strange and is flickering with pigpiod, so switch to brightness ON/OFF */
-    *key_brightness = 0.9;
+    *key_brightness = 0.5;
     if ((*key_brightness != key_brightness_save) &&
 	(*key_brightness != FLT_MISS)) {
       printf("New Key Brightness: %f \n",*key_brightness);
