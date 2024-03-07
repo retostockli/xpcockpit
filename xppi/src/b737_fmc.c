@@ -148,7 +148,7 @@ void *poll_thread_main()
 	rot_direction = 1;
       }
       
-      //printf("Rotary A/B/DIR: %i %i %i\n",rot_a,rot_b,rot_direction);
+      // printf("Rotary A/B/DIR: %i %i %i\n",rot_a,rot_b,rot_direction);
 
       /* update saved states */
       rot_a_save = rot_a;
@@ -249,8 +249,8 @@ int b737_fmc_init()
 void b737_fmc_exit(void)
 {
   /* shut down read thread */
-  //poll_thread_exit_code = 1;
-  //pthread_join(poll_thread, NULL);
+  poll_thread_exit_code = 1;
+  pthread_join(poll_thread, NULL);
 }
 
 void b737_fmc()
