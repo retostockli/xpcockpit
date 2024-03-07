@@ -184,9 +184,9 @@ int b737_fmc_init()
   gpioSetMode(ofst_led_pin, PI_OUTPUT);
   gpioSetMode(fail_led_pin, PI_OUTPUT);
   gpioSetMode(bgl_pwm_pin,  PI_OUTPUT);
-  gpioSetPWMrange(bgl_pwm_pin,FMC_PWM_RANGE);
-  gpioSetPWMfrequency(bgl_pwm_pin,FMC_PWM_FREQ);
-  gpioPWM(bgl_pwm_pin, 0);
+  //  gpioSetPWMrange(bgl_pwm_pin,FMC_PWM_RANGE);
+  //  gpioSetPWMfrequency(bgl_pwm_pin,FMC_PWM_FREQ);
+  //  gpioPWM(bgl_pwm_pin, 0);
  
   gpioSetMode(rot_a_pin,  PI_INPUT);
   gpioSetMode(rot_a_pin,  PI_INPUT);
@@ -201,7 +201,7 @@ int b737_fmc_init()
   pinMode(ofst_led_pin, OUTPUT);
   pinMode(fail_led_pin, OUTPUT);
   pinMode(bgl_pwm_pin,  OUTPUT);
-  softPwmCreate(bgl_pwm_pin,0,100); //Pin,initalValue,pwmRange    
+  //  softPwmCreate(bgl_pwm_pin,0,100); //Pin,initalValue,pwmRange    
 
   pinMode(rot_a_pin,  INPUT);
   pinMode(rot_a_pin,  INPUT);
@@ -269,6 +269,7 @@ void b737_fmc()
     /* Link Datarefs */
    
     float *key_brightness = link_dataref_flt_arr("laminar/B738/electric/panel_brightness",4,3,-2);
+    int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
     
     int *exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
     int *msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
@@ -295,18 +296,20 @@ void b737_fmc()
     }
     
     // Only update key brightness PWM if it has changed
-    if ((*key_brightness != key_brightness_save) &&
-	(*key_brightness != FLT_MISS)) {
-      printf("New Key Brightness: %f \n",*key_brightness);
-      key_brightness_save = *key_brightness;
-#ifdef PIGPIO
-      gpioPWM(bgl_pwm_pin, (int) (*key_brightness * 100.0));
- #else
-      softPwmWrite(bgl_pwm_pin, (int) (*key_brightness * 100.0));
-#endif
-    }
+    /* PWM behaves strange and is flickering with pigpiod, so switch to brightness ON/OFF */
+/*     if ((*key_brightness != key_brightness_save) && */
+/* 	(*key_brightness != FLT_MISS)) { */
+/*       printf("New Key Brightness: %f \n",*key_brightness); */
+/*       key_brightness_save = *key_brightness; */
+/* #ifdef PIGPIO */
+/*       gpioPWM(bgl_pwm_pin, (int) (*key_brightness * 100.0)); */
+/*  #else */
+/*       softPwmWrite(bgl_pwm_pin, (int) (*key_brightness * 100.0)); */
+/* #endif */
+/*     } */
     
 #ifdef PIGPIO
+    if (*avionics_on != INT_MISS) gpioWrite(bgl_pwm_pin, *avionics_on);
     if (*exec_led != INT_MISS) gpioWrite(exec_led_pin, *exec_led);
     if (*msg_led != INT_MISS) gpioWrite(msg_led_pin, *msg_led);  
     /*
@@ -315,6 +318,7 @@ void b737_fmc()
     if (*fail_led != INT_MISS) gpioWrite(fail_led_pin, *fail_led);
     */
 #else
+    if (*avionics_on != INT_MISS) digitalWrite(bgl_pwm_pin, *avionics_on);
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
     if (*msg_led != INT_MISS) digitalWrite(msg_led_pin, *msg_led);  
     /*
