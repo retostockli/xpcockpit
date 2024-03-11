@@ -109,6 +109,8 @@ int pressedRow;
 int pressedCol;
 int somethingPressed;
 
+int fmc_is_initialized;
+
 void *poll_thread_main()
 /* thread handles inputs which change faster than xppi cycle */
 {
@@ -160,7 +162,7 @@ void *poll_thread_main()
   } /* while loop */
   
   /* thread was killed */
-  printf("Input thread shutting down \n");
+  printf("FMC rotary encoder input thread shutting down \n");
 
   return 0;
 }
@@ -235,26 +237,78 @@ int b737_fmc_init()
 
   /* init thread to read encoder since encoder changes are too fast
      for repeat cycle of xppi */
-  /*
+
   poll_thread_exit_code = 0;
   if (pthread_create(&poll_thread, NULL, &poll_thread_main, NULL)>0) {
     printf("Poll thread could not be created.\n");
     return -1;
   }
-  */
+
+  fmc_is_initialized = 1;
 
   return 0;
 }
 
 void b737_fmc_exit(void)
 {
-  /* shut down read thread */
-  poll_thread_exit_code = 1;
-  pthread_join(poll_thread, NULL);
+  if (fmc_is_initialized == 1) {
+    /* shut down read thread */
+    poll_thread_exit_code = 1;
+    pthread_join(poll_thread, NULL);
+    
+    /* fix for running soft pwm in fmc: turn off background lighting */
+    gpioPWM(bgl_pwm_pin, 0);
+  }
 }
 
 void b737_fmc()
 {
+
+  /* fetch rotary encoder switch: not needed since switch 
+     is directly connected to the MENU key of the display */
+  /*
+    status = digitalRead(rot_sw_pin);
+    if (status != rot_sw_save) {
+    printf("Rotary Switch: %i\n",status);
+    rot_sw_save = status;
+    }
+  */
+
+    
+  /* DSPY_LED connected to DOWN key of the display */
+  if (rot_direction == -1) {
+    printf("Rotary DOWN: \n");
+#ifdef PIGPIO
+    gpioWrite(dspy_led_pin, 1);
+#else
+    digitalWrite(dspy_led_pin, 1);
+#endif
+    rot_direction = 0;
+  } else {
+#ifdef PIGPIO
+    gpioWrite(dspy_led_pin, 0);
+#else
+    digitalWrite(dspy_led_pin, 0);
+#endif
+  }
+      
+  /* FAIL_LED connected to UP key of the display */
+  if (rot_direction == 1) {
+    printf("Rotary UP: \n");
+#ifdef PIGPIO
+    gpioWrite(fail_led_pin, 1);
+#else
+    digitalWrite(fail_led_pin, 1);
+#endif
+    rot_direction = 0;
+  } else {
+#ifdef PIGPIO
+    gpioWrite(fail_led_pin, 0);
+#else
+    digitalWrite(fail_led_pin, 0);
+#endif
+  }
+
 
   /* only run for ZIBO 737 for now */
   if (acf_type == 3) {
@@ -329,52 +383,6 @@ void b737_fmc()
     if (*fail_led != INT_MISS) digitalWrite(fail_led_pin, *fail_led);
     */
 #endif
-
-    /* fetch rotary encoder switch: not needed since switch 
-       is directly connected to the MENU key of the display */
-    /*
-    status = digitalRead(rot_sw_pin);
-    if (status != rot_sw_save) {
-      printf("Rotary Switch: %i\n",status);
-      rot_sw_save = status;
-    }
-    */
-
-    
-    /* DSPY_LED connected to DOWN key of the display */
-    if (rot_direction == -1) {
-      printf("Rotary DOWN: \n");
-#ifdef PIGPIO
-      gpioWrite(dspy_led_pin, 1);
-#else
-      digitalWrite(dspy_led_pin, 1);
-#endif
-      rot_direction = 0;
-    } else {
-#ifdef PIGPIO
-      gpioWrite(dspy_led_pin, 0);
-#else
-      digitalWrite(dspy_led_pin, 0);
-#endif
-    }
-      
-    /* FAIL_LED connected to UP key of the display */
-    if (rot_direction == 1) {
-      printf("Rotary UP: \n");
-#ifdef PIGPIO
-      gpioWrite(fail_led_pin, 1);
-#else
-      digitalWrite(fail_led_pin, 1);
-#endif
-      rot_direction = 0;
-    } else {
-#ifdef PIGPIO
-      gpioWrite(fail_led_pin, 0);
-#else
-      digitalWrite(fail_led_pin, 0);
-#endif
-    }
-
 
     /* -------------------- */
     /* Scan Keyboard Matrix */

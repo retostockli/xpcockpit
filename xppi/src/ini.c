@@ -32,6 +32,7 @@
 #include "handleserver.h"
 #include "serverdata.h"
 #include "xplanebeacon.h"
+#include "b737_fmc.h"
 
 int verbose;
 int is_copilot;
@@ -172,10 +173,10 @@ void exit_pi(int ret)
   /* free local dataref structure */
   clear_dataref();
 
-#ifdef PIGPIO
-  /* fix for running soft pwm in fmc: turn off background lighting */
-  gpioPWM(19, 0);
+  /* terminate read thread in FMC if running */
+  b737_fmc_exit();
   
+#ifdef PIGPIO 
   /* free gpio handling */
   gpioTerminate();
 #endif
