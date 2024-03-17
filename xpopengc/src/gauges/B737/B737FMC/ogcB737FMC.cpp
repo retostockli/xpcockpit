@@ -53,7 +53,7 @@ namespace OpenGC
 B737FMC::B737FMC(int arg)
 {
 
-  printf("B737PFD constructed %i\n",arg);
+  printf("B737FMC constructed %i\n",arg);
 	
   // We want to draw an outline
   this->SetGaugeOutline(false);

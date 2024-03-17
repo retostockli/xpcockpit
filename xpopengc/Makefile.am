@@ -18,6 +18,7 @@ inidata/boeing737fmc1.ini \
 inidata/boeing737fmc2.ini \
 inidata/boeing737isfd.ini \
 inidata/boeing737rmi.ini \
+inidata/boeing737lowerdu.ini \
 inidata/default.ini \
 fonts/CockpitMCDU.ttf \
 fonts/CockpitScreens.ttf \
