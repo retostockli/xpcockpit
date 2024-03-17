@@ -326,8 +326,16 @@ void b737_fmc()
     float *key_brightness = link_dataref_flt("xpserver/fmc_key_brightness",-1);
     int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
     
-    int *exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
-    int *msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
+    int *exec_led;
+    int *msg_led;
+    if (is_copilot) {
+      msg_led = link_dataref_int("laminar/B738/fmc/fmc_message2");
+      exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights_fo");
+    } else {
+      msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
+      exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
+    }
+      
     /*
     int *dspy_led = link_dataref_int("");
     int *ofst_led = link_dataref_int("");
