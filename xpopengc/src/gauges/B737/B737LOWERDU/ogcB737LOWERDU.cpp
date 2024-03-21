@@ -46,7 +46,7 @@ B737LOWERDU::B737LOWERDU()
   printf("B737LOWERDU constructed\n");
 	
   // We want to draw an outline
-  this->SetGaugeOutline(false);
+  this->SetGaugeOutline(true);
 
   //  m_Font = m_pFontManager->LoadDefaultFont();
   m_Font = m_pFontManager->LoadFont((char*) "CockpitMCDU.ttf");
@@ -73,6 +73,8 @@ B737LOWERDU::~B737LOWERDU()
 void B737LOWERDU::Render()
 {
 
+  int rotate = this->GetArg();
+ 
   int acf_type = m_pDataSource->GetAcfType();
   
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
@@ -83,8 +85,15 @@ void B737LOWERDU::Render()
     Gauge::Render();
 
     //} else {
-    // Draw green rectangle in upper left of gauge to show it is loaded (red if X-plane is not yet connected)
+
     Gauge::ResetGaugeCoordinateSystem();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    
+    glTranslatef(m_PhysicalSize.x/2, m_PhysicalSize.y/2, 0.0);
+    glRotatef(rotate, 0, 0, 1);
+    glTranslatef(-m_PhysicalSize.x/2, -m_PhysicalSize.y/2, 0.0);
+    // Draw green rectangle in upper left of gauge to show it is loaded (red if X-plane is not yet connected)
     if (*avionics_on == 0) {
       // Valid dataref: Connection to X-Plane intact
       glColor3ub(COLOR_GREEN);
@@ -100,6 +109,8 @@ void B737LOWERDU::Render()
     glVertex2f(5,m_PhysicalSize.y-10);
     glEnd();  
     //} // Display powered?
+
+    glPopMatrix();
 
 }
 

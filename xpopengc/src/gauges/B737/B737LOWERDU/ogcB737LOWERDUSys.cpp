@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "ogcCircleEvaluator.h"
 #include "B737/B737LOWERDU/ogcB737LOWERDUSys.h"
 
 
@@ -69,15 +70,75 @@ namespace OpenGC
   void B737LOWERDUSys::Render()
   {
     char buffer[10];
+    int dx,dy,r;
+    CircleEvaluator aCircle;
+    aCircle.SetDegreesPerPoint(10);
+    
     GaugeComponent::Render();
+
+    int rotate = this->GetArg();
     
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
+    
+    glTranslatef(m_PhysicalSize.x/2, m_PhysicalSize.y/2, 0.0);
+    glRotatef(rotate, 0, 0, 1);
+    glTranslatef(-m_PhysicalSize.x/2, -m_PhysicalSize.y/2, 0.0);
 
     glColor3ub(COLOR_RED);
     snprintf( buffer, sizeof(buffer), "TEST" );
     this->m_pFontManager->SetSize(m_Font, 5, 5);
     this->m_pFontManager->Print(m_PhysicalSize.x/2, m_PhysicalSize.y/2, &buffer[0], m_Font);     
+
+    glPushMatrix();
+    glTranslatef(m_PhysicalSize.x/4, m_PhysicalSize.y/4, 0.0);
+
+    dx = m_PhysicalSize.x/10;
+    dy = m_PhysicalSize.x/8;
+    r = m_PhysicalSize.x/20;
+    
+    glBegin(GL_LINES);
+    glVertex2f(-dx+r,dy);
+    glVertex2f(+dx-r,dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(+dx,dy-r);
+    glVertex2f(+dx,-dy+r);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(-dx+r,-dy);
+    glVertex2f(+dx-r,-dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(-dx,dy-r);
+    glVertex2f(-dx,-dy+r);
+    glEnd();
+    aCircle.SetRadius(r);
+    aCircle.SetArcStartEnd(-90,0);
+    aCircle.SetOrigin(-dx+r, dy-r);
+    glBegin(GL_LINE_STRIP);
+    aCircle.Evaluate();
+    glEnd();
+    aCircle.SetArcStartEnd(0,90);
+    aCircle.SetOrigin(+dx-r, dy-r);
+    glBegin(GL_LINE_STRIP);
+    aCircle.Evaluate();
+    glEnd();
+    aCircle.SetArcStartEnd(90,180);
+    aCircle.SetOrigin(+dx-r, -dy+r);
+    glBegin(GL_LINE_STRIP);
+    aCircle.Evaluate();
+    glEnd();
+    aCircle.SetArcStartEnd(180,270);
+    aCircle.SetOrigin(-dx+r, -dy+r);
+    glBegin(GL_LINE_STRIP);
+    aCircle.Evaluate();
+    glEnd();
+    
+
+    glPopMatrix();
+
+      
     glPopMatrix();
     
   }
