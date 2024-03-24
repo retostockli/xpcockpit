@@ -848,18 +848,23 @@ void b737_aftoverhead(void)
 
   /* WE CURRENTLY ONLY HAVE ONE WIRE TO BOTH STICK SHAKERS */
   int *stall_warn = link_dataref_int("sim/cockpit2/annunciators/stall_warning");
-  if (((*stall_warn == 1) || (*stall_warn1_test == 1) || (*stall_warn2_test == 1)) && (*avionics_on == 1)) {
+  //  printf("%i %i %i\n", *stall_warn,*stall_warn1_test,*stall_warn2_test );
+  if ((((*stall_warn == 1) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
+       ((*stall_warn1_test == 1) && (*stall_warn2_test == 0))) && (*avionics_on == 1)) {
+    printf("1\n");
     ret = digital_output(card, 56, &one);
   } else {
     ret = digital_output(card, 56, &zero);
   }
-  /*
-  if (((*stall_warn == 1) && (*stall_warn1_test == 0)) || (*stall_warn2_test == 1)) {
-    ret = digital_output(card, 57, &one);
+ 
+  if ((((*stall_warn == 1) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
+       ((*stall_warn1_test == 0) && (*stall_warn2_test == 1))) && (*avionics_on == 1)) {
+    printf("2\n");
+     ret = digital_output(card, 57, &one);
   } else {
     ret = digital_output(card, 57, &zero);
   }
-  */
+ 
   
   /* NOT YET IMPLEMENTED IN ZIBO 737 */
   //ret = digital_input(card, i0+2, flight_recorder, 0);
