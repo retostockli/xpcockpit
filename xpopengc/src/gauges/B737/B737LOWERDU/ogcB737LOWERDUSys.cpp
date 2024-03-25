@@ -34,6 +34,7 @@
 #include <math.h>
 
 #include "ogcCircleEvaluator.h"
+#include "ogcRREvaluator.h"
 #include "B737/B737LOWERDU/ogcB737LOWERDUSys.h"
 
 
@@ -69,10 +70,11 @@ namespace OpenGC
 
   void B737LOWERDUSys::Render()
   {
-    char buffer[10];
-    int dx,dy,r;
-    CircleEvaluator aCircle;
-    aCircle.SetDegreesPerPoint(10);
+    char buffer[15];
+    float dx,dy,r;
+    float x,y;
+    float fontSize;
+    RREvaluator RR;
     
     GaugeComponent::Render();
 
@@ -80,65 +82,107 @@ namespace OpenGC
     
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    
+
+    glLineWidth(m_PhysicalSize.x/70.0);
+
+    // ROTATE WHOLE GAUGE IF NEEDED (if we are on rotated screen)
     glTranslatef(m_PhysicalSize.x/2, m_PhysicalSize.y/2, 0.0);
     glRotatef(rotate, 0, 0, 1);
     glTranslatef(-m_PhysicalSize.x/2, -m_PhysicalSize.y/2, 0.0);
 
-    glColor3ub(COLOR_RED);
-    snprintf( buffer, sizeof(buffer), "TEST" );
-    this->m_pFontManager->SetSize(m_Font, 5, 5);
-    this->m_pFontManager->Print(m_PhysicalSize.x/2, m_PhysicalSize.y/2, &buffer[0], m_Font);     
+    // HYDRAULICS
+    glColor3ub(COLOR_LIGHTBLUE);
+    r = m_PhysicalSize.x/60.0;
+    dx = m_PhysicalSize.x*5.5/10.0;
+    dy = m_PhysicalSize.y*1.7/10.0;
+    x = m_PhysicalSize.x/2.0;
+    y = m_PhysicalSize.x*8.5/10.0;
+    fontSize = m_PhysicalSize.x/40;
+    RR.SetRadius(r);
+    RR.SetSize(dx,dy);
+    RR.SetOrigin(x,y);
+    RR.Evaluate();
+    
+    // WHEELS and BRAKES
+    glColor3ub(COLOR_WHITE);
 
-    glPushMatrix();
-    glTranslatef(m_PhysicalSize.x/4, m_PhysicalSize.y/4, 0.0);
+    r = m_PhysicalSize.x/45.0;
+    dx = m_PhysicalSize.x/16.0;
+    dy = m_PhysicalSize.y/10.0;
+    y = m_PhysicalSize.x*6.0/10.0;
+    fontSize = m_PhysicalSize.x/40;
+    RR.SetRadius(r);
+    RR.SetSize(dx,dy);
 
-    dx = m_PhysicalSize.x/10;
-    dy = m_PhysicalSize.x/8;
-    r = m_PhysicalSize.x/20;
+    RR.SetOrigin(m_PhysicalSize.x*2.05/10.0,y);
+    RR.Evaluate();
+    RR.SetOrigin(m_PhysicalSize.x*3.00/10.0,y);
+    RR.Evaluate();
+    RR.SetOrigin(m_PhysicalSize.x*7.00/10.0,y);
+    RR.Evaluate();
+    RR.SetOrigin(m_PhysicalSize.x*7.95/10.0,y);
+    RR.Evaluate();
     
     glBegin(GL_LINES);
-    glVertex2f(-dx+r,dy);
-    glVertex2f(+dx-r,dy);
+    glVertex2f(m_PhysicalSize.x*2.05/10.0+dx/2.0,y);
+    glVertex2f(m_PhysicalSize.x*3.00/10.0-dx/2.0,y);
     glEnd();
     glBegin(GL_LINES);
-    glVertex2f(+dx,dy-r);
-    glVertex2f(+dx,-dy+r);
+    glVertex2f(m_PhysicalSize.x*7.00/10.0+dx/2.0,y);
+    glVertex2f(m_PhysicalSize.x*7.95/10.0-dx/2.0,y);
     glEnd();
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(m_PhysicalSize.x*2.05/10.0-dx/2.0,y+dy/2.0-r);
+    glVertex2f(m_PhysicalSize.x*2.05/10.0-dx/2.0-m_PhysicalSize.x/80.0,y+dy/2.0-r);
+    glVertex2f(m_PhysicalSize.x*2.05/10.0-dx/2.0-m_PhysicalSize.x/80.0,y-dy/2.0+r);
+    glVertex2f(m_PhysicalSize.x*2.05/10.0-dx/2.0,y-dy/2.0+r);
+    glEnd();
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(m_PhysicalSize.x*3.00/10.0+dx/2.0,y+dy/2.0-r);
+    glVertex2f(m_PhysicalSize.x*3.00/10.0+dx/2.0+m_PhysicalSize.x/80.0,y+dy/2.0-r);
+    glVertex2f(m_PhysicalSize.x*3.00/10.0+dx/2.0+m_PhysicalSize.x/80.0,y-dy/2.0+r);
+    glVertex2f(m_PhysicalSize.x*3.00/10.0+dx/2.0,y-dy/2.0+r);
+    glEnd();
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(m_PhysicalSize.x*7.00/10.0-dx/2.0,y+dy/2.0-r);
+    glVertex2f(m_PhysicalSize.x*7.00/10.0-dx/2.0-m_PhysicalSize.x/80.0,y+dy/2.0-r);
+    glVertex2f(m_PhysicalSize.x*7.00/10.0-dx/2.0-m_PhysicalSize.x/80.0,y-dy/2.0+r);
+    glVertex2f(m_PhysicalSize.x*7.00/10.0-dx/2.0,y-dy/2.0+r);
+    glEnd();
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(m_PhysicalSize.x*7.95/10.0+dx/2.0,y+dy/2.0-r);
+    glVertex2f(m_PhysicalSize.x*7.95/10.0+dx/2.0+m_PhysicalSize.x/80.0,y+dy/2.0-r);
+    glVertex2f(m_PhysicalSize.x*7.95/10.0+dx/2.0+m_PhysicalSize.x/80.0,y-dy/2.0+r);
+    glVertex2f(m_PhysicalSize.x*7.95/10.0+dx/2.0,y-dy/2.0+r);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    y = m_PhysicalSize.x*6.7/10.0;
+
     glBegin(GL_LINES);
-    glVertex2f(-dx+r,-dy);
-    glVertex2f(+dx-r,-dy);
+    glVertex2f(m_PhysicalSize.x*2.55/10.0+dx/2.0,y+fontSize/2.0);
+    glVertex2f(m_PhysicalSize.x*4.20/10.0-dx/2.0,y+fontSize/2.0);
     glEnd();
+
     glBegin(GL_LINES);
-    glVertex2f(-dx,dy-r);
-    glVertex2f(-dx,-dy+r);
+    glVertex2f(m_PhysicalSize.x*5.9/10.0+dx/2.0,y+fontSize/2.0);
+    glVertex2f(m_PhysicalSize.x*7.6/10.0-dx/2.0,y+fontSize/2.0);
     glEnd();
-    aCircle.SetRadius(r);
-    aCircle.SetArcStartEnd(-90,0);
-    aCircle.SetOrigin(-dx+r, dy-r);
-    glBegin(GL_LINE_STRIP);
-    aCircle.Evaluate();
-    glEnd();
-    aCircle.SetArcStartEnd(0,90);
-    aCircle.SetOrigin(+dx-r, dy-r);
-    glBegin(GL_LINE_STRIP);
-    aCircle.Evaluate();
-    glEnd();
-    aCircle.SetArcStartEnd(90,180);
-    aCircle.SetOrigin(+dx-r, -dy+r);
-    glBegin(GL_LINE_STRIP);
-    aCircle.Evaluate();
-    glEnd();
-    aCircle.SetArcStartEnd(180,270);
-    aCircle.SetOrigin(-dx+r, -dy+r);
-    glBegin(GL_LINE_STRIP);
-    aCircle.Evaluate();
-    glEnd();
+
+    snprintf( buffer, sizeof(buffer), "BRAKE TEMP" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(m_PhysicalSize.x/2 - fontSize*4, y, &buffer[0], m_Font);     
+    snprintf( buffer, sizeof(buffer), "L" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(m_PhysicalSize.x*2.5/10.0, y, &buffer[0], m_Font);     
+    snprintf( buffer, sizeof(buffer), "R" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(m_PhysicalSize.x*7.4/10.0, y, &buffer[0], m_Font);     
+
+
+    // CONTROL SURFACES
+
     
-
-    glPopMatrix();
-
-      
     glPopMatrix();
     
   }

@@ -4,6 +4,7 @@ noinst_LIBRARIES = libOpenGCBase.a
 # Source file names
 libOpenGCBase_a_SOURCES = \
 ogcCircleEvaluator.cpp \
+ogcRREvaluator.cpp \
 ogcFLTKRenderWindow.cpp \
 ogcFont.cpp \
 ogcFontManager.cpp \
@@ -16,6 +17,7 @@ ogcRenderWindow.cpp
 
 noinst_HEADERS = \
 ogcCircleEvaluator.h \
+ogcRREvaluator.h \
 ogcFLTKRenderWindow.h \
 ogcFont.h \
 ogcFontManager.h \
