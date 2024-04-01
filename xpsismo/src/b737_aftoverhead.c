@@ -827,6 +827,8 @@ void b737_aftoverhead(void)
   int *mach_warn2_test;
   int *stall_warn1_test;
   int *stall_warn2_test;
+  int *stall_warn;
+  float *stall_warn_f;
   if ((acf_type == 2) || (acf_type == 3)) {
     i0=33;
     o0=16;
@@ -834,11 +836,15 @@ void b737_aftoverhead(void)
     mach_warn2_test = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn2_test");
     stall_warn1_test = link_dataref_cmd_hold("laminar/B738/push_button/stall_test1_press");
     stall_warn2_test = link_dataref_cmd_hold("laminar/B738/push_button/stall_test2_press");
+    stall_warn = link_dataref_int("sim/cockpit2/annunciators/stall_warning");
+    stall_warn_f = link_dataref_flt("laminar/B738/pfd/airspeed_warn",-1);
   } else {
     mach_warn1_test = link_dataref_int("xpserver/mach_warn1_test");
     mach_warn2_test = link_dataref_int("xpserver/mach_warn2_test");
     stall_warn1_test = link_dataref_int("xpserver/stall_warn1_test");
     stall_warn2_test = link_dataref_int("xpserver/stall_warn2_test");
+    stall_warn = link_dataref_int("sim/cockpit2/annunciators/stall_warning");
+    stall_warn_f = link_dataref_flt("xpserver/stall_warn_f",-1);
   }
   
   ret = digital_input(card, i0+0, mach_warn2_test, 0);
@@ -847,20 +853,19 @@ void b737_aftoverhead(void)
   ret = digital_input(card, i0+4, stall_warn1_test, 0);
 
   /* WE CURRENTLY ONLY HAVE ONE WIRE TO BOTH STICK SHAKERS */
-  int *stall_warn = link_dataref_int("sim/cockpit2/annunciators/stall_warning");
   //  printf("%i %i %i\n", *stall_warn,*stall_warn1_test,*stall_warn2_test );
-  if ((((*stall_warn == 1) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
+  if (((((*stall_warn == 1) || (*stall_warn_f >= 1.0)) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
        ((*stall_warn1_test == 1) && (*stall_warn2_test == 0))) && (*avionics_on == 1)) {
-    printf("1\n");
+    //printf("1\n");
     ret = digital_output(card, 56, &one);
   } else {
     ret = digital_output(card, 56, &zero);
   }
  
-  if ((((*stall_warn == 1) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
+  if (((((*stall_warn == 1) || (*stall_warn_f >= 1.0)) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
        ((*stall_warn1_test == 0) && (*stall_warn2_test == 1))) && (*avionics_on == 1)) {
-    printf("2\n");
-     ret = digital_output(card, 57, &one);
+    //printf("2\n");
+    ret = digital_output(card, 57, &one);
   } else {
     ret = digital_output(card, 57, &zero);
   }
