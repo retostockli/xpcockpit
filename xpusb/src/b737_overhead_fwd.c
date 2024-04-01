@@ -617,9 +617,9 @@ void b737_overhead_fwd(void)
     device = servo2;
     float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",-1);
     if (*servotest == 1) {
-      ret = servos_output(device,3,&servoval,0.0,1.0,295,975);
+      ret = servos_output(device,3,&servoval,0.0,1.0,300,1000);
     } else {
-      ret = servos_output(device,3,zone_temp,0.0,80.0,295,975);
+      ret = servos_output(device,3,zone_temp,0.0,80.0,300,1000);
     }
       
     /* Yellow Annunciators */
