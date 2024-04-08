@@ -604,7 +604,7 @@ void b737_mip(void)
     */
     if (1) {
       float gauge_position = linear_interpolate(*flaps_position);
-      printf("%f %f \n",*flaps_position,gauge_position);
+      //printf("%f %f \n",*flaps_position,gauge_position);
       ret = servo_outputf(card,0,&gauge_position, 0.0,1.0);
       ret = servo_outputf(card,1,brake_pressure,-850.0,5300.0);
       //ret = servo_outputf(card,3,&fvalue,-0.1,1.1);
