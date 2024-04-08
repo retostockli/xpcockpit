@@ -586,15 +586,15 @@ void b737_mip(void)
     /* SERVOS */
     /* Flap deploy ratio is measured from 0-1 where:
        deploy  degree    servo out
-       0     : 0 deg   : 0.10
-       0.125 : 1 deg   : 0.17
-       0.250 : 2 deg   : 0.31
-       0.375 : 5 deg   : 0.38
-       0.500 : 10 deg  : 0.50
-       0.625 : 15 deg  : 0.58
-       0.750 : 25 deg  : 0.66
-       0.875 : 30 deg  : 0.73
-       1.000 : 40 deg  : 0.81
+       0     : 0 deg   : 0.07
+       0.125 : 1 deg   : 0.15
+       0.250 : 2 deg   : 0.26
+       0.375 : 5 deg   : 0.34
+       0.500 : 10 deg  : 0.45
+       0.625 : 15 deg  : 0.53
+       0.750 : 25 deg  : 0.60
+       0.875 : 30 deg  : 0.67
+       1.000 : 40 deg  : 0.75
 
        The flaps gauge in the B737 is linear in the second column
        so we have to translate the deploy ratio into the second column
@@ -604,7 +604,7 @@ void b737_mip(void)
     */
     if (1) {
       float gauge_position = linear_interpolate(*flaps_position);
-      //printf("%f %f \n",*flaps_position,gauge_position);
+      printf("%f %f \n",*flaps_position,gauge_position);
       ret = servo_outputf(card,0,&gauge_position, 0.0,1.0);
       ret = servo_outputf(card,1,brake_pressure,-850.0,5300.0);
       //ret = servo_outputf(card,3,&fvalue,-0.1,1.1);

@@ -12,9 +12,9 @@
 
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. */
-
+ 
 static float xval[9] = {0.0,0.125,0.250,0.375,0.500,0.625,0.750,0.875,1.0 }; /* Discrete steps in input space */
-static float yval[9] = {0.1,0.17,0.31,0.38,0.50,0.58,0.66,0.73,0.81}; /* Corresponding steps in output space */
+static float yval[9] = {0.07,0.15,0.26,0.34,0.45,0.53,0.60,0.67,0.75}; /* Corresponding steps in output space */
 
 float linear_interpolate(float input)
 {
