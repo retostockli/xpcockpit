@@ -360,7 +360,11 @@ void b737_fmc()
     
     // Only update key brightness PWM if it has changed
     /* PWM behaves strange and is flickering with pigpiod, so switch to brightness ON/OFF */
-    *key_brightness = 0.5;
+    if (*avionics_on == 1) {
+      *key_brightness = 0.5;
+    } else {
+      *key_brightness = 0.0;
+    }
     if ((*key_brightness != key_brightness_save) &&
 	(*key_brightness != FLT_MISS)) {
       printf("New Key Brightness: %f \n",*key_brightness);
