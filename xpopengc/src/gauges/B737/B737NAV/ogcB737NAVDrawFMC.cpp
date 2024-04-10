@@ -594,7 +594,8 @@ namespace OpenGC
 	    }
 	    
 	    /* We draw from last to present waypoint */
-	    int i = max(wpt_current,0);
+	    int i;
+	    i = max(wpt_current-1,0);
 	    while (i<nwpt) {
 
 	      int i0 = max(i-1,0);
@@ -610,7 +611,7 @@ namespace OpenGC
 
 	      /* Do not draw from last waypoint to destination airport */
 	      /* Do only draw within waypoint range */
-	      if ((strcmp(wpt[min(i1,nwpt-1)].name,(char*) des_apt_name) != 0) && (i0 >= 0) && (i1 < nwpt)) {
+	      if ((i0 >= 0) && (i1 < nwpt)) {
 
 		//		printf("%i %i \n",i0,i1);
 		
@@ -657,6 +658,9 @@ namespace OpenGC
 		  //if (( sqrt(xPos*xPos + yPos*yPos) < map_size) ||
 		  //    ( sqrt(xPos2*xPos2 + yPos2*yPos2) < map_size)) {
 
+		  // Do not draw magenta line before current waypoint and not the last leg to the airport
+		  if (i0>=(wpt_current-1) && (i1<(nwpt-1))) {
+		  
 		  glPushMatrix();
 		
 		  /*
@@ -1032,7 +1036,10 @@ namespace OpenGC
 		  } // not a Discontinuity in flight plan
 
 		  glPopMatrix();
-		
+
+		  } // do not draw magenta line to current waypoint and not to destination airport 
+
+		  
 		  // draw waypoint symbol and name
 		  glPushMatrix();
 		  glTranslatef(xPosL, yPosL, 0.0);
