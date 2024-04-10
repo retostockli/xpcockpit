@@ -594,7 +594,7 @@ namespace OpenGC
 	    }
 	    
 	    /* We draw from last to present waypoint */
-	    int i = max(wpt_current-1,0);
+	    int i = max(wpt_current,0);
 	    while (i<nwpt) {
 
 	      int i0 = max(i-1,0);
@@ -608,9 +608,9 @@ namespace OpenGC
 		if (i1 >= nwpt) break;
 	      }
 
-	      /* Do not draw from last missed approach wpt to airport */
+	      /* Do not draw from last waypoint to destination airport */
 	      /* Do only draw within waypoint range */
-	      if ((((wpt_miss2 > 0) && (i < wpt_miss2)) || (wpt_miss2 == 0)) && (i0 >= 0) && (i1 < nwpt)) {
+	      if ((strcmp(wpt[min(i1,nwpt-1)].name,(char*) des_apt_name) != 0) && (i0 >= 0) && (i1 < nwpt)) {
 
 		//		printf("%i %i \n",i0,i1);
 		
@@ -830,6 +830,7 @@ namespace OpenGC
 		      } else {
 			aCircle.SetDashed(0,1.0);
 		      }
+
 		      glBegin(GL_LINE_STRIP);
 		      aCircle.Evaluate();
 		      glEnd();
@@ -921,6 +922,7 @@ namespace OpenGC
 			lonT = (double) seg3_end_lon[i0];
 			latT = (double) seg3_end_lat[i0];
 		      }
+
 
 		      /*
 			glPushMatrix();
