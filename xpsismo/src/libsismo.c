@@ -754,7 +754,7 @@ int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxv
 	    }
 	  }
 	} else {
-	  if (verbose > 0) printf("Servo %i above maximum # of servos %i of card %i \n",
+	  if (verbose > 1) printf("Servo %i above maximum # of servos %i of card %i \n",
 	 			  servo,sismo[card].nservos,card);
 	  retval = -1;
 	}
