@@ -13,7 +13,7 @@ using namespace qindesign::network;
 #define SENDMSGLEN 4 + 4 * MAXPACKETSEND
 #define INITVAL -1
 #define NINPUTS 42
-#define NANALOGINPUTS 18
+#define NANALOGINPUTS 42
 
 
 // define network parameters
@@ -30,7 +30,7 @@ char sendBuffer[SENDMSGLEN];  // buffer to hold send packet
 EthernetUDP Udp;
 
 // define storage for MAC address
-byte mac[6];
+uint8_t mac[6];
 
 // define storage for inputs
 int isinput[NINPUTS];
@@ -40,7 +40,7 @@ int analoginput[NANALOGINPUTS];
 int analoginput_old[NANALOGINPUTS];
 int isanaloginput[NANALOGINPUTS];
 
-void pauseCode(char message[]) {
+void pauseCode(const char message[]) {
   while (1) {
     Serial.println(message);
     delay(1000);
@@ -50,7 +50,7 @@ void pauseCode(char message[]) {
 void setup() {
   // Open serial communications and wait for port to open:
   if (DEBUG) {
-    Serial.begin(9600);
+    Serial.begin(115200);
     Serial.println("Starting Setup ...");
   }
 
@@ -70,21 +70,11 @@ void setup() {
     }
     Serial.println("");
 
-    // Check for Ethernet hardware present
-    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
-      pauseCode("Error: Ethernet shield was not found.");
-    }
-
-    // That does not work, always off
-    /*
-    if (!Ethernet.linkState()) {
-      Serial.println("Ethernet cable is not connected.");
-    }
-    */
   }
 
   // start UDP service
   Udp.begin(localPort);
+  Udp.setReceiveQueueSize(10);
   if (DEBUG) Serial.println("UDP initialized.");
 
   // assume no pins are selected as inputs, will be changed during initialization
@@ -100,7 +90,7 @@ void setup() {
 
 void loop() {
 
-  int ivalue;
+  int16_t ivalue;
   int p;
 
   // if there's data available, read a packet
@@ -124,9 +114,12 @@ void loop() {
     // read the packet into packetBufffer
     Udp.read(recvBuffer, RECVMSGLEN);
 
-    // Copy payload 16 bit Integer into variable
-    memcpy(&ivalue, &recvBuffer[6], 2);
-
+    
+    if (packetSize != (4 + 4*MAXPACKETRECV)) {
+       Serial.print("Wrong Packet Size. Should be: ");
+       Serial.println(4 + 4*MAXPACKETRECV,DEC);
+    }
+    
     if (DEBUG) {
       Serial.print(" with Content: ");
       for (int i = 0; i < 2; i++) {
@@ -137,10 +130,13 @@ void loop() {
         Serial.print(recvBuffer[i], DEC);
         Serial.print(" ");
       }
+      // Copy payload 16 bit Integer into variable
+      memcpy(&ivalue, &recvBuffer[6], 2);
       Serial.println(ivalue);
     }
 
-    if ((recvBuffer[0] == 0x41) && (recvBuffer[1] == 0x52)) {
+    // Identifier for Teensy: Characters T and E
+    if ((recvBuffer[0] == 0x54) && (recvBuffer[1] == 0x45)) {
 
       /* loop through data packets */
       for (p = 0; p < MAXPACKETRECV; p++) {
@@ -152,6 +148,7 @@ void loop() {
           pinMode(recvBuffer[p * 4 + 4], OUTPUT);
           digitalWrite(recvBuffer[p * 4 + 4], ivalue);
           if (DEBUG) {
+            Serial.print("Packet ");
             Serial.print(p, DEC);
             Serial.print(" Digital Output ");
             Serial.print(recvBuffer[p * 4 + 4], DEC);
@@ -163,6 +160,7 @@ void loop() {
           pinMode(recvBuffer[p * 4 + 4], OUTPUT);
           analogWrite(recvBuffer[p * 4 + 4], ivalue);
           if (DEBUG) {
+            Serial.print("Packet ");
             Serial.print(p, DEC);
             Serial.print(" Analog Output ");
             Serial.print(recvBuffer[p * 4 + 4], DEC);
@@ -171,11 +169,12 @@ void loop() {
           }
         } else if (recvBuffer[p * 4 + 5] == 0x03) {
           /* define pin mode and initialize input to send data back to server */
-          isinput[recvBuffer[p * 4 + 4]] = 1;
+          isinput[(int) recvBuffer[p * 4 + 4]] = 1;
           pinMode(recvBuffer[p * 4 + 4], INPUT_PULLUP);
-          input_old[recvBuffer[p * 4 + 4]] = INITVAL;
-          input[recvBuffer[p * 4 + 4]] = INITVAL;
+          input_old[(int) recvBuffer[p * 4 + 4]] = INITVAL;
+          input[(int) recvBuffer[p * 4 + 4]] = INITVAL;
           if (DEBUG) {
+            Serial.print("Packet ");
             Serial.print(p, DEC);
             Serial.print(" Initializing: Digital Input ");
             Serial.print(recvBuffer[p * 4 + 4], DEC);
@@ -183,19 +182,25 @@ void loop() {
           }
         } else if (recvBuffer[p * 4 + 5] == 0x04) {
           /* define analog input to send data back to server */
-          isanaloginput[recvBuffer[p * 4 + 4]] = 1;
-          analoginput_old[recvBuffer[p * 4 + 4]] = INITVAL;
-          analoginput[recvBuffer[p * 4 + 4]] = INITVAL;
+          isanaloginput[(int) recvBuffer[p * 4 + 4]] = 1;
+          pinMode(recvBuffer[p * 4 + 4], INPUT);
+          analoginput_old[(int) recvBuffer[p * 4 + 4]] = INITVAL;
+          analoginput[(int) recvBuffer[p * 4 + 4]] = INITVAL;
           if (DEBUG) {
+            Serial.print("Packet ");
             Serial.print(p, DEC);
             Serial.print(" Initializing: Analog Input ");
             Serial.print(recvBuffer[p * 4 + 4], DEC);
             Serial.println(" will send data.");
           }
         } else {
-          /* Any other command: IGNORE */
-          if (p == 0) {
-            Serial.println("Transmission without content!!!");
+          if (recvBuffer[p * 4 + 5] != 0) {
+            Serial.println("Received unknown command???");
+          } else {
+            /* Any other command: IGNORE */
+            if (p == 0) {
+              Serial.println("Transmission without content!!!");
+            }
           }
         }
       } /* loop through data packets */
@@ -224,8 +229,8 @@ void loop() {
           }
 
           memset(sendBuffer, 0, SENDMSGLEN);
-          sendBuffer[0] = 0x41;
-          sendBuffer[1] = 0x52;
+          sendBuffer[0] = 0x54; /* T */
+          sendBuffer[1] = 0x45; /* E */
           sendBuffer[2] = mac[4];
           sendBuffer[3] = mac[5];
           sendBuffer[4] = i;
@@ -233,6 +238,10 @@ void loop() {
           memcpy(&sendBuffer[6], &input[i], sizeof(ivalue));
           Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
           int ret = Udp.write(sendBuffer, SENDMSGLEN);
+          if (DEBUG) {
+            Serial.print("Sent UDP Packet with length: ");
+            Serial.println(ret,DEC);
+          }
           Udp.endPacket();
         }
       }
@@ -241,7 +250,7 @@ void loop() {
     // Read Analog inputs and send changed ones to host
     for (int i = 0; i < NANALOGINPUTS; i++) {
       if (isanaloginput[i] == 1) {
-        ivalue = analogRead(NINPUTS + i);
+        ivalue = analogRead(i);
 
         if (ivalue != analoginput[i]) {
           analoginput[i] = ivalue;
@@ -254,8 +263,8 @@ void loop() {
           }
 
           memset(sendBuffer, 0, SENDMSGLEN);
-          sendBuffer[0] = 0x41;
-          sendBuffer[1] = 0x52;
+          sendBuffer[0] = 0x54; /* T */
+          sendBuffer[1] = 0x45; /* E */
           sendBuffer[2] = mac[4];
           sendBuffer[3] = mac[5];
           sendBuffer[4] = i;
@@ -264,6 +273,10 @@ void loop() {
 
           Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
           int ret = Udp.write(sendBuffer, SENDMSGLEN);
+          if (DEBUG) {
+            Serial.print("Sent UDP Packet with length: ");
+            Serial.println(ret,DEC);
+          }
           Udp.endPacket();
         }
       }

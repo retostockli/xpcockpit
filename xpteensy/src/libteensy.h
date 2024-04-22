@@ -14,15 +14,15 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. */
 
-#define MAXTEENSYS 5                /* maximum number of teensys that we expect */
+#define MAXTEENSYS 5             /* maximum number of teensys that we expect */
 #define MAXPACKETRECV 1          /* maximum number of data points to receive per packet */
 #define MAXPACKETSEND 10         /* maximum number of data points to send per packet */
 #define RECVMSGLEN 4+4*MAXPACKETRECV /* number of bytes in received UDP packet */
 #define SENDMSGLEN 4+4*MAXPACKETSEND /* number of bytes in sent UDP packet */
-#define MAXANALOGINPUTS 6        /* 6 on Teensy  */
-#define MAXANALOGOUTPUTS 14      /* 14 on Teensy, not all can have PWM output though  */
-#define MAXINPUTS 14             /* All inputs can be used as outputs. Some are reserved */
-#define MAXOUTPUTS 14            /* All inputs can be used as outputs. Some are reserved */
+#define MAXANALOGINPUTS 42       /* 42 on Teensy  */
+#define MAXANALOGOUTPUTS 42      /* 42 on Teensy, not all can have PWM output though  */
+#define MAXINPUTS 42             /* All inputs can be used as outputs. Some are reserved */
+#define MAXOUTPUTS 42            /* All inputs can be used as outputs. Some are reserved */
 #define MAXSAVE 30               /* maximum number of history values in data structure */
 #define INPUTINITVAL -1          /* initial value of inputs upon startup */
 #define OUTPUTINITVAL -1         /* initial value of outputs upon startup (OFF) */

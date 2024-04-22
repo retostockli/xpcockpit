@@ -1,8 +1,6 @@
-/* This is the handleserver.c code which communicates flight data to/from the X-Plane 
-   flight simulator via TCP/IP interface
+/* This is the handleudp.c code which communicates to Teensy via the UDP protocol
 
-   Copyright (C) 2009 - 2014  Reto Stockli
-   Adaptation to Linux compilation by Hans Jansen
+   Copyright (C) 2009 - 2024  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, 
    either version 3 of the License, or (at your option) any later version.
@@ -21,21 +19,39 @@
 
 #include <stdio.h>   
 #include <stdlib.h>  
-#include <sys/socket.h> 
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <stdbool.h>
 #include <unistd.h>   
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <assert.h>
+#include <pthread.h>
+
+#ifdef WIN
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <arpa/inet.h>
+#include <sys/socket.h> 
+#include <sys/ioctl.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#endif
 
 #include "handleudp.h"
 #include "common.h"
 
+#define UDPRECVBUFLEN 44*1000
+#define UDPSENDBUFLEN 44
+
+/* UDP CLIENT PARAMETERS */
+char udpClientIP[30];
+short int udpClientPort;
+char udpServerIP[30];
+short int udpServerPort;
+int clientSocket;
 int serverSocket;
 
 struct sockaddr_in udpServerAddr;     /* Server address structure */
@@ -45,20 +61,27 @@ unsigned char *udpSendBuffer;         /* buffer containing data to send to udp *
 unsigned char *udpRecvBuffer;         /* buffer containing data that was read from udp */
 int udpReadLeft;                      /* counter of bytes to read from receive thread */
 
-pthread_t poll_thread;                /* read thread */
-int poll_thread_exit_code;            /* read thread exit code */
-pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_t udp_poll_thread;                /* read thread */
+int udp_poll_thread_exit_code;            /* read thread exit code */
+pthread_mutex_t udp_exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* set up udp server socket with given server address and port */
 int init_udp_server(char server_ip[],int server_port)
 {
-
+#ifdef WIN
+  WSADATA wsaData;
+  if (WSAStartup (MAKEWORD(2, 0), &wsaData) != 0) {
+    fprintf (stderr, "WSAStartup(): Couldn't initialize Winsock.\n");
+    return -1;
+  }
+#endif
+  
   /* Create a UDP socket */
   if ((serverSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    printf("HANDLEUDP: Cannot initialize client UDP socket \n");
+    printf("TEENSYUDP: Cannot initialize client UDP socket \n");
     return -1; 
   } else {
-
+    
     /* Construct the server address structure */
     memset(&udpServerAddr, 0, sizeof(udpServerAddr));           /* Zero out structure */
     udpServerAddr.sin_family      = AF_INET;                  /* Internet address family */
@@ -77,71 +100,97 @@ int init_udp_server(char server_ip[],int server_port)
 
     /* set to blocking (0). Non-blocking (1) is not suitable for the threaded reading */
     unsigned long nSetSocketType = 0;
+#ifdef WIN
+    if (ioctlsocket(serverSocket,FIONBIO,&nSetSocketType) < 0) {
+#else
     if (ioctl(serverSocket,FIONBIO,&nSetSocketType) < 0) {
-      printf("HANDLEUDP: Server set to non-blocking failed\n");
+#endif
+      printf("TEENSYUDP: Server set to non-blocking failed\n");
       return -1;
     } else {
-      printf("HANDLEUDP: Server Socket ready\n");
+      printf("TEENSYUDP: Server Socket ready\n");
     }
   }
 
   /* set a 1 s timeout so that the thread can be terminated if ctrl-c is pressed */
+#ifdef WIN
+  int tv = 1000;
+  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#else
   struct timeval tv;
   tv.tv_sec = 1;
   tv.tv_usec = 0;
-  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
- 
+  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+#endif
+
   return 0;
 }
 
-void *poll_thread_main()
+void *udpclient_thread_main()
 /* thread handles udp receive on the server socket by use of blocking read and a read buffer */
 {
   int ret = 0;
   unsigned char buffer[UDPRECVBUFLEN];
 
-  printf("HANDLEUDP: Receive thread running \n");
+  printf("TEENSYUDP: Receive thread running \n");
 
-  while (!poll_thread_exit_code) {
+  while (!udp_poll_thread_exit_code) {
 
     /* read call goes here (1 s timeout for blocking operation) */
     ret = recv(serverSocket, buffer, UDPRECVBUFLEN, 0);
+#ifdef WIN
+    int wsaerr = WSAGetLastError();
+#endif
     if (ret == -1) {
-      if (errno == EWOULDBLOCK) { // just no data yet ...
-	if (verbose > 3) printf("HANDLEUDP: No data yet. \n");
+#ifdef WIN
+      if ((wsaerr == WSAEWOULDBLOCK) || (wsaerr == WSAEINTR)) { // just no data yet ...
+#else
+      if ((errno == EWOULDBLOCK) || (errno == EINTR)) { /* just no data yet or our own timeout */
+#endif
+	if (verbose > 3) printf("TEENSYUDP: No data yet. \n");
       } else {
-	printf("HANDLEUDP: Receive Error. \n");
-	poll_thread_exit_code = 1;
-	break;
+#ifdef WIN
+	if (wsaerr != WSAETIMEDOUT) {
+	  printf("TEENSYUDP: Receive Error %i \n",wsaerr);
+	  //udp_poll_thread_exit_code = 1;
+	  //break;
+	}
+#else
+	printf("TEENSYUDP: Receive Error %i \n",errno);
+	//udp_poll_thread_exit_code = 1;
+	//break;
+#endif
       } 
     } else if ((ret > 0) && (ret <= UDPRECVBUFLEN)) {
       /* read is ok */
-      
+
+	//printf("%i \n",ret);
+	
       /* does it fit into read buffer? */
       if (ret <= (UDPRECVBUFLEN - udpReadLeft)) {
-	pthread_mutex_lock(&exit_cond_lock);
+	pthread_mutex_lock(&udp_exit_cond_lock);
 	memcpy(&udpRecvBuffer[udpReadLeft],buffer,ret);
 	udpReadLeft += ret;
-	pthread_mutex_unlock(&exit_cond_lock);
+	pthread_mutex_unlock(&udp_exit_cond_lock);
 	
-	if (verbose > 3) printf("HANDLEUDP: receive buffer position: %i \n",udpReadLeft);
+	if (verbose > 3) printf("TEENSYUDP: receive buffer position: %i \n",udpReadLeft);
       } else {
-	if (verbose > 0) printf("HANDLEUDP: receive buffer full: %i \n",udpReadLeft);
+	if (verbose > 0) printf("TEENSYUDP: receive buffer full: %i \n",udpReadLeft);
       }
     } else if ((ret > 0) && (ret > UDPRECVBUFLEN)) {
       /* too many bytes were read */
-      printf("HANDLEUDP: too big udp packet of %i bytes does not fit in read buffer \n",ret);
+      printf("TEENSYUDP: too big udp packet of %i bytes does not fit in read buffer \n",ret);
     } else {
       /* nothing read */
     }
 
-    /* wait loop not needed since we have a timeout */
-    //usleep(500);
+    /* wait loop needed to allow read buffer to be emptied by read code */
+    usleep(500);
 
   } /* while loop */
   
   /* thread was killed */
-  if (verbose > 0) printf("HANDLEUDP: Asynchronous receive thread shutting down \n");
+  if (verbose > 0) printf("TEENSYUDP: Asynchronous receive thread shutting down \n");
 
   return 0;
 }
@@ -159,10 +208,10 @@ int init_udp_receive() {
 
   udpReadLeft=0;
  
-  poll_thread_exit_code = 0;
-  ret = pthread_create(&poll_thread, NULL, &poll_thread_main, NULL);
+  udp_poll_thread_exit_code = 0;
+  ret = pthread_create(&udp_poll_thread, NULL, &udpclient_thread_main, NULL);
   if (ret>0) {
-    printf("HANDLEUDP: poll thread could not be created.\n");
+    printf("TEENSYUDP: poll thread could not be created.\n");
     return -1;
   }
 
@@ -172,14 +221,20 @@ int init_udp_receive() {
 /* end udp connection */
 void exit_udp(void)
 {
-  poll_thread_exit_code = 1;
-  pthread_join(poll_thread, NULL);
+  udp_poll_thread_exit_code = 1;
+  pthread_join(udp_poll_thread, NULL);
+
+#ifdef WIN
+  closesocket(serverSocket);
+  WSACleanup();
+#else
   close(serverSocket);
+#endif
 }
 
 
-/* send datagram to X-Plane UDP server */
-int send_udp(char client_ip[],int client_port,unsigned char data[], int len) {
+/* send datagram to UDP client */
+int send_udp(char client_ip[], int client_port, unsigned char data[], int len) {
 
   int n;
 
@@ -197,14 +252,13 @@ int send_udp(char client_ip[],int client_port,unsigned char data[], int len) {
   printf("%s \n",udpClientAddr.sin_zero);
   */
   
-  n = sendto(serverSocket, data, len, 
-	     MSG_CONFIRM, (struct sockaddr *) &udpClientAddr, 
-	     sizeof(udpClientAddr));
+  n = sendto(serverSocket, data, len, 0,
+	     (struct sockaddr *) &udpClientAddr, sizeof(udpClientAddr));
 
   return n;
 }
 
-/* receive datagram from X-Plane UDP server */
+/* receive datagram client */
 int recv_udp() {
 
   int n; 

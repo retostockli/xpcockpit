@@ -69,13 +69,15 @@ void test(void)
   } 
 
   /* read analog input (#14) */
-  /* ret = analog_input(teensy,14,fvalue,0.0,1.0); */
-  /* if (ret == 1) { */
-  /*   /\* ret is 1 only if analog input has changed *\/ */
-  /*   printf("Analog Input changed to: %f \n",*fvalue); */
-  /* } */
+  ret = analog_input(teensy,14,fvalue,0.0,1.0);
+  if (ret == 1) {
+    /* ret is 1 only if analog input has changed */
+    printf("Analog Input changed to: %f \n",*fvalue);
+  }
   
   /* set LED connected to first output (#0) to value landing lights dataref */
+  //digitalvalue = 1;
   ret = digital_output(teensy, 0, &digitalvalue);
+  //ret = analog_output(teensy, 0, &digitalvalue);
   
 }

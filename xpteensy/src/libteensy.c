@@ -48,18 +48,18 @@ int read_teensy() {
 
   /* PROTOCOL: 8 Bytes on send and receive
      BYTE   | MEANING
-     0-1    | Identifier (Characters AR for Teensy)
+     0-1    | Identifier (Characters TE for Teensy)
      2-3    | Last two Bytes of MAC address
      --- FIRST DATA PACKET
-     4      | Input / Output Number (0-13)
+     4      | Input / Output Number
      5      | Input / Output Type 
      6-7    | Value (16 bit signed Integer Value)
      --- SECOND DATA PACKET
-     8      | Input / Output Number (0-13)
+     8      | Input / Output Number
      9      | Input / Output Type 
      10-11  | Value (16 bit signed Integer Value)
      --- THIRD DATA PACKET
-     12      | Input / Output Number (0-13)
+     12      | Input / Output Number
      13      | Input / Output Type
      14-15  | Value (16 bit signed Integer Value)
      --- N-TH DATA PACKET (N=MAXPACKET)
@@ -88,19 +88,19 @@ int read_teensy() {
     
     /* empty UDP receive buffer instead of directly accessing the device */
 
-    pthread_mutex_lock(&exit_cond_lock);    
+    pthread_mutex_lock(&udp_exit_cond_lock);    
     /* read from start of receive buffer */
     memcpy(teensyRecvBuffer,&udpRecvBuffer[0],RECVMSGLEN);
     /* shift remaining read buffer to the left */
     memmove(&udpRecvBuffer[0],&udpRecvBuffer[RECVMSGLEN],udpReadLeft-RECVMSGLEN);    
     /* decrease read buffer position and counter */
     udpReadLeft -= RECVMSGLEN;
-    pthread_mutex_unlock(&exit_cond_lock);
+    pthread_mutex_unlock(&udp_exit_cond_lock);
 
     /* decode message */
 
-    /* check init string AR */
-    if ((teensyRecvBuffer[0] == 0x41) && (teensyRecvBuffer[1] == 0x52)) {
+    /* check init string is TE */
+    if ((teensyRecvBuffer[0] == 0x54) && (teensyRecvBuffer[1] == 0x45)) {
       /* check MAC Address of Teensy which did send the message */
       
       for (i=0;i<MAXTEENSYS;i++) {
@@ -202,8 +202,8 @@ int write_teensy() {
 	  p++;
 	}
 	if (p == MAXPACKETSEND) {
-	  teensySendBuffer[0] = 0x41;
-	  teensySendBuffer[1] = 0x52;
+	  teensySendBuffer[0] = 0x54; /* T */
+	  teensySendBuffer[1] = 0x45; /* E */
 	  teensySendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
 	  teensySendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
 	  ret = send_udp(teensy[tee].ip,teensy[tee].port,teensySendBuffer,SENDMSGLEN);
@@ -226,8 +226,8 @@ int write_teensy() {
 	  p++;
 	}
 	if ((p == MAXPACKETSEND) || ((p>0)&&(analogoutput==teensy[tee].nanalogoutputs-1))) {
-	  teensySendBuffer[0] = 0x41;
-	  teensySendBuffer[1] = 0x52;
+	  teensySendBuffer[0] = 0x54; /* T */
+	  teensySendBuffer[1] = 0x45; /* E */
 	  teensySendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
 	  teensySendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
 	  ret = send_udp(teensy[tee].ip,teensy[tee].port,teensySendBuffer,SENDMSGLEN);
@@ -253,9 +253,8 @@ int init_teensy() {
   for (tee=0;tee<MAXTEENSYS;tee++) {
     if (teensy[tee].connected == 1) {
 
+      /* initialize pins selected for digital input */      
       p = 0; /* start at first data packet */
-      
-      /* initialize pins selected for input */      
       memset(teensySendBuffer,0,SENDMSGLEN);
       for (input=0;input<teensy[tee].ninputs;input++) {
 	if (teensy[tee].inputs_isinput[input] == 1) {
@@ -268,8 +267,8 @@ int init_teensy() {
 	  p++;
 	} /* pin selected as input */
 	if (p == MAXPACKETSEND) {
-	  teensySendBuffer[0] = 0x41;
-	  teensySendBuffer[1] = 0x52;
+	  teensySendBuffer[0] = 0x54; /* T */
+	  teensySendBuffer[1] = 0x45; /* E */
 	  teensySendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
 	  teensySendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
 	  ret = send_udp(teensy[tee].ip,teensy[tee].port,teensySendBuffer,SENDMSGLEN);
@@ -291,8 +290,8 @@ int init_teensy() {
 	  p++;
 	} /* analog input pint selected */
 	if ((p == MAXPACKETSEND) || ((p>0)&&(input==teensy[tee].nanaloginputs-1))) {
-	  teensySendBuffer[0] = 0x41;
-	  teensySendBuffer[1] = 0x52;
+	  teensySendBuffer[0] = 0x54; /* T */
+	  teensySendBuffer[1] = 0x45; /* E */
 	  teensySendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
 	  teensySendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
 	  ret = send_udp(teensy[tee].ip,teensy[tee].port,teensySendBuffer,SENDMSGLEN);

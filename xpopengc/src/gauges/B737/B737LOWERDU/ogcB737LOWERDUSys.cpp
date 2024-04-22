@@ -73,6 +73,7 @@ namespace OpenGC
     char buffer[15];
     float dx,dy,r;
     float x,y;
+    float px,py;
     float fontSize;
     RREvaluator RR;
     
@@ -102,9 +103,41 @@ namespace OpenGC
     RR.SetSize(dx,dy);
     RR.SetOrigin(x,y);
     RR.Evaluate();
+
+    snprintf( buffer, sizeof(buffer), "QTY %%" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x - 0.95*dx/2, y - 0.08*dy, &buffer[0], m_Font);     
+    snprintf( buffer, sizeof(buffer), "PRESS" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x - 0.95*dx/2, y - 0.39*dy, &buffer[0], m_Font);     
+    snprintf( buffer, sizeof(buffer), "A" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x - 0.2*dx/2, y + 0.20*dy, &buffer[0], m_Font);     
+    snprintf( buffer, sizeof(buffer), "B" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x + 0.5*dx/2, y + 0.20*dy, &buffer[0], m_Font);     
+
+    glColor3ub(COLOR_BLACK);
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    dx = 0.37*m_PhysicalSize.x*5.5/10.0;
+    dy = 0.2*m_PhysicalSize.y*1.7/10.0;
+    x = m_PhysicalSize.x/2.0;
+    y = m_PhysicalSize.x*8.5/10.0+m_PhysicalSize.y*1.7/10.0/2.0;
+    glVertex2f(x-0.5*dx,y-0.5*dy);
+    glVertex2f(x+0.5*dx,y-0.5*dy);
+    glVertex2f(x+0.5*dx,y+0.5*dy);
+    glVertex2f(x-0.5*dx,y+0.5*dy);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    snprintf( buffer, sizeof(buffer), "HYDRAULIC" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x - 0.45*dx, y - 0.40*dy, &buffer[0], m_Font);     
     
     // WHEELS and BRAKES
     glColor3ub(COLOR_WHITE);
+    glLineWidth(m_PhysicalSize.x/70.0);
 
     r = m_PhysicalSize.x/45.0;
     dx = m_PhysicalSize.x/16.0;
@@ -181,7 +214,50 @@ namespace OpenGC
 
 
     // CONTROL SURFACES
+    glColor3ub(COLOR_WHITE);
+    glLineWidth(m_PhysicalSize.x/70.0);
 
+    // ELEVATOR
+    px = 0.0;
+    py = 0.0;
+    x = 0.5*m_PhysicalSize.x;
+    y = 0.4*m_PhysicalSize.y;
+    dx = 0.015*m_PhysicalSize.x;
+    dy = 0.2*m_PhysicalSize.y;
+    glBegin(GL_LINES);
+    glVertex2f(x,y+0.5*dy);
+    glVertex2f(x,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y);
+    glVertex2f(x-0.5*dx,y);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y+0.5*dy);
+    glVertex2f(x-0.5*dx,y+0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y-0.5*dy);
+    glVertex2f(x-0.5*dx,y-0.5*dy);
+    glEnd();
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x-0.75*dx,y+py);
+    glVertex2f(x-1.75*dx,y+0.7*dx+py);
+    glVertex2f(x-1.75*dx,y-0.7*dx+py);
+    glEnd();
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x+0.75*dx,y+py);
+    glVertex2f(x+1.75*dx,y+0.7*dx+py);
+    glVertex2f(x+1.75*dx,y-0.7*dx+py);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    snprintf( buffer, sizeof(buffer), "ELEV" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*1.5,y-0.75*dy, &buffer[0], m_Font);     
     
     glPopMatrix();
     

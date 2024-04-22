@@ -1,6 +1,6 @@
-/* This is the handleserver.h header to the handleserver.c code
+/* This is the handleudp.h header to the handleudp.c code
 
-   Copyright (C) 2009 - 2014  Reto Stockli
+   Copyright (C) 2009 - 2024  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -13,25 +13,17 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. 
 */
-
-#include <arpa/inet.h>
-
-/* posix tread headers */
 #include <assert.h>
 #include <pthread.h>
 
-#define UDPRECVBUFLEN 30*100
-#define UDPSENDBUFLEN 28
 
-/* UDP CLIENT PARAMETERS */
 extern unsigned char *udpSendBuffer;         /* buffer containing data to send to udp */
 extern unsigned char *udpRecvBuffer;         /* buffer containing data that was read from udp */
 extern int udpReadLeft;                      /* counter of bytes to read from receive thread */
 
-/* thread parameters */
-extern pthread_t poll_thread;                /* read thread */
-extern int poll_thread_exit_code;            /* read thread exit code */
-extern pthread_mutex_t exit_cond_lock;
+extern pthread_t udp_poll_thread;                /* read thread */
+extern int udp_poll_thread_exit_code;            /* read thread exit code */
+extern pthread_mutex_t udp_exit_cond_lock;
 
 /* Prototype functions for Network communication */
 int init_udp_server(char server_ip[],int server_port);
