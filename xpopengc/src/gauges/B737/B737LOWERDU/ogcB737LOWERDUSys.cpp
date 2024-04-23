@@ -79,8 +79,31 @@ namespace OpenGC
     
     GaugeComponent::Render();
 
+    int acf_type = m_pDataSource->GetAcfType();
     int rotate = this->GetArg();
-    
+ 
+    float *engn_hydq1;
+    float *engn_hydq2;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      engn_hydq1 = link_dataref_flt("laminar/B738/hydraulic/hyd_A_qty",2);
+      engn_hydq2 = link_dataref_flt("laminar/B738/hydraulic/hyd_B_qty",2);
+    } else {
+      engn_hydq1 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_fluid_ratio_1",-2);
+      engn_hydq2 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_fluid_ratio_2",-2);
+    }
+    float *engn_hydp1;
+    float *engn_hydp2;
+    if (acf_type == 1) {
+      engn_hydp1 = link_dataref_flt("x737/systems/hydraulics/systemAHydPress",2);
+      engn_hydp2 = link_dataref_flt("x737/systems/hydraulics/systemBHydPress",2);
+    } else if ((acf_type == 2) || (acf_type == 3)) {
+      engn_hydp1 = link_dataref_flt("laminar/B738/hydraulic/A_pressure",2);
+      engn_hydp2 = link_dataref_flt("laminar/B738/hydraulic/B_pressure",2);
+    } else {
+      engn_hydp1 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_pressure_1",2);
+      engn_hydp2 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_pressure_2",2);
+    }
+   
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
 
@@ -116,7 +139,37 @@ namespace OpenGC
     snprintf( buffer, sizeof(buffer), "B" );
     this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
     this->m_pFontManager->Print(x + 0.5*dx/2, y + 0.20*dy, &buffer[0], m_Font);     
-
+    
+    glColor3ub(COLOR_WHITE);
+    if (*engn_hydq1 != FLT_MISS) {
+      if ((acf_type == 2) || (acf_type == 3)) {
+	snprintf(buffer, sizeof(buffer), "%.0f", *engn_hydq1);
+      } else {
+	snprintf(buffer, sizeof(buffer), "%.0f", *engn_hydq1 * 100.0);
+      }
+      this->m_pFontManager->SetSize(m_Font, 1.25*fontSize, 1.25*fontSize);
+      this->m_pFontManager->Print(x - 0.2*dx/2-1.25*fontSize/2.0, y - 0.08*dy, &buffer[0], m_Font);     
+    }
+    if (*engn_hydq2 != FLT_MISS) {
+      if ((acf_type == 2) || (acf_type == 3)) {
+	snprintf(buffer, sizeof(buffer), "%.0f", *engn_hydq2);
+      } else {
+	snprintf(buffer, sizeof(buffer), "%.0f", *engn_hydq2 * 100.0);
+      }
+      this->m_pFontManager->SetSize(m_Font, 1.25*fontSize, 1.25*fontSize);
+      this->m_pFontManager->Print(x + 0.5*dx/2-1.25*fontSize/2.0, y - 0.08*dy, &buffer[0], m_Font);     
+    }
+    if (*engn_hydp1 != FLT_MISS) {
+      snprintf(buffer, sizeof(buffer), "%.0f", *engn_hydp1);
+      this->m_pFontManager->SetSize(m_Font, 1.25*fontSize, 1.25*fontSize);
+      this->m_pFontManager->Print(x - 0.2*dx/2-1.25*fontSize*1.25, y - 0.39*dy, &buffer[0], m_Font);     
+    }
+    if (*engn_hydp2 != FLT_MISS) {
+      snprintf(buffer, sizeof(buffer), "%.0f", *engn_hydp2);
+      this->m_pFontManager->SetSize(m_Font, 1.25*fontSize, 1.25*fontSize);
+      this->m_pFontManager->Print(x + 0.5*dx/2-1.25*fontSize*1.25, y - 0.39*dy, &buffer[0], m_Font);     
+    }
+    
     glColor3ub(COLOR_BLACK);
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
     glBegin(GL_POLYGON);
@@ -134,7 +187,7 @@ namespace OpenGC
     snprintf( buffer, sizeof(buffer), "HYDRAULIC" );
     this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
     this->m_pFontManager->Print(x - 0.45*dx, y - 0.40*dy, &buffer[0], m_Font);     
-    
+  
     // WHEELS and BRAKES
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
@@ -189,6 +242,34 @@ namespace OpenGC
     glVertex2f(m_PhysicalSize.x*7.95/10.0+dx/2.0,y-dy/2.0+r);
     glEnd();
 
+    if ((acf_type == 2) || (acf_type == 3)) {
+      glColor3ub(COLOR_WHITE);
+      float *brake_temp_left_out = link_dataref_flt("laminar/B738/systems/brake_temp_left_out",2);
+      if (*brake_temp_left_out != FLT_MISS) {
+	snprintf(buffer, sizeof(buffer), "%.1f", *brake_temp_left_out);
+	this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+	this->m_pFontManager->Print(m_PhysicalSize.x*2.05/10.0-dx-2.2*fontSize, y-0.5*fontSize, &buffer[0], m_Font);
+      }
+      float *brake_temp_left_in = link_dataref_flt("laminar/B738/systems/brake_temp_left_in",2);
+      if (*brake_temp_left_in != FLT_MISS) {
+	snprintf(buffer, sizeof(buffer), "%.1f", *brake_temp_left_in);
+	this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+	this->m_pFontManager->Print(m_PhysicalSize.x*3.0/10.0+dx, y-0.5*fontSize, &buffer[0], m_Font);
+      }
+      float *brake_temp_right_in = link_dataref_flt("laminar/B738/systems/brake_temp_right_in",2);
+      if (*brake_temp_right_in != FLT_MISS) {
+	snprintf(buffer, sizeof(buffer), "%.1f", *brake_temp_right_in);
+	this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+	this->m_pFontManager->Print(m_PhysicalSize.x*7.0/10.0-dx-2.2*fontSize, y-0.5*fontSize, &buffer[0], m_Font);
+      }
+      float *brake_temp_right_out = link_dataref_flt("laminar/B738/systems/brake_temp_right_out",2);
+      if (*brake_temp_right_out != FLT_MISS) {
+	snprintf(buffer, sizeof(buffer), "%.1f", *brake_temp_right_out);
+	this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+	this->m_pFontManager->Print(m_PhysicalSize.x*7.95/10.0+dx, y-0.5*fontSize, &buffer[0], m_Font);
+      }
+    }
+
     glColor3ub(COLOR_LIGHTBLUE);
     y = m_PhysicalSize.x*6.7/10.0;
 
@@ -212,18 +293,17 @@ namespace OpenGC
     this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
     this->m_pFontManager->Print(m_PhysicalSize.x*7.4/10.0, y, &buffer[0], m_Font);     
 
-
-    // CONTROL SURFACES
+    // FLIGHT CONTROLS
+ 
+    // ELEVATOR
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
-
-    // ELEVATOR
-    px = 0.0;
-    py = 0.0;
     x = 0.5*m_PhysicalSize.x;
     y = 0.4*m_PhysicalSize.y;
     dx = 0.015*m_PhysicalSize.x;
     dy = 0.2*m_PhysicalSize.y;
+    px = 0.0;
+    py = 0.0;
     glBegin(GL_LINES);
     glVertex2f(x,y+0.5*dy);
     glVertex2f(x,y-0.5*dy);
@@ -258,7 +338,268 @@ namespace OpenGC
     snprintf( buffer, sizeof(buffer), "ELEV" );
     this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
     this->m_pFontManager->Print(x-fontSize*1.5,y-0.75*dy, &buffer[0], m_Font);     
+
+    // RUDDER
+    glColor3ub(COLOR_WHITE);
+    glLineWidth(m_PhysicalSize.x/70.0);
+    x = 0.5*m_PhysicalSize.x;
+    y = 0.20*m_PhysicalSize.y;
+    dx = 0.2*m_PhysicalSize.x;
+    dy = 0.015*m_PhysicalSize.y;
+    px = 0.0;
+    py = 0.0;
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y);
+    glVertex2f(x-0.5*dx,y);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x,y+0.5*dy);
+    glVertex2f(x,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y+0.5*dy);
+    glVertex2f(x+0.5*dx,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x-0.5*dx,y+0.5*dy);
+    glVertex2f(x-0.5*dx,y-0.5*dy);
+    glEnd();
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x+px,y-0.75*dy);
+    glVertex2f(x+0.7*dy+px,y-1.75*dy);
+    glVertex2f(x-0.7*dy+px,y-1.75*dy);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    snprintf( buffer, sizeof(buffer), "RUDDER" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*2.5,y-0.35*dx, &buffer[0], m_Font);     
+
+    // NOSE WHEEL
+    glColor3ub(COLOR_WHITE);
+    glLineWidth(m_PhysicalSize.x/70.0);
+    x = 0.5*m_PhysicalSize.x;
+    y = 0.1*m_PhysicalSize.y;
+    dx = 0.2*m_PhysicalSize.x;
+    dy = 0.015*m_PhysicalSize.y;
+    px = 0.0;
+    py = 0.0;
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y);
+    glVertex2f(x-0.5*dx,y);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x,y+0.5*dy);
+    glVertex2f(x,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y+0.5*dy);
+    glVertex2f(x+0.5*dx,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x-0.5*dx,y+0.5*dy);
+    glVertex2f(x-0.5*dx,y-0.5*dy);
+    glEnd();
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x+px,y-0.75*dy);
+    glVertex2f(x+0.7*dy+px,y-1.75*dy);
+    glVertex2f(x-0.7*dy+px,y-1.75*dy);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    snprintf( buffer, sizeof(buffer), "NOSE WHEEL" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*4.0,y-0.35*dx, &buffer[0], m_Font);     
+
+    // LEFT AILERON
+    float *ail1_dn = link_dataref_flt("sim/aircraft/controls/acf_ail1_dn",-2);
+    float *ail1_up = link_dataref_flt("sim/aircraft/controls/acf_ail1_up",-2);
+    float *ail1 = link_dataref_flt_arr("sim/flightmodel2/wing/aileron1_deg",32,0,-2);
     
+    glColor3ub(COLOR_WHITE);
+    glLineWidth(m_PhysicalSize.x/70.0);
+    x = 0.125*m_PhysicalSize.x;
+    y = 0.4*m_PhysicalSize.y;
+    dx = 0.015*m_PhysicalSize.x;
+    dy = 0.2*m_PhysicalSize.y;
+    px = 0.0;
+    if ((*ail1 != FLT_MISS) && (*ail1_up != FLT_MISS) && (*ail1_dn != FLT_MISS)) {
+      if (*ail1 < 0.0) {
+	py = -*ail1 / *ail1_up*0.5*dy;
+      } else {
+	py = -*ail1 / *ail1_dn*0.5*dy;
+      }
+    } else {
+      py = 0.0;
+    }
+    glBegin(GL_LINES);
+    glVertex2f(x,y+0.5*dy);
+    glVertex2f(x,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y);
+    glVertex2f(x-0.5*dx,y);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y+0.5*dy);
+    glVertex2f(x-0.5*dx,y+0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y-0.5*dy);
+    glVertex2f(x-0.5*dx,y-0.5*dy);
+    glEnd();
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x-0.75*dx,y+py);
+    glVertex2f(x-1.75*dx,y+0.7*dx+py);
+    glVertex2f(x-1.75*dx,y-0.7*dx+py);
+    glEnd();
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x+0.75*dx,y+py);
+    glVertex2f(x+1.75*dx,y+0.7*dx+py);
+    glVertex2f(x+1.75*dx,y-0.7*dx+py);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    snprintf( buffer, sizeof(buffer), "AIL" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*1.15,y-0.75*dy, &buffer[0], m_Font);     
+    
+    // LEFT FLT SPOILER
+    glColor3ub(COLOR_WHITE);
+    glLineWidth(m_PhysicalSize.x/70.0);
+    x = 0.250*m_PhysicalSize.x;
+    y = 0.45*m_PhysicalSize.y;
+    dx = 0.015*m_PhysicalSize.x;
+    dy = 0.1*m_PhysicalSize.y;
+    px = 0.0;
+    py = 0.0;
+    glBegin(GL_LINES);
+    glVertex2f(x,y+0.5*dy);
+    glVertex2f(x,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y+0.5*dy);
+    glVertex2f(x-0.5*dx,y+0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y-0.5*dy);
+    glVertex2f(x-0.5*dx,y-0.5*dy);
+    glEnd();
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x-0.75*dx,y-0.5*dy+py);
+    glVertex2f(x-1.75*dx,y-0.5*dy+0.7*dx+py);
+    glVertex2f(x-1.75*dx,y-0.5*dy-0.7*dx+py);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    snprintf( buffer, sizeof(buffer), "FLT" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*1.15,y-1.0*dy, &buffer[0], m_Font);     
+    snprintf( buffer, sizeof(buffer), "SPLR" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*1.5,y-1.4*dy, &buffer[0], m_Font);     
+    
+    // RIGHT AILERON
+    float *ail2_dn = link_dataref_flt("sim/aircraft/controls/acf_ail2_dn",-2);
+    float *ail2_up = link_dataref_flt("sim/aircraft/controls/acf_ail2_up",-2);
+    float *ail2 = link_dataref_flt_arr("sim/flightmodel2/wing/aileron2_deg",32,1,-2);
+    glColor3ub(COLOR_WHITE);
+    glLineWidth(m_PhysicalSize.x/70.0);
+    x = 0.875*m_PhysicalSize.x;
+    y = 0.4*m_PhysicalSize.y;
+    dx = 0.015*m_PhysicalSize.x;
+    dy = 0.2*m_PhysicalSize.y;
+    px = 0.0;
+    if ((*ail2 != FLT_MISS) && (*ail2_up != FLT_MISS) && (*ail2_dn != FLT_MISS)) {
+      if (*ail2 < 0.0) {
+	py = -*ail2 / *ail2_up*0.5*dy;
+      } else {
+	py = -*ail2 / *ail2_dn*0.5*dy;
+      }
+    } else {
+      py = 0.0;
+    }
+    glBegin(GL_LINES);
+    glVertex2f(x,y+0.5*dy);
+    glVertex2f(x,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y);
+    glVertex2f(x-0.5*dx,y);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y+0.5*dy);
+    glVertex2f(x-0.5*dx,y+0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y-0.5*dy);
+    glVertex2f(x-0.5*dx,y-0.5*dy);
+    glEnd();
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x-0.75*dx,y+py);
+    glVertex2f(x-1.75*dx,y+0.7*dx+py);
+    glVertex2f(x-1.75*dx,y-0.7*dx+py);
+    glEnd();
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x+0.75*dx,y+py);
+    glVertex2f(x+1.75*dx,y+0.7*dx+py);
+    glVertex2f(x+1.75*dx,y-0.7*dx+py);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    snprintf( buffer, sizeof(buffer), "AIL" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*1.15,y-0.75*dy, &buffer[0], m_Font);     
+
+    // RIGHT FLT SPOILER
+    glColor3ub(COLOR_WHITE);
+    glLineWidth(m_PhysicalSize.x/70.0);
+    x = 0.750*m_PhysicalSize.x;
+    y = 0.45*m_PhysicalSize.y;
+    dx = 0.015*m_PhysicalSize.x;
+    dy = 0.1*m_PhysicalSize.y;
+    px = 0.0;
+    py = 0.0;
+    glBegin(GL_LINES);
+    glVertex2f(x,y+0.5*dy);
+    glVertex2f(x,y-0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y+0.5*dy);
+    glVertex2f(x-0.5*dx,y+0.5*dy);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x+0.5*dx,y-0.5*dy);
+    glVertex2f(x-0.5*dx,y-0.5*dy);
+    glEnd();
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glBegin(GL_POLYGON);
+    glVertex2f(x+0.75*dx,y-0.5*dy+py);
+    glVertex2f(x+1.75*dx,y-0.5*dy+0.7*dx+py);
+    glVertex2f(x+1.75*dx,y-0.5*dy-0.7*dx+py);
+    glEnd();
+
+    glColor3ub(COLOR_LIGHTBLUE);
+    snprintf( buffer, sizeof(buffer), "FLT" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*1.15,y-1.0*dy, &buffer[0], m_Font);     
+    snprintf( buffer, sizeof(buffer), "SPLR" );
+    this->m_pFontManager->SetSize(m_Font, fontSize, fontSize);
+    this->m_pFontManager->Print(x-fontSize*1.5,y-1.4*dy, &buffer[0], m_Font);     
+       
     glPopMatrix();
     
   }

@@ -75,6 +75,9 @@ namespace OpenGC
     if (acf_type == 1) {
       engn_hydp1 = link_dataref_flt("x737/systems/hydraulics/systemAHydPress",2);
       engn_hydp2 = link_dataref_flt("x737/systems/hydraulics/systemBHydPress",2);
+    } else if ((acf_type == 2) || (acf_type == 3)) {
+      engn_hydp1 = link_dataref_flt("laminar/B738/hydraulic/A_pressure",2);
+      engn_hydp2 = link_dataref_flt("laminar/B738/hydraulic/B_pressure",2);
     } else {
       engn_hydp1 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_pressure_1",2);
       engn_hydp2 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_pressure_2",2);
