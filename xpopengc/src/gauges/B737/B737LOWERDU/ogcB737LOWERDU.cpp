@@ -78,13 +78,13 @@ void B737LOWERDU::Render()
   int acf_type = m_pDataSource->GetAcfType();
   
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
-  //if ((*avionics_on == 1) && (acf_type >= 1)) {
+  if ((*avionics_on == 1) && (acf_type >= 1)) {
     char buffer[10];
 
     // after drawing the background, draw components
     Gauge::Render();
 
-    //} else {
+  } else {
 
     Gauge::ResetGaugeCoordinateSystem();
     glMatrixMode(GL_MODELVIEW);
@@ -108,9 +108,10 @@ void B737LOWERDU::Render()
     glVertex2f(10,m_PhysicalSize.y-10);
     glVertex2f(5,m_PhysicalSize.y-10);
     glEnd();  
-    //} // Display powered?
-
+    
     glPopMatrix();
+    
+  } // Display powered?
 
 }
 
