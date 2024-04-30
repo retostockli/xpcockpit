@@ -5,7 +5,9 @@
   
   Now hosted by xpcockpit project on github.com
    
-  Copyright (c) 2021 Reto Stockli
+  Copyright (c) 2021-2024 Reto Stockli
+
+  Triangulation Routine by JOHN W. RATCLIFF (jratcliff@verant.com) July 22, 2000
 
   This software is distributed WITHOUT ANY WARRANTY; without even 
   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
@@ -40,12 +42,16 @@ public:
   /* Read Global Shoreline and Lake Data */
   bool ReadShoreline();
 
-  int num_shorelines;
-  int *num_shorelinepoints;
-  float *shoreline_centerlon;
-  float *shoreline_centerlat;
-  float **shoreline_lon;
-  float **shoreline_lat;
+  int num_shorelines; /* number of shorelines */
+  int *num_shorelinepoints; /* number of shoreline points per shoreline */
+  int *num_shorelinetriangles; /* number of shoreline triangles per shoreline */
+  float *shoreline_centerlon; /* center longitude of shoreline */
+  float *shoreline_centerlat; /* center latitude of shoreline */
+  float **shoreline_lon; /* lons of shoreline points */
+  float **shoreline_lat; /* lats of shoreline points */
+  int **shoreline_triangle1; /* shoreline triangle indices 1 */
+  int **shoreline_triangle2; /* shoreline triangle indices 2 */
+  int **shoreline_triangle3; /* shoreline triangle indices 3 */
   
 protected:
   
@@ -92,7 +98,42 @@ protected:
     retval=(retval<<8) | ((value >>24)& 0xFF); 
   }
   */
+ 
+
+  /* Triangulate Polygon for filling lakes */
+  typedef float point[2];   /* polygon point datatype */
+  typedef int triangle[3];  /* triangle datatype (indices) */
+
+  typedef struct {
+    int n;	/* number of points in polygon */
+    point *p;	/* array of points in polygon */
+  } polygon;
+
+  typedef struct {
+    int n;	/* number of triangles in triangulation */
+    triangle *t;	/* indicies of vertices in triangulation */
+  } triangulation;
+
+  int X = 0;
+  int Y = 1;
   
+  float EPSILON=0.0000000001f;
+
+  // triangulate a contour/polygon
+  bool Process(polygon *contour, triangulation *result);
+
+  // compute area of a contour/polygon
+  float Area(polygon *contour);
+
+  // decide if point Px/Py is inside triangle defined by
+  // (Ax,Ay) (Bx,By) (Cx,Cy)
+  bool InsideTriangle(float Ax, float Ay,
+                      float Bx, float By,
+                      float Cx, float Cy,
+                      float Px, float Py);
+
+  bool Snip(polygon *contour,int u,int v,int w,int n,int *V);
+
 };
 
 } // end namespace OpenGC
