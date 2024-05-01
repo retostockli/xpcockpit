@@ -103,6 +103,7 @@ void b737_awm(void)
     float *fire_bell = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
     float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
+    float *alt_warn = link_dataref_flt("laminar/b738/fmodpack/horn_alert",0);
     
     if (*ap_disconnect != FLT_MISS) {
 #ifdef PIGPIO
@@ -189,11 +190,12 @@ void b737_awm(void)
       digitalWrite(FIRE_BELL_PIN, 0);
 #endif
     }
-    if (*config_warn != FLT_MISS) {
+    if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS)) {
+      int int_horn = (int) *config_warn || (int) *alt_warn;
 #ifdef PIGPIO
-      gpioWrite(INT_HORN_PIN, (int) *config_warn);
+      gpioWrite(INT_HORN_PIN, int_horn);
 #else
-      digitalWrite(INT_HORN_PIN, (int) *config_warn);
+      digitalWrite(INT_HORN_PIN, int_horn);
 #endif
     } else {
 #ifdef PIGPIO
