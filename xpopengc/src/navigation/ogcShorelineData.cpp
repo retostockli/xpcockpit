@@ -196,7 +196,7 @@ namespace OpenGC
 	t.n = p.n-2;
 	t.t = (triangle*) malloc(t.n * sizeof(triangle));
 	if (!Process(&p, &t)) {
-	  printf("Bad Triangulation of Shoreline %i !!!\n",s);
+	  // printf("Bad Triangulation of Shoreline %i !!!\n",s);
 	  t.n = 0;
 	}
 

@@ -50,7 +50,7 @@ namespace OpenGC
   {
     GaugeComponent::Render();
     
-    int acf_type = m_pDataSource->GetAcfType();
+    //int acf_type = m_pDataSource->GetAcfType();
   
     bool is_captain = (this->GetArg() == 0);
 
@@ -137,7 +137,7 @@ namespace OpenGC
       nav_shows_dem = link_dataref_int("xpserver/EFIS_fo_terr");
     }
 
-    // *nav_shows_dem = 1;
+    *nav_shows_dem = 1;
     
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
@@ -379,31 +379,30 @@ namespace OpenGC
 		       pShorelineData->shoreline_centerlon[p],pShorelineData->shoreline_centerlat[p]);
 		*/
 
-		// Generally, it's best to use GL_TRIANGLES over all other primitives, and if possible GL_TRIANGLE_STRIP, this is mainly for performance as the triangle is the most basic primitive and is what GL_POLYGONS etc.. are translated into anyways. 
-		
 
 		if (true) {
 		  // lakes are blue areas
-		  for (i=0;i<pShorelineData->num_shorelinetriangles[p];i++) {
+		  if (pShorelineData->num_shorelinetriangles[p] > 0) {
 		    glBegin(GL_TRIANGLES);
-		    for (j=0;j<3;j++) {
-		      if (j==0) k = pShorelineData->shoreline_triangle1[p][i];
-		      if (j==1) k = pShorelineData->shoreline_triangle2[p][i];
-		      if (j==2) k = pShorelineData->shoreline_triangle3[p][i];
-		      lon = pShorelineData->shoreline_lon[p][k];  
-		      lat = pShorelineData->shoreline_lat[p][k];  
+		    for (i=0;i<pShorelineData->num_shorelinetriangles[p];i++) {
+		      for (j=0;j<3;j++) {
+			if (j==0) k = pShorelineData->shoreline_triangle1[p][i];
+			if (j==1) k = pShorelineData->shoreline_triangle2[p][i];
+			if (j==2) k = pShorelineData->shoreline_triangle3[p][i];
+			lon = pShorelineData->shoreline_lon[p][k];  
+			lat = pShorelineData->shoreline_lat[p][k];  
 		      
-		      // convert to azimuthal equidistant coordinates with acf in center
-		      lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+			// convert to azimuthal equidistant coordinates with acf in center
+			lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 		      
-		      // Compute physical position relative to acf center on screen
-		      yPos = -northing / 1852.0 / mapRange * map_size; 
-		      xPos = easting / 1852.0  / mapRange * map_size;
-		      glVertex2f(xPos,yPos);
-		    } /* loop through triangle points */
+			// Compute physical position relative to acf center on screen
+			yPos = -northing / 1852.0 / mapRange * map_size; 
+			xPos = easting / 1852.0  / mapRange * map_size;
+			glVertex2f(xPos,yPos);
+		      } /* loop through triangle points */
+		    } /* loop through triangles of a lake */
 		    glEnd();		  
-
-		  } /* loop through triangles of a lake */
+		  }
 		} else {
 		  // lakes are blue lines (fast)
 		  glBegin(GL_LINE_LOOP);
