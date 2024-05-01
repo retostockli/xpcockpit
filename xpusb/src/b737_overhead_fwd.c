@@ -118,12 +118,12 @@ void b737_overhead_fwd(void)
     /* Flood light and Panel Potentiometer are directly wired to the Overhead Backlighting */
     float servoval = 0.0;
     int *servotest = link_dataref_int("xpserver/servotest");
-    //if (*servotest == 1) {
+    if (*servotest == 1) {
       ret = axis_input(device,0,&servoval,0.0,1.0);
       if (ret == 1) {
 	printf("SERVO TEST: %f \n",servoval);
       }
-      //}
+    }
 
     
     device = mastercard;
