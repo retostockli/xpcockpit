@@ -118,12 +118,12 @@ void b737_overhead_fwd(void)
     /* Flood light and Panel Potentiometer are directly wired to the Overhead Backlighting */
     float servoval = 0.0;
     int *servotest = link_dataref_int("xpserver/servotest");
-    if (*servotest == 1) {
+    //if (*servotest == 1) {
       ret = axis_input(device,0,&servoval,0.0,1.0);
       if (ret == 1) {
 	printf("SERVO TEST: %f \n",servoval);
       }
-    }
+      //}
 
     
     device = mastercard;
@@ -616,8 +616,8 @@ void b737_overhead_fwd(void)
     /* Zone Temp Gauge */
     device = servo2;
     float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",-1);
-    if (*servotest == 1) {
-      ret = servos_output(device,3,&servoval,0.0,1.0,300,1000);
+    if (*servotest == 2) {
+      ret = servos_output(device,3,&servoval,0.0,1.0,280,970);
     } else {
       ret = servos_output(device,3,zone_temp,0.0,80.0,300,1000);
     }
@@ -667,12 +667,12 @@ void b737_overhead_fwd(void)
     float *cabin_pressure_diff = link_dataref_flt("laminar/B738/cabin_pressure_diff",-1);
     float *cabin_climb = link_dataref_flt("laminar/B738/cabin_vvi",1);    
     if (*servotest == 1) {
-      ret = servos_output(device,0,&servoval,0.0,1.0,200,1023);
-      ret = servos_output(device,1,&servoval,0.0,1.0,250,1023);
+      ret = servos_output(device,0,&servoval,0.0,1.0,220,1023);
+      ret = servos_output(device,1,&servoval,0.0,1.0,290,1023);
       ret = servos_output(device,2,&servoval,0.0,1.0,200,860);
     } else {
-      ret = servos_output(device,0,cabin_altitude,0.0,27000.0,200,1023);
-      ret = servos_output(device,1,cabin_pressure_diff,0.0,6.75,250,1023);
+      ret = servos_output(device,0,cabin_altitude,0.0,26000.0,220,1023);
+      ret = servos_output(device,1,cabin_pressure_diff,0.0,6.4,290,1023);
       ret = servos_output(device,2,cabin_climb,-1800.,1800.,200,860);
     }
     
@@ -1203,7 +1203,7 @@ void b737_overhead_fwd(void)
     device = servo1;
     float *apu_temp = link_dataref_flt("laminar/B738/electrical/apu_temp",-1);
     if (*servotest == 1) {
-      ret = servos_output(device,3,&servoval,0.0,1.0,190,1000);
+      ret = servos_output(device,3,&servoval,0.0,1.0,200,1000);
     } else {
       ret = servos_output(device,3,apu_temp,0.0,100.0,200,990);
     }
