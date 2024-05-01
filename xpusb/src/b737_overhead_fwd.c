@@ -486,9 +486,9 @@ void b737_overhead_fwd(void)
     device = servo2;
     float *outflow_valve = link_dataref_flt("laminar/B738/outflow_valve",-2);
     if (*servotest == 1) {
-      ret = servos_output(device,0,&servoval,0.0,1.0,550,930);
+      ret = servos_output(device,0,&servoval,0.0,1.0,575,950);
     } else {
-      ret = servos_output(device,0,outflow_valve,0.0,1.0,550,930);
+      ret = servos_output(device,0,outflow_valve,0.0,1.0,575,950);
     }
       
     
@@ -1203,7 +1203,7 @@ void b737_overhead_fwd(void)
     device = servo1;
     float *apu_temp = link_dataref_flt("laminar/B738/electrical/apu_temp",-1);
     if (*servotest == 1) {
-      ret = servos_output(device,3,&servoval,0.0,1.0,200,990);
+      ret = servos_output(device,3,&servoval,0.0,1.0,190,1000);
     } else {
       ret = servos_output(device,3,apu_temp,0.0,100.0,200,990);
     }
