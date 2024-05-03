@@ -515,7 +515,7 @@ int write_sismo() {
 	      servoindex = servo+2;
 	    }
 	    if (sismo[card].servos_changed[servo+bank*8] == CHANGED) {
-	      if (verbose > 0) printf("Card %i Servo %i changed to: %i \n",card,servo+bank*8,
+	      if (verbose > 1) printf("Card %i Servo %i changed to: %i \n",card,servo+bank*8,
 				      sismo[card].servos[servo+bank*8]);
 	      set_bit(&sismoSendBuffer[4],servoindex,1);
 	      sismoSendBuffer[5+servoindex] = (unsigned char) sismo[card].servos[servo+bank*8];
