@@ -349,12 +349,15 @@ namespace OpenGC
 	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.210);
 	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.140);
 	glEnd();
-	m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 	if ((*transponder_mode == 4) || (*transponder_mode == 5)) {
+	  m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 	  glColor3ub(COLOR_LIGHTBLUE);
-	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.176 ,"TFC",m_Font);
-	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.146 ,"TA ONLY",m_Font);
+	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.176 ,"TFC",m_Font);  
+	  if (*transponder_mode == 4) {
+	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.146 ,"TA ONLY",m_Font);
+	  }
 	} else {
+	  m_pFontManager->SetSize( m_Font, 0.85*fontSize, 0.85*fontSize );
 	  glColor3ub(COLOR_ORANGE);
 	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.176 ,"TCAS",m_Font);
 	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.146 ,"OFF",m_Font);
