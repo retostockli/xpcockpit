@@ -299,7 +299,7 @@ namespace OpenGC
     // ELEVATOR
     float *elev_dn = link_dataref_flt("sim/aircraft/controls/acf_elev_dn",-2);
     float *elev_up = link_dataref_flt("sim/aircraft/controls/acf_elev_up",-2);
-    float *elev = link_dataref_flt_arr("sim/flightmodel2/wing/elevator1_deg",32,0,-1);
+    float *elev = link_dataref_flt_arr("sim/flightmodel2/wing/elevator1_deg",48,0,-1);
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
     x = 0.5*m_PhysicalSize.x;
@@ -354,7 +354,7 @@ namespace OpenGC
     // RUDDER
     float *rudder_left = link_dataref_flt("sim/aircraft/controls/acf_rudd_lr",-2);
     float *rudder_right = link_dataref_flt("sim/aircraft/controls/acf_rudd_rr",-2);
-    float *rudder = link_dataref_flt_arr("sim/flightmodel2/wing/rudder1_deg",32,0,-1);
+    float *rudder = link_dataref_flt_arr("sim/flightmodel2/wing/rudder1_deg",48,0,-1);
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
     x = 0.5*m_PhysicalSize.x;
@@ -411,7 +411,7 @@ namespace OpenGC
     dx = 0.2*m_PhysicalSize.x;
     dy = 0.015*m_PhysicalSize.y;
     if ((*nosewheel != FLT_MISS) && (*nosewheel_max != FLT_MISS)) {
-      px = -min(max(*nosewheel / *nosewheel_max,-1.0f),1.0f)*0.5*dx;
+      px = min(max(*nosewheel / *nosewheel_max,-1.0f),1.0f)*0.5*dx;
     } else {
       px = 0.0;
     }
@@ -448,7 +448,7 @@ namespace OpenGC
     // LEFT AILERON
     float *ail_left_dn = link_dataref_flt("sim/aircraft/controls/acf_ail1_dn",-2);
     float *ail_left_up = link_dataref_flt("sim/aircraft/controls/acf_ail1_up",-2);
-    float *ail_left = link_dataref_flt_arr("sim/flightmodel2/wing/aileron1_deg",32,0,-1);
+    float *ail_left = link_dataref_flt_arr("sim/flightmodel2/wing/aileron1_deg",48,0,-1);
     
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
@@ -503,7 +503,7 @@ namespace OpenGC
     
     // LEFT FLT SPOILER
     float *spoil_left_up = link_dataref_flt("sim/aircraft/controls/acf_splr_up",-2);
-    float *spoil_left = link_dataref_flt_arr("sim/flightmodel2/wing/spoiler1_deg",32,0,-1);
+    float *spoil_left = link_dataref_flt_arr("sim/flightmodel2/wing/spoiler1_deg",48,0,-1);
     
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
@@ -548,7 +548,7 @@ namespace OpenGC
     // RIGHT AILERON
     float *ail_right_dn = link_dataref_flt("sim/aircraft/controls/acf_ail1_dn",-2);
     float *ail_right_up = link_dataref_flt("sim/aircraft/controls/acf_ail1_up",-2);
-    float *ail_right = link_dataref_flt_arr("sim/flightmodel2/wing/aileron1_deg",32,1,-1);
+    float *ail_right = link_dataref_flt_arr("sim/flightmodel2/wing/aileron1_deg",48,1,-1);
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
     x = 0.875*m_PhysicalSize.x;
@@ -602,7 +602,7 @@ namespace OpenGC
 
     // RIGHT FLT SPOILER
     float *spoil_right_up = link_dataref_flt("sim/aircraft/controls/acf_splr_up",-2);
-    float *spoil_right = link_dataref_flt_arr("sim/flightmodel2/wing/spoiler1_deg",32,1,-1);
+    float *spoil_right = link_dataref_flt_arr("sim/flightmodel2/wing/spoiler1_deg",48,1,-1);
 
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
