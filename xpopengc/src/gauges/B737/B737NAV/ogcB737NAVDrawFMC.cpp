@@ -736,8 +736,6 @@ namespace OpenGC
 		  if ((i0>=(wpt_current-1) && (i1<(nwpt-1))) ||
 		      ((i0==0) && (i1==1) && (wpt_current==2))) {
 
-		    //printf("%i %i %i \n",i0,i1,wpt_current);
-		  
 		    glPushMatrix();
 		
 		    /*
@@ -855,6 +853,8 @@ namespace OpenGC
 			  (fmc_radius[i1] >= 0.1)) has_rad = true;
 		    }
 		 
+		    //printf("%i %s %i %i %i %i \n",i0,wpt[i0].name,has_seg1,has_seg2,has_seg3,has_rad);
+		  
 		  
 		    /* only draw leg if it is not a Discontinuity/Vector/RW in flight plan or if 
 		       it is a direct to the next waypoint */
@@ -961,7 +961,7 @@ namespace OpenGC
 			glBegin(GL_LINE_STRIP);
 			aCircle.Evaluate();
 			glEnd();
-
+		      
 			// draw curved track (RADII Type with Segments 1-3)
 		      } else if (has_seg1 && (i > 1)) {
 
@@ -1173,20 +1173,39 @@ namespace OpenGC
 			  glEnd();		  
 			  glPopMatrix();
 			*/
-		 
-			if (missed_app_wpt) {
-			  drawDashedLine(xPosT,yPosT,xPos2,yPos2,nper100,ratio);
-			} else {
-			  glBegin(GL_LINES);
-			  glVertex2f(xPosT,yPosT);
-			  glVertex2f(xPos2,yPos2);
-			  glEnd();
+
+			if (!has_rad) {
+			  /* only draw line to next wpt if we do not have a RAD turn in addition */
+			  if (missed_app_wpt) {
+			    drawDashedLine(xPosT,yPosT,xPos2,yPos2,nper100,ratio);
+			  } else {
+			    glBegin(GL_LINES);
+			    glVertex2f(xPosT,yPosT);
+			    glVertex2f(xPos2,yPos2);
+			    glEnd();
+			  }
 			}
 
-			// Rad turn
-		      } else if (has_rad) {
+		      } else {
+			// draw straight line
 
-			//printf("%i %f %f %f \n",i1,fmc_rad_turn[i1],fmc_rad_lon[i1],fmc_rad_lat[i1]);
+			if (!has_rad) {
+			  /* only draw line to next wpt if we do not have a RAD turn in addition */
+			  if (missed_app_wpt) {
+			    drawDashedLine(xPos,yPos,xPos2,yPos2,nper100,ratio);
+			  } else {
+			    glBegin(GL_LINES);
+			    glVertex2f(xPos,yPos);
+			    glVertex2f(xPos2,yPos2);
+			    glEnd();
+			  }
+			}
+		      }
+
+		      if (has_rad) {
+			// RAD type turn
+			
+			//printf("%i %s %f %f %f %f %f %f\n",i0,wpt[i0].name,fmc_rad_turn[i1],fmc_rad_lon[i1],fmc_rad_lat[i1],fmc_af_beg[i1],fmc_af_end[i1],fmc_radius[i1]);
 			/* Center of Arc */
 			if (wpt_is_dct) {			  
 			  lon = (double) *dir_rad_lon;
@@ -1198,6 +1217,16 @@ namespace OpenGC
 			lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
 			yPosC = -northing / 1852.0 / mapRange * map_size; 
 			xPosC = easting / 1852.0  / mapRange * map_size;		  
+
+			/*
+			glPushMatrix();
+			glColor3ub(COLOR_YELLOW);
+			glPointSize(12.0);
+			glBegin(GL_POINTS);
+			glVertex2f(xPosC, yPosC);
+			glEnd();		  
+			glPopMatrix();
+			*/
 		      
 			/* Start of Arc */
 			if (fmc_af_beg[i1] != 0.0) {
@@ -1234,9 +1263,9 @@ namespace OpenGC
 			}
 
 			if (wpt_is_dct) {			  
-			  aCircle.SetRadius(fmc_radius[i1] / mapRange * map_size);
-			} else {
 			  aCircle.SetRadius(*dir_radius / mapRange * map_size);
+			} else {
+			  aCircle.SetRadius(fmc_radius[i1] / mapRange * map_size);
 			}
 			aCircle.SetOrigin(xPosC,yPosC);
 			if (missed_app_wpt) {
@@ -1247,23 +1276,8 @@ namespace OpenGC
 			glBegin(GL_LINE_STRIP);
 			aCircle.Evaluate();
 			glEnd();
-		      
 
-		      } else {
-			// draw straight line
-
-			if (missed_app_wpt) {
-			  drawDashedLine(xPos,yPos,xPos2,yPos2,nper100,ratio);
-			} else {
-			  glBegin(GL_LINES);
-			  glVertex2f(xPos,yPos);
-			  glVertex2f(xPos2,yPos2);
-			  glEnd();
-			}
 		      }
-
-		      /* Does not work with OpenGL ES */
-		      //glDisable(GL_LINE_STIPPLE);
 
 		    } // not a Discontinuity in flight plan
 
