@@ -436,7 +436,7 @@ namespace OpenGC
 	  mcpspdLocation = float(*ap_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	}
 
-	printf("%f %i %f \n",*ap_speed, *ap_speed_is_mach, mcpspdLocation);
+	//printf("%f %i %f \n",*ap_speed, *ap_speed_is_mach, mcpspdLocation);
 	
 	// keep MCP speed within bounds of tape
 	mcpspdLocation = fmin(fmax(0.0,mcpspdLocation),m_PhysicalSize.y);

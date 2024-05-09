@@ -53,6 +53,7 @@ namespace OpenGC
     GaugeComponent::Render();
      
     int acf_type = m_pDataSource->GetAcfType();
+    bool is_captain = (this->GetArg() == 0);
     
     bool mapCenter = m_NAVGauge->GetMapCenter();
     int mapMode = m_NAVGauge->GetMapMode();
@@ -225,7 +226,11 @@ namespace OpenGC
       fmc_lon = link_dataref_flt_arr("laminar/B738/fms/legs_lon",256,-1,-5);
       fmc_lat = link_dataref_flt_arr("laminar/B738/fms/legs_lat",256,-1,-5);
       fmc_alt = link_dataref_flt_arr("laminar/B738/fms/legs_alt_rest1",256,-1,0);
-      fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr"); 
+      if (is_captain) {
+	fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr");
+      } else {
+	fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr_fo");
+      }
       fmc_cur = link_dataref_int("laminar/B738/fms/vnav_idx"); 
       //      fmc_turn = link_dataref_flt_arr("laminar/B738/fms/legs_turn",256,-1,0);
       //      fmc_type = link_dataref_flt_arr("laminar/B738/fms/legs_type",256,-1,0);

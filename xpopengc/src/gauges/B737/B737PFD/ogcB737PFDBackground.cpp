@@ -109,13 +109,16 @@ namespace OpenGC
     float *altimeter_pressure_preset;
     int *altimeter_preset_show;
     int *no_vspeed;
+    int *alt_is_meters;
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
+	alt_is_meters = link_dataref_int("laminar/B738/PFD/capt/alt_mode_is_meters");
 	altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/capt/baro_in_hpa");
 	altimeter_set_std = link_dataref_int("laminar/B738/EFIS/baro_set_std_pilot");
 	altimeter_preset_show = link_dataref_int("laminar/B738/EFIS/baro_sel_pilot_show");
 	altimeter_pressure_preset = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_pilot",-4);
       } else {
+	alt_is_meters = link_dataref_int("laminar/B738/PFD/fo/alt_mode_is_meters");
 	altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/fo/baro_in_hpa");
 	altimeter_set_std = link_dataref_int("laminar/B738/EFIS/baro_set_std_copilot");
 	altimeter_preset_show = link_dataref_int("laminar/B738/EFIS/baro_sel_copilot_show");
@@ -410,13 +413,45 @@ namespace OpenGC
       snprintf(buffer, sizeof(buffer), "%2d", thousands);
       m_pFontManager->SetSize(m_Font, 1.15*fontWidth, 1.35*fontHeight);
       if (thousands >= 10) {
-	m_pFontManager->Print(149.5,170+3, &buffer[0], m_Font);
+	m_pFontManager->Print(151.5,170+3, &buffer[0], m_Font);
+      } else if (thousands >= 1) {
+	m_pFontManager->Print(154.0,170+3, &buffer[0], m_Font);
+	snprintf(buffer, sizeof(buffer), "%03d", hundreds);
+	m_pFontManager->SetSize(m_Font, 1.00*fontWidth, 1.15*fontHeight);
+	m_pFontManager->Print(161.5,170+3, &buffer[0], m_Font);
       } else {
-	m_pFontManager->Print(152,170+3, &buffer[0], m_Font);
+	if (hundreds > 0) {
+	  snprintf(buffer, sizeof(buffer), "%03d", hundreds);
+	  m_pFontManager->SetSize(m_Font, 1.00*fontWidth, 1.15*fontHeight);
+	  m_pFontManager->Print(161.5,170+3, &buffer[0], m_Font);
+	} else {
+	  snprintf(buffer, sizeof(buffer), "%d", hundreds);
+	  m_pFontManager->SetSize(m_Font, 1.00*fontWidth, 1.15*fontHeight);
+	  m_pFontManager->Print(170.0,170+3, &buffer[0], m_Font);
+	}
       }
-      snprintf(buffer, sizeof(buffer), "%03d", hundreds);
-      m_pFontManager->SetSize(m_Font, 1.15*fontWidth, 1.15*fontHeight);
-      m_pFontManager->Print(160,170+3, &buffer[0], m_Font);
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if (*alt_is_meters == 1) {
+	  int ap_altitude_meters = (int) *ap_altitude * 0.3048;
+	  snprintf(buffer, sizeof(buffer), "%d", ap_altitude_meters);
+	  m_pFontManager->SetSize(m_Font, 1.0*fontWidth, 1.15*fontHeight);
+	  if (ap_altitude_meters >= 10000) {
+	    m_pFontManager->Print(165-0.85*4.0*fontWidth,170+12, &buffer[0], m_Font);
+	  } else if (ap_altitude_meters > 1000) {
+	    m_pFontManager->Print(165-0.85*3.0*fontWidth,170+12, &buffer[0], m_Font);
+	  } else if (ap_altitude_meters > 100) {
+	    m_pFontManager->Print(165-0.85*2.0*fontWidth,170+12, &buffer[0], m_Font);
+	  } else if (ap_altitude_meters > 10 ) {
+	    m_pFontManager->Print(165-0.85*fontWidth,170+12, &buffer[0], m_Font);
+	  } else {
+	    m_pFontManager->Print(165,170+12, &buffer[0], m_Font);
+	  }
+	  glColor3ub(COLOR_CYAN);
+	  snprintf(buffer, sizeof(buffer), "M");
+	  m_pFontManager->SetSize(m_Font, 0.75*fontWidth, 0.9*fontHeight);
+	  m_pFontManager->Print(170,170+12, &buffer[0], m_Font);
+	}
+      }
     }
 
     // 5. Plot MCP states above PFD 
@@ -996,8 +1031,13 @@ namespace OpenGC
       // NAV Text on PFD
       unsigned char *text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",20,-1);
       unsigned char *text2 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt2",20,-1);
-      int *lnav_engaged = link_dataref_int("laminar/B738/autopilot/lnav_engaged");
-      int *ils_active = link_dataref_int("laminar/B738/ap/ils_active");
+      float *lnav_status = link_dataref_flt("laminar/B738/autopilot/lnav_status",0);
+      float *ils_show;
+      if (is_captain) {
+	ils_show = link_dataref_flt("laminar/B738/pfd/ils_show",0);
+      } else {
+	ils_show = link_dataref_flt("laminar/B738/pfd/ils_fo_show",0);
+      }
       m_pFontManager->SetSize(m_Font, 4, 4.5);
       glColor3ub(COLOR_WHITE);
       snprintf( buffer, sizeof(buffer), "%s", text1 );
@@ -1009,10 +1049,10 @@ namespace OpenGC
       m_pFontManager->Print(42,170,buffer, m_Font); 
       snprintf( buffer, sizeof(buffer), "%s", text2 );
       m_pFontManager->Print(42,162,buffer, m_Font);
-      if (*lnav_engaged == 1) {
+      if (*lnav_status == 1.0) {
 	strcpy( buffer, "LNAV/VNAV");
 	m_pFontManager->Print(42,154,buffer, m_Font);
-      } else if (*ils_active == 1) {
+      } else if (*ils_show == 1.0) {
 	strcpy( buffer, "ILS");
 	m_pFontManager->Print(42,154,buffer, m_Font);
       }

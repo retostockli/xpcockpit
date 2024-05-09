@@ -92,6 +92,7 @@ B737/B737PFDSA/ogcB737PFDSANav.cpp \
 B737/B737PFDSA/ogcB737PFDSASpeedIndicator.cpp \
 B737/B737PFD/ogcB737PFDAltitudeTape.cpp \
 B737/B737PFD/ogcB737PFDAltitudeTicker.cpp \
+B737/B737PFD/ogcB737PFDAltitudeTickerMeters.cpp \
 B737/B737PFD/ogcB737PFDArtificialHorizon.cpp \
 B737/B737PFD/ogcB737PFDBackground.cpp \
 B737/B737PFD/ogcB737PFD.cpp \
@@ -213,6 +214,7 @@ B737/B737PFDSA/ogcB737PFDSANav.h \
 B737/B737PFDSA/ogcB737PFDSASpeedIndicator.h \
 B737/B737PFD/ogcB737PFDAltitudeTape.h \
 B737/B737PFD/ogcB737PFDAltitudeTicker.h \
+B737/B737PFD/ogcB737PFDAltitudeTickerMeters.h \
 B737/B737PFD/ogcB737PFDArtificialHorizon.h \
 B737/B737PFD/ogcB737PFDBackground.h \
 B737/B737PFD/ogcB737PFD.h \
