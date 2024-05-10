@@ -312,6 +312,9 @@ int check_usb (const char *name, int number, uint16_t vendor, uint16_t product,
     sprintf(str,"%ls",wstr);
     printf("Product String: %s \n",str);
 
+    //   if (strcmp(str,"Bootloader")==0) {
+    //    sprintf(str,"BU0836X Interface");
+    //  } 
 
     if (!strncmp(str,name,strlen(name))) {
     

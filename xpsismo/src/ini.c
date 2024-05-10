@@ -183,6 +183,8 @@ int ini_sismodata()
     }
     for(j=0;j<MAXINPUTS;j++) {
       sismo[i].inputs_updown[j] = 0;
+      sismo[i].inputs_time[j].tv_sec = 0;
+      sismo[i].inputs_time[j].tv_usec = 0;
       for(k=0;k<MAXSAVE;k++) {
 	sismo[i].inputs[j][k] = INPUTINITVAL;
       }

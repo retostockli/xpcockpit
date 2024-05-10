@@ -61,6 +61,8 @@ namespace OpenGC
   {
     GaugeComponent::Render();
 
+    int acf_type = m_pDataSource->GetAcfType();
+ 
     bool mapCenter = m_NAVGauge->GetMapCenter();
     int mapMode = m_NAVGauge->GetMapMode();
     float mapRange = m_NAVGauge->GetMapRange();
@@ -76,7 +78,7 @@ namespace OpenGC
       float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
       // float lineWidth = 1.5 * m_PhysicalSize.x / 100.0;
 
-      double dtor = 0.0174533; /* radians per degree */
+      //double dtor = 0.0174533; /* radians per degree */
       // double radeg = 57.2958;  /* degree per radians */
 
       // define ACF center position in relative coordinates
@@ -333,6 +335,37 @@ namespace OpenGC
 
       }
 
+
+      if ((acf_type == 2) || (acf_type == 3)) {
+	float *transponder_mode = link_dataref_flt("laminar/B738/knob/transponder_pos",0);
+
+	// plot map options
+	glPushMatrix();
+	glColor3ub(COLOR_BLACK);
+	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_POLYGON);
+	glVertex2f(0,m_PhysicalSize.y*0.140);
+	glVertex2f(0,m_PhysicalSize.y*0.210);
+	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.210);
+	glVertex2f(m_PhysicalSize.x*0.100,m_PhysicalSize.y*0.140);
+	glEnd();
+	if ((*transponder_mode == 4) || (*transponder_mode == 5)) {
+	  m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	  glColor3ub(COLOR_LIGHTBLUE);
+	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.176 ,"TFC",m_Font);  
+	  if (*transponder_mode == 4) {
+	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.146 ,"TA ONLY",m_Font);
+	  }
+	} else {
+	  m_pFontManager->SetSize( m_Font, 0.85*fontSize, 0.85*fontSize );
+	  glColor3ub(COLOR_ORANGE);
+	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.176 ,"TCAS",m_Font);
+	  m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.146 ,"OFF",m_Font);
+	}
+	glPopMatrix();
+
+      }
+      
     }
     
   }

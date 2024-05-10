@@ -7,7 +7,7 @@
    Please respect the original author's license and always reference the original code
    when distributing this code here.
 
-   Copyright (C) 2021 Reto Stockli
+   Copyright (C) 2021-2024 Reto Stockli
 
    Additions for analog axes treatment by Hans Jansen 2011
    Also several cosmetic changes and changes for Linux compilation
@@ -45,8 +45,8 @@
 #define nCols 9
 #define nRows 8
 
-#define FMC_PWM_RANGE 360
-#define FMC_PWM_FREQ 40
+#define FMC_PWM_RANGE 100
+#define FMC_PWM_FREQ 500
 
 // columns are outputs. All are set to HIGH except the column being scanned.
 
@@ -109,6 +109,8 @@ int pressedRow;
 int pressedCol;
 int somethingPressed;
 
+int fmc_is_initialized;
+
 void *poll_thread_main()
 /* thread handles inputs which change faster than xppi cycle */
 {
@@ -148,7 +150,7 @@ void *poll_thread_main()
 	rot_direction = 1;
       }
       
-      //printf("Rotary A/B/DIR: %i %i %i\n",rot_a,rot_b,rot_direction);
+      // printf("Rotary A/B/DIR: %i %i %i\n",rot_a,rot_b,rot_direction);
 
       /* update saved states */
       rot_a_save = rot_a;
@@ -160,7 +162,7 @@ void *poll_thread_main()
   } /* while loop */
   
   /* thread was killed */
-  printf("Input thread shutting down \n");
+  printf("FMC rotary encoder input thread shutting down \n");
 
   return 0;
 }
@@ -235,26 +237,78 @@ int b737_fmc_init()
 
   /* init thread to read encoder since encoder changes are too fast
      for repeat cycle of xppi */
-  /*
+
   poll_thread_exit_code = 0;
   if (pthread_create(&poll_thread, NULL, &poll_thread_main, NULL)>0) {
     printf("Poll thread could not be created.\n");
     return -1;
   }
-  */
+
+  fmc_is_initialized = 1;
 
   return 0;
 }
 
 void b737_fmc_exit(void)
 {
-  /* shut down read thread */
-  //poll_thread_exit_code = 1;
-  //pthread_join(poll_thread, NULL);
+  if (fmc_is_initialized == 1) {
+    /* shut down read thread */
+    poll_thread_exit_code = 1;
+    pthread_join(poll_thread, NULL);
+    
+    /* fix for running soft pwm in fmc: turn off background lighting */
+    gpioPWM(bgl_pwm_pin, 0);
+  }
 }
 
 void b737_fmc()
 {
+
+  /* fetch rotary encoder switch: not needed since switch 
+     is directly connected to the MENU key of the display */
+  /*
+    status = digitalRead(rot_sw_pin);
+    if (status != rot_sw_save) {
+    printf("Rotary Switch: %i\n",status);
+    rot_sw_save = status;
+    }
+  */
+
+    
+  /* DSPY_LED connected to DOWN key of the display */
+  if (rot_direction == -1) {
+    printf("Rotary DOWN: \n");
+#ifdef PIGPIO
+    gpioWrite(dspy_led_pin, 1);
+#else
+    digitalWrite(dspy_led_pin, 1);
+#endif
+    rot_direction = 0;
+  } else {
+#ifdef PIGPIO
+    gpioWrite(dspy_led_pin, 0);
+#else
+    digitalWrite(dspy_led_pin, 0);
+#endif
+  }
+      
+  /* FAIL_LED connected to UP key of the display */
+  if (rot_direction == 1) {
+    printf("Rotary UP: \n");
+#ifdef PIGPIO
+    gpioWrite(fail_led_pin, 1);
+#else
+    digitalWrite(fail_led_pin, 1);
+#endif
+    rot_direction = 0;
+  } else {
+#ifdef PIGPIO
+    gpioWrite(fail_led_pin, 0);
+#else
+    digitalWrite(fail_led_pin, 0);
+#endif
+  }
+
 
   /* only run for ZIBO 737 for now */
   if (acf_type == 3) {
@@ -268,10 +322,20 @@ void b737_fmc()
 
     /* Link Datarefs */
    
-    float *key_brightness = link_dataref_flt_arr("laminar/B738/electric/panel_brightness",4,3,-2);
+    //float *key_brightness = link_dataref_flt_arr("laminar/B738/electric/panel_brightness",4,3,-2);
+    float *key_brightness = link_dataref_flt("xpserver/fmc_key_brightness",-1);
+    int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
     
-    int *exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
-    int *msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
+    int *exec_led;
+    int *msg_led;
+    if (is_copilot) {
+      msg_led = link_dataref_int("laminar/B738/fmc/fmc_message2");
+      exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights_fo");
+    } else {
+      msg_led = link_dataref_int("laminar/B738/fmc/fmc_message");
+      exec_led = link_dataref_int("laminar/B738/indicators/fmc_exec_lights");
+    }
+      
     /*
     int *dspy_led = link_dataref_int("");
     int *ofst_led = link_dataref_int("");
@@ -295,6 +359,12 @@ void b737_fmc()
     }
     
     // Only update key brightness PWM if it has changed
+    /* PWM behaves strange and is flickering with pigpiod, so switch to brightness ON/OFF */
+    if (*avionics_on == 1) {
+      *key_brightness = 0.5;
+    } else {
+      *key_brightness = 0.0;
+    }
     if ((*key_brightness != key_brightness_save) &&
 	(*key_brightness != FLT_MISS)) {
       printf("New Key Brightness: %f \n",*key_brightness);
@@ -307,6 +377,7 @@ void b737_fmc()
     }
     
 #ifdef PIGPIO
+    //if (*avionics_on != INT_MISS) gpioWrite(bgl_pwm_pin, *avionics_on);
     if (*exec_led != INT_MISS) gpioWrite(exec_led_pin, *exec_led);
     if (*msg_led != INT_MISS) gpioWrite(msg_led_pin, *msg_led);  
     /*
@@ -315,6 +386,7 @@ void b737_fmc()
     if (*fail_led != INT_MISS) gpioWrite(fail_led_pin, *fail_led);
     */
 #else
+    //if (*avionics_on != INT_MISS) digitalWrite(bgl_pwm_pin, *avionics_on);
     if (*exec_led != INT_MISS) digitalWrite(exec_led_pin, *exec_led);
     if (*msg_led != INT_MISS) digitalWrite(msg_led_pin, *msg_led);  
     /*
@@ -323,52 +395,6 @@ void b737_fmc()
     if (*fail_led != INT_MISS) digitalWrite(fail_led_pin, *fail_led);
     */
 #endif
-
-    /* fetch rotary encoder switch: not needed since switch 
-       is directly connected to the MENU key of the display */
-    /*
-    status = digitalRead(rot_sw_pin);
-    if (status != rot_sw_save) {
-      printf("Rotary Switch: %i\n",status);
-      rot_sw_save = status;
-    }
-    */
-
-    
-    /* DSPY_LED connected to DOWN key of the display */
-    if (rot_direction == -1) {
-      printf("Rotary DOWN: \n");
-#ifdef PIGPIO
-      gpioWrite(dspy_led_pin, 1);
-#else
-      digitalWrite(dspy_led_pin, 1);
-#endif
-      rot_direction = 0;
-    } else {
-#ifdef PIGPIO
-      gpioWrite(dspy_led_pin, 0);
-#else
-      digitalWrite(dspy_led_pin, 0);
-#endif
-    }
-      
-    /* FAIL_LED connected to UP key of the display */
-    if (rot_direction == 1) {
-      printf("Rotary UP: \n");
-#ifdef PIGPIO
-      gpioWrite(fail_led_pin, 1);
-#else
-      digitalWrite(fail_led_pin, 1);
-#endif
-      rot_direction = 0;
-    } else {
-#ifdef PIGPIO
-      gpioWrite(fail_led_pin, 0);
-#else
-      digitalWrite(fail_led_pin, 0);
-#endif
-    }
-
 
     /* -------------------- */
     /* Scan Keyboard Matrix */

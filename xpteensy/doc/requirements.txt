@@ -1,0 +1,22 @@
+Requirements for using Teensy as flight simulator interface
+
+- 512 digital inputs & outputs
+https://www.adafruit.com/product/5346
+16 I/O per board, 8 boards per I2C, using address translator we can have more boards:
+https://www.adafruit.com/product/5914
+- 5V outputs
+https://www.adafruit.com/product/5637
+- 10 Servo outputs
+
+- 30 analog inputs
+- 50 dimmable outputs
+- 10 PWM outputs (motors)
+- 100 7-segment displays with control for every segment
+https://www.adafruit.com/product/1427
+16x8, means 16 7-segments per board, 8 boards selectable, with address translator more
+- < 5 ms loop time
+- inputs suitable for encoders
+
+
+
+

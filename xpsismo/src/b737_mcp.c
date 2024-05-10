@@ -658,7 +658,7 @@ void b737_mcp(void)
   ret = display_outputf(card, 21, 3, ap_course2, -1, display_brightness);
   if (*ap_spd_is_mach == 1) {
     float ftemp = *ap_ias * 100.0;
-    ret = display_outputf(card,3,4, ap_ias, -1, 1);  // clear all digits
+    ret = display_outputf(card,3,4, ap_ias, -1, display_brightness);  // clear all digits
     ret = display_outputf(card,4,3, &ftemp, 2, display_brightness); // mach spd in two first digits
   } else {
     ret = display_outputf(card,3,4, ap_ias, -1, display_brightness);

@@ -35,9 +35,11 @@
 #include "handleudp.h"
 #include "serverdata.h"
 
-//char xpserver_ip[30];
-//int xpserver_port;
-//char clientname[100];
+struct timeval t2;
+struct timeval t1;
+
+#define max(A,B) ((A)>(B) ? (A) : (B)) 
+#define min(A,B) ((A)<(B) ? (A) : (B)) 
 
 char sismoserver_ip[30];
 int sismoserver_port;
@@ -175,6 +177,7 @@ int read_sismo() {
       /* card found */
       if (card >= 0) {
 
+	
 	if (sismo[card].connected == 0) {
 	  /* initialize card configuration status with information we read from the UDP packet */
 	  sismo[card].connected = 1;
@@ -228,16 +231,26 @@ int read_sismo() {
 	  if (sismoRecvBuffer[4] == 0x00) {
 	    bank = 0;
 	    firstinput = 0;
+
+	    /*
+	      gettimeofday(&t2,NULL);
+	      float dt = ((t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0)*1000.0;
+	      t1 = t2;
+	      printf("D %i %f ms\n",card,dt);
+	    */
+
 	  }
 	  /* Digital Input from Daughter Digital Input 1 (Inputs 64-127) */
 	  if (sismoRecvBuffer[4] == 0x01) {
 	    bank = 1;
 	    firstinput = 64;
+
 	  }
 	  /* Digital Input from Daughter Digital Input 2 (Inputs 128-191) */
 	  if (sismoRecvBuffer[4] == 0x02) {
 	    bank = 2;
 	    firstinput = 128;
+	
 	  }
 
 	  /* Digital Inputs are ordered in 8 bytes with 8 bits each = 64 inputs */
@@ -276,7 +289,7 @@ int read_sismo() {
 	    /* update number of history values per input bank */
 	    if (sismo[card].inputs_nsave[bank] < MAXSAVE) {
 	      sismo[card].inputs_nsave[bank] += 1;
-	      if (verbose > 2) printf("Card %i Input Bank %i # of History Values %i \n",
+	      if (verbose > 3) printf("Card %i Input Bank %i # of History Values %i \n",
 				      card,bank,sismo[card].inputs_nsave[bank]);
 	    } else {
 	      if (verbose > 2) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
@@ -288,6 +301,13 @@ int read_sismo() {
 	}
 	  
 	if ((sismoRecvBuffer[4] == 0x00) || (sismoRecvBuffer[4] == 0x03)) {
+
+	  /*
+	  gettimeofday(&t2,NULL);
+	  float dt = ((t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0)*1000.0;
+	  t1 = t2;
+	  printf("A %i %f ms\n",card,dt);
+	  */
 
 	  /* Analog Input from Master (Inputs 0-4) */
 	  if (sismoRecvBuffer[4] == 0x00) {
@@ -388,7 +408,7 @@ int write_sismo() {
 	    set_bit(&sismoSendBuffer[4+output/8],output%8,sismo[card].outputs[output+firstoutput]);
 	    if (sismo[card].outputs_changed[output+firstoutput] == CHANGED) {
 	      if (verbose > 2) printf("Card %i Output %i changed to: %i \n",
-				      card,output,sismo[card].outputs[output+firstoutput]);
+				      card,output+firstoutput,sismo[card].outputs[output+firstoutput]);
 	      anychanged = 1;
 	      /* reset changed state since data will be sent to SISMO card */
 	      sismo[card].outputs_changed[output+firstoutput] = UNCHANGED;
@@ -445,14 +465,16 @@ int write_sismo() {
 		set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
 	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGEDBINARY) {
-		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %04x \n",card,bank,display+group*8,
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %04x \n",
+					card,bank,display+group*8+firstdisplay,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
 		/* reset changed state since data will be sent to SISMO card */
 		sismo[card].displays_changed[display+group*8+firstdisplay] = UNCHANGEDBINARY;
 	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGED) {
-		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",card,bank,display+group*8,
+		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",
+					card,bank,display+group*8+firstdisplay,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
 		/* reset changed state since data will be sent to SISMO card */
@@ -711,7 +733,7 @@ int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxv
   int retval = 0;
   int data;
   int servominval = 0;
-  int servomaxval = 255;
+  int servomaxval = 254; // I think that 255 is park position
 
   if (fvalue != NULL) {
 
@@ -732,8 +754,8 @@ int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxv
 	    }
 	  }
 	} else {
-	  if (verbose > 0) printf("Servo %i above maximum # of servos %i of card %i \n",
-				  servo,sismo[card].nservos,card);
+	  if (verbose > 1) printf("Servo %i above maximum # of servos %i of card %i \n",
+	 			  servo,sismo[card].nservos,card);
 	  retval = -1;
 	}
       } else {
@@ -988,6 +1010,8 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
   char nbits[2]; /* bit arrays for 2 bit encoder */
   int s;
   int bank;
+  struct timeval newtime;
+  float dt; /* time interval since last encoder read in milliseconds */
 
   if (value != NULL) {
 
@@ -1008,6 +1032,10 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		       (sismo[card].inputs[input2][s] != sismo[card].inputs[input2][s+1])) &&
 		      (sismo[card].inputs[input1][s+1] != INPUTINITVAL) &&
 		      (sismo[card].inputs[input2][s+1] != INPUTINITVAL)) {
+
+		    gettimeofday(&newtime,NULL);
+		    dt = ((newtime.tv_sec - sismo[card].inputs_time[input1].tv_sec) +
+			  (newtime.tv_usec - sismo[card].inputs_time[input1].tv_usec) / 1000000.0)*1000.0;
 		  
 		    if (type == 1) {
 		      /* 2 bit optical encoder */
@@ -1027,25 +1055,37 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			updown = 1;
 		      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
 			updown = -1;
-
 			/* in case a) an input was missed or b) the two optical rotary inputs were transmitted 
-			   concurrently due to timing issue, assume that the last direction is still valid */
+			   concurrently due to timing issue, assume that the last direction is still valid.
+			   ONLY USE WITH FAST TURNING DT < 100 ms */
 		      } else if ((obits[0] == 1) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			updown = sismo[card].inputs_updown[input1];
+			if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
 		      } else if ((obits[0] == 0) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			updown = sismo[card].inputs_updown[input1];
+			if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
 		      }
 
-		      // printf("updn: %i %i %i %i %i %i \n",updown,s,obits[0],obits[1],nbits[0],nbits[1]);
+		      if (updown != 0) {
+			/* Update last encoder time with current postion after successful detent */
+			sismo[card].inputs_time[input1].tv_sec = newtime.tv_sec;
+			sismo[card].inputs_time[input1].tv_usec = newtime.tv_usec;
+		      }
+			
+		      //printf("updn: %i %i %i %i %i %i %f \n",updown,s,obits[0],obits[1],nbits[0],nbits[1],dt);
+		      //printf("%i %i %f \n",nbits[0],nbits[1],dt);
 		      
 		      if (updown != 0) {
-			/* add accelerator by using s as number of queued encoder changes */
-			*value = *value + ((float) updown)  * multiplier * (float) (s*2+1);
+			/* ADD ACCELERATION WITH SPEED OF TURNING ENCODER */
+			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (60.0/max(dt,1.0)));
+			/* NO ACCELERATION WITH TURNING SPEED */
+			//*value = *value + ((float) updown)  * multiplier;
 			retval = 1;
+
+			//printf("UPDN %i %f \n",updown,*value);
+			
+			/* store last updown value for later use */
+			sismo[card].inputs_updown[input1] = updown;
 		      }
 
-		      /* store last updown value for later use */
-		      sismo[card].inputs_updown[input1] = updown;
 		      
 		    } else if (type == 2) {
 		      /* 2 bit gray type mechanical encoder */

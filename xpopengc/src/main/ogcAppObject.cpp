@@ -78,6 +78,7 @@ extern "C" {
 #include "B737/B737CLOCK/ogcB737Clock.h"
 #include "B737/B737ISFD/ogcB737ISFD.h"
 #include "B737/B737RMI/ogcB737RMI.h"
+#include "B737/B737LOWERDU/ogcB737LOWERDU.h"
 
 //----------NonFunctional--------
 /*
@@ -454,6 +455,7 @@ namespace OpenGC
     else if (strcmp(name, "B737CLOCK")==0) pGauge = new B737Clock();
     else if (strcmp(name, "B737ISFD")==0) pGauge = new B737ISFD();
     else if (strcmp(name, "B737RMI")==0) pGauge = new B737RMI();
+    else if (strcmp(name, "B737LOWERDU")==0) pGauge = new B737LOWERDU();
     /*
       else if (strcmp(name, "B737AnalogFlaps")==0) pGauge = new B737AnalogFlaps();
       else if (strcmp(name, "B737VerticalSpeedDigital")==0) pGauge = new B737VerticalSpeedDigital();

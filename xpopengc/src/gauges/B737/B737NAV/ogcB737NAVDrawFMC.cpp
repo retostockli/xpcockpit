@@ -53,6 +53,7 @@ namespace OpenGC
     GaugeComponent::Render();
      
     int acf_type = m_pDataSource->GetAcfType();
+    bool is_captain = (this->GetArg() == 0);
     
     bool mapCenter = m_NAVGauge->GetMapCenter();
     int mapMode = m_NAVGauge->GetMapMode();
@@ -146,7 +147,8 @@ namespace OpenGC
 
     float *fmc_af_beg;
     float *fmc_af_end;
-    
+
+    /* arrays of waypoints */
     //    float *seg1_start_lon;
     //    float *seg1_start_lat;
     float *seg1_start_ang;
@@ -167,6 +169,31 @@ namespace OpenGC
     float *seg3_ctr_lat;
     float *seg3_radius;
     float *seg3_turn;
+
+    /* direct route to next wpt */
+    int   *dir_act;
+    float *dir_seg1_start_ang;
+    float *dir_seg1_end_lon;
+    float *dir_seg1_end_lat;
+    float *dir_seg1_end_ang;
+    float *dir_seg1_ctr_lon;
+    float *dir_seg1_ctr_lat;
+    float *dir_seg1_radius;
+    float *dir_seg1_turn;
+    float *dir_seg2_end_lon;
+    float *dir_seg2_end_lat;
+    float *dir_seg3_start_ang;
+    float *dir_seg3_end_lon;
+    float *dir_seg3_end_lat;
+    float *dir_seg3_end_ang;
+    float *dir_seg3_ctr_lon;
+    float *dir_seg3_ctr_lat;
+    float *dir_seg3_radius;
+    float *dir_seg3_turn;
+    float *dir_rad_lon;
+    float *dir_rad_lat;
+    float *dir_rad_turn;
+    float *dir_radius;
 
     unsigned char *ref_apt_name;
     //    float *ref_apt_alt;
@@ -199,7 +226,11 @@ namespace OpenGC
       fmc_lon = link_dataref_flt_arr("laminar/B738/fms/legs_lon",256,-1,-5);
       fmc_lat = link_dataref_flt_arr("laminar/B738/fms/legs_lat",256,-1,-5);
       fmc_alt = link_dataref_flt_arr("laminar/B738/fms/legs_alt_rest1",256,-1,0);
-      fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr"); 
+      if (is_captain) {
+	fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr");
+      } else {
+	fmc_ctr = link_dataref_int("laminar/B738/fms/legs_step_ctr_fo");
+      }
       fmc_cur = link_dataref_int("laminar/B738/fms/vnav_idx"); 
       //      fmc_turn = link_dataref_flt_arr("laminar/B738/fms/legs_turn",256,-1,0);
       //      fmc_type = link_dataref_flt_arr("laminar/B738/fms/legs_type",256,-1,0);
@@ -231,6 +262,7 @@ namespace OpenGC
       fmc_af_beg = link_dataref_flt_arr("laminar/B738/fms/legs_af_beg",256,-1,-1);
       fmc_af_end = link_dataref_flt_arr("laminar/B738/fms/legs_af_end",256,-1,-1);
 
+      /* wpt arrays */
       //      seg1_start_lon = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_start_lon",256,-1,-4);
       //      seg1_start_lat = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_start_lat",256,-1,-4);
       seg1_start_ang = link_dataref_flt_arr("laminar/B738/fms/legs_seg1_start_angle",256,-1,-4);
@@ -251,6 +283,31 @@ namespace OpenGC
       seg3_ctr_lat = link_dataref_flt_arr("laminar/B738/fms/legs_seg3_ctr_lat",256,-1,-4);
       seg3_radius = link_dataref_flt_arr("laminar/B738/fms/legs_seg3_radius",256,-1,-4);
       seg3_turn = link_dataref_flt_arr("laminar/B738/fms/legs_seg3_turn",256,-1,0);
+
+      /* direct to next wpt single values */
+      dir_act = link_dataref_int("laminar/B738/fms/intdir_act");
+      dir_seg1_start_ang = link_dataref_flt("laminar/B738/fms/dir_seg1_start_angle",-4);
+      dir_seg1_end_lon = link_dataref_flt("laminar/B738/fms/dir_seg1_end_lon",-4);
+      dir_seg1_end_lat = link_dataref_flt("laminar/B738/fms/dir_seg1_end_lat",-4);
+      dir_seg1_end_ang = link_dataref_flt("laminar/B738/fms/dir_seg1_end_angle",-4);
+      dir_seg1_ctr_lon = link_dataref_flt("laminar/B738/fms/dir_seg1_ctr_lon",-4);
+      dir_seg1_ctr_lat = link_dataref_flt("laminar/B738/fms/dir_seg1_ctr_lat",-4);
+      dir_seg1_radius = link_dataref_flt("laminar/B738/fms/dir_seg1_radius",-4);
+      dir_seg1_turn = link_dataref_flt("laminar/B738/fms/dir_seg1_turn",0);
+      dir_seg2_end_lon = link_dataref_flt("laminar/B738/fms/dir_seg2_end_lon",-4);
+      dir_seg2_end_lat = link_dataref_flt("laminar/B738/fms/dir_seg2_end_lat",-4);
+      dir_seg3_start_ang = link_dataref_flt("laminar/B738/fms/dir_seg3_start_angle",-4);
+      dir_seg3_end_lon = link_dataref_flt("laminar/B738/fms/dir_seg3_end_lon",-4);
+      dir_seg3_end_lat = link_dataref_flt("laminar/B738/fms/dir_seg3_end_lat",-4);
+      dir_seg3_end_ang = link_dataref_flt("laminar/B738/fms/dir_seg3_end_angle",-4);
+      dir_seg3_ctr_lon = link_dataref_flt("laminar/B738/fms/dir_seg3_ctr_lon",-4);
+      dir_seg3_ctr_lat = link_dataref_flt("laminar/B738/fms/dir_seg3_ctr_lat",-4);
+      dir_seg3_radius = link_dataref_flt("laminar/B738/fms/dir_seg3_radius",-4);
+      dir_seg3_turn = link_dataref_flt("laminar/B738/fms/dir_seg3_turn",0);
+      dir_rad_lon = link_dataref_flt("laminar/B738/fms/intdir_rad_lon_mod",-4);
+      dir_rad_lat = link_dataref_flt("laminar/B738/fms/intdir_rad_lat_mod",-4);
+      dir_rad_turn = link_dataref_flt("laminar/B738/fms/intdir_turn_mod",0);
+      dir_radius = link_dataref_flt("laminar/B738/fms/intdir_radius_mod",-1);
 
       ref_apt_name = link_dataref_byte_arr("laminar/B738/fms/ref_list_rwy_icao",20,-1);
       //      ref_apt_alt = link_dataref_flt("laminar/B738/fms/ref_icao_alt",0);
@@ -431,6 +488,15 @@ namespace OpenGC
 	float xPosL;
 	float yPosL;
 
+	bool has_seg1;
+	bool has_seg2;
+	bool has_seg3;
+	bool has_rad;
+	bool wpt_is_dct;
+
+	double start_angle;
+	double end_angle;
+	
 	// define overall symbol size (for DME, FIX, VOR, APT etc.)
 	// this scale gives the radius of the symbol in physical units
 	float ss = m_PhysicalSize.y*0.02;
@@ -594,7 +660,8 @@ namespace OpenGC
 	    }
 	    
 	    /* We draw from last to present waypoint */
-	    int i = max(wpt_current-1,0);
+	    int i;
+	    i = max(wpt_current-1,0);
 	    while (i<nwpt) {
 
 	      int i0 = max(i-1,0);
@@ -608,22 +675,34 @@ namespace OpenGC
 		if (i1 >= nwpt) break;
 	      }
 
-	      /* Do not draw from last missed approach wpt to airport */
+	      /* Do not draw from last waypoint to destination airport */
 	      /* Do only draw within waypoint range */
-	      if ((((wpt_miss2 > 0) && (i < wpt_miss2)) || (wpt_miss2 == 0)) && (i0 >= 0) && (i1 < nwpt)) {
+	      if ((i0 >= 0) && (i1 < nwpt)) {
 
-		//		printf("%i %i \n",i0,i1);
+		//printf("%i %i %i \n",i0,i1,wpt_current);
 		
 		// convert to azimuthal equidistant coordinates with acf in center
 		if ((wpt[i0].lon != FLT_MISS) && (wpt[i0].lat != FLT_MISS) &&
 		    (wpt[i1].lon != FLT_MISS) && (wpt[i1].lat != FLT_MISS)) {
 
+		  /* do we have a direct to current waypoint? */
+		  if ((*dir_act == 2) && (i0==(wpt_current-1))) {
+		    wpt_is_dct = true;
+		  } else {
+		    wpt_is_dct = false;
+		  }
 		
 		  /* convert all lonlat to azimuthal equidistant coordinates with acf in center */
 
 		  /* Start of Leg": Fix is start of straight leg */
-		  lon = (double) wpt[i0].lon;
-		  lat = (double) wpt[i0].lat;
+		  if (wpt_is_dct) {
+		    /* direct to next wpt */
+		    lon = *aircraftLon;
+		    lat = *aircraftLat;
+		  } else {
+		    lon = (double) wpt[i0].lon;
+		    lat = (double) wpt[i0].lat;
+		  }
 		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
 		  yPos = -northing / 1852.0 / mapRange * map_size; 
 		  xPos = easting / 1852.0  / mapRange * map_size;
@@ -657,218 +736,97 @@ namespace OpenGC
 		  //if (( sqrt(xPos*xPos + yPos*yPos) < map_size) ||
 		  //    ( sqrt(xPos2*xPos2 + yPos2*yPos2) < map_size)) {
 
-		  glPushMatrix();
+		  // Do not draw magenta line before current waypoint and not the last leg to the airport
+		  // However, draw from start airport to first waypoint
+		  if ((i0>=(wpt_current-1) && (i1<(nwpt-1))) ||
+		      ((i0==0) && (i1==1) && (wpt_current==2))) {
+
+		    glPushMatrix();
 		
-		  /*
-		    glPushMatrix();		    
-		    glColor3ub(COLOR_GREEN);
-		    glPointSize(10.0);
-		    glBegin(GL_POINTS);
-		    glVertex2f(xPos, yPos);
-		    glEnd();		    
-		    glPopMatrix();
+		    /*
+		      glPushMatrix();		    
+		      glColor3ub(COLOR_GREEN);
+		      glPointSize(10.0);
+		      glBegin(GL_POINTS);
+		      glVertex2f(xPos, yPos);
+		      glEnd();		    
+		      glPopMatrix();
 		
-		    glPushMatrix();		    
-		    glColor3ub(COLOR_RED);
-		    glPointSize(10.0);
-		    glBegin(GL_POINTS);
-		    glVertex2f(xPos2, yPos2);
-		    glEnd();		    
-		    glPopMatrix();
-		  */
-		
-		  /* only draw leg if it is not a Discontinuity/Vector/RW in flight plan */
-		  if ((strcmp(wpt[i0].name,"DISCONTINUITY") != 0) && (strcmp(wpt[i0].name,"(VECTOR)") != 0) &&
-		      (strncmp(wpt[i0].name,"RW",2) != 0)) {
-		  
-		    glLineWidth(lineWidth);
-		    bool missed_app_wpt;
-		    if ((i >= (wpt_miss1-1)) && (i <= wpt_miss2)) {
-		      // missed approach route
-		      missed_app_wpt = true;
-		      glColor3ub(COLOR_LIGHTBLUE);
-		      /* Does not work with OpenGL ES */
-		      //glEnable(GL_LINE_STIPPLE);
-		      //glLineStipple( 4, 0x0F0F );
+		      glPushMatrix();		    
+		      glColor3ub(COLOR_RED);
+		      glPointSize(10.0);
+		      glBegin(GL_POINTS);
+		      glVertex2f(xPos2, yPos2);
+		      glEnd();		    
+		      glPopMatrix();
+		    */
+
+		    
+		    has_seg1 = false;
+		    if (wpt_is_dct) {
+		      if ((*dir_seg1_ctr_lon != 0.0) &&
+			  (*dir_seg1_ctr_lat != 0.0) &&
+			  (*dir_seg1_end_lon != 0.0) &&
+			  (*dir_seg1_end_lat != 0.0) &&
+			  (*dir_seg1_radius != 0.0) &&
+			  (*dir_seg1_start_ang != 0.0) &&
+			  (*dir_seg1_end_ang != 0.0) &&
+			  (*dir_seg1_turn != 0.0) &&
+			  (*dir_seg1_ctr_lon != FLT_MISS) &&
+			  (*dir_seg1_ctr_lat != FLT_MISS) &&
+			  (*dir_seg1_end_lon != FLT_MISS) &&
+			  (*dir_seg1_end_lat != FLT_MISS) &&
+			  (*dir_seg1_radius != FLT_MISS) &&	
+			  (*dir_seg1_start_ang != FLT_MISS) &&
+			  (*dir_seg1_end_ang != FLT_MISS) &&
+			  (*dir_seg1_turn != FLT_MISS)) has_seg1 = true;
 		    } else {
-		      // regular route
-		      missed_app_wpt = false;
-		      glColor3ub(COLOR_VIOLET);
+		      if ((seg1_ctr_lon[i0] != 0.0) &&
+			  (seg1_ctr_lat[i0] != 0.0) &&
+			  (seg1_end_lon[i0] != 0.0) &&
+			  (seg1_end_lat[i0] != 0.0) &&
+			  (seg1_radius[i0] != 0.0) &&
+			  (seg1_start_ang[i0] != 0.0) &&
+			  (seg1_end_ang[i0] != 0.0) &&
+			  (seg1_turn[i0] != 0.0) &&
+			  (seg1_ctr_lon[i0] != FLT_MISS) &&
+			  (seg1_ctr_lat[i0] != FLT_MISS) &&
+			  (seg1_end_lon[i0] != FLT_MISS) &&
+			  (seg1_end_lat[i0] != FLT_MISS) &&
+			  (seg1_radius[i0] != FLT_MISS) &&	
+			  (seg1_start_ang[i0] != FLT_MISS) &&
+			  (seg1_end_ang[i0] != FLT_MISS) &&
+			  (seg1_turn[i0] != FLT_MISS)) has_seg1 = true;
 		    }
 
-		    // Draw Holding
-		    if ((strcmp(wpt[i1].pth,"HM") == 0) ||
-			(strcmp(wpt[i1].pth,"HF") == 0) ||
-			(strcmp(wpt[i1].pth,"HA") == 0)) {
-		      // holds are legs_pth
-		      // "HA" (hold to altitude)
-		      // "HF" (hold to a fix)
-		      // "HM" (hold with manual termination)
-		      // hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
-		      // hold length is 3.0 NM for a 60 second hold
-		      int holdtype = (int) fmc_rad_turn[i1] * 2 - 1; // 1: Right -1: Left
-		      /* hold speed */
-		      float holdspeed = max(*ground_speed,210.f);
-		      /* standard hold radius is around 1.5 nm */
-		      /* 3deg/s curve (T=120s/360deg): r = v * T / 2pi */
-		      float holdrad = pow(max(*true_air_speed,210.f),2.0) / 29127.0 / mapRange * map_size; // nm --> pixels
-		      //float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
-		      float holdlen;
-		      if (fmc_hold_time[i1] != 0.0) {
-			holdlen = holdspeed * fmc_hold_time[i1] / 3600.0 / mapRange * map_size;
-		      } else if (fmc_hold_dist[i1] != 0.0) {
-			holdlen = fmc_hold_dist[i1] / mapRange * map_size;
-		      } else {
-			/* default hold time per leg: 90 seconds */
-			holdlen = holdspeed * 90.0 / 3600.0 / mapRange * map_size;
-		      }
-	      
-		      float gamma = (fmc_crs[i1] - *magnetic_variation)*3.14/180.; // inbound direction (radians)
-		      xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course
-		      yPos1 = cos(gamma-3.14)*holdlen + yPos2; // Pos2 is end of inbound course
-		      xPos3 = sin(gamma+0.5*3.14*holdtype)*holdrad*2.0 + xPos2; // start of outbound course 
-		      yPos3 = cos(gamma+0.5*3.14*holdtype)*holdrad*2.0 + yPos2;
-		      xPos4 = sin(gamma+0.5*3.14*holdtype)*holdrad*2.0 + xPos1; // end of outbound course 
-		      yPos4 = cos(gamma+0.5*3.14*holdtype)*holdrad*2.0 + yPos1;
-
-		      // printf("%i %i %i %f \n",i,holdtype, fmc_hold_time[i1],fmc_crs[i1]);
-
-		      if (missed_app_wpt) {
-			drawDashedLine(xPos1,yPos1,xPos2,yPos2,nper100,ratio);
-		      } else {
-			glBegin(GL_LINES);
-			glVertex2f(xPos1,yPos1);
-			glVertex2f(xPos2,yPos2);
-			glEnd();
-		      }
-
-		      xPosC = 0.5*(xPos3-xPos2) + xPos2;
-		      yPosC = 0.5*(yPos3-yPos2) + yPos2;
-		      aCircle.SetDegreesPerPoint(5);
-		      aCircle.SetArcStartEnd(180./3.14*(gamma-0.5*3.14),180./3.14*(gamma+0.5*3.14));
-		      aCircle.SetRadius(holdrad);
-		      aCircle.SetOrigin(xPosC,yPosC);
-		      if (missed_app_wpt) {
-			aCircle.SetDashed(nper100,ratio);
-		      } else {
-			aCircle.SetDashed(0,1.0);
-		      }
-		      glBegin(GL_LINE_STRIP);
-		      aCircle.Evaluate();
-		      glEnd();
-  		  
-		      if (missed_app_wpt) {
-			drawDashedLine(xPos3,yPos3,xPos4,yPos4,nper100,ratio);
-		      } else {
-			glBegin(GL_LINES);
-			glVertex2f(xPos3,yPos3);
-			glVertex2f(xPos4,yPos4);
-			glEnd();
-		      }
-		  
-		      xPosC = 0.5*(xPos4-xPos1) + xPos1;
-		      yPosC = 0.5*(yPos4-yPos1) + yPos1;
-		      aCircle.SetDegreesPerPoint(5);
-		      aCircle.SetArcStartEnd(180./3.14*(gamma+0.5*3.14),180./3.14*(gamma-0.5*3.14));
-		      aCircle.SetRadius(holdrad);
-		      aCircle.SetOrigin(xPosC,yPosC);
-		      if (missed_app_wpt) {
-			aCircle.SetDashed(nper100,ratio);
-		      } else {
-			aCircle.SetDashed(0,1.0);
-		      }
-		      glBegin(GL_LINE_STRIP);
-		      aCircle.Evaluate();
-		      glEnd();
-
-		      // draw curved track (RADII Type with Segments 1-3)
-		    } else if ((seg1_ctr_lon[i0] != 0.0) &&
-			       (seg1_ctr_lat[i0] != 0.0) &&
-			       (seg1_end_lon[i0] != 0.0) &&
-			       (seg1_end_lat[i0] != 0.0) &&
-			       (seg1_radius[i0] != 0.0) &&
-			       (seg1_start_ang[i0] != 0.0) &&
-			       (seg1_end_ang[i0] != 0.0) &&
-			       (seg1_turn[i0] != 0.0) &&
-			       (seg1_ctr_lon[i0] != FLT_MISS) &&
-			       (seg1_ctr_lat[i0] != FLT_MISS) &&
-			       (seg1_end_lon[i0] != FLT_MISS) &&
-			       (seg1_end_lat[i0] != FLT_MISS) &&
-			       (seg1_radius[i0] != FLT_MISS) &&	
-			       (seg1_start_ang[i0] != FLT_MISS) &&
-			       (seg1_end_ang[i0] != FLT_MISS) &&
-			       (seg1_turn[i0] != FLT_MISS) &&
-			       (i > 1)) {
-
-		      /* SEGMENT 1 */
-		  
-		      /* Center of Arc */
-		      lon = (double) seg1_ctr_lon[i0];
-		      lat = (double) seg1_ctr_lat[i0];
-		      lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
-		      yPosC = -northing / 1852.0 / mapRange * map_size; 
-		      xPosC = easting / 1852.0  / mapRange * map_size;		  
-
-		      /* Start of Arc */
-		      double start_angle = (double) seg1_start_ang[i0];
-		      /* End of Arc */
-		      double end_angle = (double) seg1_end_ang[i0];
-		  
-		      // draw curved leg (partial circle)
-		      aCircle.SetDegreesPerPoint(2);
-		      if (seg1_turn[i0] == 2.0) {
-			/* left turn */
-			aCircle.SetArcStartEnd(end_angle,start_angle);
-		      } else {
-			/* right turn */
-			aCircle.SetArcStartEnd(start_angle,end_angle);
-		      }
-		      aCircle.SetRadius(seg1_radius[i0] / mapRange * map_size);
-		      aCircle.SetOrigin(xPosC,yPosC);
-		      if (missed_app_wpt) {
-			aCircle.SetDashed(nper100,ratio);
-		      } else {
-			aCircle.SetDashed(0,1.0);
-		      }
-		      glBegin(GL_LINE_STRIP);
-		      aCircle.Evaluate();
-		      glEnd();
-
-		      /* lon/lat at end of seg1 arc */
-		      lonT = (double) seg1_end_lon[i0];
-		      latT = (double) seg1_end_lat[i0];
-		    		    
-		      /* SEGMENT 2 */
+		    has_seg2 = false;
+		    if (wpt_is_dct) {
+		      if ((*dir_seg2_end_lon != 0) && (*dir_seg2_end_lat != 0) &&
+			  (*dir_seg2_end_lon != FLT_MISS) && (*dir_seg2_end_lat != FLT_MISS)) has_seg2 = true;
+		    } else {
 		      if ((seg2_end_lon[i0] != 0) && (seg2_end_lat[i0] != 0) &&
-			  (seg2_end_lon[i0] != FLT_MISS) && (seg2_end_lat[i0] != FLT_MISS)) {
-		    
-			lon = (double) seg1_end_lon[i0];
-			lat = (double) seg1_end_lat[i0];
-			lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
-			yPos3 = -northing / 1852.0 / mapRange * map_size; 
-			xPos3 = easting / 1852.0  / mapRange * map_size;
-			lon = (double) seg2_end_lon[i0];
-			lat = (double) seg2_end_lat[i0];
-			lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
-			yPos4 = -northing / 1852.0 / mapRange * map_size; 
-			xPos4 = easting / 1852.0  / mapRange * map_size;
-		    		    
-			if (missed_app_wpt) {
-			  drawDashedLine(xPos3,yPos3,xPos4,yPos4,nper100,ratio);
-			} else {
-			  glBegin(GL_LINES);
-			  glVertex2f(xPos3,yPos3);
-			  glVertex2f(xPos4,yPos4);
-			  glEnd();
-			}
+			  (seg2_end_lon[i0] != FLT_MISS) && (seg2_end_lat[i0] != FLT_MISS)) has_seg2 = true;
+		    }
 
-			/* end lon/lat of segment 2 */
-			lonT = (double) seg2_end_lon[i0];
-			latT = (double) seg2_end_lat[i0];
-		  
-		      }
-
-		      /* SEGMENT 3 */
+		    has_seg3 = false;
+		    if (wpt_is_dct) {
+		      if ((*dir_seg3_ctr_lon != 0.0) &&
+			  (*dir_seg3_ctr_lat != 0.0) &&
+			  (*dir_seg3_end_lon != 0.0) &&
+			  (*dir_seg3_end_lat != 0.0) &&
+			  (*dir_seg3_radius != 0.0) &&
+			  (*dir_seg3_start_ang != 0.0) &&
+			  (*dir_seg3_end_ang != 0.0) &&
+			  (*dir_seg3_turn != 0.0) &&
+			  (*dir_seg3_ctr_lon != FLT_MISS) &&
+			  (*dir_seg3_ctr_lat != FLT_MISS) &&
+			  (*dir_seg3_end_lon != FLT_MISS) &&
+			  (*dir_seg3_end_lat != FLT_MISS) &&
+			  (*dir_seg3_radius != FLT_MISS) &&	
+			  (*dir_seg3_start_ang != FLT_MISS) &&
+			  (*dir_seg3_end_ang != FLT_MISS) &&
+			  (*dir_seg3_turn != FLT_MISS)) has_seg3 = true;
+		    } else {
 		      if ((seg3_ctr_lon[i0] != 0.0) &&
 			  (seg3_ctr_lat[i0] != 0.0) &&
 			  (seg3_end_lon[i0] != 0.0) &&
@@ -884,30 +842,436 @@ namespace OpenGC
 			  (seg3_radius[i0] != FLT_MISS) &&	
 			  (seg3_start_ang[i0] != FLT_MISS) &&
 			  (seg3_end_ang[i0] != FLT_MISS) &&
-			  (seg3_turn[i0] != FLT_MISS) &&
-			  (i > 1)) {
-		    
+			  (seg3_turn[i0] != FLT_MISS)) has_seg3 = true;
+		    }
+
+		    has_rad = false;
+		    if (wpt_is_dct) {
+		      if ((*dir_rad_turn != -1.0) &&
+			  (*dir_rad_lon != 0.0) &&
+			  (*dir_rad_lat != 0.0) &&
+			  (*dir_radius >= 0.1)) has_rad = true;
+		    } else {
+		      if ((fmc_rad_turn[i1] != -1.0) &&
+			  (fmc_rad_lon[i1] != 0.0) &&
+			  (fmc_rad_lat[i1] != 0.0) &&
+			  (fmc_radius[i1] >= 0.1)) has_rad = true;
+		    }
+		 
+		    //printf("%i %s %i %i %i %i \n",i0,wpt[i0].name,has_seg1,has_seg2,has_seg3,has_rad);
+		  
+		  
+		    /* only draw leg if it is not a Discontinuity/Vector/RW in flight plan or if 
+		       it is a direct to the next waypoint */
+		    if (((strcmp(wpt[i0].name,"DISCONTINUITY") != 0) && (strcmp(wpt[i0].name,"(VECTOR)") != 0)) ||
+			(wpt_is_dct)) {
+		      //&& (strncmp(wpt[i0].name,"RW",2) != 0)) {
+		  
+		      glLineWidth(lineWidth);
+		      bool missed_app_wpt;
+		      if ((i >= (wpt_miss1-1)) && (i <= wpt_miss2)) {
+			// missed approach route
+			missed_app_wpt = true;
+			glColor3ub(COLOR_LIGHTBLUE);
+			/* Does not work with OpenGL ES */
+			//glEnable(GL_LINE_STIPPLE);
+			//glLineStipple( 4, 0x0F0F );
+		      } else {
+			// regular route
+			missed_app_wpt = false;
+			glColor3ub(COLOR_VIOLET);
+		      }
+
+		      // Draw Holding
+		      if ((strcmp(wpt[i1].pth,"HM") == 0) ||
+			  (strcmp(wpt[i1].pth,"HF") == 0) ||
+			  (strcmp(wpt[i1].pth,"HA") == 0)) {
+			// holds are legs_pth
+			// "HA" (hold to altitude)
+			// "HF" (hold to a fix)
+			// "HM" (hold with manual termination)
+			// hold_radius = 1.5	-- 1.5 NM -> about 3 deg/sec at 250kts
+			// hold length is 3.0 NM for a 60 second hold
+			int holdtype = (int) fmc_rad_turn[i1] * 2 - 1; // 1: Right -1: Left
+			/* hold speed */
+			float holdspeed = max(*ground_speed,210.f);
+			/* standard hold radius is around 1.5 nm */
+			/* 3deg/s curve (T=120s/360deg): r = v * T / 2pi */
+			float holdrad = pow(max(*true_air_speed,210.f),2.0) / 29127.0 / mapRange * map_size; // nm --> pixels
+			//float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
+			float holdlen;
+			if (fmc_hold_time[i1] != 0.0) {
+			  holdlen = holdspeed * fmc_hold_time[i1] / 3600.0 / mapRange * map_size;
+			} else if (fmc_hold_dist[i1] != 0.0) {
+			  holdlen = fmc_hold_dist[i1] / mapRange * map_size;
+			} else {
+			  /* default hold time per leg: 90 seconds */
+			  holdlen = holdspeed * 90.0 / 3600.0 / mapRange * map_size;
+			}
+	      
+			float gamma = (fmc_crs[i1] - *magnetic_variation)*3.14/180.; // inbound direction (radians)
+			xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course
+			yPos1 = cos(gamma-3.14)*holdlen + yPos2; // Pos2 is end of inbound course
+			xPos3 = sin(gamma+0.5*3.14*holdtype)*holdrad*2.0 + xPos2; // start of outbound course 
+			yPos3 = cos(gamma+0.5*3.14*holdtype)*holdrad*2.0 + yPos2;
+			xPos4 = sin(gamma+0.5*3.14*holdtype)*holdrad*2.0 + xPos1; // end of outbound course 
+			yPos4 = cos(gamma+0.5*3.14*holdtype)*holdrad*2.0 + yPos1;
+
+			// printf("%i %i %i %f \n",i,holdtype, fmc_hold_time[i1],fmc_crs[i1]);
+
+			if (missed_app_wpt) {
+			  drawDashedLine(xPos1,yPos1,xPos2,yPos2,nper100,ratio);
+			} else {
+			  glBegin(GL_LINES);
+			  glVertex2f(xPos1,yPos1);
+			  glVertex2f(xPos2,yPos2);
+			  glEnd();
+			}
+
+			xPosC = 0.5*(xPos3-xPos2) + xPos2;
+			yPosC = 0.5*(yPos3-yPos2) + yPos2;
+			aCircle.SetDegreesPerPoint(5);
+			aCircle.SetArcStartEnd(180./3.14*(gamma-0.5*3.14),180./3.14*(gamma+0.5*3.14));
+			aCircle.SetRadius(holdrad);
+			aCircle.SetOrigin(xPosC,yPosC);
+			if (missed_app_wpt) {
+			  aCircle.SetDashed(nper100,ratio);
+			} else {
+			  aCircle.SetDashed(0,1.0);
+			}
+			glBegin(GL_LINE_STRIP);
+			aCircle.Evaluate();
+			glEnd();
+  		  
+			if (missed_app_wpt) {
+			  drawDashedLine(xPos3,yPos3,xPos4,yPos4,nper100,ratio);
+			} else {
+			  glBegin(GL_LINES);
+			  glVertex2f(xPos3,yPos3);
+			  glVertex2f(xPos4,yPos4);
+			  glEnd();
+			}
+		  
+			xPosC = 0.5*(xPos4-xPos1) + xPos1;
+			yPosC = 0.5*(yPos4-yPos1) + yPos1;
+			aCircle.SetDegreesPerPoint(5);
+			aCircle.SetArcStartEnd(180./3.14*(gamma+0.5*3.14),180./3.14*(gamma-0.5*3.14));
+			aCircle.SetRadius(holdrad);
+			aCircle.SetOrigin(xPosC,yPosC);
+			if (missed_app_wpt) {
+			  aCircle.SetDashed(nper100,ratio);
+			} else {
+			  aCircle.SetDashed(0,1.0);
+			}
+			glBegin(GL_LINE_STRIP);
+			aCircle.Evaluate();
+			glEnd();
+		      
+			// draw curved track (RADII Type with Segments 1-3)
+		      } else if (has_seg1 && (i > 1)) {
+
+			/* SEGMENT 1 */
+		  
 			/* Center of Arc */
-			lon = (double) seg3_ctr_lon[i0];
-			lat = (double) seg3_ctr_lat[i0];
+			if (wpt_is_dct) {
+			  lon = (double) *dir_seg1_ctr_lon;
+			  lat = (double) *dir_seg1_ctr_lat;			  
+			} else {
+			  lon = (double) seg1_ctr_lon[i0];
+			  lat = (double) seg1_ctr_lat[i0];
+			}
 			lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
 			yPosC = -northing / 1852.0 / mapRange * map_size; 
 			xPosC = easting / 1852.0  / mapRange * map_size;		  
 
-			/* Start of Arc */
-			double start_angle = (double) seg3_start_ang[i0];
-			/* End of Arc */
-			double end_angle = (double) seg3_end_ang[i0];
-
+			if (wpt_is_dct) {
+			  /* Start of Arc */
+			  start_angle = (double) *dir_seg1_start_ang;
+			  /* End of Arc */
+			  end_angle = (double) *dir_seg1_end_ang;
+			} else {
+			  /* Start of Arc */
+			  start_angle = (double) seg1_start_ang[i0];
+			  /* End of Arc */
+			  end_angle = (double) seg1_end_ang[i0];
+			}
+			  
+			// draw curved leg (partial circle)
 			aCircle.SetDegreesPerPoint(2);
-			if (seg3_turn[i0] == 2.0) {
+			if (wpt_is_dct) {
+			  if (*dir_seg1_turn == 2.0) {
+			    /* left turn */
+			    aCircle.SetArcStartEnd(end_angle,start_angle);
+			  } else {
+			    /* right turn */
+			    aCircle.SetArcStartEnd(start_angle,end_angle);
+			  }
+			} else {
+			  if (seg1_turn[i0] == 2.0) {
+			    /* left turn */
+			    aCircle.SetArcStartEnd(end_angle,start_angle);
+			  } else {
+			    /* right turn */
+			    aCircle.SetArcStartEnd(start_angle,end_angle);
+			  }
+			}
+			if (wpt_is_dct) {
+			  aCircle.SetRadius(*dir_seg1_radius / mapRange * map_size);
+			} else {
+			  aCircle.SetRadius(seg1_radius[i0] / mapRange * map_size);
+			}
+			aCircle.SetOrigin(xPosC,yPosC);
+			if (missed_app_wpt) {
+			  aCircle.SetDashed(nper100,ratio);
+			} else {
+			  aCircle.SetDashed(0,1.0);
+			}
+
+			glBegin(GL_LINE_STRIP);
+			aCircle.Evaluate();
+			glEnd();
+
+			/* lon/lat at end of seg1 arc */
+			if (wpt_is_dct) {
+			  lonT = (double) *dir_seg1_end_lon;
+			  latT = (double) *dir_seg1_end_lat;
+			} else {
+			  lonT = (double) seg1_end_lon[i0];
+			  latT = (double) seg1_end_lat[i0];
+			}
+			 			  
+			/* SEGMENT 2 */
+			if (has_seg2) {
+
+			  if (wpt_is_dct) {			  
+			    lon = (double) *dir_seg1_end_lon;
+			    lat = (double) *dir_seg1_end_lat;
+			  } else {
+			    lon = (double) seg1_end_lon[i0];
+			    lat = (double) seg1_end_lat[i0];
+			  }
+			  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+			  yPos3 = -northing / 1852.0 / mapRange * map_size; 
+			  xPos3 = easting / 1852.0  / mapRange * map_size;
+			  if (wpt_is_dct) {			  
+			    lon = (double) *dir_seg2_end_lon;
+			    lat = (double) *dir_seg2_end_lat;
+			  } else {
+			    lon = (double) seg2_end_lon[i0];
+			    lat = (double) seg2_end_lat[i0];
+			  }
+			  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+			  yPos4 = -northing / 1852.0 / mapRange * map_size; 
+			  xPos4 = easting / 1852.0  / mapRange * map_size;
+		    		    
+			  if (missed_app_wpt) {
+			    drawDashedLine(xPos3,yPos3,xPos4,yPos4,nper100,ratio);
+			  } else {
+			    glBegin(GL_LINES);
+			    glVertex2f(xPos3,yPos3);
+			    glVertex2f(xPos4,yPos4);
+			    glEnd();
+			  }
+
+			  /* end lon/lat of segment 2 */
+			  if (wpt_is_dct) {			  
+			    lonT = (double) *dir_seg2_end_lon;
+			    latT = (double) *dir_seg2_end_lat;
+			  } else {
+			    lonT = (double) seg2_end_lon[i0];
+			    latT = (double) seg2_end_lat[i0];
+			  }
+		  
+			}
+
+			/* SEGMENT 3 */
+			if (has_seg3 && (i > 1)) {
+		    
+			  /* Center of Arc */
+			  if (wpt_is_dct) {			  
+			    lon = (double) *dir_seg3_ctr_lon;
+			    lat = (double) *dir_seg3_ctr_lat;
+			  } else {
+			    lon = (double) seg3_ctr_lon[i0];
+			    lat = (double) seg3_ctr_lat[i0];
+			  }
+			  lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+			  yPosC = -northing / 1852.0 / mapRange * map_size; 
+			  xPosC = easting / 1852.0  / mapRange * map_size;		  
+			  
+			  if (wpt_is_dct) {			  
+			    /* Start of Arc */
+			    start_angle = (double) *dir_seg3_start_ang;
+			    /* End of Arc */
+			    end_angle = (double) *dir_seg3_end_ang;
+			  } else {
+			    /* Start of Arc */
+			    start_angle = (double) seg3_start_ang[i0];
+			    /* End of Arc */
+			    end_angle = (double) seg3_end_ang[i0];
+			  }
+
+			  aCircle.SetDegreesPerPoint(2);
+			  if (wpt_is_dct) {
+			    if (*dir_seg3_turn == 2.0) {
+			      /* left turn */
+			      aCircle.SetArcStartEnd(end_angle,start_angle);
+			    } else {
+			      /* right turn */
+			      aCircle.SetArcStartEnd(start_angle,end_angle);
+			    }
+			  } else {
+			    if (seg3_turn[i0] == 2.0) {
+			      /* left turn */
+			      aCircle.SetArcStartEnd(end_angle,start_angle);
+			    } else {
+			      /* right turn */
+			      aCircle.SetArcStartEnd(start_angle,end_angle);
+			    }
+			  }
+			  if (wpt_is_dct) {			  
+			    aCircle.SetRadius(*dir_seg3_radius / mapRange * map_size);
+			  } else {
+			    aCircle.SetRadius(seg3_radius[i0] / mapRange * map_size);
+			  }
+			  aCircle.SetOrigin(xPosC,yPosC);
+			  if (missed_app_wpt) {
+			    aCircle.SetDashed(nper100,ratio);
+			  } else {
+			    aCircle.SetDashed(0,1.0);
+			  }
+			  glBegin(GL_LINE_STRIP);
+			  aCircle.Evaluate();
+			  glEnd();
+
+			  if (wpt_is_dct) {			  
+			    lonT = (double) *dir_seg3_end_lon;
+			    latT = (double) *dir_seg3_end_lat;
+			  } else {
+			    lonT = (double) seg3_end_lon[i0];
+			    latT = (double) seg3_end_lat[i0];
+			  }
+			}
+
+
+			/*
+			  glPushMatrix();
+			  glColor3ub(COLOR_BLUE);
+			  glPointSize(8.0);
+			  glBegin(GL_POINTS);
+			  glVertex2f(xPosC, yPosC);
+			  glEnd();		  
+			  glPopMatrix();
+			*/
+
+			/* Draw straight Line from End of Arcs to next start of Leg */	     
+			lonlat2gnomonic(&lonT, &latT, &easting, &northing, &MapCenterLon, &MapCenterLat);
+			yPosT = -northing / 1852.0 / mapRange * map_size; 
+			xPosT = easting / 1852.0  / mapRange * map_size;
+		 
+			/*
+			  glPushMatrix();
+			  glColor3ub(COLOR_YELLOW);
+			  glPointSize(12.0);
+			  glBegin(GL_POINTS);
+			  glVertex2f(xPosT, yPosT);
+			  glEnd();		  
+			  glPopMatrix();
+			*/
+
+			if (!has_rad) {
+			  /* only draw line to next wpt if we do not have a RAD turn in addition */
+			  if (missed_app_wpt) {
+			    drawDashedLine(xPosT,yPosT,xPos2,yPos2,nper100,ratio);
+			  } else {
+			    glBegin(GL_LINES);
+			    glVertex2f(xPosT,yPosT);
+			    glVertex2f(xPos2,yPos2);
+			    glEnd();
+			  }
+			}
+
+		      } else {
+			// draw straight line
+
+			if (!has_rad) {
+			  /* only draw line to next wpt if we do not have a RAD turn in addition */
+			  if (missed_app_wpt) {
+			    drawDashedLine(xPos,yPos,xPos2,yPos2,nper100,ratio);
+			  } else {
+			    glBegin(GL_LINES);
+			    glVertex2f(xPos,yPos);
+			    glVertex2f(xPos2,yPos2);
+			    glEnd();
+			  }
+			}
+		      }
+
+		      if (has_rad) {
+			// RAD type turn
+			
+			//printf("%i %s %f %f %f %f %f %f\n",i0,wpt[i0].name,fmc_rad_turn[i1],fmc_rad_lon[i1],fmc_rad_lat[i1],fmc_af_beg[i1],fmc_af_end[i1],fmc_radius[i1]);
+			/* Center of Arc */
+			if (wpt_is_dct) {			  
+			  lon = (double) *dir_rad_lon;
+			  lat = (double) *dir_rad_lat;
+			} else {
+			  lon = (double) fmc_rad_lon[i1];
+			  lat = (double) fmc_rad_lat[i1];
+			}
+			lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
+			yPosC = -northing / 1852.0 / mapRange * map_size; 
+			xPosC = easting / 1852.0  / mapRange * map_size;		  
+
+			/*
+			glPushMatrix();
+			glColor3ub(COLOR_YELLOW);
+			glPointSize(12.0);
+			glBegin(GL_POINTS);
+			glVertex2f(xPosC, yPosC);
+			glEnd();		  
+			glPopMatrix();
+			*/
+		      
+			/* Start of Arc */
+			if (fmc_af_beg[i1] != 0.0) {
+			  // CHECK HOW THIS WORKS WITH DIRECT TO WPT 
+			  start_angle = (double) fmc_af_beg[i1];
+			} else {
+			  if (wpt_is_dct) {			  
+			    lon2 = *aircraftLon;
+			    lat2 = *aircraftLat;
+			  } else {
+			    lon2 = (double) wpt[i0].lon;
+			    lat2 = (double) wpt[i0].lat;
+			  }
+			  start_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
+			}
+		      
+			/* End of Arc */
+			if (fmc_af_end[i1] != 0.0) {
+			  // CHECK HOW THIS WORKS WITH DIRECT TO WPT 
+			  end_angle = (double) fmc_af_end[i1];
+			} else {
+			  lon2 = (double) wpt[i1].lon;
+			  lat2 = (double) wpt[i1].lat;
+			  end_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
+			}
+		      
+			aCircle.SetDegreesPerPoint(2);
+			if (fmc_rad_turn[i1] == 2.0) {
 			  /* left turn */
 			  aCircle.SetArcStartEnd(end_angle,start_angle);
 			} else {
 			  /* right turn */
 			  aCircle.SetArcStartEnd(start_angle,end_angle);
 			}
-			aCircle.SetRadius(seg1_radius[i0] / mapRange * map_size);
+
+			if (wpt_is_dct) {			  
+			  aCircle.SetRadius(*dir_radius / mapRange * map_size);
+			} else {
+			  aCircle.SetRadius(fmc_radius[i1] / mapRange * map_size);
+			}
 			aCircle.SetOrigin(xPosC,yPosC);
 			if (missed_app_wpt) {
 			  aCircle.SetDashed(nper100,ratio);
@@ -918,119 +1282,15 @@ namespace OpenGC
 			aCircle.Evaluate();
 			glEnd();
 
-			lonT = (double) seg3_end_lon[i0];
-			latT = (double) seg3_end_lat[i0];
 		      }
 
-		      /*
-			glPushMatrix();
-			glColor3ub(COLOR_BLUE);
-			glPointSize(8.0);
-			glBegin(GL_POINTS);
-			glVertex2f(xPosC, yPosC);
-			glEnd();		  
-			glPopMatrix();
-		      */
+		    } // not a Discontinuity in flight plan
 
-		      /* Draw straight Line from End of Arcs to next start of Leg */	     
-		      lonlat2gnomonic(&lonT, &latT, &easting, &northing, &MapCenterLon, &MapCenterLat);
-		      yPosT = -northing / 1852.0 / mapRange * map_size; 
-		      xPosT = easting / 1852.0  / mapRange * map_size;
-		 
-		      /*
-			glPushMatrix();
-			glColor3ub(COLOR_YELLOW);
-			glPointSize(12.0);
-			glBegin(GL_POINTS);
-			glVertex2f(xPosT, yPosT);
-			glEnd();		  
-			glPopMatrix();
-		      */
-		 
-		      if (missed_app_wpt) {
-			drawDashedLine(xPosT,yPosT,xPos2,yPos2,nper100,ratio);
-		      } else {
-			glBegin(GL_LINES);
-			glVertex2f(xPosT,yPosT);
-			glVertex2f(xPos2,yPos2);
-			glEnd();
-		      }
+		    glPopMatrix();
 
-		      // Rad turn
-		    } else if ((fmc_rad_turn[i1] != -1.0) &&
-			       (fmc_rad_lon[i1] != 0.0) &&
-			       (fmc_rad_lat[i1] != 0.0) &&
-			       (fmc_radius[i1] >= 0.1)) {
+		  } // do not draw magenta line to current waypoint and not to destination airport 
 
-		      //printf("%i %f %f %f \n",i1,fmc_rad_turn[i1],fmc_rad_lon[i1],fmc_rad_lat[i1]);
-		      /* Center of Arc */
-		      lon = (double) fmc_rad_lon[i1];
-		      lat = (double) fmc_rad_lat[i1];
-		      lonlat2gnomonic(&lon, &lat, &easting, &northing, &MapCenterLon, &MapCenterLat);
-		      yPosC = -northing / 1852.0 / mapRange * map_size; 
-		      xPosC = easting / 1852.0  / mapRange * map_size;		  
-		      
-		      /* Start of Arc */
-		      double start_angle;
-		      if (fmc_af_beg[i1] != 0.0) {
-			start_angle = (double) fmc_af_beg[i1];
-		      } else {
-			lon2 = (double) wpt[i0].lon;
-			lat2 = (double) wpt[i0].lat;
-			start_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
-		      }
-		      
-		      /* End of Arc */
-		      double end_angle;
-		      if (fmc_af_end[i1] != 0.0) {
-			end_angle = (double) fmc_af_end[i1];
-		      } else {
-			lon2 = (double) wpt[i1].lon;
-			lat2 = (double) wpt[i1].lat;
-			end_angle = heading_from_a_to_b(&lon,&lat,&lon2,&lat2);
-		      }
-		      
-		      aCircle.SetDegreesPerPoint(2);
-		      if (fmc_rad_turn[i1] == 2.0) {
-			/* left turn */
-			aCircle.SetArcStartEnd(end_angle,start_angle);
-		      } else {
-			/* right turn */
-			aCircle.SetArcStartEnd(start_angle,end_angle);
-		      }
-
-		      aCircle.SetRadius(fmc_radius[i1] / mapRange * map_size);
-		      aCircle.SetOrigin(xPosC,yPosC);
-		      if (missed_app_wpt) {
-			aCircle.SetDashed(nper100,ratio);
-		      } else {
-			aCircle.SetDashed(0,1.0);
-		      }
-		      glBegin(GL_LINE_STRIP);
-		      aCircle.Evaluate();
-		      glEnd();
-		      
-
-		    } else {
-		      // draw straight line
-
-		      if (missed_app_wpt) {
-			drawDashedLine(xPos,yPos,xPos2,yPos2,nper100,ratio);
-		      } else {
-			glBegin(GL_LINES);
-			glVertex2f(xPos,yPos);
-			glVertex2f(xPos2,yPos2);
-			glEnd();
-		      }
-		    }
-
-		    /* Does not work with OpenGL ES */
-		    //glDisable(GL_LINE_STIPPLE);
-
-		  } // not a Discontinuity in flight plan
-
-		  glPopMatrix();
-		
+		  
 		  // draw waypoint symbol and name
 		  glPushMatrix();
 		  glTranslatef(xPosL, yPosL, 0.0);

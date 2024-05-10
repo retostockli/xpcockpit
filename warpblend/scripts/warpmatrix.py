@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 4
+setting = 3
 
 # Plot Warping grid for Checking
 doplot = False
@@ -64,9 +64,9 @@ if setting == 1:
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,68.3]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top =  [  0.0,   0.0, 279.0, 282.0]
@@ -85,9 +85,9 @@ elif setting == 2:
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,68.3]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
     blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
@@ -96,39 +96,39 @@ elif setting == 2:
     blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
-    forwin = True  # create for windows or for linux
+    forwin = False  # create for windows or for linux
     savegrid = True # save proection grid or just FOV
 elif setting == 3:
-    # Projection
+    # Projection + Cylindrical (grid testing with X-Plane)
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
-    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
+    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     projection = [False,True,True,True]  # apply projection onto curved surface
     epsilon = [0.0,0.0,6.5,0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,68.3]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
-    vertical_shift = [0.0,12.0,0.0,7.0]    # vertical shift [pixel]
+    vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
     blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
     blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
     blend_right_top = [  0.0, 224.0, 236.0,   0.0]
     blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
-    gridtest = False # display grid test pattern
+    gridtest = True # display grid test pattern
     blendtest = False  # cut blend sharp for testing
-    forwin = True  # create for windows or for linux
+    forwin = False  # create for windows or for linux
     savegrid = True # save proection grid or just FOV
 elif setting == 4:
     # None (use this for X-Plane when using warpblend with NVIDIA directly)
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
-    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
-#    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
+#    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
+    cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-    lateral_offset = [0.0,-68.1,0.0,67.9]  # lateral offset [deg]
+    lateral_offset = [0.0,-68.1,0.0,68.3]  # lateral offset [deg]
     vertical_offset = [0.0,0.0,0.0,0.0]    # vertical offset [deg]
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
@@ -165,9 +165,9 @@ elif setting == 5:
 elif setting == 6:
     # Testing Single Monitor
     nmon = 1  # number of monitors
-    ceiling = False  # projector ceiling mount instead of table mount
-    cylindrical = [True]  # apply flat plane to cylinder warping
-    projection = [False]  # apply projection onto curved surfae
+    ceiling = True  # projector ceiling mount instead of table mount
+    cylindrical = [False]  # apply flat plane to cylinder warping
+    projection = [True]  # apply projection onto curved surfae
     epsilon = [0.0]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0]  # lateral offset [deg]
@@ -179,10 +179,10 @@ elif setting == 6:
     blend_left_bot = [0.0]
     blend_right_top = [0.0]
     blend_right_bot = [0.0]
-    gridtest = False # display grid test pattern
+    gridtest = True # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
-    savegrid = False # save proection grid or just FOV
+    savegrid = True # save proection grid or just FOV
 elif setting == 7:
     # Testing Two Monitors
     nmon = 2  # number of monitors
@@ -693,11 +693,11 @@ for mon in range(0,nmon,1):
         for gx in range(0,ngx,1):
             for gy in range(0,ngy,1):
                 con.write("monitor/"+str(mon)+"/proj/grid_ini_x"+str(gx)+"/"+str(gy)+" "
-                          +str(format(xabs[gx,gy]/float(nx),('.6f')))+"\n")
+                          +str(format((xabs[gx,gy]+xdif[gx,gy])/float(nx),('.6f')))+"\n")
         for gx in range(0,ngx,1):
             for gy in range(0,ngy,1):
                 con.write("monitor/"+str(mon)+"/proj/grid_ini_y"+str(gx)+"/"+str(gy)+" "
-                          +str(format(yabs[gx,gy]/float(ny),('.6f')))+"\n")
+                          +str(format((yabs[gx,gy]+ydif[gx,gy])/float(ny),('.6f')))+"\n")
         for gx in range(0,ngx,1):
             for gy in range(0,ngy,1):
                 con.write("monitor/"+str(mon)+"/proj/grid_off_x"+str(gx)+"/"+str(gy)+" "

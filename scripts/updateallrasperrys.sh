@@ -7,4 +7,5 @@ sleep 2
 xterm -e "./updaterasperry.sh eicas; $SHELL" &
 sleep 2
 xterm -e "./updaterasperry.sh fmc1; $SHELL" &
-
+sleep 2
+xterm -e "./updaterasperry.sh fmc2; $SHELL" &

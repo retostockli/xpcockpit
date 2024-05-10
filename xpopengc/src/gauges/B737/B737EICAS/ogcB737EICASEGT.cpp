@@ -76,15 +76,17 @@ B737EICASEGT::~B737EICASEGT()
     switch (currentEngine)
       {
       case 1:
+	value = *(engn_egt_c+0);
 	if ((acf_type == 2) || (acf_type == 3)) {
 	  engn_egt_c = link_dataref_flt("laminar/B738/engine/eng1_egt",0);
+	  value = *engn_egt_c;
 	}
-	value = *(engn_egt_c+0);
 	break;
       case 2: 
 	value = *(engn_egt_c+1) ;
 	if ((acf_type == 2) || (acf_type == 3)) {
 	  engn_egt_c = link_dataref_flt("laminar/B738/engine/eng2_egt",0);
+	  value = *engn_egt_c;
 	}
 	break;
       case 3: 

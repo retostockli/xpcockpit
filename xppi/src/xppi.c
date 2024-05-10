@@ -143,6 +143,13 @@ int main(int argc, char **argv) {
    
     usleep(INTERVAL*1000);
   }
+
+  /*
+  if ((strcmp(argv[1],"boeing737fmc") == 0) ||
+      (strcmp(argv[1],"boeing737fmc1") == 0) ||
+      (strcmp(argv[1],"boeing737fmc2") == 0)) {
+    b737_fmc_exit();
+    }*/
   
   return 0; 
 } 
