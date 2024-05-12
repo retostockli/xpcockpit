@@ -74,6 +74,9 @@ public:
   /** Set whether or not to smooth */
   void SetSmooth(bool flag);
 
+  /** Set whether or not to draw as an outline */
+  void SetOutline(bool flag);
+
   /** Print a character string at location (x,y) using specified font */
   void Print(double x, double y, const char* text, int font);
   
@@ -93,6 +96,9 @@ protected:
 
   /** TRUE if the fonts are smoothed using an anti-aliased outline */
   bool m_Smooth;
+
+  /** TRUE if the fonts are drawn as an anti-aliased outline */
+  bool m_Outline;
 
   /**
    * The vector that holds Font objects

@@ -54,31 +54,32 @@ extern "C" {
 #include "ogcXPlaneDataSource.h"
 
 //-----------Gauges------------
-#include "WXR/ogcWXR.h"
 #include "Dummy/ogcDummyGauge.h"
-#include "BasicClock/ogcBasicClock.h"
-#include "A320/A320PFD/ogcA320PFD.h"
-#include "A320/A320ND/ogcA320ND.h"
-#include "A320/A320EWD/ogcA320EWD.h"
-#include "A320/A320SD/ogcA320SD.h"
-#include "A320/A320MCDU/ogcA320MCDU.h"
-#include "A320/A320Misc/A320Clock/ogcA320Clock.h"
-#include "A320/A320Misc/A320BrkTripleInd/ogcA320BrkTripleInd.h"
-#include "A320/A320Stby/A320StbyAlt/ogcA320StbyAlt.h"
-#include "A320/A320Stby/A320StbyASI/ogcA320StbyASI.h"
-#include "A320/A320Stby/A320StbyAtt/ogcA320StbyAtt.h"
-#include "A320/A320Stby/A320StbyISIS/ogcA320StbyISIS.h"
-#include "A320/A320Stby/A320StbyRMI/ogcA320StbyRMI.h"
-#include "B737/B737PFD/ogcB737PFD.h"
-#include "B737/B737PFDSA/ogcB737PFDSA.h"
-#include "B737/B737EICAS/ogcB737EICAS.h"
-#include "B737/B737NAV/ogcB737NAV.h"
-#include "B737/B737FMC/ogcB737FMC.h"
-#include "B737/B737MIP/ogcB737MIP.h"
-#include "B737/B737CLOCK/ogcB737Clock.h"
-#include "B737/B737ISFD/ogcB737ISFD.h"
-#include "B737/B737RMI/ogcB737RMI.h"
-#include "B737/B737LOWERDU/ogcB737LOWERDU.h"
+#include "Test/ogcTestGauge.h"
+// #include "WXR/ogcWXR.h"
+// #include "BasicClock/ogcBasicClock.h"
+// #include "A320/A320PFD/ogcA320PFD.h"
+// #include "A320/A320ND/ogcA320ND.h"
+// #include "A320/A320EWD/ogcA320EWD.h"
+// #include "A320/A320SD/ogcA320SD.h"
+// #include "A320/A320MCDU/ogcA320MCDU.h"
+// #include "A320/A320Misc/A320Clock/ogcA320Clock.h"
+// #include "A320/A320Misc/A320BrkTripleInd/ogcA320BrkTripleInd.h"
+// #include "A320/A320Stby/A320StbyAlt/ogcA320StbyAlt.h"
+// #include "A320/A320Stby/A320StbyASI/ogcA320StbyASI.h"
+// #include "A320/A320Stby/A320StbyAtt/ogcA320StbyAtt.h"
+// #include "A320/A320Stby/A320StbyISIS/ogcA320StbyISIS.h"
+// #include "A320/A320Stby/A320StbyRMI/ogcA320StbyRMI.h"
+// #include "B737/B737PFD/ogcB737PFD.h"
+// #include "B737/B737PFDSA/ogcB737PFDSA.h"
+// #include "B737/B737EICAS/ogcB737EICAS.h"
+// #include "B737/B737NAV/ogcB737NAV.h"
+// #include "B737/B737FMC/ogcB737FMC.h"
+// #include "B737/B737MIP/ogcB737MIP.h"
+// #include "B737/B737CLOCK/ogcB737Clock.h"
+// #include "B737/B737ISFD/ogcB737ISFD.h"
+// #include "B737/B737RMI/ogcB737RMI.h"
+// #include "B737/B737LOWERDU/ogcB737LOWERDU.h"
 
 //----------NonFunctional--------
 /*
@@ -444,36 +445,38 @@ namespace OpenGC
 
     if (verbosity > 0) printf ("AppObject - Gauge %s, xp %f, yp %f, xs %f, ys %f, (arg %i)\n", name, xPos, yPos, xScale, yScale, arg);
 
-    if (strcmp(name, "BasicClock")==0) pGauge = new BasicClock();
-    else if (strcmp(name, "WXR")==0) pGauge = new WXR();
-    else if (strcmp(name, "B737PFD")==0) pGauge = new B737PFD();
-    else if (strcmp(name, "B737PFDSA")==0) pGauge = new B737PFDSA();
-    else if (strcmp(name, "B737EICAS")==0) pGauge = new B737EICAS();
-    else if (strcmp(name, "B737NAV")==0) pGauge = new B737NAV();
-    else if (strcmp(name, "B737FMC")==0) pGauge = new B737FMC(arg);
-    else if (strcmp(name, "B737MIP")==0) pGauge = new B737MIP();
-    else if (strcmp(name, "B737CLOCK")==0) pGauge = new B737Clock();
-    else if (strcmp(name, "B737ISFD")==0) pGauge = new B737ISFD();
-    else if (strcmp(name, "B737RMI")==0) pGauge = new B737RMI();
-    else if (strcmp(name, "B737LOWERDU")==0) pGauge = new B737LOWERDU();
-    /*
-      else if (strcmp(name, "B737AnalogFlaps")==0) pGauge = new B737AnalogFlaps();
-      else if (strcmp(name, "B737VerticalSpeedDigital")==0) pGauge = new B737VerticalSpeedDigital();
-      else if (strcmp(name, "Keypad")==0) pGauge = new Keypad();
-      else if (strcmp(name, "NavTestGauge")==0) pGauge = new NavTestGauge();
-    */
-    else if (strcmp(name, "A320PFD")==0) pGauge = new A320PFD();
-    else if (strcmp(name, "A320ND")==0) pGauge = new A320ND();
-    else if (strcmp(name, "A320EWD")==0) pGauge = new A320EWD();
-    else if (strcmp(name, "A320SD")==0) pGauge = new A320SD();
-    else if (strcmp(name, "A320MCDU")==0) pGauge = new A320MCDU();
-    else if (strcmp(name, "A320Clock")==0) pGauge = new A320Clock();
-    else if (strcmp(name, "A320BrkTripleInd")==0) pGauge = new A320BrkTripleInd();
-    else if (strcmp(name, "A320StbyAlt")==0) pGauge = new A320StbyAlt();
-    else if (strcmp(name, "A320StbyASI")==0) pGauge = new A320StbyASI();
-    else if (strcmp(name, "A320StbyAtt")==0) pGauge = new A320StbyAtt();
-    else if (strcmp(name, "A320StbyISIS")==0) pGauge = new A320StbyISIS();
-    else if (strcmp(name, "A320StbyRMI")==0) pGauge = new A320StbyRMI();
+    if (strcmp(name, "DummyGauge")==0) pGauge = new DummyGauge();
+    else if (strcmp(name, "TestGauge")==0) pGauge = new TestGauge();
+    // else if (strcmp(name, "BasicClock")==0) pGauge = new BasicClock();
+    // else if (strcmp(name, "WXR")==0) pGauge = new WXR();
+    // else if (strcmp(name, "B737PFD")==0) pGauge = new B737PFD();
+    // else if (strcmp(name, "B737PFDSA")==0) pGauge = new B737PFDSA();
+    // else if (strcmp(name, "B737EICAS")==0) pGauge = new B737EICAS();
+    // else if (strcmp(name, "B737NAV")==0) pGauge = new B737NAV();
+    // else if (strcmp(name, "B737FMC")==0) pGauge = new B737FMC(arg);
+    // else if (strcmp(name, "B737MIP")==0) pGauge = new B737MIP();
+    // else if (strcmp(name, "B737CLOCK")==0) pGauge = new B737Clock();
+    // else if (strcmp(name, "B737ISFD")==0) pGauge = new B737ISFD();
+    // else if (strcmp(name, "B737RMI")==0) pGauge = new B737RMI();
+    // else if (strcmp(name, "B737LOWERDU")==0) pGauge = new B737LOWERDU();
+    // /*
+    //   else if (strcmp(name, "B737AnalogFlaps")==0) pGauge = new B737AnalogFlaps();
+    //   else if (strcmp(name, "B737VerticalSpeedDigital")==0) pGauge = new B737VerticalSpeedDigital();
+    //   else if (strcmp(name, "Keypad")==0) pGauge = new Keypad();
+    //   else if (strcmp(name, "NavTestGauge")==0) pGauge = new NavTestGauge();
+    // */
+    // else if (strcmp(name, "A320PFD")==0) pGauge = new A320PFD();
+    // else if (strcmp(name, "A320ND")==0) pGauge = new A320ND();
+    // else if (strcmp(name, "A320EWD")==0) pGauge = new A320EWD();
+    // else if (strcmp(name, "A320SD")==0) pGauge = new A320SD();
+    // else if (strcmp(name, "A320MCDU")==0) pGauge = new A320MCDU();
+    // else if (strcmp(name, "A320Clock")==0) pGauge = new A320Clock();
+    // else if (strcmp(name, "A320BrkTripleInd")==0) pGauge = new A320BrkTripleInd();
+    // else if (strcmp(name, "A320StbyAlt")==0) pGauge = new A320StbyAlt();
+    // else if (strcmp(name, "A320StbyASI")==0) pGauge = new A320StbyASI();
+    // else if (strcmp(name, "A320StbyAtt")==0) pGauge = new A320StbyAtt();
+    // else if (strcmp(name, "A320StbyISIS")==0) pGauge = new A320StbyISIS();
+    // else if (strcmp(name, "A320StbyRMI")==0) pGauge = new A320StbyRMI();
     else {
       printf("Gauge %s not defined in CreateGauge. Aborting\n",name);
       exit(-1);

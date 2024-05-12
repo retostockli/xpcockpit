@@ -68,6 +68,9 @@ public:
   /** Set whether or not to smooth */
   void SetSmooth(bool flag) {m_Smooth = flag;}
 
+  /** Set whether or not to draw as outline */
+  void SetOutline(bool flag) {m_Outline = flag;}
+
   /** Get the font name */
   char* GetName() {return m_Name;}
   
@@ -85,14 +88,11 @@ protected:
   /** True if the font is smoothed using an anti-aliased outline */
   bool m_Smooth;
 
+  /** True if the font is drawn as an anti-aliased outline */
+  bool m_Outline;
+
   /** The triangulated FTGL font object */
   FTPolygonFont* m_PolygonFont;
-
-  /** The pixmap FTGL font object */
-  FTPixmapFont* m_PixmapFont;
-
-  /** The texture FTGL font object */
-  FTTextureFont* m_TextureFont;
 
   /** The outline FTGL font object used for smoothing */
   FTOutlineFont* m_OutlineFont;
