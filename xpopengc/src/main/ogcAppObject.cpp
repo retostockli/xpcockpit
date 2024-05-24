@@ -39,6 +39,7 @@
 
 //---------Base Stuff----------
 #include <FL/Fl.H>
+#include <FL/gl.h>
 extern "C" {
 #include "dictionary.h"
 #include "iniparser.h"
@@ -212,14 +213,14 @@ namespace OpenGC
     // all datarefs have been safely received
     m_pDataSource->OnIdle();
     //printf("%i \n",numreceived);
-    if ((numreceived > 0) || (m_InitState <= 100) ||
-	(wxr_newdata == 1) || (m_FrameTest)) {
+    //    if ((numreceived > 0) || (m_InitState <= 100) ||
+    //	(wxr_newdata == 1) || (m_FrameTest)) {
   
        //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
     
       Fl::flush();
-    }
+      //    }
     if (m_InitState <= 100) m_InitState++;
   }
 
@@ -390,6 +391,7 @@ namespace OpenGC
 
       // Force the render window to update to obtain a valid device context
       m_pRenderWindow->redraw();
+ 
       Fl::flush();
 
       // Ready with the window; now set up the gauge(s)

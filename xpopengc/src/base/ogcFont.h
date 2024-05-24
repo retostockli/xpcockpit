@@ -34,6 +34,7 @@
 #define ogcFont_h
 
 #include "ogcOrderedPair.h"
+#include "ogcFreetype.h"
 
 // It's important to define this since we're linking against
 // a static rather than shared version of FTGL
@@ -96,6 +97,9 @@ protected:
 
   /** The outline FTGL font object used for smoothing */
   FTOutlineFont* m_OutlineFont;
+
+  /* The Freetype Font Object */
+  Freetype* m_PolygonFont2;
 
 };
 

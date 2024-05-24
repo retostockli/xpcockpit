@@ -39,9 +39,9 @@ Font
   m_Spacing = 1.0;
 
   m_PolygonFont = 0;
-  //m_PixmapFont = 0;
-  //m_TextureFont = 0;
   m_OutlineFont = 0;
+
+  m_PolygonFont2 = 0;
 
   m_Name = new char[512];
 }
@@ -63,6 +63,7 @@ Font
   m_OutlineFont = 0;
 
   delete[] m_Name;
+
 }
 
 void
@@ -77,6 +78,7 @@ void
 Font
 ::Print(double x, double y, const char *string)
 {
+
   if (m_Outline == false) {
     // Save the modelview matrix
     glMatrixMode(GL_MODELVIEW);
@@ -108,7 +110,12 @@ Font
     
     glPopMatrix();
   }
- 
+
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glColor3ub(100,200,250);
+  m_PolygonFont2->RenderText(string, x, y, 0.0135*m_Size.x, 0.0135*m_Size.y);
+  glPopMatrix();
 }
 
 bool
@@ -125,7 +132,9 @@ Font
   // will work correctly later on
   m_PolygonFont->FaceSize(100);
   m_OutlineFont->FaceSize(100);
- 
+
+  m_PolygonFont2 = new Freetype(name, 100);  //Build the freetype font
+
   // We succeeded at opening the fonts
   return true;
 }

@@ -46,8 +46,8 @@ TestGauge::~TestGauge()
 
 void TestGauge::Render()
 {
-    Gauge::Render();
-
+  Gauge::Render();
+  
   // Rendering the test class
   float fontWidth = 24;
   float fontHeight = 36;
@@ -56,19 +56,31 @@ void TestGauge::Render()
   glLineWidth(lineWidth);
   glColor3ub(255,100,200);
 
+  float dx = 50;
+  float dy = 50;
+  float x = 100;
+  float y = 100;
+  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+  glBegin(GL_POLYGON);
+  glVertex2f(x-0.5*dx,y-0.5*dy);
+  glVertex2f(x+0.5*dx,y-0.5*dy);
+  glVertex2f(x+0.5*dx,y+0.5*dy);
+  glVertex2f(x-0.5*dx,y+0.5*dy);
+  glEnd();
+
   char buffer[30];
   memset(buffer,0,sizeof(buffer));
   snprintf( buffer, sizeof(buffer), "%s", "ABCDEFG");
-
+  buffer[3] = (char) 176;
   m_pFontManager->SetOutline(false);
-  m_pFontManager->SetSmooth(false);
+  m_pFontManager->SetSmooth(true);
+  glColor3ub(255,100,200);
   m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
   m_pFontManager->Print(5, 5, buffer, m_Font);
 
-  m_pFontManager->SetOutline(true);
-  m_pFontManager->SetSmooth(false);
+  glColor3ub(255,100,200);
   m_pFontManager->SetSize(m_Font2, fontWidth, fontHeight);
-  m_pFontManager->Print(5, 60, buffer, m_Font2);
+  m_pFontManager->Print(5, 100, buffer, m_Font2);
 
 }
 
