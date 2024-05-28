@@ -28,7 +28,7 @@ TestGauge::TestGauge()
 
   m_Font = m_pFontManager->LoadDefaultFont();
   //m_Font = m_pFontManager->LoadFont((char*) "CockpitMCDU.ttf");
-  //  m_Font2 = m_pFontManager->LoadFont ((char*) "CockpitScreens.ttf");
+  //m_Font = m_pFontManager->LoadFont ((char*) "CockpitScreens.ttf");
 
   // Specify our physical size and position
   m_PhysicalPosition.x = 0;
@@ -58,6 +58,7 @@ void TestGauge::Render()
   glLineWidth(lineWidth);
   glColor3ub(255,100,200);
 
+  /*
   float dx = 50;
   float dy = 50;
   float x = 100;
@@ -69,6 +70,7 @@ void TestGauge::Render()
   glVertex2f(x+0.5*dx,y+0.5*dy);
   glVertex2f(x-0.5*dx,y+0.5*dy);
   glEnd();
+  */
 
   char buffer[30];
   memset(buffer,0,sizeof(buffer));
@@ -79,8 +81,15 @@ void TestGauge::Render()
   m_pFontManager->SetOutline(false);
   m_pFontManager->SetSmooth(true);
   glColor3ub(255,100,200);
-  m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
+
+  m_pFontManager->SetSize(m_Font, 0.5*fontWidth, 0.5*fontHeight);
   m_pFontManager->Print(5, 5, buffer, m_Font);
+
+  m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
+  m_pFontManager->Print(5, 30, buffer, m_Font);
+
+  m_pFontManager->SetSize(m_Font, 3*fontWidth, 3*fontHeight);
+  m_pFontManager->Print(5, 100, buffer, m_Font);
 
   /*
   glColor3ub(255,200,100);

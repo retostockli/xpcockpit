@@ -99,15 +99,17 @@ namespace OpenGC {
 	if (outline) {
 	  /* outline processing */
 	  
-	  printf("Loading Character %c %i \n",c,c);
+	  //printf("Loading Character %c %i \n",c,c);
 
 	  if (face->glyph->format != FT_GLYPH_FORMAT_OUTLINE) {
-	    printf("Glyph has no outline!\n");
+	    printf("ERROR::FREETYPE: Glyph has no outline!\n");
+	    continue;
 	  }
+	  
 	  FT_Stroker stroker;
 	  FT_Stroker_New(ft, &stroker);
 	  //  2 * 64 result in 2px outline
-	  FT_Stroker_Set(stroker, 3 * 32, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+	  FT_Stroker_Set(stroker, 2 * 64, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
 
 	  // generation of an outline for single glyph:
 	  FT_Glyph glyph;
@@ -115,8 +117,8 @@ namespace OpenGC {
 	  FT_Glyph_StrokeBorder(&glyph, stroker, false, true);
 	  FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, nullptr, true);
 	  FT_BitmapGlyph bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
-	  printf("%i %i %i %i %i\n",bitmapGlyph->bitmap.width,bitmapGlyph->bitmap.rows,
-		 bitmapGlyph->left,bitmapGlyph->top,face->glyph->advance.x);
+	  //printf("%i %i %i %i %i\n",bitmapGlyph->bitmap.width,bitmapGlyph->bitmap.rows,
+	  //	 bitmapGlyph->left,bitmapGlyph->top,face->glyph->advance.x);
 
 	  FT_Stroker_Done(stroker);
  
@@ -155,11 +157,14 @@ namespace OpenGC {
 	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	  printf("%i %i %i %i %i\n",bitmapGlyph->bitmap.width,bitmapGlyph->bitmap.rows,
-		 bitmapGlyph->left,bitmapGlyph->top,face->glyph->advance.x);
+	  //glGenerateMipmap(GL_TEXTURE_2D);
+
+	  //printf("%i %i %i %i %i\n",bitmapGlyph->bitmap.width,bitmapGlyph->bitmap.rows,
+	  //	 bitmapGlyph->left,bitmapGlyph->top,face->glyph->advance.x);
 	  
 	  // now store character for later use
 	  Character character = {
@@ -216,11 +221,14 @@ namespace OpenGC {
 	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	  printf("%i %i %i %i %i\n",face->glyph->bitmap.width,face->glyph->bitmap.rows,
-		 face->glyph->bitmap_left,face->glyph->bitmap_top,face->glyph->advance.x);
+	  //glGenerateMipmap(GL_TEXTURE_2D);
+	  
+	  //printf("%i %i %i %i %i\n",face->glyph->bitmap.width,face->glyph->bitmap.rows,
+	  //	 face->glyph->bitmap_left,face->glyph->bitmap_top,face->glyph->advance.x);
 	  
 	  // now store character for later use
 	  Character character = {
@@ -274,9 +282,10 @@ namespace OpenGC {
 
     if (m_Loaded) {
 
-      glEnable(GL_CULL_FACE);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      /* DON'T USE, IT DESTROYS POLYGON FILLING OF OTHER CODE */
+      //glEnable(GL_CULL_FACE);
+      //glEnable(GL_BLEND);
+      //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
  
       glEnable(GL_TEXTURE_2D);
     

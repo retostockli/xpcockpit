@@ -42,7 +42,6 @@ Font
 #ifdef HAVE_LIBFTGL
   m_OutlineFont = 0;
 #endif
-  m_PolygonFont2 = 0;
 
   m_Name = new char[512];
 }
@@ -65,12 +64,6 @@ Font
   m_OutlineFont = 0;
 #endif
 
-  if(m_PolygonFont2 != 0)
-  {
-    delete m_PolygonFont2;
-  }
-  m_PolygonFont2 = 0;
-  
   delete[] m_Name;
 
 }
@@ -126,11 +119,6 @@ Font
   m_PolygonFont->RenderText(string, x, y, 0.0135*m_Size.x, 0.0135*m_Size.y);
   glPopMatrix();
 #endif
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glColor3ub(255,200,100);
-  m_PolygonFont2->RenderText(string, x, y+15, 0.0135*m_Size.x, 0.0135*m_Size.y);
-  glPopMatrix();
   
 }
 
@@ -152,7 +140,6 @@ Font
 #else
   m_PolygonFont = new Freetype(name, 100);  //Build the freetype font
 #endif
-  m_PolygonFont2 = new Freetype(name, 100);  //Build the freetype font
   
   // We succeeded at opening the fonts
   return true;

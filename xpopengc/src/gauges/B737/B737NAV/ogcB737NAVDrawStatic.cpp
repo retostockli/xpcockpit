@@ -217,10 +217,11 @@ namespace OpenGC
 
       /* plot wind speed and direction and draw wind arrow */
       if ((*wind_direction_mag != FLT_MISS) && (*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
-	snprintf(buffer, sizeof(buffer), "%03d°", (int) lroundf(*wind_direction_mag));
+	snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*wind_direction_mag));
       } else {
-	snprintf(buffer, sizeof(buffer), "---°");
+	snprintf(buffer, sizeof(buffer), "---");
       }
+      buffer[strlen(buffer)] = (char) 176;
       m_pFontManager->Print( m_PhysicalSize.x*0.014, m_PhysicalSize.y*0.919 , buffer, m_Font );
   
       if ((*wind_direction_mag != FLT_MISS) && (heading_map != FLT_MISS) &&

@@ -47,7 +47,6 @@
 #else
 #include "ogcFreetype.h"
 #endif
-#include "ogcFreetype.h"
 
 namespace OpenGC
 {
@@ -77,6 +76,7 @@ public:
   void SetSmooth(bool flag) {m_Smooth = flag;}
 
   /** Set whether or not to draw as outline */
+  /** Only working with FTGL */
   void SetOutline(bool flag) {m_Outline = flag;}
 
   /** Get the font name */
@@ -97,6 +97,7 @@ protected:
   bool m_Smooth;
 
   /** True if the font is drawn as an anti-aliased outline */
+  /** Only working with FTGL */
   bool m_Outline;
 
 #ifdef HAVE_LIBFTGL
@@ -108,7 +109,6 @@ protected:
   /** The Freetype Font Object (NEW internal font rendering) */
   Freetype* m_PolygonFont;
 #endif
-  Freetype* m_PolygonFont2;
 
 };
 

@@ -369,10 +369,10 @@ namespace OpenGC
 	// plot RNP/ANP
 	glColor3ub(COLOR_BLACK);
 	glBegin(GL_POLYGON);
-	glVertex2f(m_PhysicalSize.x*0.3,m_PhysicalSize.y*0.0);
-	glVertex2f(m_PhysicalSize.x*0.3,m_PhysicalSize.y*0.1);
-	glVertex2f(m_PhysicalSize.x*0.7,m_PhysicalSize.y*0.1);
-	glVertex2f(m_PhysicalSize.x*0.7,m_PhysicalSize.y*0.0);
+	glVertex2f(m_PhysicalSize.x*0.35,m_PhysicalSize.y*0.0);
+	glVertex2f(m_PhysicalSize.x*0.35,m_PhysicalSize.y*0.1);
+	glVertex2f(m_PhysicalSize.x*0.65,m_PhysicalSize.y*0.1);
+	glVertex2f(m_PhysicalSize.x*0.65,m_PhysicalSize.y*0.0);
 	glEnd();
  	if ((acf_type == 2) || (acf_type == 3)) {
 	  if (*fmc_rnp != FLT_MISS) {
