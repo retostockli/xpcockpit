@@ -3,6 +3,8 @@
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
   
+  Gauge for testing fonts and windows ;-)
+
   2024 Reto Stockli
 
   All rights reserved.
@@ -25,8 +27,8 @@ TestGauge::TestGauge()
   if (verbosity > 0) printf("TestGauge constructed\n");
 
   m_Font = m_pFontManager->LoadDefaultFont();
-  m_Font2 = m_pFontManager->LoadFont ((char*) "CockpitScreens.ttf");
-  //m_Font2 = m_pFontManager->LoadFont ((char*) "digital.ttf");
+  //m_Font = m_pFontManager->LoadFont((char*) "CockpitMCDU.ttf");
+  //  m_Font2 = m_pFontManager->LoadFont ((char*) "CockpitScreens.ttf");
 
   // Specify our physical size and position
   m_PhysicalPosition.x = 0;
@@ -49,8 +51,8 @@ void TestGauge::Render()
   Gauge::Render();
   
   // Rendering the test class
-  float fontWidth = 24;
-  float fontHeight = 36;
+  float fontWidth = 8;
+  float fontHeight = 10;
   float lineWidth = 4.0;
 
   glLineWidth(lineWidth);
@@ -59,7 +61,7 @@ void TestGauge::Render()
   float dx = 50;
   float dy = 50;
   float x = 100;
-  float y = 100;
+  float y = 150;
   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
   glBegin(GL_POLYGON);
   glVertex2f(x-0.5*dx,y-0.5*dy);
@@ -70,18 +72,21 @@ void TestGauge::Render()
 
   char buffer[30];
   memset(buffer,0,sizeof(buffer));
-  snprintf( buffer, sizeof(buffer), "%s", "ABCDEFG");
+  snprintf( buffer, sizeof(buffer), "%s", "ABCDEF");
+  //snprintf( buffer, sizeof(buffer), "%s", "ABCDEF");
   buffer[3] = (char) 176;
+
   m_pFontManager->SetOutline(false);
   m_pFontManager->SetSmooth(true);
   glColor3ub(255,100,200);
   m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
   m_pFontManager->Print(5, 5, buffer, m_Font);
 
-  glColor3ub(255,100,200);
+  /*
+  glColor3ub(255,200,100);
   m_pFontManager->SetSize(m_Font2, fontWidth, fontHeight);
-  m_pFontManager->Print(5, 100, buffer, m_Font2);
-
+  m_pFontManager->Print(5, 150, buffer, m_Font2);
+  */
 }
 
 } // end namespace OpenGC

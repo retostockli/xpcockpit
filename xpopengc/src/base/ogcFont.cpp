@@ -39,8 +39,9 @@ Font
   m_Spacing = 1.0;
 
   m_PolygonFont = 0;
+#ifdef HAVE_LIBFTGL
   m_OutlineFont = 0;
-
+#endif
   m_PolygonFont2 = 0;
 
   m_Name = new char[512];
@@ -55,13 +56,21 @@ Font
     delete m_PolygonFont;
   }
   m_PolygonFont = 0;
-  
+
+#ifdef HAVE_LIBFTGL
   if(m_OutlineFont != 0)
   {
     delete m_OutlineFont;
   }
   m_OutlineFont = 0;
+#endif
 
+  if(m_PolygonFont2 != 0)
+  {
+    delete m_PolygonFont2;
+  }
+  m_PolygonFont2 = 0;
+  
   delete[] m_Name;
 
 }
@@ -79,6 +88,7 @@ Font
 ::Print(double x, double y, const char *string)
 {
 
+#ifdef HAVE_LIBFTGL
   if (m_Outline == false) {
     // Save the modelview matrix
     glMatrixMode(GL_MODELVIEW);
@@ -110,12 +120,18 @@ Font
     
     glPopMatrix();
   }
-
+#else
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  glColor3ub(100,200,250);
-  m_PolygonFont2->RenderText(string, x, y, 0.0135*m_Size.x, 0.0135*m_Size.y);
+  m_PolygonFont->RenderText(string, x, y, 0.0135*m_Size.x, 0.0135*m_Size.y);
   glPopMatrix();
+#endif
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glColor3ub(255,200,100);
+  m_PolygonFont2->RenderText(string, x, y+15, 0.0135*m_Size.x, 0.0135*m_Size.y);
+  glPopMatrix();
+  
 }
 
 bool
@@ -124,6 +140,7 @@ Font
 {
   strcpy(m_Name, name);
 
+#ifdef HAVE_LIBFTGL
   // Open the the font in both polygon and outline mode
   m_PolygonFont = new FTGLPolygonFont(name);
   m_OutlineFont = new FTGLOutlineFont(name);
@@ -132,9 +149,11 @@ Font
   // will work correctly later on
   m_PolygonFont->FaceSize(100);
   m_OutlineFont->FaceSize(100);
-
+#else
+  m_PolygonFont = new Freetype(name, 100);  //Build the freetype font
+#endif
   m_PolygonFont2 = new Freetype(name, 100);  //Build the freetype font
-
+  
   // We succeeded at opening the fonts
   return true;
 }

@@ -57,11 +57,11 @@ AC_MSG_RESULT([$debugit])
 if test "x$debugit" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
 # DEBUGGING USING LEAK CHECK
-#    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
+    CXXFLAGS="$CXXFLAGS -g -Wall -Wpedantic -Wno-uninitialized -fsanitize=address"
 # REGULAR DEBUGGING
 #    CXXFLAGS="$CXXFLAGS -g -Wall -Wno-uninitialized"
 # DEBUGGING USING GPROF PROFILING
-    CXXFLAGS="$CXXFLAGS -pg -g -Wall -Wno-uninitialized"
+#    CXXFLAGS="$CXXFLAGS -pg -g -Wall -Wno-uninitialized"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CXXFLAGS="$CXXFLAGS -O2"
@@ -216,29 +216,43 @@ if test -z "$HAVE_FREETYPE"; then
 please use --with-freetype=<directory> to specify a custom installation directory for freetype.])
 fi
 
+# Only use external FTGL font rendering if really needed
+# DEFAULT NOW IS INTERNAL font rendering, which only needs
+# the Freetype library but not FTGL
+AC_MSG_CHECKING([whether to use FTGL for font rendering (not needed)])
+AC_ARG_ENABLE([ftgl],
+    [AS_HELP_STRING([--enable-ftgl],
+        [Use FTGL for font rendering (default=no)])],
+    [useftgl="$enableval"],
+    [useftgl=no])
+AC_MSG_RESULT([$useftgl])
 
-# check for the FTGL library and headers (depends on freetype)
-HAVE_FTGL=yes
-AC_MSG_CHECKING([whether a location for the ftgl library was specified])
-AC_ARG_WITH([ftgl],
-[AS_HELP_STRING([--with-ftgl=<directory>],
-                [Specify location the ftgl library. Configure will expect
-to find headers in <directory>/include/ftgl and libraries in <directory>/lib.])],
-                [FTGLDIR=$with_ftgl])
-if test -z "$FTGLDIR" ; then
-    AC_MSG_RESULT([no])
+if test "x$useftgl" = xyes; then
+    # check for the FTGL library and headers (depends on freetype)
+    HAVE_FTGL=yes
+    AC_MSG_CHECKING([whether a location for the ftgl library was specified])
+    AC_ARG_WITH([ftgl],
+    [AS_HELP_STRING([--with-ftgl=<directory>],
+                    [Specify location the ftgl library. Configure will expect
+    to find headers in <directory>/include/ftgl and libraries in <directory>/lib.])],
+	            [FTGLDIR=$with_ftgl])
+    if test -z "$FTGLDIR" ; then
+        AC_MSG_RESULT([no])
+    else
+        AC_MSG_RESULT([$FTGLDIR])
+        LIBS="$LIBS -L$FTGLDIR/lib"
+        CPPFLAGS="$CPPFLAGS -I$FTGLDIR/include"
+    fi
+
+    AC_CHECK_LIB(ftgl, main, , unset HAVE_FTGL)
+    AC_CHECK_HEADER(FTGL/ftgl.h, , unset HAVE_FTGL)
+
+    if test -z "$HAVE_FTGL"; then
+	AC_MSG_ERROR([FTGL was enabled with --enable-ftgl. However, can't find ftgl library, or can't link a program to it.
+    please use --with-ftgl=<directory> to specify a custom installation directory for ftgl.])
+    fi
 else
-    AC_MSG_RESULT([$FTGLDIR])
-    LIBS="$LIBS -L$FTGLDIR/lib"
-    CPPFLAGS="$CPPFLAGS -I$FTGLDIR/include"
-fi
-
-AC_CHECK_LIB(ftgl, main, , unset HAVE_FTGL)
-AC_CHECK_HEADER(FTGL/ftgl.h, , unset HAVE_FTGL)
-
-if test -z "$HAVE_FTGL"; then
-    AC_MSG_ERROR([Can't find ftgl library, or can't link a program to it.
-please use --with-ftgl=<directory> to specify a custom installation directory for ftgl.])
+    HAVE_FTGL=no
 fi
 
 # Checks for header files.

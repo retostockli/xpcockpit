@@ -34,13 +34,20 @@
 #define ogcFont_h
 
 #include "ogcOrderedPair.h"
-#include "ogcFreetype.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_LIBFTGL
 // It's important to define this since we're linking against
 // a static rather than shared version of FTGL
 #define FTGL_LIBRARY_STATIC
-
 #include <FTGL/ftgl.h>
+#else
+#include "ogcFreetype.h"
+#endif
+#include "ogcFreetype.h"
 
 namespace OpenGC
 {
@@ -92,13 +99,15 @@ protected:
   /** True if the font is drawn as an anti-aliased outline */
   bool m_Outline;
 
+#ifdef HAVE_LIBFTGL
   /** The triangulated FTGL font object */
-  FTPolygonFont* m_PolygonFont;
-
+  FTPolygonFont* m_PolygonFont;  
   /** The outline FTGL font object used for smoothing */
   FTOutlineFont* m_OutlineFont;
-
-  /* The Freetype Font Object */
+#else
+  /** The Freetype Font Object (NEW internal font rendering) */
+  Freetype* m_PolygonFont;
+#endif
   Freetype* m_PolygonFont2;
 
 };

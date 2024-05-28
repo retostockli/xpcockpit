@@ -27,6 +27,8 @@
 //FreeType Headers
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_GLYPH_H
+#include FT_STROKER_H
 
 //Some STL headers
 #include <iostream>
@@ -34,16 +36,12 @@
 #include <string>
 #include <vector>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 ///Wrap everything in a namespace, that we can use common
 ///function names like "print" without worrying about
 ///overlapping with anyone else's code.
 namespace OpenGC {
     
-  using namespace glm;
+  //using namespace glm;
   using namespace std;
   
   class Freetype {
@@ -53,7 +51,7 @@ namespace OpenGC {
     Freetype(char* name, int size);
     ~Freetype();
     
-    void RenderText(std::string text, float x, float y, float scalex, float scaley);
+    void RenderText(std::string text, float x, float y, float scale_x, float scale_y);
 
   protected:
     /* Font Loading and Texture Generation */
@@ -66,7 +64,7 @@ namespace OpenGC {
     int m_Size;
 
     /* maximum character number to load (restrict to ascii set) */
-    long unsigned int max_char = 256;
+    unsigned char max_char = 255;
 
     /* Font is already loaded */
     bool m_Loaded;
@@ -74,12 +72,14 @@ namespace OpenGC {
     /// Holds all state information relevant to a character as loaded using FreeType
     struct Character {
       unsigned int TextureID; // ID handle of the glyph texture
-      glm::ivec2   Size;      // Size of glyph
-      glm::ivec2   Bearing;   // Offset from baseline to left/top of glyph
+      unsigned int Size_x;      // Horizontal size of glyph
+      unsigned int Size_y;      // Vertical size of glyph
+      int Bearing_x;   // Offset from baseline to left of glyph
+      int Bearing_y;   // Offset from baseline to top of glyph      
       unsigned int Advance;   // Horizontal offset to advance to next glyph
     };
 
-    std::map<GLchar, Character> Characters;
+    std::map<unsigned char, Character> Characters;
  
 
   };

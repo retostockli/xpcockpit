@@ -82,14 +82,6 @@ extern "C" {
 // #include "B737/B737RMI/ogcB737RMI.h"
 // #include "B737/B737LOWERDU/ogcB737LOWERDU.h"
 
-//----------NonFunctional--------
-/*
-  #include "ogcB737AnalogFlaps.h"
-  #include "ogcB737VerticalSpeedDigital.h"
-  #include "ogcKeypad.h"
-  #include "ogcNavTestGauge.h"
-  #include "ogcNavTestGauge.h"
-*/
 
 extern int verbosity;
 
@@ -213,14 +205,14 @@ namespace OpenGC
     // all datarefs have been safely received
     m_pDataSource->OnIdle();
     //printf("%i \n",numreceived);
-    //    if ((numreceived > 0) || (m_InitState <= 100) ||
-    //	(wxr_newdata == 1) || (m_FrameTest)) {
-  
+    if ((numreceived > 0) || (m_InitState <= 100) ||
+    	(wxr_newdata == 1) || (m_FrameTest)) {
+      
        //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
     
       Fl::flush();
-      //    }
+    }
     if (m_InitState <= 100) m_InitState++;
   }
 
