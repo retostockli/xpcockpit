@@ -1,9 +1,0 @@
-#!/usr/bin/env xdg-open
-
-[Desktop Entry]
-Name=Shutdown Raspberry
-GenericName=Shutdown Raspberry
-Exec=xterm -e "\\${HOME}/xpcockpit/scripts/shutdownraspberry.sh; \\$SHELL"
-Terminal=false
-Icon=/home/stockli/xpcockpit/applications/shutdownraspberry.png
-Type=Application
