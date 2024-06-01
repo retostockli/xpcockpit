@@ -414,6 +414,9 @@ namespace OpenGC
       m_pFontManager->SetSize(m_Font, 1.15*fontWidth, 1.35*fontHeight);
       if (thousands >= 10) {
 	m_pFontManager->Print(151.5,170+3, &buffer[0], m_Font);
+	snprintf(buffer, sizeof(buffer), "%03d", hundreds);
+	m_pFontManager->SetSize(m_Font, 1.00*fontWidth, 1.15*fontHeight);
+	m_pFontManager->Print(161.5,170+3, &buffer[0], m_Font);
       } else if (thousands >= 1) {
 	m_pFontManager->Print(154.0,170+3, &buffer[0], m_Font);
 	snprintf(buffer, sizeof(buffer), "%03d", hundreds);
