@@ -192,11 +192,12 @@ void b737_throttle(void)
   }
   
   int *autothrottle_on;
-  float *speed_mode;
+  float *autothrottle_on_f;
+  //float *speed_mode;
   float *lock_throttle;
   if ((acf_type == 2) || (acf_type == 3)) {
-    // autothrottle_on = link_dataref_int("laminar/B738/autopilot/autothrottle_status");
-    speed_mode = link_dataref_flt("laminar/B738/autopilot/speed_mode",0);
+    autothrottle_on_f = link_dataref_flt("laminar/B738/autopilot/autothrottle_status1",0);
+    //speed_mode = link_dataref_flt("laminar/B738/autopilot/speed_mode",0);
     lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0);
   } else if (acf_type == 1) {
     autothrottle_on = link_dataref_int("x737/systems/athr/athr_active");
@@ -589,7 +590,8 @@ void b737_throttle(void)
 
   int at = 0;
   if (acf_type == 3) {
-    if (*speed_mode >= 1.0) at = 1;
+    //if (*speed_mode >= 1.0) at = 1;
+    if (*autothrottle_on_f == 1.0) at = 1;
     //printf("%f %f \n",*speed_mode,*lock_throttle);
   } else {
     if (*autothrottle_on >= 1) at = 1;
