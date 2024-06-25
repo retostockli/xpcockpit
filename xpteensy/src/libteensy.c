@@ -46,7 +46,7 @@ teensy_struct teensy[MAXTEENSYS];
 
 int read_teensy() {
 
-  /* PROTOCOL: 8 Bytes on send and receive
+  /* PROTOCOL: 8+ Bytes on send and receive
      BYTE   | MEANING
      0-1    | Identifier (Characters TE for Teensy)
      2-3    | Last two Bytes of MAC address
@@ -59,8 +59,8 @@ int read_teensy() {
      9      | Input / Output Type 
      10-11  | Value (16 bit signed Integer Value)
      --- THIRD DATA PACKET
-     12      | Input / Output Number
-     13      | Input / Output Type
+     12     | Input / Output Number
+     13     | Input / Output Type
      14-15  | Value (16 bit signed Integer Value)
      --- N-TH DATA PACKET (N=MAXPACKET)
 
@@ -69,9 +69,34 @@ int read_teensy() {
      2: analog
      3: initialize to send this digital input
      4: initialize to send this analog input
+ 
+     ///////////////////////////////////////////////
+
+     NEW PROTOCOL: 10+ Bytes on send and receive
+     BYTE   | MEANING
+     0-1    | Identifier (Characters TE for Teensy)
+     2-3    | Last two Bytes of MAC address
+     4      | Init Send, Regular Send, Shutdown etc.
+     --- FIRST DATA PACKET 5 bytes
+     5      | Device Type
+     6      | Device Number
+     7      | Pin Number
+     8-9    | Value (16 bit signed Integer Value)
+     --- SECOND DATA PACKET 5 bytes
+     10     | Device Type
+     11     | Device Number
+     12     | Pin Number
+     13-14  | Value (16 bit signed Integer Value)
+     --- THIRD DATA PACKET 5 bytes
+     15     | Device Type
+     16     | Device Number
+     17     | Pin Number
+     18-19  | Value (16 bit signed Integer Value)
+     --- N-TH DATA PACKET (N=MAXPACKET)
+
   */
 
-  /* In case the server sends an initialization as input (2 or 3) to a specific pin
+  /* In case the server sends an initialization as input to a specific pin
      Teensy will send back the current input value. This is important to get
      initial states after every new connect */
 

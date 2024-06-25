@@ -32,13 +32,15 @@
 #define CHANGED 1                /* flag for changed input / output. 
 				    Can actually also be > 1 for e.g. analog inputs that change faster than xpteensy cycle */
 
-/* SISMO UDP SERVER (this code here) */
+#include "teensy_config.h"
+
+/* Teensy UDP SERVER (this code here) */
 extern char teensyserver_ip[30];
 extern int teensyserver_port;
 extern unsigned char teensyRecvBuffer[RECVMSGLEN];
 extern unsigned char teensySendBuffer[SENDMSGLEN];
 
-/* SISMO data structure */
+/* Teensy data structure */
 extern int nteensys;
 
 typedef struct {

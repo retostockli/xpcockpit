@@ -686,11 +686,14 @@ namespace OpenGC
 		    (wpt[i1].lon != FLT_MISS) && (wpt[i1].lat != FLT_MISS)) {
 
 		  /* do we have a direct to current waypoint? */
-		  if ((*dir_act == 2) && (i0==(wpt_current-1))) {
+		  /* direct sometimes starts from wpt before current wpt */
+		  if ((*dir_act == 2) && ((i0==(wpt_current-1)) || (i0==(wpt_current-2)))) {
 		    wpt_is_dct = true;
 		  } else {
 		    wpt_is_dct = false;
 		  }
+		  
+		  //printf("%i %i %i %i %s \n",i0,i1,wpt_current,wpt_is_dct,wpt[i1].name);
 		
 		  /* convert all lonlat to azimuthal equidistant coordinates with acf in center */
 
@@ -738,7 +741,8 @@ namespace OpenGC
 
 		  // Do not draw magenta line before current waypoint and not the last leg to the airport
 		  // However, draw from start airport to first waypoint
-		  if ((i0>=(wpt_current-1) && (i1<(nwpt-1))) ||
+		  if ((((i0>=(wpt_current-1)) || ((i0>=(wpt_current-2)) && wpt_is_dct)) &&
+		      (i1<(nwpt-1))) ||
 		      ((i0==0) && (i1==1) && (wpt_current==2))) {
 
 		    glPushMatrix();
@@ -858,7 +862,7 @@ namespace OpenGC
 			  (fmc_radius[i1] >= 0.1)) has_rad = true;
 		    }
 		 
-		    //printf("%i %s %i %i %i %i \n",i0,wpt[i0].name,has_seg1,has_seg2,has_seg3,has_rad);
+		    //printf("%i %i %s %i %i %i %i \n",i0,i1,wpt[i0].name,has_seg1,has_seg2,has_seg3,has_rad);
 		  
 		  
 		    /* only draw leg if it is not a Discontinuity/Vector/RW in flight plan or if 
