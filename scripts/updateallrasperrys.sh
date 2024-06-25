@@ -1,11 +1,11 @@
 #!/bin/sh
 
-xterm -e "./updaterasperry.sh du1; $SHELL" &
+xterm -e "./updateraspberry.sh du1; $SHELL" &
 sleep 2
-xterm -e "./updaterasperry.sh du2; $SHELL" &
+xterm -e "./updateraspberry.sh du2; $SHELL" &
 sleep 2
-xterm -e "./updaterasperry.sh eicas; $SHELL" &
+xterm -e "./updateraspberry.sh eicas; $SHELL" &
 sleep 2
-xterm -e "./updaterasperry.sh fmc1; $SHELL" &
+xterm -e "./updateraspberry.sh fmc1; $SHELL" &
 sleep 2
-xterm -e "./updaterasperry.sh fmc2; $SHELL" &
+xterm -e "./updateraspberry.sh fmc2; $SHELL" &
