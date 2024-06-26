@@ -170,33 +170,33 @@ namespace OpenGC
 	  if (gain == FLT_MISS) gain = 1.0;
 	  if (gain < 0.1) gain = 0.1;
 	  if (gain > 2.0) gain = 2.0;
-	
+	  
 	  /* copy temporary WXR array to WXR array */
 	  /* TODO: OPENGL Transparency not working */
 	  /* TODO: Only create image if data has changed */
 	  for (i = 0; i < m_wxr_nlin; i++) {
 	    for (j = 0; j < m_wxr_ncol; j++) {
-	    
+	      
 	      if (wxr_data[i][j]*gain == 0) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
 	      } else if (wxr_data[i][j]*gain <= 10) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
 	      } else if (wxr_data[i][j]*gain <= 20) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
 	      } else if (wxr_data[i][j]*gain <= 30) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
 	      } else if (wxr_data[i][j]*gain <= 40) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
@@ -271,7 +271,8 @@ namespace OpenGC
 	float ty = (textureCenterLat - aircraftLat) * ((float) wxr_pixperlat) * mpplat / mapRange * map_size;
 	
 	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	glBegin(GL_TRIANGLES);
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);

@@ -217,11 +217,11 @@ namespace OpenGC
 
       /* plot wind speed and direction and draw wind arrow */
       if ((*wind_direction_mag != FLT_MISS) && (*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
-	snprintf(buffer, sizeof(buffer), "%03d", (int) lroundf(*wind_direction_mag));
+	snprintf(buffer, sizeof(buffer), "%03d ", (int) lroundf(*wind_direction_mag));
       } else {
-	snprintf(buffer, sizeof(buffer), "---");
+	snprintf(buffer, sizeof(buffer), "--- ");
       }
-      buffer[strlen(buffer)] = (char) 176;
+      buffer[3] = (char) 176; // replace degree symbol with correct one
       m_pFontManager->Print( m_PhysicalSize.x*0.014, m_PhysicalSize.y*0.919 , buffer, m_Font );
   
       if ((*wind_direction_mag != FLT_MISS) && (heading_map != FLT_MISS) &&
@@ -249,7 +249,7 @@ namespace OpenGC
 	snprintf(buffer, sizeof(buffer), "---");
       }
       m_pFontManager->Print( m_PhysicalSize.x*0.128, m_PhysicalSize.y*0.919 , buffer, m_Font );
-
+    
       if (mapMode != 3) {
       
 	/* plot NAVAID name and DME if available on the lower part of the NAV display */

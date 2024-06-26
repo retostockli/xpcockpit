@@ -348,6 +348,7 @@ namespace OpenGC
 	
 	  glEnable(GL_TEXTURE_2D);
 	  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	  // glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); <-- would allow transparency
 
 	  glBegin(GL_TRIANGLES);
 	  glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
