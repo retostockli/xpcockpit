@@ -48,6 +48,8 @@ namespace OpenGC
     m_wxr_nlin = 0;
 
     wxr_image = NULL;
+
+    m_texture = 0;
   
   }
 
@@ -129,13 +131,13 @@ namespace OpenGC
       nav_shows_wxr = link_dataref_int("xpserver/EFIS_fo_wxr");
     }
 
-    
+    //*nav_shows_wxr = 1;
     
     /* Sample Datarefs for controlling WXR gain and tilt */
     float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2); /* Gain should go from 0.1 .. 2.0 */
     float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2); /* Tilt in degrees up/down : not implemented yet */
 
-    //printf("%f %f \n",*wxr_gain,*wxr_tilt);
+    printf("%f %f \n",*wxr_gain,*wxr_tilt);
     
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
@@ -176,50 +178,24 @@ namespace OpenGC
 	  /* TODO: Only create image if data has changed */
 	  for (i = 0; i < m_wxr_nlin; i++) {
 	    for (j = 0; j < m_wxr_ncol; j++) {
-	      
 	      if (wxr_data[i][j]*gain == 0) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
-	      } else if (wxr_data[i][j]*gain <= 10) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
-	      } else if (wxr_data[i][j]*gain <= 20) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
 	      } else if (wxr_data[i][j]*gain <= 30) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
-	      } else if (wxr_data[i][j]*gain <= 40) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 255;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	      } else if (wxr_data[i][j]*gain <= 50) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
-	      } else if (wxr_data[i][j]*gain <= 60) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	      } else if (wxr_data[i][j]*gain <= 70) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
-	      } else if (wxr_data[i][j]*gain <= 80) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	      } else if (wxr_data[i][j]*gain <= 90) {
@@ -237,32 +213,37 @@ namespace OpenGC
 	    }
 	  }
 	  wxr_newdata = 0;
+
+	  glGenTextures(1, &m_texture);
+	  glBindTexture(GL_TEXTURE_2D, m_texture);
+	  
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	  
+	  /* Remove border line */
+	  GLfloat color[4]={0,0,0,1};
+	  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+	  
+	  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
+			m_wxr_ncol,  m_wxr_nlin, 0, GL_RGBA,
+			GL_UNSIGNED_BYTE, wxr_image);
+
+	  glBindTexture(GL_TEXTURE_2D, 0);
+	  
 	}
 	
 	glPushMatrix();
 	
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
 	glRotatef(heading_map, 0, 0, 1);
-
-
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	/* Remove border line */
-	GLfloat color[4]={0,0,0,1};
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-	
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-		      m_wxr_ncol,  m_wxr_nlin, 0, GL_RGBA,
-		      GL_UNSIGNED_BYTE, wxr_image);
 
 	float scx = 0.5 * ((float) m_wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
 	float scy = 0.5 * ((float) m_wxr_nlin) * mpplat / mapRange * map_size;
@@ -271,6 +252,10 @@ namespace OpenGC
 	float ty = (textureCenterLat - aircraftLat) * ((float) wxr_pixperlat) * mpplat / mapRange * map_size;
 	
 	glEnable(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+
+	glColor3ub(COLOR_WHITE);
 	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
@@ -283,8 +268,10 @@ namespace OpenGC
         glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
 	glEnd();
 
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	glDisable (GL_TEXTURE_2D);
-	glFlush();
+	//glFlush();
 
 	/* end of down-shifted and rotated coordinate system */
 	glPopMatrix();

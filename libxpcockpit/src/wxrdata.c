@@ -321,8 +321,8 @@ void read_wxr() {
 	    memcpy(&hgt,&wxrBuffer[5+r*24+12],sizeof(hgt));
 	    memcpy(&cloud_ratio,&wxrBuffer[5+r*24+16],sizeof(cloud_ratio));
 	    memcpy(&precip_ratio,&wxrBuffer[5+r*24+20],sizeof(precip_ratio));
-	    lev = (int) precip_ratio * 100.0;
-	    //printf("%i lon %f lat %f hgt %f base %f cloud %f precip %f \n",r,lon,lat,hgt,cloud_base,cloud_ratio,precip_ratio);
+	    lev = (unsigned char) (precip_ratio * 100.0);
+	    //printf("%i lon %f lat %f top %f base %f cloud %f precip %f \n",r,lon,lat,hgt,cloud_base,cloud_ratio,precip_ratio);
 	  } else {
 	    memcpy(&lon,&wxrBuffer[5+r*13+0],sizeof(lon));
 	    memcpy(&lat,&wxrBuffer[5+r*13+4],sizeof(lat));

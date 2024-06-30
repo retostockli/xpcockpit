@@ -28,6 +28,8 @@
 #ifndef ogcB737NAVDrawWXR_h
 #define ogcB737NAVDrawWXR_h
 
+#define NUM_HIST 20
+
 #include "ogcGauge.h"
 #include "ogcB737NAV.h"
 
@@ -59,7 +61,12 @@ protected:
 
   int m_wxr_ncol;
   int m_wxr_nlin;
-  
+
+  unsigned int m_texture;  /* Texture Storage */
+
+  float m_wxr_gain[NUM_HIST];
+  float m_wxr_tilt[NUM_HIST];
+ 
 };
 
 } // end namespace OpenGC
