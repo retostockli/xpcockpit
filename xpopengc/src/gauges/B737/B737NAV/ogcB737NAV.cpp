@@ -3,19 +3,9 @@
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
   
-  Module:  $RCSfile: ogcB737NAV.cpp,v $
-
-  Copyright (C) 2015 by:
-    Original author:
-      John Wojnaroski
-    Contributors (in alphabetical order):
+  Copyright (C) 2015-2024 by:
       Reto Stockli
 
-  Last modification:
-    Date:      $Date: 2015/09/11 $
-    Version:   $Revision: $
-    Author:    $Author: stockli $
-  
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 2 of the
@@ -100,7 +90,7 @@ B737NAV::B737NAV()
   pDrawWXR->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pDrawWXR->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawWXR);
-
+  
   B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
   pDrawStat->SetParentRenderObject(this);
   pDrawStat->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);

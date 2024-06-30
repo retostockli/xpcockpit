@@ -41,6 +41,10 @@ namespace OpenGC
     m_wxr_nlin = 0;
 
     wxr_image = NULL;
+
+    m_texture = 0;
+
+    m_wxr_gain = 0.0;
   
   }
 
@@ -109,17 +113,18 @@ namespace OpenGC
 	float mpplat =  111.0 / (float) wxr_pixperlat / 1.852;
 
 	/* free WXR array and recreate it if we have new WXR data */
-	if (wxr_newdata == 1) {
+	if ((wxr_newdata == 1) || (*wxr_gain <= (m_wxr_gain-0.02)) || (*wxr_gain >= (m_wxr_gain+0.02))) {
+	  m_wxr_gain = *wxr_gain;
+	  
 	  printf("Plotting New WXR Data in NAV Display\n");
 	  m_wxr_ncol = wxr_ncol;
 	  m_wxr_nlin = wxr_nlin;
 	  if (wxr_image) free(wxr_image);
-	  wxr_image = NULL;
 	  wxr_image = (unsigned char*)malloc(m_wxr_nlin * m_wxr_ncol * 4 * sizeof(unsigned char));
 
 	  float gain = *wxr_gain;
 	  if (gain == FLT_MISS) gain = 1.0;
-	  if (gain < 0.1) gain = 0.1;
+	  if (gain < 0.05) gain = 0.05;
 	  if (gain > 2.0) gain = 2.0;
 	
 	  /* copy temporary WXR array to WXR array */
@@ -127,50 +132,24 @@ namespace OpenGC
 	  /* TODO: Only create image if data has changed */
 	  for (i = 0; i < m_wxr_nlin; i++) {
 	    for (j = 0; j < m_wxr_ncol; j++) {
-	      
-	      if (wxr_data[i][j]*gain == 0) {
+	      if (wxr_data[i][j]*gain <= 10) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
-	      } else if (wxr_data[i][j]*gain <= 10) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
-	      } else if (wxr_data[i][j]*gain <= 20) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
+		wxr_image[i*4*m_wxr_ncol+j*4+3] = 0; /* Transparent */
 	      } else if (wxr_data[i][j]*gain <= 30) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Transparent */
-	      } else if (wxr_data[i][j]*gain <= 40) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 255;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	      } else if (wxr_data[i][j]*gain <= 50) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
-	      } else if (wxr_data[i][j]*gain <= 60) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 0;
+		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
 		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	      } else if (wxr_data[i][j]*gain <= 70) {
 		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
-		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
-		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
-	      } else if (wxr_data[i][j]*gain <= 80) {
-		wxr_image[i*4*m_wxr_ncol+j*4+0] = 250;
-		wxr_image[i*4*m_wxr_ncol+j*4+1] = 250;
+		wxr_image[i*4*m_wxr_ncol+j*4+1] = 150;
 		wxr_image[i*4*m_wxr_ncol+j*4+2] = 0;
 		wxr_image[i*4*m_wxr_ncol+j*4+3] = 255; /* Non-Transparent */
 	      } else if (wxr_data[i][j]*gain <= 90) {
@@ -188,32 +167,37 @@ namespace OpenGC
 	    }
 	  }
 	  wxr_newdata = 0;
+
+	  glGenTextures(1, &m_texture);
+	  glBindTexture(GL_TEXTURE_2D, m_texture);
+	  
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	  
+	  /* Remove border line */
+	  GLfloat color[4]={0,0,0,1};
+	  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+	  
+	  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
+			m_wxr_ncol,  m_wxr_nlin, 0, GL_RGBA,
+			GL_UNSIGNED_BYTE, wxr_image);
+
+	  glBindTexture(GL_TEXTURE_2D, 0);
+	  
 	}
 	
 	glPushMatrix();
 	
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
 	glRotatef(heading_map, 0, 0, 1);
-
-
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	/* Remove border line */
-	GLfloat color[4]={0,0,0,1};
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-	
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-		      m_wxr_ncol,  m_wxr_nlin, 0, GL_RGBA,
-		      GL_UNSIGNED_BYTE, wxr_image);
 
 	float scx = 0.5 * ((float) m_wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
 	float scy = 0.5 * ((float) m_wxr_nlin) * mpplat / mapRange * map_size;
@@ -222,7 +206,11 @@ namespace OpenGC
 	float ty = (textureCenterLat - aircraftLat) * ((float) wxr_pixperlat) * mpplat / mapRange * map_size;
 	
 	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+
+	glColor3ub(255,255,255);
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	glBegin(GL_TRIANGLES);
         glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
@@ -233,8 +221,9 @@ namespace OpenGC
         glTexCoord2f(1.0f, 0.0f); glVertex2f( scx+tx, -scy+ty);
 	glEnd();
 
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glDisable (GL_TEXTURE_2D);
-	glFlush();
+	//glFlush();
 
 	/* end of down-shifted and rotated coordinate system */
 	glPopMatrix();
