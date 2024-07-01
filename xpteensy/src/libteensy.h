@@ -15,19 +15,8 @@
    If not, see <http://www.gnu.org/licenses/>. */
 
 #define MAXTEENSYS 5             /* maximum number of teensys that we expect */
-#define MAXPACKETRECV 1          /* maximum number of data points to receive per packet */
-#define MAXPACKETSEND 10         /* maximum number of data points to send per packet */
-#define RECVMSGLEN 4+4*MAXPACKETRECV /* number of bytes in received UDP packet */
-#define SENDMSGLEN 4+4*MAXPACKETSEND /* number of bytes in sent UDP packet */
-#define MAXANALOGINPUTS 42       /* 42 on Teensy  */
-#define MAXANALOGOUTPUTS 42      /* 42 on Teensy, not all can have PWM output though  */
-#define MAXINPUTS 42             /* All inputs can be used as outputs. Some are reserved */
-#define MAXOUTPUTS 42            /* All inputs can be used as outputs. Some are reserved */
-#define MAXSAVE 30               /* maximum number of history values in data structure */
-#define INPUTINITVAL -1          /* initial value of inputs upon startup */
-#define OUTPUTINITVAL -1         /* initial value of outputs upon startup (OFF) */
-#define ANALOGINPUTNBITS 10      /* number of bits of analog inputs */
-#define ANALOGOUTPUTNBITS 8      /* number of bits of analog outputs */
+#define RECVMSGLEN 10            /* number of bytes in received UDP packet */
+#define SENDMSGLEN 10            /* number of bytes in sent UDP packet */
 #define UNCHANGED 0              /* flag for unchanged input / output */
 #define CHANGED 1                /* flag for changed input / output. 
 				    Can actually also be > 1 for e.g. analog inputs that change faster than xpteensy cycle */
@@ -40,37 +29,19 @@ extern int teensyserver_port;
 extern unsigned char teensyRecvBuffer[RECVMSGLEN];
 extern unsigned char teensySendBuffer[SENDMSGLEN];
 
-/* Teensy data structure */
-extern int nteensys;
-
-typedef struct {
-  int connected;         /* specific teensy is connected or not */
-  char ip[30];           /* IP address of teensy */
-  int port;              /* UDP port teensy is listening */
-  unsigned char mac[2];  /* last two bytes of MAC address */
-  int ninputs;           /* actual number of activated inputs */
-  int nanaloginputs;     /* actual number of activated analoginputs */
-  int noutputs;          /* actual number of activated outputs */
-  int nanalogoutputs;    /* actual number of activated analog outputs (INOP) */
-  char inputs[MAXINPUTS][MAXSAVE];
-  char inputs_nsave; /* number of history saves for inputs */
-  char inputs_isinput[MAXINPUTS];  /* which of the pins is inialized as input sends input data back? */
-  int analoginputs[MAXANALOGINPUTS][MAXSAVE];
-  char analoginputs_isinput[MAXANALOGINPUTS];  /* which of the analog inputs should send data back? */
-  char outputs[MAXOUTPUTS];
-  char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
-  int analogoutputs[MAXOUTPUTS];
-  int analogoutputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */
-
-  
-} teensy_struct;
-
+/* DATA STRUCTURE */
 extern teensy_struct teensy[MAXTEENSYS];
+extern teensyvar_struct teensyvar[MAXTEENSYS];
+extern mcp23008_struct mcp23008[MAXTEENSYS][MAX_DEV];
+extern mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
+extern pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 
 /* Prototype Functions */
 int read_teensy(void);
 int write_teensy(void);
 int init_teensy(void);
+
+/*
 int digital_inputf(int teensy, int input, float *fvalue, int type);
 int digital_input(int teensy, int input, int *value, int type);
 int digital_outputf(int teensy, int output, float *fvalue);
@@ -79,3 +50,4 @@ int analog_output(int teensy, int analogoutput, int *value);
 int analog_input(int teensy, int input, float *value, float minval, float maxval);
 int encoder_input(int teensy, int input1, int input2, int *value, int multiplier, int type);
 int encoder_inputf(int teensy, int input1, int input2, float *value, float multiplier, int type);
+*/

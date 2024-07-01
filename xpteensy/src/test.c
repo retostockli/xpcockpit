@@ -35,11 +35,31 @@
 
 int digitalvalue;
 
+void init_test(void)
+{
+  int tee = 0;
+
+  teensy[tee].type[0] = PINMODE_OUTPUT;
+  teensy[tee].type[3] = PINMODE_INPUT;
+  teensy[tee].type[6] = PINMODE_INTERRUPT;
+  teensy[tee].type[14] = PINMODE_ANALOGINPUT;
+  teensy[tee].type[16] = PINMODE_I2C;
+  teensy[tee].type[17] = PINMODE_I2C;
+
+  mcp23017[tee][0].type[2] = PINMODE_INPUT;
+  mcp23017[tee][0].type[3] = PINMODE_INPUT;
+  mcp23017[tee][0].type[7] = PINMODE_OUTPUT;
+  mcp23017[tee][0].intpin = 6;
+  mcp23017[tee][0].wire = 1;
+  mcp23017[tee][0].address = 0x21;
+
+}
+
 void test(void)
 {
 
   int ret;
-  int teensy = 0; /* teensy number according to ini file */
+  int tee = 0;
 
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -63,21 +83,21 @@ void test(void)
   /* } */
   
   /* read digital input (#3) */  
-  ret = digital_input(teensy, 3, &digitalvalue, 0);
-  if (ret == 1) {
-    printf("Digital Input changed to: %i \n",digitalvalue);
-  } 
+  /* ret = digital_input(teensy, 3, &digitalvalue, 0); */
+  /* if (ret == 1) { */
+  /*   printf("Digital Input changed to: %i \n",digitalvalue); */
+  /* }  */
 
   /* read analog input (#14) */
-  ret = analog_input(teensy,14,fvalue,0.0,1.0);
-  if (ret == 1) {
-    /* ret is 1 only if analog input has changed */
-    printf("Analog Input changed to: %f \n",*fvalue);
-  }
+  /* ret = analog_input(teensy,14,fvalue,0.0,1.0); */
+  /* if (ret == 1) { */
+  /*   /\* ret is 1 only if analog input has changed *\/ */
+  /*   printf("Analog Input changed to: %f \n",*fvalue); */
+  /* } */
   
   /* set LED connected to first output (#0) to value landing lights dataref */
   //digitalvalue = 1;
-  ret = digital_output(teensy, 0, &digitalvalue);
+  //ret = digital_output(teensy, 0, &digitalvalue);
   //ret = analog_output(teensy, 0, &digitalvalue);
   
 }

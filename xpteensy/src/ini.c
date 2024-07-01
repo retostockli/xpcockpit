@@ -43,18 +43,16 @@ int ini_read(char* programPath, char* iniName)
   char filename[255];
   char cwd[200];
   char *pch;
-  int i,j;
+  int i,j,k,l;
   char tmp[50];
-  char sinput[50];
-  char sanaloginput[50];
-  const char s[2] = ",";
-  char *token;
+  char version[10];
+  int ival;
  
   /* general */
   int default_verbose = 0;
 
   /* xpserver */
- char default_xpserver_ip[] = "";
+  char default_xpserver_ip[] = "";
   int default_xpserver_port = 8091;
 
   /* teensy server */
@@ -65,8 +63,9 @@ int ini_read(char* programPath, char* iniName)
   char default_teensy_ip[] = "NA";
   int default_teensy_port = 0;
   int default_teensy_mac = 0;
-  char default_teensy_input[] = "";
- 
+  int default_teensy_daughter = 0;
+  char default_teensy_version[] = "NA";
+  
 
   /* check if we are in the source code directory or in the binary installation path */
   if (strncmp("/",programPath,1)==0) {
@@ -117,7 +116,6 @@ int ini_read(char* programPath, char* iniName)
     teensyserver_port = iniparser_getint(ini,"teensyserver:Port", default_teensyserver_port);
     printf("SISMOSERVER Address %s Port %i \n",teensyserver_ip, teensyserver_port);
 
-    nteensys = 0;
     for(i=0;i<MAXTEENSYS;i++) {
       sprintf(tmp,"teensy%i:Address",i);
       strcpy(teensy[i].ip,iniparser_getstring(ini,tmp, default_teensy_ip));
@@ -127,56 +125,102 @@ int ini_read(char* programPath, char* iniName)
       teensy[i].mac[0] = iniparser_getint(ini,tmp, default_teensy_mac);
       sprintf(tmp,"teensy%i:Mac2",i);
       teensy[i].mac[1] = iniparser_getint(ini,tmp, default_teensy_mac);
-      sprintf(tmp,"teensy%i:Inputs",i);
-      strcpy(sinput,iniparser_getstring(ini,tmp, default_teensy_input));
-      sprintf(tmp,"teensy%i:Analoginputs",i);
-      strcpy(sanaloginput,iniparser_getstring(ini,tmp, default_teensy_input));
-      
-      if (teensy[i].port == default_teensy_port) {
-	printf("Teensy %i NA \n",i);
+      sprintf(tmp,"teensy%i:Version",i);
+      strcpy(version,iniparser_getstring(ini,tmp, default_teensy_version));
+
+      for (k=0;k<MAX_PINS;k++) {
+	for (l=0;l<MAX_HIST;l++) {
+	  teensy[i].val[k][l] = INITVAL;
+	  teensy[i].val_save[k][l] = INITVAL;
+	}
+	teensy[i].type[k] = INITVAL;
+	teensy[i].int_dev[k] = INITVAL;
+	teensy[i].int_dev_num[k] = INITVAL;
+      }
+       
+       if (teensy[i].port == default_teensy_port) {
+	printf("Teensy %i Not Connected \n",i);
+	teensy[i].connected = 0;
+      } else if (strcmp(version,default_teensy_version)==0) {
+	printf("Teensy %i No Version Number \n",i);
 	teensy[i].connected = 0;
       } else {
-	  
-	printf("Teensy %i Address %s Port %i Mac %02x:%02x \n",i,teensy[i].ip, teensy[i].port,
+	if (strcmp(version,"4.1")==0) {
+	  teensy[i].version = TEENSY_41_TYPE;
+	  teensy[i].num_pins = 42;
+	} else {
+	  teensy[i].version = INITVAL;
+	  teensy[i].num_pins = INITVAL;
+	}
+	printf("Teensy %i Version %s Address %s Port %i Mac %02x:%02x \n",i,
+	       version,
+	       teensy[i].ip, teensy[i].port,
 	       teensy[i].mac[0],teensy[i].mac[1]);
-	nteensys++;
 	teensy[i].connected = 1;
 
-	/* evaluate selected digital inputs */
-	for (j=0;j<MAXINPUTS;j++) {
-	  teensy[i].inputs_isinput[j] = 0;
-	}
-	token = strtok(sinput, s);
-        while (token) {
-	  j = atoi(token);
-	  if (j < MAXINPUTS) {
-	    printf("Digital Input %i sends data to Server\n",j);
-	    teensy[i].inputs_isinput[j] = 1;
+	printf("Connected Daughter Boards:\n");
+	sprintf(tmp,"teensy%i:MCP23008",i);
+	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
+ 	printf("MCP23008: %i\n",ival);
+	for (j=0;j<MAX_DEV;j++) {
+	  for (k=0;k<MAX_MCP23008_PINS;k++) {
+	    for (l=0;l<MAX_HIST;l++) {
+	      mcp23008[i][j].val[k][l] = INITVAL;
+	      mcp23008[i][j].val_save[k][l] = INITVAL;
+	    }
+	    mcp23008[i][j].type[k] = INITVAL;
 	  }
-	  token=strtok(NULL,","); 
-	}
-	
-	/* evaluate selected analog inputs */
-	for (j=0;j<MAXANALOGINPUTS;j++) {
-	  teensy[i].analoginputs_isinput[j] = 0;
-	}
-	token = strtok(sanaloginput, s);
-        while (token) {
-	  j = atoi(token);
-	  if (j < MAXANALOGINPUTS) {
-	    printf("Analog Input %i sends data to Server\n",j);
-	    teensy[i].analoginputs_isinput[j] = 1;
+	  mcp23008[i][j].intpin = INITVAL;
+	  mcp23008[i][j].wire = INITVAL;
+	  mcp23008[i][j].address = 0;
+	  if (j<ival) {
+	    mcp23008[i][j].connected = 1;
+	  } else {
+	    mcp23008[i][j].connected = 0;
 	  }
-	  token=strtok(NULL,","); 
 	}
-	
-      }
 
-      /* assume that no daughter ard is attached */
-      teensy[i].ninputs = MAXINPUTS;
-      teensy[i].nanaloginputs = MAXANALOGINPUTS;
-      teensy[i].noutputs = MAXOUTPUTS;  
-      teensy[i].nanalogoutputs = MAXANALOGOUTPUTS;
+	sprintf(tmp,"teensy%i:MCP23017",i);
+	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
+ 	printf("MCP23017: %i\n",ival);
+	for (j=0;j<MAX_DEV;j++) {
+	  for (k=0;k<MAX_MCP23017_PINS;k++) {
+	    for (l=0;l<MAX_HIST;l++) {
+	      mcp23017[i][j].val[k][l] = INITVAL;
+	      mcp23017[i][j].val_save[k][l] = INITVAL;
+	    }
+	    mcp23017[i][j].type[k] = INITVAL;
+	  }
+	  mcp23017[i][j].intpin = INITVAL;
+	  mcp23017[i][j].wire = INITVAL;
+	  mcp23017[i][j].address = 0;
+	  if (j<ival) {
+	    mcp23017[i][j].connected = 1;
+	  } else {
+	    mcp23017[i][j].connected = 0;
+	  }
+	}
+
+	sprintf(tmp,"teensy%i:PCF8591",i);
+	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
+ 	printf("PCF8591: %i\n",ival);
+	for (j=0;j<MAX_DEV;j++) {
+	  for (k=0;k<MAX_PCF8591_PINS;k++) {
+	    pcf8591[i][j].val[k] = INITVAL;
+	    pcf8591[i][j].val_save[k] = INITVAL;
+	  }
+	  pcf8591[i][j].dac = INITVAL;
+	  pcf8591[i][j].wire = INITVAL;
+	  pcf8591[i][j].address = 0;
+	  if (j<ival) {
+	    pcf8591[i][j].connected = 1;
+	  } else {
+	    pcf8591[i][j].connected = 0;
+	  }
+	}
+
+      }
+	
       printf("\n");
     }
     
@@ -193,32 +237,6 @@ int ini_read(char* programPath, char* iniName)
 
 int ini_teensydata()
 {
-  int i,j,k;
-
-  for(i=0;i<MAXTEENSYS;i++) {
-    for(j=0;j<MAXANALOGINPUTS;j++) {
-      for(k=0;k<MAXSAVE;k++) {
-	teensy[i].analoginputs[j][k]= INPUTINITVAL;
-      }
-    }
-    
-    teensy[i].inputs_nsave = 0;
-
-    for(j=0;j<MAXINPUTS;j++) {
-      for(k=0;k<MAXSAVE;k++) {
-	teensy[i].inputs[j][k] = INPUTINITVAL;
-      }
-    }
-    for(j=0;j<MAXOUTPUTS;j++) {
-      teensy[i].outputs[j] = OUTPUTINITVAL;
-      teensy[i].outputs_changed[j] = UNCHANGED;
-    }
-    for(j=0;j<MAXANALOGOUTPUTS;j++) {
-      teensy[i].analogoutputs[j] = OUTPUTINITVAL;
-      teensy[i].analogoutputs_changed[j] = UNCHANGED;
-    }
-    
- }
 
   return 0;
 }
@@ -228,20 +246,20 @@ int reset_teensydata()
   /* The changed flag is modified by the read function that first reads the input 
      or writes the output etc. */
   
-  int i,j,s;
+  int i;
   
   for(i=0;i<MAXTEENSYS;i++) {
 
-    if (teensy[i].connected == 1) {
-      if (teensy[i].inputs_nsave > 0) teensy[i].inputs_nsave -= 1;
-    }
+    /* if (teensy[i].connected == 1) { */
+    /*   if (teensy[i].inputs_nsave > 0) teensy[i].inputs_nsave -= 1; */
+    /* } */
 
-    /* shift all analog inputs in history array by one */
-    for (j=0;j<teensy[i].nanaloginputs;j++) {
-      for (s=MAXSAVE-2;s>=0;s--) {
-	teensy[i].analoginputs[j][s+1] = teensy[i].analoginputs[j][s];
-      }
-    }
+    /* /\* shift all analog inputs in history array by one *\/ */
+    /* for (j=0;j<teensy[i].nanaloginputs;j++) { */
+    /*   for (s=MAXSAVE-2;s>=0;s--) { */
+    /* 	teensy[i].analoginputs[j][s+1] = teensy[i].analoginputs[j][s]; */
+    /*   } */
+    /* } */
   }
   return 0;
 }

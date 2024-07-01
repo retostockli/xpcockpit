@@ -110,6 +110,12 @@ namespace OpenGC
     int *altimeter_preset_show;
     int *no_vspeed;
     int *alt_is_meters;
+    float *show_vref;
+    float *vref;
+    float *vref15;
+    float *vref25;
+    float *vref30;
+    float *vref40;
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
 	alt_is_meters = link_dataref_int("laminar/B738/PFD/capt/alt_mode_is_meters");
@@ -117,14 +123,21 @@ namespace OpenGC
 	altimeter_set_std = link_dataref_int("laminar/B738/EFIS/baro_set_std_pilot");
 	altimeter_preset_show = link_dataref_int("laminar/B738/EFIS/baro_sel_pilot_show");
 	altimeter_pressure_preset = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_pilot",-4);
+	show_vref = link_dataref_flt("laminar/B738/FMS/vref_bugs",0);
       } else {
 	alt_is_meters = link_dataref_int("laminar/B738/PFD/fo/alt_mode_is_meters");
 	altimeter_pressure_unit = link_dataref_int("laminar/B738/EFIS_control/fo/baro_in_hpa");
 	altimeter_set_std = link_dataref_int("laminar/B738/EFIS/baro_set_std_copilot");
 	altimeter_preset_show = link_dataref_int("laminar/B738/EFIS/baro_sel_copilot_show");
 	altimeter_pressure_preset = link_dataref_flt("laminar/B738/EFIS/baro_sel_in_hg_copilot",-4);
+	show_vref = link_dataref_flt("laminar/B738/FMS/vref_bugs_fo",0);
       }
       no_vspeed = link_dataref_int("laminar/B738/pfd/no_vspd");
+      vref = link_dataref_flt("laminar/B738/FMS/vref",0);
+      vref15 = link_dataref_flt("laminar/B738/FMS/vref_15",0);
+      vref25 = link_dataref_flt("laminar/B738/FMS/vref_25",0);
+      vref30 = link_dataref_flt("laminar/B738/FMS/vref_30",0);
+      vref40 = link_dataref_flt("laminar/B738/FMS/vref_40",0);
     } else {
       altimeter_pressure_unit = link_dataref_int("xpserver/barometer_unit");
     }
@@ -937,7 +950,7 @@ namespace OpenGC
     }
 
     // draw minimum altitude (feet)
-    if ((*altimeter_minimum != FLT_MISS) && (*altimeter_minimum > 0.0)) {
+    if (*altimeter_minimum != FLT_MISS) {
       m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
       glColor3ub(COLOR_GREEN);
       if ((acf_type == 2) || (acf_type == 3)) {
@@ -949,7 +962,24 @@ namespace OpenGC
       }
       m_pFontManager->Print(117,35, &buffer[0], m_Font);
       snprintf(buffer, sizeof(buffer), "%4.0f", *altimeter_minimum);
-      m_pFontManager->Print(124,28, &buffer[0], m_Font);
+      m_pFontManager->Print(125,28, &buffer[0], m_Font);
+    }
+
+    // draw reference landing speed
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if ((*show_vref == 1.0) && (*vref != FLT_MISS) &&
+	  (*vref15 != FLT_MISS) && (*vref25 != FLT_MISS) &&
+	  (*vref30 != FLT_MISS) && (*vref40 != FLT_MISS)) {
+	m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
+	glColor3ub(COLOR_GREEN);
+	strcpy(buffer, "REF");
+	m_pFontManager->Print(40,35, &buffer[0], m_Font);
+	if (*vref == *vref15) snprintf(buffer, sizeof(buffer), "15/%i", (int) *vref);
+	if (*vref == *vref25) snprintf(buffer, sizeof(buffer), "25/%i", (int) *vref);
+	if (*vref == *vref30) snprintf(buffer, sizeof(buffer), "30/%i", (int) *vref);
+	if (*vref == *vref40) snprintf(buffer, sizeof(buffer), "40/%i", (int) *vref);
+	m_pFontManager->Print(40,28, &buffer[0], m_Font);
+      }
     }
 
     if (*aoa != FLT_MISS) {
@@ -1032,13 +1062,17 @@ namespace OpenGC
        }
 
       // NAV Text on PFD
-      unsigned char *text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",20,-1);
-      unsigned char *text2 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt2",20,-1);
+      unsigned char *text1;
+      unsigned char *text2;
       float *lnav_status = link_dataref_flt("laminar/B738/autopilot/lnav_status",0);
       float *ils_show;
       if (is_captain) {
+	text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",20,-1);
+	text2 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt2",20,-1);
 	ils_show = link_dataref_flt("laminar/B738/pfd/ils_show",0);
       } else {
+	text1 = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt1",20,-1);
+	text2 = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt2",20,-1);
 	ils_show = link_dataref_flt("laminar/B738/pfd/ils_fo_show",0);
       }
       m_pFontManager->SetSize(m_Font, 4, 4.5);
