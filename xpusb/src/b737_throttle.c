@@ -198,7 +198,8 @@ void b737_throttle(void)
   if ((acf_type == 2) || (acf_type == 3)) {
     autothrottle_on_f = link_dataref_flt("laminar/B738/autopilot/autothrottle_status1",0);
     //speed_mode = link_dataref_flt("laminar/B738/autopilot/speed_mode",0);
-    lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0);
+    //lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0);
+    lock_throttle = link_dataref_flt("laminar/B738/autopilot/autothrottle_status",0);
   } else if (acf_type == 1) {
     autothrottle_on = link_dataref_int("x737/systems/athr/athr_active");
     lock_throttle = link_dataref_flt("xpserver/lock_throttle1",0);
