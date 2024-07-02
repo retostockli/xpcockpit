@@ -690,7 +690,8 @@ namespace OpenGC
 
 		    /* do we have a direct to current waypoint? */
 		    /* direct sometimes starts from wpt before current wpt */
-		    if ((*dir_act == 2) && ((i0==(wpt_current-1)) || (i0==(wpt_current-2)))) {
+		    if ((*dir_act == 2) && ((i0==(wpt_current-1)) ||
+					    ((i0==(wpt_current-2)) && ((i1-i0)==2)))) {
 		      wpt_is_dct = true;
 		    } else {
 		      wpt_is_dct = false;

@@ -156,6 +156,8 @@ namespace OpenGC
       glEnd();
 
       // Draw Track line
+      glPushMatrix();
+      glRotatef(*track_mag - *heading_mag,0,0,-1);
       glColor3ub(COLOR_WHITE);
       glBegin(GL_LINES);
       glVertex2f(0.0,0.0);
@@ -165,19 +167,13 @@ namespace OpenGC
       glVertex2f(-0.025*radius,0.7*radius);
       glVertex2f(0.025*radius,0.7*radius);
       glEnd();
+      glPopMatrix();
       
-
-      snprintf( buffer, sizeof(buffer), "%03d", (int) lroundf(*track_mag) );
-      fontx = -bigFontSize*1.5;
-  
-      m_pFontManager->SetSize(m_Font, bigFontSize, bigFontSize );
-      m_pFontManager->Print( fontx, radius+6.0,&buffer[0], m_Font ); 
-
       // Figure out the nearest heading that's a multiple of 10
       float nearestTen = (float)( (int) *heading_mag - (int) *heading_mag % 10);
 
       // Derotate by this offset
-      glRotatef( -1.0*(*track_mag - nearestTen) * indicatorDegreesPerTrueDegrees,0,0,-1);
+      glRotatef( -1.0*(*heading_mag - nearestTen) * indicatorDegreesPerTrueDegrees,0,0,-1);
 
       // Now derotate by 40 "virtual" degrees
       glRotatef(-40*indicatorDegreesPerTrueDegrees,0,0,-1);
@@ -302,7 +298,7 @@ namespace OpenGC
 	glVertex2f(0,0);
 	glVertex2f(0,radius-4);
 	glEnd();
-	
+
         glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	glBegin(GL_POLYGON);
 	glVertex2f(0,0.8*radius);

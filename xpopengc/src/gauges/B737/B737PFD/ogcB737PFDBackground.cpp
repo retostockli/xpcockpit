@@ -151,6 +151,7 @@ namespace OpenGC
     //float *ap_mcpspd_mode;   
     //float *ap_fmcspd_mode;
 
+    float *ap_pfd_mode;
     float *ap_spd_mode;
     //float *ap_spd_mode_arm;
     float *ap_spd_mode_rec;
@@ -183,6 +184,7 @@ namespace OpenGC
       //ap_athr_armed_rec = link_dataref_flt("laminar/B738/autopilot/rec_thr2_modes",0);   
 
       if (is_captain) {
+	ap_pfd_mode     = link_dataref_flt("laminar/B738/autopilot/pfd_mode",0);
 	ap_spd_mode     = link_dataref_flt_arr("laminar/B738/autopilot/pfd_spd_mode",2,0,0);   
 	// ap_spd_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_spd_mode_arm",2,0,0);   
 	ap_spd_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_thr_modes",2,0,0);   
@@ -193,6 +195,7 @@ namespace OpenGC
 	ap_alt_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_alt_mode_arm",2,0,0);   
 	ap_alt_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_alt_modes",2,0,0);   
       } else {
+	ap_pfd_mode     = link_dataref_flt("laminar/B738/autopilot/pfd_mode_fo",0);
 	ap_spd_mode     = link_dataref_flt_arr("laminar/B738/autopilot/pfd_spd_mode",2,1,0);   
 	// ap_spd_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_spd_mode_arm",2,1,0);   
 	ap_spd_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_thr_modes",2,1,0);   
@@ -203,23 +206,7 @@ namespace OpenGC
 	ap_alt_mode_arm = link_dataref_flt_arr("laminar/B738/autopilot/pfd_alt_mode_arm",2,1,0);   
 	ap_alt_mode_rec = link_dataref_flt_arr("laminar/B738/autopilot/rec_alt_modes",2,1,0);   
       }
-	  
-	
-      //ap_flare_mode = link_dataref_flt("laminar/B738/autopilot/flare_status",0);   
-      //ap_rollout_mode = link_dataref_flt("laminar/B738/autopilot/rollout_status",0);   
-
-      //ap_retard_mode = link_dataref_flt("laminar/B738/autopilot/retard_status",0);   
-      //ap_thrhld_mode = link_dataref_flt("laminar/B738/autopilot/thr_hld_pfd",0);   
-      //ap_lnav_armed = link_dataref_flt("laminar/B738/autopilot/lnav_status",0);   
-      //ap_vorloc_armed = link_dataref_flt("laminar/B738/autopilot/vorloc_status",0);   
-      //ap_pitchspd_mode = link_dataref_flt("xpserver/PFD_PITCHSPD_mode_on",0);   
-      //ap_vvi_mode = link_dataref_flt("laminar/B738/autopilot/vvi_status_pfd",0);
-      //ap_vs_mode = link_dataref_flt("laminar/B738/autopilot/vs_status",0);   
-      //ap_gs_armed = link_dataref_flt("laminar/B738/autopilot/gs_armed_pfd",0);   
-      //ap_gs_mode = link_dataref_flt("xpserver/PFD_GS_mode_on",0);   
-      //ap_toga_mode = link_dataref_flt("xpserver/PFD_TOGA_mode_on",0);   
-      //ap_lnav_mode = link_dataref_flt("laminar/B738/autopilot/pfd_vorloc_lnav",0);   
-      //ap_vorloc_mode = link_dataref_flt("laminar/B738/autopilot/pfd_vorloc_lnav",0);   
+	 
       ap_single_ch = link_dataref_flt("laminar/B738/autopilot/single_ch_status",0);
       ap_autoland = link_dataref_flt("laminar/B738/autopilot/autoland_status",0);
     } else if (acf_type == 1) {
@@ -263,9 +250,6 @@ namespace OpenGC
       ap_single_ch = link_dataref_flt("xpserver/SINGLE_CH_warning",0);
       ap_autoland = link_dataref_flt("xpserver/autoland_status",0);
     }
-  
-    //  int *ap_vnav_armed = link_dataref_int("x737/systems/afds/VNAV");   
-    //  int *ap_lvlchg_armed = link_dataref_int("x737/systems/afds/LVLCHG");   
 
     float *fd_a_status;
     float *fd_b_status;
@@ -307,6 +291,40 @@ namespace OpenGC
     float *nav1_vdef = link_dataref_flt("sim/cockpit/radios/nav1_vdef_dot",-2);   
     float *nav2_vdef = link_dataref_flt("sim/cockpit/radios/nav2_vdef_dot",-2);   
 
+    // LNAV/VNAV/IAN Information
+    float *trk_path;
+    float *vert_path;
+    float *vert_path2;
+    float *hnav_err;
+    float *vnav_err;
+    float *fmc_rnp;
+    float *fmc_anp;
+    float *fmc_vrnp;
+    float *fmc_vanp;
+    float *mmr_hdef;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if (is_captain) {
+	trk_path = link_dataref_flt("laminar/B738/pfd/pfd_trk_path",0); 
+	vert_path = link_dataref_flt("laminar/B738/pfd/pfd_vert_path",0); 
+	vert_path2 = link_dataref_flt("laminar/B738/pfd/pfd_vert_path2",0);
+	mmr_hdef = link_dataref_flt("laminar/B738/nav/mmr_hdef",-2);
+      } else {
+	trk_path = link_dataref_flt("laminar/B738/pfd/pfd_trk_path_fo",0); 
+	vert_path = link_dataref_flt("laminar/B738/pfd/pfd_vert_path_fo",0); 
+	vert_path2 = link_dataref_flt("laminar/B738/pfd/pfd_vert_path2_fo",0); 
+	mmr_hdef = link_dataref_flt("laminar/B738/nav/mmr_hdef_fo",-2);
+      }
+      hnav_err = link_dataref_flt("laminar/B738/autopilot/gps_horizont",-2);
+      vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",-2);
+      fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
+      fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
+      fmc_vrnp = link_dataref_flt("laminar/B738/fms/vrnp",-2);
+      fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",-2);
+
+      //printf("%f %f %f %f %f %f \n",*trk_path,*vert_path,*hnav_err,*vnav_err,*fmc_rnp,*fmc_anp);
+
+    }
+    
     int *gpws = link_dataref_int("sim/cockpit2/annunciators/GPWS");
     int *windshear = link_dataref_int("sim/operation/failures/rel_wind_shear");
 
@@ -541,7 +559,7 @@ namespace OpenGC
 	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 5) {
 	  glColor3ub(COLOR_GREEN);
-	  strcpy(buffer, "SPD 5");
+	  strcpy(buffer, "GA");
 	  m_pFontManager->Print(44,183+8, &buffer[0], m_Font);
 	} else if (*ap_spd_mode == 6) {
 	  glColor3ub(COLOR_GREEN);
@@ -583,6 +601,9 @@ namespace OpenGC
 	} else if (*ap_hdg_mode == 4) {
 	  strcpy(buffer, "ROLLOUT");
 	  m_pFontManager->Print(77,183+8, &buffer[0], m_Font);
+	} else if (*ap_hdg_mode == 5) {
+	  strcpy(buffer, "FAC");
+	  m_pFontManager->Print(77,183+8, &buffer[0], m_Font);
 	}
       }
  
@@ -602,30 +623,27 @@ namespace OpenGC
 	  glEnd();
 	}
 	
-	if (*ap_alt_mode == 5) {
-	  strcpy(buffer, "G/S");
-	  m_pFontManager->Print(119,183+8, &buffer[0], m_Font);
-	} else if (*ap_alt_mode == 1) {
+	if (*ap_alt_mode == 1) {
 	  strcpy(buffer, "V/S");
 	  m_pFontManager->Print(119,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 2) {
 	  strcpy(buffer, "MCP SPD");
 	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 3) {
-	  strcpy(buffer, "ALT ACQ");
+	  strcpy(buffer, "ALT/ACQ");
 	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 4) {
 	  strcpy(buffer, "ALT HOLD");
 	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 5) {
-	  strcpy(buffer, "ALT 5");
-	  m_pFontManager->Print(110,183+8, &buffer[0], m_Font);
+	  strcpy(buffer, "G/S");
+	  m_pFontManager->Print(119,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 6) {
 	  strcpy(buffer, "FLARE");
 	  m_pFontManager->Print(114,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 7) {
-	  strcpy(buffer, "ALT 7");
-	  m_pFontManager->Print(114,183+8, &buffer[0], m_Font);
+	  strcpy(buffer, "G/P");
+	  m_pFontManager->Print(119,183+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode == 8) {
 	  strcpy(buffer, "VNAV SPD");
 	  m_pFontManager->Print(111,183+8, &buffer[0], m_Font);
@@ -682,7 +700,20 @@ namespace OpenGC
 	} else if (*ap_hdg_mode_arm == 3) {
 	  strcpy(buffer, "LNAV");
 	  m_pFontManager->Print(81,172+8, &buffer[0], m_Font);
+	} else if (*ap_hdg_mode_arm == 4) {
+	  strcpy(buffer, "FAC");
+	  m_pFontManager->Print(83,172+8, &buffer[0], m_Font);
+	} else if (*ap_hdg_mode_arm == 5) {
+	  strcpy(buffer, "LNAV VOR/LOC");
+	  m_pFontManager->Print(73,172+8, &buffer[0], m_Font);
+	} else if (*ap_hdg_mode_arm == 6) {
+	  strcpy(buffer, "LNAV ROLLOUT");
+	  m_pFontManager->Print(73,172+8, &buffer[0], m_Font);
+	} else if (*ap_hdg_mode_arm == 7) {
+	  strcpy(buffer, "LNAV FAC");
+	  m_pFontManager->Print(76,172+8, &buffer[0], m_Font);
 	}
+
 
       }
       
@@ -713,11 +744,14 @@ namespace OpenGC
 	  strcpy(buffer, "FLARE");
 	  m_pFontManager->Print(114,172+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode_arm == 4) {
-	  strcpy(buffer, "ALT 4");
+	  strcpy(buffer, "G/P");
 	  m_pFontManager->Print(114,172+8, &buffer[0], m_Font);
 	} else if (*ap_alt_mode_arm == 5) {
 	  strcpy(buffer, "VNAV");
 	  m_pFontManager->Print(116,172+8, &buffer[0], m_Font);
+	} else if (*ap_alt_mode_arm == 6) {
+	  strcpy(buffer, "G/S V/S");
+	  m_pFontManager->Print(113,172+8, &buffer[0], m_Font);
 	}
       }
 
@@ -776,160 +810,266 @@ namespace OpenGC
     }
 
     // Draw the glideslope and localizer displays to the right and bottom of the ADI
-
-    // Draw glide slope to the right of the ADI
-
-    // Where is the center of the ADI?
-    
-    // Where is the center of the ADI?
-    float ADICenterX = (94/2) + 42;
-    float ADICenterY = (98/2) + 52;
-    
-    // The height of the glideslope markers above and below center (+/- 1 and 2 degrees deflection)
-    float glideslopeHeight = 17;
-    
-    // Horizontal position of the dots relative to the ADI center
-    float dotsHoriz = ADICenterX + 51;
-    
-    // Horizontal center line
-    glColor3ub(COLOR_WHITE);
-    glBegin(GL_LINES);
-    glVertex2f( dotsHoriz - 4, ADICenterY );
-    glVertex2f( dotsHoriz + 4, ADICenterY );
-    glEnd();
-    
-    // Draw the glideslope dots
-    
+       
     // Set up the circle
     CircleEvaluator aCircle;
     aCircle.SetRadius(2.0);
     aCircle.SetArcStartEnd(0,360);
     aCircle.SetDegreesPerPoint(10);
+      
+    // Where is the center of the ADI?
+    float ADICenterX = (94/2) + 42;
+    float ADICenterY = (98/2) + 52;
     
-    glLineWidth(lineWidth);
-    
-    aCircle.SetOrigin(dotsHoriz, ADICenterY + glideslopeHeight * 2);
-    glBegin(GL_LINE_LOOP);
-    aCircle.Evaluate();
-    glEnd();
-    
-    aCircle.SetOrigin(dotsHoriz, ADICenterY + glideslopeHeight);
-    glBegin(GL_LINE_LOOP);
-    aCircle.Evaluate();
-    glEnd();
-    
-    aCircle.SetOrigin(dotsHoriz, ADICenterY + -1 * glideslopeHeight);
-    glBegin(GL_LINE_LOOP);
-    aCircle.Evaluate();
-    glEnd();
-    
-    aCircle.SetOrigin(dotsHoriz, ADICenterY + -1 * glideslopeHeight * 2);
-    glBegin(GL_LINE_LOOP);
-    aCircle.Evaluate();
-    glEnd();
-    
-    // This is the glideslope bug
+    // Horizontal position of the dots
+    float posX = ADICenterX + 51.0;    
+    // Vertical postiion of the dots 
+    float posY = 48.0;
+
+    /* TODO: Draw GP and GLS deviation, see zhsi */
+   
+    // Draw the glideslope circles and bug
     if ( ((*nav1_vertical == 1) && (*nav1_CDI == 1) && (is_captain)) || 
-	 ((*nav2_vertical == 1) && (*nav2_CDI == 1) && (is_copilot)) ) 
-      {
-	if (*nav1_vertical == 1) {
-	  rawGlideslope = *nav1_vdef;
-	} else {
-	  rawGlideslope = *nav2_vdef;
-	}
+	 ((*nav2_vertical == 1) && (*nav2_CDI == 1) && (is_copilot)) ) {
 
-	if (rawGlideslope < - 2.5) rawGlideslope = -2.5;
-	if (rawGlideslope >   2.5) rawGlideslope = 2.5;
-    
-	// The vertical offset of the glideslope bug
-	float glideslopePosition = ADICenterY - rawGlideslope * glideslopeHeight;
+      glColor3ub(COLOR_WHITE);
+      glLineWidth(lineWidth);
 
-	// Todo: fill the glideslope bug when we are in glide slope
-	// color is magenta
-	glColor3ub(COLOR_VIOLET);
-	if (fabs(rawGlideslope) < 2.49) {
-	  glBegin(GL_POLYGON);
-	} else {
-	  glBegin(GL_LINE_LOOP);
-	}
-	glVertex2f( dotsHoriz - 2, glideslopePosition ); 	
-	glVertex2f( dotsHoriz, glideslopePosition + 4 );
-	glVertex2f( dotsHoriz + 2, glideslopePosition );
-	glVertex2f( dotsHoriz, glideslopePosition - 4 );
-	glEnd();	
-      }
-
-    
-    // Draw the localizer
-    
-    // Height of localizer center in the PFD
-    float localizerHeight = 48.0;
-    
-    // Overall localizer width
-    float localizerWidth = 17.0;
-    		
-    // Verticalal center line
-    glColor3ub(COLOR_WHITE);
-    glBegin(GL_LINES);
-    glVertex2f( ADICenterX, localizerHeight + 4 );
-    glVertex2f( ADICenterX, localizerHeight - 4 );
-    glEnd();
-    
-    // Draw the localizer dots
-    
-    // Set up the circle
-    aCircle.SetRadius(2.0);
-    aCircle.SetArcStartEnd(0,360);
-    aCircle.SetDegreesPerPoint(10);
-    
-    glLineWidth(lineWidth);
-    
-    aCircle.SetOrigin(ADICenterX + localizerWidth * 2, localizerHeight);
-    glBegin(GL_LINE_LOOP);
-    aCircle.Evaluate();
-    glEnd();
-    
-    aCircle.SetOrigin(ADICenterX + localizerWidth, localizerHeight);
-    glBegin(GL_LINE_LOOP);
-    aCircle.Evaluate();
-    glEnd();
-    
-    aCircle.SetOrigin(ADICenterX + -1 * localizerWidth, localizerHeight);
-    glBegin(GL_LINE_LOOP);
-    aCircle.Evaluate();
-    glEnd();
-    
-    aCircle.SetOrigin(ADICenterX + -1 * localizerWidth * 2, localizerHeight);
-    glBegin(GL_LINE_LOOP);
-    aCircle.Evaluate();
-    glEnd();
+      // The height of the glideslope markers above and below center (+/- 1 and 2 degrees deflection)
+      float glideslopeHeight = 17;
 	
-    if ( ((*nav1_horizontal == 1) && (is_captain)) ||
-	 ((*nav2_horizontal == 1) && (is_copilot)) ) 
-      {
-	if (*nav1_horizontal == 1) {
-	  rawLocalizer = *nav1_hdef;
-	} else {
-	  rawLocalizer = *nav2_hdef;
-	}
-
-	// The horizontal offset of the localizer bug
-	float localizerPosition = ADICenterX + rawLocalizer * localizerWidth;
- 	// This is the localizer bug
-	glColor3ub(COLOR_VIOLET);
-	if (fabs(rawLocalizer) < 2.49) {
-	  glBegin(GL_POLYGON);
-	} else {
-	  glBegin(GL_LINE_LOOP);
-	}
-	glVertex2f( localizerPosition - 4, localizerHeight ); 	
-	glVertex2f( localizerPosition, localizerHeight + 2 );
-	glVertex2f( localizerPosition + 4, localizerHeight );
-	glVertex2f( localizerPosition, localizerHeight - 2 );
-	glEnd();	
-
+      // Horizontal center line
+      glBegin(GL_LINES);
+      glVertex2f( posX - 4, ADICenterY );
+      glVertex2f( posX + 4, ADICenterY );
+      glEnd();
+ 
+      // Draw the glideslope dots
+      aCircle.SetOrigin(posX, ADICenterY + glideslopeHeight * 2);
+      glBegin(GL_LINE_LOOP);
+      aCircle.Evaluate();
+      glEnd();
+    
+      aCircle.SetOrigin(posX, ADICenterY + glideslopeHeight);
+      glBegin(GL_LINE_LOOP);
+      aCircle.Evaluate();
+      glEnd();
+    
+      aCircle.SetOrigin(posX, ADICenterY + -1 * glideslopeHeight);
+      glBegin(GL_LINE_LOOP);
+      aCircle.Evaluate();
+      glEnd();
+    
+      aCircle.SetOrigin(posX, ADICenterY + -1 * glideslopeHeight * 2);
+      glBegin(GL_LINE_LOOP);
+      aCircle.Evaluate();
+      glEnd();
+    
+      // Draw the glideslope bug
+      if (*nav1_vertical == 1) {
+	rawGlideslope = *nav1_vdef;
+      } else {
+	rawGlideslope = *nav2_vdef;
       }
 
+      if (rawGlideslope < - 2.5) rawGlideslope = -2.5;
+      if (rawGlideslope >   2.5) rawGlideslope = 2.5;
+    
+      // The vertical offset of the glideslope bug
+      float glideslopePosition = ADICenterY - rawGlideslope * glideslopeHeight;
+
+      // Todo: fill the glideslope bug when we are in glide slope
+      // color is magenta
+      glColor3ub(COLOR_VIOLET);
+      if (fabs(rawGlideslope) < 2.49) {
+	glBegin(GL_POLYGON);
+      } else {
+	glBegin(GL_LINE_LOOP);
+      }
+      glVertex2f( posX - 2, glideslopePosition ); 	
+      glVertex2f( posX, glideslopePosition + 4 );
+      glVertex2f( posX + 2, glideslopePosition );
+      glVertex2f( posX, glideslopePosition - 4 );
+      glEnd();
+      
+    } else if ((acf_type == 2) || (acf_type == 3)) {
+      if (*vert_path == 1) {
+	// The height of the glideslope markers above and below center (+/- 1 and 2 degrees deflection)
+	float vertPathHeight = 34;
+
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+
+	// Horizontal center square
+	glBegin(GL_LINE_LOOP);
+	glVertex2f( posX - 3, ADICenterY-1 );
+	glVertex2f( posX + 3, ADICenterY-1 );
+	glVertex2f( posX + 3, ADICenterY+1 );
+	glVertex2f( posX - 3, ADICenterY+1 );
+	glEnd();
+
+	glLineWidth(lineWidth*2.0);
+	glBegin(GL_LINES);
+	glVertex2f( posX - 3, ADICenterY + vertPathHeight);
+	glVertex2f( posX + 3, ADICenterY + vertPathHeight );
+	glEnd();
+ 
+	glBegin(GL_LINES);
+	glVertex2f( posX - 3, ADICenterY - vertPathHeight);
+	glVertex2f( posX + 3, ADICenterY - vertPathHeight );
+	glEnd();
+
+	float vertErrorPos = *fmc_vanp / max(*fmc_vrnp,0.05f) * vertPathHeight;
+	glBegin(GL_LINES);
+	glVertex2f( posX - 2.5, ADICenterY - vertPathHeight + vertErrorPos);
+	glVertex2f( posX - 2.5, ADICenterY - vertPathHeight*1.05);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex2f( posX - 2.5, ADICenterY + vertPathHeight - vertErrorPos);
+	glVertex2f( posX - 2.5, ADICenterY + vertPathHeight*1.05);
+	glEnd();
+
+	float vertPathPos = *vnav_err / max(*fmc_vrnp,0.05f) * vertPathHeight;
+
+	if (vertPathPos > vertPathHeight) vertPathPos = vertPathHeight;
+	if (vertPathPos < -vertPathHeight) vertPathPos = -vertPathHeight;
+
+	glLineWidth(lineWidth);
+	glColor3ub(COLOR_VIOLET);
+	if (fabs(vertPathPos) == vertPathHeight) {
+	  glBegin(GL_LINE_LOOP);
+	} else {
+	  glBegin(GL_POLYGON);
+	}
+	glVertex2f( posX - 0, ADICenterY + vertPathPos);
+	glVertex2f( posX + 6, ADICenterY + vertPathPos - 2.5);
+	glVertex2f( posX + 6, ADICenterY + vertPathPos + 2.5);
+	glEnd();
+  
+      }
+    }
+
+    /* TODO: Draw FAC deviation, see zhsi */
+    
+    // Draw the localizer circles and bug	
+    if ( ((*nav1_horizontal == 1) && (is_captain)) ||
+	 ((*nav2_horizontal == 1) && (is_copilot)) ) {
+
+      glColor3ub(COLOR_WHITE);
+      glLineWidth(lineWidth);
+    
+      // Overall localizer width
+      float localizerWidth = 17.0;
+    		
+      // Verticalal center line
+      glBegin(GL_LINES);
+      glVertex2f( ADICenterX, posY + 4 );
+      glVertex2f( ADICenterX, posY - 4 );
+      glEnd();
+    
+      // Draw the localizer dots        
+      aCircle.SetOrigin(ADICenterX + localizerWidth * 2, posY);
+      glBegin(GL_LINE_LOOP);
+      aCircle.Evaluate();
+      glEnd();
+    
+      aCircle.SetOrigin(ADICenterX + localizerWidth, posY);
+      glBegin(GL_LINE_LOOP);
+      aCircle.Evaluate();
+      glEnd();
+    
+      aCircle.SetOrigin(ADICenterX + -1 * localizerWidth, posY);
+      glBegin(GL_LINE_LOOP);
+      aCircle.Evaluate();
+      glEnd();
+    
+      aCircle.SetOrigin(ADICenterX + -1 * localizerWidth * 2, posY);
+      glBegin(GL_LINE_LOOP);
+      aCircle.Evaluate();
+      glEnd();
+
+      if (*nav1_horizontal == 1) {
+	rawLocalizer = *nav1_hdef;
+      } else {
+	rawLocalizer = *nav2_hdef;
+      }
+
+      // The horizontal offset of the localizer bug
+      float localizerPosition = ADICenterX + rawLocalizer * localizerWidth;
+      // This is the localizer bug
+      glColor3ub(COLOR_VIOLET);
+      if (fabs(rawLocalizer) < 2.49) {
+	glBegin(GL_POLYGON);
+      } else {
+	glBegin(GL_LINE_LOOP);
+      }
+      glVertex2f( localizerPosition - 4, posY ); 	
+      glVertex2f( localizerPosition, posY + 2 );
+      glVertex2f( localizerPosition + 4, posY );
+      glVertex2f( localizerPosition, posY - 2 );
+      glEnd();	
+
+    } else if ((acf_type == 2) || (acf_type == 3)) {
+      if (*trk_path == 1) {
+
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+    
+	// Overall localizer width
+	float horizPathWidth = 34.0;
+    		
+	// Verticalal center line
+	glBegin(GL_LINE_LOOP);
+	glVertex2f( ADICenterX+1, posY - 3 );
+	glVertex2f( ADICenterX+1, posY + 3 );
+	glVertex2f( ADICenterX-1, posY + 3 );
+	glVertex2f( ADICenterX-1, posY - 3 );
+	glEnd();
+
+	glLineWidth(lineWidth*2.0);
+
+	glBegin(GL_LINES);
+	glVertex2f( ADICenterX+horizPathWidth, posY - 3 );
+	glVertex2f( ADICenterX+horizPathWidth, posY + 3 );
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex2f( ADICenterX-horizPathWidth, posY - 3 );
+	glVertex2f( ADICenterX-horizPathWidth, posY + 3 );
+	glEnd();
+
+	float horizErrorPos = *fmc_anp / max(*fmc_rnp,0.05f) * horizPathWidth;
+	glBegin(GL_LINES);
+	glVertex2f( ADICenterX+horizPathWidth-horizErrorPos, posY + 2.5 );
+	glVertex2f( ADICenterX+horizPathWidth*1.05, posY + 2.5 );
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex2f( ADICenterX-horizPathWidth+horizErrorPos, posY + 2.5 );
+	glVertex2f( ADICenterX-horizPathWidth*1.05, posY + 2.5 );
+	glEnd();
+
+	float horizPathPos = -*hnav_err / max(*mmr_hdef,0.05f) * horizPathWidth;
+	
+	
+	if (horizPathPos > horizPathWidth) horizPathPos =   horizPathWidth;
+	if (horizPathPos < -horizPathWidth) horizPathPos = -horizPathWidth;
+
+	glLineWidth(lineWidth);
+	glColor3ub(COLOR_VIOLET);
+	if (fabs(horizPathPos) == horizPathWidth) {
+	  glBegin(GL_LINE_LOOP);
+	} else {
+	  glBegin(GL_POLYGON);
+	}
+	glVertex2f(ADICenterX + horizPathPos,       posY - 0);
+	glVertex2f(ADICenterX + horizPathPos - 2.5, posY - 6);
+	glVertex2f(ADICenterX + horizPathPos + 2.5, posY - 6);
+	glEnd();
+      }
+    }
+    
     // draw GPWS in RED
     if (*gpws != INT_MISS) {
       if (*gpws == 1) {
@@ -974,10 +1114,17 @@ namespace OpenGC
 	glColor3ub(COLOR_GREEN);
 	strcpy(buffer, "REF");
 	m_pFontManager->Print(40,35, &buffer[0], m_Font);
-	if (*vref == *vref15) snprintf(buffer, sizeof(buffer), "15/%i", (int) *vref);
-	if (*vref == *vref25) snprintf(buffer, sizeof(buffer), "25/%i", (int) *vref);
-	if (*vref == *vref30) snprintf(buffer, sizeof(buffer), "30/%i", (int) *vref);
-	if (*vref == *vref40) snprintf(buffer, sizeof(buffer), "40/%i", (int) *vref);
+	if (*vref == *vref15) {
+	  snprintf(buffer, sizeof(buffer), "15/%i", (int) *vref);
+	} else if (*vref == *vref25) {
+	  snprintf(buffer, sizeof(buffer), "25/%i", (int) *vref);
+	} else if (*vref == *vref30) {
+	  snprintf(buffer, sizeof(buffer), "30/%i", (int) *vref);
+	} else if (*vref == *vref40) {
+	  snprintf(buffer, sizeof(buffer), "40/%i", (int) *vref);
+	} else {
+	  snprintf(buffer, sizeof(buffer), "30/%i", (int) *vref);
+	}
 	m_pFontManager->Print(40,28, &buffer[0], m_Font);
       }
     }
@@ -1063,34 +1210,72 @@ namespace OpenGC
 
       // NAV Text on PFD
       unsigned char *text1;
+      unsigned char *text1a;
       unsigned char *text2;
-      float *lnav_status = link_dataref_flt("laminar/B738/autopilot/lnav_status",0);
-      float *ils_show;
       if (is_captain) {
 	text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",20,-1);
+	text1a = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1a",20,-1);
 	text2 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt2",20,-1);
-	ils_show = link_dataref_flt("laminar/B738/pfd/ils_show",0);
       } else {
 	text1 = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt1",20,-1);
+	text1a = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt1a",20,-1);
 	text2 = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt2",20,-1);
-	ils_show = link_dataref_flt("laminar/B738/pfd/ils_fo_show",0);
       }
-      m_pFontManager->SetSize(m_Font, 4, 4.5);
+
+      
+      if (text1[0] != 32) {
+	snprintf( buffer, sizeof(buffer), "%s", text1 );
+	/* fix degree sign */
+	for (long unsigned int i=0; i<sizeof(buffer); i++) {
+	  if (((int) buffer[i]) == 61) buffer[i] = (char) 176; // X737
+	  if (((int) buffer[i]) == 96) buffer[i] = (char) 176; // ZIBO
+	}
+	m_pFontManager->SetSize(m_Font, 4, 4.5);
+	glColor3ub(COLOR_WHITE);
+	m_pFontManager->Print(42,170,buffer, m_Font);
+      }
+
+      if (text1a[0] != 32) {
+	snprintf( buffer, sizeof(buffer), "%s", text1a );
+	/* fix degree sign */
+	for (long unsigned int i=0; i<sizeof(buffer); i++) {
+	  if (((int) buffer[i]) == 61) buffer[i] = (char) 176; // X737
+	  if (((int) buffer[i]) == 96) buffer[i] = (char) 176; // ZIBO
+	}
+	m_pFontManager->SetSize(m_Font, 4, 4.5);
+	glColor3ub(COLOR_ORANGE);
+	m_pFontManager->Print(42,170,buffer, m_Font);
+
+	glBegin(GL_LINES);
+	glVertex2f( 42.0, 172.5 );
+	glVertex2f( 42.0+strlen(buffer)*4.5, 172.5 );
+	glEnd();
+      }
+	
+      
       glColor3ub(COLOR_WHITE);
-      snprintf( buffer, sizeof(buffer), "%s", text1 );
-      /* fix degree sign */
-      for (long unsigned int i=0; i<sizeof(buffer); i++) {
-	if (((int) buffer[i]) == 61) buffer[i] = (char) 176; // X737
-	if (((int) buffer[i]) == 96) buffer[i] = (char) 176; // ZIBO
-      }
-      m_pFontManager->Print(42,170,buffer, m_Font); 
       snprintf( buffer, sizeof(buffer), "%s", text2 );
       m_pFontManager->Print(42,162,buffer, m_Font);
-      if (*lnav_status == 1.0) {
+      if (*ap_pfd_mode == 1.0) {
+	strcpy( buffer, "ILS");
+	m_pFontManager->Print(42,154,buffer, m_Font);
+      } else if (*ap_pfd_mode == 2.0) {
 	strcpy( buffer, "LNAV/VNAV");
 	m_pFontManager->Print(42,154,buffer, m_Font);
-      } else if (*ils_show == 1.0) {
-	strcpy( buffer, "ILS");
+      } else if (*ap_pfd_mode == 3.0) {
+	strcpy( buffer, "LOC/NAV");
+	m_pFontManager->Print(42,154,buffer, m_Font);
+      } else if (*ap_pfd_mode == 4.0) {
+	strcpy( buffer, "FMC");
+	m_pFontManager->Print(42,154,buffer, m_Font);
+      } else if (*ap_pfd_mode == 5.0) {
+	strcpy( buffer, "LOC/GP");
+	m_pFontManager->Print(42,154,buffer, m_Font);
+      } else if (*ap_pfd_mode == 6.0) {
+	strcpy( buffer, "GLS");
+	m_pFontManager->Print(42,154,buffer, m_Font);
+      } else if (*ap_pfd_mode == 7.0) {
+	strcpy( buffer, "FAC/VNAV");
 	m_pFontManager->Print(42,154,buffer, m_Font);
       }
 
