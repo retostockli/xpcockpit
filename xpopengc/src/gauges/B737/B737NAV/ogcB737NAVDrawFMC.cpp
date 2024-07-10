@@ -252,8 +252,8 @@ namespace OpenGC
 	fmc_crs = link_dataref_flt_arr("laminar/B738/fms/legs_crs_mag",256,-1,-5);
 	fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
 	fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
-	fmc_vrnp = link_dataref_flt("laminar/B738/fms/vrnp",-2);
-	fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",-2);
+	fmc_vrnp = link_dataref_flt("laminar/B738/fms/vrnp",0);
+	fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",0);
 	fmc_vnav_td_dist = link_dataref_flt("laminar/B738/fms/vnav_td_dist",-1);
 	fmc_vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",0);
 	//      fmc_has_vrnp = link_dataref_int("laminar/B738/fms/vrnp_enable");
@@ -392,7 +392,8 @@ namespace OpenGC
 	      snprintf( buffer, sizeof(buffer), "%0.2f", *fmc_anp );
 	      m_pFontManager->Print(0.52*m_PhysicalSize.x,0.01*m_PhysicalSize.y, buffer, m_Font);	  
 	    }
-	    if ((*fmc_has_vrnp == 1) && (*fmc_vnav_td_dist == 0.0) && (*fmc_rnav_alt != 0.0)) {
+	    //if ((*fmc_has_vrnp == 1) && (*fmc_vnav_td_dist == 0.0) && (*fmc_rnav_alt != 0.0)) {
+	    if (*fmc_has_vrnp == 1) {
 	      glColor3ub(COLOR_WHITE);
 	      glLineWidth(lineWidth);
 	      glBegin(GL_LINES);
@@ -435,15 +436,37 @@ namespace OpenGC
 	      
 	      if ((*fmc_vnav_err != FLT_MISS) && (*fmc_vrnp != FLT_MISS)) {
 		glPushMatrix();
-		glTranslatef(0.96*m_PhysicalSize.x, 0.30*m_PhysicalSize.y +
-			     0.1*m_PhysicalSize.y * *fmc_vnav_err / *fmc_vrnp, 0.0);
 		glColor3ub(COLOR_VIOLET);
 		float ss = 0.01 * m_PhysicalSize.x;
+		float vnav_err = *fmc_vnav_err / max(*fmc_vrnp,0.05f);
+		bool filled = true;
+		if (vnav_err > 1.0) {
+		  vnav_err = 1.0;
+		}
+		if (vnav_err < -1.0) {
+		  vnav_err = -1.0;
+		}
+		glTranslatef(0.97*m_PhysicalSize.x, 0.30*m_PhysicalSize.y +
+			     0.1*m_PhysicalSize.y * vnav_err, 0.0);
+		if (vnav_err < 0.9) {
+		  glBegin(GL_LINE_STRIP);
+		  glVertex2f(0.0,ss);
+		  glVertex2f(0.0,ss+0.1*m_PhysicalSize.y * min(0.9-vnav_err,0.9));
+		  glVertex2f(-0.02*m_PhysicalSize.x,ss+0.1*m_PhysicalSize.y * min(0.9-vnav_err,0.9));
+		  glEnd();
+		}
+		if (vnav_err > -0.9) {
+		  glBegin(GL_LINE_STRIP);
+		  glVertex2f(0.0,-ss);
+		  glVertex2f(0.0,-ss-0.1*m_PhysicalSize.y * min(0.9+vnav_err,0.9));
+		  glVertex2f(-0.02*m_PhysicalSize.x,-ss-0.1*m_PhysicalSize.y * min(0.9+vnav_err,0.9));
+		  glEnd();
+		}
 		glBegin(GL_LINE_LOOP);
 		glVertex2f(0.0,-ss);
-		glVertex2f(-ss,0.0);
+		glVertex2f(1.25*-ss,0.0);
 		glVertex2f(0.0,ss);
-		glVertex2f(ss,0.0);
+		glVertex2f(1.25*ss,0.0);
 		glEnd();
 		glPopMatrix();
 

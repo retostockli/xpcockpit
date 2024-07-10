@@ -315,11 +315,11 @@ namespace OpenGC
 	mmr_hdef = link_dataref_flt("laminar/B738/nav/mmr_hdef_fo",-2);
       }
       hnav_err = link_dataref_flt("laminar/B738/autopilot/gps_horizont",-2);
-      vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",-2);
+      vnav_err = link_dataref_flt("laminar/B738/fms/vnav_err_pfd",0);
       fmc_rnp = link_dataref_flt("laminar/B738/fms/rnp",-2);
       fmc_anp = link_dataref_flt("laminar/B738/fms/anp",-2);
-      fmc_vrnp = link_dataref_flt("laminar/B738/fms/vrnp",-2);
-      fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",-2);
+      fmc_vrnp = link_dataref_flt("laminar/B738/fms/vrnp",0);
+      fmc_vanp = link_dataref_flt("laminar/B738/fms/vanp",0);
 
       //printf("%f %f %f %f %f %f \n",*trk_path,*vert_path,*hnav_err,*vnav_err,*fmc_rnp,*fmc_anp);
 
