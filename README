@@ -1,14 +1,24 @@
-2022/09/18
+2024/07/11
 
 This is the xpcockpit Project by Reto Stockli, supported by Hans Jansen.
 
 It enables to connect custom hardware to X-Plane by use of a C library
 which allows to subscribe to X-Plane datarefs and commands. The
-currently supported hardware is most OpenCockpits cards and Leo Bodnar's 
-BU0836 card. The project also includes a glass cockpit software which
+currently supported hardware is: 
+- most OpenCockpits cards
+- Leo Bodnar's BU0836A/X
+- Sismo Soluciones Ethernet Board
+- Arduino (development ceased)
+- Teensy (in development) 
+
+The project also includes the glass cockpit software xpopengc which
 is a further development of the OpenGC project for Boeing 737 and Airbus 320.
 
-The project consists of these components
+The project also includes a warp&blend software for directly driving the
+warp&blend API from the linux command line without manually adjusting
+control points or buying a proprietary warp&blend software.
+
+The project consists of these components:
 libxpcockpit: a library containing I/O functions of all xpcockpit clients. Needs to be compiled first
 xpserver: the plugin to X-Plane which handles dataref/command I/O via TCP/IP
 xpclient: a sample client software to show how to subscribe and use datarefs
@@ -17,6 +27,8 @@ xpopengc: the glass cockpit software client that simulates B737/A320 Gauges
 xppi: the client which enables the Rasperry Pi GPIO usage with X-Plane
 xpsismo: the client which communicates to the SISMO Ethernet Modules
 xparduino: the client which communicates to Arduino (demo only, not operational)
+xpteensy: the client to the teensy microcontroller (in dvelopment)
+warpblend: the scripts and code to create warp&blend drivers for multiple projectors
 
 The project is aimed at the following crowd:
 - X-Plane users working on Linux or OSX and now also on Windows
@@ -30,17 +42,4 @@ HOW TO START:
 - then compile (and optionally install) any of the clients like xpsismo or xpopengc
 
 Information on compiling and installing those items are found in the respective subdirectories
-
----------------------------------------------------------------------------------------------
-NEWS: 
-1. For existing users of xpcockpit: the library is a new thing. I've realized that a lot of
-the data handling code was replicated in each client, so I've packed everything in a library,
-which has to be compiled only once. The clients then all link to this library.
-
-2. Changes in install location: per default modules are not installed in their project root 
-directories any more. Please use ./configure --prefix=xyz to choose an appropriate install
-location. You will also have to use --with-libxpcockpit= for modules like xpsismo, xpopengc
-and others to find libxpcockpit. It searches in the libxpcockpit project root directory by default.
----------------------------------------------------------------------------------------------
-
 

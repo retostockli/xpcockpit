@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([xpopengc], [0.82], [Reto Stockli])
+AC_INIT([xpopengc], [1.0], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/main/main.cpp])
 AM_INIT_AUTOMAKE([-Wall subdir-objects])
 AC_CONFIG_HEADERS([config.h])
