@@ -30,6 +30,7 @@
 
 #include "ogcB737PFDArtificialHorizon.h"
 #include "ogcB737PFDAltitudeTicker.h"
+#include "ogcB737PFDAltitudeTickerMeters.h"
 #include "ogcB737PFDAltitudeTape.h"
 #include "ogcB737PFDSpeedTape.h"
 #include "ogcB737PFDSpeedTicker.h"
@@ -72,17 +73,23 @@ B737PFD::B737PFD()
   pAltTape->SetPosition(150,32);
   this->AddGaugeComponent(pAltTape);
 
+  // Create a VSI
+  B737PFDVSI* pVSI = new B737PFDVSI();
+  pVSI->SetParentRenderObject(this);
+  pVSI->SetPosition(182,44);
+  this->AddGaugeComponent(pVSI);
+
   // Create an altitude ticker
   B737PFDAltitudeTicker* pAltTicker = new B737PFDAltitudeTicker();
   pAltTicker->SetParentRenderObject(this);
   pAltTicker->SetPosition(157,90);
   this->AddGaugeComponent(pAltTicker);
 
-  // Create a VSI
-  B737PFDVSI* pVSI = new B737PFDVSI();
-  pVSI->SetParentRenderObject(this);
-  pVSI->SetPosition(182,44);
-  this->AddGaugeComponent(pVSI);
+  // Create an altitude ticker (Meters)
+  B737PFDAltitudeTickerMeters* pAltTickerMeters = new B737PFDAltitudeTickerMeters();
+  pAltTickerMeters->SetParentRenderObject(this);
+  pAltTickerMeters->SetPosition(160.5,108);
+  this->AddGaugeComponent(pAltTickerMeters);
 
   // Create a speed tape
   B737PFDSpeedTape* pSpeedTape = new B737PFDSpeedTape();

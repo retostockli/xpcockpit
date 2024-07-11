@@ -45,6 +45,8 @@ float control_panel_source_pos;
 float flt_ctrl_A_pos;
 float flt_ctrl_B_pos;
 
+int smoking1;
+int smoking2;
 
 void b737_overhead_fwd(void)
 {
@@ -486,9 +488,9 @@ void b737_overhead_fwd(void)
     device = servo2;
     float *outflow_valve = link_dataref_flt("laminar/B738/outflow_valve",-2);
     if (*servotest == 1) {
-      ret = servos_output(device,0,&servoval,0.0,1.0,550,930);
+      ret = servos_output(device,0,&servoval,0.0,1.0,575,950);
     } else {
-      ret = servos_output(device,0,outflow_valve,0.0,1.0,550,930);
+      ret = servos_output(device,0,outflow_valve,0.0,1.0,575,950);
     }
       
     
@@ -616,10 +618,10 @@ void b737_overhead_fwd(void)
     /* Zone Temp Gauge */
     device = servo2;
     float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",-1);
-    if (*servotest == 1) {
-      ret = servos_output(device,3,&servoval,0.0,1.0,295,975);
+    if (*servotest == 2) {
+      ret = servos_output(device,3,&servoval,0.0,1.0,280,970);
     } else {
-      ret = servos_output(device,3,zone_temp,0.0,80.0,295,975);
+      ret = servos_output(device,3,zone_temp,0.0,80.0,300,1000);
     }
       
     /* Yellow Annunciators */
@@ -667,12 +669,12 @@ void b737_overhead_fwd(void)
     float *cabin_pressure_diff = link_dataref_flt("laminar/B738/cabin_pressure_diff",-1);
     float *cabin_climb = link_dataref_flt("laminar/B738/cabin_vvi",1);    
     if (*servotest == 1) {
-      ret = servos_output(device,0,&servoval,0.0,1.0,200,1023);
-      ret = servos_output(device,1,&servoval,0.0,1.0,250,1023);
+      ret = servos_output(device,0,&servoval,0.0,1.0,220,1023);
+      ret = servos_output(device,1,&servoval,0.0,1.0,290,1023);
       ret = servos_output(device,2,&servoval,0.0,1.0,200,860);
     } else {
-      ret = servos_output(device,0,cabin_altitude,0.0,27000.0,200,1023);
-      ret = servos_output(device,1,cabin_pressure_diff,0.0,6.75,250,1023);
+      ret = servos_output(device,0,cabin_altitude,0.0,26000.0,220,1023);
+      ret = servos_output(device,1,cabin_pressure_diff,0.0,6.4,290,1023);
       ret = servos_output(device,2,cabin_climb,-1800.,1800.,200,860);
     }
     
@@ -934,42 +936,92 @@ void b737_overhead_fwd(void)
 
     device = mastercard;
     card = 1;
+      
     /* Chimes Only / No Smoking */
-    /* For now we assign IRS MODE */
-    int test;
-    int test2;
-    ret = digital_input(device,card,7,&test,0);
+    /* Set to Payload Presets */
+    int *zone1 = link_dataref_int_arr("laminar/B738/tab/zone1_payload",3,-1);
+    int *zone2 = link_dataref_int_arr("laminar/B738/tab/zone2_payload",3,-1);
+    int *zone3 = link_dataref_int_arr("laminar/B738/tab/zone3_payload",3,-1);
+    int *zone4 = link_dataref_int_arr("laminar/B738/tab/zone4_payload",3,-1);
+    int *zone5 = link_dataref_int_arr("laminar/B738/tab/zone5_payload",3,-1);
+    int *cargo1 = link_dataref_int("laminar/B738/tab/zone_cargo1_payload");
+    int *cargo2 = link_dataref_int("laminar/B738/tab/zone_cargo2_payload");
+    
+    ret = digital_input(device,card,7,&smoking1,0);
     if (ret == 1) {
-      printf("IRS NAV: %i \n",test);
+      if (smoking1 == 0) {
+	printf("Aircraft Payload: Medium\n");
+      } else {
+	printf("Aircraft Payload: Full\n");
+      }
     }
-    ret = digital_input(device,card,8,&test2,0);
+    ret = digital_input(device,card,8,&smoking2,0);
     if (ret == 1) {
-      printf("IRS OFF: %i \n",test2);
+      if (smoking2 == 1) {
+	printf("Aircraft Payload: Empty\n");
+      } else {
+	printf("Aircraft Payload: Medium\n");
+      }
     }
 
-    int irs_l_pos = INT_MISS;
-    if ((test != INT_MISS) && (test2 != INT_MISS)) {
-      irs_l_pos = (1-test2) + test;
-    } 
-    int *irs_l = link_dataref_int("laminar/B738/toggle_switch/irs_left");
-    int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left");
-    int *irs_l_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_right");
-    ret = set_state_updn(&irs_l_pos,irs_l,irs_l_right,irs_l_left);
-    if (ret == 1) {
-      printf("IRS L POS: %i \n",irs_l_pos);
-    }
-
-    int irs_r_pos = INT_MISS;
-    if ((test != INT_MISS) && (test2 != INT_MISS)) {
-      irs_r_pos = (1-test2) + test;
-    } 
-    int *irs_r = link_dataref_int("laminar/B738/toggle_switch/irs_right");
-    int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left");
-    int *irs_r_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_right");
-    ret = set_state_updn(&irs_r_pos,irs_r,irs_r_right,irs_r_left);
-    if (ret == 1) {
-      printf("IRS R POS: %i \n",irs_r_pos);
-    }
+    if ((smoking1 == 0) && (smoking2 == 1)) {
+      /* Empty */
+      zone1[0] = 0;
+      zone1[1] = 0;
+      zone1[2] = 0;
+      zone2[0] = 0;
+      zone2[1] = 0;
+      zone2[2] = 0;
+      zone3[0] = 0;
+      zone3[1] = 0;
+      zone3[2] = 0;
+      zone4[0] = 0;
+      zone4[1] = 0;
+      zone4[2] = 0;
+      zone5[0] = 0;
+      zone5[1] = 0;
+      zone5[2] = 0;
+      *cargo1 = 0;
+      *cargo2 = 0;
+    } else if ((smoking1 == 0) && (smoking2 == 0)) {
+      /* Medium */
+      zone1[0] = 2;
+      zone1[1] = 3;
+      zone1[2] = 2;
+      zone2[0] = 6;
+      zone2[1] = 6;
+      zone2[2] = 6;
+      zone3[0] = 6;
+      zone3[1] = 6;
+      zone3[2] = 6;
+      zone4[0] = 6;
+      zone4[1] = 6;
+      zone4[2] = 6;
+      zone5[0] = 6;
+      zone5[1] = 6;
+      zone5[2] = 6;
+      *cargo1 = 1650;
+      *cargo2 = 2300;
+     } else {
+      /* Full */
+      zone1[0] = 6;
+      zone1[1] = 4;
+      zone1[2] = 6;
+      zone2[0] = 12;
+      zone2[1] = 12;
+      zone2[2] = 12;
+      zone3[0] = 12;
+      zone3[1] = 12;
+      zone3[2] = 12;
+      zone4[0] = 12;
+      zone4[1] = 12;
+      zone4[2] = 12;
+      zone5[0] = 12;
+      zone5[1] = 12;
+      zone5[2] = 12;
+      *cargo1 = 3500;
+      *cargo2 = 4600;
+     }
 
     /* Fasten Seat Belts */
     int *belts_up = link_dataref_cmd_once("laminar/B738/toggle_switch/seatbelt_sign_up");
@@ -1229,7 +1281,7 @@ void b737_overhead_fwd(void)
     device = servo1;
     float *apu_temp = link_dataref_flt("laminar/B738/electrical/apu_temp",-1);
     if (*servotest == 1) {
-      ret = servos_output(device,3,&servoval,0.0,1.0,200,990);
+      ret = servos_output(device,3,&servoval,0.0,1.0,200,1000);
     } else {
       ret = servos_output(device,3,apu_temp,0.0,100.0,200,990);
     }
@@ -1583,6 +1635,16 @@ void b737_overhead_fwd(void)
 	fuel_pump_on[i] = ival;
       }
     }
+
+    /* Turn off Voltage / Amperage Display */
+    device = mastercard;
+    card = 1;
+    ival = 10;
+    ret = mastercard_display(device,card,11,2,&ival,1);
+    ret = mastercard_display(device,card,6,2,&ival,1);
+    ret = mastercard_display(device,card,1,3,&ival,1);
+    ret = mastercard_display(device,card,4,2,&ival,1);
+    ret = mastercard_display(device,card,8,3,&ival,1);
   
   }
     

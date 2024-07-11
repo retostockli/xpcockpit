@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Name=Shutdown Raspberrys
+GenericName=Shutdown All Five Raspberrys
+Exec=xterm -e "\\${HOME}/xpcockpit/scripts/shutdownallraspberrys.sh; \\$SHELL"
+Terminal=false
+Icon=/home/stockli/xpcockpit/applications/shutdownallraspberrys.png
+Type=Application

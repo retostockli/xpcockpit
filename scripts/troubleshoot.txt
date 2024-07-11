@@ -7,3 +7,7 @@ list cards with aplay -L
 
 set default:
 export FMOD_ALSA_DEVICE=hw:CARD=Audio,DEV=0
+
+VIDEO
+
+Screen Arrangements: 3 2 4 1

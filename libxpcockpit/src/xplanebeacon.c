@@ -251,20 +251,20 @@ void *xpbeacon_poll_thread_main()
 	if (strncmp(buffer,"BECN",4)==0) {
 	/* Fill X-Plane Beacon Structure */
 	memcpy(&becn.beacon_major_version,&buffer[5],sizeof(becn.beacon_major_version));
-	if (xplanebeacon_verbose > 2) printf("X-Plane Major Version Number: %d\n",becn.beacon_major_version);
+	if (xplanebeacon_verbose > 3) printf("X-Plane Major Version Number: %d\n",becn.beacon_major_version);
 	memcpy(&becn.beacon_minor_version,&buffer[6],sizeof(becn.beacon_minor_version));
-	if (xplanebeacon_verbose > 2) printf("X-Plane Minor Version Number: %d\n",becn.beacon_minor_version);
+	if (xplanebeacon_verbose > 3) printf("X-Plane Minor Version Number: %d\n",becn.beacon_minor_version);
 	memcpy(&becn.application_host_id,&buffer[7],sizeof(becn.application_host_id));
-	if (xplanebeacon_verbose > 2) printf("X-Plane Application ID (1=X-Plane, 2=Plane Maker): %d\n",becn.application_host_id);
+	if (xplanebeacon_verbose > 3) printf("X-Plane Application ID (1=X-Plane, 2=Plane Maker): %d\n",becn.application_host_id);
 	memcpy(&becn.version_number,&buffer[11],sizeof(becn.version_number));
-	if (xplanebeacon_verbose > 2) printf("X-Plane Version Number: %d\n",becn.version_number);
+	if (xplanebeacon_verbose > 3) printf("X-Plane Version Number: %d\n",becn.version_number);
 	memcpy(&becn.role,&buffer[15],sizeof(becn.role));
-	if (xplanebeacon_verbose > 2) printf("X-Plane Role (1=master,2=slave,3=IOS): %d\n",becn.role);
+	if (xplanebeacon_verbose > 3) printf("X-Plane Role (1=master,2=slave,3=IOS): %d\n",becn.role);
 	memcpy(&becn.port,&buffer[19],sizeof(becn.port));
-	if (xplanebeacon_verbose > 2) printf("X-Plane UDP Port: %d\n",becn.port);
+	if (xplanebeacon_verbose > 3) printf("X-Plane UDP Port: %d\n",becn.port);
 	if (ret > 21) {
 	  memcpy(&becn.computer_name,&buffer[21],ret-21);
-	  if (xplanebeacon_verbose > 2) printf("X-Plane Computer Name: %s\n",becn.computer_name);
+	  if (xplanebeacon_verbose > 3) printf("X-Plane Computer Name: %s\n",becn.computer_name);
 	}
 
 	/* we only want the IP of the master and of X-Plane */
@@ -275,7 +275,7 @@ void *xpbeacon_poll_thread_main()
 	  strcpy(XPlaneBeaconIP,inet_ntoa(serverAddr.sin_addr));   /* Server IP address */
 	  XPlaneBeaconPort = ntohs(serverAddr.sin_port);     /* Server port */
 	  
-	  if (xplanebeacon_verbose > 1) printf("X-Plane Beacon IP: %s and Port: %i \n",XPlaneBeaconIP,XPlaneBeaconPort);
+	  if (xplanebeacon_verbose > 3) printf("X-Plane Beacon IP: %s and Port: %i \n",XPlaneBeaconIP,XPlaneBeaconPort);
 	}
       }
     } else {

@@ -3,7 +3,9 @@
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
   
-  Module:  $RCSfile: ogcShorelineData.cpp,v $
+  Now hosted by xpcockpit project on github.com
+   
+  Copyright (c) 2021-2024 Reto Stockli
 
   This software is distributed WITHOUT ANY WARRANTY; without even 
   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
@@ -11,6 +13,7 @@
 
   =========================================================================*/
 
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
@@ -94,10 +97,13 @@ namespace OpenGC
     ifstream ifile;
     int nshorelines;
     int level;
-    int i,f;
+    int i,f,s;
     struct GSHHG_HEADER header;
     struct GSHHG_POINT points;
     
+    polygon p;			/* input polygon */
+    triangulation t;		/* output triangulation */
+
     sprintf(filename,"%s/%s",m_PathToGSHHG.c_str(),"gshhs_h.b");
 
     /* Read file twice: first for getting number of polygons, second read the polygons */
@@ -165,16 +171,194 @@ namespace OpenGC
 	shoreline_centerlat = (float*)malloc(num_shorelines * sizeof(float));
 	shoreline_lon = (float**)malloc(num_shorelines * sizeof(float*));
 	shoreline_lat = (float**)malloc(num_shorelines * sizeof(float*));
+	num_shorelinetriangles = (int*)malloc(num_shorelines * sizeof(int));
+	shoreline_triangle1 = (int**)malloc(num_shorelines * sizeof(int*));
+	shoreline_triangle2 = (int**)malloc(num_shorelines * sizeof(int*));
+	shoreline_triangle3 = (int**)malloc(num_shorelines * sizeof(int*));
       }
     }
 
     if (num_shorelines > 0) {
+
+      // start triangulation
+      for (s=0;s<num_shorelines;s++) {
+      //for (s=5000;s<5001;s++) {
+	//for (s=0;s<1;s++) {
+	p.n = num_shorelinepoints[s]-1;
+	//printf("Shoreline: %i Points: %i \n",s,p.n);
+	p.p = (point*)malloc(p.n * sizeof(point));
+	for (i=0;i<p.n;i++) {
+	  p.p[i][X] = shoreline_lon[s][i];
+	  p.p[i][Y] = shoreline_lat[s][i];
+	  //printf("%f %f \n",shoreline_lon[s][i],shoreline_lat[s][i]);
+	}
+
+	t.n = p.n-2;
+	t.t = (triangle*) malloc(t.n * sizeof(triangle));
+	if (!Process(&p, &t)) {
+	  // printf("Bad Triangulation of Shoreline %i !!!\n",s);
+	  t.n = 0;
+	}
+
+	num_shorelinetriangles[s] = t.n;
+	if (num_shorelinetriangles[s] > 0) {
+	  shoreline_triangle1[s] = (int*)malloc(num_shorelinetriangles[s] * sizeof(int));
+	  shoreline_triangle2[s] = (int*)malloc(num_shorelinetriangles[s] * sizeof(int));
+	  shoreline_triangle3[s] = (int*)malloc(num_shorelinetriangles[s] * sizeof(int));
+	  for (i=0;i<num_shorelinetriangles[s];i++) {
+	    shoreline_triangle1[s][i] = t.t[i][0];
+	    shoreline_triangle2[s][i] = t.t[i][1];
+	    shoreline_triangle3[s][i] = t.t[i][2];
+	  }
+	}
+
+	free(p.p);
+	free(t.t);
+      }
+      
       return true;
     } else {
       printf("No Lakes found! \n");
       return false;
     }
   }
+
+  float
+  ShorelineData
+  ::Area(polygon *contour)
+  {
     
+    int n = contour->n;
+    
+    float A=0.0f;
+    
+    for(int p=n-1,q=0; q<n; p=q++)
+      {
+	A+= contour->p[p][X]*contour->p[q][Y] - contour->p[q][X]*contour->p[p][Y];
+      }
+    return A*0.5f;
+  }
+
+  bool
+  ShorelineData
+  ::InsideTriangle(float Ax, float Ay,
+		   float Bx, float By,
+		   float Cx, float Cy,
+		   float Px, float Py)
+    
+  {
+    float ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
+    float cCROSSap, bCROSScp, aCROSSbp;
+    
+    ax = Cx - Bx;  ay = Cy - By;
+    bx = Ax - Cx;  by = Ay - Cy;
+    cx = Bx - Ax;  cy = By - Ay;
+    apx= Px - Ax;  apy= Py - Ay;
+    bpx= Px - Bx;  bpy= Py - By;
+    cpx= Px - Cx;  cpy= Py - Cy;
+    
+    aCROSSbp = ax*bpy - ay*bpx;
+    cCROSSap = cx*apy - cy*apx;
+    bCROSScp = bx*cpy - by*cpx;
+    
+    return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
+  };
+  
+  bool
+  ShorelineData
+  ::Snip(polygon *contour,int u,int v,int w,int n,int *V)
+  {
+    int p;
+    float Ax, Ay, Bx, By, Cx, Cy, Px, Py;
+
+    Ax = contour->p[V[u]][X];
+    Ay = contour->p[V[u]][Y];
+
+    Bx = contour->p[V[v]][X];
+    By = contour->p[V[v]][Y];
+
+    Cx = contour->p[V[w]][X];
+    Cy = contour->p[V[w]][Y];
+
+    if ( EPSILON > (((Bx-Ax)*(Cy-Ay)) - ((By-Ay)*(Cx-Ax))) ) return false;
+
+    for (p=0;p<n;p++)
+      {
+	if( (p == u) || (p == v) || (p == w) ) continue;
+	Px = contour->p[V[p]][X];
+	Py = contour->p[V[p]][Y];
+	if (InsideTriangle(Ax,Ay,Bx,By,Cx,Cy,Px,Py)) return false;
+      }
+
+    return true;
+  }
+  
+  bool
+  ShorelineData
+  ::Process(polygon *contour, triangulation *result)
+  {
+    /* allocate and initialize list of Vertices in polygon */
+
+    int n = contour->n;
+    if ( n < 3 ) return false;
+
+    int *V = new int[n];
+
+    /* we want a counter-clockwise polygon in V */
+
+    if ( 0.0f < Area(contour) )
+      for (int v=0; v<n; v++) V[v] = v;
+    else
+      for(int v=0; v<n; v++) V[v] = (n-1)-v;
+
+    int nv = n;
+
+    /*  remove nv-2 Vertices, creating 1 triangle every time */
+    int count = 2*nv;   /* error detection */
+
+    for(int m=0, v=nv-1; nv>2; )
+      {
+	/* if we loop, it is probably a non-simple polygon */
+	if (0 >= (count--))
+	  {
+	    //** Triangulate: ERROR - probable bad polygon!
+	    return false;
+	  }
+
+	/* three consecutive vertices in current polygon, <u,v,w> */
+	int u = v  ; if (nv <= u) u = 0;     /* previous */
+	v = u+1; if (nv <= v) v = 0;     /* new v    */
+	int w = v+1; if (nv <= w) w = 0;     /* next     */
+
+	if ( Snip(contour,u,v,w,nv,V) )
+	  {
+	    int a,b,c,s,t;
+
+	    /* true names of the vertices */
+	    a = V[u]; b = V[v]; c = V[w];
+
+	    /* output Triangle */
+	    result->t[m][0] = a;
+	    result->t[m][1] = b;
+	    result->t[m][2] = c;
+
+	    m++;
+
+	    /* remove v from remaining polygon */
+	    for(s=v,t=v+1;t<nv;s++,t++) {
+	      V[s] = V[t];
+	    }
+	    nv--;
+    
+
+	    /* resest error detection counter */
+	    count = 2*nv;
+	  }
+      }
+
+    delete[] V;
+
+    return true;
+  }
 
 } // end namespace OpenGC

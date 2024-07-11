@@ -78,7 +78,7 @@ void GlobalIdle(void *)
 /* this routine prints the GNU license information */
 void print_license(void)
 {
-  printf("OpenGC for X-Plane Copyright (C) 2009-2015 Reto Stockli\n");
+  printf("OpenGC for X-Plane 2009-2024 Reto Stockli\n");
   printf("\n");
   printf("Various additions and changes 2015 Hans Jansen\n");
   printf("\n");
@@ -95,20 +95,6 @@ void signal_handler(int sigraised)
   printf("Interrupted ... exiting \n");
   exit(0);
 }
-
-/*
-void GLAPIENTRY MessageCallback( GLenum source,
-				 GLenum type,
-				 GLuint id,
-				 GLenum severity,
-				 GLsizei length,
-				 const GLchar* message,
-				 const void* userParam )
-{
-   fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
-            type, severity, message );
-	    }*/
 
 int main(int argc, char* argv[])
 {
@@ -129,10 +115,6 @@ int main(int argc, char* argv[])
   if (signal(SIGTERM, signal_handler) == SIG_ERR) {
     printf("Could not establish new Termination signal handler.\n");
   }
-
-  // Enable OpenGL Debugging (or not)
-  //glEnable              ( GL_DEBUG_OUTPUT );
-  //glDebugMessageCallback( MessageCallback, 0 );
   
   printf ("=========== OpenGC - Starting up ==========\n");
     

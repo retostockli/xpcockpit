@@ -143,6 +143,11 @@ namespace OpenGC
     float *adf1_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf1_dme_distance_nm",-1);
     float *adf2_dme_distance_nm = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_dme_distance_nm",-1);
 
+    int *nav1_freq_active = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
+    int *nav2_freq_active = link_dataref_int("sim/cockpit/radios/nav2_freq_hz");
+    int *adf1_freq_active = link_dataref_int("sim/cockpit/radios/adf1_freq_hz");
+    int *adf2_freq_active = link_dataref_int("sim/cockpit/radios/adf2_freq_hz");
+
     if ((*track_mag != FLT_MISS) && (*heading_mag != FLT_MISS)) {
       
       // Shift center and rotate about heading
@@ -212,10 +217,11 @@ namespace OpenGC
 
       /* plot wind speed and direction and draw wind arrow */
       if ((*wind_direction_mag != FLT_MISS) && (*wind_speed != FLT_MISS) && (*wind_speed > 0.0)) {
-	snprintf(buffer, sizeof(buffer), "%03d°", (int) lroundf(*wind_direction_mag));
+	snprintf(buffer, sizeof(buffer), "%03d ", (int) lroundf(*wind_direction_mag));
       } else {
-	snprintf(buffer, sizeof(buffer), "---°");
+	snprintf(buffer, sizeof(buffer), "--- ");
       }
+      buffer[3] = (char) 176; // replace degree symbol with correct one
       m_pFontManager->Print( m_PhysicalSize.x*0.014, m_PhysicalSize.y*0.919 , buffer, m_Font );
   
       if ((*wind_direction_mag != FLT_MISS) && (heading_map != FLT_MISS) &&
@@ -243,7 +249,7 @@ namespace OpenGC
 	snprintf(buffer, sizeof(buffer), "---");
       }
       m_pFontManager->Print( m_PhysicalSize.x*0.128, m_PhysicalSize.y*0.919 , buffer, m_Font );
-
+    
       if (mapMode != 3) {
       
 	/* plot NAVAID name and DME if available on the lower part of the NAV display */
@@ -254,8 +260,8 @@ namespace OpenGC
 	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_POLYGON);
 	  glVertex2f(0,0);
-	  glVertex2f(0,m_PhysicalSize.y*0.15);
-	  glVertex2f(m_PhysicalSize.x*0.2,m_PhysicalSize.y*0.15);
+	  glVertex2f(0,m_PhysicalSize.y*0.13);
+	  glVertex2f(m_PhysicalSize.x*0.2,m_PhysicalSize.y*0.13);
 	  glVertex2f(m_PhysicalSize.x*0.2,0);
 	  glEnd();
 	  
@@ -268,7 +274,8 @@ namespace OpenGC
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "ADF 1", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", adf1_name );
 	    if (strcmp(buffer,"") == 0) {
-	      snprintf( buffer, sizeof(buffer), "%s", "------" );
+	      //snprintf( buffer, sizeof(buffer), "%s", "------" );
+	      snprintf( buffer, sizeof(buffer), "%6.1f", (float) *adf1_freq_active );
 	    } 
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.052 , buffer, m_Font );
 	    if (*adf1_has_dme == 1) {
@@ -284,7 +291,8 @@ namespace OpenGC
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.092 , "VOR 1", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", nav1_name );
 	    if (strcmp(buffer,"") == 0) {
-	      snprintf( buffer, sizeof(buffer), "%s", "------" );
+	      //snprintf( buffer, sizeof(buffer), "%s", "------" );
+	      snprintf( buffer, sizeof(buffer), "%5.2f", ((float) *nav1_freq_active)/100. );
 	    } 
 	    m_pFontManager->Print( m_PhysicalSize.x*0.013, m_PhysicalSize.y*0.052 , buffer, m_Font );
 	    if (*nav1_has_dme == 1) {
@@ -306,8 +314,8 @@ namespace OpenGC
 	  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	  glBegin(GL_POLYGON);
 	  glVertex2f(m_PhysicalSize.x,0);
-	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*0.15);
-	  glVertex2f(m_PhysicalSize.x*0.8,m_PhysicalSize.y*0.15);
+	  glVertex2f(m_PhysicalSize.x,m_PhysicalSize.y*0.13);
+	  glVertex2f(m_PhysicalSize.x*0.8,m_PhysicalSize.y*0.13);
 	  glVertex2f(m_PhysicalSize.x*0.8,0);
 	  glEnd();
 	  
@@ -320,7 +328,8 @@ namespace OpenGC
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "ADF 2", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", adf2_name );
 	    if (strcmp(buffer,"") == 0) {
-	      snprintf( buffer, sizeof(buffer), "%s", "------" );
+	      //snprintf( buffer, sizeof(buffer), "%s", "------" );
+	      snprintf( buffer, sizeof(buffer), "%6.1f", (float) *adf2_freq_active );
 	    } 
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.052 , buffer, m_Font );
 	    if (*adf2_has_dme == 1) {
@@ -336,7 +345,8 @@ namespace OpenGC
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.092 , "VOR 2", m_Font );
 	    snprintf( buffer, sizeof(buffer), "%s", nav2_name );
 	    if (strcmp(buffer,"") == 0) {
-	      snprintf( buffer, sizeof(buffer), "%s", "------" );
+	      //snprintf( buffer, sizeof(buffer), "%s", "------" );
+	      snprintf( buffer, sizeof(buffer), "%5.2f", ((float) *nav2_freq_active)/100. );
 	    } 
 	    m_pFontManager->Print( m_PhysicalSize.x*0.839, m_PhysicalSize.y*0.052 , buffer, m_Font );
 	    if (*nav2_has_dme == 1) {

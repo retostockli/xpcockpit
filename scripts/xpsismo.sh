@@ -1,5 +1,9 @@
 #!/bin/sh
 
+count=$(ps -a | grep xpsismo | grep -v xpsismo.sh | wc -l)
+
+if [ $count = 0 ] ; then
+
 ping -c 1 192.168.1.51
 if [ $? != 0 ]
 then
@@ -15,13 +19,21 @@ then
     exit 2
 fi
 
-ping -c 1 192.168.1.53
+ping -c 1 192.168.1.55
 if [ $? != 0 ]
 then
-    echo "Error connecting to PEDESTAL Card"
+    echo "Error connecting to AFT OVERHEAD Card"
     exit 2
 fi
 
 
 cd ~/xpcockpit/xpsismo/bin
 ./xpsismo boeing737
+
+exit 0
+
+else
+ zenity --info --width=200 --height=50 --text="<big>xpsismo is already running</big>" --title="xpsismo Launcher"
+ exit 1
+fi
+

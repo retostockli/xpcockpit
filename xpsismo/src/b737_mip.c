@@ -156,8 +156,8 @@ void b737_mip(void)
 
     float *auto_brake_disarm = link_dataref_flt("laminar/B738/annunciator/auto_brake_disarm",-1);
     float *anti_skid_inop = link_dataref_flt("laminar/B738/annunciator/anti_skid_inop",-1);
-    float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-1);
-    float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-1);
+    float *flaps_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-2);
+    float *flaps_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-2);
 
     float *flaps_position = link_dataref_flt("sim/cockpit2/controls/flap_handle_deploy_ratio",-3);
     float *brake_pressure = link_dataref_flt("laminar/B738/brake/brake_press",0);
@@ -587,13 +587,13 @@ void b737_mip(void)
     /* Flap deploy ratio is measured from 0-1 where:
        deploy  degree    servo out
        0     : 0 deg   : 0.10
-       0.125 : 1 deg   : 0.17
-       0.250 : 2 deg   : 0.31
-       0.375 : 5 deg   : 0.38
+       0.125 : 1 deg   : 0.18
+       0.250 : 2 deg   : 0.29
+       0.375 : 5 deg   : 0.39
        0.500 : 10 deg  : 0.50
-       0.625 : 15 deg  : 0.58
-       0.750 : 25 deg  : 0.66
-       0.875 : 30 deg  : 0.73
+       0.625 : 15 deg  : 0.57
+       0.750 : 25 deg  : 0.65
+       0.875 : 30 deg  : 0.72
        1.000 : 40 deg  : 0.81
 
        The flaps gauge in the B737 is linear in the second column
@@ -610,12 +610,14 @@ void b737_mip(void)
       //ret = servo_outputf(card,3,&fvalue,-0.1,1.1);
     } else {
       /* Test Servo by using FO INBD DU BRT */
-      printf("%f \n",servoval);
+      //printf("%f \n",servoval);
       ret = servo_outputf(card,0,&servoval, 0.0,1.0);
       ret = servo_outputf(card,1,&servoval,0.0,1.0);
       //ret = servo_outputf(card,3,&servoval,-0.1,1.1);
     }
     
   }
+  //float servoval = 0.1;
+  //ret = servo_outputf(card,0,&servoval, 0.0,1.0);
     
 }

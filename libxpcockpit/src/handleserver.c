@@ -416,7 +416,7 @@ int receive_xpserver(void) {
 #else
 	if (errno == EWOULDBLOCK) { // just no data yet ...
 #endif
-	  if (handleserver_verbose > 2) printf("HANDLESERVER: Client Socket: no data yet. \n");
+	  if (handleserver_verbose > 3) printf("HANDLESERVER: Client Socket: no data yet. \n");
 	  if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
 	} else {
 #ifdef WIN

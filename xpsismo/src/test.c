@@ -44,39 +44,39 @@ void test(void)
   int display = 0;
 
   /* link integer data like a switch in the cockpit */
-  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
   /* link floating point dataref with precision 10e-3 to local variable. This means
      that we only transfer the variable if changed by 0.001 or more */
-  float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
+  //float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
 
   /* link NAV1 Frequency to encoder value */
-  int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
+  int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_h");
 
   if (*encodervalue == INT_MISS) *encodervalue = 0;
   
   /* read second digital input (#1) */
-  i=1;
-  ret = digital_input(card, i, value, 0);
+  i=5;
+  //ret = digital_input(card, i, value, 0);
   if (ret == 1) {
     /* ret is 1 only if input has changed */
-    printf("Digital Input %i changed to: %i \n",i,*value);
+    //    printf("Digital Input %i changed to: %i \n",i,*value);
   }
  
   /* read first analog input (#0) */
   //  for (i=0;i<5;i++) {
   i=0;
-  ret = analog_input(card,i,fvalue,0.0,10.0);
+  // ret = analog_input(card,i,fvalue,0.0,10.0);
   if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-    printf("Analog Input %i changed to: %f \n",i,*fvalue);
+    //printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
     //  }
    
 
   /* read encoder at inputs 70 and 71 */
 
-  ret = encoder_input(card, 70, 71, encodervalue, -1, 1);
+  ret = encoder_input(card, 0, 1, encodervalue, -1, 1);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
@@ -85,8 +85,10 @@ void test(void)
   //ret = servo_output(card,0,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
-  ret = digital_output(card, 0, &one);
-  //ret = digital_output(card, 0, &zero);
+  for (i=0;i<64;i++) {
+    ret = digital_output(card, i, &one);
+  //ret = digital_output(card, i, &zero);
+  }
 
 
   /*

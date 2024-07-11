@@ -70,10 +70,17 @@ namespace OpenGC
 
     float value;
 
-    //    int acf_type = m_pDataSource->GetAcfType();
+    int acf_type = m_pDataSource->GetAcfType();
 
-    float *engn_hydq1 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_fluid_ratio_1",-2);
-    float *engn_hydq2 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_fluid_ratio_2",-2);
+    float *engn_hydq1;
+    float *engn_hydq2;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      engn_hydq1 = link_dataref_flt("laminar/B738/hydraulic/hyd_A_qty",2);
+      engn_hydq2 = link_dataref_flt("laminar/B738/hydraulic/hyd_B_qty",2);
+    } else {
+      engn_hydq1 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_fluid_ratio_1",-2);
+      engn_hydq2 = link_dataref_flt("sim/cockpit2/hydraulics/indicators/hydraulic_fluid_ratio_2",-2);
+    }
     //    float *engn_hydq1_x737 = link_dataref_flt("x737/systems/hydraulics/systemAHydqress",1);
     //    float *engn_hydq2_x737 = link_dataref_flt("x737/systems/hydraulics/systemBHydqress",1);
 
@@ -99,8 +106,11 @@ namespace OpenGC
 
     if (value != FLT_MISS) {
 
-      value *= 100.0;
-
+      if ((acf_type == 2) || (acf_type == 3)) {
+      } else {
+	value *= 100.0;
+      }
+	
       //float value = m_pDataSource->Engine_Hydraulic_Quantity[currentEngine-1];
       char buf[10];
 

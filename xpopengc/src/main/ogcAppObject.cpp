@@ -39,6 +39,7 @@
 
 //---------Base Stuff----------
 #include <FL/Fl.H>
+#include <FL/gl.h>
 extern "C" {
 #include "dictionary.h"
 #include "iniparser.h"
@@ -54,8 +55,9 @@ extern "C" {
 #include "ogcXPlaneDataSource.h"
 
 //-----------Gauges------------
-#include "WXR/ogcWXR.h"
 #include "Dummy/ogcDummyGauge.h"
+#include "Test/ogcTestGauge.h"
+#include "WXR/ogcWXR.h"
 #include "BasicClock/ogcBasicClock.h"
 #include "A320/A320PFD/ogcA320PFD.h"
 #include "A320/A320ND/ogcA320ND.h"
@@ -78,15 +80,8 @@ extern "C" {
 #include "B737/B737CLOCK/ogcB737Clock.h"
 #include "B737/B737ISFD/ogcB737ISFD.h"
 #include "B737/B737RMI/ogcB737RMI.h"
+#include "B737/B737LOWERDU/ogcB737LOWERDU.h"
 
-//----------NonFunctional--------
-/*
-  #include "ogcB737AnalogFlaps.h"
-  #include "ogcB737VerticalSpeedDigital.h"
-  #include "ogcKeypad.h"
-  #include "ogcNavTestGauge.h"
-  #include "ogcNavTestGauge.h"
-*/
 
 extern int verbosity;
 
@@ -211,8 +206,8 @@ namespace OpenGC
     m_pDataSource->OnIdle();
     //printf("%i \n",numreceived);
     if ((numreceived > 0) || (m_InitState <= 100) ||
-	(wxr_newdata == 1) || (m_FrameTest)) {
-  
+    	(wxr_newdata == 1) || (m_FrameTest)) {
+      
        //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
     
@@ -329,7 +324,7 @@ namespace OpenGC
       // Set up font manager
       m_pFontManager = new FontManager();
 
-      // Specify smoothed fonts
+      // Specify smoothed fonts (ONLY NEEDED WITH FTGL LIBRARY)
       m_pFontManager->SetSmooth(true);
       //m_pFontManager->SetSmooth(false);
     
@@ -388,6 +383,7 @@ namespace OpenGC
 
       // Force the render window to update to obtain a valid device context
       m_pRenderWindow->redraw();
+ 
       Fl::flush();
 
       // Ready with the window; now set up the gauge(s)
@@ -443,7 +439,9 @@ namespace OpenGC
 
     if (verbosity > 0) printf ("AppObject - Gauge %s, xp %f, yp %f, xs %f, ys %f, (arg %i)\n", name, xPos, yPos, xScale, yScale, arg);
 
-    if (strcmp(name, "BasicClock")==0) pGauge = new BasicClock();
+    if (strcmp(name, "DummyGauge")==0) pGauge = new DummyGauge();
+    else if (strcmp(name, "TestGauge")==0) pGauge = new TestGauge();
+    else if (strcmp(name, "BasicClock")==0) pGauge = new BasicClock();
     else if (strcmp(name, "WXR")==0) pGauge = new WXR();
     else if (strcmp(name, "B737PFD")==0) pGauge = new B737PFD();
     else if (strcmp(name, "B737PFDSA")==0) pGauge = new B737PFDSA();
@@ -454,6 +452,7 @@ namespace OpenGC
     else if (strcmp(name, "B737CLOCK")==0) pGauge = new B737Clock();
     else if (strcmp(name, "B737ISFD")==0) pGauge = new B737ISFD();
     else if (strcmp(name, "B737RMI")==0) pGauge = new B737RMI();
+    else if (strcmp(name, "B737LOWERDU")==0) pGauge = new B737LOWERDU();
     /*
       else if (strcmp(name, "B737AnalogFlaps")==0) pGauge = new B737AnalogFlaps();
       else if (strcmp(name, "B737VerticalSpeedDigital")==0) pGauge = new B737VerticalSpeedDigital();

@@ -27,18 +27,13 @@
 #define INPUTINITVAL -1      /* initial value of inputs upon startup */
 #define DISPLAYSINITVAL -1   /* initial value of displays upon startup (BLANK) */
 #define OUTPUTSINITVAL 0    /* initial value of outputs upon startup (OFF) */
-#define SERVOSINITVAL -1     /* initial value of servos upon startup (PARK) */
+#define SERVOSINITVAL 0     /* initial value of servos upon startup (PARK) */
 #define ANALOGINPUTNBITS 10  /* number of bits of analog inputs */
 #define UNCHANGED 0          /* flag for unchanged input / output */
 #define CHANGED 1            /* flag for changed input / output. 
 				Can actually also be > 1 for e.g. analog inputs that change faster than xpsismo cycle */
 #define UNCHANGEDBINARY 2         /* flag for changed display, with value to be interpreted as binary data (0x00 - 0xff) */ 
 #define CHANGEDBINARY 3         /* flag for changed display, with value to be interpreted as binary data (0x00 - 0xff) */ 
-
-/* XPSERVER */
-//extern char xpserver_ip[30];
-//extern int xpserver_port;
-//extern char clientname[100];
 
 /* SISMO UDP SERVER (this code here) */
 extern char sismoserver_ip[30];
@@ -70,6 +65,7 @@ typedef struct {
   int analoginputs[MAXANALOGINPUTS][MAXSAVE];
   char inputs[MAXINPUTS][MAXSAVE];
   char inputs_updown[MAXINPUTS];  /* memory for last up/down command for encoder inputs */
+  struct timeval inputs_time[MAXINPUTS]; /* time of last encoder read */
   char inputs_nsave[MAXINPUTS/64]; /* number of history saves per input bank. Each bank has 64 inputs */
   char outputs[MAXOUTPUTS];
   char outputs_changed[MAXOUTPUTS]; /* unchanged = 0, changed = 1 */

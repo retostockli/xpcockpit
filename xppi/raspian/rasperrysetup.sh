@@ -70,6 +70,12 @@ cp xsession ~/.xsession
 # for fmc1 and fmc2
 sudo cp 20-screen.conf /etc/X11/xorg.conf.d/
 
+# for fmc1 and fmc2 you may also need to edit
+/boot/config.txt
+and set:
+hdmi_group=1
+hdmi_mode=1
+
 # no password shutdown etc:
 sudo cp 010_pi-nopasswd /etc/sudoers.d/
 

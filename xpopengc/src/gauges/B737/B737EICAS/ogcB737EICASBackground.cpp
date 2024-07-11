@@ -68,7 +68,7 @@ namespace OpenGC
   {
     GaugeComponent::Render();
 
-    float *time = link_dataref_flt("sim/time/framerate_period",-3);
+    float *time = link_dataref_flt("sim/time/framerate_period",-2);
     float *tat = link_dataref_flt("sim/weather/aircraft/temperature_ambient_deg_c",-1);
     int *oilpress1 = link_dataref_int_arr("sim/cockpit/warnings/annunciators/oil_pressure_low",8,0);
     int *oilpress2 = link_dataref_int_arr("sim/cockpit/warnings/annunciators/oil_pressure_low",8,1);
@@ -79,6 +79,7 @@ namespace OpenGC
     float *valve2;
     float *filter1;
     float *filter2;
+    int *n1_mode;
     if (acf_type == 1) {
       /* these are only available for the x737 */
       valve1 = link_dataref_flt("x737/ovh/fuelPanel/engValve1_annunc",-1);
@@ -90,6 +91,7 @@ namespace OpenGC
       valve2 = link_dataref_flt("laminar/B738/engine/start_valve2",-1);
       filter1 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_1",-1);
       filter2 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_2",-1);
+      n1_mode = link_dataref_int("laminar/B738/FMS/N1_mode");
     }
       
     glMatrixMode(GL_MODELVIEW);
@@ -132,11 +134,58 @@ namespace OpenGC
     m_pFontManager->Print(44, 5, "FUEL KG", m_Font);
 
 	
-    m_pFontManager->Print(75, 190, "TAT", m_Font);
     m_pFontManager->SetSize(m_Font,6,6);
-    glColor3ub(COLOR_WHITE);
     char buf[50];
-    
+ 
+    if (*time != FLT_MISS) {
+      int fps = (int) 1.0 / *time;
+      if (fps > 0) {
+	snprintf(buf, sizeof(buf), "%i", fps);
+      }
+     glColor3ub(COLOR_WHITE);
+     m_pFontManager->Print(5, 190, buf, m_Font);
+    }
+
+    if (acf_type == 3) {
+      if (*n1_mode != INT_MISS) {
+	if (*n1_mode == 0) {
+	  sprintf(buf, "MAN");
+	} else if (*n1_mode == 1) {
+	  sprintf(buf, "TO");
+	} else if (*n1_mode == 2) {
+	  sprintf(buf, "TO 1");
+	} else if (*n1_mode == 3) {
+	  sprintf(buf, "TO 2");
+	} else if (*n1_mode == 4) {
+	  sprintf(buf, "D-TO");
+	} else if (*n1_mode == 5) {
+	  sprintf(buf, "D-TO 1");
+	} else if (*n1_mode == 6) {
+	  sprintf(buf, "D-TO 2");
+	} else if (*n1_mode == 7) {
+	  sprintf(buf, "CLB");
+	} else if (*n1_mode == 8) {
+	  sprintf(buf, "CLB 1");
+	} else if (*n1_mode == 9) {
+	  sprintf(buf, "CLB 2");
+	} else if (*n1_mode == 10) {
+	  sprintf(buf, "CRZ");
+	} else if (*n1_mode == 11) {
+	  sprintf(buf, "G\/A");
+	} else if (*n1_mode == 12) {
+	  sprintf(buf, "CON");
+	} else {
+	  sprintf(buf, "---");
+	}
+	glColor3ub(COLOR_GREEN);
+	m_pFontManager->Print(35, 190, buf, m_Font);
+
+      }
+    }
+   
+    glColor3ub(COLOR_LIGHTBLUE);
+    m_pFontManager->SetSize(m_Font, 5, 5);
+    m_pFontManager->Print(75, 190, "TAT", m_Font);
     if (*tat != FLT_MISS) {
       int itat = (int) *tat;
       if (itat > 0) {
@@ -144,17 +193,10 @@ namespace OpenGC
       } else {
 	snprintf(buf, sizeof(buf), "%i c", itat);
       }
+      glColor3ub(COLOR_GREEN);
+      m_pFontManager->SetSize(m_Font,6,6);
       m_pFontManager->Print(90, 190, buf, m_Font);
     }
-
-    if (*time != FLT_MISS) {
-      int fps = (int) 1.0 / *time;
-      if (fps > 0) {
-	snprintf(buf, sizeof(buf), "%i", fps);
-      }
-      m_pFontManager->Print(5, 190, buf, m_Font);
-    }
-
 
     // warning annunciators
     m_pFontManager->SetSize(m_Font,3.0,3.0);

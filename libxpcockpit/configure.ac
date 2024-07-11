@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.50])
-AC_INIT([libxpcockpit], [0.2], [Reto Stockli])
+AC_INIT([libxpcockpit], [1.0], [Reto Stockli])
 AC_CONFIG_SRCDIR([src/handleserver.c])
 
 # produce makefiles (turn on warnings on automake!)

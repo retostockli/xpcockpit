@@ -45,6 +45,10 @@ protected:
 
   int m_wxr_ncol;
   int m_wxr_nlin;
+
+  float m_wxr_gain;
+  
+  unsigned int m_texture;  /* Texture Storage */
   
 };
 

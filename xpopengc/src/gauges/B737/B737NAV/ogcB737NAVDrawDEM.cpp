@@ -2,17 +2,10 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcB737MapModeExpanded.cpp,v $
-
-  Last modification:
-  Date:      $Date: 2015/09/11 $
-  Version:   $Revision: $
-  Author:    $Author: stockli $
-  
-  Copyright (c) 2001-2015 Damion Shelton and Reto Stockli
-  All rights reserved.
-  See Copyright.txt or http://www.opengc.org/Copyright.htm for details.
+ 
+  Now hosted by xpcockpit project on github.com
+   
+  Copyright (c) 2021-2024 Reto Stockli
 
   This software is distributed WITHOUT ANY WARRANTY; without even 
   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
@@ -44,6 +37,8 @@ namespace OpenGC
     dem_image = NULL;
     dem_lon = NULL;
     dem_lat = NULL;
+
+    m_texture = 0;
   
   }
 
@@ -57,7 +52,7 @@ namespace OpenGC
   {
     GaugeComponent::Render();
     
-    int acf_type = m_pDataSource->GetAcfType();
+    //int acf_type = m_pDataSource->GetAcfType();
   
     bool is_captain = (this->GetArg() == 0);
 
@@ -71,6 +66,7 @@ namespace OpenGC
 
     int i;
     int j;
+    int k;
     int z;
     int p;
     int zmin, zmax, zdiff;
@@ -222,6 +218,34 @@ namespace OpenGC
 	      dem_image[j*4*dem_ncol+i*4+3] = 255; /* Non-Transparent */
 	    }
 	  }
+
+	  /* store DEM texture in OpenGL 2D Texture */
+
+	  glGenTextures(1, &m_texture);
+	  glBindTexture(GL_TEXTURE_2D, m_texture);
+	  
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+	  /* Remove border line */
+	  GLfloat color[4]={0,0,0,1};
+	  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+	
+	  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
+			dem_ncol,  dem_nlin, 0, GL_RGBA,
+			GL_UNSIGNED_BYTE, dem_image);
+
+	  glBindTexture(GL_TEXTURE_2D, 0);
+	  
 	}
 
 	dem_ncol = (dem_lonmax - dem_lonmin)*dem_pplon;
@@ -320,25 +344,6 @@ namespace OpenGC
 	} else {
 	  /* Draw Terrain */
 
-	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-	  /* Remove border line */
-	  GLfloat color[4]={0,0,0,1};
-	  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-	
-	  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA,
-			dem_ncol,  dem_nlin, 0, GL_RGBA,
-			GL_UNSIGNED_BYTE, dem_image);
 
 	  float scx = 0.5 * ((float) dem_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
 	  float scy = 0.5 * ((float) dem_nlin) * mpplat / mapRange * map_size;
@@ -353,7 +358,10 @@ namespace OpenGC
 	  */
 	
 	  glEnable(GL_TEXTURE_2D);
+	  glBindTexture(GL_TEXTURE_2D, m_texture);
+
 	  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	  // glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); <-- would allow transparency
 
 	  glBegin(GL_TRIANGLES);
 	  glTexCoord2f(0.0f, 1.0f); glVertex2f(-scx+tx,  scy+ty);
@@ -365,7 +373,8 @@ namespace OpenGC
 	  glEnd();
 
 	  glDisable (GL_TEXTURE_2D);
-	  glFlush();
+	  glDisable (GL_TEXTURE_2D);
+	  //glFlush();
 
 	  if (pShorelineData) {
 
@@ -384,24 +393,50 @@ namespace OpenGC
 		printf("Drawing Shoreline %i %i %f %f \n",p,pShorelineData->num_shorelinepoints[p],
 		       pShorelineData->shoreline_centerlon[p],pShorelineData->shoreline_centerlat[p]);
 		*/
-		
-		//glBegin(GL_POLYGON);
-		glBegin(GL_LINE_LOOP);
-		for (i=0;i<pShorelineData->num_shorelinepoints[p];i++) {
-		
-		  lon = pShorelineData->shoreline_lon[p][i];  
-		  lat = pShorelineData->shoreline_lat[p][i];  
-		  
-		  // convert to azimuthal equidistant coordinates with acf in center
-		  lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
-		  
-		  // Compute physical position relative to acf center on screen
-		  yPos = -northing / 1852.0 / mapRange * map_size; 
-		  xPos = easting / 1852.0  / mapRange * map_size;
-		  glVertex2f(xPos,yPos);
 
-		} /* loop through points of a lake */
-		glEnd();
+
+		if (true) {
+		  // lakes are blue areas
+		  if (pShorelineData->num_shorelinetriangles[p] > 0) {
+		    glBegin(GL_TRIANGLES);
+		    for (i=0;i<pShorelineData->num_shorelinetriangles[p];i++) {
+		      for (j=0;j<3;j++) {
+			if (j==0) k = pShorelineData->shoreline_triangle1[p][i];
+			if (j==1) k = pShorelineData->shoreline_triangle2[p][i];
+			if (j==2) k = pShorelineData->shoreline_triangle3[p][i];
+			lon = pShorelineData->shoreline_lon[p][k];  
+			lat = pShorelineData->shoreline_lat[p][k];  
+		      
+			// convert to azimuthal equidistant coordinates with acf in center
+			lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		      
+			// Compute physical position relative to acf center on screen
+			yPos = -northing / 1852.0 / mapRange * map_size; 
+			xPos = easting / 1852.0  / mapRange * map_size;
+			glVertex2f(xPos,yPos);
+		      } /* loop through triangle points */
+		    } /* loop through triangles of a lake */
+		    glEnd();		  
+		  }
+		} else {
+		  // lakes are blue lines (fast)
+		  glBegin(GL_LINE_LOOP);
+		  for (i=0;i<pShorelineData->num_shorelinepoints[p];i++) {
+		
+		    lon = pShorelineData->shoreline_lon[p][i];  
+		    lat = pShorelineData->shoreline_lat[p][i];  
+		  
+		    // convert to azimuthal equidistant coordinates with acf in center
+		    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+		  
+		    // Compute physical position relative to acf center on screen
+		    yPos = -northing / 1852.0 / mapRange * map_size; 
+		    xPos = easting / 1852.0  / mapRange * map_size;
+		    glVertex2f(xPos,yPos);
+
+		  } /* loop through points of a lake */
+		  glEnd();
+		}
 		  
 
 	      } /* lake inside display region */

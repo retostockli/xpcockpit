@@ -25,6 +25,9 @@
  * are handled on different systems
  */
 
+#define GL_GLEXT_PROTOTYPES 1
+#define GL3_PROTOTYPES 1
+
 #ifndef _WIN32
   // Non windows, doesn't require Windows header to work correctly
   #ifndef __gl_h_

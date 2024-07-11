@@ -86,13 +86,17 @@ namespace OpenGC
     // Autopilot speed (knots)
     float *ap_speed;
     int *ap_speed_is_mach;
-    if (acf_type == 1) {
+    if ((acf_type == 2) || (acf_type == 3)) {
+      ap_speed = link_dataref_flt("laminar/B738/autopilot/mcp_speed_dial_kts_mach",0);
+      ap_speed_is_mach = link_dataref_int("sim/cockpit/autopilot/airspeed_is_mach");  
+    } else if (acf_type == 1) {
       ap_speed = link_dataref_flt("x737/systems/athr/MCPSPD_spd",0);
       ap_speed_is_mach = link_dataref_int("x737/systems/athr/MCPSPD_ismach");  
     } else {
       ap_speed = link_dataref_flt("sim/cockpit/autopilot/airspeed",0);
-      ap_speed_is_mach = link_dataref_int("sim/cockpit/autopilot/airspeed_is_mach");
+      ap_speed_is_mach = link_dataref_int("sim/cockpit/autopilot/airspeed_is_mach");  
     }
+ 
     
     // minimum and maximum speeds
     float *min_speed;
@@ -431,7 +435,9 @@ namespace OpenGC
 	} else {
 	  mcpspdLocation = float(*ap_speed - ias_flt) * tickSpacing / 10.0 + m_PhysicalSize.y/2;
 	}
-	  
+
+	//printf("%f %i %f \n",*ap_speed, *ap_speed_is_mach, mcpspdLocation);
+	
 	// keep MCP speed within bounds of tape
 	mcpspdLocation = fmin(fmax(0.0,mcpspdLocation),m_PhysicalSize.y);
 
