@@ -3,19 +3,9 @@
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
   
-  Module:  $RCSfile: ogcB737NAV.cpp,v $
-
-  Copyright (C) 2015 by:
-    Original author:
-      John Wojnaroski
-    Contributors (in alphabetical order):
+  Copyright (C) 2015-2024 by:
       Reto Stockli
 
-  Last modification:
-    Date:      $Date: 2015/09/11 $
-    Version:   $Revision: $
-    Author:    $Author: stockli $
-  
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
   published by the Free Software Foundation; either version 2 of the
@@ -100,7 +90,7 @@ B737NAV::B737NAV()
   pDrawWXR->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pDrawWXR->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawWXR);
-
+  
   B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
   pDrawStat->SetParentRenderObject(this);
   pDrawStat->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -135,14 +125,13 @@ B737NAV::B737NAV()
   pMapPlan->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pMapPlan->SetNAVGauge(this);
   this->AddGaugeComponent(pMapPlan);
-
+  
   B737NAVDrawStatic* pDrawStatic = new B737NAVDrawStatic();
   pDrawStatic->SetParentRenderObject(this);
   pDrawStatic->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
   pDrawStatic->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pDrawStatic->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawStatic);
-
 }
 
 B737NAV::~B737NAV()
@@ -158,7 +147,7 @@ void B737NAV::Render()
  
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
   int *irs_mode;
-  if ((acf_type == 2) || (acf_type == 3)) {
+  if (acf_type == 3) {
     irs_mode = link_dataref_int("laminar/B738/irs/irs_mode");
   } else {
     irs_mode = link_dataref_int("xpserver/irs_mode");
@@ -180,7 +169,7 @@ void B737NAV::Render()
 
     // Get Map Mode (APP/VOR/MAP/PLN)
     int *map_mode;
-    if ((acf_type == 2) || (acf_type == 3)) {
+    if (acf_type == 3) {
       if (is_captain) {
 	map_mode = link_dataref_int("laminar/B738/EFIS_control/capt/map_mode_pos");
       } else {
@@ -189,6 +178,7 @@ void B737NAV::Render()
     } else {
       if (is_captain) {
 	map_mode = link_dataref_int("xpserver/map_mode_capt");
+	//*map_mode = 0;
       } else {
 	map_mode = link_dataref_int("xpserver/map_mode_fo");
       }
@@ -215,7 +205,7 @@ void B737NAV::Render()
     
     // Get Map Centered vs. Expanded Mode
     int *map_expanded;
-    if ((acf_type == 2) || (acf_type == 3)) {
+    if (acf_type == 3) {
       if (is_captain) {
 	map_expanded = link_dataref_int("laminar/B738/EFIS_control/capt/exp_map");
       } else {
@@ -274,7 +264,7 @@ void B737NAV::Render()
     } else {
       m_MapRange = 40.0;
     }
-    if (acf_type != 3) {
+    if ((acf_type != 2) && (acf_type != 3)) {
       /* map range starts at 10 nm for regular ACF */
       m_MapRange *= 2;
     }

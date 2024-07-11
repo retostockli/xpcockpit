@@ -39,9 +39,9 @@ Font
   m_Spacing = 1.0;
 
   m_PolygonFont = 0;
-  //m_PixmapFont = 0;
-  //m_TextureFont = 0;
+#ifdef HAVE_LIBFTGL
   m_OutlineFont = 0;
+#endif
 
   m_Name = new char[512];
 }
@@ -56,28 +56,16 @@ Font
   }
   m_PolygonFont = 0;
 
-  /*
-  if(m_PixmapFont != 0)
-  {
-    delete m_PixmapFont;
-  }
-  m_PixmapFont = 0;
-  */
-  /*
-  if(m_TextureFont != 0)
-  {
-    delete m_TextureFont;
-  }
-  m_TextureFont = 0;
-  */
-  
+#ifdef HAVE_LIBFTGL
   if(m_OutlineFont != 0)
   {
     delete m_OutlineFont;
   }
   m_OutlineFont = 0;
+#endif
 
   delete[] m_Name;
+
 }
 
 void
@@ -92,24 +80,26 @@ void
 Font
 ::Print(double x, double y, const char *string)
 {
-  // Save the modelview matrix
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  
-  // Set position and size
-  glTranslated(x,y,0);
-  glScaled(0.0135*m_Size.x, 0.0135*m_Size.y, 1);
-  
-  // Draw using the triangulated font
-  m_PolygonFont->Render(string);
-  //m_PixmapFont->Render(string);
-  //m_TextureFont->Render(string);
-  
-  // Restore modelview matrix
-  glPopMatrix();
 
+#ifdef HAVE_LIBFTGL
+  if (m_Outline == false) {
+    // Save the modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    
+    // Set position and size
+    glTranslated(x,y,0);
+    glScaled(0.0135*m_Size.x, 0.0135*m_Size.y, 1);
+    
+    // Draw using the triangulated font
+    m_PolygonFont->Render(string);
+    
+    // Restore modelview matrix
+    glPopMatrix();
+  }
+    
   // Draw using the smoothing outline, if desired
-  if(m_Smooth == true)
+  if ((m_Smooth == true) || (m_Outline == true)) 
   {
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -123,7 +113,13 @@ Font
     
     glPopMatrix();
   }
- 
+#else
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  m_PolygonFont->RenderText(string, x, y, 0.0135*m_Size.x, 0.0135*m_Size.y);
+  glPopMatrix();
+#endif
+  
 }
 
 bool
@@ -132,19 +128,19 @@ Font
 {
   strcpy(m_Name, name);
 
+#ifdef HAVE_LIBFTGL
   // Open the the font in both polygon and outline mode
   m_PolygonFont = new FTGLPolygonFont(name);
-  //m_PixmapFont = new FTGLPixmapFont(name);
-  //m_TextureFont = new FTGLTextureFont(name);
   m_OutlineFont = new FTGLOutlineFont(name);
 
   // The initial face size is large so that font sizing
   // will work correctly later on
   m_PolygonFont->FaceSize(100);
-  //m_PixmapFont->FaceSize(100);
-  //m_TextureFont->FaceSize(100);
   m_OutlineFont->FaceSize(100);
- 
+#else
+  m_PolygonFont = new Freetype(name, 100);  //Build the freetype font
+#endif
+  
   // We succeeded at opening the fonts
   return true;
 }

@@ -356,9 +356,7 @@ namespace OpenGC
 	  }
       }
 
-
-
-    delete V;
+    delete[] V;
 
     return true;
   }

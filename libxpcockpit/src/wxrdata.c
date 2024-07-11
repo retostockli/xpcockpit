@@ -41,7 +41,7 @@
 #define max(a,b) (((a)>(b))?(a):(b))
 #endif
 
-#define WXR_CHECK_INTERVAL 30.0
+#define WXR_CHECK_INTERVAL 60.0
 
 
 float wxr_lonmin_tmp;
@@ -313,15 +313,16 @@ void read_wxr() {
 	  */
 	  if (wxr_is_xp12) {
 	    float cloud_base;
-	    //float cloud_ratio;
+	    float cloud_ratio;
 	    float precip_ratio;
 	    memcpy(&lon,&wxrBuffer[5+r*24+0],sizeof(lon));
 	    memcpy(&lat,&wxrBuffer[5+r*24+4],sizeof(lat));
 	    memcpy(&cloud_base,&wxrBuffer[5+r*24+8],sizeof(cloud_base));
 	    memcpy(&hgt,&wxrBuffer[5+r*24+12],sizeof(hgt));
-	    memcpy(&precip_ratio,&wxrBuffer[5+r*24+16],sizeof(precip_ratio));
-	    lev = (int) precip_ratio * 100.0;
-	    //printf("%i lon %f lat %f hgt %f base %f ratio %f \n",r,lon,lat,hgt,cloud_base,precip_ratio);
+	    memcpy(&cloud_ratio,&wxrBuffer[5+r*24+16],sizeof(cloud_ratio));
+	    memcpy(&precip_ratio,&wxrBuffer[5+r*24+20],sizeof(precip_ratio));
+	    lev = (unsigned char) (precip_ratio * 100.0);
+	    //printf("%i lon %f lat %f top %f base %f cloud %f precip %f \n",r,lon,lat,hgt,cloud_base,cloud_ratio,precip_ratio);
 	  } else {
 	    memcpy(&lon,&wxrBuffer[5+r*13+0],sizeof(lon));
 	    memcpy(&lat,&wxrBuffer[5+r*13+4],sizeof(lat));
@@ -496,8 +497,7 @@ void read_wxr() {
 		
 	    } else {
 	      /* WXR Levels from 0-100 and storm top height information (feet a.s.l.) */
-	      /* WXR every arc minute for lat, but thinning lon resolution with higher lats */
-	      
+	      /* WXR every arc minute for lat, but thinning lon resolution with higher lats */	      
 	      j = (lat - wxr_latmin_tmp)*wxr_pixperlat_tmp;
 	      i = (lon - wxr_lonmin_tmp)*wxr_pixperlon_tmp;
 	      if ((j>=0)&&(j<wxr_nlin_tmp)&&(i>=0)&&(i<wxr_ncol_tmp)) {

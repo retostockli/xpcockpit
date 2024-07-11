@@ -53,7 +53,7 @@ WXR::WXR()
   m_MapRange = 20;
   m_MapCtrLon = FLT_MISS;
   m_MapCtrLat = FLT_MISS;
-  
+ 
   m_Font = m_pFontManager->LoadDefaultFont();
  
   // Specify our physical size and position
@@ -92,6 +92,7 @@ WXR::~WXR()
 void WXR::Render()
 {
 
+  int acf_type = m_pDataSource->GetAcfType();
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
   /* only display something if the battery bus is powered and avionics are running */
@@ -132,7 +133,10 @@ void WXR::Render()
     }
 
     /* for some acf map range is double this range */
-    m_MapRange *= 2.0;
+    if ((acf_type != 2) && (acf_type != 3)) {
+      /* map range starts at 10 nm for regular ACF */
+      m_MapRange *= 2;
+    }
     
     // Call base class Render once all the new NAV states have been set
     Gauge::Render();

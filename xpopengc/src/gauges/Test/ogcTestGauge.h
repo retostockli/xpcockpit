@@ -2,7 +2,10 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
+    
+  2024 Reto Stockli
+
+  All rights reserved.
   See Copyright.txt or http://www.opengc.org/Copyright.htm for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even 
@@ -11,44 +14,34 @@
 
 =========================================================================*/
 
-#ifndef ogcDrawWXR_h
-#define ogcDrawWXR_h
+/**
+ * Test gauge used for testing Features
+ */
+
+#ifndef ogcTestGauge_h
+#define ogcTestGauge_h
 
 #include "ogcGauge.h"
-#include "ogcWXR.h"
+
+extern int verbosity;
 
 namespace OpenGC
 {
 
-class DrawWXR : public GaugeComponent
+class TestGauge : public Gauge  
 {
 public:
 
-  DrawWXR();
-  virtual ~DrawWXR();
-  
+  TestGauge();
+  virtual ~TestGauge();
+
   void Render();
-  
-  void SetWXRGauge(WXR* WXRGauge) {m_WXRGauge = WXRGauge;}
-  
+
 protected:
   
-  /** The font number provided to us by the font manager */
+  /** Font from the font manager */
   int m_Font;
-
-  /* Pointer to the calling Navigation Gauge */
-  WXR* m_WXRGauge;
-  
-  /* RGBA Array for later OpenGL Rendering
-     Use single array instead of 3D array since it has to be contiguous memory */
-  unsigned char *wxr_image;
-
-  int m_wxr_ncol;
-  int m_wxr_nlin;
-
-  float m_wxr_gain;
-  
-  unsigned int m_texture;  /* Texture Storage */
+  int m_Font2;
   
 };
 

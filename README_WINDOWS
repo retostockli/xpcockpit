@@ -1,68 +1,14 @@
 Short Introduction for Windows Users
 ------------------------------------
 
-
-
-xpcockpit-windows.zip is the windows build for the open source xpopengc OpenGC-based 
-Glass Cockpit and the xpserver plugin for x-plane. It is made for those
-who want to try out our software on Windows without installing a full
-development platform. However, if you want to change, extend or add new
-gauges to xpopengc, it is needed to do basic programming in C++ and
-you will need to get familiar with the minGW programming environment
-through MSYS2 on Windows.
-
-I. How to try with the precompiled xpserver - xpopengc version for testing
+How to compile from source and develop your own xpcockpit stuff on Windows
 ==========================================================================
-
-How-to install:
-1. Go to xpserver/plugins/. Copy the xpserver subdirectory there into the X-Plane 
-   plugins directory. The plugin does handle data I/O between X-Plane and
-   connected clients. The plugin does not require any configuration. It 
-   is built for the 64 bit version of X-Plane and runs on X-Plane 10 and 11.
-   The plugin has very low overhead in X-Plane since 
-   - only data is transferred for which clients subscribe to 
-   - data are transferred in its native format, 
-   - floating point data is only transferred when it changes with a user defined threshold
-   - clients can unsubscribe to data when they don't need it any more
-   - individual elements of array data can be transferred
-
-2. Start X-Plane. Check out for the appearance of xpserver.log in X-Plane's
-   root folder. If it does not appear, please check Log.txt in X-Plane's
-   root folder. It should have a successful plugin loading message like:
-
-Loaded: /home/stockli/X-Plane 11/Resources/plugins/xpserver/64/win.xpl (xplanesd
-k.xpserver).
-
-3. Go to xpopengc/share/xpopengc/ and take the boeing737pfd.ini as a test gauge.
-   Edit the XPlanePath directory. xpopengc needs to know that in order to read
-   the navigation data from X-Plane. You can set CustomData to 1 if you have
-   your own navigation data (e.g. from Navigraph) inside "Custom Data" of X-Plane.
-   If you're running xpopengc on a different computer than X-Plane, please
-   set the Server IP address of the X-Plane computer.
-
-4. Go to xpopengc/bin in a terminal or the windows power shell and type
-   xpopengc.exe boeing737pfd
-
-   This should get you a single gauge on the screen with the PFD Display
-   of a Boeing 737. It will work with the ZIBO MOD, x737 or any X-Plane 
-   aircraft (the latter with less things displayed).
-
-
-You can now start to test other gauges, move them around on the screen
-and modify their size. You can also use many gauges on one single call.
-
-Have fun. 
-
-II. How to compile from source and develop your own xpcockpit stuff on Windows
-==============================================================================
 
 The real way to work with this is to write your own
 gauges. Install MSYS2 on Windows with the full gnu development tools and
 start crafting:
 
 https://www.msys2.org
-
-
 
 Start the MSYS2 command line with the regular w64-x86_64 (not UCRT) environment:
 Under Options select the terminal xterm-256color and enter the following command on the command
@@ -104,5 +50,3 @@ With all those, please specify an appropriate prefix. For libxpcockpit it is sim
 the prefix as the directory where the library is residing, such as $HOME/xpcockpit/libxpcockpit
 This way the library is automatically found by other modules such as xpsismo or xpopengc.
 You can of course always define another library path --with-libxpcockpit=xyz.
-
-

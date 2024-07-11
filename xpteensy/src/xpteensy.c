@@ -77,13 +77,19 @@ int main(int argc, char **argv) {
   /* initialize UDP read thread */
   if (init_udp_receive() < 0) exit_teensy(-7);
 
-  /* initialize teensy input pins */
+  /* initialize user modules which also contain initialization data
+     for teensy I/O and daughter boards */
+  if (strcmp(argv[1],"test") == 0) {
+    init_test();
+  }
+
+  /* initialize teensy board and daughter boards */
   if (init_teensy()<0) exit_teensy(-7);
 
   while (1) {
 
     /* receive data from SISMO ards */
-    if (read_teensy() < 0) exit_teensy(-8);
+    //if (read_teensy() < 0) exit_teensy(-8);
       
     /* check for TCP/IP connection to X-Plane */
     if (check_xpserver()<0) exit_teensy(-9);
@@ -102,7 +108,7 @@ int main(int argc, char **argv) {
     /**** User Modules End Here ****/
     
     /* send data to SISMO ards */
-    if (write_teensy() < 0) exit_teensy(-11);
+    //if (write_teensy() < 0) exit_teensy(-11);
 
     /* send data to X-Plane via TCP/IP */
     if (send_xpserver()<0) exit_teensy(-12);

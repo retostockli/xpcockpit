@@ -18,4 +18,5 @@
 
 
 /* Prototype Functions */
+void init_test(void);
 void test(void);

@@ -5,4 +5,4 @@ bin_PROGRAMS=xpteensy
 xpteensy_SOURCES = xpteensy.c libteensy.c ini.c handleudp.c test.c
 
 # The Headers needs to build the programs
-noinst_HEADERS= xpteensy.h libteensy.h ini.h handleudp.h common.h test.h
+noinst_HEADERS= xpteensy.h libteensy.h teensy_config.h ini.h handleudp.h common.h test.h

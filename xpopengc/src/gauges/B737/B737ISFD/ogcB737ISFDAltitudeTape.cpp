@@ -37,7 +37,7 @@ namespace OpenGC
     printf("B737ISFDAltitudeTape constructed\n");
 
     m_Font = m_pFontManager->LoadDefaultFont();
-
+    
     m_PhysicalPosition.x = 0;
     m_PhysicalPosition.y = 0;
 

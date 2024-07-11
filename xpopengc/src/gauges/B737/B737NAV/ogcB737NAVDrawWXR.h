@@ -2,15 +2,9 @@
 
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
-  
-  Module:  $RCSfile: ogcB737NAVDrawWXR.h,v $
 
-  Last modification:
-    Date:      $Date: 2004/10/14 19:28:10 $
-    Version:   $Revision: 1.1.1.1 $
-    Author:    $Author: damion $
-  
-  Copyright (c) 2001-2003 Damion Shelton
+  Copyright (c) 2024 Reto Stockli
+
   All rights reserved.
   See Copyright.txt or http://www.opengc.org/Copyright.htm for details.
 
@@ -27,6 +21,8 @@
 
 #ifndef ogcB737NAVDrawWXR_h
 #define ogcB737NAVDrawWXR_h
+
+#define NUM_HIST 20
 
 #include "ogcGauge.h"
 #include "ogcB737NAV.h"
@@ -59,6 +55,57 @@ protected:
 
   int m_wxr_ncol;
   int m_wxr_nlin;
+
+  unsigned int m_texture;  /* Texture Storage */
+
+  float m_wxr_gain[NUM_HIST];
+  float m_wxr_tilt[NUM_HIST];
+
+  float Mean(int N, float data[])
+  {
+    // variable to store sum of the given data
+    float sum = 0;
+    for (int i = 0; i < N; i++) {
+      sum += data[i];
+    }
+    
+    // calculating mean
+    return sum / N;
+  }
+  
+  float Variance(int N, float data[])
+  {
+    // variable to store sum of the given data
+    float sum = 0;
+    for (int i = 0; i < N; i++) {
+      sum += data[i];
+    }
+    
+    // calculating mean
+    float mean = sum / N;
+    
+    // temporary variable to store the summation of square
+    // of difference between individual data items and mean
+    float values = 0;
+    
+    for (int i = 0; i < N; i++) {
+      values += pow(data[i] - mean, 2);
+    }
+    
+    // variance is the square of standard deviation
+    return values / N;
+
+ 
+  }
+  
+  float standardDeviation(int N, float data[])
+  {
+
+    // calculating standard deviation by finding square root
+    // of variance
+    return sqrt(Variance(N,data));
+    
+  }
   
 };
 
