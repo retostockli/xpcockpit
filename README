@@ -29,6 +29,9 @@ xpsismo: the client which communicates to the SISMO Ethernet Modules
 xparduino: the client which communicates to Arduino (demo only, not operational)
 xpteensy: the client to the teensy microcontroller (in dvelopment)
 warpblend: the scripts and code to create warp&blend drivers for multiple projectors
+scripts: scripts I use myself to control a the cockpit components including automated install on raspberry pi's
+applications: application definitions for Linux so that binary files can be accessed via the Linux application menu
+
 
 The project is aimed at the following crowd:
 - X-Plane users working on Linux or OSX and now also on Windows
