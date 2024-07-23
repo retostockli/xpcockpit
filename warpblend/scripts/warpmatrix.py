@@ -21,13 +21,13 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 3
+setting = 4
 
 # Plot Warping grid for Checking
 doplot = False
 
 # Utilize new X-Plane >= 12.08 Window Position File Format
-newformat = True
+xp12 = True
 
 # Projector and Screen Dimensions [cm]
 # Please see projector_setup.pdf
@@ -41,14 +41,14 @@ h_0 = 12.5   # lower height of image above focal point when projected on planar 
 tr = 0.49    # Projector Throw ratio (distance / width of screen)
 
 # define output file
-outfile = "X-Plane Window Positions.prf"
+outfile = "X-Plane Window Positions_NOWARPBLEND.prf"
 
 # pixel dimensions of projector
 nx = 1920
 ny = 1080
 
 # number of x and y grid points for warping grid (101 is needed for X-Plane 11 / 12)
-if newformat:
+if xp12:
     ngx = 40
     ngy = 40
 else:
@@ -462,8 +462,6 @@ for mon in range(0,nmon,1):
     # grid horizontal: gx from left to right
     for gy in range(0,ngy,1):
         for gx in range(0,ngx,1):
-#    for gy in range(0,1,1):
-#        for gx in range(0,1,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             px = float(nx) * float(gx) / float(ngx-1)
@@ -649,10 +647,11 @@ for mon in range(0,nmon,1):
         con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_panel_only"+"\n")
     else:
         con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_normal_visuals"+"\n")
-    if newformat:
+    if xp12:
         con.write("monitor/"+str(mon)+"/proj/proj_cylinder 0"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/proj_sphere 0"+"\n")        
-    con.write("monitor/"+str(mon)+"/proj/window_2d_off 1"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/proj_sphere 0"+"\n")
+    else:
+        con.write("monitor/"+str(mon)+"/proj/window_2d_off 1"+"\n") 
     if cylindrical[mon]:
         con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")
     else:
@@ -664,7 +663,7 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/off_vrt_deg "+str(format(vertical_offset[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/off_lat_deg "+str(format(lateral_offset[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/off_phi_deg 0.000000"+"\n")
-    if newformat:
+    if xp12:
         if gridtest:
             con.write("monitor/"+str(mon)+"/proj/grid_rat_config 1"+"\n")
         else:
@@ -673,8 +672,11 @@ for mon in range(0,nmon,1):
             con.write("monitor/"+str(mon)+"/proj/grid_rat_render 1"+"\n")
         else:
             con.write("monitor/"+str(mon)+"/proj/grid_rat_render 0"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/grid_rat_drag_dim_i 4"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/grid_rat_drag_dim_j 4"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_opacity_pct 100.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_drag_dim_i 4"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_drag_dim_j 4"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_step_dim_i 13"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_step_dim_j 13"+"\n")
 
     else:
         if gridtest:
@@ -689,7 +691,7 @@ for mon in range(0,nmon,1):
         con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_j 4"+"\n")
 
     # write grid per monitor
-    if newformat:
+    if xp12:
         for gx in range(0,ngx,1):
             for gy in range(0,ngy,1):
                 con.write("monitor/"+str(mon)+"/proj/grid_ini_x"+str(gx)+"/"+str(gy)+" "
@@ -706,6 +708,19 @@ for mon in range(0,nmon,1):
             for gy in range(0,ngy,1):
                 con.write("monitor/"+str(mon)+"/proj/grid_off_y"+str(gx)+"/"+str(gy)+" "
                           +str(format(0.0,('.6f')))+"\n")
+
+        for gx in range(0,ngx,1):
+            for gy in range(0,ngy,1):
+                con.write("monitor/"+str(mon)+"/proj/grid_mul_r"+str(gx)+"/"+str(gy)+" "
+                          +str(format(1.0,('.6f')))+"\n")
+        for gx in range(0,ngx,1):
+            for gy in range(0,ngy,1):
+                con.write("monitor/"+str(mon)+"/proj/grid_mul_g"+str(gx)+"/"+str(gy)+" "
+                          +str(format(1.0,('.6f')))+"\n")
+        for gx in range(0,ngx,1):
+            for gy in range(0,ngy,1):
+                con.write("monitor/"+str(mon)+"/proj/grid_mul_b"+str(gx)+"/"+str(gy)+" "
+                          +str(format(1.0,('.6f')))+"\n")
     else:
         if (projection[mon] or cylindrical[mon]) and savegrid:
             for gx in range(0,ngx,1):
@@ -718,7 +733,7 @@ for mon in range(0,nmon,1):
 
     # write blending per monitor
 
-    if newformat:
+    if xp12:
         con.write("monitor/"+str(mon)+"/proj/edge_blend_config 0"+"\n")
         if blending[mon]:
             con.write("monitor/"+str(mon)+"/proj/edge_blend_lft 1"+"\n")
@@ -731,15 +746,15 @@ for mon in range(0,nmon,1):
             con.write("monitor/"+str(mon)+"/proj/edge_blend_bot 0"+"\n")
             con.write("monitor/"+str(mon)+"/proj/edge_blend_top 0"+"\n")
 
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_lft -15.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_rgt 15.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_bot -15.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_top 15.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_lft -15.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_rgt 15.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_bot -15.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_top 15.000000"+"\n")
 
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft 1.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt 1.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot 1.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top 1.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft 1.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt 1.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot 1.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top 1.000000"+"\n")
         
     else:
         if blending[mon]:
