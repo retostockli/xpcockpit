@@ -140,7 +140,7 @@ elif setting == 4:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
-    savegrid = False # save proection grid or just FOV
+    savegrid = True # save proection grid or just FOV
 elif setting == 5:
     # Only Testing Grid
     nmon = 4  # number of monitors
@@ -158,10 +158,10 @@ elif setting == 5:
     blend_left_bot = [0.0,0.0,0.0,0.0]
     blend_right_top = [0.0,0.0,0.0,0.0]
     blend_right_bot = [0.0,0.0,0.0,0.0]
-    gridtest = True # display grid test pattern
+    gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
-    savegrid = True # save proection grid or just FOV
+    savegrid = False # save proection grid or just FOV
 elif setting == 6:
     # Testing Single Monitor
     nmon = 1  # number of monitors
