@@ -2,7 +2,7 @@
  * Copyright (c) 2013 NVIDIA Corporation
  *
  * Changes and additions for 3 Projector Warping and Blending with the X-Plane
- * Warp and Blend Configuration file by Reto Stockli, 2023
+ * Warp and Blend Configuration file by Reto Stockli, 2023-2024
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
