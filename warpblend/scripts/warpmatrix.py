@@ -61,7 +61,7 @@ dragy = 4
 stepx = int((ngx-1)/(dragx-1)) # make sure this is integer and stepx * (dragx-1) = ngx-1!
 stepy = int((ngy-1)/(dragy-1)) # make sure this is integer and stepy * (dragy-1) = ngy-1!
 
-# blend alpha values (4 steps)
+# blend alpha values (4 steps at distance 0.0, 0.33, 0.67 and 1.0)
 blend_alpha = [0.0,0.45,0.8,1.0]
     
 # vertical offset [deg] is not implemented, but could be implemented in planar to cylindrical projection
@@ -78,10 +78,12 @@ if setting == 1:
     vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
-    blend_left_top =  [  0.0,   0.0, 279.0, 282.0]
-    blend_left_bot =  [  0.0,   0.0, 192.0, 197.0]
-    blend_right_top = [  0.0, 283.0, 287.0,   0.0]
-    blend_right_bot = [  0.0, 192.0, 205.0,   0.0]
+    # blending maximum widths per screen (0.0 means no blending) [-]
+    blend_left_top =  [  0.000000, 0.000000, 0.145313, 0.146875] 
+    blend_left_bot =  [  0.000000, 0.000000, 0.100000, 0.102604]
+    blend_right_top = [  0.000000, 0.147396, 0.149479, 0.000000]
+    blend_right_bot = [  0.000000, 0.100000, 0.106771, 0.000000]
+    blendafterwarp = True # X-Plane blends after warping and NVIDIA blends the unwarped image
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
@@ -99,10 +101,12 @@ elif setting == 2:
     vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
-    blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
-    blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
-    blend_right_top = [  0.0, 224.0, 236.0,   0.0]
-    blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
+    # blending maximum widths per screen (0.0 means no blending) [-]
+    blend_left_top =  [  0.000000, 0.000000, 0.145313, 0.146875]
+    blend_left_bot =  [  0.000000, 0.000000, 0.100000, 0.102604]
+    blend_right_top = [  0.000000, 0.147396, 0.149479, 0.000000]
+    blend_right_bot = [  0.000000, 0.100000, 0.106771, 0.000000]
+    blendafterwarp = False # X-Plane blends after warping and NVIDIA blends the unwarped image
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
@@ -120,10 +124,12 @@ elif setting == 3:
     vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
-    blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
-    blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
-    blend_right_top = [  0.0, 224.0, 236.0,   0.0]
-    blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
+    # blending maximum widths per screen (0.0 means no blending) [-]
+    blend_left_top =  [  0.000000, 0.000000, 0.145313, 0.146875]
+    blend_left_bot =  [  0.000000, 0.000000, 0.100000, 0.102604]
+    blend_right_top = [  0.000000, 0.147396, 0.149479, 0.000000]
+    blend_right_bot = [  0.000000, 0.100000, 0.106771, 0.000000]
+    blendafterwarp = False # X-Plane blends after warping and NVIDIA blends the unwarped image
     gridtest = True # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
@@ -142,10 +148,12 @@ elif setting == 4:
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
+    # blending maximum widths per screen (0.0 means no blending) [-]
     blend_left_top = [0.0,0.0,0.0,0.0]
     blend_left_bot = [0.0,0.0,0.0,0.0]
     blend_right_top = [0.0,0.0,0.0,0.0]
     blend_right_bot = [0.0,0.0,0.0,0.0]
+    blendafterwarp = False # X-Plane blends after warping and NVIDIA blends the unwarped image
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
@@ -163,10 +171,12 @@ elif setting == 5:
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
+    # blending maximum widths per screen (0.0 means no blending) [-]
     blend_left_top = [0.0,0.0,0.0,0.0]
     blend_left_bot = [0.0,0.0,0.0,0.0]
     blend_right_top = [0.0,0.0,0.0,0.0]
     blend_right_bot = [0.0,0.0,0.0,0.0]
+    blendafterwarp = False # X-Plane blends after warping and NVIDIA blends the unwarped image
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
@@ -184,10 +194,12 @@ elif setting == 6:
     vertical_shift = [0.0]    # vertical shift [pixel]
     vertical_scale = [1.0]    # vertical scale [-]
     blending = [True]   # apply blending at sides
-    blend_left_top = [121.0]
-    blend_left_bot = [0.0]
-    blend_right_top = [150.0]
-    blend_right_bot = [132.0]
+    # blending maximum widths per screen (0.0 means no blending) [-]
+    blend_left_top = [0.15]
+    blend_left_bot = [0.12]
+    blend_right_top = [0.15]
+    blend_right_bot = [0.12]
+    blendafterwarp = True # X-Plane blends after warping and NVIDIA blends the unwarped image
     gridtest = True # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
@@ -205,10 +217,12 @@ elif setting == 7:
     vertical_shift = [0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0]    # vertical scale [-]
     blending = [False,False]   # apply blending at sides
+    # blending maximum widths per screen (0.0 means no blending) [-]
     blend_left_top = [0.0,0.0]
     blend_left_bot = [0.0,0.0]
     blend_right_top = [0.0,0.0]
     blend_right_bot = [0.0,0.0]
+    blendafterwarp = False # X-Plane blends after warping and NVIDIA blends the unwarped image
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
@@ -369,13 +383,84 @@ def create_blendimage(left_top,left_bot,right_top,right_bot):
     blendimage = np.zeros((nx, ny))
 
     for y in range(0,ny,1):
-        xl = y/(ny-1) * left_bot + (1.0-y/(ny-1)) * left_top
-        xr = y/(ny-1) * right_bot + (1.0-y/(ny-1)) * right_top
+        xl = (y/(ny-1) * left_bot + (1.0-y/(ny-1)) * left_top)*(nx-1)
+        xr = (y/(ny-1) * right_bot + (1.0-y/(ny-1)) * right_top)*(nx-1)
 
         xval = [0.0,0.33*xl,0.66*xl,1.0*xl,nx-1-1.0*xr,nx-1-0.66*xr,nx-1-0.33*xr,nx-1]
         yval = [blend_alpha[0],blend_alpha[1],blend_alpha[2],blend_alpha[3],
                 blend_alpha[3],blend_alpha[2],blend_alpha[1],blend_alpha[0]]
 
+        # no blending if blend corner is at edge
+        if (xl == 0.0):
+            yval[0] = 1.0
+            yval[1] = 1.0
+            yval[2] = 1.0
+            yval[3] = 1.0
+        if (xr == 0.0):
+            yval[4] = 1.0
+            yval[5] = 1.0
+            yval[6] = 1.0
+            yval[7] = 1.0
+        blendimage[:,y] = np.interp(range(0,nx),xval,yval)        
+
+    return blendimage
+
+def create_blendimage_warped(left_top,left_bot,right_top,right_bot,xdif,ydif):
+    blendimage = np.zeros((nx, ny))
+    nblend = len(blend_alpha) # number of blending levels
+    xval = np.zeros(2*nblend)
+    yval = [blend_alpha[0],blend_alpha[1],blend_alpha[2],blend_alpha[3],
+            blend_alpha[3],blend_alpha[2],blend_alpha[1],blend_alpha[0]]
+
+    for y in range(0,ny,1):
+    #for y in range(0,1,1):
+        # maximum blending width
+        xl = (y/(ny-1) * left_bot + (1.0-y/(ny-1)) * left_top)*(nx-1)
+        xr = (y/(ny-1) * right_bot + (1.0-y/(ny-1)) * right_top)*(nx-1)
+        # loop through left and right blending
+        for lr in range(0,2,1):
+            # loop through blending widths with assigned alpha values
+            for bw in range(0,nblend,1):
+                # unwarped blending width: line with x0/y0 and x1/y1
+                if (lr == 0):
+                    x0 = int(xl*bw/(nblend-1))
+                    x1 = int(xl*bw/(nblend-1))
+                else:
+                    x0 = int(nx - 1 - xr*(nblend-1-bw)/(nblend-1))
+                    x1 = int(nx - 1 - xr*(nblend-1-bw)/(nblend-1))
+                if (y <= 40):
+                    y0 = y
+                    y1 = y+30
+                else:
+                    y0 = y-30
+                    y1 = y
+
+
+                # warped blending width: with x0w/y0w and x1w/y1w
+                x0w = x0 + xdif[int(x0/(nx-1)*(ngx-1)),int(y0/(ny-1)*(ngy-1))]
+                y0w = y0 + ydif[int(x0/(nx-1)*(ngx-1)),int(y0/(ny-1)*(ngy-1))]
+                x1w = x1 + xdif[int(x1/(nx-1)*(ngx-1)),int(y1/(ny-1)*(ngy-1))]
+                y1w = y1 + ydif[int(x1/(nx-1)*(ngx-1)),int(y1/(ny-1)*(ngy-1))]
+
+                #print(str(x0)+" "+str(y0)+" "+str(x1)+" "+str(y1))
+                #print(str(x0w)+" "+str(y0w)+" "+str(x1w)+" "+str(y1w))
+
+                if (x1w == x0w):
+                    # blending line still vertical after warping
+                    if (lr == 0):
+                        xval[bw] = x0w
+                    else:
+                        xval[bw+lr*nblend] = x0w
+
+                else:
+                    # calculate warped x-value of blending width at line intersecting y
+                    a = (y1w - y0w) / (x1w - x0w)
+
+                    if (lr == 0):
+                        xval[bw] = (y - y0w) / a + x0w
+                    else:
+                        xval[bw+lr*nblend] = (y - y0w) / a + x0w
+                    
         # no blending if blend corner is at edge
         if (xl == 0.0):
             yval[0] = 1.0
@@ -501,6 +586,7 @@ for mon in range(0,nmon,1):
         for gx in range(0,ngx,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
+            # ARE WE SURE WE RANGE FROM 0 .. nx? OR RATHER 0 .. nx-1?
             px = float(nx) * float(gx) / float(ngx-1)
             py = float(ny) * float(gy) / float(ngy-1)
             xabs[gx,gy] = px
@@ -748,11 +834,15 @@ for mon in range(0,nmon,1):
                               +str(format(0.0,('.6f')))+"\n")
 
         if blending[mon]:
-            blendimage = create_blendimage(blend_left_top[mon],blend_left_bot[mon],
-                                           blend_right_top[mon],blend_right_bot[mon])
-
-            # PROBLEM: XP12 BLEND GRID IS AFTER WARPING ...
-            # WE CALCULATE IT ON THE ORIGINAL COORDINATES
+            if blendafterwarp:
+                # XP12 BLEND GRID IS AFTER WARPING ...
+                blendimage = create_blendimage_warped(blend_left_top[mon],blend_left_bot[mon],
+                                                      blend_right_top[mon],blend_right_bot[mon],xdif,ydif)
+            else:
+                # NVIDIA: BLEND GRID IS BEFORE WARPING
+                blendimage = create_blendimage(blend_left_top[mon],blend_left_bot[mon],
+                                               blend_right_top[mon],blend_right_bot[mon])
+                 
             print(str(blendimage[0:10,0]))
             
             for gx in range(0,ngx,1):
@@ -816,12 +906,12 @@ for mon in range(0,nmon,1):
             con.write("monitor/"+str(mon)+"/proj/gradient_on 0"+"\n")
 
 
-        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/0 "+str(format(blend_left_top[mon],('.6f')))+"\n")
-        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/1 "+str(format(blend_right_top[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/0 "+str(format(blend_left_top[mon]*nx,('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/1 "+str(format(blend_right_top[mon]*nx,('.6f')))+"\n")
         con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/0 0.000000"+"\n")
         con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/1 0.000000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon],('.6f')))+"\n")
-        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon]*nx,('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon]*nx,('.6f')))+"\n")
         if blendtest:
                 con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
                 con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.000000"+"\n")
