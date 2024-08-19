@@ -83,6 +83,11 @@ if setting == 1:
     blend_left_bot =  [  0.000000, 0.000000, 0.100000, 0.102604]
     blend_right_top = [  0.000000, 0.147396, 0.149479, 0.000000]
     blend_right_bot = [  0.000000, 0.100000, 0.106771, 0.000000]
+
+    blend_left_top =  [  0.000000, 0.000000, 0.000000, 0.000000] 
+    blend_left_bot =  [  0.000000, 0.000000, 0.000000, 0.000000]
+    blend_right_top = [  0.000000, 0.000000, 0.000000, 0.000000]
+    blend_right_bot = [  0.000000, 0.000000, 0.000000, 0.000000]
     blendafterwarp = True # X-Plane blends after warping and NVIDIA blends the unwarped image
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
@@ -843,7 +848,7 @@ for mon in range(0,nmon,1):
                 blendimage = create_blendimage(blend_left_top[mon],blend_left_bot[mon],
                                                blend_right_top[mon],blend_right_bot[mon])
                  
-            print(str(blendimage[0:10,0]))
+            print(str(blendimage[0:20,ny-1]))
             
             for gx in range(0,ngx,1):
                 for gy in range(0,ngy,1):
@@ -855,8 +860,11 @@ for mon in range(0,nmon,1):
                 for gy in range(0,ngy,1):
                     x = int(gx/(ngx-1)*(nx-1))
                     y = int(gy/(ngy-1)*(ny-1))
-                    con.write("monitor/"+str(mon)+"/proj/grid_mul_g"+str(gx)+"/"+str(gy)+" "
-                              +str(format(blendimage[x,y],('.6f')))+"\n")
+                    if (gx%2 == 1):
+                        con.write("monitor/"+str(mon)+"/proj/grid_mul_g"+str(gx)+"/"+str(gy)+" "
+                                  +str(format(blendimage[x,y],('.6f')))+"\n")
+                    else:
+                       con.write("monitor/"+str(mon)+"/proj/grid_mul_g"+str(gx)+"/"+str(gy)+" 0.000000\n")
             for gx in range(0,ngx,1):
                 for gy in range(0,ngy,1):
                     x = int(gx/(ngx-1)*(nx-1))
