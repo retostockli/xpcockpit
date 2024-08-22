@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 6
+setting = 1
 
 # Plot Warping grid for Checking
 doplot = False
@@ -63,7 +63,7 @@ stepy = int((ngy-1)/(dragy-1)) # make sure this is integer and stepy * (dragy-1)
 
 # blend alpha values (4 steps at distance 0.0, 0.33, 0.67 and 1.0)
 blend_alpha = [0.0,0.45,0.8,1.0]
-blend_exp = 0.75 # exponent of the blend function (distance^exponent)
+blend_exp = 1.0 # exponent of the blend function (distance^exponent)
     
 # vertical offset [deg] is not implemented, but could be implemented in planar to cylindrical projection
 if setting == 1:
@@ -434,6 +434,8 @@ def create_blendgrid_warped(left_top,left_bot,right_top,right_bot,xwarp,ywarp):
                     
             #print(str(gx)+" "+str(xwarp[gx,gy])+" "+str(xl)+" "+str(xr)+" "+str(blendgrid[gx,gy]))
 
+    blendgrid = np.flip(blendgrid,1)
+            
     return blendgrid
 
 

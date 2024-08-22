@@ -112,7 +112,8 @@ static inline float transformPoint(vertex2f *vec) {
 }
 
 int main(int ac, char **av) {
-  char warpfile[] = "X-Plane Window Positions.prf";
+  //char warpfile[] = "X-Plane Window Positions.prf";
+  char warpfile[] = "X-Plane Window Positions_xp12.prf";
   
   GC gc;
   XGCValues values;
@@ -338,9 +339,14 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 
   bool has_warp = True;
   bool has_blend = True;
+  bool is_xp12 = False;
   
-  int ncol=101;
-  int nrow=101;
+  int ncol=0;
+  int nrow=0;
+  int dragx=0;
+  int dragy=0;
+  int stepx=0;
+  int stepy=0;
   int nx;
   int ny;
   int nr;
@@ -368,8 +374,8 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
   int nChannels = 4;
   
   /* first value is vertex coordinate and second value is warped coordinate */
-  float vx[nrow][ncol][2];
-  float vy[nrow][ncol][2];
+  float vx[256][256][2];
+  float vy[256][256][2];
   float x0;
   float x1;
 
@@ -410,22 +416,52 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 	if ((i == 1) && (strcmp(*(tokens + i),smonitor)!=0)) break;
 	if (i == 2) {
 	  if (strstr(*(tokens + i),"m_x_res_full")!=0) {
-	    //printf("%i : %s\n",i, *(tokens + i));
 	    str = strtok(*(tokens + i)," ");
 	    str = strtok(NULL," ");
 	    nx = atoi(str);
 	    printf("X-Res: %i \n",nx);
 	  } 
 	  if (strstr(*(tokens + i),"m_y_res_full")!=0) {
-	    //printf("%i : %s\n",i, *(tokens + i));
 	    str = strtok(*(tokens + i)," ");
 	    str = strtok(NULL," ");
 	    ny = atoi(str);
 	    printf("Y-Res: %i \n",ny);
 	  } 
 	} else if (i == 3) {
-	  if (strcmp(*(tokens + i),"grid_os_x")==0) isX = True;
-	  if (strcmp(*(tokens + i),"grid_os_y")==0) isY = True;
+	  if (strcmp(*(tokens + i),"proj_sphere 0")==0) is_xp12 = True;
+	  if (is_xp12) {
+	    if (strstr(*(tokens + i),"grid_ini_x")!=0) {
+	      isX = True;
+	      col = atoi(strtok(*(tokens + i),"grid_ini_x"));
+	    }
+	    if (strstr(*(tokens + i),"grid_ini_y")!=0) {
+	      isY = True;
+	      col = atoi(strtok(*(tokens + i),"grid_ini_y"));
+	    }
+	  if (strstr(*(tokens + i),"grid_drag_dim_i")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    dragx = atoi(str);
+	  }
+	  if (strstr(*(tokens + i),"grid_drag_dim_j")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    dragy = atoi(str);
+	  }
+	  if (strstr(*(tokens + i),"grid_step_dim_i")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    stepx = atoi(str);
+	  }
+	  if (strstr(*(tokens + i),"grid_step_dim_j")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    stepy = atoi(str);
+	  }
+	  } else {
+	    if (strcmp(*(tokens + i),"grid_os_x")==0) isX = True;
+	    if (strcmp(*(tokens + i),"grid_os_y")==0) isY = True;
+	  }
 	  if (strcmp(*(tokens + i),"gradient_width_top")==0) isT = True;
 	  if (strcmp(*(tokens + i),"gradient_width_bot")==0) isB = True;
 	  if (strcmp(*(tokens + i),"gradient_alpha")==0) isA = True;
@@ -435,9 +471,39 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 	    has_blend = atoi(str);
 	    printf("Blending Information in File: %i \n",has_blend);
 	  }
+
 	} else if (i == 4) {
+	  // first col/row information: init ncol/nrow
+	  if (nrow == 0) {
+	    if (is_xp12) {
+	      ncol = stepx * (dragx-1) + 1;
+	      nrow = stepy * (dragy-1) + 1;
+	    } else {
+	      nrow = 101;
+	      ncol = 101;
+	    }
+	  }
 	  if (isX || isY) {
-	    col = atoi(*(tokens + i));
+	    if (is_xp12) {
+	      // We read horizontal or vertical shifts in pixels (xp12)
+	      row = atoi(strtok(*(tokens + i)," "));
+	      str = strtok(NULL," ");
+	      val = atof(str);
+	      if (isX) {
+		vx[row][col][1] = (float) col / (float) (ncol-1);
+		vx[row][col][0] = val;
+		//if ((col == 0) && (row == 0)) printf("X: %f %f \n",vx[row][col][0],vx[row][col][1]);
+		c++;
+	      } else {
+		vy[row][col][1] = (float) row / (float) (nrow-1);
+		// Inverse vertical shift.
+		vy[row][col][0] = -val ;
+		//if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
+		r++;
+	      }	      
+	    } else {
+	      col = atoi(*(tokens + i));
+	    }
 	  } else if (isA) {
 	    side = atoi(*(tokens + i));
 	  } else if (isT || isB) {
@@ -452,24 +518,26 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 	    }
 	  }
 	} else if (i == 5) {
-	  // We read horizontal or vertical shifts in pixels
-	  if (isX || isY) {
-	    //printf("%i : %s\n",i, *(tokens + i));
-	    str = strtok(*(tokens + i)," ");
-	    row = nrow - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
-	    str = strtok(NULL," ");
-	    val = atof(str);
-	    if (isX) {
-	      vx[row][col][1] = (float) col / (float) (ncol-1);
-	      vx[row][col][0] = (val + (float) col / (float) (ncol-1) * (float) nx) / (float) nx;
-	      //if ((col == 0) && (row == 0)) printf("X: %f %f \n",vx[row][col][0],vx[row][col][1]);
-	      c++;
-	    } else {
-	      vy[row][col][1] = (float) row / (float) (nrow-1);
-	      // Inverse vertical shift.
-	      vy[row][col][0] = (-val + (float) row / (float) (nrow-1) * (float) ny) / (float) ny;
-	      //if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
-	      r++;
+	  if (!is_xp12) {
+	    // We read horizontal or vertical shifts in pixels (xp11)
+	    if (isX || isY) {
+	      printf("%i : %s\n",i, *(tokens + i));
+	      str = strtok(*(tokens + i)," ");
+	      row = nrow - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
+	      str = strtok(NULL," ");
+	      val = atof(str);
+	      if (isX) {
+		vx[row][col][1] = (float) col / (float) (ncol-1);
+		vx[row][col][0] = (val + (float) col / (float) (ncol-1) * (float) nx) / (float) nx;
+		//if ((col == 0) && (row == 0)) printf("X: %f %f \n",vx[row][col][0],vx[row][col][1]);
+		c++;
+	      } else {
+		vy[row][col][1] = (float) row / (float) (nrow-1);
+		// Inverse vertical shift.
+		vy[row][col][0] = (-val + (float) row / (float) (nrow-1) * (float) ny) / (float) ny;
+		//if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
+		r++;
+	      }
 	    }
 	  } else if (isA) {
 	    str = strtok(*(tokens + i)," ");
@@ -487,6 +555,8 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
   
   fclose(fptr);
 
+  printf("XP12 File Format: %i %i %i \n",is_xp12,nrow,ncol);
+  
   if (has_blend) {
     for (side=0;side<=1;side++) {
       if (side == 0) {
