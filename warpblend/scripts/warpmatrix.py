@@ -51,6 +51,8 @@ ny = 1080
 if xp12:
     ngx = 121
     ngy = 121
+#    ngx = 101
+#    ngy = 101
 else:
     ngx = 101
     ngy = 101
@@ -58,6 +60,8 @@ else:
 # number of manual drag nodes
 dragx = 4
 dragy = 4
+#dragx = 5
+#dragy = 5
 stepx = int((ngx-1)/(dragx-1)) # make sure this is integer and stepx * (dragx-1) = ngx-1!
 stepy = int((ngy-1)/(dragy-1)) # make sure this is integer and stepy * (dragy-1) = ngy-1!
 

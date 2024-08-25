@@ -132,7 +132,6 @@ int main(int ac, char **av) {
   char smonitor[2];
   int ret;
   int a;
-  char *str = NULL;
   char *warpfile = NULL;
   int strsize;
 
@@ -380,6 +379,7 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
   bool isA;
   
   int col;
+  float fcol;
   int row;
   float val;
 
@@ -399,6 +399,8 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
   float x1;
   float xl;
   float xr;
+  float xw;
+  float wgt;
 
   int side;
   int dist;
@@ -530,7 +532,8 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 	  if (isX || isY) {
 	    if (is_xp12) {
 	      // We read horizontal or vertical shifts in pixels (xp12)
-	      row = atoi(strtok(*(tokens + i)," "));
+	      str = strtok(*(tokens + i)," ");
+	      row = nrow - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
 	      str = strtok(NULL," ");
 	      val = atof(str);
 	      if (isX) {
@@ -541,7 +544,7 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 	      } else {
 		vy[row][col][1] = (float) row / (float) (nrow-1);
 		// Inverse vertical shift.
-		vy[row][col][0] = -val ;
+		vy[row][col][0] = 1.0-val ;
 		//if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
 		r++;
 	      }	      
@@ -600,6 +603,8 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
   fclose(fptr);
 
   printf("XP12 File Format: %i nrow %i ncol %i \n",is_xp12,nrow,ncol);
+
+  //printf("%f %f %f %f \n",vx[0][0][0],vx[nrow-1][ncol-1][0],vy[0][0][0],vy[nrow-1][ncol-1][0]);
   
   if (has_blend) {
     for (side=0;side<=1;side++) {
@@ -610,8 +615,10 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
       }
       printf("Top Pixel Size: %f\n",top[side]);
       printf("Bot Pixel Size: %f\n",bot[side]);
-      for (dist=0;dist<=3;dist++) {
-	printf("Alpha at Dist %i: %f\n",dist,alpha[side][dist]);
+      if (!is_xp12) {
+	for (dist=0;dist<=3;dist++) {
+	  printf("Alpha at Dist %i: %f\n",dist,alpha[side][dist]);
+	}
       }
     }
   }
@@ -639,32 +646,45 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 
     if (is_xp12) {
       for (y=0;y<ny;y++) {
-	x0 = vx[0][0][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][0][0] * (float) y / (float) (ny-1);
-	x1 = vx[0][ncol-1][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][ncol-1][0] * (float) y / (float) (ny-1);
+	//for (y=500;y<501;y++) {
+	//x0 = vx[0][0][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][0][0] * (float) y / (float) (ny-1);
+	//x1 = vx[0][ncol-1][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][ncol-1][0] * (float) y / (float) (ny-1);
 	xl = y/(ny-1) * bot[0] + (1.0-y/(ny-1)) * top[0];
 	xr = y/(ny-1) * bot[1] + (1.0-y/(ny-1)) * top[1];
-        for (x=0;x<nx;y++) {
+
+	row = (int) ((float) y / (float) (ny-1) * (float) (nrow-1));
+	
+        for (x=0;x<nx;x++) {
+
+	  /* linear interpolation of warping grid x positions */
+	  /* TODO: Bilinear interpolation in x and y */
+	  col = (int) ((float) x / (float) (nx-1) * (float) (ncol-1));
+	  fcol = ((float) x / (float) (nx-1) * (float) (ncol-1));
+	  wgt = fcol - (float) col;
+	  
+	  xw = (1.0 - wgt) * vx[row][col][0] + wgt * vx[row][col+1][0];
+	  //printf("%i %i %f %f %f \n",x,col,fcol,wgt,xw);
+	    //printf("%i %f %f\n",x,vx[row][col][0] * (float) (nx-1),val);
+	  
 	  if (x < nx/2) {
 	    /* left blending until center of image */
 	    if (xl == 0.0) {
 	      val = 1.0;
 	    } else {
-	      val = min(powf(max(xwarp[gx,gy],0.0)/xl,blend_exp),1.0);
+	      val = min(powf(max(xw * (float) (nx-1),0.0)/xl,blend_exp),1.0);
 	    } 
 	  } else {
 	    /* right blending starting at center of image */
 	    if (xr == 0.0) {
 	      val = 1.0;
 	    } else {
-	      val = min(powf(max(nx-xwarp[gx,gy],0.0)/xr,blend_exp),1.0);
+	      val = min(powf(max(nx- (xw * (float) (nx-1)),0.0)/xr,blend_exp),1.0);
 	    }
 	  }
-	  bytval = (unsigned char) (interpolate((float) x) * 255.0);
-	  //if (y == 500) printf("%i ",bytval);
+	  bytval = (unsigned char) (val * 255.0);
 	  pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
 	    256 * (unsigned long) bytval + (unsigned long) bytval;
-	  XPutPixel(blendImage, x, y, pixval);
-	  
+	  XPutPixel(blendImage, x, y, pixval);	  
 	}
       }
     } else {
@@ -843,28 +863,30 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
       i = 0; //vertex index
       for(r=0; r<nrow-1; ++r)
 	{
-	  double v1x,v1y,v2x,v2y,v3x,v3y,v4x,v4y;
-	  float t1x,t1y,t2x,t2y,t3x,t3y,t4x,t4y;
+	  //double v1x,v1y,v2x,v2y,v3x,v3y,v4x,v4y;
+	  //float t1x,t1y,t2x,t2y,t3x,t3y,t4x,t4y;
+	  double v1x,v1y,v4x,v4y;
+	  float t1x,t1y,t4x,t4y;
 
 	  for(c=0; c<ncol; ++c)
 	    {
 	      // vertex coordinates
 	      v1x=vx[r][c][0];
 	      v1y=vy[r][c][0];
-	      v2x=vx[r][c+1][0];
-	      v2y=vy[r][c+1][0];
-	      v3x=vx[r+1][c+1][0];
-	      v3y=vy[r+1][c+1][0];
+	      //v2x=vx[r][c+1][0];
+	      //v2y=vy[r][c+1][0];
+	      //v3x=vx[r+1][c+1][0];
+	      //v3y=vy[r+1][c+1][0];
 	      v4x=vx[r+1][c][0];
 	      v4y=vy[r+1][c][0];
 
 	      // texture coordinates of the visual image
 	      t1x=vx[r][c][1];
 	      t1y=vy[r][c][1];
-	      t2x=vx[r][c+1][1];
-	      t2y=vy[r][c+1][1];
-	      t3x=vx[r+1][c+1][1];
-	      t3y=vy[r+1][c+1][1];
+	      //t2x=vx[r][c+1][1];
+	      //t2y=vy[r][c+1][1];
+	      //t3x=vx[r+1][c+1][1];
+	      //t3y=vy[r+1][c+1][1];
 	      t4x=vx[r+1][c][1];
 	      t4y=vy[r+1][c][1];
 
