@@ -849,6 +849,8 @@ for mon in range(0,nmon,1):
         con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_bot -15.000000"+"\n")
         con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_top 15.000000"+"\n")
 
+        # We also save the actual blend distance values here for the NVIDIA blending
+        # Note that these values cannot be used by X-Plane. It uses the RGB blend map
         con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft "+str(format(blend_left_top[mon],('.6f')))+"\n")
         con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt "+str(format(blend_right_top[mon],('.6f')))+"\n")
         con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot "+str(format(blend_left_bot[mon],('.6f')))+"\n")

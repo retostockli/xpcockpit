@@ -57,7 +57,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <math.h>
 #include "warpblend.h"
+
+#define min(A,B) ((A)<(B) ? (A) : (B))
+#define max(A,B) ((A)>(B) ? (A) : (B))
 
 typedef struct {
   float x, y;
@@ -112,8 +116,6 @@ static inline float transformPoint(vertex2f *vec) {
 }
 
 int main(int ac, char **av) {
-  //char warpfile[] = "X-Plane Window Positions.prf";
-  char warpfile[] = "X-Plane Window Positions_xp12.prf";
   
   GC gc;
   XGCValues values;
@@ -131,7 +133,8 @@ int main(int ac, char **av) {
   int ret;
   int a;
   char *str = NULL;
-
+  char *warpfile = NULL;
+  int strsize;
 
   xDpy = XOpenDisplay(NULL);
   if (!xDpy) {
@@ -148,10 +151,12 @@ int main(int ac, char **av) {
 	printf("DPY ID: %i\n",nvDpyId);
       } else {
 	if (strcmp("--help",av[a]) == 0) {
-	  printf("Usage: ./warpblend DPI [monitor] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test]\n");
+	  printf("Usage: ./warpblend DPI [monitor] [warpfile] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test]\n");
 	  printf ("DPY is the Display Port, see 'nvidia-settings -q CurrentMetaMode' \n");
-	  printf ("Monitor is the monitor number in X-Plane Window position.prf \n");
+	  printf ("Monitor is the monitor number in X-Plane warp file \n");
+	  printf ("Warpfile is the wapr file (e.g. X-Plane Window positions.prf) \n");
 	  printf ("Option --test does not require any other option. It generates a Test warping and blending. \n");
+	  printf ("Option --unblend and --unwarp does not require a warp file. Only a Monitor Number \n");
 	  return 1;
 	} else {
 	  printf("Please supply the DPY-# as first argument\n");
@@ -165,6 +170,15 @@ int main(int ac, char **av) {
 	printf("Monitor #: %i\n",monitor);
       }
     }
+    if (a == 3) {
+      if (strncmp(av[a],"--",2) != 0) {
+	strsize = strlen(av[a]);
+	warpfile = malloc(strsize);
+	memset(warpfile,0,strsize);
+	strncpy(warpfile, av[a],strsize);
+	printf("X-Plane Window Preference File #: %s\n",warpfile);
+      }
+    }
     if (strcmp("--warp", av[a]) == 0) warp = True;
     if (strcmp("--unwarp", av[a]) == 0) unwarp = True;
     if (strcmp("--blend", av[a]) == 0) blend = True;
@@ -175,6 +189,11 @@ int main(int ac, char **av) {
 
   if (!(unwarp || unblend || test) && (monitor == -1)) {
     printf("Please provide the X-Plane Monitor number as second argument \n");
+    return 1;
+  }
+
+  if (!(unwarp || unblend || test) && (warpfile == NULL)) {
+    printf("Please provide the X-Plane Window Preference File as third argument \n");
     return 1;
   }
 
@@ -378,12 +397,15 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
   float vy[256][256][2];
   float x0;
   float x1;
+  float xl;
+  float xr;
 
   int side;
   int dist;
   float top[2];
   float bot[2];
   float alpha[2][4];
+  float blend_exp = 0.75;
 
   fptr = fopen(warpfile,"r");
   if (fptr == NULL) {
@@ -471,6 +493,28 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 	    has_blend = atoi(str);
 	    printf("Blending Information in File: %i \n",has_blend);
 	  }
+	  /* These Blend values are stored temporary at unused parameter positions */
+	  /* This way we do not have to read the pre-warped blending grid for NVIDIA blending */
+	  if (strstr(*(tokens + i),"edge_blend_fade_lft")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    top[0] = atof(str)*nx;
+	  }
+	  if (strstr(*(tokens + i),"edge_blend_fade_rgt")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    top[1] = atof(str)*nx;
+	  }
+	  if (strstr(*(tokens + i),"edge_blend_fade_bot")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    bot[0] = atof(str)*nx;
+	  }
+	  if (strstr(*(tokens + i),"edge_blend_fade_top")) {
+	    str = strtok(*(tokens + i)," ");
+	    str = strtok(NULL," ");
+	    bot[1] = atof(str)*nx;
+	  }
 
 	} else if (i == 4) {
 	  // first col/row information: init ncol/nrow
@@ -505,7 +549,8 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 	      col = atoi(*(tokens + i));
 	    }
 	  } else if (isA) {
-	    side = atoi(*(tokens + i));
+	    str = strtok(*(tokens + i)," ");
+	    side = atoi(str);
 	  } else if (isT || isB) {
 	    str = strtok(*(tokens + i)," ");
 	    side = atoi(str);
@@ -521,7 +566,6 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 	  if (!is_xp12) {
 	    // We read horizontal or vertical shifts in pixels (xp11)
 	    if (isX || isY) {
-	      printf("%i : %s\n",i, *(tokens + i));
 	      str = strtok(*(tokens + i)," ");
 	      row = nrow - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
 	      str = strtok(NULL," ");
@@ -538,13 +582,13 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 		//if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
 		r++;
 	      }
+	    } else if (isA) {
+	      str = strtok(*(tokens + i)," ");
+	      dist = atoi(str);
+	      str = strtok(NULL," ");
+	      val = atof(str);
+	      alpha[side][dist] = val;
 	    }
-	  } else if (isA) {
-	    str = strtok(*(tokens + i)," ");
-	    dist = atoi(str);
-	    str = strtok(NULL," ");
-	    val = atof(str);
-	    alpha[side][dist] = val;
 	  }
 	}
 	free(*(tokens + i));
@@ -555,7 +599,7 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
   
   fclose(fptr);
 
-  printf("XP12 File Format: %i %i %i \n",is_xp12,nrow,ncol);
+  printf("XP12 File Format: %i nrow %i ncol %i \n",is_xp12,nrow,ncol);
   
   if (has_blend) {
     for (side=0;side<=1;side++) {
@@ -583,6 +627,7 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
     printf("Number of Warp Grid Rows read: %i (of %i)\n",r,nrow);
   }
     
+  /* Create Blend Image */
   if (has_blend) {
     imageData = (unsigned char*) malloc (nx * ny * nChannels);
     int bitmap_pad = nChannels * 8;
@@ -592,75 +637,109 @@ int read_warpfile(const char warpfile[],const char smonitor[], bool warp, bool b
 				      0, (char*)imageData, nx, ny, bitmap_pad , bytes_per_line);
 
 
-    /* fill alpha values into linear interpolation abscissa vector */
-    if ((top[0] == 0.0) && (bot[0] == 0.0)) {
-      /* no blending on left side */
-      yval[0] = 1.0;
-      yval[1] = 1.0;
-      yval[2] = 1.0;
-      yval[3] = 1.0;
-    } else {
-      yval[0] = alpha[0][3];
-      yval[1] = alpha[0][2];
-      yval[2] = alpha[0][1];
-      yval[3] = alpha[0][0];
-    }
-    if ((top[1] == 0.0) && (bot[1] == 0.0)) {
-      /* no blending on right side */
-      yval[4] = 1.0;
-      yval[5] = 1.0;
-      yval[6] = 1.0;
-      yval[7] = 1.0;
-    } else {
-      yval[4] = alpha[1][0];
-      yval[5] = alpha[1][1];
-      yval[6] = alpha[1][2];
-      yval[7] = alpha[1][3];
-    }
-     
-    for (y=0;y<ny;y++) {
-      /* fill screen coordinate values into linear interpolation ordinate vector */
-      xval[0] = 0.0;
-      if (yval[2] == 0.0) {
-	/* blend test mode with hard blend at blend start */
-	xval[1] = 1.0;
-	xval[2] = 0.999 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-      } else {
-	xval[1] = 0.40 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-	xval[2] = 0.66 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-      }
-      xval[3] = 1.00 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-      
-      xval[4] = (float) nx - 1.00 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-      if (yval[6] == 0.0) {
-	/* blend test mode with hard blend at blend start */
-	xval[5] = (float) nx - 0.999 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-	xval[6] = (float) nx-1;
-      } else {
-	xval[5] = (float) nx - 0.66 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-	xval[6] = (float) nx - 0.40 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-      }
-      xval[7] = (float) nx;
-      //      printf("%i %f %f \n",y,xval[3],xval[4]);
-
-      /* TRANSFORM BLENDING XVALS FROM DISPLAY TO TEXTURE COORDINATES SINCE BLENDAFTERWARP DOES NOT WORK */
-      if (has_warp) {
+    if (is_xp12) {
+      for (y=0;y<ny;y++) {
 	x0 = vx[0][0][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][0][0] * (float) y / (float) (ny-1);
 	x1 = vx[0][ncol-1][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][ncol-1][0] * (float) y / (float) (ny-1);
-	//printf("%f %f \n",x0,x1);
-	
-	for (i=0;i<8;i++) {
-	  xval[i] = -x0 / (x1-x0) * (float) (nx-1) + xval[i] * 1.0 / (x1-x0);
+	xl = y/(ny-1) * bot[0] + (1.0-y/(ny-1)) * top[0];
+	xr = y/(ny-1) * bot[1] + (1.0-y/(ny-1)) * top[1];
+        for (x=0;x<nx;y++) {
+	  if (x < nx/2) {
+	    /* left blending until center of image */
+	    if (xl == 0.0) {
+	      val = 1.0;
+	    } else {
+	      val = min(powf(max(xwarp[gx,gy],0.0)/xl,blend_exp),1.0);
+	    } 
+	  } else {
+	    /* right blending starting at center of image */
+	    if (xr == 0.0) {
+	      val = 1.0;
+	    } else {
+	      val = min(powf(max(nx-xwarp[gx,gy],0.0)/xr,blend_exp),1.0);
+	    }
+	  }
+	  bytval = (unsigned char) (interpolate((float) x) * 255.0);
+	  //if (y == 500) printf("%i ",bytval);
+	  pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
+	    256 * (unsigned long) bytval + (unsigned long) bytval;
+	  XPutPixel(blendImage, x, y, pixval);
+	  
 	}
       }
+    } else {
+    
+      /* fill alpha values into linear interpolation abscissa vector */
+      if ((top[0] == 0.0) && (bot[0] == 0.0)) {
+	/* no blending on left side */
+	yval[0] = 1.0;
+	yval[1] = 1.0;
+	yval[2] = 1.0;
+	yval[3] = 1.0;
+      } else {
+	yval[0] = alpha[0][3];
+	yval[1] = alpha[0][2];
+	yval[2] = alpha[0][1];
+	yval[3] = alpha[0][0];
+      }
+      if ((top[1] == 0.0) && (bot[1] == 0.0)) {
+	/* no blending on right side */
+	yval[4] = 1.0;
+	yval[5] = 1.0;
+	yval[6] = 1.0;
+	yval[7] = 1.0;
+      } else {
+	yval[4] = alpha[1][0];
+	yval[5] = alpha[1][1];
+	yval[6] = alpha[1][2];
+	yval[7] = alpha[1][3];
+      }
+     
+      for (y=0;y<ny;y++) {
+	/* fill screen coordinate values into linear interpolation ordinate vector */
+	xval[0] = 0.0;
+	if (yval[2] == 0.0) {
+	  /* blend test mode with hard blend at blend start */
+	  xval[1] = 1.0;
+	  xval[2] = 0.999 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+	} else {
+	  xval[1] = 0.40 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+	  xval[2] = 0.66 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+	}
+	xval[3] = 1.00 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
+      
+	xval[4] = (float) nx - 1.00 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+	if (yval[6] == 0.0) {
+	  /* blend test mode with hard blend at blend start */
+	  xval[5] = (float) nx - 0.999 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+	  xval[6] = (float) nx-1;
+	} else {
+	  xval[5] = (float) nx - 0.66 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+	  xval[6] = (float) nx - 0.40 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
+	}
+	xval[7] = (float) nx;
+	//      printf("%i %f %f \n",y,xval[3],xval[4]);
+
+	/* TRANSFORM BLENDING XVALS FROM DISPLAY TO TEXTURE COORDINATES SINCE BLENDAFTERWARP DOES NOT WORK */
+	if (has_warp) {
+	  x0 = vx[0][0][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][0][0] * (float) y / (float) (ny-1);
+	  x1 = vx[0][ncol-1][0] * (1.0- (float) y / (float) (ny-1)) + vx[nrow-1][ncol-1][0] * (float) y / (float) (ny-1);
+	  //printf("%f %f \n",x0,x1);
 	
-      for (x=0;x<nx;x++) {
-	/* perform linear interpolation of tranparency between x-plane's blending steps */
-	bytval = (unsigned char) (interpolate((float) x) * 255.0);
-	//if (y == 500) printf("%i ",bytval);
-	pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
-	  256 * (unsigned long) bytval + (unsigned long) bytval;
-	XPutPixel(blendImage, x, y, pixval);
+	  for (i=0;i<8;i++) {
+	    xval[i] = -x0 / (x1-x0) * (float) (nx-1) + xval[i] * 1.0 / (x1-x0);
+	  }
+	}
+	
+	for (x=0;x<nx;x++) {
+	  /* perform linear interpolation of tranparency between x-plane's blending steps */
+	  bytval = (unsigned char) (interpolate((float) x) * 255.0);
+	  //if (y == 500) printf("%i ",bytval);
+	  pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
+	    256 * (unsigned long) bytval + (unsigned long) bytval;
+	  XPutPixel(blendImage, x, y, pixval);
+	}
+
       }
     }
 
