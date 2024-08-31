@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 1
+setting = 4
 
 # Plot Warping grid for Checking
 doplot = False
@@ -41,7 +41,7 @@ h_0 = 12.5   # lower height of image above focal point when projected on planar 
 tr = 0.49    # Projector Throw ratio (distance / width of screen)
 
 # define output file
-outfile = "X-Plane Window Positions_xp12.prf"
+outfile = "X-Plane Window Positions_NOWARPBLEND.prf"
 
 # pixel dimensions of projector
 nx = 1920
@@ -158,7 +158,7 @@ elif setting == 4:
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
-    savegrid = True # save proection grid or just FOV
+    savegrid = False # save proection grid or just FOV
 elif setting == 5:
     # Only Testing Grid
     nmon = 4  # number of monitors
