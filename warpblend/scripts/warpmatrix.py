@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 4
+setting = 1
 
 # Plot Warping grid for Checking
 doplot = False
@@ -41,7 +41,6 @@ h_0 = 12.5   # lower height of image above focal point when projected on planar 
 tr = 0.49    # Projector Throw ratio (distance / width of screen)
 
 # define output file
-outfile = "X-Plane Window Positions_NOWARPBLEND.prf"
 
 # pixel dimensions of projector
 nx = 1920
@@ -72,6 +71,7 @@ blend_exp = 1.0 # exponent of the blend function (distance^exponent)
 # vertical offset [deg] is not implemented, but could be implemented in planar to cylindrical projection
 if setting == 1:
     # Cylindrical + Projection + Blending
+    outfile = "../data/X-Plane Window Positions.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
@@ -94,6 +94,7 @@ if setting == 1:
     savegrid = True # save proection grid or just FOV
 elif setting == 2:
     # Projection + Blending
+    outfile = "../data/X-Plane Window Positions_PROJBLEND.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
@@ -116,6 +117,7 @@ elif setting == 2:
     savegrid = True # save proection grid or just FOV
 elif setting == 3:
     # Projection + Cylindrical (grid testing with X-Plane)
+    outfile = "../data/X-Plane Window Positions_PROJCYL.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
@@ -138,9 +140,9 @@ elif setting == 3:
     savegrid = True # save proection grid or just FOV
 elif setting == 4:
     # None (use this for X-Plane when using warpblend with NVIDIA directly)
+    outfile = "../data/X-Plane Window Positions_NOWARPBLEND.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
-#    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
@@ -161,6 +163,7 @@ elif setting == 4:
     savegrid = False # save proection grid or just FOV
 elif setting == 5:
     # Only Testing Grid
+    outfile = "../data/X-Plane Window Positions_GRIDTEST.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
@@ -177,12 +180,13 @@ elif setting == 5:
     blend_left_bot = [0.0,0.0,0.0,0.0]
     blend_right_top = [0.0,0.0,0.0,0.0]
     blend_right_bot = [0.0,0.0,0.0,0.0]
-    gridtest = False # display grid test pattern
+    gridtest = True # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
-    savegrid = False # save proection grid or just FOV
+    savegrid = True # save proection grid or just FOV
 elif setting == 6:
     # Testing Single Monitor
+    outfile = "../data/X-Plane Window Positions_ONEMON.prf"
     nmon = 1  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False]  # apply flat plane to cylinder warping
@@ -205,6 +209,7 @@ elif setting == 6:
     savegrid = True # save proection grid or just FOV
 elif setting == 7:
     # Testing Two Monitors
+    outfile = "../data/X-Plane Window Positions_TWOMON.prf"
     nmon = 2  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True]  # apply flat plane to cylinder warping
