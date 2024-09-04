@@ -362,8 +362,8 @@ void b737_pedestal(void)
   int *hf2 = link_dataref_int("xpserver/hf2");
 
   /* WXR Gain and Tilt */
-  float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2);
-  float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2);
+  float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-1);
+  float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-1);
   
   //  float *flt_deck_door;
   //  int *flt_deck_door_left;
@@ -1372,7 +1372,7 @@ void b737_pedestal(void)
   }
 
   /* WXR Gain */
-  ret = analog_input(card,a0+0,wxr_gain,0.0,1.0);
+  ret = analog_input(card,a0+0,wxr_gain,0.0,2.0);
   if (ret == 1) {
     //    printf("WXR Gain: %f \n",*wxr_gain);
   }

@@ -133,8 +133,8 @@ namespace OpenGC
     //*nav_shows_wxr = 1;
     
     /* Sample Datarefs for controlling WXR gain and tilt */
-    float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-2); /* Gain should go from 0.1 .. 2.0 */
-    float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-2); /* Tilt in degrees up/down : not implemented yet */
+    float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-1); /* Gain should go from 0.1 .. 2.0 */
+    float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-1); /* Tilt in degrees up/down : not implemented yet */
 
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
