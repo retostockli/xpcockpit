@@ -100,11 +100,11 @@ PLUGIN_API int XPluginStart(
   XPLMMenuID	xpserverMenu;
   int		xpserverMenuItem;
 
-  //#ifdef WIN
-  //  char on = 1;
-  //#else
+#ifdef WIN
+  char on = 1;
+#else
   int on =  1;
-  //#endif
+#endif
   int i;
 
   char	        XPlanePath[512];
@@ -362,11 +362,11 @@ float	xpserverLoopCallback(
 
   int i,j;
   int clntLen = sizeof (echoClntAddr);            /* Length of client address data structure */
-  //#ifdef WIN
-  //  char on = 1;
-  //#else
+#ifdef WIN
+  char on = 1;
+#else
   int on =  1;
-  //#endif
+#endif
   int clntSock;
   struct timeval timeout = {0}; /* TCP/IP Timeout parameters */
   timeout.tv_sec = 0;		//no timeout!
