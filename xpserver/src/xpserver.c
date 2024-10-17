@@ -100,7 +100,11 @@ PLUGIN_API int XPluginStart(
   XPLMMenuID	xpserverMenu;
   int		xpserverMenuItem;
 
+  //#ifdef WIN
+  //  char on = 1;
+  //#else
   int on =  1;
+  //#endif
   int i;
 
   char	        XPlanePath[512];
@@ -166,7 +170,7 @@ PLUGIN_API int XPluginStart(
       socketStatus = status_Error;
     }
 
-  if (setsockopt(servSock, IPPROTO_TCP, TCP_NODELAY, (const char *)&on, sizeof(on))<0)
+  if (setsockopt(servSock, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on))<0)
     {
       if (verbose > 0) fprintf(logfileptr,"XPSERVER: Could not set TCP_NODELAY \n");
       socketStatus = status_Error;
@@ -179,7 +183,7 @@ PLUGIN_API int XPluginStart(
   echoServAddr.sin_port = htons(server_port);       /* Local port */
 
   /* lose the "bind() failed: Address already in use" error message */
-  if (setsockopt(servSock,SOL_SOCKET,SO_REUSEADDR,(char*)&on,sizeof(on))) 
+  if (setsockopt(servSock,SOL_SOCKET,SO_REUSEADDR, &on, sizeof(on))) 
     { 
       if (verbose > 0) fprintf(logfileptr,"XPSERVER: setsockopt for reusing address failed\n"); 
       socketStatus = status_Error;
@@ -358,8 +362,11 @@ float	xpserverLoopCallback(
 
   int i,j;
   int clntLen = sizeof (echoClntAddr);            /* Length of client address data structure */
+  //#ifdef WIN
+  //  char on = 1;
+  //#else
   int on =  1;
-
+  //#endif
   int clntSock;
   struct timeval timeout = {0}; /* TCP/IP Timeout parameters */
   timeout.tv_sec = 0;		//no timeout!
