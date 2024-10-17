@@ -44,7 +44,8 @@ AC_MSG_RESULT([$HAVE_DEBUG])
 
 if test "x$HAVE_DEBUG" = xyes; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address -O0"
+    #CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -fsanitize=address -O0"
+    CFLAGS="$CFLAGS -g -Wall -Wno-uninitialized -O0"
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
     CFLAGS="$CFLAGS -O2"

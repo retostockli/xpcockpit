@@ -21,13 +21,13 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 3
+setting = 1
 
 # Plot Warping grid for Checking
 doplot = False
 
-# Utilize new X-Plane >= 12.08 Window Position File Format
-newformat = True
+# Utilize new X-Plane 12 Window Position File Format
+xp12 = True
 
 # Projector and Screen Dimensions [cm]
 # Please see projector_setup.pdf
@@ -41,23 +41,37 @@ h_0 = 12.5   # lower height of image above focal point when projected on planar 
 tr = 0.49    # Projector Throw ratio (distance / width of screen)
 
 # define output file
-outfile = "X-Plane Window Positions.prf"
 
 # pixel dimensions of projector
 nx = 1920
 ny = 1080
 
-# number of x and y grid points for warping grid (101 is needed for X-Plane 11 / 12)
-if newformat:
-    ngx = 40
-    ngy = 40
+# number of x and y grid points for warping grid 
+if xp12:
+    ngx = 121
+    ngy = 121
+#    ngx = 101
+#    ngy = 101
 else:
     ngx = 101
     ngy = 101
 
+# number of manual drag nodes
+dragx = 4
+dragy = 4
+#dragx = 5
+#dragy = 5
+stepx = int((ngx-1)/(dragx-1)) # make sure this is integer and stepx * (dragx-1) = ngx-1!
+stepy = int((ngy-1)/(dragy-1)) # make sure this is integer and stepy * (dragy-1) = ngy-1!
+
+# blend alpha values (4 steps at distance 0.0, 0.33, 0.67 and 1.0)
+blend_alpha = [0.0,0.45,0.8,1.0]
+blend_exp = 1.0 # exponent of the blend function (distance^exponent)
+    
 # vertical offset [deg] is not implemented, but could be implemented in planar to cylindrical projection
 if setting == 1:
     # Cylindrical + Projection + Blending
+    outfile = "../data/X-Plane Window Positions.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
@@ -69,16 +83,18 @@ if setting == 1:
     vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
-    blend_left_top =  [  0.0,   0.0, 279.0, 282.0]
-    blend_left_bot =  [  0.0,   0.0, 192.0, 197.0]
-    blend_right_top = [  0.0, 283.0, 287.0,   0.0]
-    blend_right_bot = [  0.0, 192.0, 205.0,   0.0]
+    # blending maximum widths per screen (0.0 means no blending) [-]
+    blend_left_top =  [  0.000000, 0.000000, 0.145313, 0.146875] 
+    blend_left_bot =  [  0.000000, 0.000000, 0.100000, 0.102604]
+    blend_right_top = [  0.000000, 0.147396, 0.149479, 0.000000]
+    blend_right_bot = [  0.000000, 0.100000, 0.106771, 0.000000]
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
     savegrid = True # save proection grid or just FOV
 elif setting == 2:
     # Projection + Blending
+    outfile = "../data/X-Plane Window Positions_PROJBLEND.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
@@ -90,16 +106,18 @@ elif setting == 2:
     vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,True,True,True]   # apply blending at sides
-    blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
-    blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
-    blend_right_top = [  0.0, 224.0, 236.0,   0.0]
-    blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
+    # blending maximum widths per screen (0.0 means no blending) [-]
+    blend_left_top =  [  0.000000, 0.000000, 0.145313, 0.146875]
+    blend_left_bot =  [  0.000000, 0.000000, 0.100000, 0.102604]
+    blend_right_top = [  0.000000, 0.147396, 0.149479, 0.000000]
+    blend_right_bot = [  0.000000, 0.100000, 0.106771, 0.000000]
     gridtest = False # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
     savegrid = True # save proection grid or just FOV
 elif setting == 3:
     # Projection + Cylindrical (grid testing with X-Plane)
+    outfile = "../data/X-Plane Window Positions_PROJCYL.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
@@ -111,19 +129,20 @@ elif setting == 3:
     vertical_shift = [0.0,12.0,0.0,3.0]    # vertical shift [pixel]
     vertical_scale = [1.0,0.99,1.0,0.970]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
-    blend_left_top =  [  0.0,   0.0, 228.0, 224.0]
-    blend_left_bot =  [  0.0,   0.0, 124.0, 156.0]
-    blend_right_top = [  0.0, 224.0, 236.0,   0.0]
-    blend_right_bot = [  0.0, 152.0, 136.0,   0.0]
+    # blending maximum widths per screen (0.0 means no blending) [-]
+    blend_left_top =  [  0.000000, 0.000000, 0.145313, 0.146875]
+    blend_left_bot =  [  0.000000, 0.000000, 0.100000, 0.102604]
+    blend_right_top = [  0.000000, 0.147396, 0.149479, 0.000000]
+    blend_right_bot = [  0.000000, 0.100000, 0.106771, 0.000000]
     gridtest = True # display grid test pattern
     blendtest = False  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
     savegrid = True # save proection grid or just FOV
 elif setting == 4:
     # None (use this for X-Plane when using warpblend with NVIDIA directly)
+    outfile = "../data/X-Plane Window Positions_NOWARPBLEND.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
-#    cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
     projection = [False,False,False,False]  # apply projection onto curved surface
     epsilon = [0.0,0.0,0.0,0.0]         # projector tilt [deg]
@@ -133,6 +152,7 @@ elif setting == 4:
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
+    # blending maximum widths per screen (0.0 means no blending) [-]
     blend_left_top = [0.0,0.0,0.0,0.0]
     blend_left_bot = [0.0,0.0,0.0,0.0]
     blend_right_top = [0.0,0.0,0.0,0.0]
@@ -143,6 +163,7 @@ elif setting == 4:
     savegrid = False # save proection grid or just FOV
 elif setting == 5:
     # Only Testing Grid
+    outfile = "../data/X-Plane Window Positions_GRIDTEST.prf"
     nmon = 4  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,False,False,False]  # apply flat plane to cylinder warping
@@ -154,6 +175,7 @@ elif setting == 5:
     vertical_shift = [0.0,0.0,0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0,1.0,1.0]    # vertical scale [-]
     blending = [False,False,False,False]   # apply blending at sides
+    # blending maximum widths per screen (0.0 means no blending) [-]
     blend_left_top = [0.0,0.0,0.0,0.0]
     blend_left_bot = [0.0,0.0,0.0,0.0]
     blend_right_top = [0.0,0.0,0.0,0.0]
@@ -164,27 +186,30 @@ elif setting == 5:
     savegrid = True # save proection grid or just FOV
 elif setting == 6:
     # Testing Single Monitor
+    outfile = "../data/X-Plane Window Positions_ONEMON.prf"
     nmon = 1  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False]  # apply flat plane to cylinder warping
     projection = [True]  # apply projection onto curved surfae
-    epsilon = [0.0]         # projector tilt [deg]
+    epsilon = [6.5]         # projector tilt [deg]
     frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
     lateral_offset = [0.0]  # lateral offset [deg]
     vertical_offset = [0.0]    # vertical offset [deg]
     vertical_shift = [0.0]    # vertical shift [pixel]
     vertical_scale = [1.0]    # vertical scale [-]
-    blending = [False]   # apply blending at sides
-    blend_left_top = [0.0]
-    blend_left_bot = [0.0]
-    blend_right_top = [0.0]
-    blend_right_bot = [0.0]
+    blending = [True]   # apply blending at sides
+    # blending maximum widths per screen (0.0 means no blending) [-]
+    blend_left_top = [0.14]
+    blend_left_bot = [0.10]
+    blend_right_top = [0.14]
+    blend_right_bot = [0.10]
     gridtest = True # display grid test pattern
-    blendtest = False  # cut blend sharp for testing
+    blendtest = True  # cut blend sharp for testing
     forwin = False  # create for windows or for linux
     savegrid = True # save proection grid or just FOV
 elif setting == 7:
     # Testing Two Monitors
+    outfile = "../data/X-Plane Window Positions_TWOMON.prf"
     nmon = 2  # number of monitors
     ceiling = True  # projector ceiling mount instead of table mount
     cylindrical = [False,True]  # apply flat plane to cylinder warping
@@ -196,6 +221,7 @@ elif setting == 7:
     vertical_shift = [0.0,0.0]    # vertical shift [pixel]
     vertical_scale = [1.0,1.0]    # vertical scale [-]
     blending = [False,False]   # apply blending at sides
+    # blending maximum widths per screen (0.0 means no blending) [-]
     blend_left_top = [0.0,0.0]
     blend_left_bot = [0.0,0.0]
     blend_right_top = [0.0,0.0]
@@ -248,112 +274,179 @@ def LineCircleCollision(linePoint1,linePoint2,circleRadius):
     return np.array([x_c,y_c])
 
 def Extrap(xmin,ymin,xmax,ymax,x):
-        # Linear Scaling Function
-        return (x - xmin) / (xmax - xmin) * (ymax - ymin) + ymin
+    # Linear Scaling Function
+    return (x - xmin) / (xmax - xmin) * (ymax - ymin) + ymin
 
 
 def PanoramaProj_inverse(thetaphi,FOVx,FOVy,vert_stretch):
-        # Formulas gracefully provided by Austin Meyer of X-Plane
-        # X-Plane Panorama Projection Inverse function: input is in normalized degrees horizontal
-        # and vertical from -1 to +1 and output is in normalized screen coordinates from -1 to 1
-        
-        fovratx = math.tan(0.5 * FOVx * d2r)
-        fovraty = math.tan(0.5 * FOVy * d2r)
-	# These are the angle limits that we WANT to see on screen at the borders of our screen.
-        max_theta = math.atan(fovratx)*r2d
-        max_psi = math.atan(fovraty)*r2d
+    # Formulas gracefully provided by Austin Meyer of X-Plane
+    # X-Plane Panorama Projection Inverse function: input is in normalized degrees horizontal
+    # and vertical from -1 to +1 and output is in normalized screen coordinates from -1 to 1
 
-        # print(max_theta,max_psi)
-        
-	# Figure out the ray angle we are trying to "look through" for this pixel
-	# in our panorama projection - it's a straight LINEAR mapping of
-	# screen space to degrees in BOTH angles!
-        theta_rad_cylinder = Extrap(-1,-max_theta , 1, max_theta , thetaphi[0]) * d2r
-        psi_tan_cylinder = Extrap(-1,-fovraty , 1, fovraty , thetaphi[1])
+    fovratx = math.tan(0.5 * FOVx * d2r)
+    fovraty = math.tan(0.5 * FOVy * d2r)
+    # These are the angle limits that we WANT to see on screen at the borders of our screen.
+    max_theta = math.atan(fovratx)*r2d
+    max_psi = math.atan(fovraty)*r2d
 
-        # CYLINDRICAL RENDERING:
-        psi_rad_cylinder = math.atan(psi_tan_cylinder)
+    # print(max_theta,max_psi)
 
-        # SPHERICAL RENDERING
-        # psi_rad_cylinder = Extrap(-1,-max_psi , 1, max_psi , thetaphi[1]) * d2r
+    # Figure out the ray angle we are trying to "look through" for this pixel
+    # in our panorama projection - it's a straight LINEAR mapping of
+    # screen space to degrees in BOTH angles!
+    theta_rad_cylinder = Extrap(-1,-max_theta , 1, max_theta , thetaphi[0]) * d2r
+    psi_tan_cylinder = Extrap(-1,-fovraty , 1, fovraty , thetaphi[1])
 
-        # print(theta_rad_cylinder,psi_rad_cylinder)
-        
-	# Now here's how we "back project" from panorama to planar projection: in planar projection
-	# you can think of the X and Y coordinates on screen
-        # (in normalized ratios from -fov-rat to fov-rat)
-	# to be in "tangent" space.
-	# So we can take our look vector, divide out Z (which is always the divisor
-        # of the two right triangles
-	# in eye space) and we get a pair of tangent ratios.
-        vec = np.zeros(3)
-        vec[0] = math.cos(psi_rad_cylinder) * math.sin(theta_rad_cylinder)
-        vec[1] = math.sin(psi_rad_cylinder)
-        vec[2] = math.cos(psi_rad_cylinder) * math.cos(theta_rad_cylinder)
+    # CYLINDRICAL RENDERING:
+    psi_rad_cylinder = math.atan(psi_tan_cylinder)
 
-        # print(vec)
-        
-	# This is the tangent ratios that match our desired look vector (which was computed from degrees
-	# since the destination screen is mapped in degrees.)
-	# Since a planar projection is distributed IN tangent ratios,
-        # we can just do a linear lookup and we are done.
-        xy = np.zeros(2)
-        xy[0] = Extrap(-fovratx,-1 , fovratx,1 , vec[0]/vec[2])
-        xy[1] = Extrap(-fovraty,-1 , fovraty,1 , vec[1]/vec[2]) * vert_stretch
+    # SPHERICAL RENDERING
+    # psi_rad_cylinder = Extrap(-1,-max_psi , 1, max_psi , thetaphi[1]) * d2r
 
-        return xy
+    # print(theta_rad_cylinder,psi_rad_cylinder)
+
+    # Now here's how we "back project" from panorama to planar projection: in planar projection
+    # you can think of the X and Y coordinates on screen
+    # (in normalized ratios from -fov-rat to fov-rat)
+    # to be in "tangent" space.
+    # So we can take our look vector, divide out Z (which is always the divisor
+    # of the two right triangles
+    # in eye space) and we get a pair of tangent ratios.
+    vec = np.zeros(3)
+    vec[0] = math.cos(psi_rad_cylinder) * math.sin(theta_rad_cylinder)
+    vec[1] = math.sin(psi_rad_cylinder)
+    vec[2] = math.cos(psi_rad_cylinder) * math.cos(theta_rad_cylinder)
+
+    # print(vec)
+
+    # This is the tangent ratios that match our desired look vector (which was computed from degrees
+    # since the destination screen is mapped in degrees.)
+    # Since a planar projection is distributed IN tangent ratios,
+    # we can just do a linear lookup and we are done.
+    xy = np.zeros(2)
+    xy[0] = Extrap(-fovratx,-1 , fovratx,1 , vec[0]/vec[2])
+    xy[1] = Extrap(-fovraty,-1 , fovraty,1 , vec[1]/vec[2]) * vert_stretch
+
+    return xy
 
 def PanoramaProj_forward(xy,FOVx,FOVy,vert_stretch):
-        # Formulas gracefully provided by Austin Meyer of X-Plane
-        # X-Plane Panorama Projection forward function: input is in normalized screen coordinates
-        # from -1 to 1 and output normalized degrees horizontal and vertical from -1 to +1
+    # Formulas gracefully provided by Austin Meyer of X-Plane
+    # X-Plane Panorama Projection forward function: input is in normalized screen coordinates
+    # from -1 to 1 and output normalized degrees horizontal and vertical from -1 to +1
 
-        fovratx = math.tan(0.5 * FOVx * d2r)
-        fovraty = math.tan(0.5 * FOVy * d2r)
-	# These are the angle limits that we WANT to see on screen at the borders of our screen.
-        max_theta = math.atan(fovratx)*r2d
-        max_psi = math.atan(fovraty)*r2d
+    fovratx = math.tan(0.5 * FOVx * d2r)
+    fovraty = math.tan(0.5 * FOVy * d2r)
+    # These are the angle limits that we WANT to see on screen at the borders of our screen.
+    max_theta = math.atan(fovratx)*r2d
+    max_psi = math.atan(fovraty)*r2d
 
-        # print(max_theta,max_psi)
-        
-	# Figure out the ray angle we are trying to "look through" for this pixel
-	# in our panorama projection - it's a straight LINEAR mapping of
-	# screen space to degrees in BOTH angles!
-        x_tan_cylinder = Extrap(-1,-fovratx , 1, fovratx , xy[0])
-        theta_rad_cylinder = math.atan(x_tan_cylinder)
-        y_tan_cylinder = Extrap(-1,-fovraty , 1, fovraty , xy[1]/vert_stretch)
-        psi_rad_cylinder = math.atan(y_tan_cylinder / math.sqrt(x_tan_cylinder*x_tan_cylinder + 1))
+    # print(max_theta,max_psi)
 
-        # print(theta_rad_cylinder,psi_rad_cylinder)
-        
-	# Now here's how we "back project" from panorama to planar projection: in planar projection
-	# you can think of the X and Y coordinates on screen
-        # (in normalized ratios from -fov-rat to fov-rat)
-	# to be in "tangent" space.
-	# So we can take our look vector, divide out Z (which is always the divisor
-        # of the two right triangles
-	# in eye space) and we get a pair of tangent ratios.
-        vec = np.zeros(3)
-        vec[0] = math.cos(psi_rad_cylinder) * math.sin(theta_rad_cylinder)
-        vec[1] = math.sin(psi_rad_cylinder)
-        vec[2] = math.cos(psi_rad_cylinder) * math.cos(theta_rad_cylinder)
+    # Figure out the ray angle we are trying to "look through" for this pixel
+    # in our panorama projection - it's a straight LINEAR mapping of
+    # screen space to degrees in BOTH angles!
+    x_tan_cylinder = Extrap(-1,-fovratx , 1, fovratx , xy[0])
+    theta_rad_cylinder = math.atan(x_tan_cylinder)
+    y_tan_cylinder = Extrap(-1,-fovraty , 1, fovraty , xy[1]/vert_stretch)
+    psi_rad_cylinder = math.atan(y_tan_cylinder / math.sqrt(x_tan_cylinder*x_tan_cylinder + 1))
 
-        # print(vec)
-        
-	# This is the tangent ratios that match our desired look vector (which was computed from degrees
-	# since the destination screen is mapped in degrees.)
-	# Since a planar projection is distributed IN tangent ratios,
-        # we can just do a linear lookup and we are done.
-        thetaphi = np.zeros(2)
-        thetaphi[0] = Extrap(-max_theta,-1 , max_theta,1 , theta_rad_cylinder * r2d)
+    # print(theta_rad_cylinder,psi_rad_cylinder)
 
-        # CYLINDRICAL RENDERING:
-        thetaphi[1] = Extrap(-fovraty,-1 , fovraty,1 , math.tan(psi_rad_cylinder))
+    # Now here's how we "back project" from panorama to planar projection: in planar projection
+    # you can think of the X and Y coordinates on screen
+    # (in normalized ratios from -fov-rat to fov-rat)
+    # to be in "tangent" space.
+    # So we can take our look vector, divide out Z (which is always the divisor
+    # of the two right triangles
+    # in eye space) and we get a pair of tangent ratios.
+    vec = np.zeros(3)
+    vec[0] = math.cos(psi_rad_cylinder) * math.sin(theta_rad_cylinder)
+    vec[1] = math.sin(psi_rad_cylinder)
+    vec[2] = math.cos(psi_rad_cylinder) * math.cos(theta_rad_cylinder)
 
-        # SPHERICAL RENDERING:
-        # thetaphi[1] = Extrap(-max_psi,-1 , max_psi,1 , psi_rad_cylinder * r2d) 
+    # print(vec)
 
-        return thetaphi
+    # This is the tangent ratios that match our desired look vector (which was computed from degrees
+    # since the destination screen is mapped in degrees.)
+    # Since a planar projection is distributed IN tangent ratios,
+    # we can just do a linear lookup and we are done.
+    thetaphi = np.zeros(2)
+    thetaphi[0] = Extrap(-max_theta,-1 , max_theta,1 , theta_rad_cylinder * r2d)
+
+    # CYLINDRICAL RENDERING:
+    thetaphi[1] = Extrap(-fovraty,-1 , fovraty,1 , math.tan(psi_rad_cylinder))
+
+    # SPHERICAL RENDERING:
+    # thetaphi[1] = Extrap(-max_psi,-1 , max_psi,1 , psi_rad_cylinder * r2d) 
+
+    return thetaphi
+
+
+def create_blendimage_unwarped(left_top,left_bot,right_top,right_bot):
+    # returns full blendimage (e.g. for NVIDIA driver) in unwarped display space
+    # would only be applied if warp-after-blend is working in NVIDIA
+    
+    blendimage = np.zeros((nx, ny))
+
+    for y in range(0,ny,1):
+        xl = (y/(ny-1) * left_bot + (1.0-y/(ny-1)) * left_top)*(nx-1)
+        xr = (y/(ny-1) * right_bot + (1.0-y/(ny-1)) * right_top)*(nx-1)
+
+        xval = [0.0,0.33*xl,0.66*xl,1.0*xl,nx-1-1.0*xr,nx-1-0.66*xr,nx-1-0.33*xr,nx-1]
+        yval = [blend_alpha[0],blend_alpha[1],blend_alpha[2],blend_alpha[3],
+                blend_alpha[3],blend_alpha[2],blend_alpha[1],blend_alpha[0]]
+
+        # no blending if blend corner is at edge
+        if (xl == 0.0):
+            yval[0] = 1.0
+            yval[1] = 1.0
+            yval[2] = 1.0
+            yval[3] = 1.0
+        if (xr == 0.0):
+            yval[4] = 1.0
+            yval[5] = 1.0
+            yval[6] = 1.0
+            yval[7] = 1.0
+        blendimage[:,y] = np.interp(range(0,nx),xval,yval)        
+
+    return blendimage
+
+def create_blendgrid_warped(left_top,left_bot,right_top,right_bot,xwarp,ywarp):
+    # returns blending grid in warped space. Currently simplified assumption
+    # of warping is done.
+    # safe for applying in XP12 natively (after version 12.10, when a blending image can be read)
+    
+    blendgrid = np.zeros((ngx, ngy))
+
+    for gy in range(0,ngy,1):
+    #for gy in range(0,1,1):
+
+        x0 = xdif[0,gy]
+        x1 = xdif[ngx-1,gy]
+        xl = (gy/(ngy-1) * left_bot + (1.0-gy/(ngy-1)) * left_top) * (nx-1)
+        xr = (gy/(ngy-1) * right_bot + (1.0-gy/(ngy-1)) * right_top)*(nx-1)
+        #print(str(xl)+" "+str(xr))
+        for gx in range(0,ngx,1):
+
+            if (gx < ngx/2):
+                # left blending until center of image
+                if (xl == 0.0):
+                    blendgrid[gx,gy] = 1.0
+                else:
+                    blendgrid[gx,gy] = min((max(xwarp[gx,gy],0.0)/xl)**blend_exp,1.0)
+            else:
+                # right blending starting at center of image
+                if (xr == 0.0):
+                    blendgrid[gx,gy] = 1.0
+                else:
+                    blendgrid[gx,gy] = min((max(nx-xwarp[gx,gy],0.0)/xr)**blend_exp,1.0)
+                    
+            #print(str(gx)+" "+str(xwarp[gx,gy])+" "+str(xl)+" "+str(xr)+" "+str(blendgrid[gx,gy]))
+
+    blendgrid = np.flip(blendgrid,1)
+            
+    return blendgrid
+
 
 
 # --------- START OF MAIN CODE ------------
@@ -462,10 +555,9 @@ for mon in range(0,nmon,1):
     # grid horizontal: gx from left to right
     for gy in range(0,ngy,1):
         for gx in range(0,ngx,1):
-#    for gy in range(0,1,1):
-#        for gx in range(0,1,1):
             
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
+            # ARE WE SURE WE RANGE FROM 0 .. nx? OR RATHER 0 .. nx-1?
             px = float(nx) * float(gx) / float(ngx-1)
             py = float(ny) * float(gy) / float(ngy-1)
             xabs[gx,gy] = px
@@ -649,10 +741,11 @@ for mon in range(0,nmon,1):
         con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_panel_only"+"\n")
     else:
         con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_normal_visuals"+"\n")
-    if newformat:
+    if xp12:
         con.write("monitor/"+str(mon)+"/proj/proj_cylinder 0"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/proj_sphere 0"+"\n")        
-    con.write("monitor/"+str(mon)+"/proj/window_2d_off 1"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/proj_sphere 0"+"\n")
+    else:
+        con.write("monitor/"+str(mon)+"/proj/window_2d_off 1"+"\n") 
     if cylindrical[mon]:
         con.write("monitor/"+str(mon)+"/proj/diff_FOV 1"+"\n")
     else:
@@ -664,7 +757,7 @@ for mon in range(0,nmon,1):
     con.write("monitor/"+str(mon)+"/proj/off_vrt_deg "+str(format(vertical_offset[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/off_lat_deg "+str(format(lateral_offset[mon],('.6f')))+"\n")
     con.write("monitor/"+str(mon)+"/proj/off_phi_deg 0.000000"+"\n")
-    if newformat:
+    if xp12:
         if gridtest:
             con.write("monitor/"+str(mon)+"/proj/grid_rat_config 1"+"\n")
         else:
@@ -673,8 +766,11 @@ for mon in range(0,nmon,1):
             con.write("monitor/"+str(mon)+"/proj/grid_rat_render 1"+"\n")
         else:
             con.write("monitor/"+str(mon)+"/proj/grid_rat_render 0"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/grid_rat_drag_dim_i 4"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/grid_rat_drag_dim_j 4"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_opacity_pct 100.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_drag_dim_i "+str(dragx)+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_drag_dim_j "+str(dragy)+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_step_dim_i "+str(stepx)+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_step_dim_j "+str(stepy)+"\n")
 
     else:
         if gridtest:
@@ -685,27 +781,52 @@ for mon in range(0,nmon,1):
             con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 1"+"\n")
         else:
             con.write("monitor/"+str(mon)+"/proj/grid_os_on_render 0"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_i 4"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_j 4"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_i "+str(dragx)+"\n")
+        con.write("monitor/"+str(mon)+"/proj/grid_os_drag_dim_j "+str(dragy)+"\n")
 
     # write grid per monitor
-    if newformat:
-        for gx in range(0,ngx,1):
-            for gy in range(0,ngy,1):
-                con.write("monitor/"+str(mon)+"/proj/grid_ini_x"+str(gx)+"/"+str(gy)+" "
-                          +str(format((xabs[gx,gy]+xdif[gx,gy])/float(nx),('.6f')))+"\n")
-        for gx in range(0,ngx,1):
-            for gy in range(0,ngy,1):
-                con.write("monitor/"+str(mon)+"/proj/grid_ini_y"+str(gx)+"/"+str(gy)+" "
-                          +str(format((yabs[gx,gy]+ydif[gx,gy])/float(ny),('.6f')))+"\n")
-        for gx in range(0,ngx,1):
-            for gy in range(0,ngy,1):
-                con.write("monitor/"+str(mon)+"/proj/grid_off_x"+str(gx)+"/"+str(gy)+" "
-                          +str(format(0.0,('.6f')))+"\n")
-        for gx in range(0,ngx,1):
-            for gy in range(0,ngy,1):
-                con.write("monitor/"+str(mon)+"/proj/grid_off_y"+str(gx)+"/"+str(gy)+" "
-                          +str(format(0.0,('.6f')))+"\n")
+    if xp12:
+        if (projection[mon] or cylindrical[mon]) and savegrid:
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                    con.write("monitor/"+str(mon)+"/proj/grid_ini_x"+str(gx)+"/"+str(gy)+" "
+                              +str(format((xabs[gx,gy]+xdif[gx,gy])/float(nx),('.6f')))+"\n")
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                    con.write("monitor/"+str(mon)+"/proj/grid_ini_y"+str(gx)+"/"+str(gy)+" "
+                              +str(format((yabs[gx,gy]+ydif[gx,gy])/float(ny),('.6f')))+"\n")
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                    con.write("monitor/"+str(mon)+"/proj/grid_off_x"+str(gx)+"/"+str(gy)+" "
+                              +str(format(0.0,('.6f')))+"\n")
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                    con.write("monitor/"+str(mon)+"/proj/grid_off_y"+str(gx)+"/"+str(gy)+" "
+                              +str(format(0.0,('.6f')))+"\n")
+
+        if blending[mon]:
+            # Generate XP12 Blending Grid in warped and not display space
+            blendgrid = create_blendgrid_warped(blend_left_top[mon],blend_left_bot[mon],
+                                                blend_right_top[mon],blend_right_bot[mon],
+                                                xabs+xdif,xabs+ydif)
+
+            if blendtest:
+                blendgrid[blendgrid<1.0] = 0.0
+                
+            #print(str(blendgrid[0:20,0]))
+            
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                    con.write("monitor/"+str(mon)+"/proj/grid_mul_r"+str(gx)+"/"+str(gy)+" "
+                              +str(format(blendgrid[gx,gy],('.6f')))+"\n")
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                        con.write("monitor/"+str(mon)+"/proj/grid_mul_g"+str(gx)+"/"+str(gy)+" "
+                                  +str(format(blendgrid[gx,gy],('.6f')))+"\n")
+            for gx in range(0,ngx,1):
+                for gy in range(0,ngy,1):
+                    con.write("monitor/"+str(mon)+"/proj/grid_mul_b"+str(gx)+"/"+str(gy)+" "
+                              +str(format(blendgrid[gx,gy],('.6f')))+"\n")
     else:
         if (projection[mon] or cylindrical[mon]) and savegrid:
             for gx in range(0,ngx,1):
@@ -718,28 +839,31 @@ for mon in range(0,nmon,1):
 
     # write blending per monitor
 
-    if newformat:
+    if xp12:
+        # Blending in XP12 is done via the RGB blending map (above grid)
         con.write("monitor/"+str(mon)+"/proj/edge_blend_config 0"+"\n")
         if blending[mon]:
-            con.write("monitor/"+str(mon)+"/proj/edge_blend_lft 1"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/edge_blend_rgt 1"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/edge_blend_bot 1"+"\n")
-            con.write("monitor/"+str(mon)+"/proj/edge_blend_top 1"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_lft 0"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_rgt 0"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_bot 0"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_top 0"+"\n")
         else:
             con.write("monitor/"+str(mon)+"/proj/edge_blend_lft 0"+"\n")
             con.write("monitor/"+str(mon)+"/proj/edge_blend_rgt 0"+"\n")
             con.write("monitor/"+str(mon)+"/proj/edge_blend_bot 0"+"\n")
             con.write("monitor/"+str(mon)+"/proj/edge_blend_top 0"+"\n")
 
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_lft -15.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_rgt 15.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_bot -15.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_top 15.00000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_lft -15.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_rgt 15.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_bot -15.000000"+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_top 15.000000"+"\n")
 
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft 1.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt 1.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot 1.00000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top 1.00000"+"\n")
+        # We also save the actual blend distance values here for the NVIDIA blending
+        # Note that these values cannot be used by X-Plane. It uses the RGB blend map
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft "+str(format(blend_left_top[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt "+str(format(blend_right_top[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot "+str(format(blend_left_bot[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top "+str(format(blend_right_bot[mon],('.6f')))+"\n")
         
     else:
         if blending[mon]:
@@ -748,12 +872,12 @@ for mon in range(0,nmon,1):
             con.write("monitor/"+str(mon)+"/proj/gradient_on 0"+"\n")
 
 
-        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/0 "+str(format(blend_left_top[mon],('.6f')))+"\n")
-        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/1 "+str(format(blend_right_top[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/0 "+str(format(blend_left_top[mon]*nx,('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_top/1 "+str(format(blend_right_top[mon]*nx,('.6f')))+"\n")
         con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/0 0.000000"+"\n")
         con.write("monitor/"+str(mon)+"/proj/gradient_width_ctr/1 0.000000"+"\n")
-        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon],('.6f')))+"\n")
-        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon],('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/0 "+str(format(blend_left_bot[mon]*nx,('.6f')))+"\n")
+        con.write("monitor/"+str(mon)+"/proj/gradient_width_bot/1 "+str(format(blend_right_bot[mon]*nx,('.6f')))+"\n")
         if blendtest:
                 con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
                 con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.000000"+"\n")
@@ -764,14 +888,14 @@ for mon in range(0,nmon,1):
                 con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.000000"+"\n")
                 con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
         else:
-                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 1.000000"+"\n")
-                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 0.800000"+"\n")
-                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 0.450000"+"\n")
-                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 0.000000"+"\n")
-                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 1.000000"+"\n")
-                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 0.800000"+"\n")
-                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 0.450000"+"\n")
-                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 0.000000"+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/0 "+str(format(blend_alpha[3],('.6f')))+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/1 "+str(format(blend_alpha[2],('.6f')))+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/2 "+str(format(blend_alpha[1],('.6f')))+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/0/3 "+str(format(blend_alpha[0],('.6f')))+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/0 "+str(format(blend_alpha[3],('.6f')))+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/1 "+str(format(blend_alpha[2],('.6f')))+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/2 "+str(format(blend_alpha[1],('.6f')))+"\n")
+                con.write("monitor/"+str(mon)+"/proj/gradient_alpha/1/3 "+str(format(blend_alpha[0],('.6f')))+"\n")
 
     if doplot:
         plot.figure(figsize=(16,10))

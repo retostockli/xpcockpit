@@ -21,11 +21,13 @@ sudo apt install evolution -y
 sudo apt install p7zip -y
 sudo apt install imagemagick -y
 sudo apt install libxnvctrl-dev
-sudo apt install solaar
-sudo apt install python3-numpy
-sudo apt install python3-matplotlib
-sudo apt install libfreeimage3
-sudo apt install libzip4
+sudo apt install solaar -y
+sudo apt install python3-numpy -y
+sudo apt install python3-matplotlib -y
+sudo apt install libfreeimage3 -7
+sudo apt install libzip4 -y
+sudo apt install libxcb-cursor-dev -y
+sudo apt install libssl-dev -y
 
 #sudo apt install libsecret-tools
 
