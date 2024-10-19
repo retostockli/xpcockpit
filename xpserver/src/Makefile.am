@@ -1,7 +1,7 @@
 # Build a shared Library as a plugin by NOT using Libtool
 
 # install directories
-bindir = $(prefix)/plugins/$(PACKAGE_NAME)
+bindir = $(prefix)/$(PACKAGE_NAME)
 
 # library names (Only 64 bit plugins are built)
 bin_PROGRAMS = @os@.xpl
