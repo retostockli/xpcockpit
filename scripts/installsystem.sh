@@ -35,3 +35,18 @@ gsettings set org.gnome.desktop.peripherals.mouse middle-click-emulation true
 
 #secret-tool store --label='KeePassXC' 'keepass' 'default'
 #https://github.com/keepassxreboot/keepassxc/issues/1267
+
+#/etc/hosts:
+# Flight Sim Hosts
+192.168.1.10	yakari
+192.168.1.51	mcp
+192.168.1.52	mip
+192.168.1.53	pedestal
+192.168.1.61	fmc1
+192.168.1.62	fmc2
+192.168.1.63	du1
+192.168.1.64	eicas
+192.168.1.65	du2
+192.168.1.90	raspberrypi
+
+
