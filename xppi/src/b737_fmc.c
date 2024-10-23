@@ -257,7 +257,9 @@ void b737_fmc_exit(void)
     pthread_join(poll_thread, NULL);
     
     /* fix for running soft pwm in fmc: turn off background lighting */
+#ifdef PIGPIO
     gpioPWM(bgl_pwm_pin, 0);
+#endif
   }
 }
 
