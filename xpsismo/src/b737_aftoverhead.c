@@ -780,8 +780,17 @@ void b737_aftoverhead(void)
   if ((acf_type == 2) || (acf_type == 3)) {
     /* Switches: 4/5 */
     /* ANNs: */
+     
     i0=4;
     o0=0;
+
+    float *reverser1 = link_dataref_flt("laminar/B738/annunciator/reverser_fail_0",0);
+    float *reverser2 = link_dataref_flt("laminar/B738/annunciator/reverser_fail_1",0);
+
+    ret = digital_outputf(card,o0+2,reverser1);
+    ret = digital_outputf(card,o0+3,reverser2);
+
+    /*
     if (*avionics_on != 1) {
       ret = digital_output(card,o0+0,&one);
       ret = digital_output(card,o0+1,&one);
@@ -792,15 +801,16 @@ void b737_aftoverhead(void)
       ret = digital_output(card,o0+6,&one);
       ret = digital_output(card,o0+7,&one);
     } else {
-      ret = digital_output(card,o0+0,&zero);
-      ret = digital_output(card,o0+1,&zero);
-      ret = digital_output(card,o0+2,&zero);
-      ret = digital_output(card,o0+3,&zero);
+    */
+    ret = digital_output(card,o0+0,&zero); // engine control 1
+    ret = digital_output(card,o0+1,&zero); // engine control 2
+    //ret = digital_output(card,o0+2,&zero);
+    //ret = digital_output(card,o0+3,&zero);
       ret = digital_output(card,o0+4,&zero);
       ret = digital_output(card,o0+5,&zero);
       ret = digital_output(card,o0+6,&zero);
       ret = digital_output(card,o0+7,&zero);
-    }
+      //}
   }
 
   /*** CREW OXYGEN Panel ***/
