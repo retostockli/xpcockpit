@@ -66,6 +66,8 @@ namespace OpenGC
     bool is_captain = (this->GetArg() == 0);
 
     float lineWidth = 3.0;
+    float fontHeight = 5;
+    float fontWidth = 5;
    
     // indicated air speed (knots)
     float *speed_knots;
@@ -97,6 +99,10 @@ namespace OpenGC
       ap_speed_is_mach = link_dataref_int("sim/cockpit/autopilot/airspeed_is_mach");  
     }
  
+    float *ias_disagree;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      ias_disagree = link_dataref_flt("laminar/B738/autopilot/ias_disagree",0);
+    }
     
     // minimum and maximum speeds
     float *min_speed;
@@ -221,8 +227,6 @@ namespace OpenGC
       // units
       float tickSpacing = 11.3;
       float tickWidth = 3.7;
-      float fontHeight = 5;
-      float fontWidth = 5;
       float fontIndent = 6;
 
       m_pFontManager->SetSize(m_Font, fontHeight, fontWidth);
@@ -655,6 +659,19 @@ namespace OpenGC
 	  glVertex2f(indent_x - tickWidth/2, vLocation);
 	  glVertex2f(indent_x - tickWidth/2 + tickWidth/3, vLocation + tickWidth/2);
 	  glEnd();
+	}
+      }
+
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if (*ias_disagree == 1.0) {
+	  glColor3ub(COLOR_ORANGE);
+	  fontWidth = 3.5;
+	  fontHeight = 4.0;
+	  m_pFontManager->SetSize(m_Font, 0.95*fontWidth, fontHeight);
+	  snprintf(buffer, sizeof(buffer), "IAS");
+	  m_pFontManager->Print(0.0,2.5*fontHeight, &buffer[0], m_Font);
+	  snprintf(buffer, sizeof(buffer), "DISAGREE");
+	  m_pFontManager->Print(0.0,1.0*fontHeight, &buffer[0], m_Font);
 	}
       }
       

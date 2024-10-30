@@ -171,7 +171,7 @@ namespace OpenGC
 	} else if (*n1_mode == 10) {
 	  sprintf(buf, "CRZ");
 	} else if (*n1_mode == 11) {
-	  sprintf(buf, "G\/A");
+	  sprintf(buf, "G/A");
 	} else if (*n1_mode == 12) {
 	  sprintf(buf, "CON");
 	} else {

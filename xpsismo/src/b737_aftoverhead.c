@@ -784,11 +784,19 @@ void b737_aftoverhead(void)
     i0=4;
     o0=0;
 
-    float *reverser1 = link_dataref_flt("laminar/B738/annunciator/reverser_fail_0",0);
-    float *reverser2 = link_dataref_flt("laminar/B738/annunciator/reverser_fail_1",0);
+    float *reverser_fail_1 = link_dataref_flt("laminar/B738/annunciator/reverser_fail_0",0);
+    float *reverser_fail_2 = link_dataref_flt("laminar/B738/annunciator/reverser_fail_1",0);
+    float *fadec_fail_1 = link_dataref_flt("laminar/B738/annunciator/fadec_fail_0",0);
+    float *fadec_fail_2 = link_dataref_flt("laminar/B738/annunciator/fadec_fail_1",0);
+    float *fadec_off_1 = link_dataref_flt("laminar/B738/annunciator/fadec1_off",0);
+    float *fadec_off_2 = link_dataref_flt("laminar/B738/annunciator/fadec2_off",0);
 
-    ret = digital_outputf(card,o0+2,reverser1);
-    ret = digital_outputf(card,o0+3,reverser2);
+    ret = digital_outputf(card,o0+0,fadec_fail_1);
+    ret = digital_outputf(card,o0+1,fadec_fail_2);
+    ret = digital_outputf(card,o0+2,reverser_fail_1);
+    ret = digital_outputf(card,o0+3,reverser_fail_2);
+    ret = digital_outputf(card,o0+4,fadec_off_1);
+    ret = digital_outputf(card,o0+5,fadec_off_2);
 
     /*
     if (*avionics_on != 1) {
@@ -802,12 +810,12 @@ void b737_aftoverhead(void)
       ret = digital_output(card,o0+7,&one);
     } else {
     */
-    ret = digital_output(card,o0+0,&zero); // engine control 1
-    ret = digital_output(card,o0+1,&zero); // engine control 2
+    //ret = digital_output(card,o0+0,&zero); // engine control 1
+    //ret = digital_output(card,o0+1,&zero); // engine control 2
     //ret = digital_output(card,o0+2,&zero);
     //ret = digital_output(card,o0+3,&zero);
-      ret = digital_output(card,o0+4,&zero);
-      ret = digital_output(card,o0+5,&zero);
+    //  ret = digital_output(card,o0+4,&zero);
+    //  ret = digital_output(card,o0+5,&zero);
       ret = digital_output(card,o0+6,&zero);
       ret = digital_output(card,o0+7,&zero);
       //}

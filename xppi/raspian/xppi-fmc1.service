@@ -7,8 +7,10 @@ Type=simple
 #User=stockli
 #Group=stockli
 ExecStartPre=sleep 10
-ExecStart=sudo /home/stockli/xpcockpit/xppi/bin/xppi boeing737fmc1 
-ExecStop=sudo /bin/kill $MAINPID
+#ExecStart=sudo /home/stockli/xpcockpit/xppi/bin/xppi boeing737fmc1 
+#ExecStop=sudo /bin/kill $MAINPID
+ExecStart=/home/stockli/xpcockpit/xppi/bin/xppi boeing737fmc1 
+ExecStop=/bin/kill $MAINPID
 
 [Install]
 WantedBy=default.target

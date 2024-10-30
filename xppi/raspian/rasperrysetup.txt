@@ -106,7 +106,6 @@ cp *.service ~/.config/systemd/user
 sudo apt install x11-apps -y
 sudo apt install emacs -y
 sudo apt install libfltk1.3-dev -y
-sudo apt install libftgl-dev -y
 sudo apt install libfreetype6-dev -y
 sudo apt install libudev-dev -y
 sudo apt install build-essential -y
@@ -121,10 +120,11 @@ mkdir -p ~/X-Plane\ 11/Resources/default\ scenery/default\ apt\ dat/Earth\ nav\ 
 
 # WiringPi is alive again
 https://github.com/WiringPi/WiringPi/releases
+git@github.com:WiringPi/WiringPi.git
 
 However, xppi uses pigpio first if available, so you need to remove it:
-Remove pigpio and pigpiod
-remove unused packages (will remove pigpio header and library etc.)
+sudo apt remove libpigpio-dev pigpiod
+sudo apt autoremove
 
 # Update Rasperry OS to Bullseye
 sudo apt update
