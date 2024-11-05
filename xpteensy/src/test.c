@@ -40,8 +40,8 @@ void init_test(void)
 {
   int te = 0;
 
-  teensy[te].pinmode[0] = PINMODE_PWM;
-  //  teensy[te].pinmode[0] = PINMODE_OUTPUT;
+  //teensy[te].pinmode[0] = PINMODE_PWM;
+  teensy[te].pinmode[0] = PINMODE_OUTPUT;
   teensy[te].pinmode[3] = PINMODE_INPUT;
   teensy[te].pinmode[6] = PINMODE_INTERRUPT;
   teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
@@ -100,7 +100,7 @@ void test(void)
   /* set LED connected to first output (#0) to value landing lights dataref */
   digitalvalue = 1;
   analogvalue = 0.5;
-  //ret = digital_output(te, 0, &digitalvalue);
-  ret = analog_output(te, 0, &analogvalue,0.0,1.0);
+  ret = digital_output(te, 0, &digitalvalue);
+  //ret = analog_output(te, 0, &analogvalue,0.0,1.0);
   
 }

@@ -100,7 +100,7 @@ void loop() {
 
   udp_receive();
 
-  //udp_send();
+  teensy_poll();
 
   delay(1); /* We need a maximum of 1 ms delay to capture fast changing encoders */
 }

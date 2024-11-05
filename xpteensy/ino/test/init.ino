@@ -13,7 +13,7 @@ void init() {
   }
 	teensy_data.connected = 1;
 
-  // SET TEENSY 4.1 for now
+  // SET for TEENSY 4.1 for now
 	teensy_data.num_pins = 42;
 	
   if (DEBUG) {

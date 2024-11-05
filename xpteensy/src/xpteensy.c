@@ -1,6 +1,6 @@
-/* This is the xpteensy.c code. It is the main wrapper to libteensy.c, serverdata.c and handleserver.c
+/* This is the xpteensy.c code. It is the main wrapper to libteensy.c,
    which communicates flight data to/from the X-Plane flight simulator via TCP/IP interface 
-   and connects to Teensy Boards with an Ethernet Shield via UDP.
+   and connects to Teensy Boards via Ethernet and using the UDP protocol.
 
    Copyright (C) 2021-2024  Reto Stockli
 
@@ -88,15 +88,17 @@ int main(int argc, char **argv) {
 
   while (1) {
 
-    /* receive data from SISMO ards */
-    //if (read_teensy() < 0) exit_teensy(-8);
+    /* receive data from Teensy */
+    if (read_teensy() < 0) exit_teensy(-8);
       
     /* check for TCP/IP connection to X-Plane */
     if (check_xpserver()<0) exit_teensy(-9);
  
     /* receive data from X-Plane via TCP/IP */
     if (receive_xpserver()<0) exit_teensy(-10);
-    
+
+    /* read aircraft identifier to use it in user
+       space modules which may have aircraft specific logic */
     check_aircraft();
  
     /**** User Modules Follow Here ****/
@@ -107,7 +109,7 @@ int main(int argc, char **argv) {
 
     /**** User Modules End Here ****/
     
-    /* send data to SISMO ards */
+    /* send data to Teensy */
     if (write_teensy() < 0) exit_teensy(-11);
 
     /* send data to X-Plane via TCP/IP */

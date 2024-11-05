@@ -14,6 +14,24 @@
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. */
 
+  /*
+
+     NEW PROTOCOL: 10 Bytes on send and receive
+     BYTE   | MEANING
+     0-1    | Identifier (Characters TE for Teensy)
+     2-3    | Last two Bytes of MAC address
+     4      | Init Send, Regular Send, Shutdown etc.
+     5      | Device Type
+     6      | Device Number
+     7      | Pin Number
+     8-11   | 32 bit integer data storage
+ 
+     In case the server sends an initialization as input to a specific pin
+     Teensy will send back the current input value. This is important to get
+     initial states after every new connect 
+
+  */
+
 #define TEENSY_ID1 0x54 /* T */
 #define TEENSY_ID2 0x45 /* E */
 

@@ -48,24 +48,6 @@ mcp23008_struct mcp23008[MAXTEENSYS][MAX_DEV];
 mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 
-  /*
-
-     NEW PROTOCOL: 10 Bytes on send and receive
-     BYTE   | MEANING
-     0-1    | Identifier (Characters TE for Teensy)
-     2-3    | Last two Bytes of MAC address
-     4      | Init Send, Regular Send, Shutdown etc.
-     5      | Device Type
-     6      | Device Number
-     7      | Pin Number
-     8-11   | 32 bit integer data storage
- 
-     In case the server sends an initialization as input to a specific pin
-     Teensy will send back the current input value. This is important to get
-     initial states after every new connect 
-
-  */
-
 int init_teensy() {
   
   int ret;
@@ -150,175 +132,86 @@ int write_teensy() {
 }
 
 
-/* int read_teensy() { */
+int read_teensy() {
 
-/*   int tee; */
-/*   short int val; */
-/*   int input; */
-/*   int i,s,p; */
+  int te;
+  int recv_type;
+  int dev_type;
+  int dev_num;
+  int pin;
+  short int val;
  
-/*   //printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN); */
+  //printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
   
-/*   while (udpReadLeft >= RECVMSGLEN) { */
+  while (udpReadLeft >= RECVMSGLEN) {
     
-/*     tee = -1; */
-    
-/*     /\* empty UDP receive buffer instead of directly accessing the device *\/ */
-
-/*     pthread_mutex_lock(&udp_exit_cond_lock);     */
-/*     /\* read from start of receive buffer *\/ */
-/*     memcpy(teensyRecvBuffer,&udpRecvBuffer[0],RECVMSGLEN); */
-/*     /\* shift remaining read buffer to the left *\/ */
-/*     memmove(&udpRecvBuffer[0],&udpRecvBuffer[RECVMSGLEN],udpReadLeft-RECVMSGLEN);     */
-/*     /\* decrease read buffer position and counter *\/ */
-/*     udpReadLeft -= RECVMSGLEN; */
-/*     pthread_mutex_unlock(&udp_exit_cond_lock); */
-
-/*     /\* decode message *\/ */
-
-/*     /\* check init string is TE *\/ */
-/*     if ((teensyRecvBuffer[0] == 0x54) && (teensyRecvBuffer[1] == 0x45)) { */
-/*       /\* check MAC Address of Teensy which did send the message *\/ */
-      
-/*       for (i=0;i<MAXTEENSYS;i++) { */
-/* 	if ((teensy[i].mac[0] == teensyRecvBuffer[2]) && (teensy[i].mac[1] == teensyRecvBuffer[3]) && */
-/* 	    (teensy[i].connected == 1)) tee = i; */
-/*       } */
-      
-/*       /\* tee found *\/ */
-/*       if (tee >= 0) { */
-
-/* 	if (verbose > 3) printf("Read %i bytes from Teensy %i \n",RECVMSGLEN,tee); */
-
-/* 	for (p=0;p<MAXPACKETRECV;p++) { */
-	
-/* 	  /\* Copy payload 16 bit Integer into variable *\/ */
-/* 	  memcpy(&val,&teensyRecvBuffer[p*4+6],sizeof(val)); */
-
-/* 	  input = teensyRecvBuffer[p*4+4]; */
-	
-/* 	  /\* check type of input *\/ */
-/* 	  if (teensyRecvBuffer[p*4+5] == 0x01) { */
-/* 	    /\* Digital Input *\/ */
-	  
-/* 	    if (val != teensy[te].inputs[input][0]) { */
-/* 	      /\* shift all inputs in history array by one *\/ */
-/* 	      for (i=0;i<teensy[te].ninputs;i++) { */
-/* 		for (s=MAXSAVE-2;s>=0;s--) { */
-/* 		  teensy[te].inputs[i][s+1] = teensy[te].inputs[i][s]; */
-/* 		} */
-/* 	      } */
-/* 	      teensy[te].inputs[input][0] = val;  */
-/* 	      if (verbose > 2) printf("Teensy %i Input %i Changed to: %i \n",tee,input,val); */
-
-/* 	      /\* update number of history values per input *\/ */
-/* 	      if (teensy[te].inputs_nsave < MAXSAVE) { */
-/* 		teensy[te].inputs_nsave += 1; */
-/* 		if (verbose > 2) printf("Teensy %i Input %i # of History Values %i \n", */
-/* 					tee,input,teensy[te].inputs_nsave); */
-/* 	      } else { */
-/* 		if (verbose > 0) printf("Teensy %i Input %i Maximum # of History Values %i Reached \n", */
-/* 					tee,input,MAXSAVE); */
-/* 	      }	       */
-/* 	    } */
-
-/* 	  } else if (teensyRecvBuffer[p*4+5] == 0x02) { */
-/* 	    /\* Analog Input *\/ */
-	  
-/* 	    if (val != teensy[te].analoginputs[input][0]) { */
-/* 	      if (verbose > 2) printf("Teensy %i Analog Input %i Changed to %i \n", */
-/* 				      tee,input,val); */
-/* 	    } */
-/* 	    teensy[te].analoginputs[input][0] = val;	   */
-/* 	  } else { */
-/* 	    /\* ANY OTHER TYPE OF INPUT OR DATA PACKET: DO NOTHING *\/ */
-/* 	  } */
-
-/* 	} /\* loop through data packets in message *\/ */
-	
-/* 	//printf("Left to Read: %i \n",udpReadLeft); */
-	
-/*       } else { */
-/* 	printf("Teensy with MAC %02x:%02x is not defined in ini file \n", */
-/* 	       teensyRecvBuffer[2],teensyRecvBuffer[3]); */
-/*       } */
-/*     } else { */
-/*       printf("Received wrong Init String: %02x %02x \n",teensyRecvBuffer[0],teensyRecvBuffer[1]); */
-/*     } */
-
-/*   } /\* while UDP data present in receive buffer *\/ */
-
-/*   return 0; */
-/* } */
-
-/* int write_teensy() { */
+    te = INITVAL;
   
-/*   int ret; */
-/*   int tee; */
-/*   int output; */
-/*   int analogoutput; */
-/*   short int val; */
-/*   int p; */
+    /* empty UDP receive buffer instead of directly accessing the device */
+    pthread_mutex_lock(&udp_exit_cond_lock);
+    /* read from start of receive buffer */
+    memcpy(teensyRecvBuffer,&udpRecvBuffer[0],RECVMSGLEN);
+    /* shift remaining read buffer to the left */
+    memmove(&udpRecvBuffer[0],&udpRecvBuffer[RECVMSGLEN],udpReadLeft-RECVMSGLEN);
+    /* decrease read buffer position and counter */
+    udpReadLeft -= RECVMSGLEN;
+    pthread_mutex_unlock(&udp_exit_cond_lock);
 
-/*   for (tee=0;tee<MAXTEENSYS;tee++) { */
-/*     if (teensy[te].connected == 1) { */
+    /* decode message */
 
-/*       p = 0; /\* start with first data packet *\/ */
+    /* check init string is TE */
+    if ((teensyRecvBuffer[0] == TEENSY_ID1) && (teensyRecvBuffer[1] == TEENSY_ID2)) {
+      /* check MAC Address of Teensy which did send the message */
       
-/*       /\* Check Digital Outputs for Changes and Send them *\/       */
-/*       memset(teensySendBuffer,0,SENDMSGLEN); */
-/*       for (output=0;output<teensy[te].noutputs;output++) { */
-/* 	if (teensy[te].outputs_changed[output] == CHANGED) { */
-/* 	  if (verbose > 2) printf("Teensy %i Output %i changed to: %i \n", */
-/* 				  tee,output,teensy[te].outputs[output]); */
-/* 	  teensySendBuffer[p*4+4] = output; */
-/* 	  teensySendBuffer[p*4+5] = 0x01; */
-/* 	  val = teensy[te].outputs[output]; */
-/* 	  memcpy(&teensySendBuffer[p*4+6],&val,sizeof(val)); */
-/* 	  teensy[te].outputs_changed[output] = UNCHANGED; */
-/* 	  p++; */
-/* 	} */
-/* 	if (p == MAXPACKETSEND) { */
-/* 	  teensySendBuffer[0] = 0x54; /\* T *\/ */
-/* 	  teensySendBuffer[1] = 0x45; /\* E *\/ */
-/* 	  teensySendBuffer[2] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by teensy *\/ */
-/* 	  teensySendBuffer[3] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by teensy *\/ */
-/* 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN); */
-/* 	  if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,tee); */
-/* 	  p=0; */
-/* 	  memset(teensySendBuffer,0,SENDMSGLEN); */
-/* 	} */
-/*       } */
+      for (int i=0;i<MAXTEENSYS;i++) {
+	if ((teensy[i].mac[0] == teensyRecvBuffer[2]) && (teensy[i].mac[1] == teensyRecvBuffer[3]) &&
+	    (teensy[i].connected == 1)) te = i;
+      }
       
-/*       /\* Check Analog Outputs (PWM) for Changes and Send them *\/       */
-/*       for (analogoutput=0;analogoutput<teensy[te].nanalogoutputs;analogoutput++) { */
-/* 	if (teensy[te].analogoutputs_changed[analogoutput] == CHANGED) { */
-/* 	  if (verbose > 2) printf("Teensy %i Analogoutput %i changed to: %i \n", */
-/* 				  tee,analogoutput,teensy[te].analogoutputs[analogoutput]); */
-/* 	  teensySendBuffer[p*4+4] = analogoutput; */
-/* 	  teensySendBuffer[p*4+5] = 0x02; */
-/* 	  val = teensy[te].analogoutputs[analogoutput]; */
-/* 	  memcpy(&teensySendBuffer[p*4+6],&val,sizeof(val)); */
-/* 	  teensy[te].analogoutputs_changed[analogoutput] = UNCHANGED; */
-/* 	  p++; */
-/* 	} */
-/* 	if ((p == MAXPACKETSEND) || ((p>0)&&(analogoutput==teensy[te].nanalogoutputs-1))) { */
-/* 	  teensySendBuffer[0] = 0x54; /\* T *\/ */
-/* 	  teensySendBuffer[1] = 0x45; /\* E *\/ */
-/* 	  teensySendBuffer[2] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by teensy *\/ */
-/* 	  teensySendBuffer[3] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by teensy *\/ */
-/* 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN); */
-/* 	  if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,tee); */
-/* 	  p=0; */
-/* 	  memset(teensySendBuffer,0,SENDMSGLEN); */
-/* 	} */
-/*       } */
+      /* Device which did send data is one of our Teensy devices */
+      if (te >= 0) {
 
-/*     } */
-/*   } */
-  
-/*   return 0; */
-/* } */
+	if (verbose > 1) printf("Read %i bytes from Teensy %i \n",RECVMSGLEN,te);
+
+	/* decode data header about device etc. */
+	recv_type = teensyRecvBuffer[4];
+	dev_type = teensyRecvBuffer[5];
+	dev_num = teensyRecvBuffer[6];
+	pin = teensyRecvBuffer[7];
+	
+	/* Copy payload 16 bit Integer into variable */
+	memcpy(&val,&teensyRecvBuffer[8],sizeof(val));
+
+	if (recv_type == TEENSY_REGULAR) {
+	  if ((dev_type == TEENSY_TYPE) && (dev_num == 0)) {
+	    if ((pin>=0) && (pin<teensy[te].num_pins)) {
+	      if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
+		if (verbose > 0) printf("Received digital value %i for pin %i of Teensy %i \n",val,pin,te);
+	      } else if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) {
+		if (verbose > 0) printf("Received analog value %i for pin %i of Teensy %i \n",val,pin,te);
+	      } else {
+		printf("Received value for non-Input pin %i of Teensy %i \n",pin,te);
+	      }
+	    } else {
+	      printf("Received value for invalid pin number %i for Teensy %i \n",pin,te);
+	    }
+	  }
+	}
+	
+	printf("Left to Read: %i \n",udpReadLeft);
+	
+      } else {
+	printf("Teensy with MAC %02x:%02x is not defined in ini file \n",
+	       teensyRecvBuffer[2],teensyRecvBuffer[3]);
+      }
+    } else {
+      printf("Received wrong Init String: %02x %02x \n",teensyRecvBuffer[0],teensyRecvBuffer[1]);
+    }
+
+  } /* while UDP data present in receive buffer */
+
+  return 0;
+}
 
 
 
@@ -491,7 +384,8 @@ int analog_output(int te, int pin, float *fvalue, float minval, float maxval)
 	    retval = -1;
 	  }
  	} else {
-	  if (verbose > 0) printf("Analog Output %i above maximum # of outputs %i of Teensy %i \n", pin, te);
+	  if (verbose > 0) printf("Analog Output %i above maximum # of outputs %i of Teensy %i \n", pin,
+				  teensy[te].num_pins, te);
 	  retval = -1;
 	}
       } else {
