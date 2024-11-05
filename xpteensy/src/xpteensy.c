@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
     /**** User Modules End Here ****/
     
     /* send data to SISMO ards */
-    //if (write_teensy() < 0) exit_teensy(-11);
+    if (write_teensy() < 0) exit_teensy(-11);
 
     /* send data to X-Plane via TCP/IP */
     if (send_xpserver()<0) exit_teensy(-12);

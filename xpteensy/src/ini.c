@@ -133,7 +133,7 @@ int ini_read(char* programPath, char* iniName)
 	  teensy[i].val[k][l] = INITVAL;
 	  teensy[i].val_save[k][l] = INITVAL;
 	}
-	teensy[i].type[k] = INITVAL;
+	teensy[i].pinmode[k] = INITVAL;
 	teensy[i].int_dev[k] = INITVAL;
 	teensy[i].int_dev_num[k] = INITVAL;
       }
@@ -146,10 +146,9 @@ int ini_read(char* programPath, char* iniName)
 	teensy[i].connected = 0;
       } else {
 	if (strcmp(version,"4.1")==0) {
-	  teensy[i].version = TEENSY_41_TYPE;
 	  teensy[i].num_pins = 42;
 	} else {
-	  teensy[i].version = INITVAL;
+	  printf("Teensy %i Unknown Number of Pins \n", i);
 	  teensy[i].num_pins = INITVAL;
 	}
 	printf("Teensy %i Version %s Address %s Port %i Mac %02x:%02x \n",i,
@@ -168,7 +167,7 @@ int ini_read(char* programPath, char* iniName)
 	      mcp23008[i][j].val[k][l] = INITVAL;
 	      mcp23008[i][j].val_save[k][l] = INITVAL;
 	    }
-	    mcp23008[i][j].type[k] = INITVAL;
+	    mcp23008[i][j].pinmode[k] = INITVAL;
 	  }
 	  mcp23008[i][j].intpin = INITVAL;
 	  mcp23008[i][j].wire = INITVAL;
@@ -189,7 +188,7 @@ int ini_read(char* programPath, char* iniName)
 	      mcp23017[i][j].val[k][l] = INITVAL;
 	      mcp23017[i][j].val_save[k][l] = INITVAL;
 	    }
-	    mcp23017[i][j].type[k] = INITVAL;
+	    mcp23017[i][j].pinmode[k] = INITVAL;
 	  }
 	  mcp23017[i][j].intpin = INITVAL;
 	  mcp23017[i][j].wire = INITVAL;

@@ -31,6 +31,9 @@
 #include "handleudp.h"
 #include "serverdata.h"
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 int verbose;
 
 char teensyserver_ip[30];
@@ -52,11 +55,10 @@ pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
      0-1    | Identifier (Characters TE for Teensy)
      2-3    | Last two Bytes of MAC address
      4      | Init Send, Regular Send, Shutdown etc.
-     --- FIRST DATA PACKET 5 bytes
      5      | Device Type
      6      | Device Number
      7      | Pin Number
-     8-9    | Value (16 bit signed Integer Value)
+     8-11   | 32 bit integer data storage
  
      In case the server sends an initialization as input to a specific pin
      Teensy will send back the current input value. This is important to get
@@ -67,36 +69,37 @@ pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 int init_teensy() {
   
   int ret;
-  int tee;
-  int k;
+  int te;
+  int pin;
 
-  for (tee=0;tee<MAXTEENSYS;tee++) {
-    if (teensy[tee].connected == 1) {
+  for (te=0;te<MAXTEENSYS;te++) {
+    if (teensy[te].connected == 1) {
 
       /* initialize pins selected for digital input */
       memset(teensySendBuffer,0,SENDMSGLEN);
-      for (k=0;k<teensy[tee].num_pins;k++) {
-	if (teensy[tee].type[k] != INITVAL) {
+      for (pin=0;pin<teensy[te].num_pins;pin++) {
+	if (teensy[te].pinmode[pin] != INITVAL) {
 	  if (verbose > 1) {
-	    if (teensy[tee].type[k] == PINMODE_INPUT) printf("Teensy %i Pin %i Initialized as Input \n",tee,k);
-	    if (teensy[tee].type[k] == PINMODE_OUTPUT) printf("Teensy %i Pin %i Initialized as Output \n",tee,k);
-	    if (teensy[tee].type[k] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM \n",tee,k);
-	    if (teensy[tee].type[k] == PINMODE_ANALOGINPUT) printf("Teensy %i Pin %i Initialized as ANALOG INPUT \n",tee,k);
-	    if (teensy[tee].type[k] == PINMODE_INTERRUPT) printf("Teensy %i Pin %i Initialized as INTERRUPT \n",tee,k);
-	    if (teensy[tee].type[k] == PINMODE_I2C) printf("Teensy %i Pin %i Initialized as I2C Pin \n",tee,k);
+	    if (teensy[te].pinmode[pin] == PINMODE_INPUT) printf("Teensy %i Pin %i Initialized as Input \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) printf("Teensy %i Pin %i Initialized as Output \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) printf("Teensy %i Pin %i Initialized as ANALOG INPUT \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) printf("Teensy %i Pin %i Initialized as INTERRUPT \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_I2C) printf("Teensy %i Pin %i Initialized as I2C Pin \n",te,pin);
 	  }
 	  teensySendBuffer[0] = TEENSY_ID1; /* T */
 	  teensySendBuffer[1] = TEENSY_ID2; /* E */
-	  teensySendBuffer[2] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
-	  teensySendBuffer[3] = 0x00; /* does not make sense to set MAC Address of sender since not needed by teensy */
+	  teensySendBuffer[2] = 0x00;
+	  teensySendBuffer[3] = 0x00; 
 	  teensySendBuffer[4] = TEENSY_INIT;
-	  teensySendBuffer[5] = teensy[tee].version;
-	  teensySendBuffer[6] = teensy[tee].type[k];
-	  teensySendBuffer[7] = k;
-	  teensySendBuffer[8] = 0x00;
-	  teensySendBuffer[9] = 0x00;
-	  ret = send_udp(teensy[tee].ip,teensy[tee].port,teensySendBuffer,SENDMSGLEN);
-	  if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,tee);
+	  teensySendBuffer[5] = TEENSY_TYPE;
+	  teensySendBuffer[6] = 0;
+	  teensySendBuffer[7] = pin;
+	  memcpy(&teensySendBuffer[8],&teensy[te].val[pin][0],sizeof(teensy[te].val[pin][0]));
+	  teensySendBuffer[10] = teensy[te].pinmode[pin];
+	  teensySendBuffer[11] = 0; 
+	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	  if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,te);
 	  memset(teensySendBuffer,0,SENDMSGLEN);
 	} /* pin defined */
       } /* loop over pins */
@@ -106,12 +109,46 @@ int init_teensy() {
   return 0;
 }
 
-#define PINMODE_INPUT 1
-#define PINMODE_OUTPUT 2
-#define PINMODE_PWM 3
-#define PINMODE_ANALOGINPUT 4
-#define PINMODE_INTERRUPT 5
-#define PINMODE_I2C 10
+
+int write_teensy() {
+  
+  int ret;
+  int te;
+  int pin;
+
+  for (te=0;te<MAXTEENSYS;te++) {
+    if (teensy[te].connected == 1) {
+
+      /* initialize pins selected for digital input */
+      memset(teensySendBuffer,0,SENDMSGLEN);
+      for (pin=0;pin<teensy[te].num_pins;pin++) {
+	if ((teensy[te].pinmode[pin] == PINMODE_OUTPUT) ||
+	    (teensy[te].pinmode[pin] == PINMODE_PWM)) {
+	  if (teensy[te].val[pin][0] != teensy[te].val_save[pin][0]) { 
+	    teensySendBuffer[0] = TEENSY_ID1; /* T */
+	    teensySendBuffer[1] = TEENSY_ID2; /* E */
+	    teensySendBuffer[2] = 0x00;
+	    teensySendBuffer[3] = 0x00; 
+	    teensySendBuffer[4] = TEENSY_REGULAR;
+	    teensySendBuffer[5] = TEENSY_TYPE;
+	    teensySendBuffer[6] = 0;
+	    teensySendBuffer[7] = pin;
+	    memcpy(&teensySendBuffer[8],&teensy[te].val[pin][0],sizeof(teensy[te].val[pin][0]));
+	    teensySendBuffer[10] = 0;
+	    teensySendBuffer[11] = 0;
+	    teensy[te].val_save[pin][0] = teensy[te].val[pin][0];
+	    ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	    if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,te);
+	    memset(teensySendBuffer,0,SENDMSGLEN);
+	  } /* value changed since last send */
+	} /* output or pwm */
+      } /* loop over pins */
+    } /* teensy connected */
+  } /* loop over teensys */
+
+  return 0;
+}
+
 
 /* int read_teensy() { */
 
@@ -164,21 +201,21 @@ int init_teensy() {
 /* 	  if (teensyRecvBuffer[p*4+5] == 0x01) { */
 /* 	    /\* Digital Input *\/ */
 	  
-/* 	    if (val != teensy[tee].inputs[input][0]) { */
+/* 	    if (val != teensy[te].inputs[input][0]) { */
 /* 	      /\* shift all inputs in history array by one *\/ */
-/* 	      for (i=0;i<teensy[tee].ninputs;i++) { */
+/* 	      for (i=0;i<teensy[te].ninputs;i++) { */
 /* 		for (s=MAXSAVE-2;s>=0;s--) { */
-/* 		  teensy[tee].inputs[i][s+1] = teensy[tee].inputs[i][s]; */
+/* 		  teensy[te].inputs[i][s+1] = teensy[te].inputs[i][s]; */
 /* 		} */
 /* 	      } */
-/* 	      teensy[tee].inputs[input][0] = val;  */
+/* 	      teensy[te].inputs[input][0] = val;  */
 /* 	      if (verbose > 2) printf("Teensy %i Input %i Changed to: %i \n",tee,input,val); */
 
 /* 	      /\* update number of history values per input *\/ */
-/* 	      if (teensy[tee].inputs_nsave < MAXSAVE) { */
-/* 		teensy[tee].inputs_nsave += 1; */
+/* 	      if (teensy[te].inputs_nsave < MAXSAVE) { */
+/* 		teensy[te].inputs_nsave += 1; */
 /* 		if (verbose > 2) printf("Teensy %i Input %i # of History Values %i \n", */
-/* 					tee,input,teensy[tee].inputs_nsave); */
+/* 					tee,input,teensy[te].inputs_nsave); */
 /* 	      } else { */
 /* 		if (verbose > 0) printf("Teensy %i Input %i Maximum # of History Values %i Reached \n", */
 /* 					tee,input,MAXSAVE); */
@@ -188,11 +225,11 @@ int init_teensy() {
 /* 	  } else if (teensyRecvBuffer[p*4+5] == 0x02) { */
 /* 	    /\* Analog Input *\/ */
 	  
-/* 	    if (val != teensy[tee].analoginputs[input][0]) { */
+/* 	    if (val != teensy[te].analoginputs[input][0]) { */
 /* 	      if (verbose > 2) printf("Teensy %i Analog Input %i Changed to %i \n", */
 /* 				      tee,input,val); */
 /* 	    } */
-/* 	    teensy[tee].analoginputs[input][0] = val;	   */
+/* 	    teensy[te].analoginputs[input][0] = val;	   */
 /* 	  } else { */
 /* 	    /\* ANY OTHER TYPE OF INPUT OR DATA PACKET: DO NOTHING *\/ */
 /* 	  } */
@@ -224,21 +261,21 @@ int init_teensy() {
 /*   int p; */
 
 /*   for (tee=0;tee<MAXTEENSYS;tee++) { */
-/*     if (teensy[tee].connected == 1) { */
+/*     if (teensy[te].connected == 1) { */
 
 /*       p = 0; /\* start with first data packet *\/ */
       
 /*       /\* Check Digital Outputs for Changes and Send them *\/       */
 /*       memset(teensySendBuffer,0,SENDMSGLEN); */
-/*       for (output=0;output<teensy[tee].noutputs;output++) { */
-/* 	if (teensy[tee].outputs_changed[output] == CHANGED) { */
+/*       for (output=0;output<teensy[te].noutputs;output++) { */
+/* 	if (teensy[te].outputs_changed[output] == CHANGED) { */
 /* 	  if (verbose > 2) printf("Teensy %i Output %i changed to: %i \n", */
-/* 				  tee,output,teensy[tee].outputs[output]); */
+/* 				  tee,output,teensy[te].outputs[output]); */
 /* 	  teensySendBuffer[p*4+4] = output; */
 /* 	  teensySendBuffer[p*4+5] = 0x01; */
-/* 	  val = teensy[tee].outputs[output]; */
+/* 	  val = teensy[te].outputs[output]; */
 /* 	  memcpy(&teensySendBuffer[p*4+6],&val,sizeof(val)); */
-/* 	  teensy[tee].outputs_changed[output] = UNCHANGED; */
+/* 	  teensy[te].outputs_changed[output] = UNCHANGED; */
 /* 	  p++; */
 /* 	} */
 /* 	if (p == MAXPACKETSEND) { */
@@ -246,7 +283,7 @@ int init_teensy() {
 /* 	  teensySendBuffer[1] = 0x45; /\* E *\/ */
 /* 	  teensySendBuffer[2] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by teensy *\/ */
 /* 	  teensySendBuffer[3] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by teensy *\/ */
-/* 	  ret = send_udp(teensy[tee].ip,teensy[tee].port,teensySendBuffer,SENDMSGLEN); */
+/* 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN); */
 /* 	  if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,tee); */
 /* 	  p=0; */
 /* 	  memset(teensySendBuffer,0,SENDMSGLEN); */
@@ -254,23 +291,23 @@ int init_teensy() {
 /*       } */
       
 /*       /\* Check Analog Outputs (PWM) for Changes and Send them *\/       */
-/*       for (analogoutput=0;analogoutput<teensy[tee].nanalogoutputs;analogoutput++) { */
-/* 	if (teensy[tee].analogoutputs_changed[analogoutput] == CHANGED) { */
+/*       for (analogoutput=0;analogoutput<teensy[te].nanalogoutputs;analogoutput++) { */
+/* 	if (teensy[te].analogoutputs_changed[analogoutput] == CHANGED) { */
 /* 	  if (verbose > 2) printf("Teensy %i Analogoutput %i changed to: %i \n", */
-/* 				  tee,analogoutput,teensy[tee].analogoutputs[analogoutput]); */
+/* 				  tee,analogoutput,teensy[te].analogoutputs[analogoutput]); */
 /* 	  teensySendBuffer[p*4+4] = analogoutput; */
 /* 	  teensySendBuffer[p*4+5] = 0x02; */
-/* 	  val = teensy[tee].analogoutputs[analogoutput]; */
+/* 	  val = teensy[te].analogoutputs[analogoutput]; */
 /* 	  memcpy(&teensySendBuffer[p*4+6],&val,sizeof(val)); */
-/* 	  teensy[tee].analogoutputs_changed[analogoutput] = UNCHANGED; */
+/* 	  teensy[te].analogoutputs_changed[analogoutput] = UNCHANGED; */
 /* 	  p++; */
 /* 	} */
-/* 	if ((p == MAXPACKETSEND) || ((p>0)&&(analogoutput==teensy[tee].nanalogoutputs-1))) { */
+/* 	if ((p == MAXPACKETSEND) || ((p>0)&&(analogoutput==teensy[te].nanalogoutputs-1))) { */
 /* 	  teensySendBuffer[0] = 0x54; /\* T *\/ */
 /* 	  teensySendBuffer[1] = 0x45; /\* E *\/ */
 /* 	  teensySendBuffer[2] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by teensy *\/ */
 /* 	  teensySendBuffer[3] = 0x00; /\* does not make sense to set MAC Address of sender since not needed by teensy *\/ */
-/* 	  ret = send_udp(teensy[tee].ip,teensy[tee].port,teensySendBuffer,SENDMSGLEN); */
+/* 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN); */
 /* 	  if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,tee); */
 /* 	  p=0; */
 /* 	  memset(teensySendBuffer,0,SENDMSGLEN); */
@@ -311,16 +348,16 @@ int init_teensy() {
 /*   if (value != NULL) { */
 
 /*     if (tee < MAXTEENSYS) { */
-/*       if (teensy[tee].connected) { */
-/* 	if ((input >= 0) && (input < teensy[tee].ninputs)) { */
-/* 	  if (teensy[tee].inputs_nsave != 0) { */
-/* 	    s = teensy[tee].inputs_nsave - 1; /\* history slot to read *\/ */
+/*       if (teensy[te].connected) { */
+/* 	if ((input >= 0) && (input < teensy[te].ninputs)) { */
+/* 	  if (teensy[te].inputs_nsave != 0) { */
+/* 	    s = teensy[te].inputs_nsave - 1; /\* history slot to read *\/ */
 /* 	    if (type == 0) { */
 /* 	      /\* simple pushbutton / switch *\/ */
-/* 	      if (*value != teensy[tee].inputs[input][s]) { */
+/* 	      if (*value != teensy[te].inputs[input][s]) { */
 /* 		if (verbose > 1) printf("Pushbutton: Teensy %i Input %i Changed to %i %i \n", */
-/* 					tee, input, *value,teensy[tee].inputs[input][s]); */
-/* 		*value = teensy[tee].inputs[input][s]; */
+/* 					tee, input, *value,teensy[te].inputs[input][s]); */
+/* 		*value = teensy[te].inputs[input][s]; */
 /* 		retval = 1; */
 /* 	      } */
 
@@ -328,7 +365,7 @@ int init_teensy() {
 /* 	      /\* toggle state everytime you press button *\/ */
 /* 	      if (s < (MAXSAVE-1)) { */
 /* 		/\* check if the switch state changed from 0 -> 1 *\/ */
-/* 		if ((teensy[tee].inputs[input][s] == 1) && (teensy[tee].inputs[input][s+1] == 0)) { */
+/* 		if ((teensy[te].inputs[input][s] == 1) && (teensy[te].inputs[input][s+1] == 0)) { */
 /* 		  /\* toggle *\/ */
 /* 		  if (*value != INT_MISS) { */
 /* 		    if ((*value == 0) || (*value == 1)) { */
@@ -349,7 +386,7 @@ int init_teensy() {
 /* 	  } */
 /* 	} else { */
 /* 	  if (verbose > 0) printf("Digital Input %i above maximum # of inputs %i of Teensy %i \n", */
-/* 				  input,teensy[tee].ninputs,tee); */
+/* 				  input,teensy[te].ninputs,tee); */
 /* 	  retval = -1; */
 /* 	} */
 /*       } else { */
@@ -368,110 +405,108 @@ int init_teensy() {
 /* } */
 
 
-/* /\* wrapper for digital_output when supplying floating point value  */
-/*    Values < 0.5 are set to 0 output and values >= 0.5 are set to 1 output *\/ */
-/* int digital_outputf(int tee, int output, float *fvalue) { */
+/* wrapper for digital_output when supplying floating point value
+   Values < 0.5 are set to 0 output and values >= 0.5 are set to 1 output */
+int digital_outputf(int te, int output, float *fvalue) {
 
-/*   int value; */
+  int value;
   
-/*   if (*fvalue == FLT_MISS) { */
-/*     value = INT_MISS; */
-/*   } else if (*fvalue >= 0.5) { */
-/*     value = 1; */
-/*   } else { */
-/*     value = 0; */
-/*   } */
+  if (*fvalue == FLT_MISS) {
+    value = INT_MISS;
+  } else if (*fvalue >= 0.5) {
+    value = 1;
+  } else {
+    value = 0;
+  }
     
-/*   return digital_output(tee, output, &value); */
-/* } */
+  return digital_output(te, output, &value);
+}
 
-/* int digital_output(int tee, int output, int *value) */
-/* { */
-/*   int retval = 0; */
+int digital_output(int te, int pin, int *value)
+{
+  int retval = 0;
 
-/*   if (value != NULL) { */
+  if (value != NULL) {
 
-/*     if (tee < MAXTEENSYS) { */
-/*       if (teensy[tee].connected) { */
-/* 	if ((output >= 0) && (output < teensy[tee].noutputs)) { */
+    if (te < MAXTEENSYS) {
+      if (teensy[te].connected) {
+	if ((pin >= 0) && (pin < teensy[te].num_pins)) {
+	  if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) {
+	    if (*value != INT_MISS) {
+	      if ((*value == 1) || (*value == 0)) {
+		if (*value != teensy[te].val[pin][0]) {
+		  teensy[te].val[pin][0] = *value;
+		  if (verbose > 2) printf("Digital Output %i of Teensy %i changed to %i \n", pin,te,*value);
+		}
+	      } else {
+		printf("Digital Output %i of Teensy %i should be 0 or 1, but is %i \n", pin,te,*value);
+		retval = -1;
+	      }
+	    }
+	  } else {
+	    if (verbose > 0) printf("Pin %i is not defined as digital output of Teensy %i \n", pin, te);
+	    retval = -1;
+	  }
+	} else {
+	  if (verbose > 0) printf("Digital Output %i above maximum # of outputs %i of Teensy %i \n",
+				  pin,teensy[te].num_pins,te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 2) printf("Digital Output %i cannot be written. Teensy %i not connected \n",
+				pin,te);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Digital Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n",pin,te);
+      retval = -1;
+    }
 
-/* 	  if (*value != INT_MISS) { */
-/* 	    if ((*value == 1) || (*value == 0)) { */
-/* 	      if (*value != teensy[tee].outputs[output]) { */
-/* 		teensy[tee].outputs[output] = *value; */
-/* 		teensy[tee].outputs_changed[output] = CHANGED; */
-/* 		if (verbose > 2) printf("Digital Output %i of Teensy %i changed to %i \n", */
-/* 					output,tee,*value); */
-/* 	      } */
-/* 	    } else { */
-/* 	      printf("Digital Output %i of Teensy %i should be 0 or 1, but is %i \n", */
-/* 		     output,tee,*value); */
-/* 	      retval = -1; */
-/* 	    } */
-/* 	  } */
-/* 	} else { */
-/* 	  if (verbose > 0) printf("Digital Output %i above maximum # of outputs %i of Teensy %i \n", */
-/* 				  output,teensy[tee].noutputs,tee); */
-/* 	  retval = -1; */
-/* 	} */
-/*       } else { */
-/* 	if (verbose > 2) printf("Digital Output %i cannot be written. Teensy %i not connected \n", */
-/* 				output,tee); */
-/* 	retval = -1; */
-/*       } */
-/*     } else { */
-/*       if (verbose > 0) printf("Digital Ouputt %i cannot be written. Teensy %i >= MAXTEENSYS\n",output,tee); */
-/*       retval = -1; */
-/*     } */
+  }
 
-/*   } */
+  return retval;
+}
 
-/*   return retval; */
-/* } */
+int analog_output(int te, int pin, float *fvalue, float minval, float maxval)
+{
+  int retval = 0;
+  int ival;
 
-/* int analog_output(int tee, int analogoutput, int *value) */
-/* { */
-/*   int retval = 0; */
+  if (fvalue != NULL) {
 
-/*   if (value != NULL) { */
+    if (te < MAXTEENSYS) {
+      if (teensy[te].connected) {
+	if ((pin >= 0) && (pin < teensy[te].num_pins)) {
+	  if (teensy[te].pinmode[pin] == PINMODE_PWM) {
+	    if (*fvalue != FLT_MISS) {
+	      /* scale value to analog output range */
+	      ival = (int) (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)*(pow(2,ANALOGOUTPUTNBITS)-1.0));
+	      if (ival != teensy[te].val[pin][0]) {
+		teensy[te].val[pin][0] = ival;
+		if (verbose > 2) printf("Analog Output %i of Teensy %i changed to %i \n", pin, te, ival);
+	      }
+	    }
+	  } else {
+	    if (verbose > 0) printf("Pin %i of Teensy %i is not defined as PWM Output \n", pin, te);
+	    retval = -1;
+	  }
+ 	} else {
+	  if (verbose > 0) printf("Analog Output %i above maximum # of outputs %i of Teensy %i \n", pin, te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 2) printf("Analog Output %i cannot be written. Teensy %i not connected \n", pin, te);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Analog Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n", pin, te);
+      retval = -1;
+    }
 
-/*     if (tee < MAXTEENSYS) { */
-/*       if (teensy[tee].connected) { */
-/* 	if ((analogoutput >= 0) && (analogoutput < teensy[tee].nanalogoutputs)) { */
+  }
 
-/* 	  if (*value != INT_MISS) { */
-/* 	    if ((*value >= 0) && (*value < (int) pow(2,ANALOGOUTPUTNBITS))) { */
-/* 	      if (*value != teensy[tee].analogoutputs[analogoutput]) { */
-/* 		teensy[tee].analogoutputs[analogoutput] = *value; */
-/* 		teensy[tee].analogoutputs_changed[analogoutput] = CHANGED; */
-/* 		if (verbose > 2) printf("Analog Output %i of Teensy %i changed to %i \n", */
-/* 					analogoutput,tee,*value); */
-/* 	      } */
-/* 	    } else { */
-/* 	      printf("Analog Output %i of Teensy %i should be between 0 and %i, but is %i \n", */
-/* 		     analogoutput,tee,(int) pow(2,ANALOGOUTPUTNBITS)-1,*value); */
-/* 	      retval = -1; */
-/* 	    } */
-/* 	  } */
-/* 	} else { */
-/* 	  if (verbose > 0) printf("Analog Output %i above maximum # of outputs %i of Teensy %i \n", */
-/* 				  analogoutput,teensy[tee].nanalogoutputs,tee); */
-/* 	  retval = -1; */
-/* 	} */
-/*       } else { */
-/* 	if (verbose > 2) printf("Analog Output %i cannot be written. Teensy %i not connected \n", */
-/* 				analogoutput,tee); */
-/* 	retval = -1; */
-/*       } */
-/*     } else { */
-/*       if (verbose > 0) printf("Analog Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n",analogoutput,tee); */
-/*       retval = -1; */
-/*     } */
-
-/*   } */
-
-/*   return retval; */
-/* } */
+  return retval;
+}
 
 /* /\* retrieve value from given analog input between the range minval and maxval *\/ */
 /* int analog_input(int tee, int input, float *value, float minval, float maxval) */
@@ -484,8 +519,8 @@ int init_teensy() {
 /*   if (value != NULL) { */
 
 /*     if (tee < MAXTEENSYS) { */
-/*       if (teensy[tee].connected) { */
-/* 	if ((input >= 0) && (input < teensy[tee].nanaloginputs)) { */
+/*       if (teensy[te].connected) { */
+/* 	if ((input >= 0) && (input < teensy[te].nanaloginputs)) { */
 
 /* 	  /\* Analog input values are flickering with +/-2 (out of a range of 1023) */
 /* 	     which is because of imprecision of potentiometers etc. */
@@ -495,32 +530,32 @@ int init_teensy() {
 /* 	  /\* TBD: maybe check each value against +/- 1 of all history values? *\/ */
 /* 	  // for (int s=1;s<MAXSAVE;s++) { */
 /* 	  for (int s=1;s<2;s++) { */
-/* 	    if (teensy[tee].analoginputs[input][0] == teensy[tee].analoginputs[input][s]) found = 1; */
+/* 	    if (teensy[te].analoginputs[input][0] == teensy[te].analoginputs[input][s]) found = 1; */
 /* 	  } */
 /*           /\* First Time Read *\/ */
-/*           if ((teensy[tee].analoginputs[input][0] != INPUTINITVAL) && */
-/* 	      (teensy[tee].analoginputs[input][1] == INPUTINITVAL)) { */
-/* 	    teensy[tee].analoginputs[input][1] = teensy[tee].analoginputs[input][0]; */
+/*           if ((teensy[te].analoginputs[input][0] != INPUTINITVAL) && */
+/* 	      (teensy[te].analoginputs[input][1] == INPUTINITVAL)) { */
+/* 	    teensy[te].analoginputs[input][1] = teensy[te].analoginputs[input][0]; */
 /* 	    found = 0; */
 /* 	  } */
 
 /* 	  /\* */
-/* 	  printf("%i %i %i %i %i %i %i \n",teensy[tee].analoginputs[input][0], */
-/* 		 teensy[tee].analoginputs[input][1],teensy[tee].analoginputs[input][2], */
-/* 		 teensy[tee].analoginputs[input][3],teensy[tee].analoginputs[input][4], */
-/* 		 teensy[tee].analoginputs[input][5],teensy[tee].analoginputs[input][6] */
+/* 	  printf("%i %i %i %i %i %i %i \n",teensy[te].analoginputs[input][0], */
+/* 		 teensy[te].analoginputs[input][1],teensy[te].analoginputs[input][2], */
+/* 		 teensy[te].analoginputs[input][3],teensy[te].analoginputs[input][4], */
+/* 		 teensy[te].analoginputs[input][5],teensy[te].analoginputs[input][6] */
 /* 		 );  */
 /* 	  *\/ */
 
 /* 	  if (!found) { */
-/* 	    *value = ((float) teensy[tee].analoginputs[input][0]) / (float) pow(2,ANALOGINPUTNBITS) *  */
+/* 	    *value = ((float) teensy[te].analoginputs[input][0]) / (float) pow(2,ANALOGINPUTNBITS) *  */
 /* 	    (maxval - minval) + minval; */
 /* 	    retval = 1; */
 /* 	  } */
 	  
 /* 	} else { */
 /* 	  if (verbose > 0) printf("Analog Input %i above maximum # of analog inputs %i of Teensy %i \n", */
-/* 				  input,teensy[tee].nanaloginputs,tee); */
+/* 				  input,teensy[te].nanaloginputs,tee); */
 /* 	  retval = -1; */
 /* 	} */
 /*       } else { */
@@ -572,32 +607,32 @@ int init_teensy() {
 /*   if (value != NULL) { */
 
 /*     if (tee < MAXTEENSYS) { */
-/*       if (teensy[tee].connected) { */
-/* 	if ((input1 >= 0) && (input1 < teensy[tee].ninputs) && */
-/* 	    (input2 >= 0) && (input2 < teensy[tee].ninputs)) { */
+/*       if (teensy[te].connected) { */
+/* 	if ((input1 >= 0) && (input1 < teensy[te].ninputs) && */
+/* 	    (input2 >= 0) && (input2 < teensy[te].ninputs)) { */
 /* 	  if (*value != FLT_MISS) { */
 
-/* 	    //	    printf("%i %i %i %i \n",teensy[tee].inputs[input1][s],teensy[tee].inputs[input2][s], */
-/* 	    //		   teensy[tee].inputs[input1][s+1], teensy[tee].inputs[input2][s+1]); */
+/* 	    //	    printf("%i %i %i %i \n",teensy[te].inputs[input1][s],teensy[te].inputs[input2][s], */
+/* 	    //		   teensy[te].inputs[input1][s+1], teensy[te].inputs[input2][s+1]); */
 	    
-/* 	    if (teensy[tee].inputs_nsave != 0) { */
-/* 	      s = teensy[tee].inputs_nsave - 1; /\* history slot to read *\/ */
+/* 	    if (teensy[te].inputs_nsave != 0) { */
+/* 	      s = teensy[te].inputs_nsave - 1; /\* history slot to read *\/ */
 /* 	      if (s < (MAXSAVE-1)) { */
 /* 		/\* if not first read, and if any of the inputs have changed then the encoder was moved *\/ */
-/* 		if ((((teensy[tee].inputs[input1][s] != teensy[tee].inputs[input1][s+1]) && */
-/* 		      (teensy[tee].inputs[input1][s+1] != INPUTINITVAL)) || */
-/* 		     ((teensy[tee].inputs[input2][s] != teensy[tee].inputs[input2][s+1]) && */
-/* 		      (teensy[tee].inputs[input2][s+1] != INPUTINITVAL))) && */
-/* 		    (teensy[tee].inputs[input1][s] != INPUTINITVAL) && */
-/* 		    (teensy[tee].inputs[input2][s] != INPUTINITVAL)) { */
+/* 		if ((((teensy[te].inputs[input1][s] != teensy[te].inputs[input1][s+1]) && */
+/* 		      (teensy[te].inputs[input1][s+1] != INPUTINITVAL)) || */
+/* 		     ((teensy[te].inputs[input2][s] != teensy[te].inputs[input2][s+1]) && */
+/* 		      (teensy[te].inputs[input2][s+1] != INPUTINITVAL))) && */
+/* 		    (teensy[te].inputs[input1][s] != INPUTINITVAL) && */
+/* 		    (teensy[te].inputs[input2][s] != INPUTINITVAL)) { */
 
 /* 		  /\* derive last encoder bit state *\/ */
-/* 		  obits[0] = teensy[tee].inputs[input1][s+1]; */
-/* 		  obits[1] = teensy[tee].inputs[input2][s+1]; */
+/* 		  obits[0] = teensy[te].inputs[input1][s+1]; */
+/* 		  obits[1] = teensy[te].inputs[input2][s+1]; */
 		  
 /* 		  /\* derive new encoder bit state *\/ */
-/* 		  nbits[0] = teensy[tee].inputs[input1][s]; */
-/* 		  nbits[1] = teensy[tee].inputs[input2][s]; */
+/* 		  nbits[0] = teensy[te].inputs[input1][s]; */
+/* 		  nbits[1] = teensy[te].inputs[input2][s]; */
 		  
 /* 		  if (obits[0] == INPUTINITVAL) obits[0] = nbits[0]; */
 /* 		  if (obits[1] == INPUTINITVAL) obits[1] = nbits[1]; */
@@ -666,7 +701,7 @@ int init_teensy() {
 	    
 /* 	} else { */
 /* 	  if (verbose > 0) printf("Encoder with Input %i,%i above maximum # of digital inputs %i of Teensy %i \n", */
-/* 				  input1,input2,teensy[tee].ninputs,tee); */
+/* 				  input1,input2,teensy[te].ninputs,tee); */
 /* 	  retval = -1; */
 /* 	} */
 /*       } else { */

@@ -37,19 +37,26 @@ void udp_receive(void) {
         Serial.print(recvBuffer[i]);
         Serial.print(" ");
       }
-      for (int i = 2; i < 8; i++) {
+      for (int i = 2; i < RECVMSGLEN; i++) {
         memcpy(&ivalue8, &recvBuffer[i], 1);
         Serial.print(ivalue8);
         Serial.print(" ");
       }
-      // Copy payload 16 bit Integer into variable
-      memcpy(&ivalue16, &recvBuffer[8], 2);
-      Serial.println(ivalue16);
+      Serial.println("");
+
     }
 
     // Identifier for Teensy: Characters T and E
     if ((recvBuffer[0] == TEENSY_ID1) && (recvBuffer[1] == TEENSY_ID2)) {
-
+      if ((recvBuffer[5] == TEENSY_TYPE) && (recvBuffer[6] == 0)) {
+        if (recvBuffer[4] == TEENSY_INIT) {
+          memcpy(&ivalue16, &recvBuffer[8], 2);
+          teensy_init(recvBuffer[7],recvBuffer[10],ivalue16);
+        } else if (recvBuffer[4] == TEENSY_REGULAR) {
+          memcpy(&ivalue16, &recvBuffer[8], 2);
+          teensy_recv(recvBuffer[7],ivalue16);
+        }
+      }
     }   /* Correct receive buffer initiator string */
   }     /* Packet was received */
 

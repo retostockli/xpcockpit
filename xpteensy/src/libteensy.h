@@ -15,8 +15,8 @@
    If not, see <http://www.gnu.org/licenses/>. */
 
 #define MAXTEENSYS 5             /* maximum number of teensys that we expect */
-#define RECVMSGLEN 10            /* number of bytes in received UDP packet */
-#define SENDMSGLEN 10            /* number of bytes in sent UDP packet */
+#define RECVMSGLEN 12            /* number of bytes in received UDP packet */
+#define SENDMSGLEN 12            /* number of bytes in sent UDP packet */
 #define UNCHANGED 0              /* flag for unchanged input / output */
 #define CHANGED 1                /* flag for changed input / output. 
 				    Can actually also be > 1 for e.g. analog inputs that change faster than xpteensy cycle */
@@ -44,9 +44,11 @@ int init_teensy(void);
 /*
 int digital_inputf(int teensy, int input, float *fvalue, int type);
 int digital_input(int teensy, int input, int *value, int type);
-int digital_outputf(int teensy, int output, float *fvalue);
-int digital_output(int teensy, int output, int *value);
-int analog_output(int teensy, int analogoutput, int *value);
+*/
+int digital_outputf(int teensy, int pin, float *fvalue);
+int digital_output(int teensy, int pin, int *value);
+int analog_output(int teensy, int pin, float *fvalue, float minval, float maxval);
+/*
 int analog_input(int teensy, int input, float *value, float minval, float maxval);
 int encoder_input(int teensy, int input1, int input2, int *value, int multiplier, int type);
 int encoder_inputf(int teensy, int input1, int input2, float *value, float multiplier, int type);

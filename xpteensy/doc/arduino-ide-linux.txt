@@ -1,0 +1,16 @@
+If you get:
+./arduino-ide_2.3.2_Linux_64bit.AppImage 
+[49662:0505/163801.040968:FATAL:setuid_sandbox_host.cc(158)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now. You need to make sure that /tmp/.mount_arduinl1RTCc/chrome-sandbox is owned by root and has mode 4755.
+Trace/breakpoint trap (core dumped)
+
+create /etc/apparmor.d/arduino containing:
+
+abi <abi/4.0>,
+include <tunables/global>
+profile arduino /home/stockli/AppImage/arduino-ide_2.3.3_Linux_64bit.AppImage flags=(unconfined) {
+  userns,
+  include if exists <local/arduino>
+} 
+
+reload AppArmor with:
+sudo service apparmor reload

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Arduino IDE
+Exec=/home/stockli/AppImage/arduino-ide_2.3.3_Linux_64bit.AppImage --no-sandbox
+Icon=/home/stockli/AppImage/Arduino.png
+Terminal=false

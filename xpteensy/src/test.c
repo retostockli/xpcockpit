@@ -34,24 +34,26 @@
 #include "test.h"
 
 int digitalvalue;
+float analogvalue;
 
 void init_test(void)
 {
-  int tee = 0;
+  int te = 0;
 
-  teensy[tee].type[0] = PINMODE_OUTPUT;
-  teensy[tee].type[3] = PINMODE_INPUT;
-  teensy[tee].type[6] = PINMODE_INTERRUPT;
-  teensy[tee].type[14] = PINMODE_ANALOGINPUT;
-  teensy[tee].type[16] = PINMODE_I2C;
-  teensy[tee].type[17] = PINMODE_I2C;
+  teensy[te].pinmode[0] = PINMODE_PWM;
+  //  teensy[te].pinmode[0] = PINMODE_OUTPUT;
+  teensy[te].pinmode[3] = PINMODE_INPUT;
+  teensy[te].pinmode[6] = PINMODE_INTERRUPT;
+  teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
+  teensy[te].pinmode[16] = PINMODE_I2C;
+  teensy[te].pinmode[17] = PINMODE_I2C;
 
-  mcp23017[tee][0].type[2] = PINMODE_INPUT;
-  mcp23017[tee][0].type[3] = PINMODE_INPUT;
-  mcp23017[tee][0].type[7] = PINMODE_OUTPUT;
-  mcp23017[tee][0].intpin = 6;
-  mcp23017[tee][0].wire = 1;
-  mcp23017[tee][0].address = 0x21;
+  mcp23017[te][0].pinmode[2] = PINMODE_INPUT;
+  mcp23017[te][0].pinmode[3] = PINMODE_INPUT;
+  mcp23017[te][0].pinmode[7] = PINMODE_OUTPUT;
+  mcp23017[te][0].intpin = 6;
+  mcp23017[te][0].wire = 1;
+  mcp23017[te][0].address = 0x21;
 
 }
 
@@ -59,7 +61,7 @@ void test(void)
 {
 
   int ret;
-  int tee = 0;
+  int te = 0;
 
   /* link integer data like a switch in the cockpit */
   int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -74,7 +76,7 @@ void test(void)
   /* not needed, only if you run without x-plane connection */
   if (*encodervalue == INT_MISS) *encodervalue = 0;
   if (*fvalue == FLT_MISS) *fvalue = 0.0;
-  if (*value == INT_MISS) *fvalue = 1;
+  if (*value == INT_MISS) *value = 1;
 
   /* read encoder at inputs 13 and 15 */
   /* ret = encoder_input(teensy, 8, 9, encodervalue, 5, 1); */
@@ -96,8 +98,9 @@ void test(void)
   /* } */
   
   /* set LED connected to first output (#0) to value landing lights dataref */
-  //digitalvalue = 1;
-  //ret = digital_output(teensy, 0, &digitalvalue);
-  //ret = analog_output(teensy, 0, &digitalvalue);
+  digitalvalue = 1;
+  analogvalue = 0.5;
+  //ret = digital_output(te, 0, &digitalvalue);
+  ret = analog_output(te, 0, &analogvalue,0.0,1.0);
   
 }
