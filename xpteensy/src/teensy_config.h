@@ -36,9 +36,10 @@
 #define TEENSY_ID2 0x45 /* E */
 
 #define MAX_DEV 10        // maximum number of i2c / spi devices per type
-#define MAX_HIST 10       // maximum number of history variables to save
+#define MAX_HIST 20       // maximum number of history variables to save
 #define MAX_VARS 20       // maximum number of internal variables on teensy
 #define MAX_PINS 100      // maximum number of pins on a teensy
+#define MAX_SERVO 10      // maximum number of servos on a teensy
 #define MAX_MCP23008_PINS 8
 #define MAX_MCP23017_PINS 16
 #define MAX_PCF8591_PINS 4
@@ -64,6 +65,7 @@
 #define PINMODE_PWM 3
 #define PINMODE_ANALOGINPUT 4
 #define PINMODE_INTERRUPT 5
+#define PINMODE_SERVO 6
 #define PINMODE_I2C 10
 
 #include <stdint.h>
@@ -71,7 +73,8 @@
 typedef struct {
   int8_t connected;    // Device connected (1) or not (0)
   int16_t val[MAX_PINS][MAX_HIST];      // new values on device pins (input or output)
-  int16_t val_save[MAX_PINS][MAX_HIST]; // previous values on device pins (input or output)
+  int16_t val_save[MAX_PINS];    // previous values on device pins (input or output)
+  int16_t nhist;                 // number of history values saved
   int8_t pinmode[MAX_PINS];        // what type of pin (input/output/pwm/interrup/i2c etc.)
   int8_t int_dev[MAX_PINS];     // for interrupt pins: for which device type
   int8_t int_dev_num[MAX_PINS]; // for interrupt pins: for which device number of above type
@@ -89,7 +92,8 @@ typedef struct {
 typedef struct {
   int8_t connected; // Device connected (1) or not (0)
   int16_t val[MAX_MCP23008_PINS][MAX_HIST];       // new values on device pins (input or output)
-  int16_t val_save[MAX_MCP23008_PINS][MAX_HIST];  // previous values on device pins (input or output)
+  int16_t val_save[MAX_MCP23008_PINS];  // previous values on device pins (input or output)
+  int16_t nhist;                 // number of history values saved
   int8_t pinmode[MAX_MCP23008_PINS];   // I/O type: Input or output
   int8_t intpin;    // Interrupt pin on teensy to read this device
   int8_t wire;      // I2C bus (0,1,2)
@@ -99,7 +103,8 @@ typedef struct {
 typedef struct {
   int8_t connected; // Device connected (1) or not (0)
   int16_t val[MAX_MCP23017_PINS][MAX_HIST];       // new values on device pins (input or output)
-  int16_t val_save[MAX_MCP23017_PINS][MAX_HIST];  // previous values on device pins (input or output)
+  int16_t val_save[MAX_MCP23017_PINS];  // previous values on device pins (input or output)
+  int16_t nhist;                 // number of history values saved
   int8_t pinmode[MAX_MCP23017_PINS];   // I/O type: Input or output
   int8_t intpin;     // Interrupt pin on teensy to read this device
   int8_t wire;       // I2C bus (0,1,2)

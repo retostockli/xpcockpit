@@ -41,15 +41,13 @@ int read_teensy(void);
 int write_teensy(void);
 int init_teensy(void);
 
-/*
-int digital_inputf(int teensy, int input, float *fvalue, int type);
-int digital_input(int teensy, int input, int *value, int type);
-*/
+int digital_inputf(int te, int pin, float *fvalue, int type);
+int digital_input(int te, int pin, int *value, int type);
 int digital_outputf(int teensy, int pin, float *fvalue);
 int digital_output(int teensy, int pin, int *value);
 int analog_output(int teensy, int pin, float *fvalue, float minval, float maxval);
+int analog_input(int te, int pin, float *value, float minval, float maxval);
 /*
-int analog_input(int teensy, int input, float *value, float minval, float maxval);
 int encoder_input(int teensy, int input1, int input2, int *value, int multiplier, int type);
 int encoder_inputf(int teensy, int input1, int input2, float *value, float multiplier, int type);
 */

@@ -131,12 +131,13 @@ int ini_read(char* programPath, char* iniName)
       for (k=0;k<MAX_PINS;k++) {
 	for (l=0;l<MAX_HIST;l++) {
 	  teensy[i].val[k][l] = INITVAL;
-	  teensy[i].val_save[k][l] = INITVAL;
 	}
+	teensy[i].val_save[k] = INITVAL;
 	teensy[i].pinmode[k] = INITVAL;
 	teensy[i].int_dev[k] = INITVAL;
 	teensy[i].int_dev_num[k] = INITVAL;
       }
+      teensy[i].nhist = 0;
        
        if (teensy[i].port == default_teensy_port) {
 	printf("Teensy %i Not Connected \n",i);
@@ -165,7 +166,7 @@ int ini_read(char* programPath, char* iniName)
 	  for (k=0;k<MAX_MCP23008_PINS;k++) {
 	    for (l=0;l<MAX_HIST;l++) {
 	      mcp23008[i][j].val[k][l] = INITVAL;
-	      mcp23008[i][j].val_save[k][l] = INITVAL;
+	      mcp23008[i][j].val_save[k] = INITVAL;
 	    }
 	    mcp23008[i][j].pinmode[k] = INITVAL;
 	  }
@@ -186,7 +187,7 @@ int ini_read(char* programPath, char* iniName)
 	  for (k=0;k<MAX_MCP23017_PINS;k++) {
 	    for (l=0;l<MAX_HIST;l++) {
 	      mcp23017[i][j].val[k][l] = INITVAL;
-	      mcp23017[i][j].val_save[k][l] = INITVAL;
+	      mcp23017[i][j].val_save[k] = INITVAL;
 	    }
 	    mcp23017[i][j].pinmode[k] = INITVAL;
 	  }
@@ -244,21 +245,23 @@ int reset_teensydata()
 {
   /* The changed flag is modified by the read function that first reads the input 
      or writes the output etc. */
-  
-  int i;
-  
-  for(i=0;i<MAXTEENSYS;i++) {
 
-    /* if (teensy[i].connected == 1) { */
-    /*   if (teensy[i].inputs_nsave > 0) teensy[i].inputs_nsave -= 1; */
-    /* } */
+  int te;
+  int pin;
+  
+  for(te=0;te<MAXTEENSYS;te++) {
 
-    /* /\* shift all analog inputs in history array by one *\/ */
-    /* for (j=0;j<teensy[i].nanaloginputs;j++) { */
-    /*   for (s=MAXSAVE-2;s>=0;s--) { */
-    /* 	teensy[i].analoginputs[j][s+1] = teensy[i].analoginputs[j][s]; */
-    /*   } */
-    /* } */
+    if (teensy[te].connected == 1) {
+      /* shrink history counter by one (the oldest data was read this loop)  */
+      if (teensy[te].nhist > 0) {
+	teensy[te].nhist--;
+	if (verbose > 2) printf("Number of History Values for Teensy %i: %i \n",te,teensy[te].nhist);
+      }
+      /* new data has been sent etc. so mark it as old */
+      for (pin=0;pin<teensy[te].num_pins;pin++) {
+	teensy[te].val_save[pin] = teensy[te].val[pin][teensy[te].nhist];
+      }
+    }
   }
   return 0;
 }

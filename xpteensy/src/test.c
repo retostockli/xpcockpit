@@ -85,20 +85,20 @@ void test(void)
   /* } */
   
   /* read digital input (#3) */  
-  /* ret = digital_input(teensy, 3, &digitalvalue, 0); */
-  /* if (ret == 1) { */
-  /*   printf("Digital Input changed to: %i \n",digitalvalue); */
-  /* }  */
+  ret = digital_input(te, 3, &digitalvalue, 0);
+  if (ret == 1) {
+    printf("Digital Input changed to: %i \n",digitalvalue);
+  }
 
   /* read analog input (#14) */
-  /* ret = analog_input(teensy,14,fvalue,0.0,1.0); */
-  /* if (ret == 1) { */
-  /*   /\* ret is 1 only if analog input has changed *\/ */
-  /*   printf("Analog Input changed to: %f \n",*fvalue); */
-  /* } */
+  ret = analog_input(te,14,fvalue,0.0,1.0);
+  if (ret == 1) {
+    /* ret is 1 only if analog input has changed */
+    printf("Analog Input changed to: %f \n",*fvalue);
+  }
   
   /* set LED connected to first output (#0) to value landing lights dataref */
-  digitalvalue = 1;
+  //digitalvalue = 1;
   analogvalue = 0.5;
   ret = digital_output(te, 0, &digitalvalue);
   //ret = analog_output(te, 0, &analogvalue,0.0,1.0);
