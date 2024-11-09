@@ -1,10 +1,13 @@
+// Create an instance of the Servo library
+Servo servo[MAX_SERVO];
+
 void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
   if ((pin >=0) && (pin < teensy_data.num_pins)) {
-    teensy_data.pinmode[pin] = pinmode;
+    
     if (pinmode == PINMODE_INPUT) {
       pinMode(pin, INPUT_PULLUP);
       teensy_data.val[pin][0] = INITVAL;
-      teensy_data.val_save[pin][0] = INITVAL;
+      teensy_data.val_save[pin] = INITVAL;
     } else if (pinmode == PINMODE_OUTPUT) {
       pinMode(pin, OUTPUT);
       digitalWrite(pin, initval);
@@ -18,10 +21,22 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
     } else if (pinmode == PINMODE_ANALOGINPUT) {
       pinMode(pin, INPUT);
       teensy_data.val[pin][0] = INITVAL;
-      teensy_data.val_save[pin][0] = INITVAL;      
+      teensy_data.val_save[pin] = INITVAL;      
     } else if (pinmode == PINMODE_INTERRUPT) {
       pinMode(pin, INPUT_PULLUP);
     } else if (pinmode == PINMODE_I2C) {
+
+    } else if (pinmode == PINMODE_SERVO) {
+      if (teensy_data.pinmode[pin] != pinmode) {
+        /* Specify the pin number where the motor's control signal is connected. */
+        //servo[teensy_data.num_servo].attach(pin);  
+        /* Specify the pin number where the motor's control signal is connected, and the motor's minimum and maximum control pulse width, in microseconds. */
+        servo[teensy_data.num_servo].attach(pin, SERVO_MINPULSE, SERVO_MAXPULSE);
+        teensy_data.arg1[pin] = teensy_data.num_servo;
+        /* store servo instance number for this pint */
+        teensy_data.num_servo++;
+      }
+
 
     } else {
        if (DEBUG) {
@@ -29,6 +44,8 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
         Serial.println(pin);
        }
     }
+    /* store pinmode */
+    teensy_data.pinmode[pin] = pinmode;
   } else {
     if (DEBUG) {
       Serial.print("Init: Teensy Pin Number out of range: ");
@@ -38,7 +55,7 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
 
 }
 
-void teensy_recv(int8_t pin, int16_t val) {
+void teensy_write(int8_t pin, int16_t val) {
   if ((pin >=0) && (pin < teensy_data.num_pins)) {
     if (teensy_data.pinmode[pin] == PINMODE_OUTPUT) {
       if (DEBUG) {
@@ -50,7 +67,7 @@ void teensy_recv(int8_t pin, int16_t val) {
       teensy_data.val[pin][0] = val;
       digitalWrite(pin, val);
     } else if (teensy_data.pinmode[pin] == PINMODE_PWM) {
-     if (DEBUG) {
+      if (DEBUG) {
         Serial.print("RECV: Teensy Analog Output pin ");
         Serial.print(pin);
         Serial.print(" has value: ");
@@ -58,9 +75,23 @@ void teensy_recv(int8_t pin, int16_t val) {
       }
       teensy_data.val[pin][0] = val;
       analogWrite(pin, val);
+    } else if (teensy_data.pinmode[pin] == PINMODE_SERVO) {
+      Serial.print(teensy_data.arg1[pin]);
+      Serial.print(" ");
+      Serial.println(teensy_data.num_servo);
+      if ((teensy_data.arg1[pin] < teensy_data.num_servo) && 
+          (teensy_data.arg1[pin] >= 0)) {
+        if (DEBUG) {
+          Serial.print("RECV: Teensy Servo Output pin ");
+          Serial.print(pin);
+          Serial.print(" has value: ");
+          Serial.println(val);
+        }
+        servo[teensy_data.arg1[pin]].write(val);
+      }   
     } else {
       if (DEBUG) {
-        Serial.print("RECV: Teensy Pin Number not set for Output or PWM: ");
+        Serial.print("RECV: Teensy Pin Number not set for Output, Servo or PWM: ");
         Serial.println(pin);
       }
     }
@@ -72,7 +103,7 @@ void teensy_recv(int8_t pin, int16_t val) {
   } 
 }
 
-void teensy_poll() {
+void teensy_read() {
   int ret;
   int16_t val;
   int h;
@@ -83,7 +114,7 @@ void teensy_poll() {
       } else {
         teensy_data.val[pin][0] = 1; /* If a pin is "LOW", the switch is connected to ground, thus closed */
       }
-      if (teensy_data.val[pin][0] != teensy_data.val_save[pin][0]) {
+      if (teensy_data.val[pin][0] != teensy_data.val_save[pin]) {
         if (DEBUG) {
           Serial.print("POLL: Teensy Pin Digital Value ");
           Serial.print(pin);
@@ -92,7 +123,7 @@ void teensy_poll() {
         }
         ret = udp_send(TEENSY_TYPE, 0, pin, teensy_data.val[pin][0]);
         if (ret == SENDMSGLEN) {
-          teensy_data.val_save[pin][0] = teensy_data.val[pin][0];
+          teensy_data.val_save[pin] = teensy_data.val[pin][0];
         }
       }
     } else if (teensy_data.pinmode[pin] == PINMODE_ANALOGINPUT) {

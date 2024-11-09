@@ -92,7 +92,7 @@ int init_teensy() {
 }
 
 
-int write_teensy() {
+int send_teensy() {
   
   int ret;
   int te;
@@ -105,7 +105,8 @@ int write_teensy() {
       memset(teensySendBuffer,0,SENDMSGLEN);
       for (pin=0;pin<teensy[te].num_pins;pin++) {
 	if ((teensy[te].pinmode[pin] == PINMODE_OUTPUT) ||
-	    (teensy[te].pinmode[pin] == PINMODE_PWM)) {
+	    (teensy[te].pinmode[pin] == PINMODE_PWM) ||
+	    (teensy[te].pinmode[pin] == PINMODE_SERVO)) {
 	  if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) { 
 	    teensySendBuffer[0] = TEENSY_ID1; /* T */
 	    teensySendBuffer[1] = TEENSY_ID2; /* E */
@@ -131,7 +132,7 @@ int write_teensy() {
 }
 
 
-int read_teensy() {
+int recv_teensy() {
 
   int te;
   int recv_type;
@@ -139,11 +140,11 @@ int read_teensy() {
   int dev_num;
   int pin;
   short int val;
-  int i,p;
  
   //printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
   
-  while (udpReadLeft >= RECVMSGLEN) {
+  if (udpReadLeft >= RECVMSGLEN) {
+    //while (udpReadLeft >= RECVMSGLEN) {
     
     te = INITVAL;
   
@@ -186,22 +187,6 @@ int read_teensy() {
 	  if ((dev_type == TEENSY_TYPE) && (dev_num == 0)) {
 	    if ((pin>=0) && (pin<teensy[te].num_pins)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
-		if (teensy[te].nhist > 0) {
-		  /* digital inputs: we want to catch all changes especially for rotary encoders
-		     first shift history values of all pins and store the new value in position 0 */
-		  for (p=0;p<teensy[te].num_pins;p++) {
-		    for (i=teensy[te].nhist;i>=1;i--) {
-		      if (i<MAX_HIST) {
-			teensy[te].val[p][i] = teensy[te].val[p][i-1];
-		      }
-		    }
-		  }
-		}
-		if (teensy[te].nhist < MAX_HIST) {
-		  teensy[te].nhist++;
-		} else {
-		  printf("Maximum Number %i of history values reached for Teensy %i \n",MAX_HIST,te);
-		}
 		if (verbose > 0) printf("Received digital value %i for pin %i of Teensy %i \n",val,pin,te);
 		teensy[te].val[pin][0] = val;
 	      } else if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) {
@@ -254,29 +239,26 @@ int digital_input(int te, int pin, int *value, int type)
   int retval = 0; /* returns 1 if something changed, and 0 if nothing changed,
 		     and -1 if something went wrong */
 
-  int s;
-
   if (value != NULL) {
 
     if (te < MAXTEENSYS) {
       if (teensy[te].connected) {
 	if ((pin >= 0) && (pin < teensy[te].num_pins)) {
 	  if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
-	    if (teensy[te].nhist != 0) {
-	      s = teensy[te].nhist - 1; /* history slot to read */
+	    if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
 	      if (type == 0) {
 		/* simple pushbutton / switch */
-		if (*value != teensy[te].val[pin][s]) {
+		if (*value != teensy[te].val[pin][0]) {
 		  if (verbose > 1) printf("Pushbutton: Teensy %i Pin %i Changed to %i %i \n",
-					  te, pin, *value,teensy[te].val[pin][s]);
-		  *value = teensy[te].val[pin][s];
+					  te, pin, *value,teensy[te].val[pin][0]);
+		  *value = teensy[te].val[pin][0];
 		  retval = 1;
 		}
 
 	      } else {
 		/* toggle state everytime you press button */
 		/* check if the switch state changed from 0 -> 1 */
-		if ((teensy[te].val[pin][s] == 1) && (teensy[te].val_save[pin] == 0)) {
+		if ((teensy[te].val[pin][0] == 1) && (teensy[te].val_save[pin] == 0)) {
 		  /* toggle */
 		  if (*value != INT_MISS) {
 		    if ((*value == 0) || (*value == 1)) {
@@ -309,6 +291,209 @@ int digital_input(int te, int pin, int *value, int type)
       }
     } else {
       if (verbose > 0) printf("Digital Input %i cannot be read. Teensy %i >= MAXTEENSYS\n",pin,te);
+      retval = -1;
+    }
+    
+  }
+
+  return retval;
+}
+
+/* retrieve value from given analog input between the range minval and maxval */
+int analog_input(int te, int pin, float *value, float minval, float maxval)
+{
+
+  int retval = 0; /* returns 1 if something changed, and 0 if nothing changed,
+		     and -1 if something went wrong */
+
+  if (value != NULL) {
+
+    if (te < MAXTEENSYS) {
+      if (teensy[te].connected) {
+	if ((pin >= 0) && (pin < teensy[te].num_pins)) {
+	  if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) {
+
+	    if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
+	      *value = ((float) teensy[te].val[pin][0])
+		/ (float) (pow(2,ANALOGINPUTNBITS)-1)
+		* (maxval - minval) + minval;
+	      retval = 1;
+	    }
+	  } else {
+	    if (verbose > 0) printf("Pin %i not defined as analog input for Teensy %i \n",
+				    pin,te);
+	  }
+	} else {
+	  if (verbose > 0) printf("Analog Input %i above maximum # of inputs %i of Teensy %i \n",
+				  pin,teensy[te].num_pins,te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 2) printf("Analog Input %i cannot be read. Teensy %i not connected \n",
+				pin,te);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Analog Input %i cannot be read. Teensy %i >= MAXTEENSYS\n",pin,te);
+      retval = -1;
+    }
+    
+  }
+
+  return retval;
+}
+
+/* wrapper for encoder_input using integer values and multiplier */
+int encoder_input(int te, int pin1,  int pin2, int *value, int multiplier, int type)
+{
+  float fvalue = FLT_MISS;
+  if (*value != INT_MISS) fvalue = (float) *value;
+  int ret = encoder_inputf(te, pin1, pin2, &fvalue, (float) multiplier, type);
+  if (fvalue != FLT_MISS) *value = (int) lroundf(fvalue);
+  return ret;
+    
+}
+
+/* retrieve encoder value and for given encoder type connected to inputs 1 and 2
+   Note that even though we try to capture every bit that changes, turning an
+   optical encoder too fast will result in loss of states since the Teensy
+   will not capture every state change due to its polling interval */
+/* two types of encoders: */
+/* 1: 2 bit optical rotary encoder (type 3 in xpusb) */
+/* 2: 2 bit gray type mechanical encoder */
+int encoder_inputf(int te, int pin1, int pin2, float *value, float multiplier, int type)
+{
+
+  // TODO: add multiplier by checking time since last move
+
+  int retval = 0; /* returns 1 if something changed, and 0 if nothing changed,
+		     and -1 if something went wrong */
+
+  int16_t oldcount, newcount; /* encoder integer counters */
+  int16_t updown = 0; /* encoder direction */
+  int16_t obits[2]; /* bit arrays for 2 bit encoder */
+  int16_t nbits[2]; /* bit arrays for 2 bit encoder */
+
+  struct timeval newtime;
+  float dt;
+
+  if (value != NULL) {
+
+    if (te < MAXTEENSYS) {
+      if (teensy[te].connected) {
+	if ((pin1 >= 0) && (pin1 < teensy[te].num_pins) &&
+	    (pin2 >= 0) && (pin2 < teensy[te].num_pins)) {
+	  if ((teensy[te].pinmode[pin1] == PINMODE_INPUT) &&
+	      (teensy[te].pinmode[pin1] == PINMODE_INPUT)) {
+	    
+	    if ((teensy[te].val[pin1][0] != INITVAL) &&
+		(teensy[te].val[pin2][0] != INITVAL) &&
+		(teensy[te].val_save[pin1] != INITVAL) &&
+		(teensy[te].val_save[pin2] != INITVAL)) {
+	    
+	      if ((teensy[te].val[pin1][0] != teensy[te].val_save[pin1]) ||
+		  (teensy[te].val[pin2][0] != teensy[te].val_save[pin2])) {
+		
+		if (*value != FLT_MISS) {
+
+		  /* derive last encoder bit state */
+		  obits[0] = teensy[te].val_save[pin1];
+		  obits[1] = teensy[te].val_save[pin2];
+		  
+		  /* derive new encoder bit state */
+		  nbits[0] = teensy[te].val[pin1][0];
+		  nbits[1] = teensy[te].val[pin2][0];
+		  
+		  //if (obits[0] == INITVAL) obits[0] = nbits[0];
+		  //if (obits[1] == INITVAL) obits[1] = nbits[1];
+
+		  //printf("%i %i %i %i \n",nbits[0],nbits[1],obits[0],obits[1]);
+
+		  if (type == 1) {
+		    /* 2 bit optical encoder */		    
+		    if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		      updown = -1;
+		    } else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
+		      updown = 1;
+		    } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
+		      updown = -1;
+		    } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		      updown = 1;
+		    }
+	  
+		    if (updown != 0) {
+
+		      gettimeofday(&newtime,NULL);
+		      dt = ((newtime.tv_sec - teensy[te].val_time[pin1].tv_sec) +
+			    (newtime.tv_usec - teensy[te].val_time[pin1].tv_usec) / 1000000.0)*1000.0;
+		      teensy[te].val_time[pin1] = newtime;
+		      //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
+		  
+		      *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
+		      retval = 1;
+		    }
+		  } else if (type == 2) {
+		    /* 2 bit gray type mechanical encoder */
+
+		    /* derive last encoder count */
+		    oldcount = obits[0]+2*obits[1];
+	  
+		    /* derive new encoder count */
+		    newcount = nbits[0]+2*nbits[1];
+
+		    /* forwards */
+		    if (((oldcount == 0) && (newcount == 1)) ||
+			((oldcount == 1) && (newcount == 3)) ||
+			((oldcount == 3) && (newcount == 2)) ||
+			((oldcount == 2) && (newcount == 0))) {
+		      updown = 1;
+		    }
+		    
+		    /* backwards */
+		    if (((oldcount == 2) && (newcount == 3)) ||
+			((oldcount == 3) && (newcount == 1)) ||
+			((oldcount == 1) && (newcount == 0)) ||
+			((oldcount == 0) && (newcount == 2))) {
+		      updown = -1;
+		    }
+		    
+		    if (updown != 0) {
+		      gettimeofday(&newtime,NULL);
+		      dt = ((newtime.tv_sec - teensy[te].val_time[pin1].tv_sec) +
+			    (newtime.tv_usec - teensy[te].val_time[pin1].tv_usec) / 1000000.0)*1000.0;
+		      teensy[te].val_time[pin1] = newtime;
+		      //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
+
+		      *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
+		      retval = 1;
+		    }
+		  } else {
+		    if (verbose > 0) printf("Encoder with Pins %i,%i of tee %i need to be of type 1 or 2 \n",
+					    pin1,pin2,te);
+		    retval = -1;
+		  }
+		}
+		if ((retval == 1) && (verbose > 2)) printf("Encoder with Pins %i,%i of Teensy %i changed to %f \n",
+							   pin1,pin2,te,*value);
+	      }
+	    }
+	  } else {
+	    if (verbose > 2) printf("Encoder with Pins %i,%i cannot be read. Pins not set as Inputs for Teensy %i \n",
+				    pin1,pin2,te);
+	    retval = -1;
+	  }	    
+	} else {
+	  if (verbose > 0) printf("Encoder with Pins %i,%i above maximum # of digital inputs %i of Teensy %i \n",
+				  pin1,pin2,teensy[te].num_pins,te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 2) printf("Encoder with Pins %i,%i cannot be read. Teensy %i not connected \n",
+				pin1,pin2,te);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Encoder with Pins %i,%i cannot be read. Teensy %i >= MAXTEENSYS\n",pin1,pin2,te);
       retval = -1;
     }
     
@@ -383,7 +568,7 @@ int digital_output(int te, int pin, int *value)
   return retval;
 }
 
-int analog_output(int te, int pin, float *fvalue, float minval, float maxval)
+int pwm_output(int te, int pin, float *fvalue, float minval, float maxval)
 {
   int retval = 0;
   int ival;
@@ -395,11 +580,11 @@ int analog_output(int te, int pin, float *fvalue, float minval, float maxval)
 	if ((pin >= 0) && (pin < teensy[te].num_pins)) {
 	  if (teensy[te].pinmode[pin] == PINMODE_PWM) {
 	    if (*fvalue != FLT_MISS) {
-	      /* scale value to analog output range */
+	      /* scale value to PWM output range */
 	      ival = (int) (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)*(pow(2,ANALOGOUTPUTNBITS)-1.0));
 	      if (ival != teensy[te].val[pin][0]) {
 		teensy[te].val[pin][0] = ival;
-		if (verbose > 2) printf("Analog Output %i of Teensy %i changed to %i \n", pin, te, ival);
+		if (verbose > 2) printf("PWM Output %i of Teensy %i changed to %i \n", pin, te, ival);
 	      }
 	    }
 	  } else {
@@ -407,16 +592,16 @@ int analog_output(int te, int pin, float *fvalue, float minval, float maxval)
 	    retval = -1;
 	  }
  	} else {
-	  if (verbose > 0) printf("Analog Output %i above maximum # of outputs %i of Teensy %i \n", pin,
+	  if (verbose > 0) printf("PWM Output %i above maximum # of outputs %i of Teensy %i \n", pin,
 				  teensy[te].num_pins, te);
 	  retval = -1;
 	}
       } else {
-	if (verbose > 2) printf("Analog Output %i cannot be written. Teensy %i not connected \n", pin, te);
+	if (verbose > 2) printf("PWM Output %i cannot be written. Teensy %i not connected \n", pin, te);
 	retval = -1;
       }
     } else {
-      if (verbose > 0) printf("Analog Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n", pin, te);
+      if (verbose > 0) printf("PWM Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n", pin, te);
       retval = -1;
     }
 
@@ -425,192 +610,46 @@ int analog_output(int te, int pin, float *fvalue, float minval, float maxval)
   return retval;
 }
 
-/* retrieve value from given analog input between the range minval and maxval */
-int analog_input(int te, int pin, float *value, float minval, float maxval)
+/* Writes Servo Signal to given output of Teensy */
+int servo_output(int te, int pin, float *fvalue, float minval, float maxval)
 {
+  int retval = 0;
+  int ival;
 
-  int retval = 0; /* returns 1 if something changed, and 0 if nothing changed,
-		     and -1 if something went wrong */
-
-  if (value != NULL) {
+  if (fvalue != NULL) {
 
     if (te < MAXTEENSYS) {
       if (teensy[te].connected) {
 	if ((pin >= 0) && (pin < teensy[te].num_pins)) {
-	  if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) {
-
-	    if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
-	      *value = ((float) teensy[te].val[pin][0])
-		/ (float) pow(2,ANALOGINPUTNBITS)
-		* (maxval - minval) + minval;
-	      retval = 1;
+	  if (teensy[te].pinmode[pin] == PINMODE_SERVO) {
+	    if (*fvalue != FLT_MISS) {
+	      /* scale value to servo output range */
+	      ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0))
+			    * (SERVO_MAXANGLE - SERVO_MINANGLE));
+	      if (ival != teensy[te].val[pin][0]) {
+		teensy[te].val[pin][0] = ival;
+		if (verbose > 0) printf("Servo Output %i of Teensy %i changed to %i \n", pin, te, ival);
+	      }
 	    }
 	  } else {
-	    if (verbose > 0) printf("Pin %i not defined as analog input for Teensy %i \n",
-				    pin,te);
+	    if (verbose > 0) printf("Pin %i of Teensy %i is not defined as Servo Output \n", pin, te);
+	    retval = -1;
 	  }
-	} else {
-	  if (verbose > 0) printf("Analog Input %i above maximum # of inputs %i of Teensy %i \n",
-				  pin,teensy[te].num_pins,te);
+ 	} else {
+	  if (verbose > 0) printf("Servo Output %i above maximum # of outputs %i of Teensy %i \n", pin,
+				  teensy[te].num_pins, te);
 	  retval = -1;
 	}
       } else {
-	if (verbose > 2) printf("Analog Input %i cannot be read. Teensy %i not connected \n",
-				pin,te);
+	if (verbose > 2) printf("Servo Output %i cannot be written. Teensy %i not connected \n", pin, te);
 	retval = -1;
       }
     } else {
-      if (verbose > 0) printf("Analog Input %i cannot be read. Teensy %i >= MAXTEENSYS\n",pin,te);
+      if (verbose > 0) printf("Servo Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n", pin, te);
       retval = -1;
     }
-    
+
   }
 
   return retval;
 }
-
-
-/* /\* wrapper for encoder_input using integer values and multiplier *\/ */
-/* int encoder_input(int tee, int input1,  int input2, int *value, int multiplier, int type) */
-/* { */
-/*   float fvalue = FLT_MISS; */
-/*   if (*value != INT_MISS) fvalue = (float) *value; */
-/*   int ret = encoder_inputf(tee, input1, input2, &fvalue, (float) multiplier, type); */
-/*   if (fvalue != FLT_MISS) *value = (int) lroundf(fvalue); */
-/*   return ret; */
-    
-/* } */
-
-/* /\* retrieve encoder value and for given encoder type connected to inputs 1 and 2 */
-/*    Note that even though we try to capture every bit that changes, turning an  */
-/*    optical encoder too fast will result in loss of states since the Teensy */
-/*    will not capture every state change due to its polling interval *\/ */
-/* /\* two types of encoders: *\/ */
-/* /\* 1: 2 bit optical rotary encoder (type 3 in xpusb) *\/ */
-/* /\* 2: 2 bit gray type mechanical encoder *\/ */
-/* int encoder_inputf(int tee, int input1, int input2, float *value, float multiplier, int type) */
-/* { */
-
-/*   int retval = 0; /\* returns 1 if something changed, and 0 if nothing changed,  */
-/* 		     and -1 if something went wrong *\/ */
-
-/*   char oldcount, newcount; /\* encoder integer counters *\/ */
-/*   char updown = 0; /\* encoder direction *\/ */
-/*   char obits[2]; /\* bit arrays for 2 bit encoder *\/ */
-/*   char nbits[2]; /\* bit arrays for 2 bit encoder *\/ */
-/*   int s; */
-
-/*   if (value != NULL) { */
-
-/*     if (tee < MAXTEENSYS) { */
-/*       if (teensy[te].connected) { */
-/* 	if ((input1 >= 0) && (input1 < teensy[te].ninputs) && */
-/* 	    (input2 >= 0) && (input2 < teensy[te].ninputs)) { */
-/* 	  if (*value != FLT_MISS) { */
-
-/* 	    //	    printf("%i %i %i %i \n",teensy[te].inputs[input1][s],teensy[te].inputs[input2][s], */
-/* 	    //		   teensy[te].inputs[input1][s+1], teensy[te].inputs[input2][s+1]); */
-	    
-/* 	    if (teensy[te].inputs_nsave != 0) { */
-/* 	      s = teensy[te].inputs_nsave - 1; /\* history slot to read *\/ */
-/* 	      if (s < (MAXSAVE-1)) { */
-/* 		/\* if not first read, and if any of the inputs have changed then the encoder was moved *\/ */
-/* 		if ((((teensy[te].inputs[input1][s] != teensy[te].inputs[input1][s+1]) && */
-/* 		      (teensy[te].inputs[input1][s+1] != INPUTINITVAL)) || */
-/* 		     ((teensy[te].inputs[input2][s] != teensy[te].inputs[input2][s+1]) && */
-/* 		      (teensy[te].inputs[input2][s+1] != INPUTINITVAL))) && */
-/* 		    (teensy[te].inputs[input1][s] != INPUTINITVAL) && */
-/* 		    (teensy[te].inputs[input2][s] != INPUTINITVAL)) { */
-
-/* 		  /\* derive last encoder bit state *\/ */
-/* 		  obits[0] = teensy[te].inputs[input1][s+1]; */
-/* 		  obits[1] = teensy[te].inputs[input2][s+1]; */
-		  
-/* 		  /\* derive new encoder bit state *\/ */
-/* 		  nbits[0] = teensy[te].inputs[input1][s]; */
-/* 		  nbits[1] = teensy[te].inputs[input2][s]; */
-		  
-/* 		  if (obits[0] == INPUTINITVAL) obits[0] = nbits[0]; */
-/* 		  if (obits[1] == INPUTINITVAL) obits[1] = nbits[1]; */
-
-/* 		  printf("%i %i %i %i \n",nbits[0],nbits[1],obits[0],obits[1]); */
-		  
-/* 		  if (type == 1) { */
-/* 		    /\* 2 bit optical encoder *\/ */
-		    
-/* 		    if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) { */
-/* 		      updown = -1; */
-/* 		    } else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) { */
-/* 		      updown = 1; */
-/* 		    } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) { */
-/* 		      updown = -1; */
-/* 		    } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) { */
-/* 		      updown = 1; */
-/* 		    } */
-	  
-/* 		    if (updown != 0) { */
-/* 		      /\* add accelerator by using s as number of queued encoder changes *\/ */
-/* 		      *value = *value + ((float) updown)  * multiplier * (float) (s*2+1); */
-/* 		      retval = 1; */
-/* 		    }		     */
-/* 		  } else if (type == 2) { */
-/* 		    /\* 2 bit gray type mechanical encoder *\/ */
-
-/* 		    /\* derive last encoder count *\/ */
-/* 		    oldcount = obits[0]+2*obits[1]; */
-	  
-/* 		    /\* derive new encoder count *\/ */
-/* 		    newcount = nbits[0]+2*nbits[1]; */
-
-/* 		    /\* forwtee *\/ */
-/* 		    if (((oldcount == 0) && (newcount == 1)) || */
-/* 			((oldcount == 1) && (newcount == 3)) || */
-/* 			((oldcount == 3) && (newcount == 2)) || */
-/* 			((oldcount == 2) && (newcount == 0))) { */
-/* 		      updown = 1; */
-/* 		    } */
-		    
-/* 		    /\* backwtee *\/ */
-/* 		    if (((oldcount == 2) && (newcount == 3)) || */
-/* 			((oldcount == 3) && (newcount == 1)) || */
-/* 			((oldcount == 1) && (newcount == 0)) || */
-/* 			((oldcount == 0) && (newcount == 2))) { */
-/* 		      updown = -1; */
-/* 		    } */
-		    
-/* 		    if (updown != 0) { */
-/* 		      /\* add accelerator by using s as number of queued encoder changes *\/ */
-/* 		      *value = *value + ((float) updown) * multiplier * (float) (s+1); */
-/* 		      retval = 1; */
-/* 		    }		     */
-/* 		  } else { */
-/* 		    if (verbose > 0) printf("Encoder with Input %i,%i of tee %i need to be of type 1 or 2 \n", */
-/* 					    input1,input2,tee); */
-/* 		    retval = -1; */
-/* 		  } */
-/* 		} */
-/* 	      } */
-/* 	    } */
-/* 	    if ((retval == 1) && (verbose > 2)) printf("Encoder with Input %i,%i of Teensy %i changed to %f \n", */
-/* 						       input1,input2,tee,*value); */
-/* 	  } */
-	    
-/* 	} else { */
-/* 	  if (verbose > 0) printf("Encoder with Input %i,%i above maximum # of digital inputs %i of Teensy %i \n", */
-/* 				  input1,input2,teensy[te].ninputs,tee); */
-/* 	  retval = -1; */
-/* 	} */
-/*       } else { */
-/* 	if (verbose > 2) printf("Encoder with Input %i,%i cannot be read. Teensy %i not connected \n", */
-/* 				input1,input2,tee); */
-/* 	retval = -1; */
-/*       } */
-/*     } else { */
-/*       if (verbose > 0) printf("Encoder with Input %i,%i cannot be read. Teensy %i >= MAXTEENSYS\n",input1,input2,tee); */
-/*       retval = -1; */
-/*     } */
-    
-/*   } */
-
-/*   return retval; */
-/* } */

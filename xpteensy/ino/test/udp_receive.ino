@@ -56,7 +56,7 @@ void udp_receive(void) {
             teensy_init(recvBuffer[7],recvBuffer[10],ivalue16);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            teensy_recv(recvBuffer[7],ivalue16);
+            teensy_write(recvBuffer[7],ivalue16);
           }
         }
       } /* Correct receive buffer initiator string */

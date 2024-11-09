@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <float.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <signal.h>
 
 #include "common.h"
@@ -65,7 +66,8 @@ int ini_read(char* programPath, char* iniName)
   int default_teensy_mac = 0;
   int default_teensy_daughter = 0;
   char default_teensy_version[] = "NA";
-  
+
+  struct timeval newtime;
 
   /* check if we are in the source code directory or in the binary installation path */
   if (strncmp("/",programPath,1)==0) {
@@ -116,6 +118,8 @@ int ini_read(char* programPath, char* iniName)
     teensyserver_port = iniparser_getint(ini,"teensyserver:Port", default_teensyserver_port);
     printf("SISMOSERVER Address %s Port %i \n",teensyserver_ip, teensyserver_port);
 
+    gettimeofday(&newtime,NULL);
+
     for(i=0;i<MAXTEENSYS;i++) {
       sprintf(tmp,"teensy%i:Address",i);
       strcpy(teensy[i].ip,iniparser_getstring(ini,tmp, default_teensy_ip));
@@ -132,13 +136,13 @@ int ini_read(char* programPath, char* iniName)
 	for (l=0;l<MAX_HIST;l++) {
 	  teensy[i].val[k][l] = INITVAL;
 	}
+	teensy[i].val_time[k] = newtime;
 	teensy[i].val_save[k] = INITVAL;
 	teensy[i].pinmode[k] = INITVAL;
-	teensy[i].int_dev[k] = INITVAL;
-	teensy[i].int_dev_num[k] = INITVAL;
+	teensy[i].arg1[k] = INITVAL;
+	teensy[i].arg2[k] = INITVAL;
       }
-      teensy[i].nhist = 0;
-       
+      
        if (teensy[i].port == default_teensy_port) {
 	printf("Teensy %i Not Connected \n",i);
 	teensy[i].connected = 0;
@@ -164,10 +168,8 @@ int ini_read(char* programPath, char* iniName)
  	printf("MCP23008: %i\n",ival);
 	for (j=0;j<MAX_DEV;j++) {
 	  for (k=0;k<MAX_MCP23008_PINS;k++) {
-	    for (l=0;l<MAX_HIST;l++) {
-	      mcp23008[i][j].val[k][l] = INITVAL;
-	      mcp23008[i][j].val_save[k] = INITVAL;
-	    }
+	    mcp23008[i][j].val[k] = INITVAL;
+	    mcp23008[i][j].val_save[k] = INITVAL;
 	    mcp23008[i][j].pinmode[k] = INITVAL;
 	  }
 	  mcp23008[i][j].intpin = INITVAL;
@@ -185,10 +187,8 @@ int ini_read(char* programPath, char* iniName)
  	printf("MCP23017: %i\n",ival);
 	for (j=0;j<MAX_DEV;j++) {
 	  for (k=0;k<MAX_MCP23017_PINS;k++) {
-	    for (l=0;l<MAX_HIST;l++) {
-	      mcp23017[i][j].val[k][l] = INITVAL;
-	      mcp23017[i][j].val_save[k] = INITVAL;
-	    }
+	    mcp23017[i][j].val[k] = INITVAL;
+	    mcp23017[i][j].val_save[k] = INITVAL;
 	    mcp23017[i][j].pinmode[k] = INITVAL;
 	  }
 	  mcp23017[i][j].intpin = INITVAL;
@@ -206,7 +206,9 @@ int ini_read(char* programPath, char* iniName)
  	printf("PCF8591: %i\n",ival);
 	for (j=0;j<MAX_DEV;j++) {
 	  for (k=0;k<MAX_PCF8591_PINS;k++) {
-	    pcf8591[i][j].val[k] = INITVAL;
+	    for (l=0;l<MAX_HIST;l++) {
+	      pcf8591[i][j].val[k][l] = INITVAL;
+	    }
 	    pcf8591[i][j].val_save[k] = INITVAL;
 	  }
 	  pcf8591[i][j].dac = INITVAL;
@@ -252,14 +254,9 @@ int reset_teensydata()
   for(te=0;te<MAXTEENSYS;te++) {
 
     if (teensy[te].connected == 1) {
-      /* shrink history counter by one (the oldest data was read this loop)  */
-      if (teensy[te].nhist > 0) {
-	teensy[te].nhist--;
-	if (verbose > 2) printf("Number of History Values for Teensy %i: %i \n",te,teensy[te].nhist);
-      }
-      /* new data has been sent etc. so mark it as old */
+     /* new data has been sent etc. so mark it as old */
       for (pin=0;pin<teensy[te].num_pins;pin++) {
-	teensy[te].val_save[pin] = teensy[te].val[pin][teensy[te].nhist];
+	teensy[te].val_save[pin] = teensy[te].val[pin][0];
       }
     }
   }

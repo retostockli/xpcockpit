@@ -8,6 +8,7 @@
 #define GATEWAY "192.168.1.1"
 
 #include <QNEthernet.h>
+#include <Servo.h>
 #include "common.h"
 #include "teensy_config.h"
 
@@ -20,6 +21,9 @@ teensy_struct teensy_data;
 // An EthernetUDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
 
+unsigned long StartTime;
+unsigned long CurrentTime;
+unsigned long ElapsedTime;
 
 void pauseCode(const char message[]) {
   while (1) {
@@ -98,9 +102,19 @@ void setup() {
 
 void loop() {
 
+  StartTime = micros();
+  
   udp_receive();
 
-  teensy_poll();
+  teensy_read();
+  
+  CurrentTime = micros();
+  ElapsedTime = CurrentTime - StartTime;
+
+  if ((ElapsedTime > 100) && DEBUG) {
+    Serial.print("Long Loop Time (us): ");
+    Serial.println(ElapsedTime);
+  }
 
   delay(1); /* We need a maximum of 1 ms delay to capture fast changing encoders */
 }

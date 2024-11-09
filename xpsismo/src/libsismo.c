@@ -952,7 +952,7 @@ int analog_input(int card, int input, float *value, float minval, float maxval)
 		 sismo[card].analoginputs[input][5],sismo[card].analoginputs[input][6]
 		 ); */
 	  
-	  *value = ((float) sismo[card].analoginputs[input][0]) / (float) pow(2,ANALOGINPUTNBITS) * 
+	  *value = ((float) sismo[card].analoginputs[input][0]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
 	    (maxval - minval) + minval;
 	    if (!found) {
 	      retval = 1;

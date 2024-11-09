@@ -47,6 +47,10 @@
 #define INITVAL -1          /* initial value of inputs/outputs upon startup */
 #define ANALOGINPUTNBITS 10      /* number of bits of analog inputs */
 #define ANALOGOUTPUTNBITS 8      /* number of bits of PWM outputs */
+#define SERVO_MINANGLE 0      /* minimum angle of servos (deg) */
+#define SERVO_MAXANGLE 180    /* maximum angle of servos (deg)*/
+#define SERVO_MINPULSE 400      /* minimum pulse width of servos (us) */
+#define SERVO_MAXPULSE 3000    /* maximum pulse width of servos (us) */
 
 #define TEENSY_INIT 1       // Initialization data packet
 #define TEENSY_REGULAR 2    // Regular data packet with data
@@ -72,16 +76,19 @@
 
 typedef struct {
   int8_t connected;    // Device connected (1) or not (0)
-  int16_t val[MAX_PINS][MAX_HIST];      // new values on device pins (input or output)
-  int16_t val_save[MAX_PINS];    // previous values on device pins (input or output)
-  int16_t nhist;                 // number of history values saved
-  int8_t pinmode[MAX_PINS];        // what type of pin (input/output/pwm/interrup/i2c etc.)
-  int8_t int_dev[MAX_PINS];     // for interrupt pins: for which device type
-  int8_t int_dev_num[MAX_PINS]; // for interrupt pins: for which device number of above type
-  char ip[30];            // IP address of teensy / server
+  int16_t val[MAX_PINS][MAX_HIST];    // new values on device pins (input or output)
+  int16_t val_save[MAX_PINS];         // previous values on device pins (input or output)
+  struct timeval val_time[MAX_PINS];  // stores time since last change (needed for encoder speed multiplier)
+  int8_t pinmode[MAX_PINS];    // what type of pin (input/output/pwm/interrup/i2c etc.)
+  int8_t arg1[MAX_PINS];       // for Teensy interrupt pins: interrupt for which device type.
+                               // for Servos: which servo instance (teensy) or min pulsewidth (us)
+  int8_t arg2[MAX_PINS];       // for Teensy interrupt pins: for which device number of above type
+                               // For Servos: max pulse width (us)
+  char ip[30];                 // IP address of teensy / server
   int port;               // UDP port teensy is listening / sending
   unsigned char mac[2];   // last two bytes of MAC address  
   int8_t num_pins;        // number of I/O pins on this teensy
+  int16_t num_servo;      // number of initialized servos
 } teensy_struct;
 
 typedef struct {
@@ -91,9 +98,9 @@ typedef struct {
 
 typedef struct {
   int8_t connected; // Device connected (1) or not (0)
-  int16_t val[MAX_MCP23008_PINS][MAX_HIST];       // new values on device pins (input or output)
+  int16_t val[MAX_MCP23008_PINS];       // new values on device pins (input or output)
   int16_t val_save[MAX_MCP23008_PINS];  // previous values on device pins (input or output)
-  int16_t nhist;                 // number of history values saved
+  struct timeval val_time[MAX_MCP23008_PINS];    // stores time since last change (needed for encoder speed multiplier)
   int8_t pinmode[MAX_MCP23008_PINS];   // I/O type: Input or output
   int8_t intpin;    // Interrupt pin on teensy to read this device
   int8_t wire;      // I2C bus (0,1,2)
@@ -102,9 +109,9 @@ typedef struct {
 
 typedef struct {
   int8_t connected; // Device connected (1) or not (0)
-  int16_t val[MAX_MCP23017_PINS][MAX_HIST];       // new values on device pins (input or output)
+  int16_t val[MAX_MCP23017_PINS];       // new values on device pins (input or output)
   int16_t val_save[MAX_MCP23017_PINS];  // previous values on device pins (input or output)
-  int16_t nhist;                 // number of history values saved
+  struct timeval val_time[MAX_MCP23017_PINS];    // stores time since last change (needed for encoder speed multiplier)
   int8_t pinmode[MAX_MCP23017_PINS];   // I/O type: Input or output
   int8_t intpin;     // Interrupt pin on teensy to read this device
   int8_t wire;       // I2C bus (0,1,2)
@@ -113,7 +120,7 @@ typedef struct {
 
 typedef struct {
   int8_t connected;    // Device connected (1) or not (0)
-  int16_t val[MAX_PCF8591_PINS];       // new values on device pins (Analog Inputs)
+  int16_t val[MAX_PCF8591_PINS][MAX_HIST];       // new values on device pins (Analog Inputs)
   int16_t val_save[MAX_PCF8591_PINS];  // previous values on device pins (Analog Inputs)
   int16_t dac;          // Digital to Analog pin Output
   int8_t wire;         // I2C bus (0,1,2)

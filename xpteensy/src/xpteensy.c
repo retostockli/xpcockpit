@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
   while (1) {
 
     /* receive data from Teensy */
-    if (read_teensy() < 0) exit_teensy(-8);
+    if (recv_teensy() < 0) exit_teensy(-8);
       
     /* check for TCP/IP connection to X-Plane */
     if (check_xpserver()<0) exit_teensy(-9);
@@ -110,15 +110,16 @@ int main(int argc, char **argv) {
     /**** User Modules End Here ****/
     
     /* send data to Teensy */
-    if (write_teensy() < 0) exit_teensy(-11);
+    if (send_teensy() < 0) exit_teensy(-11);
 
     /* send data to X-Plane via TCP/IP */
     if (send_xpserver()<0) exit_teensy(-12);
     
       /* reset counters and such */
     if (reset_teensydata() < 0) exit_teensy(-13);
-    
-    usleep(INTERVAL*1000);
+
+    if (udpReadLeft == 0) usleep(INTERVAL*1000);
+    //usleep(INTERVAL*1000);
   }
   
   return 0; 

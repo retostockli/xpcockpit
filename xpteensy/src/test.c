@@ -47,6 +47,9 @@ void init_test(void)
   teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
   teensy[te].pinmode[16] = PINMODE_I2C;
   teensy[te].pinmode[17] = PINMODE_I2C;
+  teensy[te].pinmode[23] = PINMODE_SERVO;
+  teensy[te].pinmode[33] = PINMODE_INPUT;
+  teensy[te].pinmode[34] = PINMODE_INPUT;
 
   mcp23017[te][0].pinmode[2] = PINMODE_INPUT;
   mcp23017[te][0].pinmode[3] = PINMODE_INPUT;
@@ -75,14 +78,14 @@ void test(void)
 
   /* not needed, only if you run without x-plane connection */
   if (*encodervalue == INT_MISS) *encodervalue = 0;
-  if (*fvalue == FLT_MISS) *fvalue = 0.0;
+  //if (*fvalue == FLT_MISS) *fvalue = 0.0;
   if (*value == INT_MISS) *value = 1;
 
-  /* read encoder at inputs 13 and 15 */
-  /* ret = encoder_input(teensy, 8, 9, encodervalue, 5, 1); */
-  /* if (ret == 1) { */
-  /*   printf("Encoder changed to: %i \n",*encodervalue); */
-  /* } */
+  /* read encoder at inputs 33 and 34 */
+  ret = encoder_input(te, 33, 34, encodervalue, 1, 1);
+  if (ret == 1) {
+    printf("Encoder changed to: %i \n",*encodervalue);
+  }
   
   /* read digital input (#3) */  
   ret = digital_input(te, 3, &digitalvalue, 0);
@@ -101,6 +104,9 @@ void test(void)
   //digitalvalue = 1;
   analogvalue = 0.5;
   ret = digital_output(te, 0, &digitalvalue);
-  //ret = analog_output(te, 0, &analogvalue,0.0,1.0);
+  //ret = pwm_output(te, 0, &analogvalue,0.0,1.0);
+
+  /* change Servo according to rotary position */
+  ret = servo_output(te, 23, fvalue,0.0,1.0);
   
 }
