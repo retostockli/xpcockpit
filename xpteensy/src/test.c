@@ -1,6 +1,6 @@
 /* This is the test.c code which can be used to test basic I/O of the Teensy
 
-   Copyright (C) 2021 Reto Stockli
+   Copyright (C) 2024 Reto Stockli
 
    Additions for analog axes treatment by Hans Jansen 2011
    Also several cosmetic changes and changes for Linux compilation
@@ -55,7 +55,7 @@ void init_test(void)
   mcp23017[te][0].pinmode[3] = PINMODE_INPUT;
   mcp23017[te][0].pinmode[7] = PINMODE_OUTPUT;
   mcp23017[te][0].intpin = 6;
-  mcp23017[te][0].wire = 1;
+  mcp23017[te][0].wire = 0;
   mcp23017[te][0].address = 0x21;
 
 }

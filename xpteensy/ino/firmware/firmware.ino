@@ -1,5 +1,5 @@
 /*
-   UDP Client for communicating to xpteensy
+   Firmware to communicate to the xpteensy X-Plane Client
  */
 
 #define PORT 1030
@@ -11,12 +11,19 @@
 #include <Servo.h>
 #include "common.h"
 #include "teensy_config.h"
+#include <Adafruit_MCP23X08.h>
+#include <Adafruit_MCP23X17.h>
+#include <Wire.h>
 
 using namespace qindesign::network;
 
+extern TwoWire Wire0;
+extern TwoWire Wire1; 
+extern TwoWire Wire2;  
 
 // data storage
 teensy_struct teensy_data;
+mcp23017_struct mcp23017_data[MAX_DEV];
 
 // An EthernetUDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
@@ -98,6 +105,14 @@ void setup() {
   // init teensy data structure
   init();
 
+
+  // Start I2C busses (one for now)
+  Wire.begin();
+  // Wire1.begin();
+  //Wire2.begin();
+  Wire.setClock(1000000);
+  //Wire1.setClock(1000000);
+  //Wire2.setClock(1000000);
 }
 
 void loop() {

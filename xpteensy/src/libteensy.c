@@ -53,15 +53,21 @@ int init_teensy() {
   int ret;
   int te;
   int pin;
+  int dev;
 
   for (te=0;te<MAXTEENSYS;te++) {
     if (teensy[te].connected == 1) {
-
+      /* initialize teensy mother board */
       /* initialize pins selected for digital input */
-      memset(teensySendBuffer,0,SENDMSGLEN);
       for (pin=0;pin<teensy[te].num_pins;pin++) {
-	if (teensy[te].pinmode[pin] != INITVAL) {
-	  if (verbose > 1) {
+	if ((teensy[te].pinmode[pin] == PINMODE_INPUT) ||
+	    (teensy[te].pinmode[pin] == PINMODE_OUTPUT) ||
+	    (teensy[te].pinmode[pin] == PINMODE_PWM) ||
+	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) ||
+	    (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) ||
+	    (teensy[te].pinmode[pin] == PINMODE_I2C)) {
+	  memset(teensySendBuffer,0,SENDMSGLEN);
+	  if (verbose > 0) {
 	    if (teensy[te].pinmode[pin] == PINMODE_INPUT) printf("Teensy %i Pin %i Initialized as Input \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) printf("Teensy %i Pin %i Initialized as Output \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM \n",te,pin);
@@ -82,9 +88,39 @@ int init_teensy() {
 	  teensySendBuffer[11] = 0; 
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	  if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,te);
-	  memset(teensySendBuffer,0,SENDMSGLEN);
 	} /* pin defined */
       } /* loop over pins */
+
+      /* initialize teensy daughter boards */
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (mcp23017[te][dev].connected == 1) {
+	  for (pin=0;pin<MAX_MCP23017_PINS;pin++) {
+	    if ((mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) ||
+		(mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)) {
+	      memset(teensySendBuffer,0,SENDMSGLEN);
+	      if (verbose > 0) {
+		if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT)
+		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Input \n",te,dev,pin);
+		if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)
+		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Output \n",te,dev,pin);
+	      }
+	      teensySendBuffer[0] = TEENSY_ID1; /* T */
+	      teensySendBuffer[1] = TEENSY_ID2; /* E */
+	      teensySendBuffer[2] = mcp23017[te][dev].wire;
+	      teensySendBuffer[3] = (int8_t) mcp23017[te][dev].address; 
+	      teensySendBuffer[4] = TEENSY_INIT;
+	      teensySendBuffer[5] = MCP23017_TYPE;
+	      teensySendBuffer[6] = dev;
+	      teensySendBuffer[7] = pin;
+	      memcpy(&teensySendBuffer[8],&mcp23017[te][dev].val[pin],sizeof(mcp23017[te][dev].val[pin]));
+	      teensySendBuffer[10] = mcp23017[te][dev].pinmode[pin];
+	      teensySendBuffer[11] = mcp23017[te][dev].intpin; 
+	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	      if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,te);
+	    } /* pin defined */
+	  } /* loop over pins */
+	}
+      }
     } /* teensy connected */
   } /* loop over teensys */
 
@@ -130,7 +166,6 @@ int send_teensy() {
 
   return 0;
 }
-
 
 int recv_teensy() {
 
@@ -520,6 +555,7 @@ int digital_outputf(int te, int output, float *fvalue) {
   return digital_output(te, output, &value);
 }
 
+/* Set Teensy pin to LOW or HIGH */
 int digital_output(int te, int pin, int *value)
 {
   int retval = 0;
@@ -568,6 +604,7 @@ int digital_output(int te, int pin, int *value)
   return retval;
 }
 
+/* Create PWM signal on Teensy pin */
 int pwm_output(int te, int pin, float *fvalue, float minval, float maxval)
 {
   int retval = 0;
@@ -610,7 +647,7 @@ int pwm_output(int te, int pin, float *fvalue, float minval, float maxval)
   return retval;
 }
 
-/* Writes Servo Signal to given output of Teensy */
+/* Writes Servo Signal to given pin of Teensy (needs to be a PWM capable pin) */
 int servo_output(int te, int pin, float *fvalue, float minval, float maxval)
 {
   int retval = 0;

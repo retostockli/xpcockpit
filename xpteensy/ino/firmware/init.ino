@@ -1,6 +1,7 @@
 void init() {
 
   int k,l;
+  int dev;
 
   teensy_data.num_servo = 0;
 
@@ -21,5 +22,20 @@ void init() {
   if (DEBUG) {
 	  Serial.println("Teensy Data initialized");
   }
-	
+
+  for (dev=0;dev<MAX_DEV;dev++) {
+    for (k=0;k<MAX_MCP23017_PINS;k++) {
+      mcp23017_data[dev].val[k] = INITVAL;
+      mcp23017_data[dev].val_save[k] = INITVAL;
+      mcp23017_data[dev].pinmode[k] = INITVAL;
+    }
+    mcp23017_data[dev].intpin = INITVAL;
+    mcp23017_data[dev].wire = INITVAL;
+    mcp23017_data[dev].address = 0x00;
+    mcp23017_data[dev].connected = 0;
+  } 
+
+  if (DEBUG) {
+	  Serial.println("MCP23017 Data initialized");
+  }	
 }

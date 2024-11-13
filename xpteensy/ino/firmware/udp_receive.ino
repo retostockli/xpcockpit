@@ -10,8 +10,8 @@ void udp_receive(void) {
   if (packetSize > 0) {
     if (DEBUG) {
       Serial.print("Received UDP Packet with Size ");
-      Serial.println(packetSize);
-      Serial.print("from ");
+      Serial.print(packetSize);
+      Serial.print(" from ");
       IPAddress remote = Udp.remoteIP();
       for (int i = 0; i < 4; i++) {
         Serial.print(remote[i], DEC);
@@ -20,7 +20,7 @@ void udp_receive(void) {
         }
       }
       Serial.print(", port ");
-      Serial.print(Udp.remotePort());
+      Serial.println(Udp.remotePort());
     }
 
     // read the packet into packetBufffer
@@ -32,7 +32,7 @@ void udp_receive(void) {
        Serial.println(RECVMSGLEN);
     } else {
       /* Parse Packet Content */
-      if (DEBUG) {
+      if (DEBUG > 1) {
         Serial.print(" with Content: ");
         for (int i = 0; i < 2; i++) {
           Serial.print(recvBuffer[i]);
@@ -48,8 +48,9 @@ void udp_receive(void) {
 
       // Identifier for Teensy: Characters T and E
       if ((recvBuffer[0] == TEENSY_ID1) && (recvBuffer[1] == TEENSY_ID2)) {
-        /* Is it a Teensy Host Controller */
+        
         if ((recvBuffer[5] == TEENSY_TYPE) && (recvBuffer[6] == 0)) {
+          /* Is it a Teensy Host Controller */
           /* Init or Regular Data Packet */
           if (recvBuffer[4] == TEENSY_INIT) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
@@ -58,9 +59,18 @@ void udp_receive(void) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             teensy_write(recvBuffer[7],ivalue16);
           }
+        } else if (recvBuffer[5] == MCP23017_TYPE) {
+          /* It is a MCP23017 daughter board */
+          /* Init or Regular Data Packet */
+          if (recvBuffer[4] == TEENSY_INIT) {
+            memcpy(&ivalue16, &recvBuffer[8], 2);
+            mcp23017_init(recvBuffer[6],recvBuffer[7],recvBuffer[10],recvBuffer[2],recvBuffer[3],recvBuffer[11],ivalue16);
+          } else if (recvBuffer[4] == TEENSY_REGULAR) {
+            memcpy(&ivalue16, &recvBuffer[8], 2);
+            mcp23017_write(recvBuffer[6],recvBuffer[7],ivalue16);
+          }          
         }
       } /* Correct receive buffer initiator string */
     } /* Correct Packet Size */
   } /* Packet was received */
-
 }
