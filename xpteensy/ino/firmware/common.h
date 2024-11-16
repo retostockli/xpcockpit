@@ -8,8 +8,6 @@
 char recvBuffer[RECVMSGLEN];  // buffer to hold receive packet
 char sendBuffer[SENDMSGLEN];  // buffer to hold send packet
 
-
-/* prototypes */
-void init(void);
+/* Prototypes */
 void udp_receive(void);
-void udp_send(void);
+int udp_send(int8_t dev_type, int8_t dev_num, int8_t pin_num, int16_t val);

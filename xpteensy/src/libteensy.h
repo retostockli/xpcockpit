@@ -41,13 +41,13 @@ int recv_teensy(void);
 int send_teensy(void);
 int init_teensy(void);
 
-int digital_inputf(int te, int pin, float *fvalue, int type);
-int digital_input(int te, int pin, int *value, int type);
+int digital_inputf(int te, int type, int dev, int pin, float *fvalue, int input_type);
+int digital_input(int te, int type, int dev, int pin, int *value, int input_type);
 int analog_input(int te, int pin, float *value, float minval, float maxval);
-int encoder_input(int te, int pin1, int pin2, int *value, int multiplier, int type);
-int encoder_inputf(int te, int pin1, int pin2, float *value, float multiplier, int type);
-int digital_outputf(int te, int pin, float *fvalue);
-int digital_output(int te, int pin, int *value);
+int encoder_input(int te, int type, int dev, int pin1, int pin2, int *value, int multiplier, int encoder_type);
+int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, float multiplier, int encoder_type);
+int digital_outputf(int te, int type, int dev, int pin, float *fvalue);
+int digital_output(int te, int type, int dev, int pin, int *value);
 int pwm_output(int te, int pin, float *fvalue, float minval, float maxval);
 int servo_output(int te, int pin, float *fvalue, float minval, float maxval);
 

@@ -171,6 +171,7 @@ int ini_read(char* programPath, char* iniName)
 	    mcp23008[i][j].val[k] = INITVAL;
 	    mcp23008[i][j].val_save[k] = INITVAL;
 	    mcp23008[i][j].pinmode[k] = INITVAL;
+	    mcp23008[i][j].val_time[k] = newtime;
 	  }
 	  mcp23008[i][j].intpin = INITVAL;
 	  mcp23008[i][j].wire = INITVAL;
@@ -190,6 +191,7 @@ int ini_read(char* programPath, char* iniName)
 	    mcp23017[i][j].val[k] = INITVAL;
 	    mcp23017[i][j].val_save[k] = INITVAL;
 	    mcp23017[i][j].pinmode[k] = INITVAL;
+	    mcp23017[i][j].val_time[k] = newtime;
 	  }
 	  mcp23017[i][j].intpin = INITVAL;
 	  mcp23017[i][j].wire = INITVAL;
@@ -249,14 +251,23 @@ int reset_teensydata()
      or writes the output etc. */
 
   int te;
+  int dev;
   int pin;
   
   for(te=0;te<MAXTEENSYS;te++) {
 
     if (teensy[te].connected == 1) {
-     /* new data has been sent etc. so mark it as old */
+      /* new data has been sent etc. so mark it as old */
       for (pin=0;pin<teensy[te].num_pins;pin++) {
 	teensy[te].val_save[pin] = teensy[te].val[pin][0];
+      }
+
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (mcp23017[te][dev].connected == 1) {
+	  for (pin=0;pin<MAX_MCP23017_PINS;pin++) {
+	    mcp23017[te][dev].val_save[pin] = mcp23017[te][dev].val[pin];
+	  }
+	}
       }
     }
   }

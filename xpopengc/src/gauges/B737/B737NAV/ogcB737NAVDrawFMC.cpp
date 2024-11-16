@@ -3,14 +3,8 @@
   OpenGC - The Open Source Glass Cockpit Project
   Please see our web site at http://www.opengc.org
   
-  Module:  $RCSfile: ogcB737MapModeExpanded.cpp,v $
-
-  Last modification:
-  Date:      $Date: 2015/09/11 $
-  Version:   $Revision: $
-  Author:    $Author: stockli $
+  Copyright (c) 2001-2024 Damion Shelton and Reto Stockli
   
-  Copyright (c) 2001-2015 Damion Shelton and Reto Stockli
   All rights reserved.
   See Copyright.txt or http://www.opengc.org/Copyright.htm for details.
 
@@ -74,8 +68,8 @@ namespace OpenGC
       int nper100 = 16; /* number of dashed per 100 pixels */
       float ratio = 0.6; /* ratio of dashed to total length */
 
-      // double dtor = 0.0174533; /* radians per degree */
-      // double radeg = 57.2958;  /* degree per radians */
+      double dtor = 0.0174533; /* radians per degree */
+      double radeg = 57.2958;  /* degree per radians */
 
       // define ACF center position in relative coordinates
       float acf_x;
@@ -103,14 +97,16 @@ namespace OpenGC
       double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
       double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
       float *aircraftHdg = link_dataref_flt("sim/flightmodel/position/psi",-1);
+      float *aircraftAlt = link_dataref_flt("sim/flightmodel/position/elevation",0); // meters
     
       // What's the heading?
       float heading_map =  m_NAVGauge->GetMapHeading();
       float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
       // What's the ground and air speed
-      float *ground_speed = link_dataref_flt("sim/flightmodel/position/groundspeed",0);
-      float *true_air_speed = link_dataref_flt("sim/flightmodel/position/true_airspeed",0);
+      float *ground_speed = link_dataref_flt("sim/flightmodel/position/groundspeed",0); // m/s
+      float *true_air_speed = link_dataref_flt("sim/flightmodel/position/true_airspeed",0); // m/s
+      float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
      
       float *fmc_ok;
       float *fmc_lon;
@@ -925,12 +921,19 @@ namespace OpenGC
 			  // hold length is 3.0 NM for a 60 second hold
 			  int holdtype = (int) fmc_rad_turn[i1] * 2 - 1; // 1: Right -1: Left
 			  /* hold speed */
-			  float holdspeed = max(*ground_speed,210.f);
+			  float holdspeed = max(*true_air_speed * 1.94384 + *wind_speed,210.0); // knots
 			  /* standard hold radius is around 1.5 nm */
 			  /* 3deg/s curve (T=120s/360deg): r = v * T / 2pi */
-			  float holdrad = pow(max(*true_air_speed,210.f),2.0) / 29127.0 / mapRange * map_size; // nm --> pixels
+			  float holdrad; // = pow(max(*true_air_speed,210.f),2.0) / 29127.0 / mapRange * map_size; // nm --> pixels
 			  //float holdrad = 1.5 / mapRange * map_size; // nm --> pixels
 			  float holdlen;
+			  
+			  if (*aircraftAlt*3.28084 <= 18800) {
+			    holdrad = pow(holdspeed,2.0) / (68620.0 * tan(dtor*23.0)) / mapRange * map_size;
+			  } else {
+			    holdrad = pow(holdspeed,2.0) / (68620.0 * tan(dtor*15.0)) / mapRange * map_size;
+			  }
+			  
 			  if (fmc_hold_time[i1] != 0.0) {
 			    holdlen = holdspeed * fmc_hold_time[i1] / 3600.0 / mapRange * map_size;
 			  } else if (fmc_hold_dist[i1] != 0.0) {
@@ -939,6 +942,13 @@ namespace OpenGC
 			    /* default hold time per leg: 90 seconds */
 			    holdlen = holdspeed * 90.0 / 3600.0 / mapRange * map_size;
 			  }
+			  
+			  if (*aircraftAlt*3.28084 <= 18800) {
+			    holdlen *= cos(dtor*23.0);
+			  } else {
+			    holdlen *= cos(dtor*15.0);
+			  }
+			  //printf("%i %f %f \n",i1,*ground_speed,*true_air_speed);
 	      
 			  float gamma = (fmc_crs[i1] - *magnetic_variation)*3.14/180.; // inbound direction (radians)
 			  xPos1 = sin(gamma-3.14)*holdlen + xPos2; // start of inbound course

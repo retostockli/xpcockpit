@@ -126,7 +126,7 @@ void loop() {
   CurrentTime = micros();
   ElapsedTime = CurrentTime - StartTime;
 
-  if ((ElapsedTime > 100) && DEBUG) {
+  if ((ElapsedTime > 1000) && DEBUG) {
     Serial.print("Long Loop Time (us): ");
     Serial.println(ElapsedTime);
   }

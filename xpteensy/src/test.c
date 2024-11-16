@@ -53,10 +53,11 @@ void init_test(void)
 
   mcp23017[te][0].pinmode[2] = PINMODE_INPUT;
   mcp23017[te][0].pinmode[3] = PINMODE_INPUT;
+  mcp23017[te][0].pinmode[5] = PINMODE_OUTPUT;
   mcp23017[te][0].pinmode[7] = PINMODE_OUTPUT;
-  mcp23017[te][0].intpin = 6;
-  mcp23017[te][0].wire = 0;
-  mcp23017[te][0].address = 0x21;
+  mcp23017[te][0].intpin = 6; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][0].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][0].address = 0x21; // I2C address of MCP23017 device
 
 }
 
@@ -82,13 +83,15 @@ void test(void)
   if (*value == INT_MISS) *value = 1;
 
   /* read encoder at inputs 33 and 34 */
-  ret = encoder_input(te, 33, 34, encodervalue, 1, 1);
+  //ret = encoder_input(te, TEENSY_TYPE, 0, 33, 34, encodervalue, 1, 1);
+  ret = encoder_input(te, MCP23017_TYPE, 0, 2, 3, encodervalue, 1, 1);
   if (ret == 1) {
     printf("Encoder changed to: %i \n",*encodervalue);
   }
   
   /* read digital input (#3) */  
-  ret = digital_input(te, 3, &digitalvalue, 0);
+  //ret = digital_input(te, MCP23017_TYPE, 0, 2, &digitalvalue, 0);
+  ret = digital_input(te, TEENSY_TYPE, 0, 3, &digitalvalue, 0);
   if (ret == 1) {
     printf("Digital Input changed to: %i \n",digitalvalue);
   }
@@ -103,7 +106,9 @@ void test(void)
   /* set LED connected to first output (#0) to value landing lights dataref */
   //digitalvalue = 1;
   analogvalue = 0.5;
-  ret = digital_output(te, 0, &digitalvalue);
+  ret = digital_output(te, TEENSY_TYPE, 0, 0, &digitalvalue);
+  ret = digital_output(te, MCP23017_TYPE, 0, 7, &digitalvalue);
+  ret = digital_output(te, MCP23017_TYPE, 0, 5, &digitalvalue);
   //ret = pwm_output(te, 0, &analogvalue,0.0,1.0);
 
   /* change Servo according to rotary position */
