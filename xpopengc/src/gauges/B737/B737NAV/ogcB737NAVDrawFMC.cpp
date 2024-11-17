@@ -687,15 +687,21 @@ namespace OpenGC
 	      while (i<nwpt) {
 
 		int i0 = max(i-1,0);
+		
 		while (fmc_bypass[i0] == 1.0) {
 		  i0 -= 1;
 		  if (i0 < 0) break;
 		}
+				
 		int i1 = i;
+		
 		while (fmc_bypass[i1] == 1.0) {
 		  i1 += 1;
 		  if (i1 >= nwpt) break;
 		}
+		
+		
+		//printf("%i %i %i %i %s \n",i0,i1,wpt_current,wpt_is_dct,wpt[i1].name);
 
 		/* Do not draw from last waypoint to destination airport */
 		/* Do only draw within waypoint range */
@@ -764,9 +770,12 @@ namespace OpenGC
 
 		    // Do not draw magenta line before current waypoint and not the last leg to the airport
 		    // However, draw from start airport to first waypoint
-		    if ((((i0>=(wpt_current-1)) || ((i0>=(wpt_current-2)) && wpt_is_dct)) &&
+		    // With bypasses i1 may be many waypoints away from i0
+		    if ((((i0>=(wpt_current-(i1-i0))) || ((i0>=(wpt_current-2)) && wpt_is_dct)) &&
 			 (i1<(nwpt-1))) ||
 			((i0==0) && (i1==1) && (wpt_current==2))) {
+
+		      //printf("%i %i %i %i %s \n",i0,i1,wpt_current,wpt_is_dct,wpt[i1].name);
 
 		      glPushMatrix();
 		
