@@ -76,6 +76,8 @@
 typedef struct {
   int8_t connected;    // Device connected (1) or not (0) as defined in ini file
   int8_t online;       // Device is replying to ping's from xpteensy via UDP
+  int8_t initialized;  // Device is initialized
+  struct timeval ping_time;  // stores time of last ping reply of teensy (to check if online)
   int16_t val[MAX_PINS][MAX_HIST];    // new values on device pins (input or output)
   int16_t val_save[MAX_PINS];         // previous values on device pins (input or output)
   struct timeval val_time[MAX_PINS];  // stores time since last change (needed for encoder speed multiplier)

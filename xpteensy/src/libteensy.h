@@ -36,6 +36,7 @@ extern mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 extern pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 
 /* Prototype Functions */
+int ping_teensy(void);
 int recv_teensy(void);
 int send_teensy(void);
 int init_teensy(void);

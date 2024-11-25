@@ -1,4 +1,4 @@
-void init() {
+void init_data() {
 
   int k,l;
   int dev;
@@ -20,7 +20,7 @@ void init() {
 	teensy_data.num_pins = 42;
 	
   if (DEBUG) {
-	  Serial.println("Teensy Data initialized");
+	  Serial.printf("Teensy Data initialized\n");
   }
 
   for (dev=0;dev<MAX_DEV;dev++) {
@@ -36,6 +36,6 @@ void init() {
   } 
 
   if (DEBUG) {
-	  Serial.println("MCP23017 Data initialized");
+	  Serial.printf("MCP23017 Data initialized\n");
   }	
 }

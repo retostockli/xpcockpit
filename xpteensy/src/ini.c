@@ -162,6 +162,8 @@ int ini_read(char* programPath, char* iniName)
 	       teensy[i].mac[0],teensy[i].mac[1]);
 	teensy[i].connected = 1;
 	teensy[i].online = 0; // only becomes 1 after device replies with a ping
+	teensy[i].initialized = 0; // only becomes 1 after init strings have been sent
+	teensy[i].ping_time = newtime;
 
 	sprintf(tmp,"teensy%i:MCP23017",i);
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
@@ -227,16 +229,16 @@ int ini_teensydata()
 
 int reset_teensydata()
 {
-  /* The changed flag is modified by the read function that first reads the input 
-     or writes the output etc. */
-
+  /* save old states so new changes can be detected */
+  
   int te;
   int dev;
   int pin;
   
   for(te=0;te<MAXTEENSYS;te++) {
 
-    if (teensy[te].connected == 1) {
+    if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 1)) {
+
       /* new data has been sent etc. so mark it as old */
       for (pin=0;pin<teensy[te].num_pins;pin++) {
 	teensy[te].val_save[pin] = teensy[te].val[pin][0];

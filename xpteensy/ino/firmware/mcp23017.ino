@@ -14,19 +14,14 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8
         } else if (wirenum == 2) {
           ret = mcp23017[dev].begin_I2C(address, &Wire2);
         } else {
-          if (DEBUG) {
-            Serial.print("Init: MCP23017 Dev # ");
-            Serial.print(dev);
-            Serial.print(" Wire Number # ");
-            Serial.print(wirenum);
-            Serial.println(" Out of Range. Can only be 0, 1 or 2");
+          if (DEBUG>0) {
+            Serial.printf("Init: MCP23017 Dev %i Wire Number %i Out of Range. Wire Number can only be 0, 1 or 2 \n",dev,wirenum);
           }
         }
 
         if (ret == 0) {
-          if (DEBUG) {
-            Serial.print("Init: MCP23017 Device Could not be connected to I2C bus: ");
-            Serial.println(dev);
+          if (DEBUG>0) {
+            Serial.printf("Init: MCP23017 Device %i could not be connected to I2C bus \n",dev);
           }
         } else {
           if (teensy_data.pinmode[intpin] == INITVAL) {
@@ -35,11 +30,8 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8
           }
 
           if (teensy_data.pinmode[intpin] == PINMODE_INTERRUPT) {
-            if (DEBUG) {
-              Serial.print("Init: MCP23017 Device ");
-              Serial.print(dev);
-              Serial.print(" connected to I2C bus # ");
-              Serial.println(wirenum);
+            if (DEBUG>0) {
+              Serial.printf("Init: MCP23017 Device %i connected to I2C bus %i \n",dev,wirenum);
             }
             mcp23017_data[dev].connected = 1;
             mcp23017_data[dev].wire = wirenum;
@@ -50,12 +42,8 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8
             teensy_data.arg1[intpin] = MCP23017_TYPE;
             teensy_data.arg2[intpin] = dev;
           } else {
-            if (DEBUG) {
-              Serial.print("Init: MCP23017 Dev # ");
-              Serial.print(dev);
-              Serial.print(" Interrupt pin # ");
-              Serial.print(intpin);
-              Serial.println(" Not defined as Interrupt on Teensy");
+            if (DEBUG>0) {
+              Serial.printf("Init: MCP23017 Device %i Interrupt pin %i was not defined as Interrupt on Teensy \n",dev,intpin);
             }
           }
         }
@@ -69,46 +57,30 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8
           mcp23017_data[dev].pinmode[pin] = pinmode;
           mcp23017[dev].pinMode(pin, INPUT_PULLUP);      // set pin as input with pullup resistor
           mcp23017[dev].setupInterruptPin(pin, CHANGE);  // send an interrupt when pin changes state
-          if (DEBUG) {
-            Serial.print("Init: MCP23017 Dev # ");
-            Serial.print(dev);
-            Serial.print(" Pin # ");
-            Serial.print(pin);
-            Serial.println(" initialized as INPUT");
+          if (DEBUG>0) {
+            Serial.printf("Init: MCP23017 Device %i Pin %i initialized as INPUT \n",dev,pin);
           }
           /* read input asap when initialized */
           mcp23017_read(dev);
         } else if (pinmode == PINMODE_OUTPUT) {
           mcp23017_data[dev].pinmode[pin] = pinmode;
           mcp23017[dev].pinMode(pin, OUTPUT);
-          if (DEBUG) {
-            Serial.print("Init: MCP23017 Dev # ");
-            Serial.print(dev);
-            Serial.print(" Pin # ");
-            Serial.print(pin);
-            Serial.println(" initialized as OUTPUT");
+          if (DEBUG>0) {
+            Serial.printf("Init: MCP23017 Device %i Pin %i initialized as OUTPUT \n",dev,pin);
           }
         } else {
-          if (DEBUG) {
-            Serial.print("Init: MCP23017 Dev # ");
-            Serial.print(dev);
-            Serial.print(" Pin # ");
-            Serial.print(pin);
-            Serial.println(" can only be INPUT or OUTPUT.");
+          if (DEBUG>0) {
+            Serial.printf("Init: MCP23017 Device %i Pin %i can only be INPUT or OUTPUT \n",dev,pin);
           }
         }
       } else {
-        if (DEBUG) {
-          Serial.print("Init: MCP23017 Device Number out of range: ");
-          Serial.println(dev);
+        if (DEBUG>0) {
+          Serial.printf("Init: MCP23017 Device Number %i out of range \n",dev);
         }
       }
     } else {
-      if (DEBUG) {
-        Serial.print("Init: MCP23017 Dev # ");
-        Serial.print(dev);
-        Serial.print("Pin # out of range: ");
-        Serial.println(pin);
+      if (DEBUG>0) {
+        Serial.printf("Init: MCP23017 Device %i Pin %i out of range \n",dev,pin);
       }
     }
   }
@@ -144,39 +116,30 @@ void mcp23017_write(int8_t dev, int8_t pin, int16_t val) {
               }
               mcp23017[dev].writeGPIOB(bitstate);
             }
-            if (DEBUG) {
-              Serial.print("WRITE: MCP23017 Dev # ");
-              Serial.print(dev);
-              Serial.print(" Pin # ");
-              Serial.print(pin);
-              Serial.print(" Data: ");
+            if (DEBUG>0) {
+              Serial.printf("WRITE: MCP23017 Device %i Pin %i Data ",dev,pin);
               for (int i = 0; i < 8; i++) {
                 bool b = bitstate & 0x80;
-                Serial.print(b);
+                Serial.printf("%i",b);
                 bitstate = bitstate << 1;
               }
-              Serial.println("");
+              Serial.printf("\n");
             }
           }
         }
       } else {
-        if (DEBUG) {
-          Serial.print("Init: MCP23017 Device Number not connected: ");
-          Serial.println(dev);
+        if (DEBUG>0) {
+          Serial.printf("Init: MCP23017 Device %i not connected \n",dev);
         }
       }
     } else {
-      if (DEBUG) {
-        Serial.print("Init: MCP23017 Device Number out of range: ");
-        Serial.println(dev);
+      if (DEBUG>0) {
+        Serial.printf("Init: MCP23017 Device Number %i out of range \n",dev);
       }
     }
   } else {
-    if (DEBUG) {
-      Serial.print("Init: MCP23017 Dev # ");
-      Serial.print(dev);
-      Serial.print("Pin # out of range: ");
-      Serial.println(pin);
+    if (DEBUG>0) {
+      Serial.printf("Init: MCP23017 Device %i Pin %i out of range \n",dev,pin);
     }
   }
 }
@@ -198,7 +161,7 @@ void mcp23017_read(int8_t dev) {
       //Time2 = micros();
       //Time3 = Time2 - Time1;
 
-      //if (DEBUG) {
+      //if (DEBUG>0) {
       //  Serial.print("MCP23017 Read Time (us): ");
       //  Serial.println(Time3);
       //}
@@ -208,13 +171,8 @@ void mcp23017_read(int8_t dev) {
           val = 1 - ((bitstate >> pin) & 1); /* HIGH = open (0), LOW: closed (1) */
           mcp23017_data[dev].val[pin] = val;
           if (mcp23017_data[dev].val[pin] != mcp23017_data[dev].val_save[pin]) {
-            if (DEBUG) {
-              Serial.print("INTERRUPT: MCP23017 ");
-              Serial.print(dev);
-              Serial.print(" Pin # ");
-              Serial.print(pin);
-              Serial.print(" digital value changed to: ");
-              Serial.println(mcp23017_data[dev].val[pin]);
+            if (DEBUG>0) {
+              Serial.printf("INTERRUPT: MCP23017 Device %i Pin %i New Digital Value %i \n",dev,pin,mcp23017_data[dev].val[pin]);
             }
             ret = udp_send(MCP23017_TYPE, dev, pin, mcp23017_data[dev].val[pin]);
             if (ret == SENDMSGLEN) {
@@ -224,15 +182,13 @@ void mcp23017_read(int8_t dev) {
         }
       }
     } else {
-      if (DEBUG) {
-        Serial.print("Init: MCP23017 Device Number not connected: ");
-        Serial.println(dev);
-      }
+      if (DEBUG>0) {
+        Serial.printf("Init: MCP23017 Device %i not connected \n",dev);
+     }
     }
   } else {
-    if (DEBUG) {
-      Serial.print("Init: MCP23017 Device Number out of range: ");
-      Serial.println(dev);
+    if (DEBUG>0) {
+      Serial.printf("Init: MCP23017 Device Number %i out of range \n",dev);
     }
   }
 }

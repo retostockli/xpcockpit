@@ -11,25 +11,15 @@ void udp_receive(void) {
     remoteIP = Udp.remoteIP();
     remotePort = Udp.remotePort();
     if (DEBUG > 1) {
-      Serial.print("Received UDP Packet with Size ");
-      Serial.print(packetSize);
-      Serial.print(" from ");
-      for (int i = 0; i < 4; i++) {
-        Serial.print(remoteIP[i], DEC);
-        if (i < 3) {
-          Serial.print(".");
-        }
-      }
-      Serial.print(", port ");
-      Serial.println(remotePort);
+      Serial.printf("Received UDP Packet with Size %i from %u.%u.%u.%u Port %i \n",
+        packetSize,remoteIP[0],remoteIP[1],remoteIP[2],remoteIP[3],remotePort);
     }
 
     // read the packet into packetBufffer
     Udp.read(recvBuffer, RECVMSGLEN);
 
     if (packetSize != RECVMSGLEN) {
-      Serial.print("Wrong Packet Size. Should be: ");
-      Serial.println(RECVMSGLEN);
+      Serial.printf("Wrong Packet Size. Should be: %i \n",RECVMSGLEN);
     } else {
       /* Parse Packet Content */
       if (DEBUG > 1) {
@@ -50,12 +40,16 @@ void udp_receive(void) {
       if ((recvBuffer[0] == TEENSY_ID1) && (recvBuffer[1] == TEENSY_ID2)) {
 
         if ((recvBuffer[5] == TEENSY_TYPE) && (recvBuffer[6] == 0)) {
-          /* Is it a Teensy Host Controller */
-          /* Init or Regular Data Packet */
-          if (recvBuffer[4] == TEENSY_INIT) {
+          if (recvBuffer[4] == TEENSY_PING) {
+            /* send reply to ping request */
+            ivalue16 = 0;
+            udp_send(TEENSY_TYPE, 0, INITVAL, ivalue16);
+          } else if (recvBuffer[4] == TEENSY_INIT) {
+            /* initialize pin or daughter board as requested */
             memcpy(&ivalue16, &recvBuffer[8], 2);
             teensy_init(recvBuffer[7], recvBuffer[10], ivalue16);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
+            /* set output to requested value */
             memcpy(&ivalue16, &recvBuffer[8], 2);
             teensy_write(recvBuffer[7], ivalue16);
           }

@@ -8,18 +8,14 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val) {
       pinMode(pin, INPUT_PULLUP);
       teensy_data.val[pin][0] = INITVAL;
       teensy_data.val_save[pin] = INITVAL;
-      if (DEBUG) {
-        Serial.print("INIT: Teensy pin ");
-        Serial.print(pin);
-        Serial.println(" initialized as Digital Input");
+      if (DEBUG>0) {
+        Serial.printf("INIT: Teensy pin %i initialized as Digital Input\n",pin);
       }
     } else if (pinmode == PINMODE_OUTPUT) {
       pinMode(pin, OUTPUT);
       teensy_data.val[pin][0] = val;
-      if (DEBUG) {
-        Serial.print("INIT: Teensy pin ");
-        Serial.print(pin);
-        Serial.println(" initialized as Digital Output");
+      if (DEBUG>0) {
+        Serial.printf("INIT: Teensy pin %i initialized as Digital Output\n",pin);
       }
     } else if (pinmode == PINMODE_PWM) {
       pinMode(pin, OUTPUT);
@@ -28,32 +24,24 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val) {
       // You can't have the chicken and egg at the same time ...
       //analogWriteFrequency(pin, 375000); // Teensy 3.0 pin 3 also changes to 375 kHz
       //analogWriteResolution(12);  // analogWrite value 0 to 4095, or 4096 for high
-      if (DEBUG) {
-        Serial.print("INIT: Teensy pin ");
-        Serial.print(pin);
-        Serial.println(" initialized as PWM Output");
+      if (DEBUG>0) {
+        Serial.printf("INIT: Teensy pin %i initialized as PWM Output\n",pin);
       } 
     } else if (pinmode == PINMODE_ANALOGINPUT) {
       pinMode(pin, INPUT);
       teensy_data.val[pin][0] = INITVAL;
       teensy_data.val_save[pin] = INITVAL;
-      if (DEBUG) {
-        Serial.print("INIT: Teensy pin ");
-        Serial.print(pin);
-        Serial.println(" initialized as Analog Input");
+      if (DEBUG>0) {
+        Serial.printf("INIT: Teensy pin %i initialized as Analog Input\n",pin);
       }
     } else if (pinmode == PINMODE_INTERRUPT) {
       pinMode(pin, INPUT_PULLUP);
-      if (DEBUG) {
-        Serial.print("INIT: Teensy pin ");
-        Serial.print(pin);
-        Serial.println(" initialized as Interrupt");
+      if (DEBUG>0) {
+        Serial.printf("INIT: Teensy pin %i initialized as Interrupt\n",pin);
       }
     } else if (pinmode == PINMODE_I2C) {
-      if (DEBUG) {
-        Serial.print("INIT: Teensy pin ");
-        Serial.print(pin);
-        Serial.println(" initialized as I2C Interface");
+      if (DEBUG>0) {
+        Serial.printf("INIT: Teensy pin %i initialized as I2C Interface\n",pin);
       }
     } else if (pinmode == PINMODE_SERVO) {
       if (teensy_data.pinmode[pin] != pinmode) {
@@ -65,24 +53,20 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val) {
         /* store servo instance number for this pint */
         teensy_data.num_servo++;
         teensy_data.val[pin][0] = val;
-        if (DEBUG) {
-          Serial.print("INIT: Teensy pin ");
-          Serial.print(pin);
-          Serial.println(" initialized as Servo Output");
+        if (DEBUG>0) {
+          Serial.printf("INIT: Teensy pin %i initialized as Servo Output\n",pin);
         }
       }
     } else {
-      if (DEBUG) {
-        Serial.print("Init: Wrong Teensy PinMode for pin ");
-        Serial.println(pin);
+      if (DEBUG>0) {
+        Serial.printf("Init: Wrong Teensy PinMode for pin %i \n",pin);
       }
     }
     /* store pinmode */
     teensy_data.pinmode[pin] = pinmode;
   } else {
-    if (DEBUG) {
-      Serial.print("Init: Teensy Pin Number out of range: ");
-      Serial.println(pin);
+    if (DEBUG>0) {
+      Serial.printf("Init: Teensy pin %i out of range\n",pin);
     }
   }
 }
@@ -91,43 +75,32 @@ void teensy_write(int8_t pin, int16_t val) {
   if (val != INITVAL) {
     if ((pin >= 0) && (pin < teensy_data.num_pins)) {
       if (teensy_data.pinmode[pin] == PINMODE_OUTPUT) {
-        if (DEBUG) {
-          Serial.print("RECV: Teensy Digital Output pin ");
-          Serial.print(pin);
-          Serial.print(" has value: ");
-          Serial.println(val);
+        if (DEBUG>0) {
+          Serial.printf("RECV: Teensy Digital Output pin %i has value %i \n",pin,val);
         }
         teensy_data.val[pin][0] = val;
         digitalWrite(pin, val);
       } else if (teensy_data.pinmode[pin] == PINMODE_PWM) {
-        if (DEBUG) {
-          Serial.print("RECV: Teensy Analog Output pin ");
-          Serial.print(pin);
-          Serial.print(" has value: ");
-          Serial.println(val);
-        }
+        if (DEBUG>0) {
+          Serial.printf("RECV: Teensy Analog Output pin %i has value %i \n",pin,val);
+       }
         teensy_data.val[pin][0] = val;
         analogWrite(pin, val);
       } else if (teensy_data.pinmode[pin] == PINMODE_SERVO) {
         if ((teensy_data.arg1[pin] < teensy_data.num_servo) && (teensy_data.arg1[pin] >= 0)) {
-          if (DEBUG) {
-            Serial.print("RECV: Teensy Servo Output pin ");
-            Serial.print(pin);
-            Serial.print(" has value: ");
-            Serial.println(val);
+          if (DEBUG>0) {
+            Serial.printf("RECV: Teensy Servo Output pin %i has value %i \n",pin,val);
           }
           servo[teensy_data.arg1[pin]].write(val);
         }
       } else {
-        if (DEBUG) {
-          Serial.print("RECV: Teensy Pin Number not set for Output, Servo or PWM: ");
-          Serial.println(pin);
+        if (DEBUG>0) {
+          Serial.printf("RECV: Teensy Pin %i not set for Output, Servo or PWM \n",pin);
         }
       }
     } else {
-      if (DEBUG) {
-        Serial.print("RECV: Teensy Pin Number out of range: ");
-        Serial.println(pin);
+      if (DEBUG>0) {
+        Serial.printf("RECV: Teensy Pin %i out of range \n",pin);
       }
     }
   }
@@ -145,11 +118,8 @@ void teensy_read() {
         teensy_data.val[pin][0] = 1; /* If a pin is "LOW", the switch is connected to ground, thus closed */
       }
       if (teensy_data.val[pin][0] != teensy_data.val_save[pin]) {
-        if (DEBUG) {
-          Serial.print("POLL: Teensy Pin Digital Value ");
-          Serial.print(pin);
-          Serial.print(" changed to: ");
-          Serial.println(teensy_data.val[pin][0]);
+        if (DEBUG>0) {
+          Serial.printf("POLL: Teensy Pin %i New Digital Value %i\n",pin,teensy_data.val[pin][0]);
         }
         ret = udp_send(TEENSY_TYPE, 0, pin, teensy_data.val[pin][0]);
         if (ret == SENDMSGLEN) {
@@ -163,15 +133,12 @@ void teensy_read() {
         } else if (teensy_data.arg1[pin] == INITVAL) {
           /* Interrupt signaling for not yet initialized board */
         } else {
-          if (DEBUG) {
-            Serial.print("POLL: Teensy Interrupt on Pin # ");
-            Serial.println(pin);
-            Serial.println(" for unknown device. Currently only implemented for MCP23017 ");
+          if (DEBUG>0) {
+            Serial.printf("POLL: Teensy Interrupt on Pin %i for unknown device. Currently only implemented for MCP23017 \n",pin);
           }
         }
-        if (DEBUG) {
-          Serial.print("POLL: Teensy Interrupt on Pin # ");
-          Serial.println(pin);
+        if (DEBUG>0) {
+          Serial.printf("POLL: Teensy Interrupt on Pin % \n",pin);
         }
       }
     } else if (teensy_data.pinmode[pin] == PINMODE_ANALOGINPUT) {
@@ -188,11 +155,8 @@ void teensy_read() {
 
       //Serial.println(val);
       if ((val > (valmax + noise)) || (val < (valmin - noise)) || ((valmax - valmin) > 3 * noise)) {
-        if (DEBUG) {
-          Serial.print("POLL: Teensy Pin Analog Value ");
-          Serial.print(pin);
-          Serial.print(" changed to: ");
-          Serial.println(val);
+        if (DEBUG>0) {
+          Serial.printf("POLL: Teensy Pin %i New Analog Value %i \n",pin,val);
         }
         ret = udp_send(TEENSY_TYPE, 0, pin, val);
 

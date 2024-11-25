@@ -51,7 +51,43 @@ pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 /* Makes sure Teensy is online before we send init strings */
 /* since UDP does not guarantee reception */
 int ping_teensy() {
+  
+  int ret;
+  int te;
+  struct timeval newtime;
+  float dt;
 
+  gettimeofday(&newtime,NULL);
+ 
+  for (te=0;te<MAXTEENSYS;te++) {
+    
+    if (teensy[te].connected == 1) {
+      if (teensy[te].online == 0) {
+
+	// time difference in [ms]
+	dt = ((newtime.tv_sec - teensy[te].ping_time.tv_sec) +
+	      (newtime.tv_usec - teensy[te].ping_time.tv_usec) / 1000000.0)*1000.0;
+
+	if (dt > 1000.0) {
+      
+	  memset(teensySendBuffer,0,SENDMSGLEN);
+	  teensySendBuffer[0] = TEENSY_ID1; /* T */
+	  teensySendBuffer[1] = TEENSY_ID2; /* E */
+	  teensySendBuffer[2] = 0x00;
+	  teensySendBuffer[3] = 0x00; 
+	  teensySendBuffer[4] = TEENSY_PING;
+	  teensySendBuffer[5] = TEENSY_TYPE;
+	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	  if (verbose > 0) printf("Sent %i bytes Ping to teensy %i \n", ret,te);
+
+	  teensy[te].ping_time = newtime;
+
+	}
+      } /* teensy not online */
+    } /* teensy connected */
+  } /* loop over teensys */
+
+  return 0;
 }
 
 /* Initialize Teensy Inputs and Outputs and Daughter boards */
@@ -62,8 +98,11 @@ int init_teensy() {
   int pin;
   int dev;
 
+  /* first check if Teensy devices are online */
+  ret = ping_teensy();
+  
   for (te=0;te<MAXTEENSYS;te++) {
-    if ((teensy[te].connected == 1) && (teensy[te].online == 1)) {
+    if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 0)) {
       /* initialize teensy mother board */
       /* initialize pins selected for digital input */
       for (pin=0;pin<teensy[te].num_pins;pin++) {
@@ -96,7 +135,7 @@ int init_teensy() {
 	  teensySendBuffer[10] = teensy[te].pinmode[pin];
 	  teensySendBuffer[11] = 0; 
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	  if (verbose > 0) printf("Sent %i bytes to teensy %i \n", ret,te);
+	  if (verbose > 0) printf("Sent %i bytes to Teensy %i \n", ret,te);
 	} /* pin defined */
       } /* loop over pins */
 
@@ -125,11 +164,12 @@ int init_teensy() {
 	      teensySendBuffer[10] = mcp23017[te][dev].pinmode[pin];
 	      teensySendBuffer[11] = mcp23017[te][dev].intpin; 
 	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	      if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,te);
+	      if (verbose > 0) printf("Sent %i bytes for MCP23017 %i to Teensy %i \n", ret, dev, te);
 	    } /* pin defined */
 	  } /* loop over pins */
 	}
       }
+      teensy[te].initialized = 1;
     } /* teensy connected */
   } /* loop over teensys */
 
@@ -145,7 +185,7 @@ int send_teensy() {
   int dev;
 
   for (te=0;te<MAXTEENSYS;te++) {
-    if (teensy[te].connected == 1) {
+    if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 1)) {
 
       /* initialize pins selected for digital input */
       memset(teensySendBuffer,0,SENDMSGLEN);
@@ -166,7 +206,7 @@ int send_teensy() {
 	    teensySendBuffer[10] = 0;
 	    teensySendBuffer[11] = 0;
 	    ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	    if (verbose > -1) printf("Sent %i bytes to teensy %i \n", ret,te);
+	    if (verbose > 0) printf("Sent %i bytes to Teensy %i \n", ret,te);
 	    memset(teensySendBuffer,0,SENDMSGLEN);
 	  } /* value changed since last send */
 	} /* pinmode output, pwm or servo */
@@ -190,7 +230,7 @@ int send_teensy() {
 		teensySendBuffer[10] = 0;
 		teensySendBuffer[11] = 0;
 		ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-		if (verbose > -1) printf("Sent %i bytes for MCP23017 %i to teensy %i \n", ret,dev,te);
+		if (verbose > 0) printf("Sent %i bytes for MCP23017 %i to Teensy %i \n", ret,dev,te);
 		memset(teensySendBuffer,0,SENDMSGLEN);		
 	      } /* value changed since last send */
 	    } /* pinmode output */
@@ -211,12 +251,13 @@ int recv_teensy() {
   int dev_num;
   int pin;
   short int val;
+  struct timeval newtime;
  
   
   if (udpReadLeft >= RECVMSGLEN) {
     //while (udpReadLeft >= RECVMSGLEN) {
 
-    printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
+    //printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
     
     te = INITVAL;
   
@@ -254,7 +295,14 @@ int recv_teensy() {
 	/* Copy payload 16 bit Integer into variable */
 	memcpy(&val,&teensyRecvBuffer[8],sizeof(val));
 
-	if (recv_type == TEENSY_REGULAR) {
+	if (recv_type == TEENSY_PING) {
+	  if ((dev_type == TEENSY_TYPE) && (dev_num == 0)) {
+	    if (verbose > 0) printf("Received Ping Reply of Teensy %i \n",te);
+	    gettimeofday(&newtime,NULL);
+	    teensy[te].online = 1;
+	    teensy[te].ping_time = newtime;
+	  }
+	} else if (recv_type == TEENSY_REGULAR) {
 	  if ((dev_type == TEENSY_TYPE) && (dev_num == 0)) {
 	    if ((pin>=0) && (pin<teensy[te].num_pins)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
