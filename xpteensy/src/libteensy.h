@@ -32,7 +32,6 @@ extern unsigned char teensySendBuffer[SENDMSGLEN];
 /* DATA STRUCTURE */
 extern teensy_struct teensy[MAXTEENSYS];
 extern teensyvar_struct teensyvar[MAXTEENSYS];
-extern mcp23008_struct mcp23008[MAXTEENSYS][MAX_DEV];
 extern mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 extern pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 

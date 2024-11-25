@@ -44,10 +44,17 @@ unsigned char teensySendBuffer[SENDMSGLEN];
 
 teensy_struct teensy[MAXTEENSYS];
 teensyvar_struct teensyvar[MAXTEENSYS];
-mcp23008_struct mcp23008[MAXTEENSYS][MAX_DEV];
 mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 
+/* Send a Ping to the Teensy until it responds */
+/* Makes sure Teensy is online before we send init strings */
+/* since UDP does not guarantee reception */
+int ping_teensy() {
+
+}
+
+/* Initialize Teensy Inputs and Outputs and Daughter boards */
 int init_teensy() {
   
   int ret;
@@ -56,7 +63,7 @@ int init_teensy() {
   int dev;
 
   for (te=0;te<MAXTEENSYS;te++) {
-    if (teensy[te].connected == 1) {
+    if ((teensy[te].connected == 1) && (teensy[te].online == 1)) {
       /* initialize teensy mother board */
       /* initialize pins selected for digital input */
       for (pin=0;pin<teensy[te].num_pins;pin++) {
@@ -89,7 +96,7 @@ int init_teensy() {
 	  teensySendBuffer[10] = teensy[te].pinmode[pin];
 	  teensySendBuffer[11] = 0; 
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	  if (verbose > 2) printf("Sent %i bytes to teensy %i \n", ret,te);
+	  if (verbose > 0) printf("Sent %i bytes to teensy %i \n", ret,te);
 	} /* pin defined */
       } /* loop over pins */
 
@@ -205,10 +212,11 @@ int recv_teensy() {
   int pin;
   short int val;
  
-  //printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
   
   if (udpReadLeft >= RECVMSGLEN) {
     //while (udpReadLeft >= RECVMSGLEN) {
+
+    printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
     
     te = INITVAL;
   
@@ -265,7 +273,7 @@ int recv_teensy() {
 	    if (mcp23017[te][dev_num].connected == 1) {
 	      if ((pin>=0) && (pin<MAX_MCP23017_PINS)) {
 		mcp23017[te][dev_num].val[pin] = val;
-		if (verbose > 0) printf("Received value %i for pin number %i for Teensy %i MCP23017 %i \n",
+		if (verbose > 0) printf("Received digital value %i for pin number %i for Teensy %i MCP23017 %i \n",
 					val,pin,te,dev_num);
 	      } else {
 		printf("Received value for invalid pin number %i for Teensy %i MCP23017 %i \n",

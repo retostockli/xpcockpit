@@ -40,7 +40,6 @@
 #define MAX_VARS 20       // maximum number of internal variables on teensy
 #define MAX_PINS 100      // maximum number of pins on a teensy
 #define MAX_SERVO 10      // maximum number of servos on a teensy
-#define MAX_MCP23008_PINS 8
 #define MAX_MCP23017_PINS 16
 #define MAX_PCF8591_PINS 4
 
@@ -52,6 +51,7 @@
 #define SERVO_MINPULSE 400      /* minimum pulse width of servos (us) */
 #define SERVO_MAXPULSE 3000    /* maximum pulse width of servos (us) */
 
+#define TEENSY_PING 0       // PING data packet
 #define TEENSY_INIT 1       // Initialization data packet
 #define TEENSY_REGULAR 2    // Regular data packet with data
 #define TEENSY_RESEND 3     // Request to resend states
@@ -60,7 +60,6 @@
 #define TEENSY_TYPE 0        // Host Teensy Microcontroller
 #define VARIABLE_TYPE 20     // Internal variable storage
 
-#define MCP23008_TYPE 100    // 8 I/O Extension via I2C
 #define MCP23017_TYPE 101    // 16 I/O Extension via I2C
 #define PCF8591_TYPE 110     // 8 bit DAC/DAC via I2C
 
@@ -75,7 +74,8 @@
 #include <stdint.h>
 
 typedef struct {
-  int8_t connected;    // Device connected (1) or not (0)
+  int8_t connected;    // Device connected (1) or not (0) as defined in ini file
+  int8_t online;       // Device is replying to ping's from xpteensy via UDP
   int16_t val[MAX_PINS][MAX_HIST];    // new values on device pins (input or output)
   int16_t val_save[MAX_PINS];         // previous values on device pins (input or output)
   struct timeval val_time[MAX_PINS];  // stores time since last change (needed for encoder speed multiplier)
@@ -98,24 +98,13 @@ typedef struct {
 
 typedef struct {
   int8_t connected; // Device connected (1) or not (0)
-  int16_t val[MAX_MCP23008_PINS];       // new values on device pins (input or output)
-  int16_t val_save[MAX_MCP23008_PINS];  // previous values on device pins (input or output)
-  struct timeval val_time[MAX_MCP23008_PINS];    // stores time since last change (needed for encoder speed multiplier)
-  int8_t pinmode[MAX_MCP23008_PINS];   // I/O type: Input or output
-  int8_t intpin;    // Interrupt pin on teensy to read this device
-  int8_t wire;      // I2C bus (0,1,2)
-  uint8_t address;   // I2C address 0x00 - 0xff
-} mcp23008_struct;
-
-typedef struct {
-  int8_t connected; // Device connected (1) or not (0)
   int16_t val[MAX_MCP23017_PINS];       // new values on device pins (input or output)
   int16_t val_save[MAX_MCP23017_PINS];  // previous values on device pins (input or output)
   struct timeval val_time[MAX_MCP23017_PINS];    // stores time since last change (needed for encoder speed multiplier)
   int8_t pinmode[MAX_MCP23017_PINS];   // I/O type: Input or output
   int8_t intpin;     // Interrupt pin on teensy to read this device
   int8_t wire;       // I2C bus (0,1,2)
-  uint8_t address;   // I2C address 0x00 - 0xff
+  uint8_t address;   // I2C address (0x20 - 0x027)
 } mcp23017_struct;
 
 typedef struct {

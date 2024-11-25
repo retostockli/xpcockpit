@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
 
   /* initialize UDP read thread */
   if (init_udp_receive() < 0) exit_teensy(-7);
+  usleep(500000);
 
   /* initialize user modules which also contain initialization data
      for teensy I/O and daughter boards */

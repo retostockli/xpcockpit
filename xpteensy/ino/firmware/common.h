@@ -5,8 +5,8 @@
 
 
 // define buffers for receiving and sending data
-char recvBuffer[RECVMSGLEN];  // buffer to hold receive packet
-char sendBuffer[SENDMSGLEN];  // buffer to hold send packet
+uint8_t recvBuffer[RECVMSGLEN];  // buffer to hold receive packet
+uint8_t sendBuffer[SENDMSGLEN];  // buffer to hold send packet
 
 /* Prototypes */
 void udp_receive(void);

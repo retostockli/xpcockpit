@@ -43,7 +43,7 @@
 #include "handleudp.h"
 #include "common.h"
 
-#define UDPRECVBUFLEN 12*100
+#define UDPRECVBUFLEN 12*1000
 #define UDPSENDBUFLEN 12
 
 /* UDP CLIENT PARAMETERS */

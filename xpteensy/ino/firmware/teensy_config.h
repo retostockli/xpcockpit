@@ -49,8 +49,8 @@
 #define ANALOGOUTPUTNBITS 8      /* number of bits of PWM outputs */
 #define SERVO_MINANGLE 0      /* minimum angle of servos (deg) */
 #define SERVO_MAXANGLE 180    /* maximum angle of servos (deg)*/
-#define SERVO_MINPULSE 544      /* minimum pulse width of servos (us) */
-#define SERVO_MAXPULSE 2400    /* maximum pulse width of servos (us) */
+#define SERVO_MINPULSE 400      /* minimum pulse width of servos (us) */
+#define SERVO_MAXPULSE 3000    /* maximum pulse width of servos (us) */
 
 #define TEENSY_INIT 1       // Initialization data packet
 #define TEENSY_REGULAR 2    // Regular data packet with data
@@ -60,7 +60,6 @@
 #define TEENSY_TYPE 0        // Host Teensy Microcontroller
 #define VARIABLE_TYPE 20     // Internal variable storage
 
-#define MCP23008_TYPE 100    // 8 I/O Extension via I2C
 #define MCP23017_TYPE 101    // 16 I/O Extension via I2C
 #define PCF8591_TYPE 110     // 8 bit DAC/DAC via I2C
 
@@ -95,17 +94,6 @@ typedef struct {
   int16_t val[MAX_VARS];      // new values for internal variables
   int16_t val_save[MAX_VARS]; // previous values for internal variables
 } teensyvar_struct;
-
-typedef struct {
-  int8_t connected; // Device connected (1) or not (0)
-  int16_t val[MAX_MCP23008_PINS];       // new values on device pins (input or output)
-  int16_t val_save[MAX_MCP23008_PINS];  // previous values on device pins (input or output)
-  struct timeval val_time[MAX_MCP23008_PINS];    // stores time since last change (needed for encoder speed multiplier)
-  int8_t pinmode[MAX_MCP23008_PINS];   // I/O type: Input or output
-  int8_t intpin;    // Interrupt pin on teensy to read this device
-  int8_t wire;      // I2C bus (0,1,2)
-  uint8_t address;   // I2C address 0x00 - 0xff
-} mcp23008_struct;
 
 typedef struct {
   int8_t connected; // Device connected (1) or not (0)

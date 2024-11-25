@@ -7,11 +7,12 @@
 #define MASK "255.255.255.0"
 #define GATEWAY "192.168.1.1"
 
+//#include <Ethernet.h>
+//#include <EthernetUdp.h>
 #include <QNEthernet.h>
 #include <Servo.h>
 #include "common.h"
 #include "teensy_config.h"
-#include <Adafruit_MCP23X08.h>
 #include <Adafruit_MCP23X17.h>
 #include <Wire.h>
 
@@ -27,6 +28,9 @@ mcp23017_struct mcp23017_data[MAX_DEV];
 
 // An EthernetUDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
+
+IPAddress remoteIP;
+int16_t remotePort;
 
 unsigned long StartTime;
 unsigned long CurrentTime;
@@ -77,6 +81,7 @@ void setup() {
   
   Ethernet.begin(ip, nm, gw);
   Ethernet.macAddress(mac);
+ //Ethernet.begin(mac, ip, gw, gw, nm);
 
   // print some setup information
   if (DEBUG) {
@@ -99,7 +104,7 @@ void setup() {
   teensy_data.mac[0] = mac[4];
   teensy_data.mac[1] = mac[5];
   Udp.begin(teensy_data.port);
-  Udp.setReceiveQueueSize(10);
+  Udp.setReceiveQueueSize(100);
   if (DEBUG) Serial.println("UDP initialized.");
 
   // init teensy data structure
@@ -113,6 +118,7 @@ void setup() {
   Wire.setClock(1000000);
   //Wire1.setClock(1000000);
   //Wire2.setClock(1000000);
+
 }
 
 void loop() {
@@ -130,6 +136,6 @@ void loop() {
     Serial.print("Long Loop Time (us): ");
     Serial.println(ElapsedTime);
   }
-
+ 
   delay(1); /* We need a maximum of 1 ms delay to capture fast changing encoders */
 }

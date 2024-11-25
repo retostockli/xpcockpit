@@ -116,7 +116,7 @@ int ini_read(char* programPath, char* iniName)
 
     strcpy(teensyserver_ip,iniparser_getstring(ini,"teensyserver:Address", default_teensyserver_ip));
     teensyserver_port = iniparser_getint(ini,"teensyserver:Port", default_teensyserver_port);
-    printf("SISMOSERVER Address %s Port %i \n",teensyserver_ip, teensyserver_port);
+    printf("TEENSY SERVER Address %s Port %i \n",teensyserver_ip, teensyserver_port);
 
     gettimeofday(&newtime,NULL);
 
@@ -161,27 +161,7 @@ int ini_read(char* programPath, char* iniName)
 	       teensy[i].ip, teensy[i].port,
 	       teensy[i].mac[0],teensy[i].mac[1]);
 	teensy[i].connected = 1;
-
-	printf("Connected Daughter Boards:\n");
-	sprintf(tmp,"teensy%i:MCP23008",i);
-	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
- 	printf("MCP23008: %i\n",ival);
-	for (j=0;j<MAX_DEV;j++) {
-	  for (k=0;k<MAX_MCP23008_PINS;k++) {
-	    mcp23008[i][j].val[k] = INITVAL;
-	    mcp23008[i][j].val_save[k] = INITVAL;
-	    mcp23008[i][j].pinmode[k] = INITVAL;
-	    mcp23008[i][j].val_time[k] = newtime;
-	  }
-	  mcp23008[i][j].intpin = INITVAL;
-	  mcp23008[i][j].wire = INITVAL;
-	  mcp23008[i][j].address = 0;
-	  if (j<ival) {
-	    mcp23008[i][j].connected = 1;
-	  } else {
-	    mcp23008[i][j].connected = 0;
-	  }
-	}
+	teensy[i].online = 0; // only becomes 1 after device replies with a ping
 
 	sprintf(tmp,"teensy%i:MCP23017",i);
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);

@@ -16,11 +16,15 @@ int udp_send(int8_t dev_type, int8_t dev_num, int8_t pin_num, int16_t val) {
     memcpy(&sendBuffer[8],&val,sizeof(val));
     sendBuffer[10] = 0;
     sendBuffer[11] = 0;
-    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+    //ret = Udp.send(remoteIP, remotePort,sendBuffer, SENDMSGLEN);
+    Udp.beginPacket(remoteIP, remotePort);
     ret = Udp.write(sendBuffer, SENDMSGLEN);
     if (DEBUG) {
       Serial.print("UDP_SEND: Sent UDP Packet with length: ");
       Serial.println(ret,DEC);
+      //Serial.print(remoteIP);
+      //Serial.print(" ");
+      //Serial.println(remotePort);
     }
     Udp.endPacket();
   }
