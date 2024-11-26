@@ -11,7 +11,7 @@ void udp_receive(void) {
     remoteIP = Udp.remoteIP();
     remotePort = Udp.remotePort();
     if (DEBUG > 1) {
-      Serial.printf("Received UDP Packet with Size %i from %u.%u.%u.%u Port %i \n",
+      Serial.printf("UDP: Received Packet with Size %i from %u.%u.%u.%u Port %i \n",
         packetSize,remoteIP[0],remoteIP[1],remoteIP[2],remoteIP[3],remotePort);
     }
 
@@ -19,10 +19,10 @@ void udp_receive(void) {
     Udp.read(recvBuffer, RECVMSGLEN);
 
     if (packetSize != RECVMSGLEN) {
-      Serial.printf("Wrong Packet Size. Should be: %i \n",RECVMSGLEN);
+      Serial.printf("UDP: Wrong Packet Size. Should be: %i \n",RECVMSGLEN);
     } else {
       /* Parse Packet Content */
-      if (DEBUG > 1) {
+      if (DEBUG > 3) {
         Serial.print(" with Content: ");
         for (int i = 0; i < 2; i++) {
           Serial.print(recvBuffer[i]);

@@ -24,8 +24,8 @@ int udp_send(int8_t dev_type, int8_t dev_num, int8_t pin_num, int16_t val) {
     //ret = Udp.send(remoteIP, remotePort,sendBuffer, SENDMSGLEN);
     Udp.beginPacket(remoteIP, remotePort);
     ret = Udp.write(sendBuffer, SENDMSGLEN);
-    if (DEBUG>0) {
-      Serial.printf("UDP_SEND: Sent UDP Packet with length %i\n",ret);
+    if (DEBUG>1) {
+      Serial.printf("UDP: Sent UDP Packet with length %i\n",ret);
     }
     Udp.endPacket();
   }

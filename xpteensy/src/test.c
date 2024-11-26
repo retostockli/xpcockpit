@@ -45,14 +45,6 @@ void init_test(void)
   teensy[te].pinmode[3] = PINMODE_INPUT;
   teensy[te].pinmode[4] = PINMODE_INPUT;
   teensy[te].pinmode[5] = PINMODE_INPUT;
-  teensy[te].pinmode[33] = PINMODE_INPUT;
-  teensy[te].pinmode[34] = PINMODE_INPUT;
-  teensy[te].pinmode[35] = PINMODE_INPUT;
-  teensy[te].pinmode[36] = PINMODE_INPUT;
-  teensy[te].pinmode[37] = PINMODE_INPUT;
-  teensy[te].pinmode[38] = PINMODE_INPUT;
-  teensy[te].pinmode[39] = PINMODE_INPUT;
-  teensy[te].pinmode[40] = PINMODE_INPUT;
 
   teensy[te].pinmode[6] = PINMODE_INTERRUPT;
   teensy[te].pinmode[7] = PINMODE_INTERRUPT;
@@ -60,30 +52,29 @@ void init_test(void)
   teensy[te].pinmode[16] = PINMODE_I2C;
   teensy[te].pinmode[17] = PINMODE_I2C;
   teensy[te].pinmode[23] = PINMODE_SERVO;
-  teensy[te].pinmode[33] = PINMODE_INPUT;
-  teensy[te].pinmode[34] = PINMODE_INPUT;
 
   
   mcp23017[te][0].pinmode[2] = PINMODE_INPUT;
   mcp23017[te][0].pinmode[3] = PINMODE_INPUT;
   mcp23017[te][0].pinmode[5] = PINMODE_OUTPUT;
-  mcp23017[te][0].pinmode[7] = PINMODE_OUTPUT;
+  mcp23017[te][0].pinmode[8] = PINMODE_OUTPUT;
+  mcp23017[te][0].pinmode[15] = PINMODE_INPUT;
   mcp23017[te][0].intpin = 6; // also define pin 6 of teensy as INTERRUPT above!
   mcp23017[te][0].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][0].address = 0x21; // I2C address of MCP23017 device
   
 
-  mcp23017[te][1].pinmode[2] = PINMODE_INPUT;
-  mcp23017[te][1].pinmode[3] = PINMODE_INPUT;
-  mcp23017[te][1].pinmode[4] = PINMODE_INPUT;
-  mcp23017[te][1].pinmode[10] = PINMODE_INPUT;
-  mcp23017[te][1].pinmode[11] = PINMODE_INPUT;
-  mcp23017[te][1].pinmode[12] = PINMODE_INPUT;
-  mcp23017[te][1].pinmode[5] = PINMODE_OUTPUT;
-  mcp23017[te][1].pinmode[7] = PINMODE_OUTPUT;
-  mcp23017[te][1].intpin = 7; // also define pin 6 of teensy as INTERRUPT above!
-  mcp23017[te][1].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][1].address = 0x20; // I2C address of MCP23017 device
+  /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
+  /* mcp23017[te][1].pinmode[3] = PINMODE_INPUT; */
+  /* mcp23017[te][1].pinmode[4] = PINMODE_INPUT; */
+  /* mcp23017[te][1].pinmode[10] = PINMODE_INPUT; */
+  /* mcp23017[te][1].pinmode[11] = PINMODE_INPUT; */
+  /* mcp23017[te][1].pinmode[12] = PINMODE_INPUT; */
+  /* mcp23017[te][1].pinmode[5] = PINMODE_OUTPUT; */
+  /* mcp23017[te][1].pinmode[7] = PINMODE_OUTPUT; */
+  /* mcp23017[te][1].intpin = 7; // also define pin 6 of teensy as INTERRUPT above! */
+  /* mcp23017[te][1].wire = 0;  // I2C Bus: 0, 1 or 2 */
+  /* mcp23017[te][1].address = 0x20; // I2C address of MCP23017 device */
  
   
 }
@@ -119,26 +110,23 @@ void test(void)
  
   
   /* read digital input (#3) */  
-  //ret = digital_input(te, MCP23017_TYPE, 0, 2, &digitalvalue, 0);
+  //ret = digital_input(te, MCP23017_TYPE, 0, 15, &digitalvalue, 0);
   ret = digital_input(te, TEENSY_TYPE, 0, 3, &digitalvalue, 0);
   if (ret == 1) {
     printf("Digital Input changed to: %i \n",digitalvalue);
   }
 
   /* read analog input (#14) */
-  /*
-  ret = analog_input(te,14,fvalue,0.0,1.0);
-  if (ret == 1) {
-    printf("Analog Input changed to: %f \n",*fvalue);
-  }
-  */
+  /* ret = analog_input(te,14,fvalue,0.0,1.0); */
+  /* if (ret == 1) { */
+  /*   printf("Analog Input changed to: %f \n",*fvalue); */
+  /* } */
   
   /* set LED connected to first output (#0) to value landing lights dataref */
   //digitalvalue = 1;
   analogvalue = 0.5;
   ret = digital_output(te, TEENSY_TYPE, 0, 0, &digitalvalue);
-  ret = digital_output(te, MCP23017_TYPE, 0, 7, &digitalvalue);
-  ret = digital_output(te, MCP23017_TYPE, 0, 5, &digitalvalue);
+  ret = digital_output(te, MCP23017_TYPE, 0, 8, &digitalvalue);
   //ret = pwm_output(te, 0, &analogvalue,0.0,1.0);
 
   /* change Servo according to rotary position */

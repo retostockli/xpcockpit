@@ -78,7 +78,11 @@ int ping_teensy() {
 	  teensySendBuffer[4] = TEENSY_PING;
 	  teensySendBuffer[5] = TEENSY_TYPE;
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	  if (verbose > 0) printf("Sent %i bytes Ping to teensy %i \n", ret,te);
+	  if (ret == SENDMSGLEN) {
+	    if (verbose > 0) printf("PING: Sent %i bytes to Teensy %i \n", ret,te);
+	  } else {
+	    printf("INCOMPLETE PING: Sent %i bytes to Teensy %i \n", ret,te);
+	  }
 
 	  teensy[te].ping_time = newtime;
 
@@ -135,7 +139,11 @@ int init_teensy() {
 	  teensySendBuffer[10] = teensy[te].pinmode[pin];
 	  teensySendBuffer[11] = 0; 
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	  if (verbose > 0) printf("Sent %i bytes to Teensy %i \n", ret,te);
+	  if (ret == SENDMSGLEN) {
+	    if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i \n", ret,te);
+	  } else {
+	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i \n", ret,te);
+	  }
 	} /* pin defined */
       } /* loop over pins */
 
@@ -164,12 +172,20 @@ int init_teensy() {
 	      teensySendBuffer[10] = mcp23017[te][dev].pinmode[pin];
 	      teensySendBuffer[11] = mcp23017[te][dev].intpin; 
 	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	      if (verbose > 0) printf("Sent %i bytes for MCP23017 %i to Teensy %i \n", ret, dev, te);
+	      if (ret == SENDMSGLEN) {
+		if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
+	      } else {
+		printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
+	      }
 	    } /* pin defined */
 	  } /* loop over pins */
 	}
       }
       teensy[te].initialized = 1;
+
+      /* wait for 10 ms to make sure teensy hardware has initialized */
+      usleep(10000);
+      
     } /* teensy connected */
   } /* loop over teensys */
 
@@ -187,13 +203,13 @@ int send_teensy() {
   for (te=0;te<MAXTEENSYS;te++) {
     if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 1)) {
 
-      /* initialize pins selected for digital input */
-      memset(teensySendBuffer,0,SENDMSGLEN);
+      /* Send chanaged values to selected Teensy outputs */
       for (pin=0;pin<teensy[te].num_pins;pin++) {
 	if ((teensy[te].pinmode[pin] == PINMODE_OUTPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_PWM) ||
 	    (teensy[te].pinmode[pin] == PINMODE_SERVO)) {
 	  if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) { 
+	    memset(teensySendBuffer,0,SENDMSGLEN);
 	    teensySendBuffer[0] = TEENSY_ID1; /* T */
 	    teensySendBuffer[1] = TEENSY_ID2; /* E */
 	    teensySendBuffer[2] = 0x00;
@@ -206,18 +222,22 @@ int send_teensy() {
 	    teensySendBuffer[10] = 0;
 	    teensySendBuffer[11] = 0;
 	    ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	    if (verbose > 0) printf("Sent %i bytes to Teensy %i \n", ret,te);
-	    memset(teensySendBuffer,0,SENDMSGLEN);
+	    if (ret == SENDMSGLEN) {
+	      if (verbose > 1) printf("SEND: Sent %i bytes to Teensy %i Pin %i \n", ret,te,pin);
+	    } else {
+	      printf("INCOMPLETE SEND: Sent %i bytes to Teensy %i Pin %i \n", ret,te,pin);
+	    }
 	  } /* value changed since last send */
 	} /* pinmode output, pwm or servo */
       } /* loop over pins of teensy */
 
-      /* MCP23017 daughter boards via I2C */
+      /* Send changed values to MCP23017 daughter board outputs via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (mcp23017[te][dev].connected == 1) {
 	  for (pin=0;pin<MAX_MCP23017_PINS;pin++) {
 	    if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT) {
 	      if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
+		memset(teensySendBuffer,0,SENDMSGLEN);
 		teensySendBuffer[0] = TEENSY_ID1; /* T */
 		teensySendBuffer[1] = TEENSY_ID2; /* E */
 		teensySendBuffer[2] = 0x00;
@@ -230,8 +250,11 @@ int send_teensy() {
 		teensySendBuffer[10] = 0;
 		teensySendBuffer[11] = 0;
 		ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-		if (verbose > 0) printf("Sent %i bytes for MCP23017 %i to Teensy %i \n", ret,dev,te);
-		memset(teensySendBuffer,0,SENDMSGLEN);		
+		if (ret == SENDMSGLEN) {
+		  if (verbose > 1) printf("SEND: Sent %i bytes to Teensy %i MCP23017 %i Pin %i \n", ret,te,dev,pin);
+		} else {
+		  printf("INCOMPLETE SEND: Sent %i bytes to Teensy %i MCP23017 %i Pin %i \n", ret,te,dev,pin);
+		}
 	      } /* value changed since last send */
 	    } /* pinmode output */
 	  } /* loop over pins of MCP23017 */
@@ -297,7 +320,7 @@ int recv_teensy() {
 
 	if (recv_type == TEENSY_PING) {
 	  if ((dev_type == TEENSY_TYPE) && (dev_num == 0)) {
-	    if (verbose > 0) printf("Received Ping Reply of Teensy %i \n",te);
+	    if (verbose > 0) printf("PING: Received Ping Reply of Teensy %i \n",te);
 	    gettimeofday(&newtime,NULL);
 	    teensy[te].online = 1;
 	    teensy[te].ping_time = newtime;
@@ -306,11 +329,11 @@ int recv_teensy() {
 	  if ((dev_type == TEENSY_TYPE) && (dev_num == 0)) {
 	    if ((pin>=0) && (pin<teensy[te].num_pins)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
-		if (verbose > 0) printf("Received digital value %i for pin %i of Teensy %i \n",val,pin,te);
+		if (verbose > 1) printf("Received digital value %i for pin %i of Teensy %i \n",val,pin,te);
 		teensy[te].val[pin][0] = val;
 	      } else if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) {
 		teensy[te].val[pin][0] = val;
-		if (verbose > 0) printf("Received analog value %i for pin %i of Teensy %i \n",val,pin,te);
+		if (verbose > 1) printf("Received analog value %i for pin %i of Teensy %i \n",val,pin,te);
 	      } else {
 		printf("Received value for non-Input pin %i of Teensy %i \n",pin,te);
 	      }
@@ -321,7 +344,7 @@ int recv_teensy() {
 	    if (mcp23017[te][dev_num].connected == 1) {
 	      if ((pin>=0) && (pin<MAX_MCP23017_PINS)) {
 		mcp23017[te][dev_num].val[pin] = val;
-		if (verbose > 0) printf("Received digital value %i for pin number %i for Teensy %i MCP23017 %i \n",
+		if (verbose > 1) printf("Received digital value %i for pin number %i for Teensy %i MCP23017 %i \n",
 					val,pin,te,dev_num);
 	      } else {
 		printf("Received value for invalid pin number %i for Teensy %i MCP23017 %i \n",
@@ -658,7 +681,7 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 			    
 			  dt = ((newtime.tv_sec - oldtime.tv_sec) +
 				(newtime.tv_usec - oldtime.tv_usec) / 1000000.0)*1000.0;
-			  printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
+			  //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
 		  
 			  *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
 			  retval = 1;

@@ -119,7 +119,7 @@ void teensy_read() {
       }
       if (teensy_data.val[pin][0] != teensy_data.val_save[pin]) {
         if (DEBUG>0) {
-          Serial.printf("POLL: Teensy Pin %i New Digital Value %i\n",pin,teensy_data.val[pin][0]);
+          Serial.printf("READ: Teensy Pin %i New Digital Value %i\n",pin,teensy_data.val[pin][0]);
         }
         ret = udp_send(TEENSY_TYPE, 0, pin, teensy_data.val[pin][0]);
         if (ret == SENDMSGLEN) {
@@ -134,11 +134,11 @@ void teensy_read() {
           /* Interrupt signaling for not yet initialized board */
         } else {
           if (DEBUG>0) {
-            Serial.printf("POLL: Teensy Interrupt on Pin %i for unknown device. Currently only implemented for MCP23017 \n",pin);
+            Serial.printf("READ: Teensy Interrupt on Pin %i for unknown device. Currently only implemented for MCP23017 \n",pin);
           }
         }
         if (DEBUG>0) {
-          Serial.printf("POLL: Teensy Interrupt on Pin % \n",pin);
+          Serial.printf("READ: Teensy Interrupt on Pin %i \n",pin);
         }
       }
     } else if (teensy_data.pinmode[pin] == PINMODE_ANALOGINPUT) {
@@ -156,7 +156,7 @@ void teensy_read() {
       //Serial.println(val);
       if ((val > (valmax + noise)) || (val < (valmin - noise)) || ((valmax - valmin) > 3 * noise)) {
         if (DEBUG>0) {
-          Serial.printf("POLL: Teensy Pin %i New Analog Value %i \n",pin,val);
+          Serial.printf("READ: Teensy Pin %i New Analog Value %i \n",pin,val);
         }
         ret = udp_send(TEENSY_TYPE, 0, pin, val);
 

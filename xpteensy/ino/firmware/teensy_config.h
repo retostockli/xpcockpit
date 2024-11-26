@@ -48,8 +48,8 @@
 #define ANALOGOUTPUTNBITS 8      /* number of bits of PWM outputs */
 #define SERVO_MINANGLE 0      /* minimum angle of servos (deg) */
 #define SERVO_MAXANGLE 180    /* maximum angle of servos (deg)*/
-#define SERVO_MINPULSE 400      /* minimum pulse width of servos (us) */
-#define SERVO_MAXPULSE 3000    /* maximum pulse width of servos (us) */
+#define SERVO_MINPULSE 550      /* minimum pulse width of servos (us) default 544 */
+#define SERVO_MAXPULSE 2600    /* maximum pulse width of servos (us) default 2400 */
 
 #define TEENSY_PING 0       // PING data packet
 #define TEENSY_INIT 1       // Initialization data packet
