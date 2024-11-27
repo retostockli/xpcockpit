@@ -36,6 +36,7 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val) {
       }
     } else if (pinmode == PINMODE_INTERRUPT) {
       pinMode(pin, INPUT_PULLUP);
+      //pinMode(pin, INPUT_PULLDOWN);
       if (DEBUG>0) {
         Serial.printf("INIT: Teensy pin %i initialized as Interrupt\n",pin);
       }
@@ -50,7 +51,7 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val) {
         /* Specify the pin number where the motor's control signal is connected, and the motor's minimum and maximum control pulse width, in microseconds. */
         servo[teensy_data.num_servo].attach(pin, SERVO_MINPULSE, SERVO_MAXPULSE);
         teensy_data.arg1[pin] = teensy_data.num_servo;
-        /* store servo instance number for this pint */
+        /* store servo instance number for this pin */
         teensy_data.num_servo++;
         teensy_data.val[pin][0] = val;
         if (DEBUG>0) {

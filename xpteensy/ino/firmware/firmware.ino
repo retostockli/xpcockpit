@@ -16,6 +16,7 @@
 #include "common.h"
 #include "teensy_config.h"
 #include <Adafruit_MCP23X17.h>
+#include <Adafruit_PWMServoDriver.h>
 #include <Wire.h>
 
 using namespace qindesign::network;
@@ -27,6 +28,7 @@ extern TwoWire Wire2;
 // data storage
 teensy_struct teensy_data;
 mcp23017_struct mcp23017_data[MAX_DEV];
+pca9685_struct pca9685_data[MAX_DEV];
 
 // An EthernetUDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
@@ -74,7 +76,7 @@ void setup() {
   teensy_data.mac[0] = mac[4];
   teensy_data.mac[1] = mac[5];
   Udp.begin(teensy_data.port);
-  Udp.setReceiveQueueSize(100);
+  Udp.setReceiveQueueCapacity(100);
   if (DEBUG > 0) Serial.printf("UDP: initialized.\n");
 
   // init teensy data structure

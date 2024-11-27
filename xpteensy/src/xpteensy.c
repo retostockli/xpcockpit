@@ -67,9 +67,6 @@ int main(int argc, char **argv) {
 
   /* initialize TCP/IP interface */
   if (initialize_tcpip_client(verbose)<0) exit_teensy(-5);
-
-  /* initialize teensy I/O data structure */
-  if (ini_teensydata()<0) exit_teensy(-5);
   
   /* initialize UDP server */
   if (init_udp_server(teensyserver_ip,teensyserver_port) < 0) exit_teensy(-6);

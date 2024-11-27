@@ -185,6 +185,24 @@ int ini_read(char* programPath, char* iniName)
 	  }
 	}
 
+	sprintf(tmp,"teensy%i:PCA9685",i);
+	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
+ 	printf("PCA9685: %i\n",ival);
+	for (j=0;j<MAX_DEV;j++) {
+	  for (k=0;k<MAX_PCA9685_PINS;k++) {
+	    pca9685[i][j].val[k] = INITVAL;
+	    pca9685[i][j].val_save[k] = INITVAL;
+	    pca9685[i][j].pinmode[k] = INITVAL;
+	  }
+	  pca9685[i][j].wire = INITVAL;
+	  pca9685[i][j].address = 0;
+	  if (j<ival) {
+	    pca9685[i][j].connected = 1;
+	  } else {
+	    pca9685[i][j].connected = 0;
+	  }
+	}
+
 	sprintf(tmp,"teensy%i:PCF8591",i);
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
  	printf("PCF8591: %i\n",ival);
@@ -221,11 +239,6 @@ int ini_read(char* programPath, char* iniName)
   return ret;
 }
 
-int ini_teensydata()
-{
-
-  return 0;
-}
 
 int reset_teensydata()
 {
@@ -251,6 +264,15 @@ int reset_teensydata()
 	  }
 	}
       }
+      
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (pca9685[te][dev].connected == 1) {
+	  for (pin=0;pin<MAX_PCA9685_PINS;pin++) {
+	    pca9685[te][dev].val_save[pin] = pca9685[te][dev].val[pin];
+	  }
+	}
+      }
+      
     }
   }
   return 0;

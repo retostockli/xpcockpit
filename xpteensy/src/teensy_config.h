@@ -40,8 +40,9 @@
 #define MAX_VARS 20       // maximum number of internal variables on teensy
 #define MAX_PINS 100      // maximum number of pins on a teensy
 #define MAX_SERVO 10      // maximum number of servos on a teensy
-#define MAX_MCP23017_PINS 16
-#define MAX_PCF8591_PINS 4
+#define MAX_MCP23017_PINS 16  // maximum number of inputs/outputs on a MCP23017
+#define MAX_PCA9685_PINS 16   // maximum number of servos/pwm outputs on a PCA9685
+#define MAX_PCF8591_PINS 4    // maximum number of analog inputs on a PCF8591
 
 #define INITVAL -1          /* initial value of inputs/outputs upon startup */
 #define ANALOGINPUTNBITS 10      /* number of bits of analog inputs */
@@ -61,6 +62,7 @@
 #define VARIABLE_TYPE 20     // Internal variable storage
 
 #define MCP23017_TYPE 101    // 16 I/O Extension via I2C
+#define PCA9685_TYPE 102     // 16 PWM/Servo Extension via I2C
 #define PCF8591_TYPE 110     // 8 bit DAC/DAC via I2C
 
 #define PINMODE_INPUT 1
@@ -108,6 +110,15 @@ typedef struct {
   int8_t wire;       // I2C bus (0,1,2)
   uint8_t address;   // I2C address (0x20 - 0x027)
 } mcp23017_struct;
+
+typedef struct {
+  int8_t connected; // Device connected (1) or not (0)
+  int16_t val[MAX_PCA9685_PINS];       // new values on device pins (input or output)
+  int16_t val_save[MAX_PCA9685_PINS];  // previous values on device pins (input or output)
+  int8_t pinmode[MAX_PCA9685_PINS];   // I/O type: Input or output
+  int8_t wire;       // I2C bus (0,1,2)
+  uint8_t address;   // I2C address (0x20 - 0x027)
+} pca9685_struct;
 
 typedef struct {
   int8_t connected;    // Device connected (1) or not (0)

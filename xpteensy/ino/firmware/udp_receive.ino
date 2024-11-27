@@ -63,6 +63,16 @@ void udp_receive(void) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             mcp23017_write(recvBuffer[6], recvBuffer[7], ivalue16);
           }
+        } else if (recvBuffer[5] == PCA9685_TYPE) {
+          /* It is a PCA9685 daughter board */
+          /* Init or Regular Data Packet */
+          if (recvBuffer[4] == TEENSY_INIT) {
+            memcpy(&ivalue16, &recvBuffer[8], 2);
+            pca9685_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[2], recvBuffer[3], recvBuffer[11], ivalue16);
+          } else if (recvBuffer[4] == TEENSY_REGULAR) {
+            memcpy(&ivalue16, &recvBuffer[8], 2);
+            pca9685_write(recvBuffer[6], recvBuffer[7], ivalue16);
+          }
         }
       } /* Correct receive buffer initiator string */
     }   /* Correct Packet Size */

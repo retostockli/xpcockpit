@@ -17,7 +17,6 @@
 
 /* Prototype Functions */
 int ini_read(char* programPath, char* iniName);
-int ini_teensydata();
 int reset_teensydata();
 int ini_signal_handler(void);
 void exit_teensy(int ret);

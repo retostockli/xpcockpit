@@ -35,6 +35,17 @@ void init_data() {
     mcp23017_data[dev].connected = 0;
   }
 
+  for (dev = 0; dev < MAX_DEV; dev++) {
+    for (k = 0; k < MAX_PCA9685_PINS; k++) {
+      pca9685_data[dev].val[k] = INITVAL;
+      pca9685_data[dev].val_save[k] = INITVAL;
+      pca9685_data[dev].pinmode[k] = INITVAL;
+    }
+    pca9685_data[dev].wire = INITVAL;
+    pca9685_data[dev].address = 0x00;
+    pca9685_data[dev].connected = 0;
+  }
+
   if (DEBUG) {
     Serial.printf("MCP23017 Data initialized\n");
   }

@@ -48,7 +48,7 @@ void init_test(void)
 
   teensy[te].pinmode[6] = PINMODE_INTERRUPT;
   teensy[te].pinmode[7] = PINMODE_INTERRUPT;
-  //  teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
+  //teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
   teensy[te].pinmode[16] = PINMODE_I2C;
   teensy[te].pinmode[17] = PINMODE_I2C;
   teensy[te].pinmode[23] = PINMODE_SERVO;
@@ -76,7 +76,9 @@ void init_test(void)
   /* mcp23017[te][1].wire = 0;  // I2C Bus: 0, 1 or 2 */
   /* mcp23017[te][1].address = 0x20; // I2C address of MCP23017 device */
  
-  
+  pca9685[te][0].pinmode[0] = PINMODE_SERVO;
+  pca9685[te][0].wire = 0;
+  pca9685[te][0].address = 0x40;
 }
 
 void test(void)
@@ -127,9 +129,10 @@ void test(void)
   analogvalue = 0.5;
   ret = digital_output(te, TEENSY_TYPE, 0, 0, &digitalvalue);
   ret = digital_output(te, MCP23017_TYPE, 0, 8, &digitalvalue);
-  //ret = pwm_output(te, 0, &analogvalue,0.0,1.0);
+  //ret = pwm_output(te, TEENSY_TYPE, 0, 0, &analogvalue,0.0,1.0);
 
   /* change Servo according to rotary position */
-  ret = servo_output(te, 23, fvalue,0.0,1.0);
+  //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0);
+  ret = servo_output(te, PCA9685_TYPE, 0, 0, &analogvalue,0.0,1.0);
   
 }

@@ -33,6 +33,7 @@ extern unsigned char teensySendBuffer[SENDMSGLEN];
 extern teensy_struct teensy[MAXTEENSYS];
 extern teensyvar_struct teensyvar[MAXTEENSYS];
 extern mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
+extern pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 extern pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 
 /* Prototype Functions */
@@ -48,6 +49,6 @@ int encoder_input(int te, int type, int dev, int pin1, int pin2, int *value, int
 int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, float multiplier, int encoder_type);
 int digital_outputf(int te, int type, int dev, int pin, float *fvalue);
 int digital_output(int te, int type, int dev, int pin, int *value);
-int pwm_output(int te, int pin, float *fvalue, float minval, float maxval);
-int servo_output(int te, int pin, float *fvalue, float minval, float maxval);
+int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
+int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
 
