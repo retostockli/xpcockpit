@@ -48,7 +48,7 @@ void init_test(void)
 
   teensy[te].pinmode[6] = PINMODE_INTERRUPT;
   teensy[te].pinmode[7] = PINMODE_INTERRUPT;
-  //teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
+  teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
   teensy[te].pinmode[16] = PINMODE_I2C;
   teensy[te].pinmode[17] = PINMODE_I2C;
   teensy[te].pinmode[23] = PINMODE_SERVO;
@@ -119,10 +119,10 @@ void test(void)
   }
 
   /* read analog input (#14) */
-  /* ret = analog_input(te,14,fvalue,0.0,1.0); */
-  /* if (ret == 1) { */
-  /*   printf("Analog Input changed to: %f \n",*fvalue); */
-  /* } */
+  ret = analog_input(te,14,fvalue,0.0,1.0);
+  if (ret == 1) {
+    printf("Analog Input changed to: %f \n",*fvalue);
+  }
   
   /* set LED connected to first output (#0) to value landing lights dataref */
   //digitalvalue = 1;
@@ -133,6 +133,6 @@ void test(void)
 
   /* change Servo according to rotary position */
   //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0);
-  ret = servo_output(te, PCA9685_TYPE, 0, 0, &analogvalue,0.0,1.0);
+  ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0);
   
 }

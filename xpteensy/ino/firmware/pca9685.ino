@@ -2,7 +2,7 @@ Adafruit_PWMServoDriver pca9685[MAX_DEV];
 
 void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_t address, int8_t intpin, int16_t initval) {
 
-  if ((pin >= 0) && (pin < MAX_PCA9685_PINS)) {
+  if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
     if ((dev >= 0) && (dev < MAX_DEV)) {
       // Connect board to I2C bus if not already connected
       if (pca9685_data[dev].connected == 0) {
@@ -31,10 +31,17 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
           pca9685_data[dev].val_save[pin] = INITVAL;  // reset pin state so that it will be sent to client after read
           pca9685_data[dev].pinmode[pin] = pinmode;
 
+          pca9685[dev].begin();
+          pca9685[dev].setOscillatorFrequency(27000000);
+          pca9685[dev].setPWMFreq(1600);  // Maximum PWM Frequency for PWM operation
+
           if (DEBUG > 0) {
             Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as PWM \n", dev, pin);
           }
         } else if (pinmode == PINMODE_SERVO) {
+          pca9685_data[dev].val_save[pin] = INITVAL;  // reset pin state so that it will be sent to client after read
+          pca9685_data[dev].pinmode[pin] = pinmode;
+
           pca9685[dev].begin();
           pca9685[dev].setOscillatorFrequency(27000000);
           pca9685[dev].setPWMFreq(50);  // Analog servos run at ~50 Hz updates
@@ -61,6 +68,54 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
 }
 
 void pca9685_write(int8_t dev, int8_t pin, int16_t val) {
-  
-          pca9685[dev].writeMicroseconds(pin, 2400);
+
+  if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
+    if ((dev >= 0) && (dev < MAX_DEV)) {
+      if (pca9685_data[dev].connected == 1) {
+        if (pca9685_data[dev].val[pin] != val) {
+          if (val != INITVAL) {
+            if (pca9685_data[dev].pinmode[pin] == PINMODE_PWM) {
+
+              if ((val >= 0) && (val < pow(2, PCA9685_PWM_NBITS))) {
+                pca9685_data[dev].val[pin] = val;
+                pca9685[dev].setPWM(pin, 0, val);
+                if (DEBUG > 0) {
+                  Serial.printf("WRITE: PCA9685 Device %i PWM %i has value %i \n", dev, pin, val);
+                }
+              } else {
+                if (DEBUG > 0) {
+                  Serial.printf("WRITE: PCA9685 Device %i PWM %i value out of range %i \n", dev, pin, val);
+                }
+              }
+            } else if (pca9685_data[dev].pinmode[pin] == PINMODE_SERVO) {
+
+              if ((val >= PCA9685_SERVO_MINPULSE) && (val <= PCA9685_SERVO_MAXPULSE)) {
+                pca9685_data[dev].val[pin] = val;
+                pca9685[dev].writeMicroseconds(pin, val);
+                if (DEBUG > 0) {
+                  Serial.printf("WRITE: PCA9685 Device %i SERVO %i has value %i \n", dev, pin, val);
+                }
+              } else {
+                if (DEBUG > 0) {
+                  Serial.printf("WRITE: PCA9685 Device %i SERVO %i value out of range %i \n", dev, pin, val);
+                }
+              }
+            } else {
+              if (DEBUG > 0) {
+                Serial.printf("WRITE: PCA9685 Device %i Pin %i can only be PWM or SERVO\n", dev, pin);
+              }
+            }
+          }  // not initialization value
+        }    // value has changed
+      } else {
+        if (DEBUG > 0) {
+          Serial.printf("WRITE: PCA9685 Device Number %i out of range \n", dev);
+        }
+      }
+    } else {
+      if (DEBUG > 0) {
+        Serial.printf("WRITE: PCA9685 Device %i Pin %i out of range \n", dev, pin);
+      }
+    }
+  }
 }

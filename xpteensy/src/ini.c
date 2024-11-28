@@ -146,16 +146,7 @@ int ini_read(char* programPath, char* iniName)
        if (teensy[i].port == default_teensy_port) {
 	printf("Teensy %i Not Connected \n",i);
 	teensy[i].connected = 0;
-      } else if (strcmp(version,default_teensy_version)==0) {
-	printf("Teensy %i No Version Number \n",i);
-	teensy[i].connected = 0;
       } else {
-	if (strcmp(version,"4.1")==0) {
-	  teensy[i].num_pins = 42;
-	} else {
-	  printf("Teensy %i Unknown Number of Pins \n", i);
-	  teensy[i].num_pins = INITVAL;
-	}
 	printf("Teensy %i Version %s Address %s Port %i Mac %02x:%02x \n",i,
 	       version,
 	       teensy[i].ip, teensy[i].port,
@@ -169,7 +160,7 @@ int ini_read(char* programPath, char* iniName)
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
  	printf("MCP23017: %i\n",ival);
 	for (j=0;j<MAX_DEV;j++) {
-	  for (k=0;k<MAX_MCP23017_PINS;k++) {
+	  for (k=0;k<MCP23017_MAX_PINS;k++) {
 	    mcp23017[i][j].val[k] = INITVAL;
 	    mcp23017[i][j].val_save[k] = INITVAL;
 	    mcp23017[i][j].pinmode[k] = INITVAL;
@@ -189,7 +180,7 @@ int ini_read(char* programPath, char* iniName)
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
  	printf("PCA9685: %i\n",ival);
 	for (j=0;j<MAX_DEV;j++) {
-	  for (k=0;k<MAX_PCA9685_PINS;k++) {
+	  for (k=0;k<PCA9685_MAX_PINS;k++) {
 	    pca9685[i][j].val[k] = INITVAL;
 	    pca9685[i][j].val_save[k] = INITVAL;
 	    pca9685[i][j].pinmode[k] = INITVAL;
@@ -207,7 +198,7 @@ int ini_read(char* programPath, char* iniName)
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
  	printf("PCF8591: %i\n",ival);
 	for (j=0;j<MAX_DEV;j++) {
-	  for (k=0;k<MAX_PCF8591_PINS;k++) {
+	  for (k=0;k<PCF8591_MAX_PINS;k++) {
 	    for (l=0;l<MAX_HIST;l++) {
 	      pcf8591[i][j].val[k][l] = INITVAL;
 	    }
@@ -253,13 +244,13 @@ int reset_teensydata()
     if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 1)) {
 
       /* new data has been sent etc. so mark it as old */
-      for (pin=0;pin<teensy[te].num_pins;pin++) {
+      for (pin=0;pin<MAX_PINS;pin++) {
 	teensy[te].val_save[pin] = teensy[te].val[pin][0];
       }
 
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (mcp23017[te][dev].connected == 1) {
-	  for (pin=0;pin<MAX_MCP23017_PINS;pin++) {
+	  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
 	    mcp23017[te][dev].val_save[pin] = mcp23017[te][dev].val[pin];
 	  }
 	}
@@ -267,7 +258,7 @@ int reset_teensydata()
       
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (pca9685[te][dev].connected == 1) {
-	  for (pin=0;pin<MAX_PCA9685_PINS;pin++) {
+	  for (pin=0;pin<PCA9685_MAX_PINS;pin++) {
 	    pca9685[te][dev].val_save[pin] = pca9685[te][dev].val[pin];
 	  }
 	}

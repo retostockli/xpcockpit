@@ -110,7 +110,7 @@ int init_teensy() {
     if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 0)) {
       /* initialize teensy mother board */
       /* initialize pins selected for digital input */
-      for (pin=0;pin<teensy[te].num_pins;pin++) {
+      for (pin=0;pin<MAX_PINS;pin++) {
 	if ((teensy[te].pinmode[pin] == PINMODE_INPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_OUTPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_PWM) ||
@@ -151,7 +151,7 @@ int init_teensy() {
       /* initialize MCP23017 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (mcp23017[te][dev].connected == 1) {
-	  for (pin=0;pin<MAX_MCP23017_PINS;pin++) {
+	  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
 	    if ((mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) ||
 		(mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)) {
 	      memset(teensySendBuffer,0,SENDMSGLEN);
@@ -186,7 +186,7 @@ int init_teensy() {
       /* initialize PCA9685 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (pca9685[te][dev].connected == 1) {
-	  for (pin=0;pin<MAX_PCA9685_PINS;pin++) {
+	  for (pin=0;pin<PCA9685_MAX_PINS;pin++) {
 	    if ((pca9685[te][dev].pinmode[pin] == PINMODE_PWM) ||
 		(pca9685[te][dev].pinmode[pin] == PINMODE_SERVO)) {
 	      memset(teensySendBuffer,0,SENDMSGLEN);
@@ -241,7 +241,7 @@ int send_teensy() {
     if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 1)) {
 
       /* Send chanaged values to selected Teensy outputs */
-      for (pin=0;pin<teensy[te].num_pins;pin++) {
+      for (pin=0;pin<MAX_PINS;pin++) {
 	if ((teensy[te].pinmode[pin] == PINMODE_OUTPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_PWM) ||
 	    (teensy[te].pinmode[pin] == PINMODE_SERVO)) {
@@ -271,7 +271,7 @@ int send_teensy() {
       /* Send changed values to MCP23017 daughter board outputs via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (mcp23017[te][dev].connected == 1) {
-	  for (pin=0;pin<MAX_MCP23017_PINS;pin++) {
+	  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
 	    if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT) {
 	      if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
 		memset(teensySendBuffer,0,SENDMSGLEN);
@@ -301,7 +301,7 @@ int send_teensy() {
       /* Send changed values to PCA9685 daughter board pwm/servos via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (pca9685[te][dev].connected == 1) {
-	  for (pin=0;pin<MAX_PCA9685_PINS;pin++) {
+	  for (pin=0;pin<PCA9685_MAX_PINS;pin++) {
 	    if ((pca9685[te][dev].pinmode[pin] == PINMODE_PWM) ||
 		(pca9685[te][dev].pinmode[pin] == PINMODE_SERVO)) {
 	      if (pca9685[te][dev].val[pin] != pca9685[te][dev].val_save[pin]) {
@@ -397,7 +397,7 @@ int recv_teensy() {
 	  }
 	} else if (recv_type == TEENSY_REGULAR) {
 	  if ((dev_type == TEENSY_TYPE) && (dev_num == 0)) {
-	    if ((pin>=0) && (pin<teensy[te].num_pins)) {
+	    if ((pin>=0) && (pin<MAX_PINS)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
 		if (verbose > 1) printf("Received digital value %i for pin %i of Teensy %i \n",val,pin,te);
 		teensy[te].val[pin][0] = val;
@@ -412,7 +412,7 @@ int recv_teensy() {
 	    }
 	  } else if ((dev_type == MCP23017_TYPE) && (dev_num >= 0) && (dev_num < MAX_DEV)) {
 	    if (mcp23017[te][dev_num].connected == 1) {
-	      if ((pin>=0) && (pin<MAX_MCP23017_PINS)) {
+	      if ((pin>=0) && (pin<MCP23017_MAX_PINS)) {
 		mcp23017[te][dev_num].val[pin] = val;
 		if (verbose > 1) printf("Received digital value %i for pin number %i for Teensy %i MCP23017 %i \n",
 					val,pin,te,dev_num);
@@ -471,7 +471,7 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
     if (te < MAXTEENSYS) {
       if (teensy[te].connected) {
 	if (type == TEENSY_TYPE) {
-	  if ((pin >= 0) && (pin < teensy[te].num_pins)) {
+	  if ((pin >= 0) && (pin < MAX_PINS)) {
 	    if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
 	      if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
 		if (input_type == 0) {
@@ -509,12 +509,12 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 	    }
 	  } else {
 	    if (verbose > 0) printf("Digital Input %i above maximum # of pins %i of Teensy %i \n",
-				    pin,teensy[te].num_pins,te);
+				    pin,MAX_PINS,te);
 	    retval = -1;
 	  }
 	} else if (type == MCP23017_TYPE) {
 	  if ((dev <= 0) && (dev < MAX_DEV)) {
-	    if ((pin >= 0) && (pin < MAX_MCP23017_PINS)) {
+	    if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
 	      if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) {
 		if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
 		  if (input_type == 0) {
@@ -552,7 +552,7 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 	      }
 	    } else {
 	      if (verbose > 0) printf("Digital Input %i of MCP23017 %i above maximum # of pins %i of Teensy %i \n",
-				      pin,dev,MAX_MCP23017_PINS,te);
+				      pin,dev,MCP23017_MAX_PINS,te);
 	      retval = -1;
 	    }
 	  } else {
@@ -589,12 +589,12 @@ int analog_input(int te, int pin, float *value, float minval, float maxval)
 
     if (te < MAXTEENSYS) {
       if (teensy[te].connected) {
-	if ((pin >= 0) && (pin < teensy[te].num_pins)) {
+	if ((pin >= 0) && (pin < MAX_PINS)) {
 	  if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) {
 
 	    if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
 	      *value = ((float) teensy[te].val[pin][0])
-		/ (float) (pow(2,ANALOGINPUTNBITS)-1)
+		/ (float) (pow(2,ANALOGINPUT_NBITS)-1)
 		* (maxval - minval) + minval;
 	      retval = 1;
 	    }
@@ -604,7 +604,7 @@ int analog_input(int te, int pin, float *value, float minval, float maxval)
 	  }
 	} else {
 	  if (verbose > 0) printf("Analog Input %i above maximum # of inputs %i of Teensy %i \n",
-				  pin,teensy[te].num_pins,te);
+				  pin,MAX_PINS,te);
 	  retval = -1;
 	}
       } else {
@@ -678,9 +678,9 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 	    if (teensy[te].connected) {
 	
 	      if (type == TEENSY_TYPE) {
-		max_pins = teensy[te].num_pins;
+		max_pins = MAX_PINS;
 	      } else {
-		max_pins = MAX_MCP23017_PINS;
+		max_pins = MCP23017_MAX_PINS;
 	      }
 	
 	      if ((pin1 >= 0) && (pin1 < max_pins) &&
@@ -835,11 +835,11 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 	      } else {
 		if (type == TEENSY_TYPE) {
 		  if (verbose > 0) printf("Encoder with Pins %i,%i above maximum # of digital inputs %i of Teensy %i \n",
-					  pin1,pin2,teensy[te].num_pins,te);
+					  pin1,pin2,MAX_PINS,te);
 		} else {
 		  if (verbose > 0)
 		    printf("Encoder with Pins %i,%i above maximum # of digital inputs %i of Teensy %i MCP23017 %i \n",
-			   pin1,pin2,teensy[te].num_pins,te, dev);
+			   pin1,pin2,MAX_PINS,te, dev);
 		}
 		retval = -1;
 	      }
@@ -898,7 +898,7 @@ int digital_output(int te, int type, int dev, int pin, int *value)
 	  if (teensy[te].connected) {
 	    if (type == TEENSY_TYPE) {
 	      /* set pin of teensy host controller */
-	      if ((pin >= 0) && (pin < teensy[te].num_pins)) {
+	      if ((pin >= 0) && (pin < MAX_PINS)) {
 		if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) {
 		  if (*value != teensy[te].val[pin][0]) {
 		    teensy[te].val[pin][0] = *value;
@@ -910,13 +910,13 @@ int digital_output(int te, int type, int dev, int pin, int *value)
 		}
 	      } else {
 		if (verbose > 0) printf("Digital Output %i above maximum # of outputs %i of Teensy %i \n",
-					pin,teensy[te].num_pins,te);
+					pin,MAX_PINS,te);
 		retval = -1;
 	      }
 	    } else if (type == MCP23017_TYPE) {
 	      /* set pin of teensy host controller */
 	      if ((dev >= 0) && (dev < MAX_DEV)) {
-		if ((pin >= 0) && (pin < MAX_MCP23017_PINS)) {
+		if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
 		  if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT) {
 		    if (*value != mcp23017[te][dev].val[pin]) {
 		      mcp23017[te][dev].val[pin] = *value;
@@ -930,7 +930,7 @@ int digital_output(int te, int type, int dev, int pin, int *value)
 		  }
 		} else {
 		  if (verbose > 0) printf("Digital Output %i above maximum # of outputs %i of MCP23017 \n",
-					  pin,MAX_MCP23017_PINS);
+					  pin,MCP23017_MAX_PINS);
 		  retval = -1;
 		}
 	      } else {
@@ -974,10 +974,10 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
       if (te < MAXTEENSYS) {
 	if (teensy[te].connected) {
 	  if (type == TEENSY_TYPE) {
-	    if ((pin >= 0) && (pin < teensy[te].num_pins)) {
+	    if ((pin >= 0) && (pin < MAX_PINS)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_PWM) {
 		/* scale value to PWM output range */
-		ival = (int) (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)*(pow(2,ANALOGOUTPUTNBITS)-1.0));
+		ival = (int) (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)*(pow(2,ANALOGOUTPUT_NBITS)-1.0));
 		if (ival != teensy[te].val[pin][0]) {
 		  teensy[te].val[pin][0] = ival;
 		  if (verbose > 2) printf("PWM Output %i of Teensy %i changed to %i \n", pin, te, ival);
@@ -988,7 +988,7 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 	      }
 	    } else {
 	      if (verbose > 0) printf("PWM Output %i above maximum # of outputs %i of Teensy %i \n", pin,
-				      teensy[te].num_pins, te);
+				      MAX_PINS, te);
 	      retval = -1;
 	    }
 	  } else {
@@ -1023,11 +1023,11 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval
       if (te < MAXTEENSYS) {
 	if (teensy[te].connected) {
 	  if (type == TEENSY_TYPE) {
-	    if ((pin >= 0) && (pin < teensy[te].num_pins)) {
+	    if ((pin >= 0) && (pin < MAX_PINS)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_SERVO) {
 		/* scale value to servo output range */
 		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0))
-			      * (SERVO_MAXANGLE - SERVO_MINANGLE));
+			      * (SERVO_MAXANGLE - SERVO_MINANGLE) + SERVO_MINANGLE);
 		if (ival != teensy[te].val[pin][0]) {
 		  teensy[te].val[pin][0] = ival;
 		  if (verbose > 0) printf("Servo Output %i of Teensy %i changed to %i \n", pin, te, ival);
@@ -1038,12 +1038,34 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval
 	      }
 	    } else {
 	      if (verbose > 0) printf("Servo Output %i above maximum # of outputs %i of Teensy %i \n", pin,
-				      teensy[te].num_pins, te);
+				      MAX_PINS, te);
 	      retval = -1;
 	    }
+	  } else if (type == PCA9685_TYPE) {
+	    if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
+	      if (pca9685[te][dev].pinmode[pin] == PINMODE_SERVO) {
+		/* scale value to servo output range */
+		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0))
+			      * (PCA9685_SERVO_MAXPULSE - PCA9685_SERVO_MINPULSE) + PCA9685_SERVO_MINPULSE);
+		if (ival != pca9685[te][dev].val[pin]) {
+		  pca9685[te][dev].val[pin] = ival;
+		  if (verbose > 0) printf("Servo Output %i of Teensy %i PCA9685 %i changed to %i \n",
+					  pin, te, dev,ival);
+		}
+	      } else {
+		if (verbose > 0) printf("Pin %i of Teensy %i PCA9685 %i is not defined as Servo Output \n",
+					pin, te, dev);
+		retval = -1;
+	      }
+	    } else {
+	      if (verbose > 0) printf("Servo Output %i above maximum # of outputs %i of Teensy %i PCA9685 %i \n",
+				      pin, PCA9685_MAX_PINS, te, dev);
+	      retval = -1;
+	    }
+
 	  } else {
-
-
+	    if (verbose > 0) printf("Servo Outputs are supported only for Teensy and PCA9685 \n");
+	    retval = -1;
 	  }
 	} else {
 	  if (verbose > 2) printf("Servo Output %i cannot be written. Teensy %i not connected \n", pin, te);

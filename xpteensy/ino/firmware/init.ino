@@ -16,15 +16,12 @@ void init_data() {
   }
   teensy_data.connected = 1;
 
-  // SET for TEENSY 4.1 for now
-  teensy_data.num_pins = 42;
-
   if (DEBUG) {
     Serial.printf("Teensy Data initialized\n");
   }
 
   for (dev = 0; dev < MAX_DEV; dev++) {
-    for (k = 0; k < MAX_MCP23017_PINS; k++) {
+    for (k = 0; k < MCP23017_MAX_PINS; k++) {
       mcp23017_data[dev].val[k] = INITVAL;
       mcp23017_data[dev].val_save[k] = INITVAL;
       mcp23017_data[dev].pinmode[k] = INITVAL;
@@ -36,7 +33,7 @@ void init_data() {
   }
 
   for (dev = 0; dev < MAX_DEV; dev++) {
-    for (k = 0; k < MAX_PCA9685_PINS; k++) {
+    for (k = 0; k < PCA9685_MAX_PINS; k++) {
       pca9685_data[dev].val[k] = INITVAL;
       pca9685_data[dev].val_save[k] = INITVAL;
       pca9685_data[dev].pinmode[k] = INITVAL;
