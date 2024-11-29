@@ -46,14 +46,14 @@
 #define SERVO_MINANGLE 0       /* minimum angle of servos (deg) */
 #define SERVO_MAXANGLE 180     /* maximum angle of servos (deg)*/
 #define SERVO_MINPULSE 600     /* minimum pulse width of servos (us) default 544 */
-#define SERVO_MAXPULSE 2400    /* maximum pulse width of servos (us) default 2400 */
+#define SERVO_MAXPULSE 2600    /* maximum pulse width of servos (us) default 2400 */
 #define MAX_VARS 20       // maximum number of internal variables on teensy
 #define MAX_PINS 42       // maximum number of pins on a teensy
 #define MAX_SERVO 10      // maximum number of servos on a teensy
 
 /* PCA9685 PWM/Servo Defines */
 #define PCA9685_SERVO_MINPULSE 600   // minimum pulse width of servos (us) on PCA9685
-#define PCA9685_SERVO_MAXPULSE 2600  // maximum pulse width of servos (us) on PCA9685
+#define PCA9685_SERVO_MAXPULSE 2400  // maximum pulse width of servos (us) on PCA9685
 #define PCA9685_PWM_NBITS 12  // number of bits of PWM on PCA9685
 #define PCA9685_MAX_PINS 16   // maximum number of servos/pwm outputs on a PCA9685
 

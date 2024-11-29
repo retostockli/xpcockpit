@@ -977,7 +977,8 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 	    if ((pin >= 0) && (pin < MAX_PINS)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_PWM) {
 		/* scale value to PWM output range */
-		ival = (int) (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)*(pow(2,ANALOGOUTPUT_NBITS)-1.0));
+		ival = (int) (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0) *
+			      (pow(2,ANALOGOUTPUT_NBITS)-1.0));
 		if (ival != teensy[te].val[pin][0]) {
 		  teensy[te].val[pin][0] = ival;
 		  if (verbose > 2) printf("PWM Output %i of Teensy %i changed to %i \n", pin, te, ival);
@@ -991,8 +992,31 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 				      MAX_PINS, te);
 	      retval = -1;
 	    }
-	  } else {
+	  } else if (type == PCA9685_TYPE) {
+	    if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
+	      if (pca9685[te][dev].pinmode[pin] == PINMODE_PWM) {
+		/* scale value to servo output range */
+		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)) *
+			      (pow(2,PCA9685_PWM_NBITS)-1.0));
+		if (ival != pca9685[te][dev].val[pin]) {
+		  pca9685[te][dev].val[pin] = ival;
+		  if (verbose > 0) printf("PWM Output %i of Teensy %i PCA9685 %i changed to %i \n",
+					  pin, te, dev,ival);
+		}
+	      } else {
+		if (verbose > 0) printf("Pin %i of Teensy %i PCA9685 %i is not defined as PWM Output \n",
+					pin, te, dev);
+		retval = -1;
+	      }
+	    } else {
+	      if (verbose > 0) printf("PWM Output %i above maximum # of outputs %i of Teensy %i PCA9685 %i \n",
+				      pin, PCA9685_MAX_PINS, te, dev);
+	      retval = -1;
+	    }
 
+	  } else {
+	    if (verbose > 0) printf("PWM Outputs are supported only for Teensy and PCA9685 \n");
+	    retval = -1;
 	  }
 	} else {
 	  if (verbose > 2) printf("PWM Output %i cannot be written. Teensy %i not connected \n", pin, te);

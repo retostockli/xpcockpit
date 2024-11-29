@@ -33,7 +33,7 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
 
           pca9685[dev].begin();
           pca9685[dev].setOscillatorFrequency(27000000);
-          pca9685[dev].setPWMFreq(1600);  // Maximum PWM Frequency for PWM operation
+          pca9685[dev].setPWMFreq(50);  // Maximum PWM Frequency for PWM operation
 
           if (DEBUG > 0) {
             Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as PWM \n", dev, pin);
@@ -78,7 +78,7 @@ void pca9685_write(int8_t dev, int8_t pin, int16_t val) {
 
               if ((val >= 0) && (val < pow(2, PCA9685_PWM_NBITS))) {
                 pca9685_data[dev].val[pin] = val;
-                pca9685[dev].setPWM(pin, 0, val);
+                pca9685[dev].setPin(pin, val);
                 if (DEBUG > 0) {
                   Serial.printf("WRITE: PCA9685 Device %i PWM %i has value %i \n", dev, pin, val);
                 }
