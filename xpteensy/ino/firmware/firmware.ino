@@ -83,12 +83,19 @@ void setup() {
   init_data();
 
   // Start I2C busses (one for now)
+  // Note: if you use a 3.3V --> 5.0V level shifter to run the I2C bus
+  // on 5.0V, then please cut the red wire on the I2C bus 5.0V side
+  // and use a separate 5.0V power supply. The power pump of the
+  // https://www.adafruit.com/product/5649 level shifter draws too much
+  // current of the Teensy controller and leads to large noise in the
+  // analog inputs
   Wire.begin();
   // Wire1.begin();
   //Wire2.begin();
-  Wire.setClock(1000000);
-  //Wire1.setClock(1000000);
-  //Wire2.setClock(1000000);
+  //Wire.setClock(1000000); // 1MHz is fast but may not work with all I2C devices
+ Wire.setClock(100000); // 1kHz is fine
+  //Wire1.setClock(100000);
+  //Wire2.setClock(100000);
 }
 
 void loop() {
