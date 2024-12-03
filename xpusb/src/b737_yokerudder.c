@@ -109,7 +109,7 @@ void b737_yokerudder(void)
   int* target_down = link_dataref_cmd_hold("sim/weapons/weapon_target_down");
   int* target_up = link_dataref_cmd_hold("sim/weapons/weapon_target_up");
   int* weapon_fire = link_dataref_cmd_hold("sim/weapons/fire_any_armed");
-  
+  // Heading and Pitch rotation for multi-monitor setup.
   float *view_horizontal = link_dataref_flt("sim/graphics/view/field_of_view_horizontal_deg",0);
   float *view_vertical = link_dataref_flt("sim/graphics/view/field_of_view_vertical_deg",0);
 
@@ -215,9 +215,11 @@ void b737_yokerudder(void)
   if (*viewmode == 0) {
     /* Only fix pilot position in forward with nothing else view mode */
     if (view_is_copilot == 0) {
-      *pilot_position = -0.4; // meters
+      //*pilot_position = -0.4; // meters
+      *view_horizontal = 16.0; // degrees
     } else {
-      *pilot_position = 0.4;  // meters
+      //*pilot_position = 0.4;  // meters
+      *view_horizontal = -16.0; // degrees
     }
   }
   
