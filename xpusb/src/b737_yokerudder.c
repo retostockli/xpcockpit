@@ -92,7 +92,9 @@ void b737_yokerudder(void)
   
   int* viewmode = link_dataref_int("xpserver/viewmode");
 
+  // datarefs to adjust for captain and copilot eye position on curved screen
   float *pilot_position = link_dataref_flt("sim/graphics/view/pilots_head_x",-2);
+  float *pilot_heading = link_dataref_flt("sim/graphics/view/dome_offset_heading",0);
   
   int* forward_with_nothing = link_dataref_cmd_once("sim/view/forward_with_nothing");
   int* forward_with_panel = link_dataref_cmd_once("sim/view/forward_with_panel");
@@ -109,11 +111,8 @@ void b737_yokerudder(void)
   int* target_down = link_dataref_cmd_hold("sim/weapons/weapon_target_down");
   int* target_up = link_dataref_cmd_hold("sim/weapons/weapon_target_up");
   int* weapon_fire = link_dataref_cmd_hold("sim/weapons/fire_any_armed");
-  // Heading and Pitch rotation for multi-monitor setup.
-  float *view_horizontal = link_dataref_flt("sim/graphics/view/field_of_view_horizontal_deg",0);
-  float *view_vertical = link_dataref_flt("sim/graphics/view/field_of_view_vertical_deg",0);
 
-  int *ap_engage = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");    // AP engage/disengage mode
+  //int *ap_engage = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");    // AP engage/disengage mode
 
   int *stab_trim_up;
   int *stab_trim_down;
@@ -192,8 +191,6 @@ void b737_yokerudder(void)
   if ((ret == 1) && (button == 1)) {
     view_is_copilot = 0;
     *viewmode=0;
-    *view_horizontal=0.0;
-    *view_vertical=0.0;
     *forward_with_nothing=1;
     *forward_with_panel=0;
     *circle=0;
@@ -204,23 +201,10 @@ void b737_yokerudder(void)
   if ((ret == 1) && (button == 1)) {
     view_is_copilot = 1;
     *viewmode=0;
-    *view_horizontal=0.0;
-    *view_vertical=0.0;
     *forward_with_nothing=1;
     *forward_with_panel=0;
     *circle=0;
     *free_camera=0;
-  }
-
-  if (*viewmode == 0) {
-    /* Only fix pilot position in forward with nothing else view mode */
-    if (view_is_copilot == 0) {
-      //*pilot_position = -0.4; // meters
-      *view_horizontal = 16.0; // degrees
-    } else {
-      //*pilot_position = 0.4;  // meters
-      *view_horizontal = -16.0; // degrees
-    }
   }
   
   ret = digital_input(device,card,10,&button,0);
@@ -252,15 +236,11 @@ void b737_yokerudder(void)
       *circle = 0;
       *free_camera = 0;
     } else if (*viewmode == 2) {
-      *view_horizontal = 0.0;
-      *view_vertical = 0.0;
-      *forward_with_nothing = 0;
+     *forward_with_nothing = 0;
       *forward_with_panel = 0;
       *circle = 1;
       *free_camera = 0;
     } else if (*viewmode == 3) {
-      *view_horizontal = 0.0;
-      *view_vertical = 0.0;
       *forward_with_nothing = 0;
       *forward_with_panel = 0;
       *circle = 0;
@@ -269,27 +249,23 @@ void b737_yokerudder(void)
   }
 
 
-  /* forward with nothing */
   if ((*viewmode == 0) || (*viewmode == 1)) {
-    
-    ret = digital_input(device,card,8,&button,0);
-    if ((ret == 1) && (button == 1)) {
-      *view_horizontal -= 45.0;
+    /* Only fix pilot position in forward with nothing */
+    //*pilot_position = 0.0;
+    if (view_is_copilot == 0) {
+      /* Captain View */
+      *pilot_position = -0.4; // meters
+      *pilot_heading = 10.0; // degrees
+    } else {
+      /* Copilot View */
+      *pilot_position = 0.4;  // meters
+      *pilot_heading = -10.0; // degrees
     }
-    ret = digital_input(device,card,9,&button,0);
-    if ((ret == 1) && (button == 1)) {
-      *view_horizontal += 45.0;
-    }
-    ret = digital_input(device,card,6,&button,0);
-    if ((ret == 1) && (button == 1)) {
-      *view_vertical += 22.5;
-    }
-    ret = digital_input(device,card,7,&button,0);
-    if ((ret == 1) && (button == 1)) {
-      *view_vertical -= 22.5;
-    }
-
+ 
   } else if ((*viewmode == 2) || (*viewmode == 3)) {
+    *pilot_position = 0.0;
+    *pilot_heading = 0.0;
+    
     ret = digital_input(device,card,8,&button,0);
     if (button == 1) {
       *view_left = 1;
