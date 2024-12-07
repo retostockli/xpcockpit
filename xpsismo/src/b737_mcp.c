@@ -57,8 +57,8 @@ void b737_mcp(void)
   float *ap_vspeed; // autopilot vertical speed
   int *ap_banklimit;  // bank limit
   int *ap_spd_is_mach;
-  int *ap_vspeed_show;
-  float *ap_vspeed_show_f;
+  float *ap_vspeed_show;
+  float *ap_ias_show;
 
   
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -79,21 +79,20 @@ void b737_mcp(void)
   }
   if ((acf_type == 2) || (acf_type == 3)) {
     ap_ias = link_dataref_flt("laminar/B738/autopilot/mcp_speed_dial_kts_mach",-2);      
+    ap_ias_show = link_dataref_flt("laminar/B738/autopilot/show_ias",0);       
   } else if (acf_type == 1) {  
     ap_ias = link_dataref_flt("x737/systems/athr/MCPSPD_spd",-2);           
   } else {
     ap_ias = link_dataref_flt("sim/cockpit/autopilot/airspeed",-2);
   }
-
+  
   if ((acf_type == 2) || (acf_type == 3)) {
     ap_vspeed = link_dataref_flt("sim/cockpit2/autopilot/vvi_dial_fpm",0);
-    ap_vspeed_show_f = link_dataref_flt("laminar/B738/autopilot/vvi_dial_show",0);       
+    ap_vspeed_show = link_dataref_flt("laminar/B738/autopilot/vvi_dial_show",0);       
   } else if (acf_type == 1) {  
     ap_vspeed = link_dataref_flt("x737/systems/afds/VS_vvi",0);             
-    ap_vspeed_show = link_dataref_int("sim/cockpit2/autopilot/vvi_status");
   } else {
     ap_vspeed = link_dataref_flt("sim/cockpit/autopilot/vertical_velocity",0);
-    ap_vspeed_show = link_dataref_int("sim/cockpit2/autopilot/vvi_status");
   }
   
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -656,12 +655,24 @@ void b737_mcp(void)
   /* DISPLAYS */
   ret = display_outputf(card, 0, 3, ap_course1, -1, display_brightness);
   ret = display_outputf(card, 21, 3, ap_course2, -1, display_brightness);
-  if (*ap_spd_is_mach == 1) {
-    float ftemp = *ap_ias * 100.0;
-    ret = display_outputf(card,3,4, ap_ias, -1, display_brightness);  // clear all digits
-    ret = display_outputf(card,4,3, &ftemp, 2, display_brightness); // mach spd in two first digits
+
+  int ap_spd_show = 0;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    if (*ap_ias_show == 1.0) ap_spd_show = 1;
   } else {
-    ret = display_outputf(card,3,4, ap_ias, -1, display_brightness);
+    ap_spd_show = 1;
+  }
+
+  if (ap_spd_show == 1) {
+    if (*ap_spd_is_mach == 1) {
+      float ftemp = *ap_ias * 100.0;
+      ret = display_outputf(card,3,4, ap_ias, -1, display_brightness);  // clear all digits
+      ret = display_outputf(card,4,3, &ftemp, 2, display_brightness); // mach spd in two first digits
+    } else {
+      ret = display_outputf(card,3,4, ap_ias, -1, display_brightness);
+    }
+  } else {
+    ret = display_outputf(card,3,4, ap_ias, -1, zero);
   }
   ret = display_outputf(card, 8, 3, ap_heading, -1, display_brightness);
   if (*ap_heading != FLT_MISS) {
@@ -677,9 +688,9 @@ void b737_mcp(void)
 
   int ap_vs_show = 0;
   if ((acf_type == 2) || (acf_type == 3)) {
-    if (*ap_vspeed_show_f >= 1.0) ap_vs_show = 1;
+    if (*ap_vspeed_show >= 1.0) ap_vs_show = 1;
   } else {
-    if (*ap_vspeed_show >= 1) ap_vs_show = 1;
+    ap_vs_show = 1;
   }
   if (ap_vs_show == 1) {
     ret = display_outputf(card, 16, 5, ap_vspeed, -1, display_brightness);
