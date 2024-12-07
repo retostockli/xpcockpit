@@ -147,7 +147,7 @@ namespace OpenGC
       glTranslatef(20, 20, 0);
 
       // gauge
-      if(value > max_green)
+      if(value > max_red)
 	glColor3ub(COLOR_RED);
       else
 	glColor3ub(COLOR_GRAYBLUE);
