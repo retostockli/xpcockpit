@@ -219,8 +219,10 @@ namespace OpenGC
 	    }
 	  }
 
+	  /* Check if Texture already exist and free memory */
+	  if (glIsTexture(m_texture)) glDeleteTextures(1, &m_texture);
+	  
 	  /* store DEM texture in OpenGL 2D Texture */
-
 	  glGenTextures(1, &m_texture);
 	  glBindTexture(GL_TEXTURE_2D, m_texture);
 	  
@@ -328,7 +330,7 @@ namespace OpenGC
 		    cos(M_PI / 180.0 * aircraftLat);
 		  yPos = (dem_lat[j][i] - aircraftLat) * ((float) dem_pplat) * mpplat / mapRange * map_size;
 		  
-		  // Only draw the Fix if it's visible within the rendering area
+		  // Only draw the Vertex if it's visible within the rendering area
 		  if ( sqrt(xPos*xPos + yPos*yPos) < map_size) {		    
 		    glVertex2f(xPos, yPos);		    
 		  }

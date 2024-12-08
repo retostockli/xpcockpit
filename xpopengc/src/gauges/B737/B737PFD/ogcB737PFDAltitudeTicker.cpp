@@ -164,15 +164,18 @@ namespace OpenGC
 	    snprintf(buffer, sizeof(buffer), "-");
 	    m_pFontManager->Print(5.0, texty + bigFontHeight/10.0, &buffer[0], m_Font);
 	  } else {
-	    glColor3ub(COLOR_GREEN);
-	    glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-	    glBegin(GL_POLYGON);
-	    glVertex2f(4.0,texty);
-	    glVertex2f(4.0,texty + bigFontHeight);
-	    glVertex2f(8.0,texty + bigFontHeight);
-	    glVertex2f(8.0,texty);
-	    glVertex2f(4.0,texty);
-	    glEnd();
+	    if(abs(alt) <= 9999) {
+	      /* do only draw the square if 9999 and below, else we fill the still present 1 of 10000 */
+	      glColor3ub(COLOR_GREEN);
+	      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+	      glBegin(GL_POLYGON);
+	      glVertex2f(4.0,texty);
+	      glVertex2f(4.0,texty + bigFontHeight);
+	      glVertex2f(8.0,texty + bigFontHeight);
+	      glVertex2f(8.0,texty);
+	      glVertex2f(4.0,texty);
+	      glEnd();
+	    }
 	  }
 	}
   
