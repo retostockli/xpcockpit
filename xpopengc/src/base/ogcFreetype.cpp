@@ -39,11 +39,28 @@ namespace OpenGC {
 
   Freetype
   ::~Freetype() {
+
+    // WE HAVE A SEGFAULT WHEN DELETING INDIVIDUAL Character ENTRIES FIRST
     
+    /*
     for ( auto i = Characters.begin(); i != Characters.end(); ++i )
       {
+	if (Characters.empty()) break;
 	Characters.erase(i);
-     }
+      }
+    */
+
+    /*
+    for (auto i = Characters.begin(); i != Characters.end(); ) {
+      printf("%i\n",i->first);
+      Character ch = Characters[i->first];
+      if (glIsTexture(ch.TextureID)) printf("YES\n");
+      if (Characters.empty()) break;
+      //Characters.erase(i);
+      ++i;
+    }
+    */
+    
     Characters.clear();
     
     delete[] m_Name;
@@ -302,7 +319,7 @@ namespace OpenGC {
 	  }
 	  
 	  Character ch = Characters[uc];
-
+	  
 	  GLfloat xpos = x + (float) ch.Bearing_x * scale_x;
 	  GLfloat ypos = y - ((float) ch.Size_y - (float) ch.Bearing_y) * scale_y;
 

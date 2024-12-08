@@ -90,7 +90,21 @@ B737NAV::B737NAV()
   pDrawWXR->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
   pDrawWXR->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawWXR);
-  
+
+  B737NAVMapModeExpanded* pMapExp = new B737NAVMapModeExpanded();
+  pMapExp->SetParentRenderObject(this);
+  pMapExp->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pMapExp->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pMapExp->SetNAVGauge(this);
+  this->AddGaugeComponent(pMapExp);
+
+  B737NAVMapModePlan* pMapPlan = new B737NAVMapModePlan();
+  pMapPlan->SetParentRenderObject(this);
+  pMapPlan->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
+  pMapPlan->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
+  pMapPlan->SetNAVGauge(this);
+  this->AddGaugeComponent(pMapPlan);
+    
   B737NAVDrawStations* pDrawStat = new B737NAVDrawStations();
   pDrawStat->SetParentRenderObject(this);
   pDrawStat->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
@@ -112,20 +126,6 @@ B737NAV::B737NAV()
   pDrawTCAS->SetNAVGauge(this);
   this->AddGaugeComponent(pDrawTCAS);
 
-  B737NAVMapModeExpanded* pMapExp = new B737NAVMapModeExpanded();
-  pMapExp->SetParentRenderObject(this);
-  pMapExp->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pMapExp->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pMapExp->SetNAVGauge(this);
-  this->AddGaugeComponent(pMapExp);
-
-  B737NAVMapModePlan* pMapPlan = new B737NAVMapModePlan();
-  pMapPlan->SetParentRenderObject(this);
-  pMapPlan->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
-  pMapPlan->SetSize(m_PhysicalSize.x,m_PhysicalSize.y);
-  pMapPlan->SetNAVGauge(this);
-  this->AddGaugeComponent(pMapPlan);
-  
   B737NAVDrawStatic* pDrawStatic = new B737NAVDrawStatic();
   pDrawStatic->SetParentRenderObject(this);
   pDrawStatic->SetPosition(m_PhysicalPosition.x,m_PhysicalPosition.y);
