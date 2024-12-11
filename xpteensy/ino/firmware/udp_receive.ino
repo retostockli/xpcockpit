@@ -42,6 +42,9 @@ void udp_receive(void) {
         if ((recvBuffer[5] == TEENSY_TYPE) && (recvBuffer[6] == 0)) {
           if (recvBuffer[4] == TEENSY_PING) {
             /* send reply to ping request */
+            if (DEBUG > 0) {
+              Serial.printf("RECV: PING Request\n");
+            }
             ivalue16 = 0;
             udp_send(TEENSY_TYPE, 0, INITVAL, ivalue16);
           } else if (recvBuffer[4] == TEENSY_INIT) {

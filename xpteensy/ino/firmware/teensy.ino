@@ -4,6 +4,9 @@ Servo servo[MAX_SERVO];
 void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
   if ((pin >= 0) && (pin < MAX_PINS)) {
 
+    /* store pinmode */
+    teensy_data.pinmode[pin] = pinmode;
+
     if (pinmode == PINMODE_INPUT) {
       pinMode(pin, INPUT_PULLUP);
       teensy_data.val[pin][0] = INITVAL;
@@ -14,14 +17,13 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
     } else if (pinmode == PINMODE_OUTPUT) {
       pinMode(pin, OUTPUT);
       teensy_data.val[pin][0] = initval;
-      teensy_write(pin, initval);
-      if (DEBUG > 0) {
+       if (DEBUG > 0) {
         Serial.printf("INIT: Teensy pin %i initialized as Digital Output\n", pin);
       }
+      teensy_write(pin, initval);
     } else if (pinmode == PINMODE_PWM) {
       pinMode(pin, OUTPUT);
       teensy_data.val[pin][0] = initval;
-      teensy_write(pin, initval);
       // See: https://www.pjrc.com/teensy/td_pulse.html
       // You can't have the chicken and egg at the same time ...
       //analogWriteFrequency(pin, 375000); // Teensy 3.0 pin 3 also changes to 375 kHz
@@ -29,6 +31,7 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
       if (DEBUG > 0) {
         Serial.printf("INIT: Teensy pin %i initialized as PWM Output\n", pin);
       }
+      teensy_write(pin, initval);
     } else if (pinmode == PINMODE_ANALOGINPUT) {
       pinMode(pin, INPUT);
       teensy_data.val[pin][0] = INITVAL;
@@ -53,21 +56,19 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
         /* store servo instance number for this pin */
         teensy_data.num_servo++;
         teensy_data.val[pin][0] = initval;
-        teensy_write(pin, initval);
-        if (DEBUG > 0) {
+         if (DEBUG > 0) {
           Serial.printf("INIT: Teensy pin %i initialized as Servo Output\n", pin);
         }
+       teensy_write(pin, initval);
       }
     } else {
       if (DEBUG > 0) {
-        Serial.printf("Init: Wrong Teensy PinMode for pin %i \n", pin);
+        Serial.printf("Init ERROR: Wrong Teensy PinMode for pin %i \n", pin);
       }
     }
-    /* store pinmode */
-    teensy_data.pinmode[pin] = pinmode;
   } else {
     if (DEBUG > 0) {
-      Serial.printf("Init: Teensy pin %i out of range\n", pin);
+      Serial.printf("Init ERROR: Teensy pin %i out of range\n", pin);
     }
   }
 }
@@ -98,12 +99,12 @@ void teensy_write(int8_t pin, int16_t val) {
         }
       } else {
         if (DEBUG > 0) {
-          Serial.printf("RECV: Teensy Pin %i not set for Output, Servo or PWM \n", pin);
+          Serial.printf("RECV ERROR: Teensy Pin %i not set for Output, Servo or PWM \n", pin);
         }
       }
     } else {
       if (DEBUG > 0) {
-        Serial.printf("RECV: Teensy Pin %i out of range \n", pin);
+        Serial.printf("RECV ERROR: Teensy Pin %i out of range \n", pin);
       }
     }
   }
@@ -137,7 +138,7 @@ void teensy_read() {
           /* Interrupt signaling for not yet initialized board */
         } else {
           if (DEBUG > 0) {
-            Serial.printf("READ: Teensy Interrupt on Pin %i for unknown device. Currently only implemented for MCP23017 \n", pin);
+            Serial.printf("READ ERROR: Teensy Interrupt on Pin %i for unknown device. Currently only implemented for MCP23017 \n", pin);
           }
         }
         if (DEBUG > 0) {
@@ -147,33 +148,37 @@ void teensy_read() {
     } else if (teensy_data.pinmode[pin] == PINMODE_ANALOGINPUT) {
       val = analogRead(pin);
 
+      /* Shift History of analog inputs and update current value */
+      for (h = 0; h < MAX_HIST - 1; h++) {
+        teensy_data.val[pin][h + 1] = teensy_data.val[pin][h];
+      }
+      teensy_data.val[pin][0] = val;
+
       /* Median Filter input noise of potentiometers */
       int16_t temparr[MAX_HIST];
       int16_t noise = 5;
-       
-      memcpy(temparr,teensy_data.val[pin],sizeof(teensy_data.val[pin][0])*MAX_HIST);
 
-      quicksort(temparr,0,MAX_HIST-1);
-      /*
-      for (int i=0;i<MAX_HIST;i++) {
-        Serial.printf("%i ",temparr[i]);
-      }
-      Serial.printf("\n");
-      */
-      int16_t median = temparr[MAX_HIST/2];
-      //Serial.printf("median:%i val:%i\n",median,val);
+      memcpy(temparr, teensy_data.val[pin], sizeof(teensy_data.val[pin][0]) * MAX_HIST);
 
-      if ((val < (median - noise)) || (val > (median + noise))) {
-        if (DEBUG > 0) {
-          Serial.printf("READ: Teensy Pin %i New Analog Value %i \n", pin, val);
+      quicksort(temparr, 0, MAX_HIST - 1);
+
+      int16_t median = temparr[MAX_HIST / 2];
+
+      //Serial.printf("%i %i\n", median, teensy_data.val_save[pin]);
+
+      if ((median != INITVAL) && (teensy_data.val_save[pin] != INITVAL)) {
+        if ((median < (teensy_data.val_save[pin] - noise)) || (median > (teensy_data.val_save[pin] + noise))) {
+          if (DEBUG > 0) {
+            Serial.printf("READ: Teensy Pin %i New Analog Value %i\n", pin, median);
+          }
+          ret = udp_send(TEENSY_TYPE, 0, pin, median);
+
+          /* save current median value for later comparison */
+          teensy_data.val_save[pin] = median;
         }
-        ret = udp_send(TEENSY_TYPE, 0, pin, val);
-
-        /* Shift History of analog inputs and update current value */
-        for (h = 0; h < MAX_HIST - 1; h++) {
-          teensy_data.val[pin][h + 1] = teensy_data.val[pin][h];
-        }
-        teensy_data.val[pin][0] = val;
+      } else {
+        /* initialize save value */
+        teensy_data.val_save[pin] = median;
       }
     }
   }
