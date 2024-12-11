@@ -113,11 +113,11 @@ int main(int argc, char **argv) {
     /* send data to X-Plane via TCP/IP */
     if (send_xpserver()<0) exit_teensy(-12);
     
-      /* reset counters and such */
+    /* reset counters and such */
     if (reset_teensydata() < 0) exit_teensy(-13);
 
-    if (udpReadLeft == 0) usleep(INTERVAL*1000);
-    //usleep(INTERVAL*1000);
+    /* if we have new data from Teensy or from X-Plane: immediately continue */
+    if ((udpReadLeft == 0) || (numreceived == 0)) usleep(INTERVAL*1000);
   }
   
   return 0; 

@@ -17,7 +17,7 @@
 
 #include "check_aircraft.h"
 
-#define INTERVAL 2
+#define INTERVAL 10
 
 /* verbosity of xpsismo (0-4) */
 extern int verbose;

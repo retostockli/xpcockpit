@@ -147,17 +147,23 @@ void teensy_read() {
     } else if (teensy_data.pinmode[pin] == PINMODE_ANALOGINPUT) {
       val = analogRead(pin);
 
-      /* Filter input noise of +/- X values. Only send if there is a significant change */
-      int16_t valmax = -1;
-      int16_t valmin = 10000;
-      int16_t noise = 2;
-      for (h = 0; h < MAX_HIST; h++) {
-        valmax = max(teensy_data.val[pin][h], valmax);
-        valmin = min(teensy_data.val[pin][h], valmin);
-      }
+      /* Median Filter input noise of potentiometers */
+      int16_t temparr[MAX_HIST];
+      int16_t noise = 5;
+       
+      memcpy(temparr,teensy_data.val[pin],sizeof(teensy_data.val[pin][0])*MAX_HIST);
 
-      //Serial.println(val);
-      if ((val > (valmax + noise)) || (val < (valmin - noise)) || ((valmax - valmin) > 3 * noise)) {
+      quicksort(temparr,0,MAX_HIST-1);
+      /*
+      for (int i=0;i<MAX_HIST;i++) {
+        Serial.printf("%i ",temparr[i]);
+      }
+      Serial.printf("\n");
+      */
+      int16_t median = temparr[MAX_HIST/2];
+      //Serial.printf("median:%i val:%i\n",median,val);
+
+      if ((val < (median - noise)) || (val > (median + noise))) {
         if (DEBUG > 0) {
           Serial.printf("READ: Teensy Pin %i New Analog Value %i \n", pin, val);
         }

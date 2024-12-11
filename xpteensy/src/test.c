@@ -89,21 +89,27 @@ void test(void)
   int te = 0;
 
   /* link integer data like a switch in the cockpit */
-  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  int *value = link_dataref_int("xpserver/digitalvalue");
   
   /* link floating point dataref with precision 10e-1 to local variable. This means
      that we only transfer the variable if changed by 0.1 or more */
-  float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
+  //  float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
+  float *fvalue = link_dataref_flt("xpserver/analogvalue",-3);
 
   /* link NAV1 Frequency to encoder value */
-  int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
+  //  int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
+  int *encodervalue = link_dataref_int("xpserver/encoder");
 
   /* not needed, only if you run without x-plane connection */
   if (*encodervalue == INT_MISS) *encodervalue = 0;
   //if (*fvalue == FLT_MISS) *fvalue = 0.0;
   if (*value == INT_MISS) *value = 1;
 
-  /* read encoder at inputs 33 and 34 */
+  float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
+  float *time = link_dataref_flt("sim/time/framerate_period",-3);
+
+    /* read encoder at inputs 33 and 34 */
   //ret = encoder_input(te, TEENSY_TYPE, 0, 33, 34, encodervalue, 1, 1);
  
   ret = encoder_input(te, MCP23017_TYPE, 0, 2, 3, encodervalue, 1, 1);
