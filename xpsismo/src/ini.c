@@ -177,6 +177,7 @@ int ini_sismodata()
       for(k=0;k<MAXSAVE;k++) {
 	sismo[i].analoginputs[j][k]= INPUTINITVAL;
       }
+      sismo[i].analoginputs_save[j]= INPUTINITVAL;
     }
     for(j=0;j<MAXINPUTS/64;j++) {
       sismo[i].inputs_nsave[j] = 0;

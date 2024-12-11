@@ -63,6 +63,7 @@ typedef struct {
   int ndisplays;         /* actual number of activated displays */
   int nservos;           /* actual number of activated servos */
   int analoginputs[MAXANALOGINPUTS][MAXSAVE];
+  int analoginputs_save[MAXANALOGINPUTS];
   char inputs[MAXINPUTS][MAXSAVE];
   char inputs_updown[MAXINPUTS];  /* memory for last up/down command for encoder inputs */
   struct timeval inputs_time[MAXINPUTS]; /* time of last encoder read */

@@ -134,6 +134,53 @@ void set_7segment(unsigned char *byte, int val)
 
 }
 
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int partition(int arr[], int low, int high) {
+
+    // Initialize pivot to be the first element
+    int p = arr[low];
+    int i = low;
+    int j = high;
+
+    while (i < j) {
+
+        // Find the first element greater than
+        // the pivot (from starting)
+        while (arr[i] <= p && i <= high - 1) {
+            i++;
+        }
+
+        // Find the first element smaller than
+        // the pivot (from last)
+        while (arr[j] > p && j >= low + 1) {
+            j--;
+        }
+        if (i < j) {
+            swap(&arr[i], &arr[j]);
+        }
+    }
+    swap(&arr[low], &arr[j]);
+    return j;
+}
+
+void quicksort(int arr[], int low, int high) {
+    if (low < high) {
+
+        // call partition function to find Partition Index
+        int pi = partition(arr, low, high);
+
+        // Recursively call quickSort() for left and right
+        // half based on Partition Index
+        quicksort(arr, low, pi - 1);
+        quicksort(arr, pi + 1, high);
+    }
+}
+
 int read_sismo() {
   
   int card;
@@ -927,7 +974,10 @@ int analog_input(int card, int input, float *value, float minval, float maxval)
 
   int retval = 0; /* returns 1 if something changed, and 0 if nothing changed, 
 		     and -1 if something went wrong */
-  int found = 0;
+
+  int temparr[MAXSAVE];
+  int median;
+  int noise = 2;
 
   if (value != NULL) {
 
@@ -935,16 +985,33 @@ int analog_input(int card, int input, float *value, float minval, float maxval)
       if (sismo[card].connected) {
 	if ((input >= 0) && (input < sismo[card].nanaloginputs)) {
 
-	  /* Analog input values are flickering with +/-2 (out of a range of 1023)
-	     which is because of imprecision of potentiometers etc.
+	  /* Analog input values are flickering with spikes (up to 10 out of a range of 1023)
+	     which is because of imprecision of potentiometers and power supply.
 	     A change does not necessarily mean that we turned the potentiometer,
-	     so check whether the present value can be found in the history values.
-	     if not: we have a real change */
-	  /* TBD: maybe check each value against +/- 1 of all history values? */
-	  for (int s=1;s<MAXSAVE;s++) {
-	    if (sismo[card].analoginputs[input][0] == sismo[card].analoginputs[input][s]) found = 1;
+	     Here we use a median filter */
+
+	  memcpy(temparr,&sismo[card].analoginputs[input],MAXSAVE*sizeof(int));
+	  quicksort(temparr,0,MAXSAVE-1);
+	  median = temparr[MAXSAVE/2];
+
+	  //if (input == 0)
+	  //  printf("%i %i \n",sismo[card].analoginputs_save[input],median);
+	  
+	  if ((sismo[card].analoginputs_save[input] < (median - noise)) ||
+	      (sismo[card].analoginputs_save[input] > (median + noise))) {
+	    /* potentiometer really changed */
+	  
+	    retval = 1;
+	    sismo[card].analoginputs_save[input] = median; // save median for later comparison
+	  } else {
+	    /* simply noise, save value unchanged to last median */
+	    retval = 0;
 	  }
 
+	  /* convert current median to float value with requested range */
+	  *value = ((float) median) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
+	    (maxval - minval) + minval;
+	  
 	  /*
 	  printf("%i %i %i %i %i %i %i \n",sismo[card].analoginputs[input][0],
 		 sismo[card].analoginputs[input][1],sismo[card].analoginputs[input][2],
@@ -952,11 +1019,6 @@ int analog_input(int card, int input, float *value, float minval, float maxval)
 		 sismo[card].analoginputs[input][5],sismo[card].analoginputs[input][6]
 		 ); */
 	  
-	  *value = ((float) sismo[card].analoginputs[input][0]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
-	    (maxval - minval) + minval;
-	    if (!found) {
-	      retval = 1;
-	    }
 	  
 	} else {
 	  if (verbose > 0) printf("Analog Input %i above maximum # of analog inputs %i of card %i \n",

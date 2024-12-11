@@ -1374,7 +1374,7 @@ void b737_pedestal(void)
   /* WXR Gain */
   ret = analog_input(card,a0+0,wxr_gain,0.0,2.0);
   if (ret == 1) {
-    //    printf("WXR Gain: %f \n",*wxr_gain);
+    printf("WXR Gain: %f \n",*wxr_gain);
   }
   
   /* WXR Tilt */
