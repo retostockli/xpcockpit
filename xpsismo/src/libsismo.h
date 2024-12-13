@@ -23,7 +23,7 @@
 #define MAXDISPLAYS 32+32+32 /* 32 on master and 2x32 on daughters */
 #define DISPLAYBRIGHTNESS 15 /* 0-15 Brightness of 7 segment displays */
 #define MAXSERVOS 14         /* 14 on daughter */
-#define MAXSAVE 30           /* maximum number of history values in data structure */
+#define MAXSAVE 15           /* maximum number of history values in data structure */
 #define INPUTINITVAL -1      /* initial value of inputs upon startup */
 #define DISPLAYSINITVAL -1   /* initial value of displays upon startup (BLANK) */
 #define OUTPUTSINITVAL 0    /* initial value of outputs upon startup (OFF) */
