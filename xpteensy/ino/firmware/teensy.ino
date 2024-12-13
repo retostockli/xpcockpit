@@ -149,7 +149,7 @@ void teensy_read() {
       val = analogRead(pin);
 
       /* Shift History of analog inputs and update current value */
-      for (h = 0; h < MAX_HIST - 1; h++) {
+	    for (h = MAX_HIST-2; h >= 0; h--) {
         teensy_data.val[pin][h + 1] = teensy_data.val[pin][h];
       }
       teensy_data.val[pin][0] = val;

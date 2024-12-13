@@ -1529,7 +1529,7 @@ int receive_mastercard(void)
 	       Here we use a median filter */
 
 	    /* Shift History of analog inputs and update current value */
-	    for (h = 0; h < MAX_HIST - 1; h++) {
+	    for (h = MAX_HIST-2; h >= 0; h--) {
 	      iocard[device].axes_hist[axis-1][h+1] = iocard[device].axes_hist[axis-1][h];
 	    }
 	    iocard[device].axes_hist[axis-1][0] = recv_data[1];
@@ -2062,7 +2062,7 @@ int receive_axes(void)
 	       Here we use a median filter */
 
 	    /* Shift History of analog inputs and update current value */
-	    for (h = 0; h < MAX_HIST - 1; h++) {
+	    for (h = MAX_HIST-2; h >= 0; h--) {
 	      iocard[device].axes_hist[byte][h+1] = iocard[device].axes_hist[byte][h];
 	    }
 	    iocard[device].axes_hist[byte][0] = recv_data1[byte];
@@ -2110,7 +2110,7 @@ int receive_axes(void)
 	       Here we use a median filter */
 
 	    /* Shift History of analog inputs and update current value */
-	    for (h = 0; h < MAX_HIST - 1; h++) {
+	    for (h = MAX_HIST-2; h >= 0; h--) {
 	      iocard[device].axes_hist[byte][h+1] = iocard[device].axes_hist[byte][h];
 	    }
 	    iocard[device].axes_hist[byte][0] = recv_data2[byte];
@@ -2197,7 +2197,7 @@ int receive_bu0836(void)
 	       Here we use a median filter */
 
 	    /* Shift History of analog inputs and update current value */
-	    for (h = 0; h < MAX_HIST - 1; h++) {
+	    for (h = MAX_HIST-2; h >= 0; h--) {
 	      iocard[device].axes_hist[axis][h+1] = iocard[device].axes_hist[axis][h];
 	    }
 	    iocard[device].axes_hist[axis][0] = recv_data[2*axis] + recv_data[2*axis+1]*256;
