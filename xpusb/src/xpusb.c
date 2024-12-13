@@ -170,11 +170,11 @@ int main (int argc, char **argv)
 	iocard_test();
       }
       if (strcmp(argv[1],"test") == 0) {
-	iocard_test();
+	//iocard_test();
 	// usbkeys_test();
 	//usbservos_test();
 	// dcmotorsplus_test();
-	//bu0836_test();
+	bu0836_test();
 	// dcmotorsplus_test();
       }
       /*** user-space modules end here ***/

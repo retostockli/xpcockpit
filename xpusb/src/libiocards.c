@@ -259,6 +259,53 @@ int get_acceleration (int device, int card, int input, int accelerator)
   return acceleration;
 }
 
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int partition(int arr[], int low, int high) {
+
+    // Initialize pivot to be the first element
+    int p = arr[low];
+    int i = low;
+    int j = high;
+
+    while (i < j) {
+
+        // Find the first element greater than
+        // the pivot (from starting)
+        while (arr[i] <= p && i <= high - 1) {
+            i++;
+        }
+
+        // Find the first element smaller than
+        // the pivot (from last)
+        while (arr[j] > p && j >= low + 1) {
+            j--;
+        }
+        if (i < j) {
+            swap(&arr[i], &arr[j]);
+        }
+    }
+    swap(&arr[low], &arr[j]);
+    return j;
+}
+
+void quicksort(int arr[], int low, int high) {
+    if (low < high) {
+
+        // call partition function to find Partition Index
+        int pi = partition(arr, low, high);
+
+        // Recursively call quickSort() for left and right
+        // half based on Partition Index
+        quicksort(arr, low, pi - 1);
+        quicksort(arr, pi + 1, high);
+    }
+}
+
 /* initialize data arrays with default values */
 /* flight data for  USB and TCP/IP communication */
 int initialize_iocardsdata(void) 
@@ -266,6 +313,7 @@ int initialize_iocardsdata(void)
   int device;
   int count;
   int card;
+  int hist;
   struct timeval time_new;
 
   /* reset interval counter */
@@ -284,31 +332,34 @@ int initialize_iocardsdata(void)
     for (card=0;card<iocard[device].ncards;card++) {
       for (count=0;count<iocard[device].ninputs;count++) {
 	iocard[device].inputs[card][count]=0;
-	iocard[device].inputs_old[card][count]=-1;
+	iocard[device].inputs_old[card][count]=INITVAL;
 	iocard[device].time_enc[card][count] = time_new;
 	iocard[device].inputs_read[card][count] = 0;
       }
       for (count=0;count<iocard[device].noutputs;count++) {
 	iocard[device].outputs[card][count]=0;
-	iocard[device].outputs_old[card][count]=-1;
+	iocard[device].outputs_old[card][count]=INITVAL;
       }
       for (count=0;count<iocard[device].ndisplays;count++) {
 	iocard[device].displays[card][count]=0;
-	iocard[device].displays_old[card][count]=-1;
+	iocard[device].displays_old[card][count]=INITVAL;
       }
     }
     for (count=0;count<iocard[device].naxes;count++) {
-      iocard[device].axes[count]=-1;
-      iocard[device].axes_old[count]=-1;
+      for (hist=0;hist<MAX_HIST;hist++) {
+	iocard[device].axes_hist[count][hist]=INITVAL;
+      }
+      iocard[device].axes[count]=INITVAL;
+      iocard[device].axes_old[count]=INITVAL;
     }
     for (count=0;count<iocard[device].nservos;count++) {
       iocard[device].servos[count]=SERVOPARK;
-      iocard[device].servos_old[count]=-1;
+      iocard[device].servos_old[count]=INITVAL;
       iocard[device].time_servos[count] = FLT_MISS;
     }
     for (count=0;count<iocard[device].nmotors;count++) {
       iocard[device].motors[count]=MOTORPARK;
-      iocard[device].motors_old[count]=-1;
+      iocard[device].motors_old[count]=INITVAL;
     }
   }
 
@@ -383,8 +434,8 @@ int copy_iocardsdata(void)
     for (device=0;device<MAXDEVICES;device++) {
       for (card=0;card<iocard[device].ncards;card++) {
 	for (count=0;count<iocard[device].ninputs;count++) {
-	  if (iocard[device].inputs[card][count] == -1) iocard[device].inputs[card][count] = 0 ;
-	  if (iocard[device].inputs_old[card][count] == -1) iocard[device].inputs_old[card][count] = 0 ;
+	  if (iocard[device].inputs[card][count] == INITVAL) iocard[device].inputs[card][count] = 0 ;
+	  if (iocard[device].inputs_old[card][count] == INITVAL) iocard[device].inputs_old[card][count] = 0 ;
 	}
       }
     }
@@ -638,9 +689,9 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
 		if (((iocard[device].inputs[card][input] != iocard[device].inputs_old[card][input]) ||
 		     (iocard[device].inputs[card][input+1] != iocard[device].inputs_old[card][input+1]) ||
 		     (iocard[device].inputs[card][input+2] != iocard[device].inputs_old[card][input+2])) &&
-		    (iocard[device].inputs_old[card][input] != -1) && 
-		    (iocard[device].inputs_old[card][input+1] != -1) &&
-		    (iocard[device].inputs_old[card][input+2] != -1)) {
+		    (iocard[device].inputs_old[card][input] != INITVAL) && 
+		    (iocard[device].inputs_old[card][input+1] != INITVAL) &&
+		    (iocard[device].inputs_old[card][input+2] != INITVAL)) {
 		  /* something has changed */
 	    
 		  if (verbose > 1) {
@@ -681,7 +732,7 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
 		
 	      if (((iocard[device].inputs[card][input] != iocard[device].inputs_old[card][input]) || 
 		   (iocard[device].inputs[card][input+1] != iocard[device].inputs_old[card][input+1]))
-		  && (iocard[device].inputs_old[card][input] != -1) && (iocard[device].inputs_old[card][input+1] != -1)) {
+		  && (iocard[device].inputs_old[card][input] != INITVAL) && (iocard[device].inputs_old[card][input+1] != INITVAL)) {
 		/* something has changed */
 	  
 		if (verbose > 1) {
@@ -709,7 +760,7 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
 
 	      if (((iocard[device].inputs[card][input] != iocard[device].inputs_old[card][input]) || 
 		   (iocard[device].inputs[card][input+1] != iocard[device].inputs_old[card][input+1])) 
-		  && (iocard[device].inputs_old[card][input] != -1) && (iocard[device].inputs_old[card][input+1] != -1)) {
+		  && (iocard[device].inputs_old[card][input] != INITVAL) && (iocard[device].inputs_old[card][input+1] != INITVAL)) {
 		/* something has changed */
 	
 		/*
@@ -765,7 +816,7 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
 	
 	      if (((iocard[device].inputs[card][input] != iocard[device].inputs_old[card][input]) || 
 		   (iocard[device].inputs[card][input+1] != iocard[device].inputs_old[card][input+1]))
-		  && (iocard[device].inputs_old[card][input] != -1) && (iocard[device].inputs_old[card][input+1] != -1)) {
+		  && (iocard[device].inputs_old[card][input] != INITVAL) && (iocard[device].inputs_old[card][input+1] != INITVAL)) {
 		/* something has changed */
 	  
 		if (verbose > 1) {
@@ -1007,7 +1058,7 @@ int axis_input(int device, int input, float *value, float minval, float maxval)
 	  }
 	} else {
 	  /* nothing changed */
-	  if (iocard[device].axes[input] != -1) {
+	  if (iocard[device].axes[input] != INITVAL) {
 	    *value = ((float) iocard[device].axes[input]) / (float) pow(2,iocard[device].nbits) * (maxval - minval) + minval;
 	  }
 	  retval = 0;
@@ -1405,6 +1456,11 @@ int receive_mastercard(void)
   int buffersize = 8;
   unsigned char recv_data[buffersize];	/* mastercard raw IO data */
 
+  int median;
+  int noise = 1; // out of 256
+  int temparr[MAX_HIST];
+  int h;
+ 
   /* PROTOCOL */
   /* Each Mastercard has 72 Inputs, distributed over 8 slots with 9 inputs
      The first 8 inputs of each slot are read first, followed by an optional vector of the 9th input for each slot
@@ -1460,11 +1516,39 @@ int receive_mastercard(void)
 	axis = (recv_data[0] >> 4) & 7;	/* extract the A/D number from bits 6-4 */
 
 	if (axis > 0) {
+
 	  if (verbose > 3) printf("LIBIOCARDS: Axis %i reports %i \n", axis, recv_data[1]);
+
 	  /* suppress noise +/-1 in axis input to avoid high frequency flipping of input */
 	  if ((abs(recv_data[1] - iocard[device].axes_old[axis-1]) > 1) ||
 	      (recv_data[1] == 0) || (recv_data[1] == 255)) {
-	    iocard[device].axes[axis-1] = recv_data[1];
+
+	    /* Analog input values are flickering with spikes (up to 5 out of a range of 255)
+	       which is because of imprecision of potentiometers and power supply.
+	       A change does not necessarily mean that we turned the potentiometer,
+	       Here we use a median filter */
+
+	    /* Shift History of analog inputs and update current value */
+	    for (h = 0; h < MAX_HIST - 1; h++) {
+	      iocard[device].axes_hist[axis-1][h+1] = iocard[device].axes_hist[axis-1][h];
+	    }
+	    iocard[device].axes_hist[axis-1][0] = recv_data[1];
+      
+	    memcpy(temparr,&iocard[device].axes_hist[axis-1],MAX_HIST*sizeof(int));
+	    quicksort(temparr,0,MAX_HIST-1);
+	    median = temparr[MAX_HIST/2];
+
+	    if ((median != INITVAL) && (iocard[device].axes[axis-1] != INITVAL)) {
+	      if ((median < (iocard[device].axes[axis-1] - noise)) ||
+		  (median > (iocard[device].axes[axis-1] + noise))) {
+		/* save current median value */
+		iocard[device].axes[axis-1] = median;		
+	      }      	  
+	    } else {
+	      /* initialize current value */
+	      iocard[device].axes[axis-1] = median;		
+	    }
+
 	  }
 	}
 
@@ -1948,6 +2032,11 @@ int receive_axes(void)
   unsigned char recv_data1[buffersize1];	/* IOCard-USBServos raw IO data */
   unsigned char recv_data2[buffersize2];	/* DCMotors PLUS raw IO data */
 
+  int median;
+  int noise = 1; // out of 256
+  int temparr[MAX_HIST];
+  int h;
+  
   for (device=0;device<MAXDEVICES;device++) {
 
     /* check if we have a IOCard-USBServos or USBServos v3 card */
@@ -1964,13 +2053,35 @@ int receive_axes(void)
 	  if (verbose > 2) printf("LIBIOCARDS: received %i bytes from IOCard-USBServos \n",recv_status);
 	  
 	  for (byte=0;byte<4;byte++) {
+	    
 	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i value %i \n",device,byte,recv_data1[byte]);
-	    /* suppress noise +/-1 in axis input to avoid high frequency flipping of input */
-	    if ((abs(recv_data1[byte] - iocard[device].axes_old[byte]) > 5) ||
-		(recv_data1[byte] == 0) || (recv_data1[byte] == 255)) {
-	      // printf("%i %i %i %i \n",byte,recv_data1[byte],recv_data1[byte+4],recv_status);
-	      iocard[device].axes[byte] = recv_data1[byte];
+	    
+	    /* Analog input values are flickering with spikes (up to 5 out of a range of 255)
+	       which is because of imprecision of potentiometers and power supply.
+	       A change does not necessarily mean that we turned the potentiometer,
+	       Here we use a median filter */
+
+	    /* Shift History of analog inputs and update current value */
+	    for (h = 0; h < MAX_HIST - 1; h++) {
+	      iocard[device].axes_hist[byte][h+1] = iocard[device].axes_hist[byte][h];
 	    }
+	    iocard[device].axes_hist[byte][0] = recv_data1[byte];
+      
+	    memcpy(temparr,&iocard[device].axes_hist[byte],MAX_HIST*sizeof(int));
+	    quicksort(temparr,0,MAX_HIST-1);
+	    median = temparr[MAX_HIST/2];
+
+	    if ((median != INITVAL) && (iocard[device].axes[byte] != INITVAL)) {
+	      if ((median < (iocard[device].axes[byte] - noise)) ||
+		  (median > (iocard[device].axes[byte] + noise))) {
+		/* save current median value */
+		iocard[device].axes[byte] = median;		
+	      }      	  
+	    } else {
+	      /* initialize current value */
+	      iocard[device].axes[byte] = median;		
+	    }
+	  
 	  }
 	}
       } while (recv_status > 0);
@@ -1990,13 +2101,35 @@ int receive_axes(void)
 	  if (verbose > 2) printf("LIBIOCARDS: received %i bytes from USBMotors PLUS \n",recv_status);
 	  
 	  for (byte=0;byte<8;byte++) {
+	    
 	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i value %i \n",device,byte,recv_data2[byte]);
-	    /* suppress noise +/-1 in axis input to avoid high frequency flipping of input */
-	    if ((abs(recv_data2[byte] - iocard[device].axes_old[byte]) > 5) ||
-		(recv_data2[byte] == 0) || (recv_data2[byte] == 255)) {
-	      //if (byte == 0) printf("%i %i \n",iocard[device].axes[byte],recv_data2[byte]);
-	      iocard[device].axes[byte] = recv_data2[byte];
+	    
+	    /* Analog input values are flickering with spikes (up to 10 out of a range of 1023)
+	       which is because of imprecision of potentiometers and power supply.
+	       A change does not necessarily mean that we turned the potentiometer,
+	       Here we use a median filter */
+
+	    /* Shift History of analog inputs and update current value */
+	    for (h = 0; h < MAX_HIST - 1; h++) {
+	      iocard[device].axes_hist[byte][h+1] = iocard[device].axes_hist[byte][h];
 	    }
+	    iocard[device].axes_hist[byte][0] = recv_data2[byte];
+      
+	    memcpy(temparr,&iocard[device].axes_hist[byte],MAX_HIST*sizeof(int));
+	    quicksort(temparr,0,MAX_HIST-1);
+	    median = temparr[MAX_HIST/2];
+
+	    if ((median != INITVAL) && (iocard[device].axes[byte] != INITVAL)) {
+	      if ((median < (iocard[device].axes[byte] - noise)) ||
+		  (median > (iocard[device].axes[byte] + noise))) {
+		/* save current median value */
+		iocard[device].axes[byte] = median;		
+	      }      	  
+	    } else {
+	      /* initialize current value */
+	      iocard[device].axes[byte] = median;		
+	    }
+
 	  }
 	}
       } while (recv_status > 0);
@@ -2032,6 +2165,11 @@ int receive_bu0836(void)
   int card = 0;
   unsigned char recv_data[buffersize];	/* BU0836X/A Interface raw IO data */
 
+  int median;
+  int noise = 2; // out of 1024
+  int temparr[MAX_HIST];
+  int h;
+
   for (device=0;device<MAXDEVICES;device++) {
 
     /* check if we have a IOCard-USBServos card */
@@ -2049,9 +2187,37 @@ int receive_bu0836(void)
 
 	  /* read analog axis (2 bytes per axis) */
 	  for (axis=0;axis<iocard[device].naxes;axis++) {
-	    iocard[device].axes[axis] = recv_data[2*axis] + recv_data[2*axis+1]*256;
-	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i Value %i \n",device,axis,iocard[device].axes[axis]);
+	    
+	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i Value %i \n",device,axis,
+				    recv_data[2*axis] + recv_data[2*axis+1]*256);
+	    
+	    /* Analog input values are flickering with spikes (up to 10 out of a range of 1023)
+	       which is because of imprecision of potentiometers and power supply.
+	       A change does not necessarily mean that we turned the potentiometer,
+	       Here we use a median filter */
+
+	    /* Shift History of analog inputs and update current value */
+	    for (h = 0; h < MAX_HIST - 1; h++) {
+	      iocard[device].axes_hist[axis][h+1] = iocard[device].axes_hist[axis][h];
+	    }
+	    iocard[device].axes_hist[axis][0] = recv_data[2*axis] + recv_data[2*axis+1]*256;
+      
+	    memcpy(temparr,&iocard[device].axes_hist[axis],MAX_HIST*sizeof(int));
+	    quicksort(temparr,0,MAX_HIST-1);
+	    median = temparr[MAX_HIST/2];
+
+	    if ((median != INITVAL) && (iocard[device].axes[axis] != INITVAL)) {
+	      if ((median < (iocard[device].axes[axis] - noise)) ||
+		  (median > (iocard[device].axes[axis] + noise))) {
+		/* save current median value */
+		iocard[device].axes[axis] = median;		
+	      }      	  
+	    } else {
+	      /* initialize current value */
+	      iocard[device].axes[axis] = median;		
+	    }
 	  }
+	  
 	  for (button=0;button<nbutton;button++) {
 	    if (strcmp(iocard[device].serial,"B37271")==0) {
 	      /* BU0836X card in my CFY TQ */
