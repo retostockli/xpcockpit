@@ -57,6 +57,7 @@ void init_test(void)
   mcp23017[te][0].pinmode[2] = PINMODE_INPUT;
   mcp23017[te][0].pinmode[3] = PINMODE_INPUT;
   mcp23017[te][0].pinmode[5] = PINMODE_OUTPUT;
+  mcp23017[te][0].pinmode[7] = PINMODE_INPUT;
   mcp23017[te][0].pinmode[8] = PINMODE_OUTPUT;
   mcp23017[te][0].pinmode[15] = PINMODE_INPUT;
   mcp23017[te][0].intpin = 6; // also define pin 6 of teensy as INTERRUPT above!
@@ -119,8 +120,8 @@ void test(void)
  
   
   /* read digital input (#3) */  
-  //ret = digital_input(te, MCP23017_TYPE, 0, 15, &digitalvalue, 0);
-  ret = digital_input(te, TEENSY_TYPE, 0, 3, &digitalvalue, 0);
+  ret = digital_input(te, MCP23017_TYPE, 0, 7, &digitalvalue, 0);
+  //ret = digital_input(te, TEENSY_TYPE, 0, 3, &digitalvalue, 0);
   if (ret == 1) {
     printf("Digital Input changed to: %i \n",digitalvalue);
   }

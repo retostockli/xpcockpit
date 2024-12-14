@@ -44,8 +44,8 @@ void bu0836_test(void)
   float value;
 
   /* read potentiometer from analog input #1 on BU0836X/A card, scale it to the range 0-100 */
-  for (axis=0; axis<iocard[device].naxes; axis++) {
-    //    axis = 0;
+  //for (axis=0; axis<iocard[device].naxes; axis++) {
+  for (axis=0; axis<1; axis++) {
     ret = axis_input(device,axis,&value,minval,maxval);
     if ((ret == 1) && (axis == 0)) {
       printf("Analog Input %i has value: %f \n",axis,value);

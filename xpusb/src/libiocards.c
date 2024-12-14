@@ -1527,27 +1527,29 @@ int receive_mastercard(void)
 	       which is because of imprecision of potentiometers and power supply.
 	       A change does not necessarily mean that we turned the potentiometer,
 	       Here we use a median filter */
+	    
+	    memcpy(temparr,&iocard[device].axes_hist[axis-1],MAX_HIST*sizeof(int));
+	    quicksort(temparr,0,MAX_HIST-1);
+	    median = temparr[MAX_HIST/2];
+
+	    if ((recv_data[1] != INITVAL) && (median != INITVAL)) {
+	      /* compare to median of history values */
+	      if ((recv_data[1] < (median - noise)) ||
+		  (recv_data[1] > (median + noise))) {
+		/* save current value */
+	        //if ((axis-1) == 0) printf("%i %i \n",median,recv_data[1]);
+		iocard[device].axes[axis-1] = recv_data[1];		
+	      }      	  
+	    } else {
+	      /* initialize current value */
+	      iocard[device].axes[axis-1] = recv_data[1];		
+	    }
 
 	    /* Shift History of analog inputs and update current value */
 	    for (h = MAX_HIST-2; h >= 0; h--) {
 	      iocard[device].axes_hist[axis-1][h+1] = iocard[device].axes_hist[axis-1][h];
 	    }
 	    iocard[device].axes_hist[axis-1][0] = recv_data[1];
-      
-	    memcpy(temparr,&iocard[device].axes_hist[axis-1],MAX_HIST*sizeof(int));
-	    quicksort(temparr,0,MAX_HIST-1);
-	    median = temparr[MAX_HIST/2];
-
-	    if ((median != INITVAL) && (iocard[device].axes[axis-1] != INITVAL)) {
-	      if ((median < (iocard[device].axes[axis-1] - noise)) ||
-		  (median > (iocard[device].axes[axis-1] + noise))) {
-		/* save current median value */
-		iocard[device].axes[axis-1] = median;		
-	      }      	  
-	    } else {
-	      /* initialize current value */
-	      iocard[device].axes[axis-1] = median;		
-	    }
 
 	  }
 	}
@@ -2060,27 +2062,29 @@ int receive_axes(void)
 	       which is because of imprecision of potentiometers and power supply.
 	       A change does not necessarily mean that we turned the potentiometer,
 	       Here we use a median filter */
-
-	    /* Shift History of analog inputs and update current value */
-	    for (h = MAX_HIST-2; h >= 0; h--) {
-	      iocard[device].axes_hist[byte][h+1] = iocard[device].axes_hist[byte][h];
-	    }
-	    iocard[device].axes_hist[byte][0] = recv_data1[byte];
       
 	    memcpy(temparr,&iocard[device].axes_hist[byte],MAX_HIST*sizeof(int));
 	    quicksort(temparr,0,MAX_HIST-1);
 	    median = temparr[MAX_HIST/2];
 
-	    if ((median != INITVAL) && (iocard[device].axes[byte] != INITVAL)) {
-	      if ((median < (iocard[device].axes[byte] - noise)) ||
-		  (median > (iocard[device].axes[byte] + noise))) {
-		/* save current median value */
-		iocard[device].axes[byte] = median;		
+	    if ((recv_data1[byte] != INITVAL) && (median != INITVAL)) {
+	      /* compare to median of history values */
+	      if ((recv_data1[byte] < (median - noise)) ||
+		  (recv_data1[byte] > (median + noise))) {
+		/* save current value */
+	        //if (byte == 0) printf("%i %i \n",median,recv_data1[byte]);
+		iocard[device].axes[byte] = recv_data1[byte];		
 	      }      	  
 	    } else {
 	      /* initialize current value */
-	      iocard[device].axes[byte] = median;		
+	      iocard[device].axes[byte] = recv_data1[byte];		
 	    }
+
+	    /* Shift history of analog inputs and update current value */
+	    for (h = MAX_HIST-2; h >= 0; h--) {
+	      iocard[device].axes_hist[byte][h+1] = iocard[device].axes_hist[byte][h];
+	    }
+	    iocard[device].axes_hist[byte][0] = recv_data1[byte];
 	  
 	  }
 	}
@@ -2108,27 +2112,29 @@ int receive_axes(void)
 	       which is because of imprecision of potentiometers and power supply.
 	       A change does not necessarily mean that we turned the potentiometer,
 	       Here we use a median filter */
-
-	    /* Shift History of analog inputs and update current value */
-	    for (h = MAX_HIST-2; h >= 0; h--) {
-	      iocard[device].axes_hist[byte][h+1] = iocard[device].axes_hist[byte][h];
-	    }
-	    iocard[device].axes_hist[byte][0] = recv_data2[byte];
       
 	    memcpy(temparr,&iocard[device].axes_hist[byte],MAX_HIST*sizeof(int));
 	    quicksort(temparr,0,MAX_HIST-1);
 	    median = temparr[MAX_HIST/2];
 
-	    if ((median != INITVAL) && (iocard[device].axes[byte] != INITVAL)) {
-	      if ((median < (iocard[device].axes[byte] - noise)) ||
-		  (median > (iocard[device].axes[byte] + noise))) {
-		/* save current median value */
-		iocard[device].axes[byte] = median;		
+	    if ((recv_data2[byte] != INITVAL) && (median != INITVAL)) {
+	      /* compare to median of history values */
+	      if ((recv_data2[byte] < (median - noise)) ||
+		  (recv_data2[byte] > (median + noise))) {
+		/* save current value */
+	        //if (byte == 0) printf("%i %i \n",median,recv_data1[byte]);
+		iocard[device].axes[byte] = recv_data2[byte];		
 	      }      	  
 	    } else {
 	      /* initialize current value */
-	      iocard[device].axes[byte] = median;		
+	      iocard[device].axes[byte] = recv_data2[byte];		
 	    }
+
+	    /* Shift history of analog inputs and update current value */
+	    for (h = MAX_HIST-2; h >= 0; h--) {
+	      iocard[device].axes_hist[byte][h+1] = iocard[device].axes_hist[byte][h];
+	    }
+	    iocard[device].axes_hist[byte][0] = recv_data2[byte];
 
 	  }
 	}
@@ -2165,6 +2171,7 @@ int receive_bu0836(void)
   int card = 0;
   unsigned char recv_data[buffersize];	/* BU0836X/A Interface raw IO data */
 
+  int val;
   int median;
   int noise = 2; // out of 1024
   int temparr[MAX_HIST];
@@ -2188,36 +2195,43 @@ int receive_bu0836(void)
 	  /* read analog axis (2 bytes per axis) */
 	  for (axis=0;axis<iocard[device].naxes;axis++) {
 	    
-	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i Value %i \n",device,axis,
-				    recv_data[2*axis] + recv_data[2*axis+1]*256);
+	    val = recv_data[2*axis] + recv_data[2*axis+1]*256;
+	    
+	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i Value %i \n",device,axis,val);
 	    
 	    /* Analog input values are flickering with spikes (up to 10 out of a range of 1023)
 	       which is because of imprecision of potentiometers and power supply.
 	       A change does not necessarily mean that we turned the potentiometer,
 	       Here we use a median filter */
+      
+	    memcpy(temparr,&iocard[device].axes_hist[axis],MAX_HIST*sizeof(int));
+	    quicksort(temparr,0,MAX_HIST-1);
+	    median = temparr[MAX_HIST/2];
+	    
+	    //if (axis == 0)
+	    //  printf("%i %i %i \n",val,iocard[device].axes_old[axis],iocard[device].axes[axis]);
+	    
+	    if ((val != INITVAL) && (median != INITVAL)) {
+	      /* compare to median of history values */
+	      if ((val < (median - noise)) ||
+		  (val > (median + noise))) {
+		/* save current value */
+	        //if (axis == 0) printf("%i %i \n",median,val);
+		iocard[device].axes[axis] = val;		
+	      }      	  
+	    } else {
+	      /* initialize current value */
+	      iocard[device].axes[axis] = val;		
+	    }
 
 	    /* Shift History of analog inputs and update current value */
 	    for (h = MAX_HIST-2; h >= 0; h--) {
 	      iocard[device].axes_hist[axis][h+1] = iocard[device].axes_hist[axis][h];
 	    }
 	    iocard[device].axes_hist[axis][0] = recv_data[2*axis] + recv_data[2*axis+1]*256;
-      
-	    memcpy(temparr,&iocard[device].axes_hist[axis],MAX_HIST*sizeof(int));
-	    quicksort(temparr,0,MAX_HIST-1);
-	    median = temparr[MAX_HIST/2];
 
-	    if ((median != INITVAL) && (iocard[device].axes[axis] != INITVAL)) {
-	      if ((median < (iocard[device].axes[axis] - noise)) ||
-		  (median > (iocard[device].axes[axis] + noise))) {
-		/* save current median value */
-		iocard[device].axes[axis] = median;		
-	      }      	  
-	    } else {
-	      /* initialize current value */
-	      iocard[device].axes[axis] = median;		
-	    }
 	  }
-	  
+	    
 	  for (button=0;button<nbutton;button++) {
 	    if (strcmp(iocard[device].serial,"B37271")==0) {
 	      /* BU0836X card in my CFY TQ */

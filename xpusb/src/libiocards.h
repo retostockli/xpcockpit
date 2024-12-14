@@ -32,7 +32,7 @@
 #define MAXDEVICES 10     /* maximum number of simultaneous USB IOCARD devices */
 
 #define INITVAL -1        /* initial value for inputs and outputs */
-#define MAX_HIST 20       /* number of history values for analog input median filter */
+#define MAX_HIST 10       /* number of history values for analog input median filter */
 #define MAXAXES 8         /* number of axes available on the USB expansion, IOCard-USBServos or BU0836X/A card */
 #define MAXINPUTS 72      /* number of binary input channels per MASTERCARD 0-35 on J3 and 36-71 on J4 */
 #define MAXOUTPUTS 45     /* number of binary output channels per MASTERCARD 11-48 on J2, 49-55 on P2 */

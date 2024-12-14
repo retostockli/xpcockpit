@@ -1,7 +1,7 @@
 /* This is the libteensy.c code which contains all functions to interact with
    Teensys via the Ethernet Shield and the UDP protcol
 
-   Copyright (C) 2024 - 2024 Reto Stockli
+   Copyright (C) 2024 - 2025 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
