@@ -336,7 +336,7 @@ int read_sismo() {
 	    /* update number of history values per input bank */
 	    if (sismo[card].inputs_nsave[bank] < MAXSAVE) {
 	      sismo[card].inputs_nsave[bank] += 1;
-	      if (verbose > 3) printf("Card %i Input Bank %i # of History Values %i \n",
+	      if (verbose > 2) printf("Card %i Input Bank %i # of History Values %i \n",
 				      card,bank,sismo[card].inputs_nsave[bank]);
 	    } else {
 	      if (verbose > 0) printf("Card %i Input Bank %i Maximum # of History Values %i Reached \n",
@@ -1022,8 +1022,14 @@ int analog_input(int card, int input, float *value, float minval, float maxval)
 		} // change is above noise or not
 	      } // value changed since last read
 	  } else {
-	    /* initialize save value with current median value */
-	    sismo[card].analoginputs_save[input] = sismo[card].analoginputs[input][0];
+	    /* initialize save value with current value */
+	    if ((sismo[card].analoginputs[input][0] != INPUTINITVAL) &&
+		(sismo[card].analoginputs[input][0] != sismo[card].analoginputs_save[input])) {
+	      sismo[card].analoginputs_save[input] = sismo[card].analoginputs[input][0];
+	      *value = ((float) sismo[card].analoginputs[input][0]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
+		(maxval - minval) + minval;
+	      retval = 1;
+	    }
 	  }	  
 	  
 	} else {
