@@ -17,7 +17,7 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
     } else if (pinmode == PINMODE_OUTPUT) {
       pinMode(pin, OUTPUT);
       teensy_data.val[pin][0] = initval;
-       if (DEBUG > 0) {
+      if (DEBUG > 0) {
         Serial.printf("INIT: Teensy pin %i initialized as Digital Output\n", pin);
       }
       teensy_write(pin, initval);
@@ -56,10 +56,10 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
         /* store servo instance number for this pin */
         teensy_data.num_servo++;
         teensy_data.val[pin][0] = initval;
-         if (DEBUG > 0) {
+        if (DEBUG > 0) {
           Serial.printf("INIT: Teensy pin %i initialized as Servo Output\n", pin);
         }
-       teensy_write(pin, initval);
+        teensy_write(pin, initval);
       }
     } else {
       if (DEBUG > 0) {
@@ -148,38 +148,40 @@ void teensy_read() {
     } else if (teensy_data.pinmode[pin] == PINMODE_ANALOGINPUT) {
       val = analogRead(pin);
 
-      /* Shift History of analog inputs and update current value */
-	    for (h = MAX_HIST-2; h >= 0; h--) {
-        teensy_data.val[pin][h + 1] = teensy_data.val[pin][h];
-      }
-      teensy_data.val[pin][0] = val;
-
       /* Median Filter input noise of potentiometers */
       int16_t temparr[MAX_HIST];
       int16_t noise = 5;
 
       memcpy(temparr, teensy_data.val[pin], sizeof(teensy_data.val[pin][0]) * MAX_HIST);
-
       quicksort(temparr, 0, MAX_HIST - 1);
-
       int16_t median = temparr[MAX_HIST / 2];
 
       //Serial.printf("%i %i\n", median, teensy_data.val_save[pin]);
 
-      if ((median != INITVAL) && (teensy_data.val_save[pin] != INITVAL)) {
-        if ((median < (teensy_data.val_save[pin] - noise)) || (median > (teensy_data.val_save[pin] + noise))) {
-          if (DEBUG > 0) {
-            Serial.printf("READ: Teensy Pin %i New Analog Value %i\n", pin, median);
-          }
-          ret = udp_send(TEENSY_TYPE, 0, pin, median);
+      if (median != INITVAL) {
+        /* only send current value if it is outside median and noise */
+        if ((val < (median - noise)) || (val > (median + noise)) || (teensy_data.val_save[pin] == INITVAL)) {
+          /* only send current value if it is not the same as in last send */
+          if (val != teensy_data.val_save[pin]) {
+            if (DEBUG > 0) {
+              Serial.printf("READ: Teensy Pin %i New Analog Value %i median: %i save: %i \n", pin, val,
+                            teensy_data.val_save[pin], median);
+            }
 
-          /* save current median value for later comparison */
-          teensy_data.val_save[pin] = median;
+            /* send current value */
+            ret = udp_send(TEENSY_TYPE, 0, pin, val);
+
+            /* save current value for later comparison */
+            teensy_data.val_save[pin] = val;
+          }
         }
-      } else {
-        /* initialize save value */
-        teensy_data.val_save[pin] = median;
+      } 
+
+      /* Shift History of analog inputs and update current value */
+      for (h = MAX_HIST - 2; h >= 0; h--) {
+        teensy_data.val[pin][h + 1] = teensy_data.val[pin][h];
       }
+      teensy_data.val[pin][0] = val;
     }
   }
 }
