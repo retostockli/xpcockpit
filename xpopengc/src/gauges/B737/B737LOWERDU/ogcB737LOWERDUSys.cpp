@@ -299,7 +299,12 @@ namespace OpenGC
     // ELEVATOR
     float *elev_dn = link_dataref_flt("sim/aircraft/controls/acf_elev_dn",-2);
     float *elev_up = link_dataref_flt("sim/aircraft/controls/acf_elev_up",-2);
-    float *elev = link_dataref_flt_arr("sim/flightmodel2/wing/elevator1_deg",48,0,-1);
+    float *elev;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      elev = link_dataref_flt("laminar/yoke/pitch",-2);
+    } else {
+      elev = link_dataref_flt_arr("sim/flightmodel2/wing/elevator1_deg",48,0,-1);
+    }
     glColor3ub(COLOR_WHITE);
     glLineWidth(m_PhysicalSize.x/70.0);
     x = 0.5*m_PhysicalSize.x;
@@ -308,10 +313,14 @@ namespace OpenGC
     dy = 0.2*m_PhysicalSize.y;
     px = 0.0;
     if ((*elev != FLT_MISS) && (*elev_up != FLT_MISS) && (*elev_dn != FLT_MISS)) {
-      if (*elev < 0.0) {
-	py = *elev / *elev_up*0.5*dy;
+      if ((acf_type == 2) || (acf_type == 3)) {
+	py = *elev * 0.5 * dy;
       } else {
-	py = *elev / *elev_dn*0.5*dy;
+	if (*elev < 0.0) {
+	  py = *elev / *elev_up *0.5 *dy;
+	} else {
+	  py = *elev / *elev_dn *0.5 *dy;
+	}
       }
     } else {
       py = 0.0;
