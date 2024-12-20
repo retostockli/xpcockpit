@@ -93,7 +93,7 @@ void setup() {
   // Wire1.begin();
   //Wire2.begin();
   //Wire.setClock(1000000); // 1MHz is fast but may not work with all I2C devices
- Wire.setClock(100000); // 1kHz is fine
+ Wire.setClock(100000); // 100kHz is fine
   //Wire1.setClock(100000);
   //Wire2.setClock(100000);
 }
