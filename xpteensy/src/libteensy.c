@@ -115,6 +115,7 @@ int init_teensy() {
 	    (teensy[te].pinmode[pin] == PINMODE_OUTPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_PWM) ||
 	    (teensy[te].pinmode[pin] == PINMODE_SERVO) ||
+	    (teensy[te].pinmode[pin] == PINMODE_MOTOR) ||
 	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_I2C)) {
@@ -125,6 +126,11 @@ int init_teensy() {
 	    if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) printf("Teensy %i Pin %i Initialized as ANALOG INPUT \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_SERVO) printf("Teensy %i Pin %i Initialized as SERVO \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
+	      printf("Teensy %i Pin %i Initialized as Motor \n",te,pin);
+	      printf("       with Direction Pins %i %i \n",teensy[te].arg1[pin],teensy[te].arg2[pin]);
+	      if (teensy[te].arg3[pin] != INITVAL) printf("       with Current Sensing Pin %i \n",teensy[te].arg3[pin]);
+	    }
 	    if (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) printf("Teensy %i Pin %i Initialized as INTERRUPT \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_I2C) printf("Teensy %i Pin %i Initialized as I2C Pin \n",te,pin);
 	  }
@@ -136,9 +142,15 @@ int init_teensy() {
 	  teensySendBuffer[5] = TEENSY_TYPE;
 	  teensySendBuffer[6] = 0;
 	  teensySendBuffer[7] = pin;
+	  printf("%i \n",teensy[te].val[pin][0]);
 	  memcpy(&teensySendBuffer[8],&teensy[te].val[pin][0],sizeof(teensy[te].val[pin][0]));
 	  teensySendBuffer[10] = teensy[te].pinmode[pin];
-	  teensySendBuffer[11] = 0; 
+	  if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
+	    /* also send the two direction pins for IN1 and IN2 and the Current Sense pin */ 
+	    teensySendBuffer[11] = teensy[te].arg1[pin];
+	    teensySendBuffer[12] = teensy[te].arg2[pin];
+	    teensySendBuffer[13] = teensy[te].arg3[pin];
+	  }
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	  if (ret == SENDMSGLEN) {
 	    if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i \n", ret,te);
@@ -163,8 +175,8 @@ int init_teensy() {
 	      }
 	      teensySendBuffer[0] = TEENSY_ID1; /* T */
 	      teensySendBuffer[1] = TEENSY_ID2; /* E */
-	      teensySendBuffer[2] = mcp23017[te][dev].wire;
-	      teensySendBuffer[3] = (int8_t) mcp23017[te][dev].address; 
+	      teensySendBuffer[2] = 0x00;
+	      teensySendBuffer[3] = 0x00; 
 	      teensySendBuffer[4] = TEENSY_INIT;
 	      teensySendBuffer[5] = MCP23017_TYPE;
 	      teensySendBuffer[6] = dev;
@@ -172,6 +184,8 @@ int init_teensy() {
 	      memcpy(&teensySendBuffer[8],&mcp23017[te][dev].val[pin],sizeof(mcp23017[te][dev].val[pin]));
 	      teensySendBuffer[10] = mcp23017[te][dev].pinmode[pin];
 	      teensySendBuffer[11] = mcp23017[te][dev].intpin; 
+	      teensySendBuffer[12] = mcp23017[te][dev].wire;
+	      teensySendBuffer[13] = (int8_t) mcp23017[te][dev].address; 
 	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	      if (ret == SENDMSGLEN) {
 		if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
@@ -198,8 +212,8 @@ int init_teensy() {
 	      }
 	      teensySendBuffer[0] = TEENSY_ID1; /* T */
 	      teensySendBuffer[1] = TEENSY_ID2; /* E */
-	      teensySendBuffer[2] = pca9685[te][dev].wire;
-	      teensySendBuffer[3] = (int8_t) pca9685[te][dev].address; 
+	      teensySendBuffer[2] = 0x00;
+	      teensySendBuffer[3] = 0x00; 
 	      teensySendBuffer[4] = TEENSY_INIT;
 	      teensySendBuffer[5] = PCA9685_TYPE;
 	      teensySendBuffer[6] = dev;
@@ -207,6 +221,8 @@ int init_teensy() {
 	      memcpy(&teensySendBuffer[8],&pca9685[te][dev].val[pin],sizeof(pca9685[te][dev].val[pin]));
 	      teensySendBuffer[10] = pca9685[te][dev].pinmode[pin];
 	      teensySendBuffer[11] = 0; 
+	      teensySendBuffer[12] = pca9685[te][dev].wire;
+	      teensySendBuffer[13] = (int8_t) pca9685[te][dev].address; 
 	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	      if (ret == SENDMSGLEN) {
 		if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i PCA9685 %i \n", ret,te,dev);
@@ -244,6 +260,7 @@ int send_teensy() {
       for (pin=0;pin<MAX_PINS;pin++) {
 	if ((teensy[te].pinmode[pin] == PINMODE_OUTPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_PWM) ||
+	    (teensy[te].pinmode[pin] == PINMODE_MOTOR) ||
 	    (teensy[te].pinmode[pin] == PINMODE_SERVO)) {
 	  if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) { 
 	    memset(teensySendBuffer,0,SENDMSGLEN);
@@ -1106,3 +1123,66 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval
 
   return retval;
 }
+
+/* Create Motor Driver Signal (for L298) on Teensy */
+int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake)
+{
+  int retval = 0;
+  int ival;
+
+  if (fvalue != NULL) {
+
+    if (*fvalue != FLT_MISS) {
+      
+      if (te < MAXTEENSYS) {
+	if (teensy[te].connected) {
+	  if (type == TEENSY_TYPE) {
+	    if ((pin >= 0) && (pin < MAX_PINS)) {
+	      if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
+		/* scale value to PWM output range */
+		if (brake == 1) {
+		  /* set value to 1000 if motor brake is needed */
+		  ival = 1000;
+		} else {
+		  if (*fvalue >= 0.0) {
+		    ival = (int) (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0) *
+				  (pow(2,ANALOGOUTPUT_NBITS)-1.0));
+		  } else {
+		    ival = (int) -(MIN(MAX(0.0,(-*fvalue - minval) / (maxval - minval)),1.0) *
+				   (pow(2,ANALOGOUTPUT_NBITS)-1.0));
+		  }
+		  if (ival == INITVAL) ival = 0; // -1 as motor value corresponds to the init value */
+		}
+		if (ival != teensy[te].val[pin][0]) {
+		  teensy[te].val[pin][0] = ival;
+		  if (verbose > 0) printf("MOTOR Output %i of Teensy %i changed to %i \n", pin, te, ival);
+		}
+	      } else {
+		if (verbose > 0) printf("Pin %i of Teensy %i is not defined as MOTOR Output \n", pin, te);
+		retval = -1;
+	      }
+	    } else {
+	      if (verbose > 0) printf("MOTOR Output %i above maximum # of outputs %i of Teensy %i \n", pin,
+				      MAX_PINS, te);
+	      retval = -1;
+	    }
+	  } else {
+	    if (verbose > 0) printf("MOTOR Outputs are supported only for Teensy \n");
+	    retval = -1;
+	  }
+	} else {
+	  if (verbose > 2) printf("MOTOR Output %i cannot be written. Teensy %i not connected \n", pin, te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 0) printf("MOTOR Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n", pin, te);
+	retval = -1;
+      }
+
+    }
+    
+  }
+
+  return retval;
+}
+

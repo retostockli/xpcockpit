@@ -24,7 +24,7 @@
      5      | Device Type
      6      | Device Number
      7      | Pin Number
-     8-11   | 32 bit integer data storage
+     8-15   | 64 bit integer data storage
  
      In case the server sends an initialization as input to a specific pin
      Teensy will send back the current input value. This is important to get
@@ -83,6 +83,8 @@
 #define PINMODE_ANALOGINPUT 4
 #define PINMODE_INTERRUPT 5
 #define PINMODE_SERVO 6
+#define PINMODE_MOTOR 7
+#define PINMODE_DIRENCODER 8
 #define PINMODE_I2C 10
 
 #include <stdint.h>
@@ -98,8 +100,13 @@ typedef struct {
   int8_t pinmode[MAX_PINS];    // what type of pin (input/output/pwm/interrup/i2c etc.)
   int8_t arg1[MAX_PINS];       // for Teensy interrupt pins: interrupt for which device type.
                                // for Servos: which servo instance (teensy) or min pulsewidth (us)
+                               // for Motors: IN1 pin number
   int8_t arg2[MAX_PINS];       // for Teensy interrupt pins: for which device number of above type
                                // For Servos: max pulse width (us)
+                               // for Motors: IN2 pin number
+  int8_t arg3[MAX_PINS];       // for Teensy interrupt pins: for which device number of above type
+                               // For Servos: max pulse width (us)
+                               // for Motors: Current sense pin number
   char ip[30];                 // IP address of teensy / server
   int port;               // UDP port teensy is listening / sending
   unsigned char mac[2];   // last two bytes of MAC address  

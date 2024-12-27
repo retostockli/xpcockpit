@@ -36,33 +36,45 @@
 int digitalvalue;
 float analogvalue;
 
+int brake;
+int direction;
+
 void init_test(void)
 {
   int te = 0;
 
-  //teensy[te].pinmode[0] = PINMODE_PWM;
-  teensy[te].pinmode[0] = PINMODE_OUTPUT;
-  teensy[te].pinmode[3] = PINMODE_INPUT;
-  teensy[te].pinmode[4] = PINMODE_INPUT;
-  teensy[te].pinmode[5] = PINMODE_INPUT;
+  //teensy[te].pinmode[24] = PINMODE_PWM;
+  //  teensy[te].pinmode[0] = PINMODE_OUTPUT;
+  //  teensy[te].pinmode[3] = PINMODE_INPUT;
+  //  teensy[te].pinmode[4] = PINMODE_INPUT;
+  //  teensy[te].pinmode[5] = PINMODE_INPUT;
 
-  teensy[te].pinmode[6] = PINMODE_INTERRUPT;
-  teensy[te].pinmode[7] = PINMODE_INTERRUPT;
+  //  teensy[te].pinmode[6] = PINMODE_INTERRUPT;
+  //  teensy[te].pinmode[7] = PINMODE_INTERRUPT;
   teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
-  teensy[te].pinmode[16] = PINMODE_I2C;
-  teensy[te].pinmode[17] = PINMODE_I2C;
-  teensy[te].pinmode[23] = PINMODE_SERVO;
+  //teensy[te].pinmode[16] = PINMODE_I2C;
+  //teensy[te].pinmode[17] = PINMODE_I2C;
+  //  teensy[te].pinmode[23] = PINMODE_SERVO;
+  teensy[te].pinmode[30] = PINMODE_INPUT; // direction
+  teensy[te].pinmode[31] = PINMODE_INPUT; // brake
+  teensy[te].pinmode[33] = PINMODE_MOTOR; // motor EN
+  teensy[te].arg1[33] = 34; // motor IN1
+  teensy[te].arg2[33] = 35; // motor IN1
+  teensy[te].arg3[33] = 38; // motor Current Sense
+  teensy[te].pinmode[38] = PINMODE_ANALOGINPUT;
+  
+   
 
   
-  mcp23017[te][0].pinmode[2] = PINMODE_INPUT;
-  mcp23017[te][0].pinmode[3] = PINMODE_INPUT;
-  mcp23017[te][0].pinmode[5] = PINMODE_OUTPUT;
-  mcp23017[te][0].pinmode[7] = PINMODE_INPUT;
-  mcp23017[te][0].pinmode[8] = PINMODE_OUTPUT;
-  mcp23017[te][0].pinmode[15] = PINMODE_INPUT;
-  mcp23017[te][0].intpin = 6; // also define pin 6 of teensy as INTERRUPT above!
-  mcp23017[te][0].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][0].address = 0x21; // I2C address of MCP23017 device
+  /* mcp23017[te][0].pinmode[2] = PINMODE_INPUT; */
+  /* mcp23017[te][0].pinmode[3] = PINMODE_INPUT; */
+  /* mcp23017[te][0].pinmode[5] = PINMODE_OUTPUT; */
+  /* mcp23017[te][0].pinmode[7] = PINMODE_INPUT; */
+  /* mcp23017[te][0].pinmode[8] = PINMODE_OUTPUT; */
+  /* mcp23017[te][0].pinmode[15] = PINMODE_INPUT; */
+  /* mcp23017[te][0].intpin = 6; // also define pin 6 of teensy as INTERRUPT above! */
+  /* mcp23017[te][0].wire = 0;  // I2C Bus: 0, 1 or 2 */
+  /* mcp23017[te][0].address = 0x21; // I2C address of MCP23017 device */
   
 
   /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
@@ -76,11 +88,13 @@ void init_test(void)
   /* mcp23017[te][1].intpin = 7; // also define pin 6 of teensy as INTERRUPT above! */
   /* mcp23017[te][1].wire = 0;  // I2C Bus: 0, 1 or 2 */
   /* mcp23017[te][1].address = 0x20; // I2C address of MCP23017 device */
- 
+
+  /*
   pca9685[te][0].pinmode[0] = PINMODE_SERVO;
   pca9685[te][0].pinmode[2] = PINMODE_PWM;
   pca9685[te][0].wire = 0;
   pca9685[te][0].address = 0x40;
+  */
 }
 
 void test(void)
@@ -107,23 +121,35 @@ void test(void)
   //if (*fvalue == FLT_MISS) *fvalue = 0.0;
   if (*value == INT_MISS) *value = 1;
 
-  float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
-  float *time = link_dataref_flt("sim/time/framerate_period",-3);
+  //float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
+  //float *time = link_dataref_flt("sim/time/framerate_period",-3);
 
-    /* read encoder at inputs 33 and 34 */
+  /* read encoder at inputs 33 and 34 */
   //ret = encoder_input(te, TEENSY_TYPE, 0, 33, 34, encodervalue, 1, 1);
- 
+
+  /*
   ret = encoder_input(te, MCP23017_TYPE, 0, 2, 3, encodervalue, 1, 1);
   if (ret == 1) {
     printf("Encoder changed to: %i \n",*encodervalue);
   }
+  */
  
   
   /* read digital input (#3) */  
-  ret = digital_input(te, MCP23017_TYPE, 0, 7, &digitalvalue, 0);
+  //ret = digital_input(te, MCP23017_TYPE, 0, 7, &digitalvalue, 0);
   //ret = digital_input(te, TEENSY_TYPE, 0, 3, &digitalvalue, 0);
+  //if (ret == 1) {
+  //  printf("Digital Input changed to: %i \n",digitalvalue);
+  //}
+
+  ret = digital_input(te, TEENSY_TYPE, 0, 30, &direction, 0);
   if (ret == 1) {
-    printf("Digital Input changed to: %i \n",digitalvalue);
+    printf("Motor Direction changed to: %i \n",direction);
+  }
+
+  ret = digital_input(te, TEENSY_TYPE, 0, 31, &brake, 0);
+  if (ret == 1) {
+    printf("Motor Brake changed to: %i \n",brake);
   }
 
   /* read analog input (#14) */
@@ -131,17 +157,35 @@ void test(void)
   if (ret == 1) {
     printf("Analog Input changed to: %f \n",*fvalue);
   }
+
+  /* change Motor according to speed, direction and brake */
+  float speed = FLT_MISS;
+  if (*fvalue != FLT_MISS) {
+    if (direction == 1) {
+      speed = *fvalue;
+    } else {
+      speed = -*fvalue;
+    }
+  }
+  ret = motor_output(te, TEENSY_TYPE, 0, 33, &speed,0.0,1.0,brake);
+
+  /* read analog input for motor current sense (#38) */
+  ret = analog_input(te,38,&analogvalue,0.0,1.0);
+  if (ret == 1) {
+    printf("Motor Current changed to: %f \n",analogvalue*3.3/0.39);
+  }
+
   
   /* set LED connected to first output (#0) to value landing lights dataref */
   //digitalvalue = 1;
-  analogvalue = 0.5;
-  ret = digital_output(te, TEENSY_TYPE, 0, 0, &digitalvalue);
-  ret = digital_output(te, MCP23017_TYPE, 0, 8, &digitalvalue);
+  //analogvalue = 0.5;
+  //ret = digital_output(te, TEENSY_TYPE, 0, 0, &digitalvalue);
+  //ret = digital_output(te, MCP23017_TYPE, 0, 8, &digitalvalue);
   //ret = pwm_output(te, TEENSY_TYPE, 0, 0, &analogvalue,0.0,1.0);
 
   /* change Servo according to rotary position */
   //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0);
-  ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0);
+  //ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0);
 
   //ret = pwm_output(te, PCA9685_TYPE, 0, 2, fvalue,0.0,1.0);
   

@@ -50,7 +50,7 @@ void udp_receive(void) {
           } else if (recvBuffer[4] == TEENSY_INIT) {
             /* initialize pin or daughter board as requested */
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            teensy_init(recvBuffer[7], recvBuffer[10], ivalue16);
+            teensy_init(recvBuffer[7], recvBuffer[10], ivalue16, recvBuffer[11],recvBuffer[12],recvBuffer[13]);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             /* set output to requested value */
             memcpy(&ivalue16, &recvBuffer[8], 2);
@@ -61,7 +61,7 @@ void udp_receive(void) {
           /* Init or Regular Data Packet */
           if (recvBuffer[4] == TEENSY_INIT) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            mcp23017_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[2], recvBuffer[3], recvBuffer[11], ivalue16);
+            mcp23017_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[11], recvBuffer[12], recvBuffer[13], ivalue16);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             mcp23017_write(recvBuffer[6], recvBuffer[7], ivalue16);
@@ -71,7 +71,7 @@ void udp_receive(void) {
           /* Init or Regular Data Packet */
           if (recvBuffer[4] == TEENSY_INIT) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            pca9685_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[2], recvBuffer[3], recvBuffer[11], ivalue16);
+            pca9685_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[12], recvBuffer[13], ivalue16);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             pca9685_write(recvBuffer[6], recvBuffer[7], ivalue16);

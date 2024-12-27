@@ -42,7 +42,7 @@ void loop() {
     pot_save = pot;
   }
 
-  if (brake == 0) {
+  if (brake == 1) {
     if (dir == 0) {
       digitalWrite(IN1_PIN, 1);
       digitalWrite(IN2_PIN, 0);

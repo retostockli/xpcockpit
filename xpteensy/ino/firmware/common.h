@@ -1,6 +1,6 @@
 #define DEBUG 1
-#define RECVMSGLEN 12
-#define SENDMSGLEN 12
+#define RECVMSGLEN 16
+#define SENDMSGLEN 16
 
 
 

@@ -15,8 +15,8 @@
    If not, see <http://www.gnu.org/licenses/>. */
 
 #define MAXTEENSYS 5             /* maximum number of teensys that we expect */
-#define RECVMSGLEN 12            /* number of bytes in received UDP packet */
-#define SENDMSGLEN 12            /* number of bytes in sent UDP packet */
+#define RECVMSGLEN 16            /* number of bytes in received UDP packet */
+#define SENDMSGLEN 16            /* number of bytes in sent UDP packet */
 #define UNCHANGED 0              /* flag for unchanged input / output */
 #define CHANGED 1                /* flag for changed input / output. 
 				    Can actually also be > 1 for e.g. analog inputs that change faster than xpteensy cycle */
@@ -51,4 +51,5 @@ int digital_outputf(int te, int type, int dev, int pin, float *fvalue);
 int digital_output(int te, int type, int dev, int pin, int *value);
 int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
 int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
+int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake);
 

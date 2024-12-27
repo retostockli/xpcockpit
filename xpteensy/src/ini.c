@@ -141,6 +141,7 @@ int ini_read(char* programPath, char* iniName)
 	teensy[i].pinmode[k] = INITVAL;
 	teensy[i].arg1[k] = INITVAL;
 	teensy[i].arg2[k] = INITVAL;
+	teensy[i].arg3[k] = INITVAL;
       }
       
        if (teensy[i].port == default_teensy_port) {

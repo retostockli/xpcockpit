@@ -1,7 +1,7 @@
 // Create an instance of the Servo library
 Servo servo[MAX_SERVO];
 
-void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
+void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t arg2, int8_t arg3) {
   if ((pin >= 0) && (pin < MAX_PINS)) {
 
     /* store pinmode */
@@ -16,14 +16,14 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
       }
     } else if (pinmode == PINMODE_OUTPUT) {
       pinMode(pin, OUTPUT);
-      teensy_data.val[pin][0] = initval;
+      teensy_data.val[pin][0] = val;
       if (DEBUG > 0) {
         Serial.printf("INIT: Teensy pin %i initialized as Digital Output\n", pin);
       }
-      teensy_write(pin, initval);
+      teensy_write(pin, val);
     } else if (pinmode == PINMODE_PWM) {
       pinMode(pin, OUTPUT);
-      teensy_data.val[pin][0] = initval;
+      teensy_data.val[pin][0] = val;
       // See: https://www.pjrc.com/teensy/td_pulse.html
       // You can't have the chicken and egg at the same time ...
       //analogWriteFrequency(pin, 375000); // Teensy 3.0 pin 3 also changes to 375 kHz
@@ -31,7 +31,7 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
       if (DEBUG > 0) {
         Serial.printf("INIT: Teensy pin %i initialized as PWM Output\n", pin);
       }
-      teensy_write(pin, initval);
+      teensy_write(pin, val);
     } else if (pinmode == PINMODE_ANALOGINPUT) {
       pinMode(pin, INPUT);
       teensy_data.val[pin][0] = INITVAL;
@@ -55,12 +55,31 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t initval) {
         teensy_data.arg1[pin] = teensy_data.num_servo;
         /* store servo instance number for this pin */
         teensy_data.num_servo++;
-        teensy_data.val[pin][0] = initval;
+        teensy_data.val[pin][0] = val;
         if (DEBUG > 0) {
           Serial.printf("INIT: Teensy pin %i initialized as Servo Output\n", pin);
         }
-        teensy_write(pin, initval);
+        teensy_write(pin, val);
       }
+    } else if (pinmode == PINMODE_MOTOR) {
+      pinMode(pin, OUTPUT);
+      if (arg1 != INITVAL) pinMode(arg1, OUTPUT);
+      if (arg2 != INITVAL) pinMode(arg2, OUTPUT);
+      if (arg3 != INITVAL) pinMode(arg3, INPUT);
+      teensy_data.arg1[pin] = arg1;
+      teensy_data.arg2[pin] = arg2;
+      teensy_data.arg3[pin] = arg3;
+      teensy_data.val[pin][0] = val;
+      // See: https://www.pjrc.com/teensy/td_pulse.html
+      // You can't have the chicken and egg at the same time ...
+      //analogWriteFrequency(pin, 375000); // Teensy 3.0 pin 3 also changes to 375 kHz
+      //analogWriteResolution(12);  // analogWrite value 0 to 4095, or 4096 for high
+      if (DEBUG > 0) {
+        Serial.printf("INIT: Teensy pin %i initialized as Motor Output\n", pin);
+        Serial.printf("      with direction pins %i %i \n", arg1, arg2);
+        if (arg3 != INITVAL) Serial.printf("      and current sensing pin %i \n", arg3);
+      }
+      teensy_write(pin, val);
     } else {
       if (DEBUG > 0) {
         Serial.printf("Init ERROR: Wrong Teensy PinMode for pin %i \n", pin);
@@ -86,10 +105,34 @@ void teensy_write(int8_t pin, int16_t val) {
         }
       } else if (teensy_data.pinmode[pin] == PINMODE_PWM) {
         if (DEBUG > 0) {
-          Serial.printf("RECV: Teensy Analog Output pin %i has value %i \n", pin, val);
+          Serial.printf("RECV: Teensy PWM Output pin %i has value %i \n", pin, val);
         }
         teensy_data.val[pin][0] = val;
         analogWrite(pin, val);
+      } else if (teensy_data.pinmode[pin] == PINMODE_MOTOR) {
+        /* L298N Driver using Pins EN with PWM and IN1/IN2 for Direction */
+        if (DEBUG > 0) {
+          Serial.printf("RECV: Teensy Motor Output pin %i has value %i \n", pin, val);
+        }
+        teensy_data.val[pin][0] = val;
+        if (val == 1000) {
+          /* BRAKE MOTOR */
+          digitalWrite(pin, 1);
+          digitalWrite(teensy_data.arg1[pin], 0);
+          digitalWrite(teensy_data.arg2[pin], 0);
+        } else {
+          if (val > 0) {
+            /* TURN CW */
+            analogWrite(pin, val);
+            digitalWrite(teensy_data.arg1[pin], 1);
+            digitalWrite(teensy_data.arg2[pin], 0);
+          } else {
+            /* TURN CCW */
+            analogWrite(pin, -val);
+            digitalWrite(teensy_data.arg1[pin], 0);
+            digitalWrite(teensy_data.arg2[pin], 1);
+          }
+        }
       } else if (teensy_data.pinmode[pin] == PINMODE_SERVO) {
         if ((teensy_data.arg1[pin] < teensy_data.num_servo) && (teensy_data.arg1[pin] >= 0)) {
           if (DEBUG > 0) {
@@ -175,7 +218,7 @@ void teensy_read() {
             teensy_data.val_save[pin] = val;
           }
         }
-      } 
+      }
 
       /* Shift History of analog inputs and update current value */
       for (h = MAX_HIST - 2; h >= 0; h--) {

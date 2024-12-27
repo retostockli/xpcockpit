@@ -1,6 +1,6 @@
 Adafruit_MCP23X17 mcp23017[MAX_DEV];
 
-void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_t address, int8_t intpin, int16_t initval) {
+void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t wirenum, uint8_t address, int16_t val) {
 
   if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
     if ((dev >= 0) && (dev < MAX_DEV)) {
@@ -65,7 +65,7 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8
         } else if (pinmode == PINMODE_OUTPUT) {
           mcp23017_data[dev].pinmode[pin] = pinmode;
           mcp23017[dev].pinMode(pin, OUTPUT);
-          mcp23017_write(dev, pin, initval);
+          mcp23017_write(dev, pin, val);
 
           if (DEBUG > 0) {
             Serial.printf("INIT: MCP23017 Device %i Pin %i initialized as OUTPUT \n", dev, pin);

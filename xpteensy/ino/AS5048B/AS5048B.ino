@@ -33,6 +33,7 @@ unsigned long ElapsedTime;
 
 // initialize with I2C address (optional, standard 0x40)
 AMS_AS5048B mysensor(0x40);
+//AMS_AS5048B mysensor;
 
 void setup() {
 
@@ -42,7 +43,7 @@ void setup() {
 
 	//Start Wire object. Unneeded here as this is done (optionally) by the AMS_AS5048B object (see lib code - #define USE_WIREBEGIN_ENABLED)
   Wire.begin();
-  Wire.setClock(1000000); // 100kHz is fine
+  Wire.setClock(400000); // 100kHz is fine
  
 	//init AMS_AS5048B object
 	mysensor.begin();

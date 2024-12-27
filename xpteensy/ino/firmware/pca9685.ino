@@ -1,6 +1,6 @@
 Adafruit_PWMServoDriver pca9685[MAX_DEV];
 
-void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_t address, int8_t intpin, int16_t initval) {
+void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_t address, int16_t val) {
 
   if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
     if ((dev >= 0) && (dev < MAX_DEV)) {
