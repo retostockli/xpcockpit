@@ -51,9 +51,9 @@ void init_test(void)
 
   //  teensy[te].pinmode[6] = PINMODE_INTERRUPT;
   //  teensy[te].pinmode[7] = PINMODE_INTERRUPT;
-  teensy[te].pinmode[14] = PINMODE_ANALOGINPUT;
-  //teensy[te].pinmode[16] = PINMODE_I2C;
-  //teensy[te].pinmode[17] = PINMODE_I2C;
+  teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEDIAN;
+  teensy[te].pinmode[16] = PINMODE_I2C;
+  teensy[te].pinmode[17] = PINMODE_I2C;
   //  teensy[te].pinmode[23] = PINMODE_SERVO;
   teensy[te].pinmode[30] = PINMODE_INPUT; // direction
   teensy[te].pinmode[31] = PINMODE_INPUT; // brake
@@ -61,7 +61,7 @@ void init_test(void)
   teensy[te].arg1[33] = 34; // motor IN1
   teensy[te].arg2[33] = 35; // motor IN1
   teensy[te].arg3[33] = 38; // motor Current Sense
-  teensy[te].pinmode[38] = PINMODE_ANALOGINPUT;
+  teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
   
    
 
@@ -95,6 +95,12 @@ void init_test(void)
   pca9685[te][0].wire = 0;
   pca9685[te][0].address = 0x40;
   */
+
+  as5048b[te][0].nangle = 4;
+  as5048b[te][0].type = 1;
+  as5048b[te][0].wire = 0;
+  as5048b[te][0].address = 0x40;
+
 }
 
 void test(void)

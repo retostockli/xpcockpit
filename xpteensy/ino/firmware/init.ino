@@ -43,6 +43,17 @@ void init_data() {
     pca9685_data[dev].connected = 0;
   }
 
+  for (dev = 0; dev < MAX_DEV; dev++) {
+    as5048b_data[dev].val = INITVAL;
+    as5048b_data[dev].val_save = INITVAL;
+    as5048b_data[dev].type = INITVAL;
+    as5048b_data[dev].nangle = INITVAL;
+
+    as5048b_data[dev].wire = INITVAL;
+    as5048b_data[dev].address = 0x00;
+    as5048b_data[dev].connected = 0;
+  }
+
   if (DEBUG) {
     Serial.printf("MCP23017 Data initialized\n");
   }

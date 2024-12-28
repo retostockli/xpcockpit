@@ -22,13 +22,14 @@
 using namespace qindesign::network;
 
 extern TwoWire Wire0;
-extern TwoWire Wire1;
-extern TwoWire Wire2;
+//extern TwoWire Wire1;
+//extern TwoWire Wire2;
 
 // data storage
 teensy_struct teensy_data;
 mcp23017_struct mcp23017_data[MAX_DEV];
 pca9685_struct pca9685_data[MAX_DEV];
+as5048b_struct as5048b_data[MAX_DEV];
 
 // An EthernetUDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
@@ -93,9 +94,9 @@ void setup() {
   // Wire1.begin();
   //Wire2.begin();
   //Wire.setClock(1000000); // 1MHz is fast but may not work with all I2C devices
- Wire.setClock(100000); // 100kHz is fine
-  //Wire1.setClock(100000);
-  //Wire2.setClock(100000);
+ Wire.setClock(400000); // 400kHz is fine
+  //Wire1.setClock(400000);
+  //Wire2.setClock(400000);
 }
 
 void loop() {
@@ -105,6 +106,8 @@ void loop() {
   udp_receive();
 
   teensy_read();
+
+  as5048b_read();
 
   CurrentTime = micros();
   ElapsedTime = CurrentTime - StartTime;

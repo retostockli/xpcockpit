@@ -47,6 +47,7 @@ teensyvar_struct teensyvar[MAXTEENSYS];
 mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
+as5048b_struct as5048b[MAXTEENSYS][MAX_DEV];
 
 /* Send a Ping to the Teensy until it responds */
 /* Makes sure Teensy is online before we send init strings */
@@ -116,7 +117,8 @@ int init_teensy() {
 	    (teensy[te].pinmode[pin] == PINMODE_PWM) ||
 	    (teensy[te].pinmode[pin] == PINMODE_SERVO) ||
 	    (teensy[te].pinmode[pin] == PINMODE_MOTOR) ||
-	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) ||
+	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) ||
+	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) ||
 	    (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_I2C)) {
 	  memset(teensySendBuffer,0,SENDMSGLEN);
@@ -124,7 +126,8 @@ int init_teensy() {
 	    if (teensy[te].pinmode[pin] == PINMODE_INPUT) printf("Teensy %i Pin %i Initialized as Input \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) printf("Teensy %i Pin %i Initialized as Output \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) printf("Teensy %i Pin %i Initialized as ANALOG INPUT \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Median Filter) \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Mean Filter) \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_SERVO) printf("Teensy %i Pin %i Initialized as SERVO \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
 	      printf("Teensy %i Pin %i Initialized as Motor \n",te,pin);
@@ -231,6 +234,38 @@ int init_teensy() {
 	      }
 	    } /* pin defined */
 	  } /* loop over pins */
+	}
+      }
+      
+      /* initialize AS5048B boards connected via I2C */
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (as5048b[te][dev].connected == 1) {
+	  memset(teensySendBuffer,0,SENDMSGLEN);
+	  if (verbose > 0) {
+	    if (as5048b[te][dev].type == 0)
+	      printf("Teensy %i AS5048B %i Initialized as Direction Count Reporting \n",te,dev);
+	    if (as5048b[te][dev].type == 1)
+	      printf("Teensy %i AS5048B %i Initialized as Angle Reporting \n",te,dev);
+	  }
+	  teensySendBuffer[0] = TEENSY_ID1; /* T */
+	  teensySendBuffer[1] = TEENSY_ID2; /* E */
+	  teensySendBuffer[2] = 0x00;
+	  teensySendBuffer[3] = 0x00; 
+	  teensySendBuffer[4] = TEENSY_INIT;
+	  teensySendBuffer[5] = AS5048B_TYPE;
+	  teensySendBuffer[6] = dev;
+	  teensySendBuffer[7] = 0;
+	  memcpy(&teensySendBuffer[8],&as5048b[te][dev].val,sizeof(as5048b[te][dev].val));
+	  teensySendBuffer[10] = as5048b[te][dev].nangle;
+	  teensySendBuffer[11] = as5048b[te][dev].type; 
+	  teensySendBuffer[12] = as5048b[te][dev].wire;
+	  teensySendBuffer[13] = (int8_t) as5048b[te][dev].address; 
+	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	  if (ret == SENDMSGLEN) {
+	    if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i AS5048B %i \n", ret,te,dev);
+	  } else {
+	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i AS5048B %i \n", ret,te,dev);
+	  }
 	}
       }
       
@@ -418,7 +453,8 @@ int recv_teensy() {
 	      if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
 		if (verbose > 1) printf("Received digital value %i for pin %i of Teensy %i \n",val,pin,te);
 		teensy[te].val[pin][0] = val;
-	      } else if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) {
+	      } else if ((teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) ||
+			 (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN))  {
 		teensy[te].val[pin][0] = val;
 		if (verbose > 1) printf("Received analog value %i for pin %i of Teensy %i \n",val,pin,te);
 	      } else {
@@ -607,7 +643,8 @@ int analog_input(int te, int pin, float *value, float minval, float maxval)
     if (te < MAXTEENSYS) {
       if (teensy[te].connected) {
 	if ((pin >= 0) && (pin < MAX_PINS)) {
-	  if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) {
+	  if ((teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) ||
+	      (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN)) {
 
 	    if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
 	      *value = ((float) teensy[te].val[pin][0])

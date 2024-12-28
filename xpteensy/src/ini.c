@@ -215,6 +215,23 @@ int ini_read(char* programPath, char* iniName)
 	  }
 	}
 
+	sprintf(tmp,"teensy%i:AS5048B",i);
+	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
+ 	printf("AS5048B: %i\n",ival);
+	for (j=0;j<MAX_DEV;j++) {
+	  as5048b[i][j].val = INITVAL;
+	  as5048b[i][j].val_save = INITVAL;
+	  as5048b[i][j].nangle = INITVAL;
+	  as5048b[i][j].type = INITVAL;
+	  as5048b[i][j].wire = INITVAL;
+	  as5048b[i][j].address = 0;
+	  if (j<ival) {
+	    as5048b[i][j].connected = 1;
+	  } else {
+	    as5048b[i][j].connected = 0;
+	  }
+	}
+
       }
 	
       printf("\n");

@@ -35,6 +35,7 @@ extern teensyvar_struct teensyvar[MAXTEENSYS];
 extern mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 extern pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 extern pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
+extern as5048b_struct as5048b[MAXTEENSYS][MAX_DEV];
 
 /* Prototype Functions */
 int ping_teensy(void);

@@ -76,6 +76,13 @@ void udp_receive(void) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             pca9685_write(recvBuffer[6], recvBuffer[7], ivalue16);
           }
+        } else if (recvBuffer[5] == AS5048B_TYPE) {
+          /* It is a AS5048B daughter board */
+          /* Init or Regular Data Packet */
+          if (recvBuffer[4] == TEENSY_INIT) {
+            memcpy(&ivalue16, &recvBuffer[8], 2);
+            as5048b_init(recvBuffer[6], recvBuffer[10], recvBuffer[11], recvBuffer[12], recvBuffer[13], ivalue16);
+          }
         }
       } /* Correct receive buffer initiator string */
     }   /* Correct Packet Size */

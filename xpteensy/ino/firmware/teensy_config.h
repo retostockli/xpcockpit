@@ -75,16 +75,17 @@
 #define MCP23017_TYPE 101    // 16 I/O Extension via I2C
 #define PCA9685_TYPE 102     // 16 PWM/Servo Extension via I2C
 #define PCF8591_TYPE 110     // 8 bit DAC/DAC via I2C
+#define AS5048B_TYPE 111     // Rotation Angle Encoder via I2C
 
 
 #define PINMODE_INPUT 1
 #define PINMODE_OUTPUT 2
 #define PINMODE_PWM 3
-#define PINMODE_ANALOGINPUT 4
-#define PINMODE_INTERRUPT 5
-#define PINMODE_SERVO 6
-#define PINMODE_MOTOR 7
-#define PINMODE_DIRENCODER 8
+#define PINMODE_ANALOGINPUTMEDIAN 4 // use median filter (good for noise in potentiometers)
+#define PINMODE_ANALOGINPUTMEAN 5  // use mean filter (good for rapidly changing analog inputs, like current sensors)
+#define PINMODE_INTERRUPT 6
+#define PINMODE_SERVO 7
+#define PINMODE_MOTOR 8 // L298 motor driver (for now)
 #define PINMODE_I2C 10
 
 #include <stdint.h>
@@ -126,7 +127,7 @@ typedef struct {
   int8_t pinmode[MCP23017_MAX_PINS];   // I/O type: Input or output
   int8_t intpin;     // Interrupt pin on teensy to read this device
   int8_t wire;       // I2C bus (0,1,2)
-  uint8_t address;   // I2C address (0x20 - 0x027)
+  uint8_t address;   // I2C address (0x20 - 0x27)
 } mcp23017_struct;
 
 typedef struct {
@@ -135,8 +136,18 @@ typedef struct {
   int16_t val_save[PCA9685_MAX_PINS];  // previous values on device pins (input or output)
   int8_t pinmode[PCA9685_MAX_PINS];   // I/O type: Input or output
   int8_t wire;       // I2C bus (0,1,2)
-  uint8_t address;   // I2C address (0x20 - 0x027)
+  uint8_t address;   // I2C address (0x20 - 0x27)
 } pca9685_struct;
+
+typedef struct {
+  int8_t connected; // Device connected (1) or not (0)
+  int16_t val;       // new angle value
+  int16_t val_save;  // previous angle value
+  int8_t nangle;     // number of angles to report per 360 degree turn
+  int8_t type;       // return direction counts (0) or actual angle (1)
+  int8_t wire;       // I2C bus (0,1,2)
+  uint8_t address;   // I2C address (0x40 - 0x43)
+} as5048b_struct;
 
 typedef struct {
   int8_t connected;    // Device connected (1) or not (0)
