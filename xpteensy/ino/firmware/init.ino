@@ -32,6 +32,10 @@ void init_data() {
     mcp23017_data[dev].connected = 0;
   }
 
+  if (DEBUG) {
+    Serial.printf("MCP23017 Data initialized\n");
+  }
+ 
   for (dev = 0; dev < MAX_DEV; dev++) {
     for (k = 0; k < PCA9685_MAX_PINS; k++) {
       pca9685_data[dev].val[k] = INITVAL;
@@ -41,6 +45,10 @@ void init_data() {
     pca9685_data[dev].wire = INITVAL;
     pca9685_data[dev].address = 0x00;
     pca9685_data[dev].connected = 0;
+  }
+
+  if (DEBUG) {
+    Serial.printf("PCA9685 Data initialized\n");
   }
 
   for (dev = 0; dev < MAX_DEV; dev++) {
@@ -55,7 +63,7 @@ void init_data() {
   }
 
   if (DEBUG) {
-    Serial.printf("MCP23017 Data initialized\n");
+    Serial.printf("AS5048B Data initialized\n");
   }
 }
 

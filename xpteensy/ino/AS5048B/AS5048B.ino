@@ -32,8 +32,8 @@ unsigned long CurrentTime;
 unsigned long ElapsedTime;
 
 // initialize with I2C address (optional, standard 0x40)
-AMS_AS5048B mysensor(0x40);
-//AMS_AS5048B mysensor;
+//AMS_AS5048B mysensor(0x40);
+AMS_AS5048B mysensor;
 
 void setup() {
 
@@ -50,7 +50,7 @@ void setup() {
 
 	//consider the current position as zero
 	mysensor.setZeroReg();
-
+ 
 }
 
 void loop() {
@@ -67,5 +67,5 @@ void loop() {
 
 	Serial.println(angle, DEC);
 
-	delay(2000);
+	delay(500);
 }
