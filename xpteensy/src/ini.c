@@ -281,7 +281,13 @@ int reset_teensydata()
 	  }
 	}
       }
-      
+
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (as5048b[te][dev].connected == 1) {
+	  as5048b[te][dev].val_save = as5048b[te][dev].val;
+	}
+      }
+          
     }
   }
   return 0;

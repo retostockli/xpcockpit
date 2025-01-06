@@ -476,6 +476,19 @@ int recv_teensy() {
 	    } else {
 	      printf("Received value for not connected MCP23017 device %i on Teensy %i\n",dev_num,te);
 	    }
+	  } else if ((dev_type == AS5048B_TYPE) && (dev_num >= 0) && (dev_num < MAX_DEV)) {
+	    if (as5048b[te][dev_num].connected == 1) {
+	      as5048b[te][dev_num].val = val;
+	      if (as5048b[te][dev_num].type == 1) {
+		if (verbose > 1) printf("Received Angle %i for Teensy %i AS5048B %i \n",
+					val,te,dev_num);
+	      } else {
+		if (verbose > 1) printf("Received Directional Impulse %i for Teensy %i AS5048B %i \n",
+					val,te,dev_num);
+	      }
+	    } else {
+	      printf("Received value for not connected AS5048B device %i on Teensy %i\n",dev_num,te);
+	    }
 	  } else {
 	    printf("Received value for unknown device type\n");
 	  }
@@ -624,6 +637,67 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
       }
     } else {
       if (verbose > 0) printf("Digital Input %i cannot be read. Teensy %i >= %i\n",pin,te,MAXTEENSYS);
+      retval = -1;
+    }    
+  }
+  
+  return retval;
+}
+
+/* retrieves rotation angle or up/down trigger from AS5048B */
+int angle_input(int te, int type, int dev, int input_type, int *value)
+{
+
+  int retval = 0; /* returns 1 if something changed, and 0 if nothing changed,
+		     and -1 if something went wrong */
+
+  if (value != NULL) {
+
+    if (te < MAXTEENSYS) {
+      if (teensy[te].connected) {
+	if (type == AS5048B_TYPE) {
+	  if ((dev <= 0) && (dev < MAX_DEV)) {
+	    if (input_type == as5048b[te][dev].type) {
+	      if (as5048b[te][dev].val != as5048b[te][dev].val_save) {
+		if (input_type == 0) {
+		  /* direction count */
+		  if (verbose > 1) {
+		    if (as5048b[te][dev].val == 1) {
+		      printf("Teensy %i AS5048B %i DIRECTION UP \n", te, dev);
+		    } else {
+		      printf("Teensy %i AS5048B %i DIRECTION DOWN \n", te, dev);
+		    }
+		  }
+		  *value = as5048b[te][dev].val;
+		  as5048b[te][dev].val = 0;
+		  retval = 1;
+		} else {
+		  /* angle reporting */
+		  if (verbose > 1) printf("Teensy %i AS5048B %i Angle %i \n", te, dev,as5048b[te][dev].val);
+		  *value = as5048b[te][dev].val;
+		  retval = 1;
+		}
+	      }
+	    } else {
+	      if (verbose > 0) printf("Teensy %i AS5048B %i is not configured for input type %i \n",
+				      te,dev,input_type);
+	      retval = -1;
+	    }
+	  } else {
+	    if (verbose > 0) printf("AS5048B %i above maximum # of devices %i of Teensy %i \n",
+				    dev,MAX_DEV,te);
+	    retval = -1;
+	  }
+	} else {
+	  if (verbose > 0) printf("Please select AS5048B Device for Angle Input on Teensy %i \n",te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 2) printf("Angle from AS5048B cannot be read. Teensy %i not connected \n",te);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 0) printf("Angle from AS5048B cannot be read. Teensy %i >= %i\n",te,MAXTEENSYS);
       retval = -1;
     }    
   }

@@ -53,4 +53,5 @@ int digital_output(int te, int type, int dev, int pin, int *value);
 int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
 int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
 int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake);
+int angle_input(int te, int type, int dev, int input_type, int *value);
 

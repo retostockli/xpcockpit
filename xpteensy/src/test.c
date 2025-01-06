@@ -96,8 +96,8 @@ void init_test(void)
   pca9685[te][0].address = 0x40;
   */
 
-  as5048b[te][0].nangle = 4;
-  as5048b[te][0].type = 1;
+  as5048b[te][0].nangle = 10;
+  as5048b[te][0].type = 0;
   as5048b[te][0].wire = 0;
   as5048b[te][0].address = 0x40;
 
@@ -181,7 +181,17 @@ void test(void)
     printf("Motor Current changed to: %f \n",analogvalue*3.3/0.39);
   }
 
-  
+  int angle;
+  ret = angle_input(te, AS5048B_TYPE, 0, 0, &angle);
+  if (ret == 1) {
+    //printf("Angle changed to: %i \n",angle);
+    if (angle == 1) {
+      printf("UP\n");
+    } else {
+      printf("DOWN\n");
+    }
+  }
+ 
   /* set LED connected to first output (#0) to value landing lights dataref */
   //digitalvalue = 1;
   //analogvalue = 0.5;
