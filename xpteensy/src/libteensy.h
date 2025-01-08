@@ -31,7 +31,7 @@ extern unsigned char teensySendBuffer[SENDMSGLEN];
 
 /* DATA STRUCTURE */
 extern teensy_struct teensy[MAXTEENSYS];
-extern teensyvar_struct teensyvar[MAXTEENSYS];
+extern program_struct program[MAXTEENSYS][MAX_PROG];
 extern mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 extern pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 extern pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
@@ -54,4 +54,5 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
 int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake);
 int angle_input(int te, int type, int dev, int input_type, int *value);
+int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval);
 

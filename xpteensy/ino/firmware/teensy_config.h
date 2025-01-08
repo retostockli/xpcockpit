@@ -47,7 +47,8 @@
 #define SERVO_MAXANGLE 180     /* maximum angle of servos (deg)*/
 #define SERVO_MINPULSE 600     /* minimum pulse width of servos (us) default 544 */
 #define SERVO_MAXPULSE 2600    /* maximum pulse width of servos (us) default 2400 */
-#define MAX_VARS 20       // maximum number of internal variables on teensy
+#define MAX_PROG 5        // maximum number of programs
+#define MAX_VARS 10       // maximum number of internal variables for programs
 #define MAX_PINS 42       // maximum number of pins on a teensy
 #define MAX_SERVO 10      // maximum number of servos on a teensy
 
@@ -70,13 +71,14 @@
 #define TEENSY_SHUTDOWN 10  // Request to shutdown /* INOP */
 
 #define TEENSY_TYPE 0        // Host Teensy Microcontroller
-#define VARIABLE_TYPE 20     // Internal variable storage
+#define PROGRAM_TYPE 20      // Internal Program Type (e.g. for closed loop motor control)
 
-#define MCP23017_TYPE 101    // 16 I/O Extension via I2C
+#define MCP23017_TYPE 101    // 16 Pin I/O Extension via I2C
 #define PCA9685_TYPE 102     // 16 PWM/Servo Extension via I2C
 #define PCF8591_TYPE 110     // 8 bit DAC/DAC via I2C
 #define AS5048B_TYPE 111     // Rotation Angle Encoder via I2C
 
+#define PROGRAM_CLOSEDLOOP 1 // Program steering a dc motor in a closed loop (servo) controlled by a potentiometer
 
 #define PINMODE_INPUT 1
 #define PINMODE_OUTPUT 2
@@ -109,15 +111,19 @@ typedef struct {
                                // For Servos: max pulse width (us)
                                // for Motors: Current sense pin number
   char ip[30];                 // IP address of teensy / server
-  int port;               // UDP port teensy is listening / sending
-  unsigned char mac[2];   // last two bytes of MAC address  
-  int16_t num_servo;      // number of initialized servos
+  int port;                    // UDP port teensy is listening / sending
+  unsigned char mac[2];        // last two bytes of MAC address  
+  int16_t num_servo;           // number of initialized servos
 } teensy_struct;
 
 typedef struct {
-  int16_t val[MAX_VARS];      // new values for internal variables
-  int16_t val_save[MAX_VARS]; // previous values for internal variables
-} teensyvar_struct;
+  int8_t connected;           // this program is defined (connected) 
+  int8_t type;                // program identifier to feed with these variables (above: PROGRAM_XYZ)
+  int8_t val8[MAX_VARS];      // 8 bit values used in program (e.g. pin numbers)
+  int16_t val16[MAX_VARS];    // 16 bit values used by program (e.g. potentiometer values)
+  int8_t val8_save[MAX_VARS];      // 8 bit values used in program (e.g. pin numbers) previous values
+  int16_t val16_save[MAX_VARS];    // 16 bit values used by program (e.g. potentiometer values) previous values
+} program_struct;
 
 typedef struct {
   int8_t connected; // Device connected (1) or not (0)

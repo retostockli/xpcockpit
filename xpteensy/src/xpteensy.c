@@ -118,6 +118,7 @@ int main(int argc, char **argv) {
 
     /* if we have new data from Teensy or from X-Plane: immediately continue */
     if ((udpReadLeft == 0) || (numreceived == 0)) usleep(INTERVAL*1000);
+
   }
   
   return 0; 

@@ -43,7 +43,7 @@ unsigned char teensyRecvBuffer[RECVMSGLEN];
 unsigned char teensySendBuffer[SENDMSGLEN];
 
 teensy_struct teensy[MAXTEENSYS];
-teensyvar_struct teensyvar[MAXTEENSYS];
+program_struct program[MAXTEENSYS][MAX_PROG];
 mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
@@ -103,6 +103,7 @@ int init_teensy() {
   int te;
   int pin;
   int dev;
+  int prog;
 
   /* first check if Teensy devices are online */
   ret = ping_teensy();
@@ -145,7 +146,6 @@ int init_teensy() {
 	  teensySendBuffer[5] = TEENSY_TYPE;
 	  teensySendBuffer[6] = 0;
 	  teensySendBuffer[7] = pin;
-	  printf("%i \n",teensy[te].val[pin][0]);
 	  memcpy(&teensySendBuffer[8],&teensy[te].val[pin][0],sizeof(teensy[te].val[pin][0]));
 	  teensySendBuffer[10] = teensy[te].pinmode[pin];
 	  if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
@@ -269,6 +269,42 @@ int init_teensy() {
 	}
       }
       
+      
+      /* initialize internal programs on Teensy */
+      /* initialize last, since motors, potentiometers etc. used by programs need to be known before */
+      /* for now: send 3x 16 bit values and 3x 8 bit values (may need extension for other programs) */
+      /* also: programs may send values back (not currently implemented) */
+      for (prog=0;prog<MAX_PROG;prog++) {
+	if (program[te][prog].connected == 1) {
+	  memset(teensySendBuffer,0,SENDMSGLEN);
+	  if (verbose > 0) {
+	    if (program[te][prog].type == PROGRAM_CLOSEDLOOP) {
+	      printf("Teensy %i Program %i Initialized as Closed Loop Motor Driver \n",te,prog);
+	    } else {
+	      printf("Teensy %i Program %i Initialized as UNDEFINED PROGRAM (PLEASE DEFINE)\n",te,prog);
+	    }
+	  }
+	  teensySendBuffer[0] = TEENSY_ID1; /* T */
+	  teensySendBuffer[1] = TEENSY_ID2; /* E */
+	  teensySendBuffer[2] = program[te][prog].val8[0]; // 8 bit value #0
+	  teensySendBuffer[3] = program[te][prog].val8[1]; // 8 bit value #1
+	  teensySendBuffer[4] = TEENSY_INIT;
+	  teensySendBuffer[5] = PROGRAM_TYPE;
+	  teensySendBuffer[6] = program[te][prog].type; // type of program
+	  teensySendBuffer[7] = prog;  // program number
+	  memcpy(&teensySendBuffer[8],&program[te][prog].val16[0],sizeof(program[te][prog].val16[0])); // 16 bit value #0
+	  memcpy(&teensySendBuffer[10],&program[te][prog].val16[1],sizeof(program[te][prog].val16[1])); // 16 bit value #1
+	  memcpy(&teensySendBuffer[12],&program[te][prog].val16[2],sizeof(program[te][prog].val16[2])); // 16 bit value #2
+	  teensySendBuffer[14] = program[te][prog].val8[2]; // 8 bit value #2	  
+	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	  if (ret == SENDMSGLEN) {
+	    if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
+	  } else {
+	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
+	  }
+	}
+      }
+      
       teensy[te].initialized = 1;
 
       /* wait for 10 ms to make sure teensy hardware has initialized */
@@ -287,6 +323,7 @@ int send_teensy() {
   int te;
   int pin;
   int dev;
+  int prog;
 
   for (te=0;te<MAXTEENSYS;te++) {
     if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 1)) {
@@ -381,7 +418,38 @@ int send_teensy() {
 	} /* PCA9685 connected */
       } /* loop over PCA9685 devices */
 
-      
+      /* Send changed values to internal program running on Teensy */
+      for (prog=0;prog<MAX_PROG;prog++) {
+	if (program[te][prog].connected == 1) {
+	  if ((program[te][prog].val8[0] != program[te][prog].val8_save[0]) ||
+	      (program[te][prog].val8[1] != program[te][prog].val8_save[1]) ||
+	      (program[te][prog].val8[2] != program[te][prog].val8_save[2]) ||
+	      (program[te][prog].val16[0] != program[te][prog].val16_save[0]) ||
+	      (program[te][prog].val16[1] != program[te][prog].val16_save[1]) ||
+	      (program[te][prog].val16[2] != program[te][prog].val16_save[2])) {
+	    memset(teensySendBuffer,0,SENDMSGLEN);
+	    teensySendBuffer[0] = TEENSY_ID1; /* T */
+	    teensySendBuffer[1] = TEENSY_ID2; /* E */
+	    teensySendBuffer[2] = program[te][prog].val8[0]; // 8 bit value #0
+	    teensySendBuffer[3] = program[te][prog].val8[1]; // 8 bit value #1
+	    teensySendBuffer[4] = TEENSY_REGULAR;
+	    teensySendBuffer[5] = PROGRAM_TYPE;
+	    teensySendBuffer[6] = program[te][prog].type; // type of program
+	    teensySendBuffer[7] = prog;  // program number
+	    memcpy(&teensySendBuffer[8],&program[te][prog].val16[0],sizeof(program[te][prog].val16[0])); // 16 bit value #0
+	    memcpy(&teensySendBuffer[10],&program[te][prog].val16[1],sizeof(program[te][prog].val16[1])); // 16 bit value #1
+	    memcpy(&teensySendBuffer[12],&program[te][prog].val16[2],sizeof(program[te][prog].val16[2])); // 16 bit value #2
+	    teensySendBuffer[14] = program[te][prog].val8[2]; // 8 bit value #2
+	    ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	    if (ret == SENDMSGLEN) {
+	      if (verbose > 1) printf("SEND: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
+	    } else {
+	      printf("INCOMPLETE SEND: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
+	    }
+	  } /* value changed since last send */
+	} /* Programm defined / connected */
+      } /* loop over programs */
+     
     } /* teensy connected */
   } /* loop over teensys */
 
@@ -504,7 +572,7 @@ int recv_teensy() {
       printf("Received wrong Init String: %02x %02x \n",teensyRecvBuffer[0],teensyRecvBuffer[1]);
     }
 
-  } /* while UDP data present in receive buffer */
+  } /* while / if UDP data present in receive buffer */
 
   return 0;
 }
@@ -1014,8 +1082,8 @@ int digital_outputf(int te, int type, int dev, int output, float *fvalue) {
 }
 
 /* Set Teensy or MCP23017 pin to LOW or HIGH */
-int digital_output(int te, int type, int dev, int pin, int *value)
-{
+int digital_output(int te, int type, int dev, int pin, int *value) {
+
   int retval = 0;
 
   if (value != NULL) {
@@ -1090,8 +1158,8 @@ int digital_output(int te, int type, int dev, int pin, int *value)
 }
 
 /* Create PWM signal on Teensy pin */
-int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval)
-{
+int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval) {
+
   int retval = 0;
   int ival;
 
@@ -1163,8 +1231,8 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 }
 
 /* Writes Servo Signal to given pin of Teensy (needs to be a PWM capable pin) */
-int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval)
-{
+int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval) {
+
   int retval = 0;
   int ival;
 
@@ -1236,8 +1304,8 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval
 }
 
 /* Create Motor Driver Signal (for L298) on Teensy */
-int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake)
-{
+int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake) {
+
   int retval = 0;
   int ival;
 
@@ -1297,3 +1365,64 @@ int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval
   return retval;
 }
 
+int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval) {
+
+  /* program variable storage:
+     16 bit (0) : Required Potentiometer Value for motor to reach
+     16 bit (1) : Minimum Potentiometer Value
+     16 bit (2) : Maximum Potentiometer Value
+     8 bit (0) : closed loop active (1) or not (0)
+     8 bit (1) : pin number of Servo Potentiometer (potentiometer has to be defined as regular potentiometer)
+     8 bit (2) : pin number of Motor EN (other pins of motor have to be defined as regular motor) */
+  
+  int retval = 0;
+  int ival;
+
+  if (fvalue != NULL) {
+
+    if (*fvalue != FLT_MISS) {
+
+      if (te < MAXTEENSYS) {
+	if (teensy[te].connected) {
+	  if ((prog >= 0) && (prog < MAX_PROG)) {
+	    if (program[te][prog].type == PROGRAM_CLOSEDLOOP) {
+
+	      float servo_min = (float) program[te][prog].val16[1];
+	      float servo_max = (float) program[te][prog].val16[2];
+	      
+	      /* scale value to servo output range */
+	      ival = (int16_t) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)) *
+				(servo_max - servo_min) + servo_min);
+
+	      if (ival != program[te][prog].val16[0]) {
+		  program[te][prog].val16[0] = ival;
+		  if (verbose > 0) printf("Teensy %i Closed Loop Program %i Servo Position changed to %i \n", te, prog, ival);
+		}
+	      if (active != program[te][prog].val8[0]) {
+		program[te][prog].val8[0] = active;
+		if (verbose > 0) printf("Teensy %i Closed Loop Program %i Active Status set to %i \n", te, prog, active);
+	      }
+	    } else {
+	      if (verbose > 0) printf("Program %i of Teensy %i is not defined as Closed Loop \n", prog, te);
+	      retval = -1;
+	    }
+	  } else {
+	    if (verbose > 0) printf("Program %i above maximum # of programs %i of Teensy %i \n", prog,
+				    MAX_PROG, te);
+	    retval = -1;
+	  }
+	} else {
+	  if (verbose > 2) printf("Program %i cannot be executed. Teensy %i not connected \n", prog, te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 0) printf("Program %i cannot be executed. Teensy %i >= MAXTEENSYS\n", prog, te);
+	retval = -1;
+      }
+
+    }
+
+  }
+
+  return retval;
+}

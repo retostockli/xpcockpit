@@ -79,6 +79,11 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t ar
         Serial.printf("      with direction pins %i %i \n", arg1, arg2);
         if (arg3 != INITVAL) Serial.printf("      and current sensing pin %i \n", arg3);
       }
+      /* ALWAYS STOP MOTOR AT INIT */
+      digitalWrite(pin, 0);
+      digitalWrite(teensy_data.arg1[pin], 0);
+      digitalWrite(teensy_data.arg2[pin], 0);
+      /* And then start it with a value if not missing */
       teensy_write(pin, val);
     } else {
       if (DEBUG > 0) {
@@ -224,6 +229,7 @@ void teensy_read() {
 
       } else {
         /* Median Filter input noise of potentiometers */
+        /* Can have a time lag since the median filter needs to be filled with new values first */
         int16_t temparr[MAX_HIST];
         int16_t noise = 5;
 
@@ -231,24 +237,21 @@ void teensy_read() {
         quicksort(temparr, 0, MAX_HIST - 1);
         int16_t median = temparr[MAX_HIST / 2];
 
-        //Serial.printf("%i %i\n", median, teensy_data.val_save[pin]);
+        //Serial.printf("%i %i %i\n", val, median, teensy_data.val_save[pin]);
 
         if (median != INITVAL) {
           /* only send current value if it is outside median and noise */
-          if ((val < (median - noise)) || (val > (median + noise)) || (teensy_data.val_save[pin] == INITVAL)) {
-            /* only send current value if it is not the same as in last send */
-            if (val != teensy_data.val_save[pin]) {
-              if (DEBUG > 0) {
-                Serial.printf("READ: Teensy Pin %i New Analog Value %i median: %i save: %i \n", pin, val,
-                              median, teensy_data.val_save[pin]);
-              }
-
-              /* send current value */
-              ret = udp_send(TEENSY_TYPE, 0, pin, val);
-
-              /* save current value for later comparison */
-              teensy_data.val_save[pin] = val;
+          if ((median < (teensy_data.val_save[pin] - noise)) || (median > (teensy_data.val_save[pin] + noise)) || (teensy_data.val_save[pin] == INITVAL)) {
+            if (DEBUG > 0) {
+              Serial.printf("READ: Teensy Pin %i New Analog Value %i median: %i median save: %i \n", pin, val,
+                            median, teensy_data.val_save[pin]);
             }
+
+            /* send current value */
+            ret = udp_send(TEENSY_TYPE, 0, pin, median);
+
+            /* save current median for later comparison */
+            teensy_data.val_save[pin] = median;
           }
         }
 

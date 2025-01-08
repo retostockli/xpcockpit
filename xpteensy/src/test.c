@@ -45,13 +45,14 @@ void init_test(void)
 
   //teensy[te].pinmode[24] = PINMODE_PWM;
   //  teensy[te].pinmode[0] = PINMODE_OUTPUT;
-  //  teensy[te].pinmode[3] = PINMODE_INPUT;
-  //  teensy[te].pinmode[4] = PINMODE_INPUT;
+  teensy[te].pinmode[3] = PINMODE_INPUT;
+  teensy[te].pinmode[4] = PINMODE_INPUT;
   //  teensy[te].pinmode[5] = PINMODE_INPUT;
 
   //  teensy[te].pinmode[6] = PINMODE_INTERRUPT;
   //  teensy[te].pinmode[7] = PINMODE_INTERRUPT;
   teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEDIAN;
+  //teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN;
   teensy[te].pinmode[16] = PINMODE_I2C;
   teensy[te].pinmode[17] = PINMODE_I2C;
   //  teensy[te].pinmode[23] = PINMODE_SERVO;
@@ -61,7 +62,7 @@ void init_test(void)
   teensy[te].arg1[33] = 34; // motor IN1
   teensy[te].arg2[33] = 35; // motor IN1
   teensy[te].arg3[33] = 38; // motor Current Sense
-  teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
+  //teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
   
    
 
@@ -101,6 +102,14 @@ void init_test(void)
   as5048b[te][0].wire = 0;
   as5048b[te][0].address = 0x40;
 
+  /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
+     running inside the teensy */
+  program[te][0].type = PROGRAM_CLOSEDLOOP;
+  program[te][0].val16[1] = 0; // minimum servo potentiometer value
+  program[te][0].val16[2] = 995; // maximum servo potentiometer value
+  program[te][0].val8[1] = 14;  // servo potentiometer pin number (needs to be defined separately above)
+  program[te][0].val8[2] = 33;  // servo motor pin number (first pin, full motor separately defined above)
+  
 }
 
 void test(void)
@@ -130,15 +139,12 @@ void test(void)
   //float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
   //float *time = link_dataref_flt("sim/time/framerate_period",-3);
 
-  /* read encoder at inputs 33 and 34 */
-  //ret = encoder_input(te, TEENSY_TYPE, 0, 33, 34, encodervalue, 1, 1);
-
-  /*
-  ret = encoder_input(te, MCP23017_TYPE, 0, 2, 3, encodervalue, 1, 1);
+  /* read encoder at inputs 3 and 4 */
+  ret = encoder_input(te, TEENSY_TYPE, 0, 3, 4, encodervalue, 1, 1);
+  //ret = encoder_input(te, MCP23017_TYPE, 0, 2, 3, encodervalue, 1, 1);
   if (ret == 1) {
     printf("Encoder changed to: %i \n",*encodervalue);
   }
-  */
  
   
   /* read digital input (#3) */  
@@ -148,23 +154,27 @@ void test(void)
   //  printf("Digital Input changed to: %i \n",digitalvalue);
   //}
 
+
   ret = digital_input(te, TEENSY_TYPE, 0, 30, &direction, 0);
   if (ret == 1) {
     printf("Motor Direction changed to: %i \n",direction);
   }
 
+  /*
   ret = digital_input(te, TEENSY_TYPE, 0, 31, &brake, 0);
   if (ret == 1) {
     printf("Motor Brake changed to: %i \n",brake);
   }
+  */
 
   /* read analog input (#14) */
-  ret = analog_input(te,14,fvalue,0.0,1.0);
+  ret = analog_input(te,14,fvalue,0.0,1023.0);
   if (ret == 1) {
     printf("Analog Input changed to: %f \n",*fvalue);
   }
 
   /* change Motor according to speed, direction and brake */
+  /*
   float speed = FLT_MISS;
   if (*fvalue != FLT_MISS) {
     if (direction == 1) {
@@ -174,13 +184,17 @@ void test(void)
     }
   }
   ret = motor_output(te, TEENSY_TYPE, 0, 33, &speed,0.0,1.0,brake);
-
+  */
+  
   /* read analog input for motor current sense (#38) */
+  /*
   ret = analog_input(te,38,&analogvalue,0.0,1.0);
   if (ret == 1) {
     printf("Motor Current changed to: %f \n",analogvalue*3.3/0.39);
   }
+  */
 
+  /*
   int angle;
   ret = angle_input(te, AS5048B_TYPE, 0, 0, &angle);
   if (ret == 1) {
@@ -191,7 +205,13 @@ void test(void)
       printf("DOWN\n");
     }
   }
- 
+  */
+
+  // closed loop motor operation test
+  float fencodervalue = 0.0;
+  if (*encodervalue != FLT_MISS) fencodervalue = (float) *encodervalue;
+  ret = program_closedloop(te, 0, direction, &fencodervalue, 0.0, 100.0);
+  
   /* set LED connected to first output (#0) to value landing lights dataref */
   //digitalvalue = 1;
   //analogvalue = 0.5;

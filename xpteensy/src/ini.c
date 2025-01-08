@@ -232,6 +232,23 @@ int ini_read(char* programPath, char* iniName)
 	  }
 	}
 
+	sprintf(tmp,"teensy%i:PROGRAMS",i);
+	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
+ 	printf("PROGRAMS: %i\n",ival);
+	for (j=0;j<MAX_PROG;j++) {
+	  for (k=0;k<MAX_VARS;k++) {
+	    program[i][j].val8[k] = INITVAL;
+	    program[i][j].val16[k] = INITVAL;
+	    program[i][j].val8_save[k] = INITVAL;
+	    program[i][j].val16_save[k] = INITVAL;
+	  }
+	  if (j<ival) {
+	    program[i][j].connected = 1;
+	  } else {
+	    program[i][j].connected = 0;
+	  }
+	}
+
       }
 	
       printf("\n");
@@ -256,6 +273,8 @@ int reset_teensydata()
   int te;
   int dev;
   int pin;
+  int prog;
+  int var;
   
   for(te=0;te<MAXTEENSYS;te++) {
 
@@ -287,7 +306,16 @@ int reset_teensydata()
 	  as5048b[te][dev].val_save = as5048b[te][dev].val;
 	}
       }
-          
+      
+      for (prog=0;prog<MAX_PROG;prog++) {
+	if (program[te][prog].connected == 1) {
+	  for (var=0;var<MAX_VARS;var++) {
+	    program[te][prog].val8_save[var] = program[te][prog].val8[var];
+	    program[te][prog].val16_save[var] = program[te][prog].val16[var];
+	  }
+	}
+      }
+                    
     }
   }
   return 0;

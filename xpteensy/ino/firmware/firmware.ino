@@ -30,6 +30,7 @@ teensy_struct teensy_data;
 mcp23017_struct mcp23017_data[MAX_DEV];
 pca9685_struct pca9685_data[MAX_DEV];
 as5048b_struct as5048b_data[MAX_DEV];
+program_struct program_data[MAX_PROG];
 
 // An EthernetUDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
@@ -103,11 +104,20 @@ void loop() {
 
   StartTime = micros();
 
+  /* check if new data is available via UDP and update Teensy Outputs with it */
   udp_receive();
-
+  /* check if Teensy inputs have changed and send it out via UDP */
   teensy_read();
-
+  /* read magnetic encoder and send update via UDP if needed */
   as5048b_read();
+  /* execute programs if needed */ 
+  for (int prog=0;prog<MAX_PROG;prog++) {
+    if (program_data[prog].connected == 1) {
+      if (program_data[prog].type == PROGRAM_CLOSEDLOOP) {
+        program_closedloop(prog);
+      }
+    }
+  }
 
   CurrentTime = micros();
   ElapsedTime = CurrentTime - StartTime;

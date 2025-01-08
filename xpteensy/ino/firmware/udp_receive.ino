@@ -4,6 +4,7 @@ void udp_receive(void) {
 
   int16_t ivalue16;
   int8_t ivalue8;
+  int8_t prog;
 
   // if there's data available, read a packet
   int packetSize = Udp.parsePacket();
@@ -12,14 +13,14 @@ void udp_receive(void) {
     remotePort = Udp.remotePort();
     if (DEBUG > 1) {
       Serial.printf("UDP: Received Packet with Size %i from %u.%u.%u.%u Port %i \n",
-        packetSize,remoteIP[0],remoteIP[1],remoteIP[2],remoteIP[3],remotePort);
+                    packetSize, remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3], remotePort);
     }
 
     // read the packet into packetBufffer
     Udp.read(recvBuffer, RECVMSGLEN);
 
     if (packetSize != RECVMSGLEN) {
-      Serial.printf("UDP: Wrong Packet Size. Should be: %i \n",RECVMSGLEN);
+      Serial.printf("UDP: Wrong Packet Size. Should be: %i \n", RECVMSGLEN);
     } else {
       /* Parse Packet Content */
       if (DEBUG > 3) {
@@ -50,7 +51,7 @@ void udp_receive(void) {
           } else if (recvBuffer[4] == TEENSY_INIT) {
             /* initialize pin or daughter board as requested */
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            teensy_init(recvBuffer[7], recvBuffer[10], ivalue16, recvBuffer[11],recvBuffer[12],recvBuffer[13]);
+            teensy_init(recvBuffer[7], recvBuffer[10], ivalue16, recvBuffer[11], recvBuffer[12], recvBuffer[13]);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             /* set output to requested value */
             memcpy(&ivalue16, &recvBuffer[8], 2);
@@ -83,7 +84,21 @@ void udp_receive(void) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             as5048b_init(recvBuffer[6], recvBuffer[10], recvBuffer[11], recvBuffer[12], recvBuffer[13], ivalue16);
           }
+        } else if (recvBuffer[5] == PROGRAM_TYPE) {
+          /* It is data for a program */
+          prog = recvBuffer[7];  // number of program
+          if (recvBuffer[4] == TEENSY_INIT) {
+            program_data[prog].connected = 1;
+            program_data[prog].type = recvBuffer[6];
+          }
+          memcpy(&program_data[prog].val16[0], &recvBuffer[8], 2);
+          memcpy(&program_data[prog].val16[1], &recvBuffer[10], 2);
+          memcpy(&program_data[prog].val16[2], &recvBuffer[12], 2);
+          program_data[prog].val8[0] = recvBuffer[2];
+          program_data[prog].val8[1] = recvBuffer[3];
+          program_data[prog].val8[2] = recvBuffer[14];
         }
+
       } /* Correct receive buffer initiator string */
     }   /* Correct Packet Size */
   }     /* Packet was received */
