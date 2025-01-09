@@ -90,6 +90,9 @@ void udp_receive(void) {
           if (recvBuffer[4] == TEENSY_INIT) {
             program_data[prog].connected = 1;
             program_data[prog].type = recvBuffer[6];
+
+            program_data[prog].val8[3] = false;
+            program_data[prog].val8[4] = false;
           }
           memcpy(&program_data[prog].val16[0], &recvBuffer[8], 2);
           memcpy(&program_data[prog].val16[1], &recvBuffer[10], 2);

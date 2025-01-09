@@ -51,17 +51,23 @@ void init_test(void)
 
   //  teensy[te].pinmode[6] = PINMODE_INTERRUPT;
   //  teensy[te].pinmode[7] = PINMODE_INTERRUPT;
-  teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEDIAN;
-  //teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN;
+  teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN;
+  teensy[te].pinmode[15] = PINMODE_ANALOGINPUTMEAN;
   teensy[te].pinmode[16] = PINMODE_I2C;
   teensy[te].pinmode[17] = PINMODE_I2C;
-  //  teensy[te].pinmode[23] = PINMODE_SERVO;
+  teensy[te].pinmode[23] = PINMODE_OUTPUT;
   teensy[te].pinmode[30] = PINMODE_INPUT; // direction
   teensy[te].pinmode[31] = PINMODE_INPUT; // brake
   teensy[te].pinmode[33] = PINMODE_MOTOR; // motor EN
   teensy[te].arg1[33] = 34; // motor IN1
   teensy[te].arg2[33] = 35; // motor IN1
   teensy[te].arg3[33] = 38; // motor Current Sense
+  
+  teensy[te].pinmode[24] = PINMODE_MOTOR; // motor EN
+  teensy[te].arg1[24] = 26; // motor IN1
+  teensy[te].arg2[24] = 25; // motor IN1
+  //teensy[te].arg3[24] = 38; // motor Current Sense
+
   //teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
   
    
@@ -105,10 +111,16 @@ void init_test(void)
   /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
      running inside the teensy */
   program[te][0].type = PROGRAM_CLOSEDLOOP;
-  program[te][0].val16[1] = 0; // minimum servo potentiometer value
-  program[te][0].val16[2] = 995; // maximum servo potentiometer value
+  program[te][0].val16[1] = 5; // minimum servo potentiometer value
+  program[te][0].val16[2] = 990; // maximum servo potentiometer value
   program[te][0].val8[1] = 14;  // servo potentiometer pin number (needs to be defined separately above)
   program[te][0].val8[2] = 33;  // servo motor pin number (first pin, full motor separately defined above)
+  
+  program[te][1].type = PROGRAM_CLOSEDLOOP;
+  program[te][1].val16[1] = 5; // minimum servo potentiometer value
+  program[te][1].val16[2] = 990; // maximum servo potentiometer value
+  program[te][1].val8[1] = 15;  // servo potentiometer pin number (needs to be defined separately above)
+  program[te][1].val8[2] = 24;  // servo motor pin number (first pin, full motor separately defined above)
   
 }
 
@@ -168,7 +180,7 @@ void test(void)
   */
 
   /* read analog input (#14) */
-  ret = analog_input(te,14,fvalue,0.0,1023.0);
+  ret = analog_input(te,15,fvalue,0.0,1023.0);
   if (ret == 1) {
     printf("Analog Input changed to: %f \n",*fvalue);
   }
@@ -194,7 +206,6 @@ void test(void)
   }
   */
 
-  /*
   int angle;
   ret = angle_input(te, AS5048B_TYPE, 0, 0, &angle);
   if (ret == 1) {
@@ -205,17 +216,17 @@ void test(void)
       printf("DOWN\n");
     }
   }
-  */
 
   // closed loop motor operation test
   float fencodervalue = 0.0;
   if (*encodervalue != FLT_MISS) fencodervalue = (float) *encodervalue;
   ret = program_closedloop(te, 0, direction, &fencodervalue, 0.0, 100.0);
+  ret = program_closedloop(te, 1, direction, &fencodervalue, 0.0, 100.0);
   
   /* set LED connected to first output (#0) to value landing lights dataref */
   //digitalvalue = 1;
   //analogvalue = 0.5;
-  //ret = digital_output(te, TEENSY_TYPE, 0, 0, &digitalvalue);
+  //ret = digital_output(te, TEENSY_TYPE, 0, 23, &direction);
   //ret = digital_output(te, MCP23017_TYPE, 0, 8, &digitalvalue);
   //ret = pwm_output(te, TEENSY_TYPE, 0, 0, &analogvalue,0.0,1.0);
 

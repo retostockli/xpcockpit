@@ -2,7 +2,7 @@ int program_closedloop(int prog) {
 
   int ret = 0;
 
-  int16_t precision = pow(2, ANALOGINPUT_NBITS) / 50;  // servo precision: set to 1%
+  int16_t precision = pow(2, ANALOGINPUT_NBITS) / 100;  // servo precision: set to 1%
 
   if ((prog >= 0) && (prog < MAX_PROG)) {
 
@@ -31,11 +31,31 @@ int program_closedloop(int prog) {
       bool forward = false;
       bool backward = false;
 
-      uint8_t speed = 255;
+      /* MIN and MAX speeds may need to be made dynamic */
+      uint8_t min_speed = 100;   /* minimum speed at which motors do still run with load */
+      uint8_t max_speed = 255;   /* maximum speed for this motor */
 
-      if (servo_request > (servo_actual + precision)) forward = true;
-      if (servo_request < (servo_actual - precision)) backward = true;
+      bool forward_save = program_data[prog].val8[3];
+      bool backward_save = program_data[prog].val8[4];
 
+      /* Hysteresis: if we are stopped, we need more inertia for starting again */
+      /* This resolves stopping at a precision boundary and trying to move because of potentiometer noise */
+      int16_t hysteresis;
+      if ((forward_save == false) && (backward_save == false)) {
+        hysteresis = precision * 2;
+      } else {
+        hysteresis = precision;
+      }
+      if (servo_request > (servo_actual + hysteresis)) forward = true;
+      if (servo_request < (servo_actual - hysteresis)) backward = true;
+
+      /* decrease speed if we get to requested servo position for not overshooting */
+      uint8_t speed = min(max(fabsf(servo_request - servo_actual) / pow(2, ANALOGINPUT_NBITS) * 15.0,0.0),1.0) *
+                      float(max_speed - min_speed) + min_speed;
+
+      /* save last state of motor */
+      program_data[prog].val8[3] = forward;
+      program_data[prog].val8[4] = backward;
 
       if (program_data[prog].val16_save[0] != servo_request) {
         if (DEBUG > 0) {
