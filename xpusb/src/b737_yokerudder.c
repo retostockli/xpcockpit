@@ -73,6 +73,8 @@ void b737_yokerudder(void)
   float value1,value2;
   int ret1,ret2;
 
+  int viewmode_changed = 0;
+
   if ((view_is_copilot != 0) && (view_is_copilot != 1)) view_is_copilot = 0;
   
   float* left_brake;
@@ -195,6 +197,7 @@ void b737_yokerudder(void)
     *forward_with_panel=0;
     *circle=0;
     *free_camera=0;
+    viewmode_changed = 1;
   }
   /* COPILOT */
   ret = digital_input(device,card,16,&button,0);
@@ -205,6 +208,7 @@ void b737_yokerudder(void)
     *forward_with_panel=0;
     *circle=0;
     *free_camera=0;
+    viewmode_changed = 1;
   }
   
   ret = digital_input(device,card,10,&button,0);
@@ -223,6 +227,8 @@ void b737_yokerudder(void)
 
       time_viewmodebutton.tv_sec = newtime.tv_sec;
       time_viewmodebutton.tv_usec = newtime.tv_usec;
+
+      viewmode_changed = 1;
     }
       
     if (*viewmode == 0) {
@@ -249,7 +255,7 @@ void b737_yokerudder(void)
   }
 
 
-  if ((*viewmode == 0) || (*viewmode == 1)) {
+  if (*viewmode == 0) {
     /* Only fix pilot position in forward with nothing */
     //*pilot_position = 0.0;
     if (view_is_copilot == 0) {
@@ -262,9 +268,13 @@ void b737_yokerudder(void)
       *pilot_heading = -10.0; // degrees
     }
  
-  } else if ((*viewmode == 2) || (*viewmode == 3)) {
-    *pilot_position = 0.0;
-    *pilot_heading = 0.0;
+  } else if ((*viewmode == 1) || (*viewmode == 2) || (*viewmode == 3)) {
+
+    if (viewmode_changed == 1) {
+      // Only set these values upon button press (let the user rotate and move in the cockpit afterwards
+      *pilot_position = 0.0;
+      *pilot_heading = 0.0;
+    }
     
     ret = digital_input(device,card,8,&button,0);
     if (button == 1) {
