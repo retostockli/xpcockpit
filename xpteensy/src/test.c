@@ -43,7 +43,7 @@ void init_test(void)
 {
   int te = 0;
 
-  //teensy[te].pinmode[24] = PINMODE_PWM;
+  teensy[te].pinmode[37] = PINMODE_PWM;
   //  teensy[te].pinmode[0] = PINMODE_OUTPUT;
   teensy[te].pinmode[3] = PINMODE_INPUT;
   teensy[te].pinmode[4] = PINMODE_INPUT;
@@ -228,7 +228,7 @@ void test(void)
   //analogvalue = 0.5;
   //ret = digital_output(te, TEENSY_TYPE, 0, 23, &direction);
   //ret = digital_output(te, MCP23017_TYPE, 0, 8, &digitalvalue);
-  //ret = pwm_output(te, TEENSY_TYPE, 0, 0, &analogvalue,0.0,1.0);
+  ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,5.0,1023.0);
 
   /* change Servo according to rotary position */
   //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0);

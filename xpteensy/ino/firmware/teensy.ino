@@ -212,10 +212,10 @@ void teensy_read() {
                               meanval, teensy_data.val_save[pin]);
               }
 
-              /* send current value */
-              ret = udp_send(TEENSY_TYPE, 0, pin, meanval);
+              /* send current input value */
+              ret = udp_send(TEENSY_TYPE, 0, pin, val);
 
-              /* save current value for later comparison */
+              /* save new mean value for later comparison */
               teensy_data.val_save[pin] = meanval;
             }
           }
@@ -248,9 +248,9 @@ void teensy_read() {
             }
 
             /* send current value */
-            ret = udp_send(TEENSY_TYPE, 0, pin, median);
+            ret = udp_send(TEENSY_TYPE, 0, pin, val);
 
-            /* save current median for later comparison */
+            /* save new median value for later comparison */
             teensy_data.val_save[pin] = median;
           }
         }
