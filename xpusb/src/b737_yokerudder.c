@@ -95,7 +95,7 @@ void b737_yokerudder(void)
   int* viewmode = link_dataref_int("xpserver/viewmode");
 
   // datarefs to adjust for captain and copilot eye position on curved screen
-  float *pilot_position = link_dataref_flt("sim/graphics/view/pilots_head_x",-2);
+  float *pilot_position = link_dataref_flt("sim/graphics/view/pilots_head_x",-3);
   float *pilot_heading = link_dataref_flt("sim/graphics/view/dome_offset_heading",0);
   
   int* forward_with_nothing = link_dataref_cmd_once("sim/view/forward_with_nothing");
@@ -257,21 +257,20 @@ void b737_yokerudder(void)
 
   if (*viewmode == 0) {
     /* Only fix pilot position in forward with nothing */
-    //*pilot_position = 0.0;
     if (view_is_copilot == 0) {
       /* Captain View */
-      *pilot_position = -0.4; // meters
-      *pilot_heading = 10.0; // degrees
+      *pilot_position = -0.51; // meters
+      *pilot_heading = 4.0; // degrees
     } else {
       /* Copilot View */
-      *pilot_position = 0.4;  // meters
-      *pilot_heading = -10.0; // degrees
+      *pilot_position = 0.51;  // meters
+      *pilot_heading = -4.0; // degrees
     }
  
   } else if ((*viewmode == 1) || (*viewmode == 2) || (*viewmode == 3)) {
 
     if (viewmode_changed == 1) {
-      // Only set these values upon button press (let the user rotate and move in the cockpit afterwards
+      // Only set these values upon button press (let the user rotate and move in the cockpit afterwards)
       *pilot_position = 0.0;
       *pilot_heading = 0.0;
     }
@@ -302,5 +301,5 @@ void b737_yokerudder(void)
     }
  
   }
-  
+
 }
