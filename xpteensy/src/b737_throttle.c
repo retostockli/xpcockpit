@@ -47,66 +47,65 @@ void init_b737_tq(void)
 {
   int te = 0;
 
-  teensy[te].pinmode[25] = PINMODE_ANALOGINPUTMEDIAN;
-  
-  /* teensy[te].pinmode[37] = PINMODE_PWM; */
-  /* //  teensy[te].pinmode[0] = PINMODE_OUTPUT; */
-  /* teensy[te].pinmode[3] = PINMODE_INPUT; */
-  /* teensy[te].pinmode[4] = PINMODE_INPUT; */
-  /* //  teensy[te].pinmode[5] = PINMODE_INPUT; */
-  /* teensy[te].pinmode[41] = PINMODE_ANALOGINPUTMEAN  ; */
-  /* //  teensy[te].pinmode[6] = PINMODE_INTERRUPT; */
-  /* //  teensy[te].pinmode[7] = PINMODE_INTERRUPT; */
-  /* teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN; */
-  /* teensy[te].pinmode[16] = PINMODE_I2C; */
-  /* teensy[te].pinmode[17] = PINMODE_I2C; */
-  /* teensy[te].pinmode[23] = PINMODE_OUTPUT; */
-  /* teensy[te].pinmode[30] = PINMODE_INPUT; // direction */
-  /* teensy[te].pinmode[31] = PINMODE_INPUT; // brake */
-  /* teensy[te].pinmode[33] = PINMODE_MOTOR; // motor EN */
-  /* teensy[te].arg1[33] = 34; // motor IN1 */
-  /* teensy[te].arg2[33] = 35; // motor IN1 */
-  /* teensy[te].arg3[33] = 38; // motor Current Sense */
-  
-  /* teensy[te].pinmode[24] = PINMODE_MOTOR; // motor EN */
-  /* teensy[te].arg1[24] = 26; // motor IN1 */
-  /* teensy[te].arg2[24] = 25; // motor IN1 */
-  //teensy[te].arg3[24] = 38; // motor Current Sense
 
-  //teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
-  
-   
+  teensy[te].pinmode[0] = PINMODE_MOTOR; // motor EN
+  teensy[te].arg1[0] = 1; // motor IN1 */
+  teensy[te].arg2[0] = 2; // motor IN2 */
+  teensy[te].arg3[0] = 14; // motor Current Sense */
+  teensy[te].pinmode[3] = PINMODE_MOTOR; // motor EN
+  teensy[te].arg1[3] = 4; // motor IN1 */
+  teensy[te].arg2[3] = 5; // motor IN2 */
+  teensy[te].arg3[3] = 15; // motor Current Sense */
+  teensy[te].pinmode[6] = PINMODE_MOTOR; // motor EN
+  teensy[te].arg1[6] = 7; // motor IN1 */
+  teensy[te].arg2[6] = 8; // motor IN2 */
+  teensy[te].arg3[6] = 16; // motor Current Sense */
+  teensy[te].pinmode[9] = PINMODE_MOTOR; // motor EN
+  teensy[te].arg1[9] = 10; // motor IN1 */
+  teensy[te].arg2[9] = 11; // motor IN2 */
+  teensy[te].arg3[9] = 17; // motor Current Sense */
 
+  /* PWM Lighting */
+  teensy[te].pinmode[12] = PINMODE_PWM; // Background Lighting
+  teensy[te].pinmode[13]= PINMODE_PWM; // Park Brake Light
   
-  /* mcp23017[te][0].pinmode[2] = PINMODE_INPUT; */
-  /* mcp23017[te][0].pinmode[3] = PINMODE_INPUT; */
-  /* mcp23017[te][0].pinmode[5] = PINMODE_OUTPUT; */
-  /* mcp23017[te][0].pinmode[7] = PINMODE_INPUT; */
-  /* mcp23017[te][0].pinmode[8] = PINMODE_OUTPUT; */
-  /* mcp23017[te][0].pinmode[15] = PINMODE_INPUT; */
-  /* mcp23017[te][0].intpin = 6; // also define pin 6 of teensy as INTERRUPT above! */
-  /* mcp23017[te][0].wire = 0;  // I2C Bus: 0, 1 or 2 */
-  /* mcp23017[te][0].address = 0x21; // I2C address of MCP23017 device */
+  /* Analog Inputs */
+  //teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEDIAN; // Motor 1 Current Measurement A0
+  //teensy[te].pinmode[15] = PINMODE_ANALOGINPUTMEDIAN; // Motor 2 Current Measurement A1
+  //teensy[te].pinmode[16] = PINMODE_ANALOGINPUTMEDIAN; // Motor 3 Current Measurement A2
+  //teensy[te].pinmode[17] = PINMODE_ANALOGINPUTMEDIAN; // Motor 4 Current Measurement A3
+
+  /* I2C */
+  teensy[te].pinmode[18] = PINMODE_I2C; 
+  teensy[te].pinmode[19] = PINMODE_I2C; 
+
+  /* Sound Board */
+  teensy[te].pinmode[20] = PINMODE_OUTPUT;
   
+  /* Analog Inputs */
+  teensy[te].pinmode[22] = PINMODE_ANALOGINPUTMEDIAN; // REVERSER 0 A8
+  teensy[te].pinmode[23] = PINMODE_ANALOGINPUTMEDIAN; // REVERSER 1 A9
+  teensy[te].pinmode[24] = PINMODE_ANALOGINPUTMEDIAN; // FLAPS A10
+  teensy[te].pinmode[25] = PINMODE_ANALOGINPUTMEDIAN; // SPEED BRAKE A11
+  teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEDIAN; // THRUST 0 A12
+  teensy[te].pinmode[27] = PINMODE_ANALOGINPUTMEDIAN; // THRUST 1 A13
 
-  /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[3] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[4] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[10] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[11] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[12] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[5] = PINMODE_OUTPUT; */
-  /* mcp23017[te][1].pinmode[7] = PINMODE_OUTPUT; */
-  /* mcp23017[te][1].intpin = 7; // also define pin 6 of teensy as INTERRUPT above! */
-  /* mcp23017[te][1].wire = 0;  // I2C Bus: 0, 1 or 2 */
-  /* mcp23017[te][1].address = 0x20; // I2C address of MCP23017 device */
-
-  /*
-  pca9685[te][0].pinmode[0] = PINMODE_SERVO;
-  pca9685[te][0].pinmode[2] = PINMODE_PWM;
-  pca9685[te][0].wire = 0;
-  pca9685[te][0].address = 0x40;
-  */
+  /* Buttons / Inputs */
+  teensy[te].pinmode[28] = PINMODE_INPUT; // Stab Trim Main Elect
+  teensy[te].pinmode[29] = PINMODE_INPUT; // Stab Trim Auto Pilot
+  teensy[te].pinmode[30] = PINMODE_INPUT; // Park Brake
+  teensy[te].pinmode[31] = PINMODE_INPUT; // Cutoff 0
+  teensy[te].pinmode[32] = PINMODE_INPUT; // Cutoff 1
+  teensy[te].pinmode[34] = PINMODE_INPUT; // TOGA 0 and 1 (parallel)
+  teensy[te].pinmode[35] = PINMODE_INPUT; // AT DISCONNECT 0 and 1 (parallel)
+  teensy[te].pinmode[39] = PINMODE_INPUT; // HORN CUTOUT BUTTON
+  teensy[te].pinmode[40] = PINMODE_INPUT; // HORN CUTOUT ENCODER 1
+  teensy[te].pinmode[41] = PINMODE_INPUT; // HORN CUTOUT ENCODER 2
+ 
+  /* Servos */
+  teensy[te].pinmode[33] = PINMODE_PWM; // Park Brake Servo
+  teensy[te].pinmode[36] = PINMODE_PWM; // Stab Trim 0 Servo
+  teensy[te].pinmode[37] = PINMODE_PWM; // Stab Trim 1 Servo
 
   /* as5048b[te][0].nangle = 10; */
   /* as5048b[te][0].type = 0; */
@@ -338,93 +337,40 @@ void b737_tq(void)
     maxspeedbrake = maxspeedbrake_xplane;
   }
    
+  /* read reverser 0 lever position */
+  ret = analog_input(te,22,&reverser0,0.0,1.0);
+  if (ret == 1) {
+    printf("Reverser 0 changed to: %f \n",reverser0);
+  }
+
+  /* read reverser 1 lever position */
+  ret = analog_input(te,23,&reverser1,0.0,1.0);
+  if (ret == 1) {
+    printf("Reverser 1 changed to: %f \n",reverser1);
+  }
   
-  /* /\* read analog input (#14) *\/ */
+  /* read flap lever position */
+  ret = analog_input(te,24,&flap,0.0,1.0);
+  if (ret == 1) {
+    printf("Flap Lever changed to: %f \n",flap);
+  }
+  
+  /* read speed brake lever position */
   ret = analog_input(te,25,&speedbrake,0.0,1.0);
   if (ret == 1) {
     printf("Speed Brake changed to: %f \n",speedbrake);
   }
-  
-  //float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
-  //float *time = link_dataref_flt("sim/time/framerate_period",-3);
 
-  /* read encoder at inputs 3 and 4 */
-  /* ret = encoder_input(te, TEENSY_TYPE, 0, 3, 4, encodervalue, 1, 1); */
-  /* //ret = encoder_input(te, MCP23017_TYPE, 0, 2, 3, encodervalue, 1, 1); */
-  /* if (ret == 1) { */
-  /*   printf("Encoder changed to: %i \n",*encodervalue); */
-  /* } */
- 
-  
-  /* read digital input (#3) */  
-  //ret = digital_input(te, MCP23017_TYPE, 0, 7, &digitalvalue, 0);
-  //ret = digital_input(te, TEENSY_TYPE, 0, 3, &digitalvalue, 0);
-  //if (ret == 1) {
-  //  printf("Digital Input changed to: %i \n",digitalvalue);
-  //}
-
-
-  /* ret = digital_input(te, TEENSY_TYPE, 0, 30, &direction, 0); */
-  /* if (ret == 1) { */
-  /*   printf("Motor Direction changed to: %i \n",direction); */
-  /* } */
-
-  /*
-  ret = digital_input(te, TEENSY_TYPE, 0, 31, &brake, 0);
+  /* read throttle 0 lever position */
+  ret = analog_input(te,26,&throttle0,0.0,1.0);
   if (ret == 1) {
-    printf("Motor Brake changed to: %i \n",brake);
+    printf("Throttle 0 changed to: %f \n",throttle0);
   }
-  */
 
-  /* change Motor according to speed, direction and brake */
-  /*
-  float speed = FLT_MISS;
-  if (*fvalue != FLT_MISS) {
-    if (direction == 1) {
-      speed = *fvalue;
-    } else {
-      speed = -*fvalue;
-    }
-  }
-  ret = motor_output(te, TEENSY_TYPE, 0, 33, &speed,0.0,1.0,brake);
-  */
-  
-  /* read analog input for motor current sense (#38) */
-  /*
-  ret = analog_input(te,38,&analogvalue,0.0,1.0);
+  /* read throttle 1 lever position */
+  ret = analog_input(te,27,&throttle1,0.0,1.0);
   if (ret == 1) {
-    printf("Motor Current changed to: %f \n",analogvalue*3.3/0.39);
+    printf("Throttle 1 changed to: %f \n",throttle1);
   }
-  */
 
-  /* int angle; */
-  /* ret = angle_input(te, AS5048B_TYPE, 0, 0, &angle); */
-  /* if (ret == 1) { */
-  /*   //printf("Angle changed to: %i \n",angle); */
-  /*   if (angle == 1) { */
-  /*     printf("UP\n"); */
-  /*   } else { */
-  /*     printf("DOWN\n"); */
-  /*   } */
-  /* } */
-
-  // closed loop motor operation test
-  /* float fencodervalue = 0.0; */
-  /* if (*encodervalue != FLT_MISS) fencodervalue = (float) *encodervalue; */
-  /* ret = program_closedloop(te, 0, direction, &fencodervalue, 0.0, 100.0); */
-  /* ret = program_closedloop(te, 1, direction, &fencodervalue, 0.0, 100.0); */
-  
-  /* set LED connected to first output (#0) to value landing lights dataref */
-  //digitalvalue = 1;
-  //analogvalue = 0.5;
-  //ret = digital_output(te, TEENSY_TYPE, 0, 23, &direction);
-  //ret = digital_output(te, MCP23017_TYPE, 0, 8, &digitalvalue);
-  //ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,5.0,1023.0);
-
-  /* change Servo according to rotary position */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0);
-  //ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0);
-
-  //ret = pwm_output(te, PCA9685_TYPE, 0, 2, fvalue,0.0,1.0);
-  
 }
