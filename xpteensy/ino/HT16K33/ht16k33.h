@@ -29,11 +29,10 @@
  */
 
 
+#include <stdlib.h>
 
 #ifndef ht16k33_h
 #define ht16k33_h
-
-#include "Arduino.h"
 
 class HT16K33
 {

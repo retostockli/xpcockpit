@@ -27,15 +27,15 @@
  *             Fix for compiler warnings in IDE
  * 2024-01-14  Nomake Wan <nomake_wan AT yahoo.co.jp>
  *             Fix to allow full brightness in setBrightness() function
+ * 2025-01-27  Reto Stockli <reto.stockli@gmail.com>
+ *             Fixed 7 segment code and added free address and wire interface selection
+ *             Wire interface is externalized since it may be started for other I2C cards as well
  *
  */
 
-#include "Arduino.h"
-#include "ht16k33.h"
 #include <Wire.h>
+#include "ht16k33.h"
 
-// "address" is base address 0-7 which becomes 11100xxx = E0-E7
-#define BASEHTADDR 0x70
 
 //Commands
 #define HT16K33_DDAP          0b00000000 // Display data address pointer: 0000xxxx
@@ -81,8 +81,8 @@ HT16K33::HT16K33(){
 // Setup the env
 //
 void HT16K33::begin(uint8_t address){
-  _address=address | BASEHTADDR;
-  Wire.begin();
+  _address=address;
+ 
   i2c_write(HT16K33_SS  | HT16K33_SS_NORMAL); // Wakeup
   i2c_write(HT16K33_DSP | HT16K33_DSP_ON | HT16K33_DSP_NOBLINK); // Display on and no blinking
   i2c_write(HT16K33_RIS | HT16K33_RIS_OUT); // INT pin works as row output 
@@ -97,9 +97,14 @@ void HT16K33::begin(uint8_t address){
 // internal function - Write a single byte
 //
 uint8_t HT16K33::i2c_write(uint8_t val){
+  uint8_t ret;
   Wire.beginTransmission(_address);
   Wire.write(val);
-  return Wire.endTransmission();
+  ret = Wire.endTransmission();
+  if (ret != 0) {
+    Serial.printf("I2C Device Address 0x%x Write Error: %i \n",_address,ret);
+  }
+  return ret;
 } // i2c_write
 
 /****************************************************************/
@@ -110,6 +115,7 @@ uint8_t HT16K33::i2c_write(uint8_t val){
 //
 uint8_t HT16K33::i2c_write(uint8_t cmd,uint8_t *data,uint8_t size,boolean LSB){
   uint8_t i;
+  uint8_t ret;
   Wire.beginTransmission(_address);
   Wire.write(cmd);
   i=0;
@@ -122,8 +128,11 @@ uint8_t HT16K33::i2c_write(uint8_t cmd,uint8_t *data,uint8_t size,boolean LSB){
       Wire.write(data[i++]);
     }
   }
-  return Wire.endTransmission(); // Send out the data
-} // i2c_write
+  ret = Wire.endTransmission();
+  if (ret != 0) {
+    Serial.printf("I2C Device Address 0x%x Write Error: %i \n",_address,ret);
+  }
+  return ret;} // i2c_write
 
 /****************************************************************/
 // internal function - read a byte from specific address (send one byte(address to read) and read a byte)

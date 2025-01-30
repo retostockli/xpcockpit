@@ -35,9 +35,9 @@ void setup() {
 
   // Start I2C bus
   Wire1.begin();
-  
+
   // begin_I2C: first argument Hex of address, second argument: wire instance
-  if (!mcp.begin_I2C(0x21, &Wire1)) {
+  if (!mcp.begin_I2C(0x20, &Wire1)) {
     Serial.println("Error.");
     while (1)
       ;
@@ -64,34 +64,32 @@ void setup() {
   Serial.println("Looping...");
 }
 
-  void loop() {
-    unsigned long StartTime = micros();
-    if (!digitalRead(TEE_INT_PIN)) {
-      uint16_t b = mcp.readGPIOAB();
-      //uint8_t b = mcp.readGPIOA();
-      obits[0] = nbits[0];
-      obits[1] = nbits[1];
-      nbits[0] = (b >> 2) & 1;
-      nbits[1] = (b >> 3) & 1;
-      //nbits[0] = 0 != (b & 4);
-      //nbits[1] = 0 != (b & 8);
-      Serial.print(nbits[0]);
-      Serial.println(nbits[1]);
-      //Serial.println(b);
-      int updown = encoder(obits,nbits);
-      if (updown == 1) Serial.println("UPUP");
-      if (updown == -1) Serial.println("DOWN");
-    } else {
-      
-    }
-    unsigned long CurrentTime = micros();
-    unsigned long ElapsedTime = CurrentTime - StartTime;
+void loop() {
+  unsigned long StartTime = micros();
+  if (!digitalRead(TEE_INT_PIN)) {
+    uint16_t b = mcp.readGPIOAB();
+    //uint8_t b = mcp.readGPIOA();
+    obits[0] = nbits[0];
+    obits[1] = nbits[1];
+    nbits[0] = (b >> 2) & 1;
+    nbits[1] = (b >> 3) & 1;
+    //nbits[0] = 0 != (b & 4);
+    //nbits[1] = 0 != (b & 8);
+    Serial.print(nbits[0]);
+    Serial.println(nbits[1]);
+    //Serial.println(b);
+    int updown = encoder(obits, nbits);
+    if (updown == 1) Serial.println("UPUP");
+    if (updown == -1) Serial.println("DOWN");
+  } else {
+  }
+  unsigned long CurrentTime = micros();
+  unsigned long ElapsedTime = CurrentTime - StartTime;
 
-    //  if (ElapsedTime > 5) Serial.println(ElapsedTime);
-    /*
+  if (ElapsedTime > 5) Serial.println(ElapsedTime);
+
   mcp.digitalWrite(MCP_LED_PIN, HIGH);
   delay(500);
   mcp.digitalWrite(MCP_LED_PIN, LOW);
   delay(500);
-  */
-  }
+}

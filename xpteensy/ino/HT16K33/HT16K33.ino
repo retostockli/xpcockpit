@@ -2,6 +2,7 @@
  * Simple test of simple ht16k33 library turning on and off LEDs
  */
 
+#include <Wire.h>
 #include "ht16k33.h"
 #include "7segfont.h"
 
@@ -13,8 +14,12 @@ void setup() {
   Serial.begin(57600);
   Serial.println(F("ht16k33 light test v0.01"));
   Serial.println();
-  // initialize everything, 0x00 is the i2c address for the first one (0x70 is added in the class).
-  HT.begin(0x00);
+
+
+  Wire.begin();
+
+  // initialize everything, 0x70 is the first i2c address (0x70 - 0x77 by jumper selection)
+  HT.begin(0x70);
 
   HT.define7segFont((uint8_t*)&fontTable);
 }
@@ -28,6 +33,7 @@ void loop() {
   HT.clearAll();
   delay(1000);
 
+  HT.setBrightness(15);
 
   for (dig = 8; dig < 16; dig++) {
     for (val = 0; val < 16; val++) {

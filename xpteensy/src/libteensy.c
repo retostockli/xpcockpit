@@ -34,8 +34,6 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-int verbose;
-
 char teensyserver_ip[30];
 int teensyserver_port;
 

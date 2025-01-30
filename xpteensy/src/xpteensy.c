@@ -2,7 +2,7 @@
    which communicates flight data to/from the X-Plane flight simulator via TCP/IP interface 
    and connects to Teensy Boards via Ethernet and using the UDP protocol.
 
-   Copyright (C) 2021-2024  Reto Stockli
+   Copyright (C) 2021-2025  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -42,6 +42,7 @@
 #include "serverdata.h"
 #include "xplanebeacon.h"
 #include "test.h"
+#include "b737_throttle.h"
 
 // Driver code 
 int main(int argc, char **argv) {
@@ -79,6 +80,8 @@ int main(int argc, char **argv) {
      for teensy and daughter boards */
   if (strcmp(argv[1],"test") == 0) {
     init_test();
+  } else if (strcmp(argv[1],"boeing737tq") == 0) {
+    init_b737_tq();
   }
 
   while (1) {
@@ -103,6 +106,8 @@ int main(int argc, char **argv) {
 
     if (strcmp(argv[1],"test") == 0) {
       test();
+    } else if (strcmp(argv[1],"boeing737tq") == 0) {
+      b737_tq();
     }
 
     /**** User Modules End Here ****/

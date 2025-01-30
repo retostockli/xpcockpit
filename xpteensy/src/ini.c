@@ -69,6 +69,9 @@ int ini_read(char* programPath, char* iniName)
 
   struct timeval newtime;
 
+  /* reset interval counter */
+  interval_counter = 0;
+ 
   /* check if we are in the source code directory or in the binary installation path */
   if (strncmp("/",programPath,1)==0) {
     /* we have full path starting code */
@@ -275,6 +278,10 @@ int reset_teensydata()
   int pin;
   int prog;
   int var;
+
+  /* update interval counter for up/down states */
+  interval_counter++;
+  if (interval_counter >= (INTERVAL_UPDN / INTERVAL)) interval_counter = 0;
   
   for(te=0;te<MAXTEENSYS;te++) {
 
