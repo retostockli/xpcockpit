@@ -2,6 +2,10 @@
 Servo servo[MAX_SERVO];
 
 void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t arg2, int8_t arg3) {
+
+  int i;
+  bool found;
+
   if ((pin >= 0) && (pin < MAX_PINS)) {
 
     /* store pinmode */
@@ -49,18 +53,29 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t ar
         Serial.printf("INIT: Teensy pin %i initialized as I2C Interface\n", pin);
       }
     } else if (pinmode == PINMODE_SERVO) {
-      if (teensy_data.pinmode[pin] != pinmode) {
-        /* Specify the pin number where the motor's control signal is connected, and the motor's minimum and maximum control pulse width, in microseconds. */
+      /* Specify the pin number where the servo's control signal is connected, and the servo's minimum and maximum control pulse width, in microseconds. */
+
+      /* check first if this servo is already connected */
+      found = false;
+      for (i = 0; i < teensy_data.num_servo; i++) {
+        if ((servo[i].attached()) && (teensy_data.arg1[pin] == i)) {
+          if (DEBUG > 0) {
+            Serial.printf("INIT: Teensy pin %i already has servo %i defined. No initialization needed.\n", pin, i);
+          }
+          found = true;
+        }
+      }
+      if (!found) {
         servo[teensy_data.num_servo].attach(pin, SERVO_MINPULSE, SERVO_MAXPULSE);
         teensy_data.arg1[pin] = teensy_data.num_servo;
         /* store servo instance number for this pin */
         teensy_data.num_servo++;
-        teensy_data.val[pin][0] = val;
         if (DEBUG > 0) {
           Serial.printf("INIT: Teensy pin %i initialized as Servo Output\n", pin);
         }
-        teensy_write(pin, val);
       }
+      teensy_data.val[pin][0] = val;
+      teensy_write(pin, val);
     } else if (pinmode == PINMODE_MOTOR) {
       pinMode(pin, OUTPUT);
       if (arg1 != INITVAL) pinMode(arg1, OUTPUT);

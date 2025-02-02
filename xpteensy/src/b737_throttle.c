@@ -43,6 +43,7 @@ int parkbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling 
 int stabilizer_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
 float stabilizer_old; /* save value for stabilizer to dampen small changes from pots */
 
+
 void init_b737_tq(void)
 {
   int te = 0;
@@ -103,9 +104,9 @@ void init_b737_tq(void)
   teensy[te].pinmode[41] = PINMODE_INPUT; // HORN CUTOUT ENCODER 2
  
   /* Servos */
-  teensy[te].pinmode[33] = PINMODE_PWM; // Park Brake Servo
-  teensy[te].pinmode[36] = PINMODE_PWM; // Stab Trim 0 Servo
-  teensy[te].pinmode[37] = PINMODE_PWM; // Stab Trim 1 Servo
+  teensy[te].pinmode[33] = PINMODE_SERVO; // Park Brake Servo
+  teensy[te].pinmode[36] = PINMODE_SERVO; // Stab Trim 0 Servo
+  teensy[te].pinmode[37] = PINMODE_SERVO; // Stab Trim 1 Servo
 
   /* as5048b[te][0].nangle = 10; */
   /* as5048b[te][0].type = 0; */
@@ -114,17 +115,17 @@ void init_b737_tq(void)
 
   /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
      running inside the teensy */
-  /* program[te][0].type = PROGRAM_CLOSEDLOOP; */
-  /* program[te][0].val16[1] = 5; // minimum servo potentiometer value */
-  /* program[te][0].val16[2] = 990; // maximum servo potentiometer value */
-  /* program[te][0].val8[1] = 14;  // servo potentiometer pin number (needs to be defined separately above) */
-  /* program[te][0].val8[2] = 33;  // servo motor pin number (first pin, full motor separately defined above) */
+  program[te][0].type = PROGRAM_CLOSEDLOOP;
+  program[te][0].val16[1] = 5; // minimum servo potentiometer value
+  program[te][0].val16[2] = 990; // maximum servo potentiometer value
+  program[te][0].val8[1] = 26;  // servo potentiometer pin number (needs to be defined separately above)
+  program[te][0].val8[2] = 0;  // servo motor pin number (first pin, full motor separately defined above)
   
-  /* program[te][1].type = PROGRAM_CLOSEDLOOP; */
-  /* program[te][1].val16[1] = 5; // minimum servo potentiometer value */
-  /* program[te][1].val16[2] = 990; // maximum servo potentiometer value */
-  /* program[te][1].val8[1] = 15;  // servo potentiometer pin number (needs to be defined separately above) */
-  /* program[te][1].val8[2] = 24;  // servo motor pin number (first pin, full motor separately defined above) */
+  program[te][1].type = PROGRAM_CLOSEDLOOP;
+  program[te][1].val16[1] = 5; // minimum servo potentiometer value
+  program[te][1].val16[2] = 990; // maximum servo potentiometer value
+  program[te][1].val8[1] = 27;  // servo potentiometer pin number (needs to be defined separately above)
+  program[te][1].val8[2] = 3;  // servo motor pin number (first pin, full motor separately defined above)
   
 }
 
@@ -168,6 +169,15 @@ void b737_tq(void)
   
   int parkbrake;
   float difparkbrake = 0.05; /* minimum difference between x-plane and H/W to toggle a change */
+
+  int stab_trim_main_elect;
+  int stab_trim_auto_pilot;
+  int cutoff0;
+  int cutoff1;
+  int toga;
+  int at_disconnect;
+  int horn_cutout;
+  int horn_encoder;
 
   float flap=FLT_MISS;
 
@@ -372,5 +382,74 @@ void b737_tq(void)
   if (ret == 1) {
     printf("Throttle 1 changed to: %f \n",throttle1);
   }
+
+  /* read STAB TRIM MAIN ELECT Switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 28, &stab_trim_main_elect, 0);
+  if (ret == 1) {
+    printf("Stab Trim Main Elect changed to: %i \n",stab_trim_main_elect);
+  }
+
+  /* read STAB TRIM AUTO PILOT Switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 29, &stab_trim_auto_pilot, 0);
+  if (ret == 1) {
+    printf("Stab Trim Auto Pilot changed to: %i \n",stab_trim_auto_pilot);
+  }
+
+  /* read PARK BRAKE Switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 30, &parkbrake, 0);
+  if (ret == 1) {
+    printf("Park Brake changed to: %i \n",parkbrake);
+  }
+
+  /* read CUTOFF 0 lever switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 31, &cutoff0, 0);
+  if (ret == 1) {
+    printf("Cutoff 0 changed to: %i \n",cutoff0);
+  }
+
+  /* read CUTOFF 1 lever switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 32, &cutoff1, 0);
+  if (ret == 1) {
+    printf("Cutoff 1 changed to: %i \n",cutoff1);
+  }
+
+  /* read TOGA Button */
+  ret = digital_input(te, TEENSY_TYPE, 0, 34, &toga, 0);
+  if (ret == 1) {
+    printf("TOGA Button changed to: %i \n",toga);
+  }
+
+  /* read AT DISCONNECT Button */
+  ret = digital_input(te, TEENSY_TYPE, 0, 35, &at_disconnect, 0);
+  if (ret == 1) {
+    printf("AT DISCONNECT Button changed to: %i \n",at_disconnect);
+  }
+
+  /* read HORN CUTOUT Button */
+  ret = digital_input(te, TEENSY_TYPE, 0, 39, &horn_cutout, 0);
+  if (ret == 1) {
+    printf("HORN CUTOUT Button changed to: %i \n",horn_cutout);
+  }
+
+  /* read HORN CUTOUT Encoder (not present in real aircraft) */
+  ret = encoder_input(te, TEENSY_TYPE, 0, 40, 41, &horn_encoder, 1, 1);
+  if (ret == 1) {
+    printf("HORN CUTOUT Encoder changed to: %i \n",horn_encoder);
+  }
+  if (horn_encoder > 100) horn_encoder = 100;
+  if (horn_encoder < 0) horn_encoder = 0;
+
+  /* steer PARK BRAKE Servo */
+  //ret = servo_output(te, TEENSY_TYPE, 0, 33, &throttle0,-0.3,1.3);
+  /* steer STAB TRIM Servo 0 */
+  //ret = servo_output(te, TEENSY_TYPE, 0, 36, &throttle0,-0.3,1.3);
+  /* steer STAB TRIM Servo 1 */
+  //ret = servo_output(te, TEENSY_TYPE, 0, 37, &throttle0,-0.3,1.3);
+
+
+  // closed loop motor operation test
+  float fencodervalue = (float) horn_encoder;
+  ret = program_closedloop(te, 0, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
+  ret = program_closedloop(te, 1, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
 
 }
