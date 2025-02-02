@@ -49,39 +49,44 @@ void init_b737_tq(void)
   int te = 0;
 
 
+  /* Thrust Lever 0 Motor */
   teensy[te].pinmode[0] = PINMODE_MOTOR; // motor EN
   teensy[te].arg1[0] = 1; // motor IN1 */
   teensy[te].arg2[0] = 2; // motor IN2 */
-  teensy[te].arg3[0] = 14; // motor Current Sense */
+  teensy[te].arg3[0] = 16; // motor Current Sense */
+  /* Thrust Lever 1 Motor */
   teensy[te].pinmode[3] = PINMODE_MOTOR; // motor EN
   teensy[te].arg1[3] = 4; // motor IN1 */
   teensy[te].arg2[3] = 5; // motor IN2 */
-  teensy[te].arg3[3] = 15; // motor Current Sense */
-  teensy[te].pinmode[6] = PINMODE_MOTOR; // motor EN
-  teensy[te].arg1[6] = 7; // motor IN1 */
-  teensy[te].arg2[6] = 8; // motor IN2 */
-  teensy[te].arg3[6] = 16; // motor Current Sense */
-  teensy[te].pinmode[9] = PINMODE_MOTOR; // motor EN
-  teensy[te].arg1[9] = 10; // motor IN1 */
-  teensy[te].arg2[9] = 11; // motor IN2 */
-  teensy[te].arg3[9] = 17; // motor Current Sense */
+  teensy[te].arg3[3] = 17; // motor Current Sense */
+  /* Stab Trim Wheel Motor */
+  teensy[te].pinmode[8] = PINMODE_MOTOR; // motor EN
+  teensy[te].arg1[8] = 9; // motor IN1 */
+  teensy[te].arg2[8] = 10; // motor IN2 */
+  teensy[te].arg3[8] = 20; // motor Current Sense */
+  /* Speed Brake Lever Motor */
+  teensy[te].pinmode[11] = PINMODE_MOTOR; // motor EN
+  teensy[te].arg1[11] = 12; // motor IN1 */
+  teensy[te].arg2[11] = 13; // motor IN2 */
+  teensy[te].arg3[11] = 21; // motor Current Sense */
 
   /* PWM Lighting */
-  teensy[te].pinmode[12] = PINMODE_PWM; // Background Lighting
-  teensy[te].pinmode[13]= PINMODE_PWM; // Park Brake Light
+  teensy[te].pinmode[14] = PINMODE_PWM; // Background Lighting
+  teensy[te].pinmode[15]= PINMODE_PWM; // Park Brake Light
   
   /* Analog Inputs */
-  //teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEDIAN; // Motor 1 Current Measurement A0
-  //teensy[te].pinmode[15] = PINMODE_ANALOGINPUTMEDIAN; // Motor 2 Current Measurement A1
-  //teensy[te].pinmode[16] = PINMODE_ANALOGINPUTMEDIAN; // Motor 3 Current Measurement A2
-  //teensy[te].pinmode[17] = PINMODE_ANALOGINPUTMEDIAN; // Motor 4 Current Measurement A3
+  //teensy[te].pinmode[16] = PINMODE_ANALOGINPUTMEDIAN; // Motor 1 Current Measurement A0
+  //teensy[te].pinmode[17] = PINMODE_ANALOGINPUTMEDIAN; // Motor 2 Current Measurement A1
+  //teensy[te].pinmode[20] = PINMODE_ANALOGINPUTMEDIAN; // Motor 3 Current Measurement A2
+  //teensy[te].pinmode[21] = PINMODE_ANALOGINPUTMEDIAN; // Motor 4 Current Measurement A3
 
   /* I2C */
   teensy[te].pinmode[18] = PINMODE_I2C; 
   teensy[te].pinmode[19] = PINMODE_I2C; 
 
   /* Sound Board */
-  teensy[te].pinmode[20] = PINMODE_OUTPUT;
+  teensy[te].pinmode[6] = PINMODE_OUTPUT;
+  //teensy[te].pinmode[7] = PINMODE_OUTPUT; /* UNUSED */
   
   /* Analog Inputs */
   teensy[te].pinmode[22] = PINMODE_ANALOGINPUTMEDIAN; // REVERSER 0 A8
@@ -99,6 +104,7 @@ void init_b737_tq(void)
   teensy[te].pinmode[32] = PINMODE_INPUT; // Cutoff 1
   teensy[te].pinmode[34] = PINMODE_INPUT; // TOGA 0 and 1 (parallel)
   teensy[te].pinmode[35] = PINMODE_INPUT; // AT DISCONNECT 0 and 1 (parallel)
+  //teensy[te].pinmode[38] = PINMODE_INPUT; /* UNUSED */
   teensy[te].pinmode[39] = PINMODE_INPUT; // HORN CUTOUT BUTTON
   teensy[te].pinmode[40] = PINMODE_INPUT; // HORN CUTOUT ENCODER 1
   teensy[te].pinmode[41] = PINMODE_INPUT; // HORN CUTOUT ENCODER 2
@@ -115,17 +121,30 @@ void init_b737_tq(void)
 
   /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
      running inside the teensy */
+
+  /* Thrust Lever 0 */
   program[te][0].type = PROGRAM_CLOSEDLOOP;
   program[te][0].val16[1] = 5; // minimum servo potentiometer value
   program[te][0].val16[2] = 990; // maximum servo potentiometer value
   program[te][0].val8[1] = 26;  // servo potentiometer pin number (needs to be defined separately above)
   program[te][0].val8[2] = 0;  // servo motor pin number (first pin, full motor separately defined above)
-  
+  program[te][0].val8[3] = (int8_t) 255; // maximum motor speed
+
+  /* Trust Lever 1 */
   program[te][1].type = PROGRAM_CLOSEDLOOP;
   program[te][1].val16[1] = 5; // minimum servo potentiometer value
   program[te][1].val16[2] = 990; // maximum servo potentiometer value
   program[te][1].val8[1] = 27;  // servo potentiometer pin number (needs to be defined separately above)
   program[te][1].val8[2] = 3;  // servo motor pin number (first pin, full motor separately defined above)
+  program[te][1].val8[3] = (int8_t) 255; // maximum motor speed
+  
+  /* Speed Brake Lever */
+  program[te][2].type = PROGRAM_CLOSEDLOOP;
+  program[te][2].val16[1] = 5; // minimum servo potentiometer value
+  program[te][2].val16[2] = 700; // maximum servo potentiometer value
+  program[te][2].val8[1] = 25;  // servo potentiometer pin number (needs to be defined separately above)
+  program[te][2].val8[2] = 11;  // servo motor pin number (first pin, full motor separately defined above)
+  program[te][2].val8[3] = (int8_t) 180; // maximum motor speed
   
 }
 
@@ -176,7 +195,6 @@ void b737_tq(void)
   int cutoff1;
   int toga;
   int at_disconnect;
-  int horn_cutout;
   int horn_encoder;
 
   float flap=FLT_MISS;
@@ -285,13 +303,13 @@ void b737_tq(void)
   }
   
      
-  int *horn_cutoff;
+  int *horn_cutout;
   if ((acf_type == 2) || (acf_type == 3)) { 
-    horn_cutoff = link_dataref_cmd_once("laminar/B738/alert/gear_horn_cutout");
+    horn_cutout = link_dataref_cmd_once("laminar/B738/alert/gear_horn_cutout");
   } else if (acf_type == 1) {
-    horn_cutoff = link_dataref_cmd_once("x737/TQ/HORN_CUTOFF");
+    horn_cutout = link_dataref_cmd_once("x737/TQ/HORN_CUTOUT");
   } else {
-    horn_cutoff = link_dataref_int("xpserver/HORN_CUTOFF");
+    horn_cutout = link_dataref_int("xpserver/HORN_CUTOUT");
   }
 
 
@@ -426,9 +444,9 @@ void b737_tq(void)
   }
 
   /* read HORN CUTOUT Button */
-  ret = digital_input(te, TEENSY_TYPE, 0, 39, &horn_cutout, 0);
+  ret = digital_input(te, TEENSY_TYPE, 0, 39, horn_cutout, 0);
   if (ret == 1) {
-    printf("HORN CUTOUT Button changed to: %i \n",horn_cutout);
+    printf("HORN CUTOUT Button changed to: %i \n",*horn_cutout);
   }
 
   /* read HORN CUTOUT Encoder (not present in real aircraft) */
@@ -449,7 +467,32 @@ void b737_tq(void)
 
   // closed loop motor operation test
   float fencodervalue = (float) horn_encoder;
+
+  /* Throttle 0 Motor */
   ret = program_closedloop(te, 0, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
+  /* Throttle 1 Motor */
   ret = program_closedloop(te, 1, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
+
+  /* Speed Brake Motor */
+  ret = program_closedloop(te, 2, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
+
+  float speed;
+  if (stab_trim_auto_pilot == 1) {
+    speed = 1.0;
+  } else {
+    speed = -1.0;
+  }
+  /* Trim Wheel Motor */
+  ret = motor_output(te, TEENSY_TYPE, 0, 8, &speed,0.0,1.0,1-*horn_cutout);
+
+  /* Background Lighting */
+  float lighting = (float) horn_encoder;
+  ret = pwm_output(te, TEENSY_TYPE, 0, 14, &lighting,0.0,100.0);
+
+  /* Park Brake Light */
+  ret = pwm_output(te, TEENSY_TYPE, 0, 15, &lighting,0.0,100.0);
+
+  /* Trim Wheel Sound Trigger */
+  ret = digital_output(te, TEENSY_TYPE, 0, 6, &toga);
 
 }

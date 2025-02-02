@@ -100,6 +100,7 @@ void udp_receive(void) {
           program_data[prog].val8[0] = recvBuffer[2];
           program_data[prog].val8[1] = recvBuffer[3];
           program_data[prog].val8[2] = recvBuffer[14];
+          program_data[prog].val8[3] = recvBuffer[15];
         }
 
       } /* Correct receive buffer initiator string */

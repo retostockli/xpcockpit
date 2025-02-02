@@ -131,6 +131,8 @@ int init_teensy() {
 	    if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
 	      printf("Teensy %i Pin %i Initialized as Motor \n",te,pin);
 	      printf("       with Direction Pins %i %i \n",teensy[te].arg1[pin],teensy[te].arg2[pin]);
+	      if (teensy[te].arg1[pin] == INITVAL) printf("ERROR: NO DIRECTION PIN 1 DEFINED!!!! \n");
+	      if (teensy[te].arg2[pin] == INITVAL) printf("ERROR: NO DIRECTION PIN 2 DEFINED!!!! \n");
 	      if (teensy[te].arg3[pin] != INITVAL) printf("       with Current Sensing Pin %i \n",teensy[te].arg3[pin]);
 	    }
 	    if (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) printf("Teensy %i Pin %i Initialized as INTERRUPT \n",te,pin);
@@ -147,7 +149,7 @@ int init_teensy() {
 	  memcpy(&teensySendBuffer[8],&teensy[te].val[pin][0],sizeof(teensy[te].val[pin][0]));
 	  teensySendBuffer[10] = teensy[te].pinmode[pin];
 	  if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
-	    /* also send the two direction pins for IN1 and IN2 and the Current Sense pin */ 
+	    /* also send the two direction pins for IN1 and IN2 and the Current Sense pin */
 	    teensySendBuffer[11] = teensy[te].arg1[pin];
 	    teensySendBuffer[12] = teensy[te].arg2[pin];
 	    teensySendBuffer[13] = teensy[te].arg3[pin];
@@ -294,6 +296,7 @@ int init_teensy() {
 	  memcpy(&teensySendBuffer[10],&program[te][prog].val16[1],sizeof(program[te][prog].val16[1])); // 16 bit value #1
 	  memcpy(&teensySendBuffer[12],&program[te][prog].val16[2],sizeof(program[te][prog].val16[2])); // 16 bit value #2
 	  teensySendBuffer[14] = program[te][prog].val8[2]; // 8 bit value #2	  
+	  teensySendBuffer[15] = program[te][prog].val8[3]; // 8 bit value #3	  
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	  if (ret == SENDMSGLEN) {
 	    if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
@@ -438,6 +441,7 @@ int send_teensy() {
 	    memcpy(&teensySendBuffer[10],&program[te][prog].val16[1],sizeof(program[te][prog].val16[1])); // 16 bit value #1
 	    memcpy(&teensySendBuffer[12],&program[te][prog].val16[2],sizeof(program[te][prog].val16[2])); // 16 bit value #2
 	    teensySendBuffer[14] = program[te][prog].val8[2]; // 8 bit value #2
+	    teensySendBuffer[15] = program[te][prog].val8[3]; // 8 bit value #3
 	    ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	    if (ret == SENDMSGLEN) {
 	      if (verbose > 1) printf("SEND: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
@@ -1371,8 +1375,9 @@ int program_closedloop(int te, int prog, int active, float *fvalue, float minval
      16 bit (2) : Maximum Potentiometer Value
      8 bit (0) : closed loop active (1) or not (0)
      8 bit (1) : pin number of Servo Potentiometer (potentiometer has to be defined as regular potentiometer)
-     8 bit (2) : pin number of Motor EN (other pins of motor have to be defined as regular motor) */
-  
+     8 bit (2) : pin number of Motor EN (other pins of motor have to be defined as regular motor)
+     8 bit (3) : Max Speed of motor (0-255) */
+
   int retval = 0;
   int ival;
 

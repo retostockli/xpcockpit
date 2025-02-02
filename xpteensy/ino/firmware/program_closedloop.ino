@@ -9,6 +9,7 @@ int program_closedloop(int prog) {
     int8_t active = program_data[prog].val8[0];
     int8_t pot_pin = program_data[prog].val8[1];
     int8_t mot_pin = program_data[prog].val8[2];
+  
 
     int16_t servo_request = program_data[prog].val16[0];
     //int16_t servo_min = program_data[prog].val16[1];
@@ -32,11 +33,12 @@ int program_closedloop(int prog) {
       bool backward = false;
 
       /* MIN and MAX speeds may need to be made dynamic */
-      uint8_t min_speed = 100;   /* minimum speed at which motors do still run with load */
-      uint8_t max_speed = 255;   /* maximum speed for this motor */
+      uint8_t min_speed = 140;   /* minimum speed at which motors do still run with load */
+      //uint8_t max_speed = 255;   /* maximum speed for this motor */
+      uint8_t max_speed = (uint8_t) program_data[prog].val8[3];
 
-      bool forward_save = program_data[prog].val8[3];
-      bool backward_save = program_data[prog].val8[4];
+      bool forward_save = program_data[prog].val8[5];
+      bool backward_save = program_data[prog].val8[6];
 
       /* Hysteresis: if we are stopped, we need more inertia for starting again */
       /* This resolves stopping at a precision boundary and trying to move because of potentiometer noise */
@@ -54,12 +56,12 @@ int program_closedloop(int prog) {
                       float(max_speed - min_speed) + min_speed;
 
       /* save last state of motor */
-      program_data[prog].val8[3] = forward;
-      program_data[prog].val8[4] = backward;
+      program_data[prog].val8[5] = forward;
+      program_data[prog].val8[6] = backward;
 
       if (program_data[prog].val16_save[0] != servo_request) {
         if (DEBUG > 0) {
-          Serial.printf("Program %i New Closed Loop Motor Servo Value: %i\n", prog, servo_request);
+          Serial.printf("Program %i New Closed Loop Motor Servo Value: %i MAX Speed: \n", prog, servo_request, max_speed);
         }
         program_data[prog].val16_save[0] = servo_request;
       }
