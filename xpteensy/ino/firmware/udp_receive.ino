@@ -51,7 +51,7 @@ void udp_receive(void) {
           } else if (recvBuffer[4] == TEENSY_INIT) {
             /* initialize pin or daughter board as requested */
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            teensy_init(recvBuffer[7], recvBuffer[10], ivalue16, recvBuffer[11], recvBuffer[12], recvBuffer[13]);
+            teensy_init(recvBuffer[7], recvBuffer[10], ivalue16, recvBuffer[11], recvBuffer[12], recvBuffer[13],recvBuffer[14], recvBuffer[15]);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             /* set output to requested value */
             memcpy(&ivalue16, &recvBuffer[8], 2);
@@ -100,8 +100,7 @@ void udp_receive(void) {
           program_data[prog].val8[0] = recvBuffer[2];
           program_data[prog].val8[1] = recvBuffer[3];
           program_data[prog].val8[2] = recvBuffer[14];
-          program_data[prog].val8[3] = recvBuffer[15];
-        }
+         }
 
       } /* Correct receive buffer initiator string */
     }   /* Correct Packet Size */

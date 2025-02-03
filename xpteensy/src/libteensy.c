@@ -153,6 +153,8 @@ int init_teensy() {
 	    teensySendBuffer[11] = teensy[te].arg1[pin];
 	    teensySendBuffer[12] = teensy[te].arg2[pin];
 	    teensySendBuffer[13] = teensy[te].arg3[pin];
+	    teensySendBuffer[14] = teensy[te].arg4[pin];
+	    teensySendBuffer[15] = teensy[te].arg5[pin];
 	  }
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	  if (ret == SENDMSGLEN) {
@@ -296,7 +298,6 @@ int init_teensy() {
 	  memcpy(&teensySendBuffer[10],&program[te][prog].val16[1],sizeof(program[te][prog].val16[1])); // 16 bit value #1
 	  memcpy(&teensySendBuffer[12],&program[te][prog].val16[2],sizeof(program[te][prog].val16[2])); // 16 bit value #2
 	  teensySendBuffer[14] = program[te][prog].val8[2]; // 8 bit value #2	  
-	  teensySendBuffer[15] = program[te][prog].val8[3]; // 8 bit value #3	  
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	  if (ret == SENDMSGLEN) {
 	    if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
@@ -609,32 +610,32 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 	if (type == TEENSY_TYPE) {
 	  if ((pin >= 0) && (pin < MAX_PINS)) {
 	    if (teensy[te].pinmode[pin] == PINMODE_INPUT) {
-	      if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
-		if (input_type == 0) {
-		  /* simple pushbutton / switch */
-		  if (*value != teensy[te].val[pin][0]) {
-		    if (verbose > 1) printf("Pushbutton: Teensy %i Pin %i Changed to %i %i \n",
-					    te, pin, *value,teensy[te].val[pin][0]);
-		    *value = teensy[te].val[pin][0];
-		    retval = 1;
-		  }
-		  
-		} else {
-		  /* toggle state everytime you press button */
-		  /* check if the switch state changed from 0 -> 1 */
-		  if ((teensy[te].val[pin][0] == 1) && (teensy[te].val_save[pin] == 0)) {
-		    /* toggle */
-		    if (*value != INT_MISS) {
-		      if ((*value == 0) || (*value == 1)) {
-			*value = 1 - (*value);
-			retval = 1;
-			if (verbose > 1) printf("Toogle Switch: Teensy %i Pin %i Changed to %i \n",
-						te, pin, *value);
-		      } else {
-			printf("Toogle Switch: Teensy %i Pin %i Needs to be 0 or 1, but has value %i \n",
-			       te, pin, *value);
-			retval = -1;
-		      }
+	      if (input_type == 0) {
+		/* simple pushbutton / switch */
+		if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
+		  if (verbose > 1) printf("Pushbutton: Teensy %i Pin %i Changed to %i %i \n",
+					  te, pin, *value,teensy[te].val[pin][0]);
+		  retval = 1;
+		}
+		/* always return current value if not initial value */
+		if (teensy[te].val[pin][0] != INITVAL) {
+		  *value = teensy[te].val[pin][0];
+		} 
+	      } else {
+		/* toggle state everytime you press button */
+		/* check if the switch state changed from 0 -> 1 */
+		if ((teensy[te].val[pin][0] == 1) && (teensy[te].val_save[pin] == 0)) {
+		  /* toggle */
+		  if (*value != INT_MISS) {
+		    if ((*value == 0) || (*value == 1)) {
+		      *value = 1 - (*value);
+		      retval = 1;
+		      if (verbose > 1) printf("Toogle Switch: Teensy %i Pin %i Changed to %i \n",
+					      te, pin, *value);
+		    } else {
+		      printf("Toogle Switch: Teensy %i Pin %i Needs to be 0 or 1, but has value %i \n",
+			     te, pin, *value);
+		      retval = -1;
 		    }
 		  }
 		}
@@ -789,11 +790,13 @@ int analog_input(int te, int pin, float *value, float minval, float maxval)
 	if ((pin >= 0) && (pin < MAX_PINS)) {
 	  if ((teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) ||
 	      (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN)) {
-
-	    if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
+	    /* always return actual value if valid */
+	    if (teensy[te].val[pin][0] != INITVAL) {
 	      *value = ((float) teensy[te].val[pin][0])
 		/ (float) (pow(2,ANALOGINPUT_NBITS)-1)
 		* (maxval - minval) + minval;
+	    }
+	    if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
 	      retval = 1;
 	    }
 	  } else {
@@ -1140,21 +1143,22 @@ int digital_output(int te, int type, int dev, int pin, int *value) {
 	      if (verbose > 0) printf("Digital Outputs are supported only for Teensy and MCP23017 \n");
 	      retval = -1;
 	    }
+	  } else {
+	    if (verbose > 0) printf("Digital Output %i cannot be written. Teensy %i not connected \n",
+				    pin,te);
+	    retval = -1;
 	  }
 	} else {
-	  if (verbose > 0) printf("Digital Output %i cannot be written. Teensy %i not connected \n",
-				  pin,te);
+	  if (verbose > 0) printf("Digital Ouput %i cannot be written. Teensy %i >= %i \n",pin,te, MAXTEENSYS);
 	  retval = -1;
 	}
       } else {
-	if (verbose > 0) printf("Digital Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n",pin,te);
+	printf("Digital Output %i of Teensy %i should be 0 or 1, but is %i \n", pin,te,*value);
 	retval = -1;
       }
-    } else {
-      printf("Digital Output %i of Teensy %i should be 0 or 1, but is %i \n", pin,te,*value);
-      retval = -1;
-    }
-  }
+    } // Output value not missing
+    
+  } // Output value pointer not null
 
   return retval;
 }
@@ -1221,7 +1225,7 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 	  retval = -1;
 	}
       } else {
-	if (verbose > 0) printf("PWM Ouput %i cannot be written. Teensy %i >= MAXTEENSYS\n", pin, te);
+	if (verbose > 0) printf("PWM Ouput %i cannot be written. Teensy %i >= %i \n", pin, te, MAXTEENSYS);
 	retval = -1;
       }
 
@@ -1233,7 +1237,11 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 }
 
 /* Writes Servo Signal to given pin of Teensy (needs to be a PWM capable pin) */
-int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval) {
+/* minval / maxval are the maximum range of the input fvalue that we want the servo to travel */
+/* servo_minval and servo_maxval is the normalized range for the servo to travel in the input range.
+   Example: The servo would normally go from normalized 0.0 to 1.0, you can limit it between e.g. the range 0.25 to 0.725 */
+int servo_output(int te, int type, int dev, int pin, float *fvalue,
+		 float minval, float maxval, float servo_minval, float servo_maxval) {
 
   int retval = 0;
   int ival;
@@ -1248,7 +1256,8 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval
 	    if ((pin >= 0) && (pin < MAX_PINS)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_SERVO) {
 		/* scale value to servo output range */
-		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0))
+		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)
+				       * (servo_maxval - servo_minval) + servo_minval),1.0))
 			      * (SERVO_MAXANGLE - SERVO_MINANGLE) + SERVO_MINANGLE);
 		if (ival != teensy[te].val[pin][0]) {
 		  teensy[te].val[pin][0] = ival;
@@ -1267,7 +1276,8 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval
 	    if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
 	      if (pca9685[te][dev].pinmode[pin] == PINMODE_SERVO) {
 		/* scale value to servo output range */
-		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0))
+		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)
+				       * (servo_maxval - servo_minval) + servo_minval),1.0))
 			      * (PCA9685_SERVO_MAXPULSE - PCA9685_SERVO_MINPULSE) + PCA9685_SERVO_MINPULSE);
 		if (ival != pca9685[te][dev].val[pin]) {
 		  pca9685[te][dev].val[pin] = ival;
@@ -1367,6 +1377,7 @@ int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval
   return retval;
 }
 
+/* This program simulates a servo using a real motor and a potentiometer */
 int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval) {
 
   /* program variable storage:
@@ -1375,15 +1386,14 @@ int program_closedloop(int te, int prog, int active, float *fvalue, float minval
      16 bit (2) : Maximum Potentiometer Value
      8 bit (0) : closed loop active (1) or not (0)
      8 bit (1) : pin number of Servo Potentiometer (potentiometer has to be defined as regular potentiometer)
-     8 bit (2) : pin number of Motor EN (other pins of motor have to be defined as regular motor)
-     8 bit (3) : Max Speed of motor (0-255) */
+     8 bit (2) : pin number of Motor EN (other pins of motor have to be defined as regular motor) */
 
   int retval = 0;
   int ival;
 
   if (fvalue != NULL) {
 
-    if (*fvalue != FLT_MISS) {
+    if ((*fvalue != FLT_MISS) && (active != INT_MISS)) {
 
       if (te < MAXTEENSYS) {
 	if (teensy[te].connected) {

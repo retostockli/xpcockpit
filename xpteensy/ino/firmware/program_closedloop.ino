@@ -32,10 +32,8 @@ int program_closedloop(int prog) {
       bool forward = false;
       bool backward = false;
 
-      /* MIN and MAX speeds may need to be made dynamic */
-      uint8_t min_speed = 140;   /* minimum speed at which motors do still run with load */
-      //uint8_t max_speed = 255;   /* maximum speed for this motor */
-      uint8_t max_speed = (uint8_t) program_data[prog].val8[3];
+      uint8_t min_speed = teensy_data.arg4[mot_pin];  /* minimum speed at which motors do still run with load */
+      uint8_t max_speed = teensy_data.arg5[mot_pin];  /* maximum speed for motor to move to new position */
 
       bool forward_save = program_data[prog].val8[5];
       bool backward_save = program_data[prog].val8[6];
@@ -51,7 +49,7 @@ int program_closedloop(int prog) {
       if (servo_request > (servo_actual + hysteresis)) forward = true;
       if (servo_request < (servo_actual - hysteresis)) backward = true;
 
-      /* decrease speed if we get to requested servo position for not overshooting */
+      /* decrease speed once close to requested servo position for not overshooting */
       uint8_t speed = min(max(fabsf(servo_request - servo_actual) / pow(2, ANALOGINPUT_NBITS) * 15.0,0.0),1.0) *
                       float(max_speed - min_speed) + min_speed;
 
@@ -61,7 +59,7 @@ int program_closedloop(int prog) {
 
       if (program_data[prog].val16_save[0] != servo_request) {
         if (DEBUG > 0) {
-          Serial.printf("Program %i New Closed Loop Motor Servo Value: %i MAX Speed: \n", prog, servo_request, max_speed);
+          Serial.printf("Program %i New Closed Loop Motor Servo Value: %i \n", prog, servo_request);
         }
         program_data[prog].val16_save[0] = servo_request;
       }
@@ -69,7 +67,7 @@ int program_closedloop(int prog) {
       if (forward) {
         /* move motor forward */
         if (DEBUG > 0) {
-          Serial.printf("Program %i New Closed Loop Motor Servo run FORWARD with Speed %i \n", prog, speed);
+          Serial.printf("Program %i Closed Loop Motor Servo run FORWARD with Speed %i \n", prog, speed);
           Serial.printf("Servo REQ: %i Servo ACT: %i \n", servo_request, servo_actual);
         }
         analogWrite(mot_pin, speed);
@@ -78,7 +76,7 @@ int program_closedloop(int prog) {
       } else if (backward) {
         /* move motor backward */
         if (DEBUG > 0) {
-          Serial.printf("Program %i New Closed Loop Motor Servo run BACKWARD with Speed %i \n", prog, speed);
+          Serial.printf("Program %i Closed Loop Motor Servo run BACKWARD with Speed %i \n", prog, speed);
           Serial.printf("Servo REQ: %i Servo ACT: %i \n", servo_request, servo_actual);
         }
         analogWrite(mot_pin, speed);

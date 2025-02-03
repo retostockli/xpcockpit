@@ -234,8 +234,8 @@ void test(void)
   //ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,5.0,1023.0);
 
   /* change Servo according to rotary position */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0);
-  //ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0);
+  //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0,0.2,0.8);
+  //ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0,0.2,0.8);
 
   //ret = pwm_output(te, PCA9685_TYPE, 0, 2, fvalue,0.0,1.0);
   

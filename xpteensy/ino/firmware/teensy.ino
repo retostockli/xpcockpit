@@ -1,7 +1,7 @@
 // Create an instance of the Servo library
 Servo servo[MAX_SERVO];
 
-void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t arg2, int8_t arg3) {
+void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t arg2, int8_t arg3, uint8_t arg4, uint8_t arg5) {
 
   int i;
   bool found;
@@ -77,13 +77,15 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t ar
       teensy_data.val[pin][0] = val;
       teensy_write(pin, val);
     } else if (pinmode == PINMODE_MOTOR) {
-      pinMode(pin, OUTPUT);
+      pinMode(pin, OUTPUT); // EN PWM Output PIN
       if (arg1 != INITVAL) pinMode(arg1, OUTPUT);
       if (arg2 != INITVAL) pinMode(arg2, OUTPUT);
       if (arg3 != INITVAL) pinMode(arg3, INPUT);
-      teensy_data.arg1[pin] = arg1;
-      teensy_data.arg2[pin] = arg2;
-      teensy_data.arg3[pin] = arg3;
+      teensy_data.arg1[pin] = arg1; // IN1 Output PIN
+      teensy_data.arg2[pin] = arg2; // IN2 Output PIN
+      teensy_data.arg3[pin] = arg3; // Current Sense Analog Input PIN
+      teensy_data.arg4[pin] = arg4; // Motor Minium Speed (0-255B)
+      teensy_data.arg5[pin] = arg5; // Motor Maximum Speed (0-255B)
       teensy_data.val[pin][0] = val;
       // See: https://www.pjrc.com/teensy/td_pulse.html
       // You can't have the chicken and egg at the same time ...

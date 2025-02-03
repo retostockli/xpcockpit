@@ -51,7 +51,7 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 int digital_outputf(int te, int type, int dev, int pin, float *fvalue);
 int digital_output(int te, int type, int dev, int pin, int *value);
 int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
-int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
+int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, float servo_min, float servo_max);
 int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake);
 int angle_input(int te, int type, int dev, int input_type, int *value);
 int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval);

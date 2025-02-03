@@ -110,6 +110,8 @@ typedef struct {
   int8_t arg3[MAX_PINS];       // for Teensy interrupt pins: for which device number of above type
                                // For Servos: max pulse width (us)
                                // for Motors: Current sense pin number
+  uint8_t arg4[MAX_PINS];      // for Motors: Minimum Speed (currently only used in closed loop program)
+  uint8_t arg5[MAX_PINS];      // for Motors: Maximum Speed (currently only used in closed loop program)
   char ip[30];                 // IP address of teensy / server
   int port;                    // UDP port teensy is listening / sending
   unsigned char mac[2];        // last two bytes of MAC address  

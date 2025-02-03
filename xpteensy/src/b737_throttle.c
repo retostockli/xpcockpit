@@ -54,11 +54,15 @@ void init_b737_tq(void)
   teensy[te].arg1[0] = 1; // motor IN1 */
   teensy[te].arg2[0] = 2; // motor IN2 */
   teensy[te].arg3[0] = 16; // motor Current Sense */
+  teensy[te].arg4[0] = 80; // minimum Motor Speed */
+  teensy[te].arg5[0] = 255; // minimum Motor Speed */
   /* Thrust Lever 1 Motor */
   teensy[te].pinmode[3] = PINMODE_MOTOR; // motor EN
   teensy[te].arg1[3] = 4; // motor IN1 */
   teensy[te].arg2[3] = 5; // motor IN2 */
   teensy[te].arg3[3] = 17; // motor Current Sense */
+  teensy[te].arg4[3] = 80; // minimum Motor Speed */
+  teensy[te].arg5[3] = 255; // minimum Motor Speed */
   /* Stab Trim Wheel Motor */
   teensy[te].pinmode[8] = PINMODE_MOTOR; // motor EN
   teensy[te].arg1[8] = 9; // motor IN1 */
@@ -69,6 +73,33 @@ void init_b737_tq(void)
   teensy[te].arg1[11] = 12; // motor IN1 */
   teensy[te].arg2[11] = 13; // motor IN2 */
   teensy[te].arg3[11] = 21; // motor Current Sense */
+  teensy[te].arg4[11] = 160; // minimum Motor Speed */
+  teensy[te].arg5[11] = 180; // minimum Motor Speed */
+
+
+  /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
+     running inside the teensy */
+
+  /* Thrust Lever 0 */
+  program[te][0].type = PROGRAM_CLOSEDLOOP;
+  program[te][0].val16[1] = 5; // minimum servo potentiometer value
+  program[te][0].val16[2] = 990; // maximum servo potentiometer value
+  program[te][0].val8[1] = 26;  // servo potentiometer pin number (needs to be defined separately above)
+  program[te][0].val8[2] = 0;  // servo motor pin number (first pin, full motor separately defined above)
+
+  /* Trust Lever 1 */
+  program[te][1].type = PROGRAM_CLOSEDLOOP;
+  program[te][1].val16[1] = 5; // minimum servo potentiometer value
+  program[te][1].val16[2] = 990; // maximum servo potentiometer value
+  program[te][1].val8[1] = 27;  // servo potentiometer pin number (needs to be defined separately above)
+  program[te][1].val8[2] = 3;  // servo motor pin number (first pin, full motor separately defined above)
+  
+  /* Speed Brake Lever */
+  program[te][2].type = PROGRAM_CLOSEDLOOP;
+  program[te][2].val16[1] = 305; // minimum servo potentiometer value
+  program[te][2].val16[2] = 1015; // maximum servo potentiometer value
+  program[te][2].val8[1] = 25;  // servo potentiometer pin number (needs to be defined separately above)
+  program[te][2].val8[2] = 11;  // servo motor pin number (first pin, full motor separately defined above)
 
   /* PWM Lighting */
   teensy[te].pinmode[14] = PINMODE_PWM; // Background Lighting
@@ -114,38 +145,12 @@ void init_b737_tq(void)
   teensy[te].pinmode[36] = PINMODE_SERVO; // Stab Trim 0 Servo
   teensy[te].pinmode[37] = PINMODE_SERVO; // Stab Trim 1 Servo
 
-  /* as5048b[te][0].nangle = 10; */
-  /* as5048b[te][0].type = 0; */
-  /* as5048b[te][0].wire = 0; */
-  /* as5048b[te][0].address = 0x40; */
+  /* Stab Trim Wheel direction and rotation counter */
+  as5048b[te][0].nangle = 10;
+  as5048b[te][0].type = 0;
+  as5048b[te][0].wire = 0;
+  as5048b[te][0].address = 0x40;
 
-  /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
-     running inside the teensy */
-
-  /* Thrust Lever 0 */
-  program[te][0].type = PROGRAM_CLOSEDLOOP;
-  program[te][0].val16[1] = 5; // minimum servo potentiometer value
-  program[te][0].val16[2] = 990; // maximum servo potentiometer value
-  program[te][0].val8[1] = 26;  // servo potentiometer pin number (needs to be defined separately above)
-  program[te][0].val8[2] = 0;  // servo motor pin number (first pin, full motor separately defined above)
-  program[te][0].val8[3] = (int8_t) 255; // maximum motor speed
-
-  /* Trust Lever 1 */
-  program[te][1].type = PROGRAM_CLOSEDLOOP;
-  program[te][1].val16[1] = 5; // minimum servo potentiometer value
-  program[te][1].val16[2] = 990; // maximum servo potentiometer value
-  program[te][1].val8[1] = 27;  // servo potentiometer pin number (needs to be defined separately above)
-  program[te][1].val8[2] = 3;  // servo motor pin number (first pin, full motor separately defined above)
-  program[te][1].val8[3] = (int8_t) 255; // maximum motor speed
-  
-  /* Speed Brake Lever */
-  program[te][2].type = PROGRAM_CLOSEDLOOP;
-  program[te][2].val16[1] = 5; // minimum servo potentiometer value
-  program[te][2].val16[2] = 700; // maximum servo potentiometer value
-  program[te][2].val8[1] = 25;  // servo potentiometer pin number (needs to be defined separately above)
-  program[te][2].val8[2] = 11;  // servo motor pin number (first pin, full motor separately defined above)
-  program[te][2].val8[3] = (int8_t) 180; // maximum motor speed
-  
 }
 
 void b737_tq(void)
@@ -165,36 +170,36 @@ void b737_tq(void)
   float reverser1=FLT_MISS;
 
   float speedbrake=FLT_MISS;
-  float minspeedbrake;
-  float maxspeedbrake;
+  float minspeedbrake_xplane;
+  float maxspeedbrake_xplane;
   float minspeedbrake_x737 = 0.0;
   float maxspeedbrake_x737 = 1.0;
   float minspeedbrake_zibo = 0.0;
   float maxspeedbrake_zibo = 1.0;
-  float minspeedbrake_xplane = -0.5;
-  float maxspeedbrake_xplane = 1.0;
+  float minspeedbrake_default = -0.5;
+  float maxspeedbrake_default = 1.0;
   float difspeedbrake = 0.05; /* minimum difference between x-plane and H/W to toggle a change */
 
   float stabilizer=FLT_MISS;
+  float minstabilizer_xplane;
+  float maxstabilizer_xplane;
   float minstabilizer_x737 = -0.280;
   float maxstabilizer_x737 =  1.000;
   float minstabilizer_zibo = -1.000;
   float maxstabilizer_zibo =  0.719;
-  float minstabilizer_xplane = -1.000;
-  float maxstabilizer_xplane =  1.000;
-  float minstabilizer;
-  float maxstabilizer;
+  float minstabilizer_default = -1.000;
+  float maxstabilizer_default =  1.000;
   float difstabilizer = 0.01; /* minimum difference between x-plane and H/W to toggle a change */
   
   int parkbrake;
   float difparkbrake = 0.05; /* minimum difference between x-plane and H/W to toggle a change */
 
-  int stab_trim_main_elect;
-  int stab_trim_auto_pilot;
-  int cutoff0;
-  int cutoff1;
-  int toga;
-  int at_disconnect;
+  float stab_trim_main_elect = FLT_MISS;
+  float stab_trim_auto_pilot = FLT_MISS;
+  int cutoff0 = INT_MISS;
+  int cutoff1 = INT_MISS;
+  int toga = INT_MISS;
+  int at_disconnect = INT_MISS;
   int horn_encoder;
 
   float flap=FLT_MISS;
@@ -206,8 +211,12 @@ void b737_tq(void)
   int zero = 0;
 
   int *num_engines = link_dataref_int("sim/aircraft/engine/acf_num_engines");
-  float *throttle = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_jet_rev_ratio", 16, -1, -2);
-  float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",16, -1, -2);
+  /* XP 12 */
+  //float *throttle = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_jet_rev_ratio", 16, -1, -2);
+  //float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",16, -1, -2);
+  /* XP 11 */
+  float *throttle = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_jet_rev_ratio", 8, -1, -2);
+  float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",8, -1, -2);
 
   float *zibo_throttle0;
   float *zibo_throttle1;
@@ -299,17 +308,20 @@ void b737_tq(void)
     fuel_mixture_left = link_dataref_flt("x737/cockpit/tq/leftCutoffLeverPos",-2);
     fuel_mixture_right = link_dataref_flt("x737/cockpit/tq/rightCutoffLeverPos",-2);
   } else {
-    fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",16,-1,-2);
+    /* XP 12 */
+    //fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",16,-1,-2);
+    /* XP 11 */
+    fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",8,-1,-2);
   }
   
      
-  int *horn_cutout;
+  int *horn_cutout_button;
   if ((acf_type == 2) || (acf_type == 3)) { 
-    horn_cutout = link_dataref_cmd_once("laminar/B738/alert/gear_horn_cutout");
+    horn_cutout_button = link_dataref_cmd_once("laminar/B738/alert/gear_horn_cutout");
   } else if (acf_type == 1) {
-    horn_cutout = link_dataref_cmd_once("x737/TQ/HORN_CUTOUT");
+    horn_cutout_button = link_dataref_cmd_once("x737/TQ/HORN_CUTOUT");
   } else {
-    horn_cutout = link_dataref_int("xpserver/HORN_CUTOUT");
+    horn_cutout_button = link_dataref_int("xpserver/HORN_CUTOUT");
   }
 
 
@@ -344,25 +356,25 @@ void b737_tq(void)
 
   /* fetch stabilizer setting from x737 dataref if available */
   if ((acf_type == 2) || (acf_type == 3)) {
-    minstabilizer = minstabilizer_zibo;
-    maxstabilizer = maxstabilizer_zibo;
+    minstabilizer_xplane = minstabilizer_zibo;
+    maxstabilizer_xplane = maxstabilizer_zibo;
   } else if (acf_type == 1) {
-    minstabilizer = minstabilizer_x737;
-    maxstabilizer = maxstabilizer_x737;
+    minstabilizer_xplane = minstabilizer_x737;
+    maxstabilizer_xplane = maxstabilizer_x737;
   } else {
-    minstabilizer = minstabilizer_xplane;
-    maxstabilizer = maxstabilizer_xplane;
+    minstabilizer_xplane = minstabilizer_default;
+    maxstabilizer_xplane = maxstabilizer_default;
   }
 
   if ((acf_type == 2) || (acf_type == 3)) {
-    minspeedbrake = minspeedbrake_zibo;
-    maxspeedbrake = maxspeedbrake_zibo;
+    minspeedbrake_xplane = minspeedbrake_zibo;
+    maxspeedbrake_xplane = maxspeedbrake_zibo;
   } else if (acf_type == 1) {
-    minspeedbrake = minspeedbrake_x737;
-    maxspeedbrake = maxspeedbrake_x737;
+    minspeedbrake_xplane = minspeedbrake_x737;
+    maxspeedbrake_xplane = maxspeedbrake_x737;
   } else {
-    minspeedbrake = minspeedbrake_xplane;
-    maxspeedbrake = maxspeedbrake_xplane;
+    minspeedbrake_xplane = minspeedbrake_default;
+    maxspeedbrake_xplane = maxspeedbrake_default;
   }
    
   /* read reverser 0 lever position */
@@ -402,15 +414,15 @@ void b737_tq(void)
   }
 
   /* read STAB TRIM MAIN ELECT Switch */
-  ret = digital_input(te, TEENSY_TYPE, 0, 28, &stab_trim_main_elect, 0);
+  ret = digital_inputf(te, TEENSY_TYPE, 0, 28, &stab_trim_main_elect, 0);
   if (ret == 1) {
-    printf("Stab Trim Main Elect changed to: %i \n",stab_trim_main_elect);
+    printf("Stab Trim Main Elect changed to: %f \n",stab_trim_main_elect);
   }
 
   /* read STAB TRIM AUTO PILOT Switch */
-  ret = digital_input(te, TEENSY_TYPE, 0, 29, &stab_trim_auto_pilot, 0);
+  ret = digital_inputf(te, TEENSY_TYPE, 0, 29, &stab_trim_auto_pilot, 0);
   if (ret == 1) {
-    printf("Stab Trim Auto Pilot changed to: %i \n",stab_trim_auto_pilot);
+    printf("Stab Trim Auto Pilot changed to: %f \n",stab_trim_auto_pilot);
   }
 
   /* read PARK BRAKE Switch */
@@ -432,21 +444,21 @@ void b737_tq(void)
   }
 
   /* read TOGA Button */
-  ret = digital_input(te, TEENSY_TYPE, 0, 34, &toga, 0);
-  if (ret == 1) {
-    printf("TOGA Button changed to: %i \n",toga);
+  ret = digital_input(te, TEENSY_TYPE, 0, 34, toga_button, 0);
+  if ((ret == 1) && (*toga_button == 1)) {
+    printf("TOGA Button pressed \n");
   }
 
   /* read AT DISCONNECT Button */
-  ret = digital_input(te, TEENSY_TYPE, 0, 35, &at_disconnect, 0);
-  if (ret == 1) {
-    printf("AT DISCONNECT Button changed to: %i \n",at_disconnect);
+  ret = digital_input(te, TEENSY_TYPE, 0, 35, at_disconnect_button, 0);
+  if ((ret == 1) && (*at_disconnect_button == 1)) {
+    printf("AT DISCONNECT Button pressed \n");
   }
 
   /* read HORN CUTOUT Button */
-  ret = digital_input(te, TEENSY_TYPE, 0, 39, horn_cutout, 0);
-  if (ret == 1) {
-    printf("HORN CUTOUT Button changed to: %i \n",*horn_cutout);
+  ret = digital_input(te, TEENSY_TYPE, 0, 39, horn_cutout_button, 0);
+  if ((ret == 1) && (*horn_cutout_button == 1)) {
+    printf("HORN CUTOUT Button pressed \n");
   }
 
   /* read HORN CUTOUT Encoder (not present in real aircraft) */
@@ -457,12 +469,81 @@ void b737_tq(void)
   if (horn_encoder > 100) horn_encoder = 100;
   if (horn_encoder < 0) horn_encoder = 0;
 
+  /*** SPEED BRAKE LEVER ***/
+  
+   /* H/W Lever goes from 0.275 - 0.995 */
+  if (speedbrake != FLT_MISS) {
+    speedbrake = min(max((speedbrake - 0.275)/(0.995-0.275),0.0),1.0);
+  }
+  /* Scale speedbrake value to X-Plane range */
+  if (speedbrake != FLT_MISS) {
+    speedbrake = speedbrake * (maxspeedbrake_xplane - minspeedbrake_xplane) + minspeedbrake_xplane;
+  }
+ 
+  if ((speedbrake_mode < 0) && (speedbrake_mode > 2)) speedbrake_mode = 0;
+  if ((speedbrake_mode == 0) && (speedbrake != FLT_MISS) && (*speedbrake_xplane != FLT_MISS) &&
+      (fabs(speedbrake - *speedbrake_xplane) > difspeedbrake)) {
+    if (ret == 1) {
+      /* H/W has changed: Manual Mode */
+      speedbrake_mode = 1;
+    } else {
+      /* X-Plane has changed: AP Mode */
+      speedbrake_mode = 2;
+    }
+  }
+  if ((speedbrake_mode != 0) && (speedbrake != FLT_MISS) && (*speedbrake_xplane != FLT_MISS) &&
+      (fabs(speedbrake - *speedbrake_xplane) < difspeedbrake)) {
+    /* Idle mode: H/W and X-Plane in same position */
+    speedbrake_mode = 0;
+  }
+
+  /*** FLAPS LEVER ***/
+  if (flap < 0.5*(0.043+0.179)) {
+    *flap_ratio = 0.000;
+  } else if (flap < 0.5*(0.179+0.313)) {
+    *flap_ratio = 0.125;
+  } else if (flap < 0.5*(0.313+0.441)) {
+    *flap_ratio = 0.250;
+  } else if (flap < 0.5*(0.441+0.540)) {
+    *flap_ratio = 0.375;
+  } else if (flap < 0.5*(0.540+0.650)) {
+    *flap_ratio = 0.500;
+  } else if (flap < 0.5*(0.659+0.750)) {
+    *flap_ratio = 0.625;
+  } else if (flap < 0.5*(0.750+0.880)) {
+    *flap_ratio = 0.750;
+  } else if (flap < 0.5*(0.880+0.950)) {
+    *flap_ratio = 0.875;
+  } else {
+    *flap_ratio = 1.000;
+  }
+
+  /*** TRIM SWITCHES ***/
+
+  if ((acf_type == 2) || (acf_type == 3)) {
+    ret = set_state_togglef(&stab_trim_main_elect,main_elect_pos,main_elect_toggle);
+    ret = set_state_togglef(&stab_trim_auto_pilot,autopilot_pos,autopilot_toggle);     
+  }
+  
+  
+  
   /* steer PARK BRAKE Servo */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 33, &throttle0,-0.3,1.3);
+  //ret = servo_output(te, TEENSY_TYPE, 0, 33, &throttle0, 0.0, 1.0, 0.51, 0.77);
   /* steer STAB TRIM Servo 0 */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 36, &throttle0,-0.3,1.3);
+  //ret = servo_output(te, TEENSY_TYPE, 0, 36, &throttle0, 0.0, 1.0, 0.175, 0.68);
   /* steer STAB TRIM Servo 1 */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 37, &throttle0,-0.3,1.3);
+  //ret = servo_output(te, TEENSY_TYPE, 0, 37, &throttle0, 0.0, 1.0, 0.28, 0.76);
+
+  int angle;
+  ret = angle_input(te, AS5048B_TYPE, 0, 0, &angle);
+  if (ret == 1) {
+    //printf("Angle changed to: %i \n",angle);
+    if (angle == 1) {
+      printf("UP\n");
+    } else {
+      printf("DOWN\n");
+    }
+  }
 
 
   // closed loop motor operation test
@@ -470,27 +551,22 @@ void b737_tq(void)
 
   /* Throttle 0 Motor */
   ret = program_closedloop(te, 0, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
+
   /* Throttle 1 Motor */
   ret = program_closedloop(te, 1, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
 
   /* Speed Brake Motor */
   ret = program_closedloop(te, 2, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
 
-  float speed;
-  if (stab_trim_auto_pilot == 1) {
-    speed = 1.0;
-  } else {
-    speed = -1.0;
-  }
   /* Trim Wheel Motor */
-  ret = motor_output(te, TEENSY_TYPE, 0, 8, &speed,0.0,1.0,1-*horn_cutout);
+  //ret = motor_output(te, TEENSY_TYPE, 0, 8, &speed,0.0,1.0,1-*horn_cutout_button);
 
   /* Background Lighting */
   float lighting = (float) horn_encoder;
   ret = pwm_output(te, TEENSY_TYPE, 0, 14, &lighting,0.0,100.0);
 
   /* Park Brake Light */
-  ret = pwm_output(te, TEENSY_TYPE, 0, 15, &lighting,0.0,100.0);
+  ret = pwm_output(te, TEENSY_TYPE, 0, 15, parkbrake_xplane,0.0,1.0);
 
   /* Trim Wheel Sound Trigger */
   ret = digital_output(te, TEENSY_TYPE, 0, 6, &toga);
