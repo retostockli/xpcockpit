@@ -43,6 +43,11 @@ int parkbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling 
 int stabilizer_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
 float stabilizer_old; /* save value for stabilizer to dampen small changes from pots */
 
+int trim_up_ap_old;
+int trim_down_ap_old;
+struct timeval trim_time;
+int trim_wheel_up_old;
+int trim_wheel_down_old;
 
 void init_b737_tq(void)
 {
@@ -146,20 +151,27 @@ void init_b737_tq(void)
   teensy[te].pinmode[37] = PINMODE_SERVO; // Stab Trim 1 Servo
 
   /* Stab Trim Wheel direction and rotation counter */
-  as5048b[te][0].nangle = 10;
+  as5048b[te][0].nangle = 50;
   as5048b[te][0].type = 0;
   as5048b[te][0].wire = 0;
   as5048b[te][0].address = 0x40;
 
+  /* initialize auto/manual modes */
+  stabilizer_mode = 0;
+  parkbrake_mode = 0;
+  
 }
 
 void b737_tq(void)
 {
 
   int ret;
-  int te = 0;
+  int te = 0; /* Teensy Number in ini file */
+  int i;
+  float fvalue;
 
- 
+  struct timeval new_time;
+
   float minval = 0.0;
   float maxval = 1.0;
   
@@ -186,7 +198,8 @@ void b737_tq(void)
   float minstabilizer_x737 = -0.280;
   float maxstabilizer_x737 =  1.000;
   float minstabilizer_zibo = -1.000;
-  float maxstabilizer_zibo =  0.719;
+  //  float maxstabilizer_zibo =  0.719;
+  float maxstabilizer_zibo =  1.000;
   float minstabilizer_default = -1.000;
   float maxstabilizer_default =  1.000;
   float difstabilizer = 0.01; /* minimum difference between x-plane and H/W to toggle a change */
@@ -209,6 +222,9 @@ void b737_tq(void)
 
   int one = 1;
   int zero = 0;
+
+  /* Check if Power is on */
+  int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
   int *num_engines = link_dataref_int("sim/aircraft/engine/acf_num_engines");
   /* XP 12 */
@@ -256,8 +272,10 @@ void b737_tq(void)
     speedbrake_xplane = link_dataref_flt("sim/cockpit2/controls/speedbrake_ratio",-2);
   }
 
-  int *trim_up = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_up_mech");
-  int *trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down_mech");
+  int *trim_up_cmd = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_up_mech");
+  int *trim_down_cmd = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down_mech");
+  int *trim_up_ap = link_dataref_int("sim/cockpit2/annunciators/autopilot_trim_up");
+  int *trim_down_ap = link_dataref_int("sim/cockpit2/annunciators/autopilot_trim_down");
   float *stabilizer_xplane = link_dataref_flt("sim/cockpit2/controls/elevator_trim",-3);
 
   int *toga_button;
@@ -430,6 +448,21 @@ void b737_tq(void)
   if (ret == 1) {
     printf("Park Brake changed to: %i \n",parkbrake);
   }
+  if ((parkbrake_mode == 0) && (parkbrake != INT_MISS) && (*parkbrake_xplane != FLT_MISS) &&
+      (fabs((float) parkbrake - *parkbrake_xplane) > difparkbrake)) {
+    if (ret == 1) {
+      /* H/W has changed */
+      parkbrake_mode = 1;
+    } else {
+      /* X-Plane has changed */
+      parkbrake_mode = 2;
+    }
+  }  
+  if ((parkbrake_mode != 0) && (parkbrake != FLT_MISS) && (*parkbrake_xplane != FLT_MISS) &&
+      (fabs((float) parkbrake - *parkbrake_xplane) < difparkbrake)) {
+    /* Reset to idle mode: H/W and X-Plane in same position */
+    parkbrake_mode = 0;
+  }
 
   /* read CUTOFF 0 lever switch */
   ret = digital_input(te, TEENSY_TYPE, 0, 31, &cutoff0, 0);
@@ -525,50 +558,202 @@ void b737_tq(void)
     ret = set_state_togglef(&stab_trim_auto_pilot,autopilot_pos,autopilot_toggle);     
   }
   
+  /*** CUTOFF LEVERS ***/
   
-  
-  /* steer PARK BRAKE Servo */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 33, &throttle0, 0.0, 1.0, 0.51, 0.77);
-  /* steer STAB TRIM Servo 0 */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 36, &throttle0, 0.0, 1.0, 0.175, 0.68);
-  /* steer STAB TRIM Servo 1 */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 37, &throttle0, 0.0, 1.0, 0.28, 0.76);
-
-  int angle;
-  ret = angle_input(te, AS5048B_TYPE, 0, 0, &angle);
-  if (ret == 1) {
-    //printf("Angle changed to: %i \n",angle);
-    if (angle == 1) {
-      printf("UP\n");
-    } else {
-      printf("DOWN\n");
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+    if ((*fuel_mixture_left != FLT_MISS) && (cutoff0 != INT_MISS)) {
+      *fuel_mixture_left = (float) (1-cutoff0);
+    }    
+    if ((*fuel_mixture_right != FLT_MISS) && (cutoff1 != INT_MISS)) {
+      *fuel_mixture_right = (float) (1-cutoff1);
+    }    
+  } else {
+    if (*num_engines != INT_MISS) {
+      for (i=0;i<*num_engines;i++) {
+	if ((i<(*num_engines/2)) || (*num_engines == 1)) {
+	  if ((*(fuel_mixture+i) != FLT_MISS) && (cutoff0 != INT_MISS)) {
+	    *(fuel_mixture+i) = (float) (1-cutoff0);
+	  }
+	} else {
+	  if ((*(fuel_mixture+i) != FLT_MISS) && (cutoff1 != INT_MISS)) {
+	    *(fuel_mixture+i) = (float) (1-cutoff1);
+	  }
+	}
+      }
     }
   }
 
+  /*** PARK BRAKE ***/
+  if (parkbrake_mode == 2) {
+    /* Auto Park Brake: Only works to release Park Brake */
+    if ((*parkbrake_xplane != FLT_MISS) && (*parkbrake_xplane == 0)) {
+      fvalue = 1.0;
+      printf("A: %f %f \n",*parkbrake_xplane, fvalue);
+      ret = servo_output(te, TEENSY_TYPE, 0, 33, &fvalue, 0.0, 1.0, 0.51, 0.77);
+    } else {
+      /* Cannot Auto-Set Parkbrake, thus change X-Plane Value */
+      parkbrake_mode = 1;
+    }
+  }
+  if (parkbrake_mode == 1) {
+    /* Manual Park Brake */
+    /* Set Park Brake Servo to neutral position */
+    fvalue = 0.0;
+    ret = servo_output(te, TEENSY_TYPE, 0, 33, &fvalue, 0.0, 1.0, 0.51, 0.77);
+
+    if (((acf_type == 2) || (acf_type == 3)) && (parkbrake != INT_MISS)) {
+      fvalue = (float) parkbrake;
+      ret = set_state_togglef(parkbrake_xplane,&fvalue,parkbrake_button);
+      if (ret != 0) {
+	printf("Park Brake Toggle: %f %i %i \n",*parkbrake_xplane,parkbrake,*parkbrake_button);
+      }
+
+    } else {
+      if (parkbrake != INT_MISS) *parkbrake_xplane = (float) parkbrake;
+    }      
+  }
+  if (parkbrake_mode == 0) {
+    /* Set Park Brake servo to neutral position */
+    fvalue = 0.0;
+    ret = servo_output(te, TEENSY_TYPE, 0, 33, &fvalue, 0.0, 1.0, 0.51, 0.77);
+  }
+
+  /*** Stabilizer Indicators ***/
+  if (*stabilizer_xplane != FLT_MISS) {
+    /* left */
+    fvalue = (1.0 - (*stabilizer_xplane - minstabilizer_xplane)/(maxstabilizer_xplane - minstabilizer_xplane));
+    //    printf("%f %f %f %f \n",*stabilizer_xplane,minstabilizer,maxstabilizer,value);
+    ret = servo_output(te, TEENSY_TYPE, 0, 36, &fvalue, 0.0, 1.0, 0.115, 0.64);
+   
+    /* right */
+    fvalue = ((*stabilizer_xplane) - minstabilizer_xplane)/(maxstabilizer_xplane - minstabilizer_xplane);
+    //    printf("%f %f %f %f \n",*stabilizer_xplane,minstabilizer,maxstabilizer,value);
+    ret = servo_output(te, TEENSY_TYPE, 0, 37, &fvalue, 0.0, 1.0, 0.28, 0.825);
+
+  }
+
+  /*** Stabilizer Trim Wheel ***/
+
+  /* Manual Trim */
+  int angle;
+  int trim_up_wheel = 0;
+  int trim_down_wheel = 0;
+  ret = angle_input(te, AS5048B_TYPE, 0, 0, &angle);
+  if ((ret == 1) && (trim_up_ap_old == 0) && (trim_down_ap_old == 0)) {
+    //printf("Angle changed to: %i \n",angle);
+    if (angle == 1) {
+      printf("UP\n");
+      trim_up_wheel = 1;
+      //*trim_up_cmd = 1;
+    } else {
+      printf("DOWN\n");
+      trim_down_wheel = 1;
+      //*trim_down_cmd = 1;
+    }
+  }
+
+  /* Is our first command from X-Plane or from Hardware? */
+  if (stabilizer_mode == 0) {
+    if ((trim_up_wheel == 1) || (trim_down_wheel == 1)) stabilizer_mode = 1;
+    if ((*trim_up_ap == 1) || (*trim_down_ap == 1)) stabilizer_mode = 2;
+  }
+
+  if (stabilizer_mode == 1) {
+    stabilizer_mode = 0;
+  }
+
+  if (stabilizer_mode == 2) {
+    
+    /* AP-controlled Stab Trim: use Trim Wheel Motor */
+    /* Also applied for trim switches on Yoke */
+    
+    float motor_speed = 0;
+    int motor_stop = 0;
+
+    /* turn wheel in respective direction if AP commanded trim is running */
+    if (*trim_up_ap == 1) motor_speed = -1.0;
+    if (*trim_down_ap == 1) motor_speed = 1.0;
+
+    /* upon stop we need a short time reverse speed for a fast stop */
+    /* reset timer by default */
+    if ((*trim_up_ap == 0) && (trim_up_ap_old == 0) &&
+	(*trim_down_ap == 0) && (trim_down_ap_old == 0)) {
+      trim_time.tv_sec = INT_MISS;
+    }
+
+    /* start timer after AP trim command stopped */
+    if ((((*trim_up_ap == 0) && (trim_up_ap_old == 1)) ||
+	 ((*trim_down_ap == 0) && (trim_down_ap_old == 1)))
+	&& (trim_time.tv_sec == INT_MISS)) {
+      gettimeofday(&trim_time,NULL);  
+    }
+
+    /* check timer and stop reverse if needed */
+    if (trim_time.tv_sec != INT_MISS) {
+      gettimeofday(&new_time,NULL);
+
+      /* time passed since commanded stop [ms] */
+      int dt = ((new_time.tv_sec - trim_time.tv_sec) +
+		(new_time.tv_usec - trim_time.tv_usec) / 1000000.0)*1000.0;
+
+      /* stop reverse after x milliseconds */
+      if (dt > 75) {
+	printf("Finish Trim Motor Reverse \n");
+	trim_time.tv_sec = INT_MISS;
+      }
+    }
+  
+    /* shortly reverse direction for full stop */
+    if ((*trim_up_ap == 0) && (trim_up_ap_old == 1)) {
+      //printf("Reverse\n");
+      motor_speed = 1.0;
+    }
+    if ((*trim_down_ap == 0) && (trim_down_ap_old == 1)) {
+      //printf("Reverse\n");
+      motor_speed = -1.0;
+    }
+
+    /* Motor Brake */
+    if ((*trim_up_ap == 0) && (*trim_down_ap == 0) &&
+	(trim_up_ap_old == 0) && (trim_down_ap_old == 0)) {
+      /* revert to neutral mode */
+      motor_stop = 1;
+      stabilizer_mode = 0;
+    }
+  
+    ret = motor_output(te, TEENSY_TYPE, 0, 8, &motor_speed,0.0,1.0,motor_stop);
+    
+    /* reset old states if needed (only after short reverse has finished */
+    if (trim_time.tv_sec == INT_MISS) {
+      trim_up_ap_old = *trim_up_ap;
+      trim_down_ap_old = *trim_down_ap;
+    }
+  }
+ 
+  /* Trim Wheel Sound Trigger */
+  int sound_trigger = (*trim_up_ap || *trim_down_ap);
+  //ret = digital_output(te, TEENSY_TYPE, 0, 6, &sound_trigger);
 
   // closed loop motor operation test
   float fencodervalue = (float) horn_encoder;
 
   /* Throttle 0 Motor */
-  ret = program_closedloop(te, 0, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
+  //ret = program_closedloop(te, 0, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
 
   /* Throttle 1 Motor */
-  ret = program_closedloop(te, 1, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
+  //ret = program_closedloop(te, 1, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
 
   /* Speed Brake Motor */
-  ret = program_closedloop(te, 2, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
-
-  /* Trim Wheel Motor */
-  //ret = motor_output(te, TEENSY_TYPE, 0, 8, &speed,0.0,1.0,1-*horn_cutout_button);
+  //ret = program_closedloop(te, 2, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
 
   /* Background Lighting */
-  float lighting = (float) horn_encoder;
-  ret = pwm_output(te, TEENSY_TYPE, 0, 14, &lighting,0.0,100.0);
+  float background_lighting = 0.0;
+  if (*avionics_on == 1) background_lighting = 75.0; /* set 75% intensity for now */
+  ret = pwm_output(te, TEENSY_TYPE, 0, 14, &background_lighting,0.0,100.0);
 
   /* Park Brake Light */
-  ret = pwm_output(te, TEENSY_TYPE, 0, 15, parkbrake_xplane,0.0,1.0);
-
-  /* Trim Wheel Sound Trigger */
-  ret = digital_output(te, TEENSY_TYPE, 0, 6, &toga);
+  float parkbrake_light = 0.0;
+  if ((*avionics_on == 1) && (*parkbrake_xplane == 1.0)) parkbrake_light = 75.0;
+  ret = pwm_output(te, TEENSY_TYPE, 0, 15, &parkbrake_light,0.0,100.0);
 
 }
