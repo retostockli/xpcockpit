@@ -101,8 +101,8 @@ void init_b737_tq(void)
   
   /* Speed Brake Lever */
   program[te][2].type = PROGRAM_CLOSEDLOOP;
-  program[te][2].val16[1] = 305; // minimum servo potentiometer value
-  program[te][2].val16[2] = 1015; // maximum servo potentiometer value
+  program[te][2].val16[1] = 286; // minimum servo potentiometer value
+  program[te][2].val16[2] = 1018; // maximum servo potentiometer value
   program[te][2].val8[1] = 25;  // servo potentiometer pin number (needs to be defined separately above)
   program[te][2].val8[2] = 11;  // servo motor pin number (first pin, full motor separately defined above)
 
@@ -159,6 +159,7 @@ void init_b737_tq(void)
   /* initialize auto/manual modes */
   stabilizer_mode = 0;
   parkbrake_mode = 0;
+  speedbrake_mode = 0;
   
 }
 
@@ -169,6 +170,7 @@ void b737_tq(void)
   int te = 0; /* Teensy Number in ini file */
   int i;
   float fvalue;
+  int en;
 
   struct timeval new_time;
 
@@ -178,6 +180,9 @@ void b737_tq(void)
   float throttle0=FLT_MISS;
   float throttle1=FLT_MISS;
 
+  float minthrottle = 0.01;
+  float maxthrottle = 0.98;
+    
   float reverser0=FLT_MISS;
   float reverser1=FLT_MISS;
 
@@ -202,7 +207,6 @@ void b737_tq(void)
   float maxstabilizer_zibo =  1.000;
   float minstabilizer_default = -1.000;
   float maxstabilizer_default =  1.000;
-  float difstabilizer = 0.01; /* minimum difference between x-plane and H/W to toggle a change */
   
   int parkbrake;
   float difparkbrake = 0.05; /* minimum difference between x-plane and H/W to toggle a change */
@@ -394,88 +398,12 @@ void b737_tq(void)
     minspeedbrake_xplane = minspeedbrake_default;
     maxspeedbrake_xplane = maxspeedbrake_default;
   }
+
+  /* Background Lighting */
+  float background_lighting = 0.0;
+  if (*avionics_on == 1) background_lighting = 75.0; /* set 75% intensity for now */
+  ret = pwm_output(te, TEENSY_TYPE, 0, 14, &background_lighting,0.0,100.0);
    
-  /* read reverser 0 lever position */
-  ret = analog_input(te,22,&reverser0,0.0,1.0);
-  if (ret == 1) {
-    printf("Reverser 0 changed to: %f \n",reverser0);
-  }
-
-  /* read reverser 1 lever position */
-  ret = analog_input(te,23,&reverser1,0.0,1.0);
-  if (ret == 1) {
-    printf("Reverser 1 changed to: %f \n",reverser1);
-  }
-  
-  /* read flap lever position */
-  ret = analog_input(te,24,&flap,0.0,1.0);
-  if (ret == 1) {
-    printf("Flap Lever changed to: %f \n",flap);
-  }
-  
-  /* read speed brake lever position */
-  ret = analog_input(te,25,&speedbrake,0.0,1.0);
-  if (ret == 1) {
-    printf("Speed Brake changed to: %f \n",speedbrake);
-  }
-
-  /* read throttle 0 lever position */
-  ret = analog_input(te,26,&throttle0,0.0,1.0);
-  if (ret == 1) {
-    printf("Throttle 0 changed to: %f \n",throttle0);
-  }
-
-  /* read throttle 1 lever position */
-  ret = analog_input(te,27,&throttle1,0.0,1.0);
-  if (ret == 1) {
-    printf("Throttle 1 changed to: %f \n",throttle1);
-  }
-
-  /* read STAB TRIM MAIN ELECT Switch */
-  ret = digital_inputf(te, TEENSY_TYPE, 0, 28, &stab_trim_main_elect, 0);
-  if (ret == 1) {
-    printf("Stab Trim Main Elect changed to: %f \n",stab_trim_main_elect);
-  }
-
-  /* read STAB TRIM AUTO PILOT Switch */
-  ret = digital_inputf(te, TEENSY_TYPE, 0, 29, &stab_trim_auto_pilot, 0);
-  if (ret == 1) {
-    printf("Stab Trim Auto Pilot changed to: %f \n",stab_trim_auto_pilot);
-  }
-
-  /* read PARK BRAKE Switch */
-  ret = digital_input(te, TEENSY_TYPE, 0, 30, &parkbrake, 0);
-  if (ret == 1) {
-    printf("Park Brake changed to: %i \n",parkbrake);
-  }
-  if ((parkbrake_mode == 0) && (parkbrake != INT_MISS) && (*parkbrake_xplane != FLT_MISS) &&
-      (fabs((float) parkbrake - *parkbrake_xplane) > difparkbrake)) {
-    if (ret == 1) {
-      /* H/W has changed */
-      parkbrake_mode = 1;
-    } else {
-      /* X-Plane has changed */
-      parkbrake_mode = 2;
-    }
-  }  
-  if ((parkbrake_mode != 0) && (parkbrake != FLT_MISS) && (*parkbrake_xplane != FLT_MISS) &&
-      (fabs((float) parkbrake - *parkbrake_xplane) < difparkbrake)) {
-    /* Reset to idle mode: H/W and X-Plane in same position */
-    parkbrake_mode = 0;
-  }
-
-  /* read CUTOFF 0 lever switch */
-  ret = digital_input(te, TEENSY_TYPE, 0, 31, &cutoff0, 0);
-  if (ret == 1) {
-    printf("Cutoff 0 changed to: %i \n",cutoff0);
-  }
-
-  /* read CUTOFF 1 lever switch */
-  ret = digital_input(te, TEENSY_TYPE, 0, 32, &cutoff1, 0);
-  if (ret == 1) {
-    printf("Cutoff 1 changed to: %i \n",cutoff1);
-  }
-
   /* read TOGA Button */
   ret = digital_input(te, TEENSY_TYPE, 0, 34, toga_button, 0);
   if ((ret == 1) && (*toga_button == 1)) {
@@ -502,88 +430,132 @@ void b737_tq(void)
   if (horn_encoder > 100) horn_encoder = 100;
   if (horn_encoder < 0) horn_encoder = 0;
 
-  /*** SPEED BRAKE LEVER ***/
   
-   /* H/W Lever goes from 0.275 - 0.995 */
-  if (speedbrake != FLT_MISS) {
-    speedbrake = min(max((speedbrake - 0.275)/(0.995-0.275),0.0),1.0);
+  /*** THROTTLE AND REVERSER LEVERS ***/
+  
+  /* read reverser 0 lever position */
+  ret = analog_input(te,22,&reverser0,0.0,1.0);
+  if (ret == 1) {
+    printf("Reverser 0 changed to: %f \n",reverser0);
   }
-  /* Scale speedbrake value to X-Plane range */
-  if (speedbrake != FLT_MISS) {
-    speedbrake = speedbrake * (maxspeedbrake_xplane - minspeedbrake_xplane) + minspeedbrake_xplane;
+
+  /* read reverser 1 lever position */
+  ret = analog_input(te,23,&reverser1,0.0,1.0);
+  if (ret == 1) {
+    printf("Reverser 1 changed to: %f \n",reverser1);
   }
- 
-  if ((speedbrake_mode < 0) && (speedbrake_mode > 2)) speedbrake_mode = 0;
-  if ((speedbrake_mode == 0) && (speedbrake != FLT_MISS) && (*speedbrake_xplane != FLT_MISS) &&
-      (fabs(speedbrake - *speedbrake_xplane) > difspeedbrake)) {
-    if (ret == 1) {
-      /* H/W has changed: Manual Mode */
-      speedbrake_mode = 1;
+
+  /* read throttle 0 lever position */
+  ret = analog_input(te,26,&throttle0,0.0,1.0);
+  if (ret == 1) {
+    printf("Throttle 0 changed to: %f \n",throttle0);
+  }
+
+  /* read throttle 1 lever position */
+  ret = analog_input(te,27,&throttle1,0.0,1.0);
+  if (ret == 1) {
+    printf("Throttle 1 changed to: %f \n",throttle1);
+  }
+
+  /* diagnose whether on Auto Throttle (AT) or Manual mode */
+  int at = 0;
+  if (acf_type == 3) {
+    //if (*speed_mode >= 1.0) at = 1;
+    if (*autothrottle_on_f == 1.0) at = 1;
+    //printf("%f %f \n",*speed_mode,*lock_throttle);
+  } else {
+    if (*autothrottle_on >= 1) at = 1;
+  }
+
+  /*** ---> please adjust for any number of engines */
+  
+  if ((at == 1) && (*lock_throttle == 1.0)) {
+    /* on autopilot and autothrottle */
+       
+    /* Auto Throttle for engine 1 (first engine on left wing) */
+    en = 0;
+    if ((*(throttle_actuator+en) != FLT_MISS) && (throttle0 != FLT_MISS)) { 
+      ret = program_closedloop(te, 0, 1, (throttle_actuator+en), 0.0, 1.0);
     } else {
-      /* X-Plane has changed: AP Mode */
-      speedbrake_mode = 2;
+      ret = program_closedloop(te, 0, 0, (throttle_actuator+en), 0.0, 1.0);
     }
-  }
-  if ((speedbrake_mode != 0) && (speedbrake != FLT_MISS) && (*speedbrake_xplane != FLT_MISS) &&
-      (fabs(speedbrake - *speedbrake_xplane) < difspeedbrake)) {
-    /* Idle mode: H/W and X-Plane in same position */
-    speedbrake_mode = 0;
-  }
 
-  /*** FLAPS LEVER ***/
-  if (flap < 0.5*(0.043+0.179)) {
-    *flap_ratio = 0.000;
-  } else if (flap < 0.5*(0.179+0.313)) {
-    *flap_ratio = 0.125;
-  } else if (flap < 0.5*(0.313+0.441)) {
-    *flap_ratio = 0.250;
-  } else if (flap < 0.5*(0.441+0.540)) {
-    *flap_ratio = 0.375;
-  } else if (flap < 0.5*(0.540+0.650)) {
-    *flap_ratio = 0.500;
-  } else if (flap < 0.5*(0.659+0.750)) {
-    *flap_ratio = 0.625;
-  } else if (flap < 0.5*(0.750+0.880)) {
-    *flap_ratio = 0.750;
-  } else if (flap < 0.5*(0.880+0.950)) {
-    *flap_ratio = 0.875;
-  } else {
-    *flap_ratio = 1.000;
-  }
-
-  /*** TRIM SWITCHES ***/
-
-  if ((acf_type == 2) || (acf_type == 3)) {
-    ret = set_state_togglef(&stab_trim_main_elect,main_elect_pos,main_elect_toggle);
-    ret = set_state_togglef(&stab_trim_auto_pilot,autopilot_pos,autopilot_toggle);     
-  }
-  
-  /*** CUTOFF LEVERS ***/
-  
-  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
-    if ((*fuel_mixture_left != FLT_MISS) && (cutoff0 != INT_MISS)) {
-      *fuel_mixture_left = (float) (1-cutoff0);
-    }    
-    if ((*fuel_mixture_right != FLT_MISS) && (cutoff1 != INT_MISS)) {
-      *fuel_mixture_right = (float) (1-cutoff1);
-    }    
-  } else {
+    /* Auto Throttle for engine 2 (first engine on right wing)*/
     if (*num_engines != INT_MISS) {
-      for (i=0;i<*num_engines;i++) {
-	if ((i<(*num_engines/2)) || (*num_engines == 1)) {
-	  if ((*(fuel_mixture+i) != FLT_MISS) && (cutoff0 != INT_MISS)) {
-	    *(fuel_mixture+i) = (float) (1-cutoff0);
-	  }
-	} else {
-	  if ((*(fuel_mixture+i) != FLT_MISS) && (cutoff1 != INT_MISS)) {
-	    *(fuel_mixture+i) = (float) (1-cutoff1);
+      en = (*num_engines + 1) / 2;
+    } else {
+      en = 1;
+    }
+    if ((*(throttle_actuator+en) != FLT_MISS) && (throttle1 != FLT_MISS)) {
+      ret = program_closedloop(te, 1, 1, (throttle_actuator+en), 0.0, 1.0);
+    } else {
+      ret = program_closedloop(te, 1, 0, (throttle_actuator+en), 0.0, 1.0);
+    }
+
+  } else {
+    /* on manual throttle */
+    en = 0;
+    ret = program_closedloop(te, 0, 0, (throttle_actuator+en), 0.0, 1.0);
+    en = 1;
+    ret = program_closedloop(te, 1, 0, (throttle_actuator+en), 0.0, 1.0);
+
+    if ((reverser0 != FLT_MISS) && (reverser1 != FLT_MISS) &&
+	(throttle0 != FLT_MISS) && (throttle1 != FLT_MISS)) {
+    
+      if ((acf_type == 2) || (acf_type == 3)) {
+	*zibo_reverser0 = reverser0;
+	*zibo_throttle0 = (throttle0 - minthrottle)/(maxthrottle - minthrottle);
+	*zibo_reverser1 = reverser1;
+	*zibo_throttle1 = (throttle1 - minthrottle)/(maxthrottle - minthrottle);
+      } else {
+	if (*num_engines != INT_MISS) {
+	  for (i=0;i<*num_engines;i++) {
+	    if ((i<(*num_engines/2)) || (*num_engines == 1)) {
+	      /* engines on left wing */
+	      /* or single engine */
+	      /* or first half minus one if uneven # of engines */
+	      if ((throttle0 < 0.05) && (reverser0 > 0.05)) {
+		*(throttle+i) = -reverser0;
+	      } else {
+		*(throttle+i) = (throttle0 - minthrottle)/(maxthrottle - minthrottle);
+	      }
+	    } else {
+	      if ((throttle1 < 0.05) && (reverser1 > 0.05)) {
+		*(throttle+i) = -reverser1;
+	      } else {
+		*(throttle+i) = (throttle1 - minthrottle)/(maxthrottle - minthrottle);
+	      }
+	    }
 	  }
 	}
       }
+
     }
+
+  } // manual throttle
+
+  
+  /*** PARK BRAKE Switch and Servo ***/
+  ret = digital_input(te, TEENSY_TYPE, 0, 30, &parkbrake, 0);
+  if (ret == 1) {
+    printf("Park Brake changed to: %i \n",parkbrake);
+  }
+  if ((parkbrake_mode == 0) && (parkbrake != INT_MISS) && (*parkbrake_xplane != FLT_MISS) &&
+      (fabs((float) parkbrake - *parkbrake_xplane) > difparkbrake)) {
+    if (ret == 1) {
+      /* H/W has changed */
+      parkbrake_mode = 1;
+    } else {
+      /* X-Plane has changed */
+      parkbrake_mode = 2;
+    }
+  }  
+  if ((parkbrake_mode != 0) && (parkbrake != FLT_MISS) && (*parkbrake_xplane != FLT_MISS) &&
+      (fabs((float) parkbrake - *parkbrake_xplane) < difparkbrake)) {
+    /* Reset to idle mode: H/W and X-Plane in same position */
+    parkbrake_mode = 0;
   }
 
-  /*** PARK BRAKE ***/
   if (parkbrake_mode == 2) {
     /* Auto Park Brake: Only works to release Park Brake */
     if ((*parkbrake_xplane != FLT_MISS) && (*parkbrake_xplane == 0)) {
@@ -618,6 +590,146 @@ void b737_tq(void)
     ret = servo_output(te, TEENSY_TYPE, 0, 33, &fvalue, 0.0, 1.0, 0.51, 0.77);
   }
 
+  /* Park Brake Light */
+  float parkbrake_light = 0.0;
+  if ((*avionics_on == 1) && (*parkbrake_xplane == 1.0)) parkbrake_light = 75.0;
+  ret = pwm_output(te, TEENSY_TYPE, 0, 15, &parkbrake_light,0.0,100.0);
+
+
+  
+  /*** SPEED BRAKE LEVER ***/
+
+  /* read speed brake lever position */
+  ret = analog_input(te,25,&speedbrake,0.0,1.0);
+  if (ret == 1) {
+    printf("Speed Brake changed to: %f \n",speedbrake);
+  }
+ 
+   /* H/W Lever goes from 0.280 - 0.995 */
+  if (speedbrake != FLT_MISS) {
+    speedbrake = min(max((speedbrake - 0.280)/(0.995-0.280),0.0),1.0);
+  }
+  /* Scale speedbrake value to X-Plane range */
+  if (speedbrake != FLT_MISS) {
+    speedbrake = speedbrake * (maxspeedbrake_xplane - minspeedbrake_xplane) + minspeedbrake_xplane;
+  }
+  
+  if ((speedbrake_mode == 0) && (speedbrake != FLT_MISS) && (*speedbrake_xplane != FLT_MISS) &&
+      (fabs(speedbrake - *speedbrake_xplane) > difspeedbrake)) {
+    if (ret == 1) {
+      /* H/W has changed: Manual Mode */
+      printf("Speedbrake Changed to Manual Mode\n");
+      speedbrake_mode = 1;
+    } else {
+      /* X-Plane has changed: AP Mode */
+      printf("Speedbrake Changed to Auto Mode\n");
+      speedbrake_mode = 2;
+    }
+  }
+  if ((speedbrake_mode != 0) && (speedbrake != FLT_MISS) && (*speedbrake_xplane != FLT_MISS) &&
+      (fabs(speedbrake - *speedbrake_xplane) < difspeedbrake)) {
+    /* Idle mode: H/W and X-Plane in same position */
+    speedbrake_mode = 0;
+  }
+
+  if ((speedbrake_mode == 0) || (speedbrake_mode == 1)) {
+
+    ret = program_closedloop(te, 2, 0, speedbrake_xplane, minspeedbrake_xplane, maxspeedbrake_xplane);
+
+    if (speedbrake_mode == 1) {
+      *speedbrake_xplane = speedbrake; 
+    }
+    
+  } else if (speedbrake_mode == 2) {
+
+    ret = program_closedloop(te, 2, 1, speedbrake_xplane, minspeedbrake_xplane, maxspeedbrake_xplane);
+
+  }
+
+  /*** FLAPS LEVER ***/
+  
+  /* read flap lever position */
+  ret = analog_input(te,24,&flap,0.0,1.0);
+  if (ret == 1) {
+    printf("Flap Lever changed to: %f \n",flap);
+  }
+  
+  if (flap < 0.5*(0.043+0.179)) {
+    *flap_ratio = 0.000;
+  } else if (flap < 0.5*(0.179+0.313)) {
+    *flap_ratio = 0.125;
+  } else if (flap < 0.5*(0.313+0.441)) {
+    *flap_ratio = 0.250;
+  } else if (flap < 0.5*(0.441+0.540)) {
+    *flap_ratio = 0.375;
+  } else if (flap < 0.5*(0.540+0.650)) {
+    *flap_ratio = 0.500;
+  } else if (flap < 0.5*(0.659+0.750)) {
+    *flap_ratio = 0.625;
+  } else if (flap < 0.5*(0.750+0.880)) {
+    *flap_ratio = 0.750;
+  } else if (flap < 0.5*(0.880+0.950)) {
+    *flap_ratio = 0.875;
+  } else {
+    *flap_ratio = 1.000;
+  }
+
+  /*** TRIM SWITCHES ***/
+
+  /* read STAB TRIM MAIN ELECT Switch */
+  ret = digital_inputf(te, TEENSY_TYPE, 0, 28, &stab_trim_main_elect, 0);
+  if (ret == 1) {
+    printf("Stab Trim Main Elect changed to: %f \n",stab_trim_main_elect);
+  }
+
+  /* read STAB TRIM AUTO PILOT Switch */
+  ret = digital_inputf(te, TEENSY_TYPE, 0, 29, &stab_trim_auto_pilot, 0);
+  if (ret == 1) {
+    printf("Stab Trim Auto Pilot changed to: %f \n",stab_trim_auto_pilot);
+  }
+
+  if ((acf_type == 2) || (acf_type == 3)) {
+    ret = set_state_togglef(&stab_trim_main_elect,main_elect_pos,main_elect_toggle);
+    ret = set_state_togglef(&stab_trim_auto_pilot,autopilot_pos,autopilot_toggle);     
+  }
+  
+  /*** CUTOFF LEVERS ***/
+
+  /* read CUTOFF 0 lever switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 31, &cutoff0, 0);
+  if (ret == 1) {
+    printf("Cutoff 0 changed to: %i \n",cutoff0);
+  }
+
+  /* read CUTOFF 1 lever switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 32, &cutoff1, 0);
+  if (ret == 1) {
+    printf("Cutoff 1 changed to: %i \n",cutoff1);
+  }
+  
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+    if ((*fuel_mixture_left != FLT_MISS) && (cutoff0 != INT_MISS)) {
+      *fuel_mixture_left = (float) (1-cutoff0);
+    }    
+    if ((*fuel_mixture_right != FLT_MISS) && (cutoff1 != INT_MISS)) {
+      *fuel_mixture_right = (float) (1-cutoff1);
+    }    
+  } else {
+    if (*num_engines != INT_MISS) {
+      for (i=0;i<*num_engines;i++) {
+	if ((i<(*num_engines/2)) || (*num_engines == 1)) {
+	  if ((*(fuel_mixture+i) != FLT_MISS) && (cutoff0 != INT_MISS)) {
+	    *(fuel_mixture+i) = (float) (1-cutoff0);
+	  }
+	} else {
+	  if ((*(fuel_mixture+i) != FLT_MISS) && (cutoff1 != INT_MISS)) {
+	    *(fuel_mixture+i) = (float) (1-cutoff1);
+	  }
+	}
+      }
+    }
+  }
+
   /*** Stabilizer Indicators ***/
   if (*stabilizer_xplane != FLT_MISS) {
     /* left */
@@ -644,22 +756,57 @@ void b737_tq(void)
     if (angle == 1) {
       printf("UP\n");
       trim_up_wheel = 1;
-      //*trim_up_cmd = 1;
     } else {
       printf("DOWN\n");
       trim_down_wheel = 1;
-      //*trim_down_cmd = 1;
     }
   }
 
   /* Is our first command from X-Plane or from Hardware? */
   if (stabilizer_mode == 0) {
-    if ((trim_up_wheel == 1) || (trim_down_wheel == 1)) stabilizer_mode = 1;
-    if ((*trim_up_ap == 1) || (*trim_down_ap == 1)) stabilizer_mode = 2;
+    if ((trim_up_wheel == 1) || (trim_down_wheel == 1)) stabilizer_mode = 1; // Hand drives
+    if ((*trim_up_ap == 1) || (*trim_down_ap == 1)) stabilizer_mode = 2; // X-Plane drives
+
+    if (stabilizer_mode > 0) printf("Switched to Stabilizer Mode: %i \n",stabilizer_mode);
+
+    trim_time.tv_sec = INT_MISS;
   }
 
   if (stabilizer_mode == 1) {
-    stabilizer_mode = 0;
+    if (trim_up_wheel == 1) {
+      trim_time.tv_sec = INT_MISS;
+      *trim_up_cmd = 1;
+      *trim_down_cmd = 0;
+    }
+    if (trim_down_wheel == 1) {
+      trim_time.tv_sec = INT_MISS;
+      *trim_up_cmd = 0;
+      *trim_down_cmd = 1;
+    }
+
+    if ((trim_up_wheel == 0) && (trim_down_wheel == 0)) {
+      if (trim_time.tv_sec == INT_MISS) {
+	gettimeofday(&trim_time,NULL);
+      } else {
+	gettimeofday(&new_time,NULL);
+	
+	/* time passed since commanded stop [ms] */
+	int dt = ((new_time.tv_sec - trim_time.tv_sec) +
+		  (new_time.tv_usec - trim_time.tv_usec) / 1000000.0)*1000.0;
+	
+	/* hardware trim wheel quiet after x ms no up/down commands */
+	if (dt > 100) {
+	  *trim_up_cmd = 0;
+	  *trim_down_cmd = 0;
+	}
+	/* wait until x-plane stopped turning trim wheel */
+	if (dt > 1000) {
+	  printf("Finish Manual Trim \n");
+	  trim_time.tv_sec = INT_MISS;
+	  stabilizer_mode = 0;
+	}
+      }
+    }
   }
 
   if (stabilizer_mode == 2) {
@@ -670,17 +817,6 @@ void b737_tq(void)
     float motor_speed = 0;
     int motor_stop = 0;
 
-    /* turn wheel in respective direction if AP commanded trim is running */
-    if (*trim_up_ap == 1) motor_speed = -1.0;
-    if (*trim_down_ap == 1) motor_speed = 1.0;
-
-    /* upon stop we need a short time reverse speed for a fast stop */
-    /* reset timer by default */
-    if ((*trim_up_ap == 0) && (trim_up_ap_old == 0) &&
-	(*trim_down_ap == 0) && (trim_down_ap_old == 0)) {
-      trim_time.tv_sec = INT_MISS;
-    }
-
     /* start timer after AP trim command stopped */
     if ((((*trim_up_ap == 0) && (trim_up_ap_old == 1)) ||
 	 ((*trim_down_ap == 0) && (trim_down_ap_old == 1)))
@@ -689,7 +825,17 @@ void b737_tq(void)
     }
 
     /* check timer and stop reverse if needed */
-    if (trim_time.tv_sec != INT_MISS) {
+    if (trim_time.tv_sec == INT_MISS) {
+      /* regular operation */
+      /* turn wheel in respective direction if AP commanded trim is running */
+      if (*trim_up_ap == 1) motor_speed = -1.0;
+      if (*trim_down_ap == 1) motor_speed = 1.0;
+    } else {
+      /* stop operation */
+      /* turn wheel in counter direction */
+      if (trim_up_ap_old == 1) motor_speed = 1.0;
+      if (trim_down_ap_old == 1) motor_speed = -1.0;
+
       gettimeofday(&new_time,NULL);
 
       /* time passed since commanded stop [ms] */
@@ -698,27 +844,14 @@ void b737_tq(void)
 
       /* stop reverse after x milliseconds */
       if (dt > 75) {
-	printf("Finish Trim Motor Reverse \n");
-	trim_time.tv_sec = INT_MISS;
+	motor_stop = 1;
       }
-    }
-  
-    /* shortly reverse direction for full stop */
-    if ((*trim_up_ap == 0) && (trim_up_ap_old == 1)) {
-      //printf("Reverse\n");
-      motor_speed = 1.0;
-    }
-    if ((*trim_down_ap == 0) && (trim_down_ap_old == 1)) {
-      //printf("Reverse\n");
-      motor_speed = -1.0;
-    }
-
-    /* Motor Brake */
-    if ((*trim_up_ap == 0) && (*trim_down_ap == 0) &&
-	(trim_up_ap_old == 0) && (trim_down_ap_old == 0)) {
-      /* revert to neutral mode */
-      motor_stop = 1;
-      stabilizer_mode = 0;
+      /* trim motor quiet, no more false up/down manual commands */
+      if (dt > 1000) {
+	printf("Finish Trim Motor Operation \n");
+	trim_time.tv_sec = INT_MISS;
+	stabilizer_mode = 0;
+      }
     }
   
     ret = motor_output(te, TEENSY_TYPE, 0, 8, &motor_speed,0.0,1.0,motor_stop);
@@ -733,27 +866,5 @@ void b737_tq(void)
   /* Trim Wheel Sound Trigger */
   int sound_trigger = (*trim_up_ap || *trim_down_ap);
   //ret = digital_output(te, TEENSY_TYPE, 0, 6, &sound_trigger);
-
-  // closed loop motor operation test
-  float fencodervalue = (float) horn_encoder;
-
-  /* Throttle 0 Motor */
-  //ret = program_closedloop(te, 0, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
-
-  /* Throttle 1 Motor */
-  //ret = program_closedloop(te, 1, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
-
-  /* Speed Brake Motor */
-  //ret = program_closedloop(te, 2, stab_trim_main_elect, &fencodervalue, 0.0, 100.0);
-
-  /* Background Lighting */
-  float background_lighting = 0.0;
-  if (*avionics_on == 1) background_lighting = 75.0; /* set 75% intensity for now */
-  ret = pwm_output(te, TEENSY_TYPE, 0, 14, &background_lighting,0.0,100.0);
-
-  /* Park Brake Light */
-  float parkbrake_light = 0.0;
-  if ((*avionics_on == 1) && (*parkbrake_xplane == 1.0)) parkbrake_light = 75.0;
-  ret = pwm_output(te, TEENSY_TYPE, 0, 15, &parkbrake_light,0.0,100.0);
 
 }
