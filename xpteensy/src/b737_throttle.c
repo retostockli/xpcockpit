@@ -37,11 +37,17 @@
 #define max(A,B) ((A)>(B) ? (A) : (B)) 
 #define min(A,B) ((A)<(B) ? (A) : (B)) 
 
+/* Min and Max Potentiometer Values for Levers */
+#define THROTTLE_MIN 0.01
+#define THROTTLE_MAX 0.98
+#define SPEEDBRAKE_MIN 0.300
+#define SPEEDBRAKE_ARM 0.510
+#define SPEEDBRAKE_MAX 0.995
+ 
 /* allocation of global variables defined in b737_throttle.h */
 int speedbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
 int parkbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
 int stabilizer_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
-float stabilizer_old; /* save value for stabilizer to dampen small changes from pots */
 
 int trim_up_ap_old;
 int trim_down_ap_old;
@@ -87,22 +93,22 @@ void init_b737_tq(void)
 
   /* Thrust Lever 0 */
   program[te][0].type = PROGRAM_CLOSEDLOOP;
-  program[te][0].val16[1] = 5; // minimum servo potentiometer value
-  program[te][0].val16[2] = 990; // maximum servo potentiometer value
+  program[te][0].val16[1] = THROTTLE_MIN * 1023; // minimum servo potentiometer value
+  program[te][0].val16[2] = THROTTLE_MAX * 1023; // maximum servo potentiometer value
   program[te][0].val8[1] = 26;  // servo potentiometer pin number (needs to be defined separately above)
   program[te][0].val8[2] = 0;  // servo motor pin number (first pin, full motor separately defined above)
 
   /* Trust Lever 1 */
   program[te][1].type = PROGRAM_CLOSEDLOOP;
-  program[te][1].val16[1] = 5; // minimum servo potentiometer value
-  program[te][1].val16[2] = 990; // maximum servo potentiometer value
+  program[te][1].val16[1] = THROTTLE_MIN * 1023; // minimum servo potentiometer value
+  program[te][1].val16[2] = THROTTLE_MAX * 1023; // maximum servo potentiometer value
   program[te][1].val8[1] = 27;  // servo potentiometer pin number (needs to be defined separately above)
   program[te][1].val8[2] = 3;  // servo motor pin number (first pin, full motor separately defined above)
   
   /* Speed Brake Lever */
   program[te][2].type = PROGRAM_CLOSEDLOOP;
-  program[te][2].val16[1] = 286; // minimum servo potentiometer value
-  program[te][2].val16[2] = 1018; // maximum servo potentiometer value
+  program[te][2].val16[1] = SPEEDBRAKE_MIN * 1023; // minimum servo potentiometer value
+  program[te][2].val16[2] = SPEEDBRAKE_MAX * 1023; // maximum servo potentiometer value
   program[te][2].val8[1] = 25;  // servo potentiometer pin number (needs to be defined separately above)
   program[te][2].val8[2] = 11;  // servo motor pin number (first pin, full motor separately defined above)
 
@@ -179,10 +185,7 @@ void b737_tq(void)
   
   float throttle0=FLT_MISS;
   float throttle1=FLT_MISS;
-
-  float minthrottle = 0.01;
-  float maxthrottle = 0.98;
-    
+   
   float reverser0=FLT_MISS;
   float reverser1=FLT_MISS;
 
@@ -284,21 +287,21 @@ void b737_tq(void)
 
   int *toga_button;
   if ((acf_type == 2) || (acf_type == 3)) {
-    toga_button = link_dataref_cmd_once("laminar/B738/autopilot/left_toga_press");
+    toga_button = link_dataref_cmd_hold("laminar/B738/autopilot/left_toga_press");
   } else if (acf_type == 1) {
     toga_button = link_dataref_int("x737/systems/athr/toggle_TOGA");
   } else {
     //    toga_button = link_dataref_cmd_once("sim/engines/TOGA_power");
-    toga_button = link_dataref_cmd_once("sim/autopilot/take_off_go_around");
+    toga_button = link_dataref_cmd_hold("sim/autopilot/take_off_go_around");
   }
   
   int *at_disconnect_button;
   if ((acf_type == 2) || (acf_type == 3)) {
-    at_disconnect_button = link_dataref_cmd_once("laminar/B738/autopilot/left_at_dis_press");
+    at_disconnect_button = link_dataref_cmd_hold("laminar/B738/autopilot/left_at_dis_press");
   } else if (acf_type == 1) {
-    at_disconnect_button = link_dataref_cmd_once("x737/mcp/ATHR_ARM_OFF");
+    at_disconnect_button = link_dataref_cmd_hold("x737/mcp/ATHR_ARM_OFF");
   } else {
-    at_disconnect_button = link_dataref_cmd_once("sim/autopilot/autothrottle_off");
+    at_disconnect_button = link_dataref_cmd_hold("sim/autopilot/autothrottle_off");
   }
   
   int *autothrottle_on;
@@ -308,8 +311,8 @@ void b737_tq(void)
   if ((acf_type == 2) || (acf_type == 3)) {
     autothrottle_on_f = link_dataref_flt("laminar/B738/autopilot/autothrottle_status1",0);
     //speed_mode = link_dataref_flt("laminar/B738/autopilot/speed_mode",0);
-    //lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0);
-    lock_throttle = link_dataref_flt("laminar/B738/autopilot/autothrottle_status",0);
+    lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0); // XP11
+    //lock_throttle = link_dataref_flt("laminar/B738/autopilot/autothrottle_status",0); // XP12
   } else if (acf_type == 1) {
     autothrottle_on = link_dataref_int("x737/systems/athr/athr_active");
     lock_throttle = link_dataref_flt("xpserver/lock_throttle1",0);
@@ -339,9 +342,9 @@ void b737_tq(void)
      
   int *horn_cutout_button;
   if ((acf_type == 2) || (acf_type == 3)) { 
-    horn_cutout_button = link_dataref_cmd_once("laminar/B738/alert/gear_horn_cutout");
+    horn_cutout_button = link_dataref_cmd_hold("laminar/B738/alert/gear_horn_cutout");
   } else if (acf_type == 1) {
-    horn_cutout_button = link_dataref_cmd_once("x737/TQ/HORN_CUTOUT");
+    horn_cutout_button = link_dataref_cmd_hold("x737/TQ/HORN_CUTOUT");
   } else {
     horn_cutout_button = link_dataref_int("xpserver/HORN_CUTOUT");
   }
@@ -435,6 +438,7 @@ void b737_tq(void)
   
   /* read reverser 0 lever position */
   ret = analog_input(te,22,&reverser0,0.0,1.0);
+  //printf("%f \n",reverser0);
   if (ret == 1) {
     printf("Reverser 0 changed to: %f \n",reverser0);
   }
@@ -459,18 +463,15 @@ void b737_tq(void)
 
   /* diagnose whether on Auto Throttle (AT) or Manual mode */
   int at = 0;
-  if (acf_type == 3) {
-    //if (*speed_mode >= 1.0) at = 1;
+  if ((acf_type == 2) || (acf_type == 3)) {
     if (*autothrottle_on_f == 1.0) at = 1;
-    //printf("%f %f \n",*speed_mode,*lock_throttle);
+    //printf("%f %f \n",*autothrottle_on_f,*lock_throttle);
   } else {
     if (*autothrottle_on >= 1) at = 1;
   }
-
-  /*** ---> please adjust for any number of engines */
   
   if ((at == 1) && (*lock_throttle == 1.0)) {
-    /* on autopilot and autothrottle */
+    /* on autothrottle */
        
     /* Auto Throttle for engine 1 (first engine on left wing) */
     en = 0;
@@ -494,19 +495,21 @@ void b737_tq(void)
 
   } else {
     /* on manual throttle */
+    fvalue = 0.0;
     en = 0;
-    ret = program_closedloop(te, 0, 0, (throttle_actuator+en), 0.0, 1.0);
+    ret = program_closedloop(te, 0, 0, &fvalue, 0.0, 1.0);
     en = 1;
-    ret = program_closedloop(te, 1, 0, (throttle_actuator+en), 0.0, 1.0);
+    ret = program_closedloop(te, 1, 0, &fvalue, 0.0, 1.0);
 
     if ((reverser0 != FLT_MISS) && (reverser1 != FLT_MISS) &&
 	(throttle0 != FLT_MISS) && (throttle1 != FLT_MISS)) {
     
       if ((acf_type == 2) || (acf_type == 3)) {
 	*zibo_reverser0 = reverser0;
-	*zibo_throttle0 = (throttle0 - minthrottle)/(maxthrottle - minthrottle);
+	*zibo_throttle0 = min(max((throttle0 - THROTTLE_MIN)/(THROTTLE_MAX - THROTTLE_MIN),0.0),1.0);
 	*zibo_reverser1 = reverser1;
-	*zibo_throttle1 = (throttle1 - minthrottle)/(maxthrottle - minthrottle);
+	*zibo_throttle1 = min(max((throttle1 - THROTTLE_MIN)/(THROTTLE_MAX - THROTTLE_MIN),0.0),1.0);
+
       } else {
 	if (*num_engines != INT_MISS) {
 	  for (i=0;i<*num_engines;i++) {
@@ -517,13 +520,13 @@ void b737_tq(void)
 	      if ((throttle0 < 0.05) && (reverser0 > 0.05)) {
 		*(throttle+i) = -reverser0;
 	      } else {
-		*(throttle+i) = (throttle0 - minthrottle)/(maxthrottle - minthrottle);
+		*(throttle+i) = min(max((throttle0 - THROTTLE_MIN)/(THROTTLE_MAX - THROTTLE_MIN),0.0),1.0);
 	      }
 	    } else {
 	      if ((throttle1 < 0.05) && (reverser1 > 0.05)) {
 		*(throttle+i) = -reverser1;
 	      } else {
-		*(throttle+i) = (throttle1 - minthrottle)/(maxthrottle - minthrottle);
+		*(throttle+i) = min(max((throttle1 - THROTTLE_MIN)/(THROTTLE_MAX - THROTTLE_MIN),0.0),1.0);
 	      }
 	    }
 	  }
@@ -604,12 +607,15 @@ void b737_tq(void)
   if (ret == 1) {
     printf("Speed Brake changed to: %f \n",speedbrake);
   }
+
+  int speedbrake_armed = 0;
+  if (speedbrake > SPEEDBRAKE_ARM) speedbrake_armed = 1;
  
-   /* H/W Lever goes from 0.280 - 0.995 */
+   /* Normalize H/W lever potentiometer range */
   if (speedbrake != FLT_MISS) {
-    speedbrake = min(max((speedbrake - 0.280)/(0.995-0.280),0.0),1.0);
+    speedbrake = min(max((speedbrake - SPEEDBRAKE_MIN)/(SPEEDBRAKE_MAX - SPEEDBRAKE_MIN),0.0),1.0);
   }
-  /* Scale speedbrake value to X-Plane range */
+  /* Scale normalized speedbrake range to X-Plane range */
   if (speedbrake != FLT_MISS) {
     speedbrake = speedbrake * (maxspeedbrake_xplane - minspeedbrake_xplane) + minspeedbrake_xplane;
   }
@@ -642,8 +648,15 @@ void b737_tq(void)
     
   } else if (speedbrake_mode == 2) {
 
-    ret = program_closedloop(te, 2, 1, speedbrake_xplane, minspeedbrake_xplane, maxspeedbrake_xplane);
+    if (speedbrake_armed == 1) {
 
+      ret = program_closedloop(te, 2, 1, speedbrake_xplane, minspeedbrake_xplane, maxspeedbrake_xplane);
+
+    } else {
+      printf("Speedbrake Changed to Manual Mode\n");
+      speedbrake_mode = 1;
+    }  
+    
   }
 
   /*** FLAPS LEVER ***/
@@ -864,7 +877,8 @@ void b737_tq(void)
   }
  
   /* Trim Wheel Sound Trigger */
-  int sound_trigger = (*trim_up_ap || *trim_down_ap);
-  //ret = digital_output(te, TEENSY_TYPE, 0, 6, &sound_trigger);
+  /* How to Convert Audio File: sox -v 2.0 PMDG_Trim.wav -r 22000 -b 16 T00HOLDL.WAV */
+  int sound_trigger = ((*trim_up_ap == 1) || (*trim_down_ap == 1));
+  ret = digital_output(te, TEENSY_TYPE, 0, 6, &sound_trigger);
 
 }

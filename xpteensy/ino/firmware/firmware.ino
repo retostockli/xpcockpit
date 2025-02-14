@@ -5,9 +5,10 @@
 
 /* USER PARAMETERS PER TEENSY CONTROLLER */
 #define PORT 1030
-#define IP "192.168.1.66"
 #define MASK "255.255.255.0"
 #define GATEWAY "192.168.1.1"
+
+#define IP "192.168.1.66"   /* Boeing 737 Throttle Quadrant */
 
 //#include <Ethernet.h>
 //#include <EthernetUdp.h>
