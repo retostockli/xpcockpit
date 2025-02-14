@@ -38,11 +38,13 @@
 #define min(A,B) ((A)<(B) ? (A) : (B)) 
 
 /* Min and Max Potentiometer Values for Levers */
-#define THROTTLE_MIN 0.01
+#define THROTTLE_MIN 0.03
 #define THROTTLE_MAX 0.98
 #define SPEEDBRAKE_MIN 0.300
 #define SPEEDBRAKE_ARM 0.510
 #define SPEEDBRAKE_MAX 0.995
+#define REVERSER_MIN 0.05
+#define REVERSER_MAX 0.95
  
 /* allocation of global variables defined in b737_throttle.h */
 int speedbrake_mode; /* 0: no change; 1: H/W controlling; 2: X-Plane controlling */
@@ -179,9 +181,6 @@ void b737_tq(void)
   int en;
 
   struct timeval new_time;
-
-  float minval = 0.0;
-  float maxval = 1.0;
   
   float throttle0=FLT_MISS;
   float throttle1=FLT_MISS;
@@ -200,7 +199,6 @@ void b737_tq(void)
   float maxspeedbrake_default = 1.0;
   float difspeedbrake = 0.05; /* minimum difference between x-plane and H/W to toggle a change */
 
-  float stabilizer=FLT_MISS;
   float minstabilizer_xplane;
   float maxstabilizer_xplane;
   float minstabilizer_x737 = -0.280;
@@ -218,28 +216,20 @@ void b737_tq(void)
   float stab_trim_auto_pilot = FLT_MISS;
   int cutoff0 = INT_MISS;
   int cutoff1 = INT_MISS;
-  int toga = INT_MISS;
-  int at_disconnect = INT_MISS;
   int horn_encoder;
 
   float flap=FLT_MISS;
-
-  int ivalue;
-  float value;
-
-  int one = 1;
-  int zero = 0;
 
   /* Check if Power is on */
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
   int *num_engines = link_dataref_int("sim/aircraft/engine/acf_num_engines");
-  /* XP 12 */
-  //float *throttle = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_jet_rev_ratio", 16, -1, -2);
-  //float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",16, -1, -2);
-  /* XP 11 */
-  float *throttle = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_jet_rev_ratio", 8, -1, -2);
-  float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",8, -1, -2);
+  /* XP12 */
+  float *throttle = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_jet_rev_ratio", 16, -1, -2);
+  float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",16, -1, -2);
+  /* XP11 */
+  //float *throttle = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_jet_rev_ratio", 8, -1, -2);
+  //float *throttle_actuator = link_dataref_flt_arr("sim/cockpit2/engine/actuators/throttle_ratio",8, -1, -2);
 
   float *zibo_throttle0;
   float *zibo_throttle1;
@@ -311,8 +301,8 @@ void b737_tq(void)
   if ((acf_type == 2) || (acf_type == 3)) {
     autothrottle_on_f = link_dataref_flt("laminar/B738/autopilot/autothrottle_status1",0);
     //speed_mode = link_dataref_flt("laminar/B738/autopilot/speed_mode",0);
-    lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0); // XP11
-    //lock_throttle = link_dataref_flt("laminar/B738/autopilot/autothrottle_status",0); // XP12
+    //lock_throttle = link_dataref_flt("laminar/B738/autopilot/lock_throttle",0); // XP11
+    lock_throttle = link_dataref_flt("laminar/B738/autopilot/autothrottle_status",0); // XP12
   } else if (acf_type == 1) {
     autothrottle_on = link_dataref_int("x737/systems/athr/athr_active");
     lock_throttle = link_dataref_flt("xpserver/lock_throttle1",0);
@@ -333,10 +323,10 @@ void b737_tq(void)
     fuel_mixture_left = link_dataref_flt("x737/cockpit/tq/leftCutoffLeverPos",-2);
     fuel_mixture_right = link_dataref_flt("x737/cockpit/tq/rightCutoffLeverPos",-2);
   } else {
-    /* XP 12 */
-    //fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",16,-1,-2);
-    /* XP 11 */
-    fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",8,-1,-2);
+    /* XP12 */
+    fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",16,-1,-2);
+    /* XP11 */
+    //fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",8,-1,-2);
   }
   
      
@@ -505,9 +495,9 @@ void b737_tq(void)
 	(throttle0 != FLT_MISS) && (throttle1 != FLT_MISS)) {
     
       if ((acf_type == 2) || (acf_type == 3)) {
-	*zibo_reverser0 = reverser0;
+	*zibo_reverser0 = min(max((reverser0 - REVERSER_MIN)/(REVERSER_MAX - REVERSER_MIN),0.0),1.0);
 	*zibo_throttle0 = min(max((throttle0 - THROTTLE_MIN)/(THROTTLE_MAX - THROTTLE_MIN),0.0),1.0);
-	*zibo_reverser1 = reverser1;
+	*zibo_reverser1 = min(max((reverser1 - REVERSER_MIN)/(REVERSER_MAX - REVERSER_MIN),0.0),1.0);
 	*zibo_throttle1 = min(max((throttle1 - THROTTLE_MIN)/(THROTTLE_MAX - THROTTLE_MIN),0.0),1.0);
 
       } else {
@@ -518,13 +508,13 @@ void b737_tq(void)
 	      /* or single engine */
 	      /* or first half minus one if uneven # of engines */
 	      if ((throttle0 < 0.05) && (reverser0 > 0.05)) {
-		*(throttle+i) = -reverser0;
+		*(throttle+i) = -min(max((reverser0 - REVERSER_MIN)/(REVERSER_MAX - REVERSER_MIN),0.0),1.0);
 	      } else {
 		*(throttle+i) = min(max((throttle0 - THROTTLE_MIN)/(THROTTLE_MAX - THROTTLE_MIN),0.0),1.0);
 	      }
 	    } else {
 	      if ((throttle1 < 0.05) && (reverser1 > 0.05)) {
-		*(throttle+i) = -reverser1;
+		*(throttle+i) = -min(max((reverser1 - REVERSER_MIN)/(REVERSER_MAX - REVERSER_MIN),0.0),1.0);
 	      } else {
 		*(throttle+i) = min(max((throttle1 - THROTTLE_MIN)/(THROTTLE_MAX - THROTTLE_MIN),0.0),1.0);
 	      }

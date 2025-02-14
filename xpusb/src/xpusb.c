@@ -144,11 +144,9 @@ int main (int argc, char **argv)
 	a320_mcdu_keys();
       }
       if (strcmp("boeing737",argv[1]) == 0) {
-	//	if (acf_type >= 0) {
-	  b737_throttle();
-	  b737_yokerudder();
-	  b737_overhead_fwd();
-	  //	}
+	//b737_throttle();
+	b737_yokerudder();
+	b737_overhead_fwd();
       }
       if (strcmp("boeing737yokerudder",argv[1]) == 0) {
 	b737_yokerudder();
