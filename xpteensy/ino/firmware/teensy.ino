@@ -1,7 +1,7 @@
 // Create an instance of the Servo library
 Servo servo[MAX_SERVO];
 
-void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t arg2, int8_t arg3, uint8_t arg4, uint8_t arg5) {
+void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t arg2, int8_t arg3, uint8_t arg4, uint8_t arg5, int16_t arg6) {
 
   int i;
   bool found;
@@ -77,15 +77,16 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t ar
       teensy_data.val[pin][0] = val;
       teensy_write(pin, val);
     } else if (pinmode == PINMODE_MOTOR) {
-      pinMode(pin, OUTPUT); // EN PWM Output PIN
+      pinMode(pin, OUTPUT);  // EN PWM Output PIN
       if (arg1 != INITVAL) pinMode(arg1, OUTPUT);
       if (arg2 != INITVAL) pinMode(arg2, OUTPUT);
       if (arg3 != INITVAL) pinMode(arg3, INPUT);
-      teensy_data.arg1[pin] = arg1; // IN1 Output PIN
-      teensy_data.arg2[pin] = arg2; // IN2 Output PIN
-      teensy_data.arg3[pin] = arg3; // Current Sense Analog Input PIN
-      teensy_data.arg4[pin] = arg4; // Motor Minium Speed (0-255B)
-      teensy_data.arg5[pin] = arg5; // Motor Maximum Speed (0-255B)
+      teensy_data.arg1[pin] = arg1;  // IN1 Output PIN
+      teensy_data.arg2[pin] = arg2;  // IN2 Output PIN
+      teensy_data.arg3[pin] = arg3;  // Current Sense Analog Input PIN
+      teensy_data.arg4[pin] = arg4;  // Motor Minium Speed (0-255B)
+      teensy_data.arg5[pin] = arg5;  // Motor Maximum Speed (0-255B)
+      teensy_data.arg6[pin] = arg6;  // Motor maximum current (0..1023)
       teensy_data.val[pin][0] = val;
       // See: https://www.pjrc.com/teensy/td_pulse.html
       // You can't have the chicken and egg at the same time ...
@@ -179,6 +180,8 @@ void teensy_read() {
   int ret;
   int16_t val;
   int h;
+  float dt;
+
   for (int8_t pin = 0; pin < MAX_PINS; pin++) {
     if (teensy_data.pinmode[pin] == PINMODE_INPUT) {
       if (digitalRead(pin)) {
@@ -213,6 +216,12 @@ void teensy_read() {
     } else if ((teensy_data.pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) || (teensy_data.pinmode[pin] == PINMODE_ANALOGINPUTMEAN)) {
       val = analogRead(pin);
 
+      /* Shift History of analog inputs and update current value */
+      for (h = MAX_HIST - 2; h >= 0; h--) {
+        teensy_data.val[pin][h + 1] = teensy_data.val[pin][h];
+      }
+      teensy_data.val[pin][0] = val;
+
       if (teensy_data.pinmode[pin] == PINMODE_ANALOGINPUTMEAN) {
         /* Mean Filter input noise of potentiometers */
         int16_t noise = 6;
@@ -224,25 +233,35 @@ void teensy_read() {
           /* only send current value if it is outside mean and noise */
           if ((teensy_data.val_save[pin] < (meanval - noise)) || (teensy_data.val_save[pin] > (meanval + noise)) || (teensy_data.val_save[pin] == INITVAL)) {
             if (meanval != teensy_data.val_save[pin]) {
-              if (DEBUG > 0) {
-                Serial.printf("READ: Teensy Pin %i New Analog Value %i mean: %i save: %i \n", pin, val,
-                              meanval, teensy_data.val_save[pin]);
+
+              // time difference in [ms]
+              dt = (float(current_time.tv_sec - teensy_data.val_time[pin].tv_sec) + float(current_time.tv_usec - teensy_data.val_time[pin].tv_usec) / 1000000.0) * 1000.0;
+
+              /* do not send new analog inputs more than 20 times a second */
+              if (dt > 50) {
+
+                if (DEBUG > 0) {
+                  Serial.printf("READ: Teensy Pin %i New Analog Value %i mean: %i save: %i \n", pin, val,
+                                meanval, teensy_data.val_save[pin]);
+                }
+
+                /* send current input value */
+                ret = udp_send(TEENSY_TYPE, 0, pin, val);
+
+                /* save new mean value for later comparison */
+                teensy_data.val_save[pin] = meanval;
+
+                teensy_data.val_time[pin].tv_sec = current_time.tv_sec;
+                teensy_data.val_time[pin].tv_usec = current_time.tv_usec;
+
+              } else {
+                if (DEBUG > 0) {
+                  Serial.printf("READ: Teensy Pin %i New Analog Value %i WAITING TO SEND \n", pin, val);
+                }
               }
-
-              /* send current input value */
-              ret = udp_send(TEENSY_TYPE, 0, pin, val);
-
-              /* save new mean value for later comparison */
-              teensy_data.val_save[pin] = meanval;
             }
           }
         }
-
-        /* Shift History of analog inputs and update current value */
-        for (h = MAX_HIST - 2; h >= 0; h--) {
-          teensy_data.val[pin][h + 1] = teensy_data.val[pin][h];
-        }
-        teensy_data.val[pin][0] = val;
 
       } else {
         /* Median Filter input noise of potentiometers */
@@ -259,24 +278,29 @@ void teensy_read() {
         if (median != INITVAL) {
           /* only send current value if it is outside median and noise */
           if ((median < (teensy_data.val_save[pin] - noise)) || (median > (teensy_data.val_save[pin] + noise)) || (teensy_data.val_save[pin] == INITVAL)) {
-            if (DEBUG > 0) {
-              Serial.printf("READ: Teensy Pin %i New Analog Value %i median: %i median save: %i \n", pin, val,
-                            median, teensy_data.val_save[pin]);
+
+            // time difference in [ms]
+            dt = (float(current_time.tv_sec - teensy_data.val_time[pin].tv_sec) + float(current_time.tv_usec - teensy_data.val_time[pin].tv_usec) / 1000000.0) * 1000.0;
+
+            /* do not send new analog inputs more than 20 times a second */
+            if (dt > 50) {
+
+              if (DEBUG > 0) {
+                Serial.printf("READ: Teensy Pin %i New Analog Value %i median: %i median save: %i \n", pin, val,
+                              median, teensy_data.val_save[pin]);
+              }
+
+              /* send current value */
+              ret = udp_send(TEENSY_TYPE, 0, pin, val);
+
+              /* save new median value for later comparison */
+              teensy_data.val_save[pin] = median;
+
+              teensy_data.val_time[pin].tv_sec = current_time.tv_sec;
+              teensy_data.val_time[pin].tv_usec = current_time.tv_usec;
             }
-
-            /* send current value */
-            ret = udp_send(TEENSY_TYPE, 0, pin, val);
-
-            /* save new median value for later comparison */
-            teensy_data.val_save[pin] = median;
           }
         }
-
-        /* Shift History of analog inputs and update current value */
-        for (h = MAX_HIST - 2; h >= 0; h--) {
-          teensy_data.val[pin][h + 1] = teensy_data.val[pin][h];
-        }
-        teensy_data.val[pin][0] = val;
       }
     }
   }

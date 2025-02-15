@@ -121,8 +121,8 @@ void init_b737_tq(void)
   /* Analog Inputs */
   //teensy[te].pinmode[16] = PINMODE_ANALOGINPUTMEDIAN; // Motor 1 Current Measurement A0
   //teensy[te].pinmode[17] = PINMODE_ANALOGINPUTMEDIAN; // Motor 2 Current Measurement A1
-  //teensy[te].pinmode[20] = PINMODE_ANALOGINPUTMEDIAN; // Motor 3 Current Measurement A2
-  //teensy[te].pinmode[21] = PINMODE_ANALOGINPUTMEDIAN; // Motor 4 Current Measurement A3
+  teensy[te].pinmode[20] = PINMODE_ANALOGINPUTMEDIAN; // Motor 3 Current Measurement A2
+  teensy[te].pinmode[21] = PINMODE_ANALOGINPUTMEDIAN; // Motor 4 Current Measurement A3
 
   /* I2C */
   teensy[te].pinmode[18] = PINMODE_I2C; 
@@ -553,7 +553,7 @@ void b737_tq(void)
     /* Auto Park Brake: Only works to release Park Brake */
     if ((*parkbrake_xplane != FLT_MISS) && (*parkbrake_xplane == 0)) {
       fvalue = 1.0;
-      printf("A: %f %f \n",*parkbrake_xplane, fvalue);
+      //printf("A: %f %f \n",*parkbrake_xplane, fvalue);
       ret = servo_output(te, TEENSY_TYPE, 0, 33, &fvalue, 0.0, 1.0, 0.51, 0.77);
     } else {
       /* Cannot Auto-Set Parkbrake, thus change X-Plane Value */
@@ -566,11 +566,12 @@ void b737_tq(void)
     fvalue = 0.0;
     ret = servo_output(te, TEENSY_TYPE, 0, 33, &fvalue, 0.0, 1.0, 0.51, 0.77);
 
-    if (((acf_type == 2) || (acf_type == 3)) && (parkbrake != INT_MISS)) {
+    if (((acf_type == 2) || (acf_type == 3)) &&
+	(parkbrake != INT_MISS) && (*parkbrake_xplane != FLT_MISS)) {
       fvalue = (float) parkbrake;
       ret = set_state_togglef(parkbrake_xplane,&fvalue,parkbrake_button);
       if (ret != 0) {
-	printf("Park Brake Toggle: %f %i %i \n",*parkbrake_xplane,parkbrake,*parkbrake_button);
+	printf("Park Brake Toggle: XP: %f HW: %i \n",*parkbrake_xplane,parkbrake);
       }
 
     } else {
@@ -614,11 +615,11 @@ void b737_tq(void)
       (fabs(speedbrake - *speedbrake_xplane) > difspeedbrake)) {
     if (ret == 1) {
       /* H/W has changed: Manual Mode */
-      printf("Speedbrake Changed to Manual Mode\n");
+      printf("Speedbrake operating in Manual Mode\n");
       speedbrake_mode = 1;
     } else {
       /* X-Plane has changed: AP Mode */
-      printf("Speedbrake Changed to Auto Mode\n");
+      printf("Speedbrake operating in Auto Mode\n");
       speedbrake_mode = 2;
     }
   }
@@ -643,7 +644,7 @@ void b737_tq(void)
       ret = program_closedloop(te, 2, 1, speedbrake_xplane, minspeedbrake_xplane, maxspeedbrake_xplane);
 
     } else {
-      printf("Speedbrake Changed to Manual Mode\n");
+      printf("Speedbrake operating in Manual Mode\n");
       speedbrake_mode = 1;
     }  
     
@@ -748,7 +749,12 @@ void b737_tq(void)
   }
 
   /*** Stabilizer Trim Wheel ***/
-
+  float trim_current;
+  ret = analog_input(te,20,&trim_current,0.0,1023.0);
+  if (ret == 1) {
+    printf("Trim Wheel Current: %f \n",trim_current);
+  }
+  
   /* Manual Trim */
   int angle;
   int trim_up_wheel = 0;
@@ -794,16 +800,16 @@ void b737_tq(void)
 	gettimeofday(&new_time,NULL);
 	
 	/* time passed since commanded stop [ms] */
-	int dt = ((new_time.tv_sec - trim_time.tv_sec) +
-		  (new_time.tv_usec - trim_time.tv_usec) / 1000000.0)*1000.0;
+	float dt = ((float) (new_time.tv_sec - trim_time.tv_sec) +
+		  ((float) (new_time.tv_usec - trim_time.tv_usec)) / 1000000.0)*1000.0;
 	
 	/* hardware trim wheel quiet after x ms no up/down commands */
-	if (dt > 100) {
+	if (dt > 100.0) {
 	  *trim_up_cmd = 0;
 	  *trim_down_cmd = 0;
 	}
 	/* wait until x-plane stopped turning trim wheel */
-	if (dt > 1000) {
+	if (dt > 1000.0) {
 	  printf("Finish Manual Trim \n");
 	  trim_time.tv_sec = INT_MISS;
 	  stabilizer_mode = 0;
@@ -842,15 +848,15 @@ void b737_tq(void)
       gettimeofday(&new_time,NULL);
 
       /* time passed since commanded stop [ms] */
-      int dt = ((new_time.tv_sec - trim_time.tv_sec) +
-		(new_time.tv_usec - trim_time.tv_usec) / 1000000.0)*1000.0;
+      float dt = ((float) (new_time.tv_sec - trim_time.tv_sec) +
+		  ((float) (new_time.tv_usec - trim_time.tv_usec)) / 1000000.0)*1000.0;
 
       /* stop reverse after x milliseconds */
-      if (dt > 75) {
+      if (dt > 75.0) {
 	motor_stop = 1;
       }
       /* trim motor quiet, no more false up/down manual commands */
-      if (dt > 1000) {
+      if (dt > 1000.0) {
 	printf("Finish Trim Motor Operation \n");
 	trim_time.tv_sec = INT_MISS;
 	stabilizer_mode = 0;
@@ -867,8 +873,8 @@ void b737_tq(void)
   }
  
   /* Trim Wheel Sound Trigger */
-  /* How to Convert Audio File: sox -v 2.0 PMDG_Trim.wav -r 22000 -b 16 T00HOLDL.WAV */
+  /* How to Convert Audio File: sox -v 3.0 PMDG_Trim.wav -r 22000 -b 16 T00HOLDL.WAV */
   int sound_trigger = ((*trim_up_ap == 1) || (*trim_down_ap == 1));
-  ret = digital_output(te, TEENSY_TYPE, 0, 6, &sound_trigger);
+  //ret = digital_output(te, TEENSY_TYPE, 0, 6, &sound_trigger);
 
 }

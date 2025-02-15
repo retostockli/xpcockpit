@@ -145,6 +145,9 @@ int ini_read(char* programPath, char* iniName)
 	teensy[i].arg1[k] = INITVAL;
 	teensy[i].arg2[k] = INITVAL;
 	teensy[i].arg3[k] = INITVAL;
+	teensy[i].arg4[k] = 0;
+	teensy[i].arg5[k] = 0;
+	teensy[i].arg6[k] = INITVAL;
       }
       
        if (teensy[i].port == default_teensy_port) {
@@ -222,8 +225,10 @@ int ini_read(char* programPath, char* iniName)
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
  	printf("AS5048B: %i\n",ival);
 	for (j=0;j<MAX_DEV;j++) {
-	  as5048b[i][j].val = INITVAL;
-	  as5048b[i][j].val_save = INITVAL;
+	  for (l=0;l<MAX_HIST;l++) {
+	    as5048b[i][j].val[l] = -1000; // We cannot take initval since -1 is DOWN Command
+	  }
+	  as5048b[i][j].val_save = -1000; // We cannot take initval since -1 is DOWN Command
 	  as5048b[i][j].nangle = INITVAL;
 	  as5048b[i][j].type = INITVAL;
 	  as5048b[i][j].wire = INITVAL;
@@ -310,7 +315,7 @@ int reset_teensydata()
 
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (as5048b[te][dev].connected == 1) {
-	  as5048b[te][dev].val_save = as5048b[te][dev].val;
+	  as5048b[te][dev].val_save = as5048b[te][dev].val[0];
 	}
       }
       

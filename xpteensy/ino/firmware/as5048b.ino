@@ -63,7 +63,9 @@ void as5048b_init(int8_t dev, int8_t nangle, int8_t type, int8_t wirenum, uint8_
 void as5048b_read() {
 
   int ret = 0;
+  int h;
   unsigned long time = micros();
+
   if (time > (as5048b_time + AS5048B_POLL_TIME * 1000)) {
 
     as5048b_time = time;
@@ -73,48 +75,74 @@ void as5048b_read() {
 
         bool up = false;
         bool dn = false;
-        int16_t angle = as5048b[dev].angleR(3, true) + 5; // read angle and add some in order not to stick to 359 and 0
-        angle = angle % 360;  // set 360 degrees to 0 degrees
-        int16_t angle_save = angle;
-        int16_t angle_previous = as5048b_data[dev].val;
+        int16_t angle = as5048b[dev].angleR(3, true);         // read angle
+        angle = angle % 360;                                  // set 360 degrees to 0 degrees
+        int16_t angle_previous = as5048b_data[dev].val_save;  // previous median value
+
+        /* Shift History of angle inputs and update current value */
+        for (h = MAX_HIST - 2; h >= 0; h--) {
+          as5048b_data[dev].val[h + 1] = as5048b_data[dev].val[h];
+        }
+        as5048b_data[dev].val[0] = angle;
+
+        /* Median Filter input noise of angle measurement */
+        /* Can have a time lag since the median filter needs to be filled with new values first */
+        int16_t temparr[MAX_HIST];
+        int16_t noise = 1;
+
+        memcpy(temparr, as5048b_data[dev].val, sizeof(as5048b_data[dev].val[0]) * MAX_HIST);
 
         /* check if we just crossed the 360 degree border and adjust angle for comparison */
         /* we only compare positive angles in order to get each nangle step */
-        if (as5048b_data[dev].val != INITVAL) {
-          if (angle > (as5048b_data[dev].val + 300)) angle_previous += 360;
-          if (angle < (as5048b_data[dev].val - 300)) angle += 360;
-
-          if ((angle * as5048b_data[dev].nangle / 360) > (angle_previous * as5048b_data[dev].nangle / 360)) up = true;
-          if ((angle * as5048b_data[dev].nangle / 360) < (angle_previous * as5048b_data[dev].nangle / 360)) dn = true;
+        for (h = 0; h < MAX_HIST; h++) {
+          if ((temparr[h] != INITVAL) && (angle_previous != INITVAL)) {
+            if (angle_previous > (temparr[h] + 300)) temparr[h] += 360;
+            if (angle_previous < (temparr[h] - 300)) temparr[h] -= 360;
+          }
         }
 
-        if ((as5048b_data[dev].val == INITVAL) || up || dn) {
+        quicksort(temparr, 0, MAX_HIST - 1);
+        int16_t median = temparr[MAX_HIST / 2];
 
-          if (as5048b_data[dev].type == 1) {
-            /* send current angle value */
-            ret = udp_send(AS5048B_TYPE, dev, 0, angle_save);
-          } else {
-            /* send up / down value */
-            if (up) {
-              ret = udp_send(AS5048B_TYPE, dev, 0, 1);
-            } else {
-              ret = udp_send(AS5048B_TYPE, dev, 0, -1);
-            }
-          }
-          if (DEBUG > 0) {
-            Serial.printf("READ: as5048b Device Number %i Angle %i \n", dev, angle_save);
-            //Serial.printf("%i %i %i %i\n", angle, angle_save, angle_previous, as5048b_data[dev].val);
-            //Serial.printf("%i %i\n", angle * as5048b_data[dev].nangle / 360, angle_previous * as5048b_data[dev].nangle / 360);
-          }
+        if ((median != INITVAL) && (angle_previous != INITVAL)) {
+          /* only send current value if it is outside median and noise */
+          if ((median < (angle_previous - noise)) || (median > (angle_previous + noise))) {
+            if ((median * as5048b_data[dev].nangle / 360) > (angle_previous * as5048b_data[dev].nangle / 360)) up = true;
+            if ((median * as5048b_data[dev].nangle / 360) < (angle_previous * as5048b_data[dev].nangle / 360)) dn = true;
 
-          /* update stored angle upon successful send (not used right now) */
-          if (ret == SENDMSGLEN) {
-            as5048b_data[dev].val_save = as5048b_data[dev].val;
-          }
-        }  // angle changed enough so we can send update
+            if (up || dn) {
 
-        /* store new angle for later comparison */
-        as5048b_data[dev].val = angle_save;
+              //Serial.printf("%i %i %i\n", angle, median, angle_previous);
+
+              if (as5048b_data[dev].type == 1) {
+                /* send current angle value */
+                ret = udp_send(AS5048B_TYPE, dev, 0, angle);
+              } else {
+                /* send up / down value */
+                if (up) {
+                  ret = udp_send(AS5048B_TYPE, dev, 0, 1);
+                } else {
+                  ret = udp_send(AS5048B_TYPE, dev, 0, -1);
+                }
+              }
+              if (DEBUG > 0) {
+                Serial.printf("READ: as5048b Device Number %i Angle %i \n", dev, angle);
+              }
+
+              /* update stored angle upon successful send (not used right now) */
+              if (ret == SENDMSGLEN) {
+                if (median < 0) median += 360;
+                if (median > 359) median -= 360;
+                as5048b_data[dev].val_save = median % 360;
+              }
+            }  // angle changed more than nangle so we can send update
+          }    // angle change outside noise
+        }      // median and save value not INITVAL
+        if ((as5048b_data[dev].val_save == INITVAL) && (median != INITVAL)) {
+          if (median < 0) median += 360;
+          if (median > 359) median -= 360;
+          as5048b_data[dev].val_save = median;
+        }
 
       }  // connected
     }    // loop through devices

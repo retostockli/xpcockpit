@@ -112,6 +112,7 @@ typedef struct {
                                // for Motors: Current sense pin number
   uint8_t arg4[MAX_PINS];      // for Motors: Minimum Speed (currently only used in closed loop program)
   uint8_t arg5[MAX_PINS];      // for Motors: Maximum Speed (currently only used in closed loop program)
+  int16_t arg6[MAX_PINS];      // for Motors: Maximum Current (in analog input units 0..1023)
   char ip[30];                 // IP address of teensy / server
   int port;                    // UDP port teensy is listening / sending
   unsigned char mac[2];        // last two bytes of MAC address  
@@ -149,7 +150,7 @@ typedef struct {
 
 typedef struct {
   int8_t connected; // Device connected (1) or not (0)
-  int16_t val;       // new angle value
+  int16_t val[MAX_HIST]; // new angle value (perform median filter on history)
   int16_t val_save;  // previous angle value
   int8_t nangle;     // number of angles to report per 360 degree turn
   int8_t type;       // return direction counts (0) or actual angle (1)

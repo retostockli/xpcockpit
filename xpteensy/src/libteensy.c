@@ -65,8 +65,8 @@ int ping_teensy() {
       if (teensy[te].online == 0) {
 
 	// time difference in [ms]
-	dt = ((newtime.tv_sec - teensy[te].ping_time.tv_sec) +
-	      (newtime.tv_usec - teensy[te].ping_time.tv_usec) / 1000000.0)*1000.0;
+	dt = ((float)(newtime.tv_sec - teensy[te].ping_time.tv_sec) +
+	      ((float)(newtime.tv_usec - teensy[te].ping_time.tv_usec)) / 1000000.0)*1000.0;
 
 	if (dt > 1000.0) {
       
@@ -140,8 +140,13 @@ int init_teensy() {
 	  }
 	  teensySendBuffer[0] = TEENSY_ID1; /* T */
 	  teensySendBuffer[1] = TEENSY_ID2; /* E */
-	  teensySendBuffer[2] = 0x00;
-	  teensySendBuffer[3] = 0x00; 
+	  if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
+	    /* also send maximum allowable current for motor */
+	    memcpy(&teensySendBuffer[2],&teensy[te].arg6[pin],sizeof(teensy[te].arg6[pin]));
+	  } else {
+	    teensySendBuffer[2] = 0x00;
+	    teensySendBuffer[3] = 0x00;
+	  }
 	  teensySendBuffer[4] = TEENSY_INIT;
 	  teensySendBuffer[5] = TEENSY_TYPE;
 	  teensySendBuffer[6] = 0;
@@ -150,11 +155,11 @@ int init_teensy() {
 	  teensySendBuffer[10] = teensy[te].pinmode[pin];
 	  if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
 	    /* also send the two direction pins for IN1 and IN2 and the Current Sense pin */
-	    teensySendBuffer[11] = teensy[te].arg1[pin];
-	    teensySendBuffer[12] = teensy[te].arg2[pin];
-	    teensySendBuffer[13] = teensy[te].arg3[pin];
-	    teensySendBuffer[14] = teensy[te].arg4[pin];
-	    teensySendBuffer[15] = teensy[te].arg5[pin];
+	    teensySendBuffer[11] = teensy[te].arg1[pin]; // IN1 Pin
+	    teensySendBuffer[12] = teensy[te].arg2[pin]; // IN2 Pin
+	    teensySendBuffer[13] = teensy[te].arg3[pin]; // Current Sense Pin
+	    teensySendBuffer[14] = teensy[te].arg4[pin]; // Min speed (0..255)
+	    teensySendBuffer[15] = teensy[te].arg5[pin]; // Max speed (0..255)
 	  }
 	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	  if (ret == SENDMSGLEN) {
@@ -257,7 +262,7 @@ int init_teensy() {
 	  teensySendBuffer[5] = AS5048B_TYPE;
 	  teensySendBuffer[6] = dev;
 	  teensySendBuffer[7] = 0;
-	  memcpy(&teensySendBuffer[8],&as5048b[te][dev].val,sizeof(as5048b[te][dev].val));
+	  memcpy(&teensySendBuffer[8],&as5048b[te][dev].val[0],sizeof(as5048b[te][dev].val[0]));
 	  teensySendBuffer[10] = as5048b[te][dev].nangle;
 	  teensySendBuffer[11] = as5048b[te][dev].type; 
 	  teensySendBuffer[12] = as5048b[te][dev].wire;
@@ -549,7 +554,7 @@ int recv_teensy() {
 	    }
 	  } else if ((dev_type == AS5048B_TYPE) && (dev_num >= 0) && (dev_num < MAX_DEV)) {
 	    if (as5048b[te][dev_num].connected == 1) {
-	      as5048b[te][dev_num].val = val;
+	      as5048b[te][dev_num].val[0] = val;
 	      if (as5048b[te][dev_num].type == 1) {
 		if (verbose > 1) printf("Received Angle %i for Teensy %i AS5048B %i \n",
 					val,te,dev_num);
@@ -729,23 +734,23 @@ int angle_input(int te, int type, int dev, int input_type, int *value)
 	if (type == AS5048B_TYPE) {
 	  if ((dev <= 0) && (dev < MAX_DEV)) {
 	    if (input_type == as5048b[te][dev].type) {
-	      if (as5048b[te][dev].val != as5048b[te][dev].val_save) {
+	      if (as5048b[te][dev].val[0] != as5048b[te][dev].val_save) {
 		if (input_type == 0) {
 		  /* direction count */
 		  if (verbose > 1) {
-		    if (as5048b[te][dev].val == 1) {
+		    if (as5048b[te][dev].val[0] == 1) {
 		      printf("Teensy %i AS5048B %i DIRECTION UP \n", te, dev);
 		    } else {
 		      printf("Teensy %i AS5048B %i DIRECTION DOWN \n", te, dev);
 		    }
 		  }
-		  *value = as5048b[te][dev].val;
-		  as5048b[te][dev].val = 0;
+		  *value = as5048b[te][dev].val[0];
+		  as5048b[te][dev].val[0] = 0;
 		  retval = 1;
 		} else {
 		  /* angle reporting */
-		  if (verbose > 1) printf("Teensy %i AS5048B %i Angle %i \n", te, dev,as5048b[te][dev].val);
-		  *value = as5048b[te][dev].val;
+		  if (verbose > 1) printf("Teensy %i AS5048B %i Angle %i \n", te, dev,as5048b[te][dev].val[0]);
+		  *value = as5048b[te][dev].val[0];
 		  retval = 1;
 		}
 	      }
@@ -950,8 +955,8 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 			    mcp23017[te][dev].val_time[pin1] = newtime;
 			  }
 			    
-			  dt = ((newtime.tv_sec - oldtime.tv_sec) +
-				(newtime.tv_usec - oldtime.tv_usec) / 1000000.0)*1000.0;
+			  dt = ((float)(newtime.tv_sec - oldtime.tv_sec) +
+				((float)(newtime.tv_usec - oldtime.tv_usec)) / 1000000.0)*1000.0;
 			  //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
 		  
 			  *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
@@ -992,8 +997,8 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 			    mcp23017[te][dev].val_time[pin1] = newtime;
 			  }
 			    
-			  dt = ((newtime.tv_sec - oldtime.tv_sec) +
-				(newtime.tv_usec - oldtime.tv_usec) / 1000000.0)*1000.0;
+			  dt = ((float)(newtime.tv_sec - oldtime.tv_sec) +
+				((float)(newtime.tv_usec - oldtime.tv_usec)) / 1000000.0)*1000.0;
 			  //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
 
 			  *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));

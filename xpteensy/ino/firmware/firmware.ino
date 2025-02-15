@@ -83,6 +83,7 @@ void setup() {
   if (DEBUG > 0) Serial.printf("UDP: initialized.\n");
 
   // init teensy data structure
+  gettimeofday(&current_time,NULL);
   init_data();
 
   // Start I2C busses (one for now)
@@ -104,6 +105,8 @@ void setup() {
 void loop() {
 
   StartTime = micros();
+
+  gettimeofday(&current_time,NULL);
 
   /* check if new data is available via UDP and update Teensy Outputs with it */
   udp_receive();

@@ -3,6 +3,7 @@
 void udp_receive(void) {
 
   int16_t ivalue16;
+  int16_t ivalue16b;
   int8_t ivalue8;
   int8_t prog;
 
@@ -51,7 +52,8 @@ void udp_receive(void) {
           } else if (recvBuffer[4] == TEENSY_INIT) {
             /* initialize pin or daughter board as requested */
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            teensy_init(recvBuffer[7], recvBuffer[10], ivalue16, recvBuffer[11], recvBuffer[12], recvBuffer[13],recvBuffer[14], recvBuffer[15]);
+            memcpy(&ivalue16b, &recvBuffer[2], 2);
+            teensy_init(recvBuffer[7], recvBuffer[10], ivalue16, recvBuffer[11], recvBuffer[12], recvBuffer[13],recvBuffer[14], recvBuffer[15], ivalue16b);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             /* set output to requested value */
             memcpy(&ivalue16, &recvBuffer[8], 2);

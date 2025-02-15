@@ -11,8 +11,14 @@ void init_data() {
     }
     teensy_data.val_save[k] = INITVAL;
     teensy_data.pinmode[k] = INITVAL;
+    teensy_data.val_time[k].tv_sec = current_time.tv_sec;
+    teensy_data.val_time[k].tv_usec = current_time.tv_usec;
     teensy_data.arg1[k] = INITVAL;
     teensy_data.arg2[k] = INITVAL;
+    teensy_data.arg3[k] = INITVAL;
+    teensy_data.arg4[k] = 0;
+    teensy_data.arg5[k] = 0;
+    teensy_data.arg6[k] = INITVAL;
   }
   teensy_data.connected = 1;
 
@@ -35,7 +41,7 @@ void init_data() {
   if (DEBUG) {
     Serial.printf("MCP23017 Data initialized\n");
   }
- 
+
   for (dev = 0; dev < MAX_DEV; dev++) {
     for (k = 0; k < PCA9685_MAX_PINS; k++) {
       pca9685_data[dev].val[k] = INITVAL;
@@ -52,7 +58,9 @@ void init_data() {
   }
 
   for (dev = 0; dev < MAX_DEV; dev++) {
-    as5048b_data[dev].val = INITVAL;
+    for (l = 0; l < MAX_HIST; l++) {
+      as5048b_data[dev].val[l] = INITVAL;
+    }
     as5048b_data[dev].val_save = INITVAL;
     as5048b_data[dev].type = INITVAL;
     as5048b_data[dev].nangle = INITVAL;
