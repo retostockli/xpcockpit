@@ -55,7 +55,10 @@ void b737_mcp(void)
   float *ap_heading; // autopilot heading
   float *ap_ias; // IAS autopilot
   float *ap_vspeed; // autopilot vertical speed
-  int *ap_banklimit;  // bank limit
+  float *ap_banklimit_pos;  // bank limit
+  int *ap_banklimit;
+  int *ap_banklimit_up; 
+  int *ap_banklimit_dn; 
   int *ap_spd_is_mach;
   float *ap_vspeed_show;
   float *ap_ias_show;
@@ -96,7 +99,9 @@ void b737_mcp(void)
   }
   
   if ((acf_type == 2) || (acf_type == 3)) {
-    ap_banklimit = link_dataref_int("laminar/B738/rotary/autopilot/bank_angle");      
+    ap_banklimit_pos = link_dataref_flt("laminar/B738/autopilot/bank_angle_pos",0);      
+    ap_banklimit_up = link_dataref_cmd_once("laminar/B738/autopilot/bank_angle_up");      
+    ap_banklimit_dn = link_dataref_cmd_once("laminar/B738/autopilot/bank_angle_dn");      
   } else {
     ap_banklimit = link_dataref_int("sim/cockpit/autopilot/heading_roll_mode");     
   }
@@ -490,8 +495,11 @@ void b737_mcp(void)
   }
   /* Bank limit - 0 = auto, 1-6 = 5-30 degrees of bank */
   if ((acf_type == 2) || (acf_type == 3)) {
-      *ap_banklimit = bank15 + bank20*2 + bank25*3 + bank30*4;
-      // printf("banklimit: %i \n",*ap_banklimit);
+    float ap_banklimit_hw = (float) (bank15 + bank20*2 + bank25*3 + bank30*4);
+    ret = set_state_updnf(&ap_banklimit_hw, ap_banklimit_pos, ap_banklimit_up, ap_banklimit_dn);
+    if (ret == 1) {
+      printf("banklimit: HW: %f XP: %f \n",ap_banklimit_hw,*ap_banklimit_pos);
+    }
   } else {
     if ((bank10+bank15+bank20+bank25+bank30) != 0) {
       *ap_banklimit = bank10*2 + bank15*3 + bank20*4 + bank25*5 + bank30*6;

@@ -260,11 +260,11 @@ void b737_yokerudder(void)
     if (view_is_copilot == 0) {
       /* Captain View */
       *pilot_position = -0.51; // meters
-      *pilot_heading = 4.0; // degrees
+      *pilot_heading = 14.5; // degrees
     } else {
       /* Copilot View */
       *pilot_position = 0.51;  // meters
-      *pilot_heading = -4.0; // degrees
+      *pilot_heading = -14.5; // degrees
     }
  
   } else if ((*viewmode == 1) || (*viewmode == 2) || (*viewmode == 3)) {
