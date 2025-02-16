@@ -43,9 +43,11 @@ void init_test(void)
 {
   int te = 0;
 
+  /*
   for (int i=0;i<42;i++) {
     teensy[te].pinmode[i] = PINMODE_INPUT;
   }
+  */
   
   /* teensy[te].pinmode[37] = PINMODE_PWM; */
   /* //  teensy[te].pinmode[0] = PINMODE_OUTPUT; */

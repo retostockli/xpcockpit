@@ -41,11 +41,15 @@
 #include "handleserver.h"
 #include "serverdata.h"
 #include "xplanebeacon.h"
+#include "check_aircraft.h"
 #include "test.h"
 #include "b737_throttle.h"
 
 // Driver code 
 int main(int argc, char **argv) {
+
+  /* Set Loop interval to 5 ms */
+  interval = 5;
   
   /* evaluate command line arguments */
   argc--;
@@ -122,7 +126,7 @@ int main(int argc, char **argv) {
     if (reset_teensydata() < 0) exit_teensy(-13);
 
     /* if we have new data from Teensy or from X-Plane: immediately continue */
-    if ((udpReadLeft == 0) || (numreceived == 0)) usleep(INTERVAL*1000);
+    if ((udpReadLeft == 0) || (numreceived == 0)) usleep(interval*1000);
 
   }
   

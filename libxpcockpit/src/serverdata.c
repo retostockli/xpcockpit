@@ -43,6 +43,8 @@ int numreceived; /* stores number of received datarefs in this loop */
 struct timeval time_start; /* stores the time when we initialized the dataref structure */
 
 int serverdata_verbose;
+int interval;
+int interval_counter;
 
 int time_subtract (struct timeval *x, struct timeval *y, struct timeval *result) {
   /* Perform the carry for the later subtraction by updating y. */
@@ -514,4 +516,112 @@ int unlink_dataref(const char datarefname[]) {
 
   /* returns the number of deallocated datarefs */
   return found;
+}
+
+
+// set rotary switch to new position using up and down command once (float states)
+int set_state_updnf(float *new_statef, float *old_statef, int *up, int *dn)
+{
+  int new_state = INT_MISS;
+  if (*new_statef != FLT_MISS) new_state = lroundf(*new_statef);
+  int old_state = INT_MISS;
+  if (*old_statef != FLT_MISS) old_state = lroundf(*old_statef);
+  return set_state_updn(&new_state, &old_state, up,dn);
+}
+
+// set rotary switch to new position using up and down command once (int states)
+int set_state_updn(int *new_state, int *old_state, int *up, int *dn)
+{
+
+  int ret = 0;
+  
+  if ((new_state) && (old_state) && (up) && (dn)) {
+    if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
+
+      //      if ((*up == 1) || (*dn == 1)) {
+	/* we just upped or downed, so wait for a cycle */
+      //      } else {
+      if (interval_counter == 0) {
+	if (*new_state > *old_state) {
+	  *up = 1;
+	  *dn = 0;
+	  ret = 1;
+	} else if (*new_state < *old_state) {
+	  *up = 0;
+	  *dn = 1;
+	  ret =-1;
+	} else {
+	  /* nothing to do */
+	}
+      }
+
+    }
+  }
+
+  return ret;
+  
+}
+
+// Toggle Switch with command once "toggle" to new state (floating point states)
+int set_state_togglef(float *new_statef, float *old_statef, int *toggle)
+{
+  int new_state = INT_MISS;
+  if (*new_statef != FLT_MISS) new_state = lroundf(*new_statef);
+  int old_state = INT_MISS;
+  if (*old_statef != FLT_MISS) old_state = lroundf(*old_statef);
+  return set_state_toggle(&new_state, &old_state, toggle);
+}
+ 
+// Toggle Switch with command once "toggle" to new state (integer states)
+int set_state_toggle(int *new_state, int *old_state, int *toggle)
+{
+
+  int ret = 0;
+  
+  if ((new_state) && (old_state) && (toggle)) {
+    if ((*new_state != INT_MISS) && (*old_state != INT_MISS)) {
+
+      //      if (*toggle == 1) {
+	/* we just upped or downed, so wait for a cycle */
+      //      } else {
+      if (interval_counter == 0) {
+	if (*new_state > *old_state) {
+	  *toggle = 1;
+	  ret = 1;
+	} else if (*new_state < *old_state) {
+	  *toggle = 1;
+	  ret =-1;
+	} else {
+	  /* nothing to do */
+	}
+      }
+
+    }
+  }
+
+  return ret;
+  
+}
+
+// set switch cover state with command once toggle
+int set_switch_cover(float *switch_cover_pos, int *switch_cover_toggle, int on)
+{
+  /* open or close switch covers in ZIBO mod. They are animated, so
+     assume it is open as soon as the floating point value is > 0 or
+     assume it is closed as soon as the floating point value is < 1 */
+  int value;
+  if (*switch_cover_pos != FLT_MISS) {
+    if (interval_counter == 0) {
+      if (on == 1) {
+	value = *switch_cover_pos > 0.0;
+      } else {
+	value = *switch_cover_pos == 1.0;
+      }
+    }
+  } else {
+    value = INT_MISS;
+  }
+
+  return set_state_toggle(&on,&value,switch_cover_toggle);
+
 }

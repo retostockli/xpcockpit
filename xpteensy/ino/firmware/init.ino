@@ -22,9 +22,9 @@ void init_data() {
   }
   teensy_data.connected = 1;
 
-  if (DEBUG) {
-    Serial.printf("Teensy Data initialized\n");
-  }
+
+  Serial.printf("Teensy Data initialized\n");
+
 
   for (dev = 0; dev < MAX_DEV; dev++) {
     for (k = 0; k < MCP23017_MAX_PINS; k++) {
@@ -38,9 +38,9 @@ void init_data() {
     mcp23017_data[dev].connected = 0;
   }
 
-  if (DEBUG) {
-    Serial.printf("MCP23017 Data initialized\n");
-  }
+
+  Serial.printf("MCP23017 Data initialized\n");
+
 
   for (dev = 0; dev < MAX_DEV; dev++) {
     for (k = 0; k < PCA9685_MAX_PINS; k++) {
@@ -53,9 +53,9 @@ void init_data() {
     pca9685_data[dev].connected = 0;
   }
 
-  if (DEBUG) {
-    Serial.printf("PCA9685 Data initialized\n");
-  }
+
+  Serial.printf("PCA9685 Data initialized\n");
+
 
   for (dev = 0; dev < MAX_DEV; dev++) {
     for (l = 0; l < MAX_HIST; l++) {
@@ -70,9 +70,8 @@ void init_data() {
     as5048b_data[dev].connected = 0;
   }
 
-  if (DEBUG) {
-    Serial.printf("AS5048B Data initialized\n");
-  }
+
+  Serial.printf("AS5048B Data initialized\n");
 }
 
 int init_ethernet(void) {
@@ -121,9 +120,9 @@ int init_ethernet(void) {
   });
 
   if (Ethernet.begin(ip, nm, gw)) {
-    if (DEBUG > 0) Serial.printf("Ethernet: Started.\n");
+    Serial.printf("Ethernet: Started.\n");
   } else {
-    if (DEBUG > 0) Serial.printf("Ethernet: Failed to start\n");
+    Serial.printf("Ethernet: Failed to start\n");
     return -1;
   }
 

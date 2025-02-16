@@ -96,7 +96,10 @@ void ntohf (float *src, float *dst)
 /* initialize this module */
 int initialize_tcpip_client(int init_verbose)
 {
-  
+
+  /* reset interval counter */
+  interval_counter = 0;
+   
   handleserver_verbose = init_verbose;
 
   /* Check if we have a pre-defined X-Plane IP Address. If not, use X-Plane 
@@ -386,6 +389,12 @@ int receive_xpserver(void) {
   unsigned char *datab;
   int disconnected;
 
+  /* update interval counter for up/down states */
+  interval_counter++;
+  if (interval != 0) {
+    if (interval_counter >= (INTERVAL_UPDN / interval)) interval_counter = 0;
+  }
+    
   disconnected = 0;
   datai = 0;
   recvMsgSize = 0;

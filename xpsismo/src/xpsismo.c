@@ -48,6 +48,9 @@
 
 // Driver code 
 int main(int argc, char **argv) {
+
+  /* loop interval [ms] */
+  interval = 10;
   
   /* evaluate command line arguments */
   argc--;
@@ -144,7 +147,7 @@ int main(int argc, char **argv) {
       /* reset counters and such */
     if (reset_sismodata() < 0) exit_sismo(-13);
    
-    usleep(INTERVAL*1000);
+    usleep(interval*1000);
   }
   
   return 0; 

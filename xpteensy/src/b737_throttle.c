@@ -875,6 +875,6 @@ void b737_tq(void)
   /* Trim Wheel Sound Trigger */
   /* How to Convert Audio File: sox -v 3.0 PMDG_Trim.wav -r 22000 -b 16 T00HOLDL.WAV */
   int sound_trigger = ((*trim_up_ap == 1) || (*trim_down_ap == 1));
-  //ret = digital_output(te, TEENSY_TYPE, 0, 6, &sound_trigger);
+  ret = digital_output(te, TEENSY_TYPE, 0, 6, &sound_trigger);
 
 }

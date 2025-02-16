@@ -64,9 +64,10 @@ void a320_chrono (void);
 /* All input/output/motor/server addresses are zero-based (e.g. range from 0..ninputs-1) */
 int main (int argc, char **argv)
 {
- 
-  //struct timeval tval_before, tval_after, tval_result;
 
+  /* Loop interval [ms] */
+  interval = 5;
+  
   /* print License terms */
   print_license();
   
@@ -196,7 +197,7 @@ int main (int argc, char **argv)
       if (copy_iocardsdata()<0) exit_xpusb(-24);
      
       /* run xpusb data exchange (usb and tcp/ip) every 1000 microseconds */
-      usleep(INTERVAL*1000);
+      usleep(interval*1000);
 
     }
 

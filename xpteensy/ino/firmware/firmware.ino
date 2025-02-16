@@ -8,7 +8,7 @@
 #define MASK "255.255.255.0"
 #define GATEWAY "192.168.1.1"
 
-#define IP "192.168.1.66"   /* Boeing 737 Throttle Quadrant */
+#define IP "192.168.1.66" /* Boeing 737 Throttle Quadrant */
 
 //#include <Ethernet.h>
 //#include <EthernetUdp.h>
@@ -61,13 +61,18 @@ void setup() {
 
   // define storage for MAC address
   uint8_t mac[6];
-  
 
   // Open serial communications and wait for port to open:
-  if (DEBUG) {
-    Serial.begin(115200);
-    Serial.printf("Starting Setup ...\n");
+  while (!Serial && millis() < 2000) {
+    // wait up to 2 seconds for Arduino Serial Monitor
   }
+  if (Serial) {
+    // Send Debug info if serial monitor is connected
+    DEBUG = 1;
+  } else {
+    DEBUG = 0;
+  }
+  Serial.printf("Starting Setup ...\n");
 
   // start the Ethernet and fetch MAC address of interface
   init_ethernet();
@@ -80,10 +85,10 @@ void setup() {
   teensy_data.mac[1] = mac[5];
   Udp.begin(teensy_data.port);
   Udp.setReceiveQueueCapacity(100);
-  if (DEBUG > 0) Serial.printf("UDP: initialized.\n");
+  Serial.printf("UDP: initialized.\n");
 
   // init teensy data structure
-  gettimeofday(&current_time,NULL);
+  gettimeofday(&current_time, NULL);
   init_data();
 
   // Start I2C busses (one for now)
@@ -97,16 +102,16 @@ void setup() {
   // Wire1.begin();
   //Wire2.begin();
   //Wire.setClock(1000000); // 1MHz is fast but may not work with all I2C devices
- Wire.setClock(400000); // 400kHz is fine
-  //Wire1.setClock(400000);
-  //Wire2.setClock(400000);
+  Wire.setClock(400000);  // 400kHz is fine
+                          //Wire1.setClock(400000);
+                          //Wire2.setClock(400000);
 }
 
 void loop() {
 
   StartTime = micros();
 
-  gettimeofday(&current_time,NULL);
+  gettimeofday(&current_time, NULL);
 
   /* check if new data is available via UDP and update Teensy Outputs with it */
   udp_receive();
@@ -114,8 +119,8 @@ void loop() {
   teensy_read();
   /* read magnetic encoder and send update via UDP if needed */
   as5048b_read();
-  /* execute programs if needed */ 
-  for (int prog=0;prog<MAX_PROG;prog++) {
+  /* execute programs if needed */
+  for (int prog = 0; prog < MAX_PROG; prog++) {
     if (program_data[prog].connected == 1) {
       if (program_data[prog].type == PROGRAM_CLOSEDLOOP) {
         program_closedloop(prog);
@@ -129,8 +134,6 @@ void loop() {
   if ((ElapsedTime > 1000) && (DEBUG > 0)) {
     Serial.printf("Long Loop Time: %i us\n", ElapsedTime);
   }
-
-  // Ethernet.loop();
 
   delay(1); /* We need a maximum of 1 ms delay to capture fast changing encoders */
 }

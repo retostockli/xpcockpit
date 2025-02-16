@@ -208,7 +208,7 @@ void *xpbeacon_poll_thread_main()
   //unsigned char buffer[bufferlen];
   char buffer[bufferlen];
   struct sockaddr_in serverAddr;     /* Server address structure */
-  int addrlen = sizeof(serverAddr);
+  unsigned int addrlen = sizeof(serverAddr);
 
   memset(&serverAddr, 0, sizeof(serverAddr));            /* Zero out structure */
   serverAddr.sin_family      = AF_INET;                  /* Internet address family */

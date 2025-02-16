@@ -42,6 +42,10 @@
 #define XPSTATUS_UNLINK	          4 // client sent dataref unlink request to x-plane
 #define XPSTATUS_VALID	          5 // x-plane confirmed dataref validity to client
 
+/* State check interval (ms) for Up/Down commands
+   Needs feedback time from flight simulator states */
+#define INTERVAL_UPDN 100
+
 /* Protocol Version 2 data structure */
 
 /* A dynamically (run-time) expandable number of datarefs of any X-Plane internal data type
@@ -87,6 +91,12 @@ extern char clientname[100]; /* name of x-plane client package */
 extern int lastindex; /* stores the index of the last Dataref called */
 extern int numreceived; /* stores number of datarefs that were received in this loop */
 
+/* loop interval in [ms] */
+extern int interval;
+
+/* time step counter */
+extern int interval_counter;
+
 /* Prototype functions for x-plane data handling */
 int initialize_dataref(int init_verbose);
 void clear_dataref();
@@ -131,3 +141,10 @@ int *link_dataref_cmd_hold(const char datarefname[]);
 
 /* remove a dataref from the subscription */
 int unlink_dataref(const char datarefname[]);
+
+
+int set_state_updnf(float *new_statef, float *old_statef, int *up, int *dn);
+int set_state_updn(int *new_state, int *old_state, int *up, int *dn);
+int set_state_togglef(float *new_statef, float *old_statef, int *toggle);
+int set_state_toggle(int *new_state, int *old_state, int *toggle);
+int set_switch_cover(float *switch_cover_pos, int *switch_cover_toggle, int on);
