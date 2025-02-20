@@ -118,6 +118,7 @@ int init_teensy() {
 	    (teensy[te].pinmode[pin] == PINMODE_MOTOR) ||
 	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) ||
 	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) ||
+	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_I2C)) {
 	  memset(teensySendBuffer,0,SENDMSGLEN);
@@ -127,6 +128,7 @@ int init_teensy() {
 	    if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Median Filter) \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Mean Filter) \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) printf("Teensy %i Pin %i Initialized as ANALOG INPUT \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_SERVO) printf("Teensy %i Pin %i Initialized as SERVO \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
 	      printf("Teensy %i Pin %i Initialized as Motor \n",te,pin);
@@ -530,7 +532,8 @@ int recv_teensy() {
 		if (verbose > 1) printf("Received digital value %i for pin %i of Teensy %i \n",val,pin,te);
 		teensy[te].val[pin][0] = val;
 	      } else if ((teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) ||
-			 (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN))  {
+			 (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) ||
+			 (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT))  {
 		teensy[te].val[pin][0] = val;
 		if (verbose > 1) printf("Received analog value %i for pin %i of Teensy %i \n",val,pin,te);
 	      } else {
@@ -794,7 +797,8 @@ int analog_input(int te, int pin, float *value, float minval, float maxval)
       if (teensy[te].connected) {
 	if ((pin >= 0) && (pin < MAX_PINS)) {
 	  if ((teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) ||
-	      (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN)) {
+	      (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) ||
+	      (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT)) {
 	    /* always return actual value if valid */
 	    if (teensy[te].val[pin][0] != INITVAL) {
 	      *value = ((float) teensy[te].val[pin][0])

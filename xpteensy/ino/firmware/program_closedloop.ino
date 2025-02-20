@@ -15,7 +15,7 @@ int program_closedloop(int prog) {
     //int16_t servo_min = program_data[prog].val16[1];
     //int16_t servo_max = program_data[prog].val16[2];
 
-    if ((teensy_data.pinmode[pot_pin] != PINMODE_ANALOGINPUTMEDIAN) && (teensy_data.pinmode[pot_pin] != PINMODE_ANALOGINPUTMEAN)) {
+    if ((teensy_data.pinmode[pot_pin] != PINMODE_ANALOGINPUTMEDIAN) && (teensy_data.pinmode[pot_pin] != PINMODE_ANALOGINPUTMEAN) && (teensy_data.pinmode[pot_pin] != PINMODE_ANALOGINPUT)) {
       if (DEBUG > 0) Serial.printf("Program %i Closed Loop Motor: Pin %i not defined as Anlog Input\n", prog, pot_pin);
     }
 

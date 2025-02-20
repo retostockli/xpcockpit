@@ -62,6 +62,10 @@ void setup() {
   // define storage for MAC address
   uint8_t mac[6];
 
+  while (!Serial && millis() < 3000) {
+    // wait up to 15 seconds for Arduino Serial Monitor
+  }
+  
   Serial.printf("Starting Setup ...\n");
 
   // start the Ethernet and fetch MAC address of interface
@@ -110,6 +114,7 @@ void loop() {
 
   gettimeofday(&current_time, NULL);
 
+
   /* check if new data is available via UDP and update Teensy Outputs with it */
   udp_receive();
   /* check if Teensy inputs have changed and send it out via UDP */
@@ -128,9 +133,9 @@ void loop() {
   CurrentTime = micros();
   ElapsedTime = CurrentTime - StartTime;
 
-  //if ((ElapsedTime > 1000) && (DEBUG > 0)) {
-  Serial.printf("Long Loop Time: %i us\n", ElapsedTime);
-  //}
+  if ((ElapsedTime > 1000) && (DEBUG > 0)) {
+    Serial.printf("Long Loop Time: %i us\n", ElapsedTime);
+  }
 
   delay(1); /* We need a maximum of 1 ms delay to capture fast changing encoders */
 }

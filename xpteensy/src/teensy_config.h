@@ -36,7 +36,7 @@
 #define TEENSY_ID2 0x45 /* E */
 
 #define MAX_DEV 10        // maximum number of i2c / spi devices per type
-#define MAX_HIST 20       // maximum number of history variables to save
+#define MAX_HIST 11       // maximum number of history variables to save
 
 #define INITVAL -1          /* initial value of inputs/outputs upon startup */
 
@@ -85,9 +85,10 @@
 #define PINMODE_PWM 3
 #define PINMODE_ANALOGINPUTMEDIAN 4 // use median filter (good for noise in potentiometers)
 #define PINMODE_ANALOGINPUTMEAN 5  // use mean filter (good for rapidly changing analog inputs, like current sensors)
-#define PINMODE_INTERRUPT 6
-#define PINMODE_SERVO 7
-#define PINMODE_MOTOR 8 // L298 motor driver (for now)
+#define PINMODE_ANALOGINPUT 6  // use no filter filter (good for undelayed analog read)
+#define PINMODE_INTERRUPT 7
+#define PINMODE_SERVO 8
+#define PINMODE_MOTOR 9 // L298 motor driver (for now)
 #define PINMODE_I2C 10
 
 #include <stdint.h>

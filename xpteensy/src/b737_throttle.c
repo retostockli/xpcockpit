@@ -1,4 +1,4 @@
-/* This is the b737_tq.c code which handles the CFY Throttle Quadrant rebuilt
+/* This is the b737_throttle.c code which handles the CFY Throttle Quadrant rebuilt
    with a Teensy 4.1, L298N motor controllers, a sound board and a AS5048 direction sensor.
 
    Copyright (C) 2025 Reto Stockli
@@ -57,10 +57,10 @@ struct timeval trim_time;
 int trim_wheel_up_old;
 int trim_wheel_down_old;
 
+/* Setup code for the Boeing 737 Throttle Quadrant Teensy Controller */
 void init_b737_tq(void)
 {
   int te = 0;
-
 
   /* Thrust Lever 0 Motor */
   teensy[te].pinmode[0] = PINMODE_MOTOR; // motor EN
@@ -171,6 +171,7 @@ void init_b737_tq(void)
   
 }
 
+/* Main Loop Code for the Boeing 737 Throttle Quadrant Teensy Controller */
 void b737_tq(void)
 {
 
@@ -220,7 +221,7 @@ void b737_tq(void)
 
   float flap=FLT_MISS;
 
-  /* Check if Power is on */
+  /* X-Plane Datarefs and Commandrefs used in this code */
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
   int *num_engines = link_dataref_int("sim/aircraft/engine/acf_num_engines");
@@ -328,7 +329,6 @@ void b737_tq(void)
     /* XP11 */
     //fuel_mixture = link_dataref_flt_arr("sim/flightmodel/engine/ENGN_mixt",8,-1,-2);
   }
-  
      
   int *horn_cutout_button;
   if ((acf_type == 2) || (acf_type == 3)) { 
@@ -338,7 +338,6 @@ void b737_tq(void)
   } else {
     horn_cutout_button = link_dataref_int("xpserver/HORN_CUTOUT");
   }
-
 
   /* Covers of the Stab Trim Cutoff switches: open */
   if ((acf_type == 2) || (acf_type == 3)) { 
@@ -350,8 +349,7 @@ void b737_tq(void)
     ret = set_switch_cover(autopilot_cover_pos,autopilot_cover_toggle,1);     
   }
 
-  /* Stab Trim Cutoff Switches */
-  
+  /* Stab Trim Cutoff Switches */ 
   int *main_elect_toggle;
   float *main_elect_pos;
   int *autopilot_toggle;
@@ -363,13 +361,8 @@ void b737_tq(void)
     autopilot_pos = link_dataref_flt("laminar/B738/toggle_switch/ap_trim_pos",-3);
   }
 
-  
-  /*
-  float *stabilizer_min = link_dataref_flt("sim/aircraft/controls/acf_min_trim_elev",-3);
-  float *stabilizer_max = link_dataref_flt("sim/aircraft/controls/acf_max_trim_elev",-3);
-  */
-
-  /* fetch stabilizer setting from x737 dataref if available */
+ 
+  /* assign correct stabilizer range depending on aircraft */
   if ((acf_type == 2) || (acf_type == 3)) {
     minstabilizer_xplane = minstabilizer_zibo;
     maxstabilizer_xplane = maxstabilizer_zibo;
@@ -381,6 +374,7 @@ void b737_tq(void)
     maxstabilizer_xplane = maxstabilizer_default;
   }
 
+  /* assign correct speedbrake settings depending on aircraft */
   if ((acf_type == 2) || (acf_type == 3)) {
     minspeedbrake_xplane = minspeedbrake_zibo;
     maxspeedbrake_xplane = maxspeedbrake_zibo;
@@ -392,11 +386,13 @@ void b737_tq(void)
     maxspeedbrake_xplane = maxspeedbrake_default;
   }
 
-  /* Background Lighting */
+  /*** Background Lighting ***/
   float background_lighting = 0.0;
   if (*avionics_on == 1) background_lighting = 75.0; /* set 75% intensity for now */
   ret = pwm_output(te, TEENSY_TYPE, 0, 14, &background_lighting,0.0,100.0);
-   
+
+  /*** Read Buttons ***/
+  
   /* read TOGA Button */
   ret = digital_input(te, TEENSY_TYPE, 0, 34, toga_button, 0);
   if ((ret == 1) && (*toga_button == 1)) {
@@ -771,7 +767,7 @@ void b737_tq(void)
     }
   }
 
-  /* Is our first command from X-Plane or from Hardware? */
+  /* Does our stabilizer move come from X-Plane or from our Hardware? */
   if (stabilizer_mode == 0) {
     if ((trim_up_wheel == 1) || (trim_down_wheel == 1)) stabilizer_mode = 1; // Hand drives
     if ((*trim_up_ap == 1) || (*trim_down_ap == 1)) stabilizer_mode = 2; // X-Plane drives
