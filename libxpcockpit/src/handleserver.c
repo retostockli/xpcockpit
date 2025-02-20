@@ -200,12 +200,12 @@ void exit_tcpip_client(void)
 int check_xpserver(void)
 {
 
-  int ret = 0;
+  int ret;
   int res; 
-  fd_set myset; 
+  fd_set writeset; 
   struct timeval tv; 
-  int valopt; 
-  socklen_t lon; 
+  int err; 
+  socklen_t len; 
 
   if (socketStatus == status_Error) {
     if (handleserver_verbose > 0) printf("HANDLESERVER: Ignoring Error. Trying send/receive again ... \n");
@@ -252,106 +252,95 @@ int check_xpserver(void)
 	   set to blocking (0) for asynchronous read */
 	unsigned long nSetSocketType = 1;
 #ifdef WIN
-	if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0)
+	if (ioctlsocket(clntSock,FIONBIO,&nSetSocketType) < 0) {
 #else
-	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0)
+	if (ioctl(clntSock,FIONBIO,&nSetSocketType) < 0) {
 #endif
-	  {
-	    if (handleserver_verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
-	    socketStatus = status_Error;
-	    ret = -42;
-	  }     
+	  if (handleserver_verbose > 0) printf("HANDLESERVER: Client set to non-blocking failed\n");
+	  socketStatus = status_Error;
+	  ret = -42;
+	}     
 
 	/* Check for and establish a connection to the X-Plane server */
 	if (handleserver_verbose > 0)
 	  printf("HANDLESERVER: Checking for X-Plane and plugin XPSERVER at IP %s and Port %i \n",
 		 XPlaneServerIP,XPlaneServerPort);
-	if (connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0) {
+	ret = connect(clntSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr));
 #ifdef WIN
-	  int wsaerr = WSAGetLastError();
-	  if ((wsaerr == WSAEINPROGRESS) || (wsaerr == WSAEWOULDBLOCK)) { 
+	int wsaerr = WSAGetLastError();
+	if ((ret >= 0) || (wsaerr == WSAEINPROGRESS)) { 
 #else
-	    if ((errno == EINPROGRESS) || (errno == EWOULDBLOCK)) { 
+	if ((ret >= 0) || (errno == EINPROGRESS)) { 
 #endif
-	    if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - selecting\n"); 
-	    do { 
-	      tv.tv_sec = 0; 
-	      tv.tv_usec = 500000; /* 500 ms timeout for connect */
-	      FD_ZERO(&myset); 
-	      FD_SET(clntSock, &myset); 
-	      res = select(clntSock+1, NULL, &myset, NULL, &tv); 
+	  if (ret == 0) {
+	    /* yeah, we found the xpserver plugin running in X-Plane ... */
+	    if (handleserver_verbose > 0) {
+	      printf("HANDLESERVER: Connected to X-Plane and plugin XPSERVER at IP %s and Port %i \n",
+		     XPlaneServerIP,XPlaneServerPort);
+	    }
+	    socketStatus = status_Connected;
+	  } else {
+	    if (handleserver_verbose > 1) printf("HANDLESERVER: EINPROGRESS in connect() - Using select\n");
+
+	    /* 500 ms timeout for connect to finish operation*/
+	    tv.tv_sec = 0; 
+	    tv.tv_usec = 500000; 
+	    FD_ZERO(&writeset); 
+	    FD_SET(clntSock, &writeset); 
+	    res = select(clntSock+1, NULL, &writeset, NULL, &tv); 
+	    if (res < 0) {
+	      /* Connection error */
 #ifdef WIN
 	      int wsaerr = WSAGetLastError();
-	      if (res < 0 && wsaerr != WSAEINTR) { 
-		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
 #else
-	      if (res < 0 && errno != EINTR) { 
-		if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %s\n", strerror(errno)); 
 #endif
-		break;
-	      } else if (res > 0) { 
-		// Socket selected for write 
-		lon = sizeof(int); 
-		if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+	    } else if (res == 0) {
+	      /* Timeout */
+	      if (handleserver_verbose > 1) printf("HANDLESERVER: Timeout in select() - Cancelling!\n"); 
+	    } else {
+	      // Check if the connection was successful
+	      len = sizeof(err); 
+	      if (getsockopt(clntSock, SOL_SOCKET, SO_ERROR, (void*)(&err), &len) < 0) { 
 #ifdef WIN
-		  int wsaerr = WSAGetLastError();
-		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d\n", wsaerr); 
+		int wsaerr = WSAGetLastError();
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d\n", wsaerr); 
 #else
-		  if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Error in getsockopt() %s\n", strerror(errno)); 
 #endif
-		  break;
-		} 
-		/* yeah, we found the xpserver plugin running in X-Plane ... */
-		if (handleserver_verbose > 0) {
-		  printf("HANDLESERVER: Connected to X-Plane and plugin XPSERVER at IP %s and Port %i \n",
-			 XPlaneServerIP,XPlaneServerPort);
+	      } else {
+		if (err > 0) {
+		  if (handleserver_verbose > 1) printf("HANDLESERVER: Connection refused (no server available) \n");
+		} else {
+		  /* yeah, we found the xpserver plugin running in X-Plane ... */
+		  if (handleserver_verbose > 0) {
+		    printf("HANDLESERVER: Connected to X-Plane and plugin XPSERVER at IP %s and Port %i \n",
+			   XPlaneServerIP,XPlaneServerPort);
+		  }
+		  socketStatus = status_Connected;
 		}
-		socketStatus = status_Connected;
-		break; 
-	      } else { 
-		if (handleserver_verbose > 1) printf("HANDLESERVER: Timeout in select() - Cancelling!\n"); 
-		break;
-	      } 
-	    } while (1);
-	  } else { 
+	      } // getsockopt
+	    } // select
+	  } // EINPROGRESS
+	} // connect  
+
+	/* After a failed Connect we have to reinitialize the socket. Why? */
+	if (socketStatus == status_Ready) {
+	  /* no server visible yet or connection timeout ... */
+	  if (handleserver_verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
 #ifdef WIN
-	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d\n", wsaerr); 
+	  closesocket(clntSock);
 #else
-	    if (handleserver_verbose > 0) printf("HANDLESERVER: Error connecting %d - %s\n", errno, strerror(errno)); 
+	  close(clntSock); 
 #endif
-	  } 
-
-	  /* After a failed Connect we have to reinitialize the socket. Why? */
-	  if (socketStatus == status_Ready) {
-	    /* no server visible yet or connection timeout ... */
-	    if (handleserver_verbose > 2) printf("HANDLESERVER: No TCP/IP connection to X-Plane yet. \n");
-#ifdef WIN
-	    closesocket(clntSock);
-#else
-	    close(clntSock); 
-#endif
-	    if (create_tcpip_socket() < 0) {
-	      if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
-	      ret = -43;
-	    }
+	  if (create_tcpip_socket() < 0) {
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+	    ret = -43;
 	  }
-
-	} else {
-	  /* yeah, we found the xpserver plugin running in X-Plane ... */
-	  if (handleserver_verbose > 0) {
-	    printf("HANDLESERVER: Connected to X-Plane. \n");
-	    printf("X-Plane Server Plugin Address:Port is %s:%i \n",XPlaneServerIP, XPlaneServerPort);
-	  }
-
-	  socketStatus = status_Connected;
 	}
-
-      }
-
-    } else {
-      /* no valid IP address: wait for x-plane beacon to send us one */
-    }
-
+      } // time for checking
+    } // valid Server IP address
   } else {
     /* Re-initialize Socket if we're back to init state */
     if (socketStatus == status_Init) {
@@ -361,9 +350,13 @@ int check_xpserver(void)
       }
     }
   }
-
+      
   /* Return value is 1 if connected and 0 if not connected */
-  if (socketStatus == status_Connected) ret = 1;
+  if (socketStatus == status_Connected) {
+    ret = 1;
+  } else {
+    ret = 0;
+  }
   
   return ret;
 }
