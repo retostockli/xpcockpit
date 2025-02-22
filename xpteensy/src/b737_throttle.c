@@ -121,8 +121,8 @@ void init_b737_tq(void)
   /* Analog Inputs */
   //teensy[te].pinmode[16] = PINMODE_ANALOGINPUTMEDIAN; // Motor 1 Current Measurement A0
   //teensy[te].pinmode[17] = PINMODE_ANALOGINPUTMEDIAN; // Motor 2 Current Measurement A1
-  teensy[te].pinmode[20] = PINMODE_ANALOGINPUTMEDIAN; // Motor 3 Current Measurement A2
-  teensy[te].pinmode[21] = PINMODE_ANALOGINPUTMEDIAN; // Motor 4 Current Measurement A3
+  //teensy[te].pinmode[20] = PINMODE_ANALOGINPUTMEDIAN; // Motor 3 Current Measurement A2
+  //teensy[te].pinmode[21] = PINMODE_ANALOGINPUTMEDIAN; // Motor 4 Current Measurement A3
 
   /* I2C */
   teensy[te].pinmode[18] = PINMODE_I2C; 
@@ -745,11 +745,13 @@ void b737_tq(void)
   }
 
   /*** Stabilizer Trim Wheel ***/
+  /*
   float trim_current;
   ret = analog_input(te,20,&trim_current,0.0,1023.0);
   if (ret == 1) {
     printf("Trim Wheel Current: %f \n",trim_current);
   }
+  */
   
   /* Manual Trim */
   int angle;
@@ -838,8 +840,10 @@ void b737_tq(void)
     } else {
       /* stop operation */
       /* turn wheel in counter direction */
-      if (trim_up_ap_old == 1) motor_speed = 1.0;
-      if (trim_down_ap_old == 1) motor_speed = -1.0;
+      if (trim_up_ap_old == 1) motor_speed = 0.5;
+      if (trim_down_ap_old == 1) motor_speed = -0.5;
+      //if (trim_up_ap_old == 1) motor_speed = 0.0;
+      //if (trim_down_ap_old == 1) motor_speed = 0.0;
 
       gettimeofday(&new_time,NULL);
 
@@ -848,11 +852,12 @@ void b737_tq(void)
 		  ((float) (new_time.tv_usec - trim_time.tv_usec)) / 1000000.0)*1000.0;
 
       /* stop reverse after x milliseconds */
-      if (dt > 75.0) {
+      if (dt > 200.0) {
 	motor_stop = 1;
+	motor_speed = 0;
       }
       /* trim motor quiet, no more false up/down manual commands */
-      if (dt > 1000.0) {
+      if (dt > 1500.0) {
 	printf("Finish Trim Motor Operation \n");
 	trim_time.tv_sec = INT_MISS;
 	stabilizer_mode = 0;
