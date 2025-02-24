@@ -753,7 +753,7 @@ void b737_tq(void)
   }
   */
   
-  /* Manual Trim */
+  /* Manual Trim Detector (AS5048B magnetic rotary sensor) */
   int angle;
   int trim_up_wheel = 0;
   int trim_down_wheel = 0;
@@ -774,7 +774,8 @@ void b737_tq(void)
     if ((trim_up_wheel == 1) || (trim_down_wheel == 1)) stabilizer_mode = 1; // Hand drives
     if ((*trim_up_ap == 1) || (*trim_down_ap == 1)) stabilizer_mode = 2; // X-Plane drives
 
-    if (stabilizer_mode > 0) printf("Switched to Stabilizer Mode: %i \n",stabilizer_mode);
+    if (stabilizer_mode == 1) printf("Start Manual Trim. Switched to Stabilizer Mode: %i \n",stabilizer_mode);
+    if (stabilizer_mode == 2) printf("Start Auto Trim. Switched to Stabilizer Mode: %i \n",stabilizer_mode);
 
     trim_time.tv_sec = INT_MISS;
   }
@@ -808,9 +809,9 @@ void b737_tq(void)
 	}
 	/* wait until x-plane stopped turning trim wheel */
 	if (dt > 1000.0) {
-	  printf("Finish Manual Trim \n");
 	  trim_time.tv_sec = INT_MISS;
 	  stabilizer_mode = 0;
+	  printf("Finish Manual Trim. Switched to Stabilizer Mode: %i \n",stabilizer_mode);
 	}
       }
     }
@@ -831,19 +832,20 @@ void b737_tq(void)
       gettimeofday(&trim_time,NULL);  
     }
 
+    /* re-press up or down AP switch during stop operation */
+    if ((*trim_up_ap == 1) || (*trim_down_ap == 1)) trim_time.tv_sec = INT_MISS;
+
     /* check timer and stop reverse if needed */
     if (trim_time.tv_sec == INT_MISS) {
       /* regular operation */
       /* turn wheel in respective direction if AP commanded trim is running */
-      if (*trim_up_ap == 1) motor_speed = -1.0;
-      if (*trim_down_ap == 1) motor_speed = 1.0;
+      if (*trim_up_ap == 1) motor_speed = -0.9;
+      if (*trim_down_ap == 1) motor_speed = 0.9;
     } else {
       /* stop operation */
       /* turn wheel in counter direction */
-      if (trim_up_ap_old == 1) motor_speed = 0.5;
-      if (trim_down_ap_old == 1) motor_speed = -0.5;
-      //if (trim_up_ap_old == 1) motor_speed = 0.0;
-      //if (trim_down_ap_old == 1) motor_speed = 0.0;
+      if (trim_up_ap_old == 1) motor_speed = 0.6;
+      if (trim_down_ap_old == 1) motor_speed = -0.6;
 
       gettimeofday(&new_time,NULL);
 
@@ -854,13 +856,13 @@ void b737_tq(void)
       /* stop reverse after x milliseconds */
       if (dt > 200.0) {
 	motor_stop = 1;
-	motor_speed = 0;
+	motor_speed = 0.0;
       }
       /* trim motor quiet, no more false up/down manual commands */
       if (dt > 1500.0) {
-	printf("Finish Trim Motor Operation \n");
 	trim_time.tv_sec = INT_MISS;
 	stabilizer_mode = 0;
+	printf("Finish Auto Trim. Switched to Stabilizer Mode: %i\n",stabilizer_mode);
       }
     }
   
