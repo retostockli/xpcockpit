@@ -7,12 +7,12 @@
 #include <Wire.h>
 #include "mylib.h"
 
-#define TEE_INT_PIN 6  // Teensy pin for catching interrupt
+#define TEE_INT_PIN 4  // Teensy pin for catching interrupt
 #define TEE_LED_PIN 0  // Teensy pin where LED is connected
 #define MCP_LED_PIN 7  // MCP23XXX pin LED is attached to
 
 //I2C Wires:
-//red: 3.3V
+//red: 3.3V or 5.0V (make sure you have a level shifter of the signals if using 5.0V)
 //black: ground
 //yellow: SCL
 //blue: SDA
@@ -37,14 +37,15 @@ void setup() {
   Wire1.begin();
 
   // begin_I2C: first argument Hex of address, second argument: wire instance
-  if (!mcp.begin_I2C(0x20, &Wire1)) {
+  // I2C Address can be changed with inputs D0,D1,D2 from 0x20 - 0x27
+  if (!mcp.begin_I2C(0x20, &Wire)) {
     Serial.println("Error.");
     while (1)
       ;
   }
 
   //  Set speed of I2C bus
-  Wire1.setClock(1000000);
+  Wire.setClock(400000);
 
   pinMode(TEE_INT_PIN, INPUT_PULLUP);
   // configure MCP23017 for interrupt: 1st argument: A OR B, 2nd argument: open drain, 3rd argument: interrupt = LOW
@@ -86,10 +87,11 @@ void loop() {
   unsigned long CurrentTime = micros();
   unsigned long ElapsedTime = CurrentTime - StartTime;
 
-  if (ElapsedTime > 5) Serial.println(ElapsedTime);
+  if (ElapsedTime > 5) Serial.printf("Time: %i \n",ElapsedTime);
 
   mcp.digitalWrite(MCP_LED_PIN, HIGH);
-  delay(500);
+  delay(2000);
   mcp.digitalWrite(MCP_LED_PIN, LOW);
   delay(500);
+  
 }
