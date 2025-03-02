@@ -18,6 +18,7 @@
 #include "teensy_config.h"
 #include <Adafruit_MCP23X17.h>
 #include <Adafruit_PWMServoDriver.h>
+#include "ht16k33.h"
 #include <Wire.h>
 
 using namespace qindesign::network;
@@ -31,6 +32,7 @@ teensy_struct teensy_data;
 mcp23017_struct mcp23017_data[MAX_DEV];
 pca9685_struct pca9685_data[MAX_DEV];
 as5048b_struct as5048b_data[MAX_DEV];
+ht16k33_struct ht16k33_data[MAX_DEV];
 program_struct program_data[MAX_PROG];
 
 // An EthernetUDP instance to let us send and receive packets over UDP

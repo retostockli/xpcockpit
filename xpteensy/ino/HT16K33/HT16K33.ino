@@ -9,17 +9,22 @@
 // Define the class
 HT16K33 HT;
 
+extern TwoWire Wire;  // Wire, Wire1, Wire2
+
 /****************************************************************/
 void setup() {
   Serial.begin(57600);
   Serial.println(F("ht16k33 light test v0.01"));
   Serial.println();
 
-
   Wire.begin();
 
+  //  Set speed of I2C bus
+  Wire.setClock(400000);
+
   // initialize everything, 0x70 is the first i2c address (0x70 - 0x77 by jumper selection)
-  HT.begin(0x70);
+  // Define used I2C Interface (wire, wire1, wire2)
+  HT.begin(0x70,&Wire);
 
   HT.define7segFont((uint8_t*)&fontTable);
 }

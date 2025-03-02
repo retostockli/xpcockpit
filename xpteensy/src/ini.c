@@ -236,6 +236,25 @@ int ini_read(char* programPath, char* iniName)
 	    as5048b[i][j].connected = 0;
 	  }
 	}
+	
+	sprintf(tmp,"teensy%i:HT16K33",i);
+	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
+ 	printf("HT16K33: %i\n",ival);
+	for (j=0;j<MAX_DEV;j++) {
+	  for (k=0;k<HT16K33_MAX_DIG;k++) {
+	    ht16k33[i][j].val[k] = INITVAL;
+	    ht16k33[i][j].val_save[k] = INITVAL;
+	    ht16k33[i][j].decimalpoint[k] = INITVAL;
+	  }
+	  ht16k33[i][j].brightness = 0;
+	  ht16k33[i][j].wire = INITVAL;
+	  ht16k33[i][j].address = 0;
+	  if (j<ival) {
+	    ht16k33[i][j].connected = 1;
+	  } else {
+	    ht16k33[i][j].connected = 0;
+	  }
+	}
 
 	sprintf(tmp,"teensy%i:PROGRAMS",i);
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
@@ -278,6 +297,7 @@ int reset_teensydata()
   int te;
   int dev;
   int pin;
+  int dig;
   int prog;
   int var;
   
@@ -309,6 +329,14 @@ int reset_teensydata()
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (as5048b[te][dev].connected == 1) {
 	  as5048b[te][dev].val_save = as5048b[te][dev].val[0];
+	}
+      }
+      
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (ht16k33[te][dev].connected == 1) {
+	  for (dig=0;dig<HT16K33_MAX_DIG;dig++) {
+	    ht16k33[te][dev].val_save[dig] = ht16k33[te][dev].val[dig];
+	  }
 	}
       }
       

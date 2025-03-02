@@ -126,6 +126,11 @@ void init_test(void)
   /* program[te][1].val16[2] = 990; // maximum servo potentiometer value */
   /* program[te][1].val8[1] = 15;  // servo potentiometer pin number (needs to be defined separately above) */
   /* program[te][1].val8[2] = 24;  // servo motor pin number (first pin, full motor separately defined above) */
+
+  ht16k33[te][0].brightness = 10;
+  ht16k33[te][0].wire = 0;
+  ht16k33[te][0].address = 0x70;
+
   
 }
 
@@ -240,5 +245,11 @@ void test(void)
   //ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0,0.2,0.8);
 
   //ret = pwm_output(te, PCA9685_TYPE, 0, 2, fvalue,0.0,1.0);
+
+  *value = 12345;
+  int dp = -1;
+  int brightness = 8;
+  
+  ret = display_output(te, HT16K33_TYPE, 0, 8, 5, value, dp, brightness);
   
 }

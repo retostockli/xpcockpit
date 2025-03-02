@@ -36,6 +36,7 @@ extern mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 extern pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 extern pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 extern as5048b_struct as5048b[MAXTEENSYS][MAX_DEV];
+extern ht16k33_struct ht16k33[MAXTEENSYS][MAX_DEV];
 
 /* Prototype Functions */
 int ping_teensy(void);
@@ -50,6 +51,8 @@ int encoder_input(int te, int type, int dev, int pin1, int pin2, int *value, int
 int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, float multiplier, int encoder_type);
 int digital_outputf(int te, int type, int dev, int pin, float *fvalue);
 int digital_output(int te, int type, int dev, int pin, int *value);
+int display_outputf(int te, int type, int dev, int pos, int n, float *fvalue, int dp, int brightness);
+int display_output(int te, int type, int dev, int pos, int n, int *value, int dp, int brightness);
 int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval);
 int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, float servo_min, float servo_max);
 int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake);

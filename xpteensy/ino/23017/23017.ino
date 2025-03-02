@@ -20,7 +20,7 @@
 // uncomment appropriate line
 //Adafruit_MCP23X08 mcp;
 Adafruit_MCP23X17 mcp;
-extern TwoWire Wire1;  // Wire, Wire1, Wire2
+extern TwoWire Wire;  // Wire, Wire1, Wire2
 
 uint8_t obits[2];
 uint8_t nbits[2];
@@ -34,7 +34,10 @@ void setup() {
   Serial.println("MCP23xxx Blink Test!");
 
   // Start I2C bus
-  Wire1.begin();
+  Wire.begin();
+
+  //  Set speed of I2C bus
+  Wire.setClock(400000);
 
   // begin_I2C: first argument Hex of address, second argument: wire instance
   // I2C Address can be changed with inputs D0,D1,D2 from 0x20 - 0x27
@@ -43,9 +46,6 @@ void setup() {
     while (1)
       ;
   }
-
-  //  Set speed of I2C bus
-  Wire.setClock(400000);
 
   pinMode(TEE_INT_PIN, INPUT_PULLUP);
   // configure MCP23017 for interrupt: 1st argument: A OR B, 2nd argument: open drain, 3rd argument: interrupt = LOW

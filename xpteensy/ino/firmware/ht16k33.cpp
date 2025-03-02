@@ -135,8 +135,7 @@ uint8_t HT16K33::i2c_write(uint8_t cmd,uint8_t *data,uint8_t size,boolean LSB){
   if (ret != 0) {
     Serial.printf("I2C Device Address 0x%x Write Error: %i \n",_address,ret);
   }
-  return ret;
-} // i2c_write
+  return ret;} // i2c_write
 
 /****************************************************************/
 // internal function - read a byte from specific address (send one byte(address to read) and read a byte)

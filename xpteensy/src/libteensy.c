@@ -46,6 +46,7 @@ mcp23017_struct mcp23017[MAXTEENSYS][MAX_DEV];
 pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 as5048b_struct as5048b[MAXTEENSYS][MAX_DEV];
+ht16k33_struct ht16k33[MAXTEENSYS][MAX_DEV];
 
 /* Send a Ping to the Teensy until it responds */
 /* Makes sure Teensy is online before we send init strings */
@@ -278,7 +279,29 @@ int init_teensy() {
 	}
       }
       
-      
+      /* initialize HT16K33 boards connected via I2C */
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (ht16k33[te][dev].connected == 1) {
+	  memset(teensySendBuffer,0,SENDMSGLEN);
+	  if (verbose > 0) printf("Teensy %i HT16K33 %i Initialized \n",te,dev);
+	  teensySendBuffer[0] = TEENSY_ID1; /* T */
+	  teensySendBuffer[1] = TEENSY_ID2; /* E */
+	  teensySendBuffer[2] = 0x00;
+	  teensySendBuffer[3] = 0x00; 
+	  teensySendBuffer[4] = TEENSY_INIT;
+	  teensySendBuffer[5] = HT16K33_TYPE;
+	  teensySendBuffer[6] = dev;
+	  teensySendBuffer[12] = ht16k33[te][dev].wire;
+	  teensySendBuffer[13] = (int8_t) ht16k33[te][dev].address; 
+	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	  if (ret == SENDMSGLEN) {
+	    if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i HT16K33 %i \n", ret,te,dev);
+	  } else {
+	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i HT16K33 %i \n", ret,te,dev);
+	  }
+	}
+      }
+          
       /* initialize internal programs on Teensy */
       /* initialize last, since motors, potentiometers etc. used by programs need to be known before */
       /* for now: send 3x 16 bit values and 3x 8 bit values (may need extension for other programs) */
@@ -331,6 +354,7 @@ int send_teensy() {
   int ret;
   int te;
   int pin;
+  int dig;
   int dev;
   int prog;
 
@@ -426,6 +450,34 @@ int send_teensy() {
 	  } /* loop over pins of PCA9685 */
 	} /* PCA9685 connected */
       } /* loop over PCA9685 devices */
+
+      /* Send changed values to HT16K33 daughter board via I2C */
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (ht16k33[te][dev].connected == 1) {
+	  for (dig=0;dig<HT16K33_MAX_DIG;dig++) {
+	    if (ht16k33[te][dev].val[dig] != ht16k33[te][dev].val_save[dig]) {
+	      memset(teensySendBuffer,0,SENDMSGLEN);
+	      teensySendBuffer[0] = TEENSY_ID1; /* T */
+	      teensySendBuffer[1] = TEENSY_ID2; /* E */
+	      teensySendBuffer[2] = 0x00;
+	      teensySendBuffer[3] = 0x00; 
+	      teensySendBuffer[4] = TEENSY_REGULAR;
+	      teensySendBuffer[5] = HT16K33_TYPE;
+	      teensySendBuffer[6] = dev;
+	      teensySendBuffer[7] = dig;
+	      memcpy(&teensySendBuffer[8],&ht16k33[te][dev].val[dig],sizeof(ht16k33[te][dev].val[dig]));
+	      teensySendBuffer[10] = ht16k33[te][dev].decimalpoint[dig];
+	      teensySendBuffer[11] = ht16k33[te][dev].brightness;
+	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	      if (ret == SENDMSGLEN) {
+		if (verbose > 0) printf("SEND: Sent %i bytes to Teensy %i HT16K33 %i Pin %i \n", ret,te,dev,pin);
+	      } else {
+		printf("INCOMPLETE SEND: Sent %i bytes to Teensy %i HT16K33 %i Pin %i \n", ret,te,dev,pin);
+	      }
+	    } /* value changed since last send */
+	  } /* loop over pins of HT16K33 */
+	} /* HT16K33 connected */
+      } /* loop over HT16K33 devices */
 
       /* Send changed values to internal program running on Teensy */
       for (prog=0;prog<MAX_PROG;prog++) {
@@ -1163,6 +1215,149 @@ int digital_output(int te, int type, int dev, int pin, int *value) {
 	}
       } else {
 	printf("Digital Output %i of Teensy %i should be 0 or 1, but is %i \n", pin,te,*value);
+	retval = -1;
+      }
+    } // Output value not missing
+    
+  } // Output value pointer not null
+
+  return retval;
+}
+int display_outputf(int te, int type, int dev, int pos, int n, float *fvalue, int dp, int brightness) {
+  int value;
+  
+  if (*fvalue == FLT_MISS) {
+    value = INT_MISS;
+  } else {
+    value = (int) lroundf(*fvalue);
+  }
+    
+  return display_output(te, type, dev, pos, n, &value, dp, brightness);
+
+}
+
+int display_output(int te, int type, int dev, int pos, int n, int *value, int dp, int brightness) {
+
+  int retval = 0;
+  int count;
+  int changed;
+  int tempval;
+  int negative;
+  int16_t single;
+
+  /* Digits go from 0-F, 16-18 are blank, 19 is negative sign, 20 is degree sign, 21 is underscore */
+
+  if (value != NULL) {
+
+    if (*value != INT_MISS) {
+      if (te < MAXTEENSYS) {
+	if (teensy[te].connected) {
+	  if (type == HT16K33_TYPE) {
+	    if ((dev >= 0) && (dev < MAX_DEV)) {
+	      if ((pos >= 0) && (pos < HT16K33_MAX_DIG) && (n > 0) && ((pos+n) <= HT16K33_MAX_DIG)) {
+
+		changed = 0;
+
+		ht16k33[te][dev].brightness = brightness;
+		
+		/* Regular Case with integer number distributed over n 7-segment displays */
+		/* generate temporary storage of input value */
+		tempval = *value;
+
+		/* reverse negative numbers: find treatment for - sign */
+		/* use first digit for negative sign */
+		if (tempval < 0) {
+		  tempval = -tempval;
+		  negative = 1;
+		} else {
+		  negative = 0;
+		}
+		
+		/* read individual digits from integer */
+		/* blank leftmost 0 values except if it is the first one */ 
+		count = 0;
+		while ((tempval) && (count<n))
+		  {
+		    if (dp == count) {
+		      ht16k33[te][dev].decimalpoint[pos+count] = 1;
+		    } else {
+		      ht16k33[te][dev].decimalpoint[pos+count] = 0;
+		    }
+		      
+		    single = tempval % 10;
+		    if (ht16k33[te][dev].val[pos+count] != single) {
+		      ht16k33[te][dev].val[pos+count] = single;
+		      changed = 1;
+		    }
+		    tempval /= 10;
+		    count++;
+		  }
+		    
+		while (count<n)
+		  {
+		    if (negative) {
+		      /* set negative sign */
+		      if (count > dp) {
+			single = 19;
+			if (ht16k33[te][dev].val[pos+count] != single) {
+			  ht16k33[te][dev].val[pos+count] = single;
+			  changed = 1;
+			}
+			negative = 0;
+		      }
+		    } else {
+		      if ((count == 0) || (dp >= count)) {
+			/* do not blank leftmost 0 display or if it has a decimal point */
+			/* this allows to display for instance 0.04 */
+			if (dp == count) {
+			  ht16k33[te][dev].decimalpoint[pos+count] = 1;
+			} else {
+			  ht16k33[te][dev].decimalpoint[pos+count] = 0;
+			}
+			
+			single = 0;
+			if (ht16k33[te][dev].val[pos+count] != single) {
+			  ht16k33[te][dev].val[pos+count] = single;
+			  changed = 1;
+			}
+		      } else {
+			/* blank all other displays in front of number */
+			single = 16;
+			if (ht16k33[te][dev].val[pos+count] != single) {
+			  ht16k33[te][dev].val[pos+count] = single;
+			  changed = 1;
+			}
+		      }
+		    }
+		    count++;
+		  }
+
+		if (changed == 1) {
+		  if (verbose > 0) printf("Display Output Digit range %i-%i of Teensy %i HT16K33 %i changed to %i \n",
+					  pos,pos+n-1,te,dev,*value);
+		}
+	      } else {
+		if (verbose > 0) printf("Display Output digit range %i-%i above maximum # of Digits %i of HT16K33 \n",
+					pos,pos+n-1,HT16K33_MAX_DIG);
+		retval = -1;
+	      }
+	    } else {
+	      if (verbose > 0) printf("Display Output range %i-%i cannot be written. HT16K33 %i not connected to Teensy %i \n",
+				      pos,pos+n-1,dev,te);
+	      retval = -1;
+	    }
+	  } else {
+	    if (verbose > 0) printf("Display Outputs are supported only for HT16K33 \n");
+	    retval = -1;
+	  }
+	} else {
+	  if (verbose > 0) printf("Display Output range %i-%i cannot be written. Teensy %i not connected \n",
+				  pos,pos+n-1,te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 0) printf("Display Output range %i-%i cannot be written. Teensy %i >= %i \n",
+				pos,pos+n-1,te, MAXTEENSYS);
 	retval = -1;
       }
     } // Output value not missing

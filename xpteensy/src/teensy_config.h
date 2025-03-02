@@ -64,12 +64,17 @@
 /* PCF8591 4 Analog Inputs Defines */
 #define PCF8591_MAX_PINS 4    // maximum number of analog inputs on a PCF8591
 
+/* HT16K33 16x8 LED 7-segment Defines */
+#define HT16K33_MAX_DIG 16   // maximum number of digits on HT16K33
+
+/* Teensy I/O Protocol */
 #define TEENSY_PING 0       // PING data packet
 #define TEENSY_INIT 1       // Initialization data packet
 #define TEENSY_REGULAR 2    // Regular data packet with data
 #define TEENSY_RESEND 3     // Request to resend states /* INOP */
 #define TEENSY_SHUTDOWN 10  // Request to shutdown /* INOP */
 
+/* Teensy type of connected daughter boards */
 #define TEENSY_TYPE 0        // Host Teensy Microcontroller
 #define PROGRAM_TYPE 20      // Internal Program Type (e.g. for closed loop motor control)
 
@@ -77,6 +82,7 @@
 #define PCA9685_TYPE 102     // 16 PWM/Servo Extension via I2C
 #define PCF8591_TYPE 110     // 8 bit DAC/DAC via I2C
 #define AS5048B_TYPE 111     // Rotation Angle Encoder via I2C
+#define HT16K33_TYPE 112     // 7 segment display driver via I2C
 
 #define PROGRAM_CLOSEDLOOP 1 // Program steering a dc motor in a closed loop (servo) controlled by a potentiometer
 
@@ -167,3 +173,13 @@ typedef struct {
   int8_t wire;         // I2C bus (0,1,2)
   uint8_t address;     // I2C address 0x00 - 0xff
 } pcf8591_struct;
+
+typedef struct {
+  int8_t connected;
+  int16_t val[HT16K33_MAX_DIG];
+  int16_t val_save[HT16K33_MAX_DIG];
+  int8_t decimalpoint[HT16K33_MAX_DIG];
+  int8_t brightness;
+  int8_t wire;  // I2C bus (0,1,2)
+  uint8_t address; // I2C address 0x00 - 0xff
+} ht16k33_struct;

@@ -53,8 +53,22 @@ void init_data() {
     pca9685_data[dev].connected = 0;
   }
 
-
   Serial.printf("PCA9685 Data initialized\n");
+
+
+  for (dev = 0; dev < MAX_DEV; dev++) {
+    for (k = 0; k < HT16K33_MAX_DIG; k++) {
+      ht16k33_data[dev].val[k] = INITVAL;
+      ht16k33_data[dev].val_save[k] = INITVAL;
+      ht16k33_data[dev].decimalpoint[k] = INITVAL;
+    }
+    ht16k33_data[dev].brightness = INITVAL;
+    ht16k33_data[dev].wire = INITVAL;
+    ht16k33_data[dev].address = 0x00;
+    ht16k33_data[dev].connected = 0;
+  }
+
+  Serial.printf("HT16K33 Data initialized\n");
 
 
   for (dev = 0; dev < MAX_DEV; dev++) {
