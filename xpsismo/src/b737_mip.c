@@ -123,6 +123,7 @@ void b737_mip(void)
     float *fmc_prst = link_dataref_flt("laminar/B738/fmc/fmc_message_warn",-1);
 
     float *speedbrake_armed = link_dataref_flt("laminar/B738/annunciator/speedbrake_armed",-1);
+    float *speedbrake_not_arm = link_dataref_flt("laminar/B738/annunciator/spd_brk_not_arm",-1);
     float *speedbrake_extend = link_dataref_flt("laminar/B738/annunciator/speedbrake_extend",-1);
     float *stab_outoftrim = link_dataref_flt("laminar/B738/annunciator/stab_out_of_trim",-1);
 
@@ -522,7 +523,7 @@ void b737_mip(void)
     }
       
     ret = digital_outputf(card, 5, speedbrake_armed);
-    ret = digital_outputf(card, 6, lights_test);   // speed brake do not arm
+    ret = digital_outputf(card, 6, speedbrake_not_arm); 
     ret = digital_outputf(card, 7, stab_outoftrim);
 
     ret = digital_outputf(card, 8, sixpack_flt_cont);

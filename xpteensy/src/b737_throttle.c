@@ -40,8 +40,9 @@
 /* Min and Max Potentiometer Values for Levers */
 #define THROTTLE_MIN 0.03
 #define THROTTLE_MAX 0.98
-#define SPEEDBRAKE_MIN 0.300
-#define SPEEDBRAKE_ARM 0.510
+#define SPEEDBRAKE_LOCK 0.330 // speedbrake mechanical detent preventing movement3
+#define SPEEDBRAKE_MIN 0.400
+#define SPEEDBRAKE_ARM 0.510 
 #define SPEEDBRAKE_MAX 0.995
 #define REVERSER_MIN 0.05
 #define REVERSER_MAX 0.95
@@ -595,8 +596,8 @@ void b737_tq(void)
     printf("Speed Brake changed to: %f \n",speedbrake);
   }
 
-  int speedbrake_armed = 0;
-  if (speedbrake > SPEEDBRAKE_ARM) speedbrake_armed = 1;
+  int speedbrake_locked = 0;
+  if (speedbrake < SPEEDBRAKE_LOCK) speedbrake_locked = 1;
  
    /* Normalize H/W lever potentiometer range */
   if (speedbrake != FLT_MISS) {
@@ -635,7 +636,7 @@ void b737_tq(void)
     
   } else if (speedbrake_mode == 2) {
 
-    if (speedbrake_armed == 1) {
+    if (speedbrake_locked == 0) {
 
       ret = program_closedloop(te, 2, 1, speedbrake_xplane, minspeedbrake_xplane, maxspeedbrake_xplane);
 
