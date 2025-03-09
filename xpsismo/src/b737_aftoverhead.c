@@ -154,97 +154,97 @@ void b737_aftoverhead(void)
 
   /*** FLAPS PANEL ***/
   if ((acf_type == 2) || (acf_type == 3)) {
-    i0 = 43;
-    o0 = 64;
-    int *flaps_test =  link_dataref_cmd_hold("laminar/B738/push_button/flaps_test");
-    ret = digital_input(card, i0+0, flaps_test, 0);
+    if (*avionics_on = 1) {
+      i0 = 43;
+      o0 = 64;
+      int *flaps_test =  link_dataref_cmd_hold("laminar/B738/push_button/flaps_test");
+      ret = digital_input(card, i0+0, flaps_test, 0);
 
-    float *flaps_test_ann = link_dataref_flt("laminar/B738/annunciator/flaps_test",-2);
-    if (*flaps_test_ann > 0.05) {
-      for (i=0;i<32;i++) {
- 	ret = digital_output(card,o0+i,&one);
-      }
-    } else {
-      float *slats_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-2);
-      float *slats_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-2);
-      float *slats1 = link_dataref_flt("laminar/B738/controls/slat1_deploy_ratio",-3);
-      float *slats2 = link_dataref_flt("laminar/B738/controls/slat2_deploy_ratio",-3);
-
-      /* SLATS ANNUNCIATORS */
-      if (*slats_transit > 0.05) {
-	ret = digital_output(card,o0+0,&one);
-	ret = digital_output(card,o0+1,&one);
-	ret = digital_output(card,o0+2,&one);
-	ret = digital_output(card,o0+16,&one);
-	ret = digital_output(card,o0+17,&one);
-	ret = digital_output(card,o0+18,&one);
+      float *flaps_test_ann = link_dataref_flt("laminar/B738/annunciator/flaps_test",-2);
+      if (*flaps_test_ann > 0.05) {
+	for (i=0;i<32;i++) {
+	  ret = digital_output(card,o0+i,&one);
+	}
       } else {
-	ret = digital_output(card,o0+0,&zero);
-	ret = digital_output(card,o0+1,&zero);
-	ret = digital_output(card,o0+2,&zero);
-	ret = digital_output(card,o0+16,&zero);
-	ret = digital_output(card,o0+17,&zero);
-	ret = digital_output(card,o0+18,&zero);
-      }
+	float *slats_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-2);
+	float *slats_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-2);
+	float *slats1 = link_dataref_flt("laminar/B738/controls/slat1_deploy_ratio",-3);
+	float *slats2 = link_dataref_flt("laminar/B738/controls/slat2_deploy_ratio",-3);
+
+	/* SLATS ANNUNCIATORS */
+	if (*slats_transit > 0.05) {
+	  ret = digital_output(card,o0+0,&one);
+	  ret = digital_output(card,o0+1,&one);
+	  ret = digital_output(card,o0+2,&one);
+	  ret = digital_output(card,o0+16,&one);
+	  ret = digital_output(card,o0+17,&one);
+	  ret = digital_output(card,o0+18,&one);
+	} else {
+	  ret = digital_output(card,o0+0,&zero);
+	  ret = digital_output(card,o0+1,&zero);
+	  ret = digital_output(card,o0+2,&zero);
+	  ret = digital_output(card,o0+16,&zero);
+	  ret = digital_output(card,o0+17,&zero);
+	  ret = digital_output(card,o0+18,&zero);
+	}
 	
-      if (*slats2 == 0.5) {
-	ret = digital_output(card,o0+5,&one);
-	ret = digital_output(card,o0+6,&one);
-	ret = digital_output(card,o0+7,&one);
-	ret = digital_output(card,o0+21,&one);
-	ret = digital_output(card,o0+22,&one);
-	ret = digital_output(card,o0+23,&one);
-      } else {
-	ret = digital_output(card,o0+5,&zero);
-	ret = digital_output(card,o0+6,&zero);
-	ret = digital_output(card,o0+7,&zero);
-	ret = digital_output(card,o0+21,&zero);
-	ret = digital_output(card,o0+22,&zero);
-	ret = digital_output(card,o0+23,&zero);
-      }
+	if (*slats2 == 0.5) {
+	  ret = digital_output(card,o0+5,&one);
+	  ret = digital_output(card,o0+6,&one);
+	  ret = digital_output(card,o0+7,&one);
+	  ret = digital_output(card,o0+21,&one);
+	  ret = digital_output(card,o0+22,&one);
+	  ret = digital_output(card,o0+23,&one);
+	} else {
+	  ret = digital_output(card,o0+5,&zero);
+	  ret = digital_output(card,o0+6,&zero);
+	  ret = digital_output(card,o0+7,&zero);
+	  ret = digital_output(card,o0+21,&zero);
+	  ret = digital_output(card,o0+22,&zero);
+	  ret = digital_output(card,o0+23,&zero);
+	}
       
-      if (*slats2 == 1.0) {
-	ret = digital_output(card,o0+8,&one);
-	ret = digital_output(card,o0+9,&one);
-	ret = digital_output(card,o0+10,&one);
-	ret = digital_output(card,o0+24,&one);
-	ret = digital_output(card,o0+25,&one);
-	ret = digital_output(card,o0+26,&one);
-      } else {
-	ret = digital_output(card,o0+8,&zero);
-	ret = digital_output(card,o0+9,&zero);
-	ret = digital_output(card,o0+10,&zero);
-	ret = digital_output(card,o0+24,&zero);
-	ret = digital_output(card,o0+25,&zero);
-	ret = digital_output(card,o0+26,&zero);
-      }
+	if (*slats2 == 1.0) {
+	  ret = digital_output(card,o0+8,&one);
+	  ret = digital_output(card,o0+9,&one);
+	  ret = digital_output(card,o0+10,&one);
+	  ret = digital_output(card,o0+24,&one);
+	  ret = digital_output(card,o0+25,&one);
+	  ret = digital_output(card,o0+26,&one);
+	} else {
+	  ret = digital_output(card,o0+8,&zero);
+	  ret = digital_output(card,o0+9,&zero);
+	  ret = digital_output(card,o0+10,&zero);
+	  ret = digital_output(card,o0+24,&zero);
+	  ret = digital_output(card,o0+25,&zero);
+	  ret = digital_output(card,o0+26,&zero);
+	}
 
-      /* FLAPS ANNUNCIATORS */
-      if ((*slats1 > 0.0) && (*slats1 < 1.0)) {
-	ret = digital_output(card,o0+3,&one);
-	ret = digital_output(card,o0+4,&one);
-	ret = digital_output(card,o0+19,&one);
-	ret = digital_output(card,o0+20,&one);
-      } else {
-	ret = digital_output(card,o0+3,&zero);
-	ret = digital_output(card,o0+4,&zero);
-	ret = digital_output(card,o0+19,&zero);
-	ret = digital_output(card,o0+20,&zero);
-      }
-      if (*slats1 == 1.0) {
-	ret = digital_output(card,o0+11,&one);
-	ret = digital_output(card,o0+12,&one);
-	ret = digital_output(card,o0+27,&one);
-	ret = digital_output(card,o0+28,&one);
-      } else {
-	ret = digital_output(card,o0+11,&zero);
-	ret = digital_output(card,o0+12,&zero);
-	ret = digital_output(card,o0+27,&zero);
-	ret = digital_output(card,o0+28,&zero);
-      }
+	/* FLAPS ANNUNCIATORS */
+	if ((*slats1 > 0.0) && (*slats1 < 1.0)) {
+	  ret = digital_output(card,o0+3,&one);
+	  ret = digital_output(card,o0+4,&one);
+	  ret = digital_output(card,o0+19,&one);
+	  ret = digital_output(card,o0+20,&one);
+	} else {
+	  ret = digital_output(card,o0+3,&zero);
+	  ret = digital_output(card,o0+4,&zero);
+	  ret = digital_output(card,o0+19,&zero);
+	  ret = digital_output(card,o0+20,&zero);
+	}
+	if (*slats1 == 1.0) {
+	  ret = digital_output(card,o0+11,&one);
+	  ret = digital_output(card,o0+12,&one);
+	  ret = digital_output(card,o0+27,&one);
+	  ret = digital_output(card,o0+28,&one);
+	} else {
+	  ret = digital_output(card,o0+11,&zero);
+	  ret = digital_output(card,o0+12,&zero);
+	  ret = digital_output(card,o0+27,&zero);
+	  ret = digital_output(card,o0+28,&zero);
+	}
+      }    
     }
-    
-
   }
 
   /*** IRS Selector PANEL ***/

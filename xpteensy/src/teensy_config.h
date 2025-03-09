@@ -152,7 +152,7 @@ typedef struct {
   int16_t val_save[PCA9685_MAX_PINS];  // previous values on device pins (input or output)
   int8_t pinmode[PCA9685_MAX_PINS];   // I/O type: Input or output
   int8_t wire;       // I2C bus (0,1,2)
-  uint8_t address;   // I2C address (0x20 - 0x27)
+  uint8_t address;   // I2C address (0x40 - 0x7F)
 } pca9685_struct;
 
 typedef struct {
@@ -181,5 +181,5 @@ typedef struct {
   int8_t decimalpoint[HT16K33_MAX_DIG];
   int8_t brightness;
   int8_t wire;  // I2C bus (0,1,2)
-  uint8_t address; // I2C address 0x00 - 0xff
+  uint8_t address; // I2C address 0x70 - 0x77
 } ht16k33_struct;
