@@ -26,9 +26,12 @@ then
     exit 2
 fi
 
+trap - SIGINT SIGTERM
 
 cd ~/xpcockpit/xpsismo/bin
 ./xpsismo boeing737
+
+read -p "Press key to continue.. " -n1 -s
 
 exit 0
 
