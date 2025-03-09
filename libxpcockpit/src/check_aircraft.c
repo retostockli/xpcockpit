@@ -59,6 +59,9 @@ void check_aircraft(void) {
     } else if (strcmp((const char*) tailnum,"D-ATUC")==0) {
       /* Standard x737 */
       acf_type = 1;
+    } else if (strcmp((const char*) tailnum,"N988DR")==0) {
+      /* F14 Tomcat */
+      acf_type = 5;
     } else if (strcmp((const char*) tailnum,"")==0) {
       /* No Tail Number (yet?) */
       acf_type = -1;

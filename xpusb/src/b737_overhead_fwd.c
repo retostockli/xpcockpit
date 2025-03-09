@@ -1645,7 +1645,61 @@ void b737_overhead_fwd(void)
     ret = mastercard_display(device,card,1,3,&ival,1);
     ret = mastercard_display(device,card,4,2,&ival,1);
     ret = mastercard_display(device,card,8,3,&ival,1);
-  
+
+
+    /* weapon arming for fighter jets */
+    int *weapons_arm_cover_pos = link_dataref_int("laminar/f14/anm/weapons/arm_switch_guard_target_pos");
+    int *weapons_arm_cover_toggle = link_dataref_cmd_once("laminar/f14/weapons/switch/master_arm_switch_guard");
+    ival = 1;
+    float cover_pos = FLT_MISS;
+    if (*weapons_arm_cover_pos != INT_MISS) {
+      cover_pos = (float) *weapons_arm_cover_pos;
+    }    
+    ret = set_switch_cover(&cover_pos,weapons_arm_cover_toggle,ival);
+
+    int *weapons_arm_pos = link_dataref_int("sim/cockpit2/weapons/master_arm");
+    int *weapons_arm_toggle = link_dataref_cmd_once("sim/weapons/master_arm_on");
+    device = mastercard;
+    card = 1;
+    ret = digital_input(device,card,16,&ival,0);
+    if (ret == 1) {
+      printf("Weapons armed: %i \n",ival);
+    }
+    ret = set_state_toggle(&ival,weapons_arm_pos,weapons_arm_toggle);
+
+    device = mastercard;
+    card = 1;
+
+    /* GRD CALL BUTTON: air to ground missile */
+    int *air2ground = link_dataref_cmd_once("sim/weapons/fire_air_to_ground");
+    ret = digital_input(device,card,31,air2ground,0);
+    if (ret == 1) {
+      printf("FIRE AIR TO GROUND MISSILE/BOMB: %i \n",*air2ground);
+    }
+     
+    device = mastercard;
+    card = 0;
+
+    /* ATTEND BUTTON: air to air missile */
+    int *air2air = link_dataref_cmd_once("sim/weapons/fire_air_to_air");
+    ret = digital_input(device,card,53,air2air,0);
+    if (ret == 1) {
+      printf("FIRE AIR TO AIR MISSILE: %i \n",*air2air);
+    }
+    
+    /* CVR ERASE: deploy flares */
+    int *flares = link_dataref_cmd_once("sim/weapons/deploy_flares");
+    ret = digital_input(device,card,70,flares,0);
+    if (ret == 1) {
+      printf("DEPLOY FLARES: %i \n",*flares);
+    }
+    /* CVR Test: deploy chaff */
+    int *chaff= link_dataref_cmd_once("sim/weapons/deploy_chaff");
+    ret = digital_input(device,card,71,chaff,0);
+    if (ret == 1) {
+      printf("DEPLOY CHAFF: %i \n",*chaff);
+    }
+    
   }
     
 }

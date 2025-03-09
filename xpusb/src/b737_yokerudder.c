@@ -37,7 +37,7 @@ struct timeval time_viewmodebutton;
    0: Stab Trim down
    1: Stab Trim up
    2: INT MIC CAPT
-   3: MIC CPAT
+   3: MIC CAPT
    4: AP Disconnect
    5:
    6: HAT Up
@@ -112,7 +112,9 @@ void b737_yokerudder(void)
   int* weapon_up = link_dataref_cmd_hold("sim/weapons/weapon_select_up");
   int* target_down = link_dataref_cmd_hold("sim/weapons/weapon_target_down");
   int* target_up = link_dataref_cmd_hold("sim/weapons/weapon_target_up");
-  int* weapon_fire = link_dataref_cmd_hold("sim/weapons/fire_any_armed");
+  int* fire_weapon = link_dataref_cmd_hold("sim/weapons/fire_any_armed");
+  int* fire_guns= link_dataref_cmd_hold("sim/weapons/fire_guns");
+  int* fire_a2a = link_dataref_cmd_hold("sim/weapons/fire_air_to_air");
 
   //int *ap_engage = link_dataref_int("sim/cockpit/autopilot/autopilot_mode");    // AP engage/disengage mode
 
@@ -186,7 +188,13 @@ void b737_yokerudder(void)
   if (*viewmode == INT_MISS) {
     *viewmode = 0;
   }
- 
+
+  /* Fighter Jet */
+  /* if (acf_type == 5) { */
+  /*   ret = digital_input(device,card,3,&button,0); */
+  /*   *fire_guns = button;       */
+  /* } */
+  
   /* INT MIC button on Yoke resets view to default */
   /* CAPTAIN */
   ret = digital_input(device,card,2,&button,0);
