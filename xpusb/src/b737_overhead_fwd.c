@@ -638,21 +638,22 @@ void b737_overhead_fwd(void)
     ret = digital_output(device,card,27,&ival);
 
     /* Zone Temp Potentiometers */
-    float *cont_cab_rheostat = link_dataref_flt("laminar/B738/air/cont_cab_temp/rheostat",-2);
-    ret = axis_input(device,0,cont_cab_rheostat,0.0,1.0);
-    if (ret == 1) {
-      printf("CONT CAB TEMP RHEO: %f \n",*cont_cab_rheostat);
-    } 
-    float *fwd_cab_rheostat = link_dataref_flt("laminar/B738/air/fwd_cab_temp/rheostat",-2);
-    ret = axis_input(device,1,fwd_cab_rheostat,0.0,1.0);
-    if (ret == 1) {
-      printf("FWD CAB TEMP RHEO: %f \n",*fwd_cab_rheostat);
-    } 
-    float *aft_cab_rheostat = link_dataref_flt("laminar/B738/air/aft_cab_temp/rheostat",-2);
-    ret = axis_input(device,2,aft_cab_rheostat,0.0,1.0);
-    if (ret == 1) {
-      printf("AFT CAB TEMP RHEO: %f \n",*aft_cab_rheostat);
-    } 
+    /* REMOVED TEMPORARILY */
+    /* float *cont_cab_rheostat = link_dataref_flt("laminar/B738/air/cont_cab_temp/rheostat",-2); */
+    /* ret = axis_input(device,0,cont_cab_rheostat,0.0,1.0); */
+    /* if (ret == 1) { */
+    /*   printf("CONT CAB TEMP RHEO: %f \n",*cont_cab_rheostat); */
+    /* }  */
+    /* float *fwd_cab_rheostat = link_dataref_flt("laminar/B738/air/fwd_cab_temp/rheostat",-2); */
+    /* ret = axis_input(device,1,fwd_cab_rheostat,0.0,1.0); */
+    /* if (ret == 1) { */
+    /*   printf("FWD CAB TEMP RHEO: %f \n",*fwd_cab_rheostat); */
+    /* }  */
+    /* float *aft_cab_rheostat = link_dataref_flt("laminar/B738/air/aft_cab_temp/rheostat",-2); */
+    /* ret = axis_input(device,2,aft_cab_rheostat,0.0,1.0); */
+    /* if (ret == 1) { */
+    /*   printf("AFT CAB TEMP RHEO: %f \n",*aft_cab_rheostat); */
+    /* }  */
 
     /* -------------------- */
     /* ALTITUDE GAUGE Panel */
