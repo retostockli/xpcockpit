@@ -180,7 +180,7 @@ void b737_pedestal(void)
 
   float flood_brightness;
 
-
+  int nav1_freq_active_save;
 
   /* x-plane data */
   int *nav1_freq_active = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
@@ -543,6 +543,11 @@ void b737_pedestal(void)
   /*** NAV1 Panel ***/ 
   i0 = 64+8;
   d0 = 32+16;
+
+  if (nav1_freq_active_save != *nav1_freq_active) {
+    printf("NEW NAV1 FREQ: %i \n",*nav1_freq_active);
+    nav1_freq_active_save = *nav1_freq_active;
+  }
   
   /* NAV1 tfr button */
   ret = digital_input(card,i0+0,&nav1_tfr_button,0);
