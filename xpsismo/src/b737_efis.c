@@ -478,7 +478,10 @@ void b737_efis(int copilot)
   /* Minimums setting */
   if (*altimeter_minimum != FLT_MISS) {
     ret = encoder_inputf(card, 35+offset,36+offset, altimeter_minimum, 10.0, 1);
-    if (*altimeter_minimum < 0.0) *altimeter_minimum = 0.0;
+    /* if (*altimeter_minimum < -1.0) { */
+    /*   *altimeter_minimum = -1.0; */
+    /*   printf("Radio Altimeter Minimum: %f \n",*altimeter_minimum); */
+    /* } */
     if (ret == 1) {
       printf("Radio Altimeter Minimum: %f \n",*altimeter_minimum);
     }

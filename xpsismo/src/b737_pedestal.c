@@ -144,6 +144,8 @@ float fire_eng2_rotate_l_input;
 float fire_eng2_rotate_r_input;
 int fire_bell_cutout;
 
+int nav1_freq_active_save;
+
 void b737_pedestal(void)
 {
 
@@ -179,8 +181,6 @@ void b737_pedestal(void)
   float trim_max = 1.0;
 
   float flood_brightness;
-
-  int nav1_freq_active_save;
 
   /* x-plane data */
   int *nav1_freq_active = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
