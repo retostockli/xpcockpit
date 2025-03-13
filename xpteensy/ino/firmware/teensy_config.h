@@ -35,7 +35,7 @@
 #define TEENSY_ID1 0x54 /* T */
 #define TEENSY_ID2 0x45 /* E */
 
-#define MAX_DEV 10        // maximum number of i2c / spi devices per type
+#define MAX_DEV 30        // maximum number of i2c / spi devices per type
 #define MAX_HIST 11       // maximum number of history variables to save
 
 #define INITVAL -1          /* initial value of inputs/outputs upon startup */

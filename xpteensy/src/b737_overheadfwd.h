@@ -1,6 +1,6 @@
-/* This is the test.h header to the test.c code
+/* This is the b737_overheadfwd.h header to the b737_overheadfwd.c code
 
-   Copyright (C) 2021-2024 Reto Stockli
+   Copyright (C) 2025-2025 Reto Stockli
 
    Additions for analog axes treatment by Hans Jansen 2011
    Also several cosmetic changes and changes for Linux compilation
@@ -18,5 +18,5 @@
 
 
 /* Prototype Functions */
-void init_test(void);
-void test(void);
+void init_b737_overheadfwd(void);
+void b737_overheadfwd(void);

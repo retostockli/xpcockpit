@@ -44,6 +44,7 @@
 #include "check_aircraft.h"
 #include "test.h"
 #include "b737_throttle.h"
+#include "b737_overheadfwd.h"
 
 // Driver code 
 int main(int argc, char **argv) {
@@ -86,8 +87,10 @@ int main(int argc, char **argv) {
     init_test();
   } else if (strcmp(argv[1],"boeing737tq") == 0) {
     init_b737_tq();
+  } else if (strcmp(argv[1],"boeing737ovhfwd") == 0) {
+    init_b737_overheadfwd();
   }
-
+  
   while (1) {
  
     /* initialize teensy board and daughter boards */
@@ -112,6 +115,8 @@ int main(int argc, char **argv) {
       test();
     } else if (strcmp(argv[1],"boeing737tq") == 0) {
       b737_tq();
+    } else if (strcmp(argv[1],"boeing737ovhfwd") == 0) {
+      b737_overheadfwd();
     }
 
     /**** User Modules End Here ****/

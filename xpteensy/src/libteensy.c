@@ -711,62 +711,68 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 	  }
 	} else if (type == MCP23017_TYPE) {
 	  if ((dev <= 0) && (dev < MAX_DEV)) {
-	    if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
-	      if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) {
-		if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
-		  if (input_type == 0) {
-		    /* simple pushbutton / switch */
-		    if (*value != mcp23017[te][dev].val[pin]) {
-		      if (verbose > 1) printf("Pushbutton: Teensy %i MCP23017 %i Pin %i Changed to %i %i \n",
-					      te, dev, pin, *value,mcp23017[te][dev].val[pin]);
-		      *value = mcp23017[te][dev].val[pin];
-		      retval = 1;
-		    }
-		  } else {
-		    /* toggle state everytime you press button */
-		    /* check if the switch state changed from 0 -> 1 */
-		    if ((mcp23017[te][dev].val[pin] == 1) && (mcp23017[te][dev].val_save[pin] == 0)) {
-		      /* toggle */
-		      if (*value != INT_MISS) {
-			if ((*value == 0) || (*value == 1)) {
-			  *value = 1 - (*value);
+	    if (mcp23017[te][dev].connected == 1) {
+		if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
+		  if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) {
+		    if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
+		      if (input_type == 0) {
+			/* simple pushbutton / switch */
+			if (*value != mcp23017[te][dev].val[pin]) {
+			  if (verbose > 1) printf("Pushbutton: Teensy %i MCP23017 %i Pin %i Changed to %i %i \n",
+						  te, dev, pin, *value,mcp23017[te][dev].val[pin]);
+			  *value = mcp23017[te][dev].val[pin];
 			  retval = 1;
-			  if (verbose > 1) printf("Toogle Switch: Teensy %i MCP23017 %i Pin %i Changed to %i \n",
-						  te, dev, pin, *value);
-			} else {
-			  printf("Toogle Switch: Teensy %i MCP23017 %i Pin %i Needs to be 0 or 1, has value %i \n",
-				 te, dev, pin, *value);
-			  retval = -1;
+			}
+		      } else {
+			/* toggle state everytime you press button */
+			/* check if the switch state changed from 0 -> 1 */
+			if ((mcp23017[te][dev].val[pin] == 1) && (mcp23017[te][dev].val_save[pin] == 0)) {
+			  /* toggle */
+			  if (*value != INT_MISS) {
+			    if ((*value == 0) || (*value == 1)) {
+			      *value = 1 - (*value);
+			      retval = 1;
+			      if (verbose > 1) printf("Toogle Switch: Teensy %i MCP23017 %i Pin %i Changed to %i \n",
+						      te, dev, pin, *value);
+			    } else {
+			      printf("Toogle Switch: Teensy %i MCP23017 %i Pin %i Needs to be 0 or 1, has value %i \n",
+				     te, dev, pin, *value);
+			      retval = -1;
+			    }
+			  }
 			}
 		      }
 		    }
+		  } else {
+		    if (verbose > 0) printf("Pin %i of MCP23017 %i is not defined as digital input of Teensy %i \n",
+					    pin, dev, te);
+		    retval = -1;
 		  }
+		} else {
+		  if (verbose > 0) printf("Digital Input %i of MCP23017 %i above maximum # of pins %i of Teensy %i \n",
+					  pin,dev,MCP23017_MAX_PINS,te);
+		  retval = -1;
 		}
 	      } else {
-		if (verbose > 0) printf("Pin %i of MCP23017 %i is not defined as digital input of Teensy %i \n",
-					pin, dev, te);
+		if (verbose > 0) printf("Digital Input %i cannot be read. MCP23017 %i not connected to Teensy %i \n",
+					pin,dev,te);
 		retval = -1;
 	      }
-	    } else {
-	      if (verbose > 0) printf("Digital Input %i of MCP23017 %i above maximum # of pins %i of Teensy %i \n",
-				      pin,dev,MCP23017_MAX_PINS,te);
-	      retval = -1;
-	    }
+	      } else {
+		if (verbose > 0) printf("Digital Input %i for MCP23017 %i above maximum # of devices %i of Teensy %i \n",
+					pin, dev,MAX_DEV,te);
+		retval = -1;
+	      }
 	  } else {
-	    if (verbose > 0) printf("Digital Input %i for MCP23017 %i above maximum # of devices %i of Teensy %i \n",
-				    pin, dev,MAX_DEV,te);
+	    if (verbose > 0) printf("Digital Input %i for Teensy %i: Please select Teensy or MCP23017 \n",pin,te);
 	    retval = -1;
 	  }
 	} else {
-	  if (verbose > 0) printf("Digital Input %i for Teensy %i: Please select Teensy or MCP23017 \n",pin,te);
+	  if (verbose > 2) printf("Digital Input %i cannot be read. Teensy %i not connected \n",
+				  pin,te);
 	  retval = -1;
 	}
       } else {
-	if (verbose > 2) printf("Digital Input %i cannot be read. Teensy %i not connected \n",
-				pin,te);
-	retval = -1;
-      }
-    } else {
       if (verbose > 0) printf("Digital Input %i cannot be read. Teensy %i >= %i\n",pin,te,MAXTEENSYS);
       retval = -1;
     }    
@@ -788,30 +794,36 @@ int angle_input(int te, int type, int dev, int input_type, int *value)
       if (teensy[te].connected) {
 	if (type == AS5048B_TYPE) {
 	  if ((dev <= 0) && (dev < MAX_DEV)) {
-	    if (input_type == as5048b[te][dev].type) {
-	      if (as5048b[te][dev].val[0] != as5048b[te][dev].val_save) {
-		if (input_type == 0) {
-		  /* direction count */
-		  if (verbose > 1) {
-		    if (as5048b[te][dev].val[0] == 1) {
-		      printf("Teensy %i AS5048B %i DIRECTION UP \n", te, dev);
-		    } else {
-		      printf("Teensy %i AS5048B %i DIRECTION DOWN \n", te, dev);
+	    if (as5048b[te][dev].connected == 1) {
+	      if (input_type == as5048b[te][dev].type) {
+		if (as5048b[te][dev].val[0] != as5048b[te][dev].val_save) {
+		  if (input_type == 0) {
+		    /* direction count */
+		    if (verbose > 1) {
+		      if (as5048b[te][dev].val[0] == 1) {
+			printf("Teensy %i AS5048B %i DIRECTION UP \n", te, dev);
+		      } else {
+			printf("Teensy %i AS5048B %i DIRECTION DOWN \n", te, dev);
+		      }
 		    }
+		    *value = as5048b[te][dev].val[0];
+		    as5048b[te][dev].val[0] = 0;
+		    retval = 1;
+		  } else {
+		    /* angle reporting */
+		    if (verbose > 1) printf("Teensy %i AS5048B %i Angle %i \n", te, dev,as5048b[te][dev].val[0]);
+		    *value = as5048b[te][dev].val[0];
+		    retval = 1;
 		  }
-		  *value = as5048b[te][dev].val[0];
-		  as5048b[te][dev].val[0] = 0;
-		  retval = 1;
-		} else {
-		  /* angle reporting */
-		  if (verbose > 1) printf("Teensy %i AS5048B %i Angle %i \n", te, dev,as5048b[te][dev].val[0]);
-		  *value = as5048b[te][dev].val[0];
-		  retval = 1;
 		}
+	      } else {
+		if (verbose > 0) printf("Teensy %i AS5048B %i is not configured for input type %i \n",
+					te,dev,input_type);
+		retval = -1;
 	      }
 	    } else {
-	      if (verbose > 0) printf("Teensy %i AS5048B %i is not configured for input type %i \n",
-				      te,dev,input_type);
+	      if (verbose > 0) printf("AS5048B %i not connected to of Teensy %i \n",
+				      dev,te);
 	      retval = -1;
 	    }
 	  } else {
@@ -900,7 +912,7 @@ int encoder_input(int te, int type, int dev, int pin1,  int pin2, int *value, in
    optical encoder too fast will result in loss of states since the Teensy
    will not capture every state change due to its polling interval */
 /* two types of encoders: */
-/* 1: 2 bit optical rotary encoder (type 3 in xpusb) */
+/* 1: 2 bit optical rotary encoder */
 /* 2: 2 bit gray type mechanical encoder */
 int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, float multiplier, int encoder_type)
 {
@@ -939,170 +951,178 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 
 	    if (teensy[te].connected) {
 	
-	      if (type == TEENSY_TYPE) {
-		max_pins = MAX_PINS;
-	      } else {
-		max_pins = MCP23017_MAX_PINS;
-	      }
-	
-	      if ((pin1 >= 0) && (pin1 < max_pins) &&
-		  (pin2 >= 0) && (pin2 < max_pins)) {
-		if (type == TEENSY_TYPE) {
-		  pinmode1 = teensy[te].pinmode[pin1];
-		  pinmode2 = teensy[te].pinmode[pin2];
-		} else {
-		  pinmode1 = mcp23017[te][dev].pinmode[pin1];
-		  pinmode2 = mcp23017[te][dev].pinmode[pin2];
-		}
-		if ((pinmode1 == PINMODE_INPUT) &&
-		    (pinmode2 == PINMODE_INPUT)) {
-
-		  if (type == TEENSY_TYPE) {
-		    val1 = teensy[te].val[pin1][0];
-		    val2 = teensy[te].val[pin2][0];
-		    val1_save = teensy[te].val_save[pin1];
-		    val2_save = teensy[te].val_save[pin2];
-		  } else {
-		    val1 = mcp23017[te][dev].val[pin1];
-		    val2 = mcp23017[te][dev].val[pin2];
-		    val1_save = mcp23017[te][dev].val_save[pin1];
-		    val2_save = mcp23017[te][dev].val_save[pin2];
-		  }
-		  //printf("%i %i %i %i \n",val1,val2,val1_save,val2_save);
-		  if ((val1 != INITVAL) && (val2 != INITVAL) &&
-		      (val1_save != INITVAL) && (val2_save != INITVAL)) {
-	    
-		    if ((val1 != val1_save) || (val2 != val2_save)) {
+	      if ((type == TEENSY_TYPE) || ((type == MCP23017_TYPE) && (mcp23017[te][dev].connected == 1))) {
 		
-		      /* derive last encoder bit state */
-		      obits[0] = val1_save;
-		      obits[1] = val2_save;
-		  
-		      /* derive new encoder bit state */
-		      nbits[0] = val1;
-		      nbits[1] = val2;
-		  
-		      //if (obits[0] == INITVAL) obits[0] = nbits[0];
-		      //if (obits[1] == INITVAL) obits[1] = nbits[1];
-
-		      //printf("%i %i %i %i \n",nbits[0],nbits[1],obits[0],obits[1]);
-
-		      if (encoder_type == 1) {
-			/* 2 bit optical encoder */		    
-			if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			  updown = -1;
-			} else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			  updown = 1;
-			} else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			  updown = -1;
-			} else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			  updown = 1;
-			} else {
-			  /* This encoder sends 2 bit changes per encoder change. This is an intermediate step */
-			}
-	  
-			if (updown != 0) {
-			  gettimeofday(&newtime,NULL);
-			  if (type == TEENSY_TYPE) {
-			    oldtime = teensy[te].val_time[pin1];
-			    teensy[te].val_time[pin1] = newtime;
-			  } else {
-			    oldtime = mcp23017[te][dev].val_time[pin1];
-			    mcp23017[te][dev].val_time[pin1] = newtime;
-			  }
-			    
-			  dt = ((float)(newtime.tv_sec - oldtime.tv_sec) +
-				((float)(newtime.tv_usec - oldtime.tv_usec)) / 1000000.0)*1000.0;
-			  //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
-		  
-			  *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
-			  retval = 1;
-			}
-		      } else if (encoder_type == 2) {
-			/* 2 bit gray type mechanical encoder */
-
-			/* derive last encoder count */
-			oldcount = obits[0]+2*obits[1];
-	  
-			/* derive new encoder count */
-			newcount = nbits[0]+2*nbits[1];
-
-			/* forwards */
-			if (((oldcount == 0) && (newcount == 1)) ||
-			    ((oldcount == 1) && (newcount == 3)) ||
-			    ((oldcount == 3) && (newcount == 2)) ||
-			    ((oldcount == 2) && (newcount == 0))) {
-			  updown = 1;
-			}
-		    
-			/* backwards */
-			if (((oldcount == 2) && (newcount == 3)) ||
-			    ((oldcount == 3) && (newcount == 1)) ||
-			    ((oldcount == 1) && (newcount == 0)) ||
-			    ((oldcount == 0) && (newcount == 2))) {
-			  updown = -1;
-			}
-		    
-			if (updown != 0) {
-			  gettimeofday(&newtime,NULL);
-			  if (type == TEENSY_TYPE) {
-			    oldtime = teensy[te].val_time[pin1];
-			    teensy[te].val_time[pin1] = newtime;
-			  } else {
-			    oldtime = mcp23017[te][dev].val_time[pin1];
-			    mcp23017[te][dev].val_time[pin1] = newtime;
-			  }
-			    
-			  dt = ((float)(newtime.tv_sec - oldtime.tv_sec) +
-				((float)(newtime.tv_usec - oldtime.tv_usec)) / 1000000.0)*1000.0;
-			  //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
-
-			  *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
-			  retval = 1;
-			}
-		      } else {
-			if (verbose > 0) {
-			  if (type == TEENSY_TYPE) {
-			    printf("Encoder with Pins %i,%i of Teensy %i need to be of type 1 or 2 \n",
-				   pin1,pin2,te);
-			  } else {
-			    printf("Encoder with Pins %i,%i of Teensy %i MCP23017 %i need to be of type 1 or 2 \n",
-				   pin1,pin2,te,dev);
-			  }
-			  retval = -1;
-			}
-		      }
-		      if (type == TEENSY_TYPE) {
-			if ((retval == 1) && (verbose > 0)) printf("Encoder with Pins %i,%i of Teensy %i changed to %f \n",
-								   pin1,pin2,te,*value);
-		      } else {
-			if ((retval == 1) && (verbose > 0))
-			  printf("Encoder with Pins %i,%i of Teensy %i MCP23017 %i changed to %f \n",
-				 pin1,pin2,te,dev,*value);
-		      }			
-		    }
+		if (type == TEENSY_TYPE) {
+		  max_pins = MAX_PINS;
+		} else {
+		  max_pins = MCP23017_MAX_PINS;
+		}
+	
+		if ((pin1 >= 0) && (pin1 < max_pins) &&
+		    (pin2 >= 0) && (pin2 < max_pins)) {
+		  if (type == TEENSY_TYPE) {
+		    pinmode1 = teensy[te].pinmode[pin1];
+		    pinmode2 = teensy[te].pinmode[pin2];
+		  } else {
+		    pinmode1 = mcp23017[te][dev].pinmode[pin1];
+		    pinmode2 = mcp23017[te][dev].pinmode[pin2];
 		  }
+		  if ((pinmode1 == PINMODE_INPUT) &&
+		      (pinmode2 == PINMODE_INPUT)) {
+
+		    if (type == TEENSY_TYPE) {
+		      val1 = teensy[te].val[pin1][0];
+		      val2 = teensy[te].val[pin2][0];
+		      val1_save = teensy[te].val_save[pin1];
+		      val2_save = teensy[te].val_save[pin2];
+		    } else {
+		      val1 = mcp23017[te][dev].val[pin1];
+		      val2 = mcp23017[te][dev].val[pin2];
+		      val1_save = mcp23017[te][dev].val_save[pin1];
+		      val2_save = mcp23017[te][dev].val_save[pin2];
+		    }
+		    //printf("%i %i %i %i \n",val1,val2,val1_save,val2_save);
+		    if ((val1 != INITVAL) && (val2 != INITVAL) &&
+			(val1_save != INITVAL) && (val2_save != INITVAL)) {
+	    
+		      if ((val1 != val1_save) || (val2 != val2_save)) {
+		
+			/* derive last encoder bit state */
+			obits[0] = val1_save;
+			obits[1] = val2_save;
+		  
+			/* derive new encoder bit state */
+			nbits[0] = val1;
+			nbits[1] = val2;
+		  
+			//if (obits[0] == INITVAL) obits[0] = nbits[0];
+			//if (obits[1] == INITVAL) obits[1] = nbits[1];
+
+			//printf("%i %i %i %i \n",nbits[0],nbits[1],obits[0],obits[1]);
+
+			if (encoder_type == 1) {
+			  /* 2 bit optical encoder */		    
+			  if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
+			    updown = -1;
+			  } else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
+			    updown = 1;
+			  } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
+			    updown = -1;
+			  } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
+			    updown = 1;
+			  } else {
+			    /* This encoder sends 2 bit changes per encoder change. This is an intermediate step */
+			  }
+	  
+			  if (updown != 0) {
+			    gettimeofday(&newtime,NULL);
+			    if (type == TEENSY_TYPE) {
+			      oldtime = teensy[te].val_time[pin1];
+			      teensy[te].val_time[pin1] = newtime;
+			    } else {
+			      oldtime = mcp23017[te][dev].val_time[pin1];
+			      mcp23017[te][dev].val_time[pin1] = newtime;
+			    }
+			    
+			    dt = ((float)(newtime.tv_sec - oldtime.tv_sec) +
+				  ((float)(newtime.tv_usec - oldtime.tv_usec)) / 1000000.0)*1000.0;
+			    //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
+		  
+			    *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
+			    retval = 1;
+			  }
+			} else if (encoder_type == 2) {
+			  /* 2 bit gray type mechanical encoder */
+
+			  /* derive last encoder count */
+			  oldcount = obits[0]+2*obits[1];
+	  
+			  /* derive new encoder count */
+			  newcount = nbits[0]+2*nbits[1];
+
+			  /* forwards */
+			  if (((oldcount == 0) && (newcount == 1)) ||
+			      ((oldcount == 1) && (newcount == 3)) ||
+			      ((oldcount == 3) && (newcount == 2)) ||
+			      ((oldcount == 2) && (newcount == 0))) {
+			    updown = 1;
+			  }
+		    
+			  /* backwards */
+			  if (((oldcount == 2) && (newcount == 3)) ||
+			      ((oldcount == 3) && (newcount == 1)) ||
+			      ((oldcount == 1) && (newcount == 0)) ||
+			      ((oldcount == 0) && (newcount == 2))) {
+			    updown = -1;
+			  }
+		    
+			  if (updown != 0) {
+			    gettimeofday(&newtime,NULL);
+			    if (type == TEENSY_TYPE) {
+			      oldtime = teensy[te].val_time[pin1];
+			      teensy[te].val_time[pin1] = newtime;
+			    } else {
+			      oldtime = mcp23017[te][dev].val_time[pin1];
+			      mcp23017[te][dev].val_time[pin1] = newtime;
+			    }
+			    
+			    dt = ((float)(newtime.tv_sec - oldtime.tv_sec) +
+				  ((float)(newtime.tv_usec - oldtime.tv_usec)) / 1000000.0)*1000.0;
+			    //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
+
+			    *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
+			    retval = 1;
+			  }
+			} else {
+			  if (verbose > 0) {
+			    if (type == TEENSY_TYPE) {
+			      printf("Encoder with Pins %i,%i of Teensy %i need to be of type 1 or 2 \n",
+				     pin1,pin2,te);
+			    } else {
+			      printf("Encoder with Pins %i,%i of Teensy %i MCP23017 %i need to be of type 1 or 2 \n",
+				     pin1,pin2,te,dev);
+			    }
+			    retval = -1;
+			  }
+			}
+			if (type == TEENSY_TYPE) {
+			  if ((retval == 1) && (verbose > 0)) printf("Encoder with Pins %i,%i of Teensy %i changed to %f \n",
+								     pin1,pin2,te,*value);
+			} else {
+			  if ((retval == 1) && (verbose > 0))
+			    printf("Encoder with Pins %i,%i of Teensy %i MCP23017 %i changed to %f \n",
+				   pin1,pin2,te,dev,*value);
+			}			
+		      }
+		    }
+		  } else {
+		    if (type == TEENSY_TYPE) {
+		      if (verbose > 0)
+			printf("Encoder with Pins %i,%i cannot be read. Pins not set as Inputs for Teensy %i \n",
+			       pin1,pin2,te);
+		    } else {
+		      if (verbose > 0)
+			printf("Encoder with Pins %i,%i cannot be read. Pins not set as Inputs for Teensy %i MCP23017 %i \n",
+			       pin1,pin2,te,dev);
+		    }
+		    retval = -1;
+		  }	    
 		} else {
 		  if (type == TEENSY_TYPE) {
-		    if (verbose > 0)
-		      printf("Encoder with Pins %i,%i cannot be read. Pins not set as Inputs for Teensy %i \n",
-			     pin1,pin2,te);
+		    if (verbose > 0) printf("Encoder with Pins %i,%i above maximum # of digital inputs %i of Teensy %i \n",
+					    pin1,pin2,MAX_PINS,te);
 		  } else {
 		    if (verbose > 0)
-		      printf("Encoder with Pins %i,%i cannot be read. Pins not set as Inputs for Teensy %i MCP23017 %i \n",
-			     pin1,pin2,te,dev);
+		      printf("Encoder with Pins %i,%i above maximum # of digital inputs %i of Teensy %i MCP23017 %i \n",
+			     pin1,pin2,MAX_PINS,te, dev);
 		  }
 		  retval = -1;
-		}	    
-	      } else {
-		if (type == TEENSY_TYPE) {
-		  if (verbose > 0) printf("Encoder with Pins %i,%i above maximum # of digital inputs %i of Teensy %i \n",
-					  pin1,pin2,MAX_PINS,te);
-		} else {
-		  if (verbose > 0)
-		    printf("Encoder with Pins %i,%i above maximum # of digital inputs %i of Teensy %i MCP23017 %i \n",
-			   pin1,pin2,MAX_PINS,te, dev);
 		}
+		
+	      } else {
+		if (verbose > 0) printf("Encoder with Pins %i %i cannot be read. MCP23017 %i not connected to Teensy %i \n",
+					pin1,pin2,dev,te);
 		retval = -1;
 	      }
 	    } else {
@@ -1178,28 +1198,34 @@ int digital_output(int te, int type, int dev, int pin, int *value) {
 	    } else if (type == MCP23017_TYPE) {
 	      /* set pin of teensy host controller */
 	      if ((dev >= 0) && (dev < MAX_DEV)) {
-		if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
-		  if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT) {
-		    if (*value != mcp23017[te][dev].val[pin]) {
-		      mcp23017[te][dev].val[pin] = *value;
-		      if (verbose > 1) printf("Digital Output %i of Teensy %i MCP23017 %i changed to %i \n",
-					      pin,te,dev,*value);
+		if (mcp23017[te][dev].connected == 1) {
+		  if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
+		    if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT) {
+		      if (*value != mcp23017[te][dev].val[pin]) {
+			mcp23017[te][dev].val[pin] = *value;
+			if (verbose > 1) printf("Digital Output %i of Teensy %i MCP23017 %i changed to %i \n",
+						pin,te,dev,*value);
+		      }
+		    } else {
+		      if (verbose > 0) printf("Pin %i is not defined as digital output of Teensy %i MCP23017 %i \n",
+					      pin, te, dev);
+		      retval = -1;
 		    }
 		  } else {
-		    if (verbose > 0) printf("Pin %i is not defined as digital output of Teensy %i MCP23017 %i \n",
-					    pin, te, dev);
+		    if (verbose > 0) printf("Digital Output %i above maximum # of outputs %i of MCP23017 \n",
+					    pin,MCP23017_MAX_PINS);
 		    retval = -1;
 		  }
 		} else {
-		  if (verbose > 0) printf("Digital Output %i above maximum # of outputs %i of MCP23017 \n",
-					  pin,MCP23017_MAX_PINS);
+		  if (verbose > 0) printf("Digital Output %i cannot be written. MCP23017 %i not connected to Teensy %i \n",
+					  pin,dev,te);
 		  retval = -1;
 		}
 	      } else {
-		if (verbose > 0) printf("Digital Output %i cannot be written. MCP23017 %i not connected to Teensy %i \n",
-					pin,dev,te);
+		if (verbose > 0) printf("Digital Output %i cannot be written. MCP23017 %i above maximum device number %i \n",
+					pin,dev,MAX_DEV);
 		retval = -1;
-	      }
+	      }	
 	    } else {
 	      if (verbose > 0) printf("Digital Outputs are supported only for Teensy and MCP23017 \n");
 	      retval = -1;
@@ -1254,96 +1280,102 @@ int display_output(int te, int type, int dev, int pos, int n, int *value, int dp
 	if (teensy[te].connected) {
 	  if (type == HT16K33_TYPE) {
 	    if ((dev >= 0) && (dev < MAX_DEV)) {
-	      if ((pos >= 0) && (pos < HT16K33_MAX_DIG) && (n > 0) && ((pos+n) <= HT16K33_MAX_DIG)) {
+	      if (ht16k33[te][dev].connected == 1) {
+		if ((pos >= 0) && (pos < HT16K33_MAX_DIG) && (n > 0) && ((pos+n) <= HT16K33_MAX_DIG)) {
 
-		changed = 0;
+		  changed = 0;
 
-		ht16k33[te][dev].brightness = brightness;
+		  ht16k33[te][dev].brightness = brightness;
 		
-		/* Regular Case with integer number distributed over n 7-segment displays */
-		/* generate temporary storage of input value */
-		tempval = *value;
+		  /* Regular Case with integer number distributed over n 7-segment displays */
+		  /* generate temporary storage of input value */
+		  tempval = *value;
 
-		/* reverse negative numbers: find treatment for - sign */
-		/* use first digit for negative sign */
-		if (tempval < 0) {
-		  tempval = -tempval;
-		  negative = 1;
-		} else {
-		  negative = 0;
-		}
-		
-		/* read individual digits from integer */
-		/* blank leftmost 0 values except if it is the first one */ 
-		count = 0;
-		while ((tempval) && (count<n))
-		  {
-		    if (dp == count) {
-		      ht16k33[te][dev].decimalpoint[pos+count] = 1;
-		    } else {
-		      ht16k33[te][dev].decimalpoint[pos+count] = 0;
-		    }
-		      
-		    single = tempval % 10;
-		    if (ht16k33[te][dev].val[pos+count] != single) {
-		      ht16k33[te][dev].val[pos+count] = single;
-		      changed = 1;
-		    }
-		    tempval /= 10;
-		    count++;
+		  /* reverse negative numbers: find treatment for - sign */
+		  /* use first digit for negative sign */
+		  if (tempval < 0) {
+		    tempval = -tempval;
+		    negative = 1;
+		  } else {
+		    negative = 0;
 		  }
-		    
-		while (count<n)
-		  {
-		    if (negative) {
-		      /* set negative sign */
-		      if (count > dp) {
-			single = 19;
-			if (ht16k33[te][dev].val[pos+count] != single) {
-			  ht16k33[te][dev].val[pos+count] = single;
-			  changed = 1;
-			}
-			negative = 0;
+		
+		  /* read individual digits from integer */
+		  /* blank leftmost 0 values except if it is the first one */ 
+		  count = 0;
+		  while ((tempval) && (count<n))
+		    {
+		      if (dp == count) {
+			ht16k33[te][dev].decimalpoint[pos+count] = 1;
+		      } else {
+			ht16k33[te][dev].decimalpoint[pos+count] = 0;
 		      }
-		    } else {
-		      if ((count == 0) || (dp >= count)) {
-			/* do not blank leftmost 0 display or if it has a decimal point */
-			/* this allows to display for instance 0.04 */
-			if (dp == count) {
-			  ht16k33[te][dev].decimalpoint[pos+count] = 1;
-			} else {
-			  ht16k33[te][dev].decimalpoint[pos+count] = 0;
-			}
-			
-			single = 0;
-			if (ht16k33[te][dev].val[pos+count] != single) {
-			  ht16k33[te][dev].val[pos+count] = single;
-			  changed = 1;
+		      
+		      single = tempval % 10;
+		      if (ht16k33[te][dev].val[pos+count] != single) {
+			ht16k33[te][dev].val[pos+count] = single;
+			changed = 1;
+		      }
+		      tempval /= 10;
+		      count++;
+		    }
+		    
+		  while (count<n)
+		    {
+		      if (negative) {
+			/* set negative sign */
+			if (count > dp) {
+			  single = 19;
+			  if (ht16k33[te][dev].val[pos+count] != single) {
+			    ht16k33[te][dev].val[pos+count] = single;
+			    changed = 1;
+			  }
+			  negative = 0;
 			}
 		      } else {
-			/* blank all other displays in front of number */
-			single = 16;
-			if (ht16k33[te][dev].val[pos+count] != single) {
-			  ht16k33[te][dev].val[pos+count] = single;
-			  changed = 1;
+			if ((count == 0) || (dp >= count)) {
+			  /* do not blank leftmost 0 display or if it has a decimal point */
+			  /* this allows to display for instance 0.04 */
+			  if (dp == count) {
+			    ht16k33[te][dev].decimalpoint[pos+count] = 1;
+			  } else {
+			    ht16k33[te][dev].decimalpoint[pos+count] = 0;
+			  }
+			
+			  single = 0;
+			  if (ht16k33[te][dev].val[pos+count] != single) {
+			    ht16k33[te][dev].val[pos+count] = single;
+			    changed = 1;
+			  }
+			} else {
+			  /* blank all other displays in front of number */
+			  single = 16;
+			  if (ht16k33[te][dev].val[pos+count] != single) {
+			    ht16k33[te][dev].val[pos+count] = single;
+			    changed = 1;
+			  }
 			}
 		      }
+		      count++;
 		    }
-		    count++;
-		  }
 
-		if (changed == 1) {
-		  if (verbose > 0) printf("Display Output Digit range %i-%i of Teensy %i HT16K33 %i changed to %i \n",
-					  pos,pos+n-1,te,dev,*value);
+		  if (changed == 1) {
+		    if (verbose > 0) printf("Display Output Digit range %i-%i of Teensy %i HT16K33 %i changed to %i \n",
+					    pos,pos+n-1,te,dev,*value);
+		  }
+		} else {
+		  if (verbose > 0) printf("Display Output digit range %i-%i above maximum # of Digits %i of HT16K33 \n",
+					  pos,pos+n-1,HT16K33_MAX_DIG);
+		  retval = -1;
 		}
 	      } else {
-		if (verbose > 0) printf("Display Output digit range %i-%i above maximum # of Digits %i of HT16K33 \n",
-					pos,pos+n-1,HT16K33_MAX_DIG);
+		if (verbose > 0) printf("Display Output range %i-%i cannot be written. HT16K33 %i not connected to Teensy %i \n",
+					pos,pos+n-1,dev,te);
 		retval = -1;
 	      }
 	    } else {
-	      if (verbose > 0) printf("Display Output range %i-%i cannot be written. HT16K33 %i not connected to Teensy %i \n",
-				      pos,pos+n-1,dev,te);
+	      if (verbose > 0) printf("Display Output range %i-%i cannot be written. HT16K33 %i above maximum # of devices %i of Teensy %i \n",
+				      pos,pos+n-1,dev,MAX_DEV,te);
 	      retval = -1;
 	    }
 	  } else {
@@ -1399,27 +1431,39 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 	      retval = -1;
 	    }
 	  } else if (type == PCA9685_TYPE) {
-	    if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
-	      if (pca9685[te][dev].pinmode[pin] == PINMODE_PWM) {
-		/* scale value to servo output range */
-		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)) *
-			      (pow(2,PCA9685_PWM_NBITS)-1.0));
-		if (ival != pca9685[te][dev].val[pin]) {
-		  pca9685[te][dev].val[pin] = ival;
-		  if (verbose > 0) printf("PWM Output %i of Teensy %i PCA9685 %i changed to %i \n",
-					  pin, te, dev,ival);
+	    if ((dev >= 0) && (dev < MAX_DEV)) {
+	      if (pca9685[te][dev].connected == 1) {
+		if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
+		  if (pca9685[te][dev].pinmode[pin] == PINMODE_PWM) {
+		    /* scale value to servo output range */
+		    ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)) *
+				  (pow(2,PCA9685_PWM_NBITS)-1.0));
+		    if (ival != pca9685[te][dev].val[pin]) {
+		      pca9685[te][dev].val[pin] = ival;
+		      if (verbose > 0) printf("PWM Output %i of Teensy %i PCA9685 %i changed to %i \n",
+					      pin, te, dev,ival);
+		    }
+		  } else {
+		    if (verbose > 0) printf("Pin %i of Teensy %i PCA9685 %i is not defined as PWM Output \n",
+					    pin, te, dev);
+		    retval = -1;
+		  }
+		} else {
+		  if (verbose > 0) printf("PWM Output %i above maximum # of outputs %i of Teensy %i PCA9685 %i \n",
+					  pin, PCA9685_MAX_PINS, te, dev);
+		  retval = -1;
 		}
+
 	      } else {
-		if (verbose > 0) printf("Pin %i of Teensy %i PCA9685 %i is not defined as PWM Output \n",
-					pin, te, dev);
+		if (verbose > 0) printf("PCA9685 %i not connected to of Teensy %i \n",
+					dev,te);
 		retval = -1;
 	      }
 	    } else {
-	      if (verbose > 0) printf("PWM Output %i above maximum # of outputs %i of Teensy %i PCA9685 %i \n",
-				      pin, PCA9685_MAX_PINS, te, dev);
+	      if (verbose > 0) printf("PCA9685 %i above maximum # of devices %i of Teensy %i \n",
+				      dev,MAX_DEV,te);
 	      retval = -1;
 	    }
-
 	  } else {
 	    if (verbose > 0) printf("PWM Outputs are supported only for Teensy and PCA9685 \n");
 	    retval = -1;
@@ -1477,28 +1521,39 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue,
 	      retval = -1;
 	    }
 	  } else if (type == PCA9685_TYPE) {
-	    if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
-	      if (pca9685[te][dev].pinmode[pin] == PINMODE_SERVO) {
-		/* scale value to servo output range */
-		ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)
-				       * (servo_maxval - servo_minval) + servo_minval),1.0))
-			      * (PCA9685_SERVO_MAXPULSE - PCA9685_SERVO_MINPULSE) + PCA9685_SERVO_MINPULSE);
-		if (ival != pca9685[te][dev].val[pin]) {
-		  pca9685[te][dev].val[pin] = ival;
-		  if (verbose > 0) printf("Servo Output %i of Teensy %i PCA9685 %i changed to %i \n",
-					  pin, te, dev,ival);
+	    if ((dev >= 0) && (dev < MAX_DEV)) {
+	      if (pca9685[te][dev].connected == 1) {
+		if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
+		  if (pca9685[te][dev].pinmode[pin] == PINMODE_SERVO) {
+		    /* scale value to servo output range */
+		    ival = (int) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)
+					   * (servo_maxval - servo_minval) + servo_minval),1.0))
+				  * (PCA9685_SERVO_MAXPULSE - PCA9685_SERVO_MINPULSE) + PCA9685_SERVO_MINPULSE);
+		    if (ival != pca9685[te][dev].val[pin]) {
+		      pca9685[te][dev].val[pin] = ival;
+		      if (verbose > 0) printf("Servo Output %i of Teensy %i PCA9685 %i changed to %i \n",
+					      pin, te, dev,ival);
+		    }
+		  } else {
+		    if (verbose > 0) printf("Pin %i of Teensy %i PCA9685 %i is not defined as Servo Output \n",
+					    pin, te, dev);
+		    retval = -1;
+		  }
+		} else {
+		  if (verbose > 0) printf("Servo Output %i above maximum # of outputs %i of Teensy %i PCA9685 %i \n",
+					  pin, PCA9685_MAX_PINS, te, dev);
+		  retval = -1;
 		}
 	      } else {
-		if (verbose > 0) printf("Pin %i of Teensy %i PCA9685 %i is not defined as Servo Output \n",
-					pin, te, dev);
+		if (verbose > 0) printf("PCA9685 %i not connected to of Teensy %i \n",
+					dev,te);
 		retval = -1;
 	      }
 	    } else {
-	      if (verbose > 0) printf("Servo Output %i above maximum # of outputs %i of Teensy %i PCA9685 %i \n",
-				      pin, PCA9685_MAX_PINS, te, dev);
+	      if (verbose > 0) printf("PCA9685 %i above maximum # of devices %i of Teensy %i \n",
+				      dev,MAX_DEV,te);
 	      retval = -1;
 	    }
-
 	  } else {
 	    if (verbose > 0) printf("Servo Outputs are supported only for Teensy and PCA9685 \n");
 	    retval = -1;

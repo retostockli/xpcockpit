@@ -8,7 +8,8 @@
 #define MASK "255.255.255.0"
 #define GATEWAY "192.168.1.1"
 
-#define IP "192.168.1.66" /* Boeing 737 Throttle Quadrant */
+//#define IP "192.168.1.66" /* Boeing 737 Throttle Quadrant */
+#define IP "192.168.1.67" /* Boeing 737 Forward Overhead */
 
 //#include <Ethernet.h>
 //#include <EthernetUdp.h>
