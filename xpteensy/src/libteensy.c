@@ -1118,8 +1118,7 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 			     pin1,pin2,MAX_PINS,te, dev);
 		  }
 		  retval = -1;
-		}
-		
+		}		
 	      } else {
 		if (verbose > 0) printf("Encoder with Pins %i %i cannot be read. MCP23017 %i not connected to Teensy %i \n",
 					pin1,pin2,dev,te);
