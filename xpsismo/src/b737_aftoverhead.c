@@ -392,7 +392,7 @@ void b737_aftoverhead(void)
 
     char *irs_val;
     if (*sys_disp == 0) {
-      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",100,-1);
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",100,-1);
     } else {
       irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",100,-1);
     }
