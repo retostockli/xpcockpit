@@ -125,14 +125,17 @@ int init_teensy() {
 	  memset(teensySendBuffer,0,SENDMSGLEN);
 	  if (verbose > 0) {
 	    if (teensy[te].pinmode[pin] == PINMODE_INPUT) printf("Teensy %i Pin %i Initialized as Input \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) printf("Teensy %i Pin %i Initialized as Output \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) printf("Teensy %i Pin %i Initialized as Output with Value %i \n",
+								  te,pin,teensy[te].val[pin][0]);
+	    if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM with Value %i \n",
+							       te,pin,teensy[te].val[pin][0]);
 	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Median Filter) \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Mean Filter) \n",te,pin);
 	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) printf("Teensy %i Pin %i Initialized as ANALOG INPUT \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_SERVO) printf("Teensy %i Pin %i Initialized as SERVO \n",te,pin);
+	    if (teensy[te].pinmode[pin] == PINMODE_SERVO) printf("Teensy %i Pin %i Initialized as SERVO with Value %i \n",
+								 te,pin,teensy[te].val[pin][0]);
 	    if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
-	      printf("Teensy %i Pin %i Initialized as Motor \n",te,pin);
+	      printf("Teensy %i Pin %i Initialized as Motor with Value %i \n",te,pin,teensy[te].val[pin][0]);
 	      printf("       with Direction Pins %i %i \n",teensy[te].arg1[pin],teensy[te].arg2[pin]);
 	      if (teensy[te].arg1[pin] == INITVAL) printf("ERROR: NO DIRECTION PIN 1 DEFINED!!!! \n");
 	      if (teensy[te].arg2[pin] == INITVAL) printf("ERROR: NO DIRECTION PIN 2 DEFINED!!!! \n");
@@ -184,7 +187,8 @@ int init_teensy() {
 		if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT)
 		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Input \n",te,dev,pin);
 		if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)
-		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Output \n",te,dev,pin);
+		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Output with Value %i \n",
+			 te,dev,pin,mcp23017[te][dev].val[pin]);
 	      }
 	      teensySendBuffer[0] = TEENSY_ID1; /* T */
 	      teensySendBuffer[1] = TEENSY_ID2; /* E */
@@ -219,9 +223,11 @@ int init_teensy() {
 	      memset(teensySendBuffer,0,SENDMSGLEN);
 	      if (verbose > 0) {
 		if (pca9685[te][dev].pinmode[pin] == PINMODE_PWM)
-		  printf("Teensy %i PCA9685 %i Pin %i Initialized as PWM \n",te,dev,pin);
+		  printf("Teensy %i PCA9685 %i Pin %i Initialized as PWM with Value %i \n",
+			 te,dev,pin,pca9685[te][dev].val[pin]);
 		if (pca9685[te][dev].pinmode[pin] == PINMODE_SERVO)
-		  printf("Teensy %i PCA9685 %i Pin %i Initialized as SERVO \n",te,dev,pin);
+		  printf("Teensy %i PCA9685 %i Pin %i Initialized as SERVO with Value %i \n",
+			 te,dev,pin,pca9685[te][dev].val[pin]);
 	      }
 	      teensySendBuffer[0] = TEENSY_ID1; /* T */
 	      teensySendBuffer[1] = TEENSY_ID2; /* E */

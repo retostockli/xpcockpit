@@ -57,7 +57,6 @@ void init_b737_overheadfwd(void)
   /* teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN; */
   /* teensy[te].pinmode[16] = PINMODE_I2C; */
   /* teensy[te].pinmode[17] = PINMODE_I2C; */
-  /* teensy[te].pinmode[23] = PINMODE_OUTPUT; */
   /* teensy[te].pinmode[30] = PINMODE_INPUT; // direction */
   /* teensy[te].pinmode[31] = PINMODE_INPUT; // brake */
   /* teensy[te].pinmode[33] = PINMODE_MOTOR; // motor EN */
@@ -71,8 +70,13 @@ void init_b737_overheadfwd(void)
   //teensy[te].arg3[24] = 38; // motor Current Sense
 
   //teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
-  
-   
+
+  /* Controlling Solid State Relays (SSR) */
+  for (pin=26;pin<34;pin++) {
+    teensy[te].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  // Controls Overhead-to-Pedestal Light Intensity from Pedestal Potentiometer
+  teensy[te].pinmode[28] = PINMODE_PWM; 
 
   dev = 0;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
@@ -130,8 +134,9 @@ void b737_overheadfwd(void)
   /* link integer data like a switch in the cockpit */
   //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
   int *value = link_dataref_int("xpserver/digitalvalue");
+  float *fvalue = link_dataref_flt("xpserver/analogvalue",0);
 
-  //if (*fvalue == FLT_MISS) *fvalue = 0.0;
+  if (*fvalue == FLT_MISS) *fvalue = 0.0;
   if (*value == INT_MISS) *value = 1;
 
   /* /\* read analog input (#14) *\/ */
@@ -164,12 +169,20 @@ void b737_overheadfwd(void)
   }
   */
 
+  *value = 1;
+  
+  for (pin=26;pin<34;pin++) {
+    if (pin != 28) ret = digital_output(te, TEENSY_TYPE, 0, pin, value);
+  }
+
+  *fvalue = 0.1;
+  
+  ret = pwm_output(te, TEENSY_TYPE, 0, 28, fvalue,0.0,1.0);
 
   dev = 1;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     ret = digital_output(te, MCP23017_TYPE, dev, pin, value);
   }
-  //ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,5.0,1023.0);
 
   /* change Servo according to rotary position */
   //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0,0.2,0.8);

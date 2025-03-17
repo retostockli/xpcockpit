@@ -1,5 +1,7 @@
 Adafruit_MCP23X17 mcp23017[MAX_DEV];
 
+/* Use 10k pull down resistor on interrupt if you run MCP23017 on 5V */
+
 void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t wirenum, uint8_t address, int16_t val) {
 
   if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
