@@ -40,40 +40,16 @@ void init_b737_overheadfwd(void)
   int pin;
   int dev;
 
-  /*
-  for (int i=0;i<42;i++) {
-    teensy[te].pinmode[i] = PINMODE_INPUT;
-  }
-  */
-  
-  /* teensy[te].pinmode[37] = PINMODE_PWM; */
-  /* //  teensy[te].pinmode[0] = PINMODE_OUTPUT; */
-  /* teensy[te].pinmode[3] = PINMODE_INPUT; */
-  /* teensy[te].pinmode[4] = PINMODE_INPUT; */
-  /* //  teensy[te].pinmode[5] = PINMODE_INPUT; */
-  /* teensy[te].pinmode[41] = PINMODE_ANALOGINPUTMEAN  ; */
-  /* //  teensy[te].pinmode[6] = PINMODE_INTERRUPT; */
-  /* //  teensy[te].pinmode[7] = PINMODE_INTERRUPT; */
-  /* teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN; */
-  /* teensy[te].pinmode[16] = PINMODE_I2C; */
-  /* teensy[te].pinmode[17] = PINMODE_I2C; */
-  /* teensy[te].pinmode[30] = PINMODE_INPUT; // direction */
-  /* teensy[te].pinmode[31] = PINMODE_INPUT; // brake */
-  /* teensy[te].pinmode[33] = PINMODE_MOTOR; // motor EN */
-  /* teensy[te].arg1[33] = 34; // motor IN1 */
-  /* teensy[te].arg2[33] = 35; // motor IN1 */
-  /* teensy[te].arg3[33] = 38; // motor Current Sense */
-  
-  /* teensy[te].pinmode[24] = PINMODE_MOTOR; // motor EN */
-  /* teensy[te].arg1[24] = 26; // motor IN1 */
-  /* teensy[te].arg2[24] = 25; // motor IN1 */
-  //teensy[te].arg3[24] = 38; // motor Current Sense
-
-  //teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
-
   /* Controlling Solid State Relays (SSR) */
+  /* 26: On/Off Pedestal Light */
+  /* 27: On/Off Background Light */
+  /* 29: On/Off Yaw Damper Coil */
+  /* 30: On/Off Engine 1 Start Switch Coil */
+  /* 31: On/Off Engine 2 Start Switch Coil */
   for (pin=26;pin<34;pin++) {
-    teensy[te].pinmode[pin] = PINMODE_OUTPUT;
+    if (pin != 28) {
+      teensy[te].pinmode[pin] = PINMODE_OUTPUT;
+    }
   }
   // Controls Overhead-to-Pedestal Light Intensity from Pedestal Potentiometer
   teensy[te].pinmode[28] = PINMODE_PWM; 
@@ -82,7 +58,7 @@ void init_b737_overheadfwd(void)
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
-  mcp23017[te][dev].intpin = 8; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][dev].intpin = 0; // also define pin 6 of teensy as INTERRUPT above!
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x20; // I2C address of MCP23017 device
   
@@ -93,20 +69,6 @@ void init_b737_overheadfwd(void)
   mcp23017[te][dev].intpin = INITVAL; // also define pin 6 of teensy as INTERRUPT above!
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x21; // I2C address of MCP23017 device
-  
-
-  /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[3] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[4] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[10] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[11] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[12] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[5] = PINMODE_OUTPUT; */
-  /* mcp23017[te][1].pinmode[7] = PINMODE_OUTPUT; */
-  /* mcp23017[te][1].intpin = 7; // also define pin 6 of teensy as INTERRUPT above! */
-  /* mcp23017[te][1].wire = 0;  // I2C Bus: 0, 1 or 2 */
-  /* mcp23017[te][1].address = 0x20; // I2C address of MCP23017 device */
-
 
   /* pca9685[te][0].pinmode[0] = PINMODE_PWM; */
   /* //pca9685[te][0].pinmode[2] = PINMODE_PWM; */
@@ -129,10 +91,12 @@ void b737_overheadfwd(void)
   int pin;
   int dev;
 
+  int one = 1;
+  int zero = 0;
+
   int inputvalue;
 
   /* link integer data like a switch in the cockpit */
-  //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
   int *value = link_dataref_int("xpserver/digitalvalue");
   float *fvalue = link_dataref_flt("xpserver/analogvalue",0);
 
@@ -144,10 +108,7 @@ void b737_overheadfwd(void)
   /* if (ret == 1) { */
   /*   printf("Analog Input changed to: %f \n",*fvalue); */
   /* } */
-
-  //float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
-  //float *time = link_dataref_flt("sim/time/framerate_period",-3);
-  
+ 
   dev = 0;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     ret = digital_input(te, MCP23017_TYPE, dev, pin, &inputvalue, 0);
@@ -157,28 +118,18 @@ void b737_overheadfwd(void)
   }
 
 
-  /* ret = digital_input(te, TEENSY_TYPE, 0, 30, &direction, 0); */
-  /* if (ret == 1) { */
-  /*   printf("Motor Direction changed to: %i \n",direction); */
-  /* } */
-
-  /*
-  ret = digital_input(te, TEENSY_TYPE, 0, 31, &brake, 0);
-  if (ret == 1) {
-    printf("Motor Brake changed to: %i \n",brake);
-  }
-  */
-
-  *value = 1;
-  
-  for (pin=26;pin<34;pin++) {
-    if (pin != 28) ret = digital_output(te, TEENSY_TYPE, 0, pin, value);
-  }
-
-  *fvalue = 0.1;
-  
+  /* Pedestal Light PWM controlled by Pedestal Potentiometer */
+  *fvalue = 0.5;
+  ret = digital_output(te, TEENSY_TYPE, 0, 26, &one);
   ret = pwm_output(te, TEENSY_TYPE, 0, 28, fvalue,0.0,1.0);
 
+  /* Background Lighting (Direct Potentiometer MOSFET control */
+  ret = digital_output(te, TEENSY_TYPE, 0, 27, &one);
+
+  /* Yaw Damper Coil */
+  ret = digital_output(te, TEENSY_TYPE, 0, 29, &zero);
+
+  *value = 0;
   dev = 1;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     ret = digital_output(te, MCP23017_TYPE, dev, pin, value);

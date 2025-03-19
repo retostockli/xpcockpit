@@ -49,7 +49,10 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t
               mcp23017_data[dev].wire = wirenum;
               mcp23017_data[dev].address = address;
               mcp23017_data[dev].intpin = intpin;
-              mcp23017[dev].setupInterrupts(true, true, LOW); /* configure Interrupt mode of MCP23017 */
+              // mirror INTA/B so only one wire required
+              // active drive so INTA/B will not be floating
+              // INTA/B will be signaled with a LOW
+              mcp23017[dev].setupInterrupts(true, false, LOW); /* configure Interrupt mode of MCP23017 */
 
               teensy_data.arg1[intpin] = MCP23017_TYPE;
               teensy_data.arg2[intpin] = dev;
