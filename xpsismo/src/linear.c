@@ -15,7 +15,8 @@
  
 static float xval[9] = {0.0,0.125,0.250,0.375,0.500,0.625,0.750,0.875,1.0 }; /* Discrete steps in input space */
 //static float yval[9] = {0.07,0.15,0.26,0.34,0.45,0.53,0.60,0.67,0.75}; /* Corresponding steps in output space */
-static float yval[9] = {0.10,0.18,0.29,0.39,0.50,0.57,0.65,0.72,0.81 }; /* Corresponding steps in output space */
+//static float yval[9] = {0.10,0.18,0.29,0.39,0.50,0.57,0.65,0.72,0.81 }; /* Corresponding steps in output space */
+static float yval[9] = {0.29,0.37,0.49,0.58,0.68,0.75,0.84,0.91,0.97 }; /* Corresponding steps in output space */
 
 
 float linear_interpolate(float input)

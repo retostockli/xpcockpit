@@ -389,7 +389,7 @@ void b737_tq(void)
 
   /*** Background Lighting ***/
   float background_lighting = 0.0;
-  if (*avionics_on == 1) background_lighting = 75.0; /* set 75% intensity for now */
+  if (*avionics_on == 1) background_lighting = 25.0; /* set 75% intensity for now */
   ret = pwm_output(te, TEENSY_TYPE, 0, 14, &background_lighting,0.0,100.0);
 
   /*** Read Buttons ***/

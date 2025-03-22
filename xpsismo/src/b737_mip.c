@@ -596,12 +596,10 @@ void b737_mip(void)
        0.750 : 25 deg  : 0.65
        0.875 : 30 deg  : 0.72
        1.000 : 40 deg  : 0.81
-
+  
        The flaps gauge in the B737 is linear in the second column
        so we have to translate the deploy ratio into the second column
        by linear interpolation
-       --> Flaps gauge seems to be broken? Sticks to same postion and does only 
-       move erratically and not return.
     */
     if (1) {
       float gauge_position = linear_interpolate(*flaps_position);
@@ -611,10 +609,9 @@ void b737_mip(void)
       //ret = servo_outputf(card,3,&fvalue,-0.1,1.1);
     } else {
       /* Test Servo by using FO INBD DU BRT */
-      //printf("%f \n",servoval);
+      printf("%f \n",servoval);
       ret = servo_outputf(card,0,&servoval, 0.0,1.0);
       ret = servo_outputf(card,1,&servoval,0.0,1.0);
-      //ret = servo_outputf(card,3,&servoval,-0.1,1.1);
     }
     
   }
