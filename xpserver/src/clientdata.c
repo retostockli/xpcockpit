@@ -239,7 +239,12 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
 
 /* check validity of dataref, type, number of elements etc. */
 /* if check fails, the datarefname field is replaced with an error string */
-/* return values: 0=OK, 1=dataref not found in x-plane (continue with custom dataref creation), 2=type/nelements/etc wrong */
+/* return values:
+    0=OK
+    1=dataref not found in x-plane
+    2=type/nelements/etc wrong
+   -1=offset/clientdata not allocated */
+
 int check_clientdata(int offset) {
 
   int xptype;
@@ -276,7 +281,7 @@ int check_clientdata(int offset) {
 	      snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
 		       "Dataref differs in type: %i (client) vs. %i (X-Plane)",
 		       clientdata[offset].type, XPLMGetDataRefTypes(clientdata[offset].dataref));
-	      return -1;
+	      return 2;
 	    }
 
 	    if (clientdata[offset].nelements > 1) {
@@ -289,7 +294,7 @@ int check_clientdata(int offset) {
 		  snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
 			   "Dataref differs in # elements: %i (client) vs. %i (X-Plane)",
 			   clientdata[offset].nelements, (int) XPLMGetDatavf(clientdata[offset].dataref, NULL,0,0));
-	          return -1;
+	          return 2;
 	        }
 	        break;
 	      case XPTYPE_INT_ARR:
@@ -298,7 +303,7 @@ int check_clientdata(int offset) {
 		      clientdata[offset].datarefname, clientdata[offset].nelements, 
 		      (int) XPLMGetDatavi(clientdata[offset].dataref, NULL,0,0));
 		  snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),"Dataref differs in # elements: %i (client) vs. %i (X-Plane)",clientdata[offset].nelements, (int) XPLMGetDatavi(clientdata[offset].dataref, NULL,0,0));
-	          return -1;
+	          return 2;
 	        }
 	        break;
 	      case XPTYPE_BYTE_ARR:
@@ -306,14 +311,14 @@ int check_clientdata(int offset) {
 		   may vary in size also during runtime. Optimally, only valid elements will be read
 		   even if the client specifies less or more elements than the dataref holds */
 	        if (clientdata[offset].nelements != XPLMGetDatab(clientdata[offset].dataref, NULL,0,0)) {
-	          if (verbose > 0) fprintf(logfileptr, "Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
+	          if (verbose > 1) fprintf(logfileptr, "Warning-only for Strings: Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
 		      clientdata[offset].datarefname, clientdata[offset].nelements, 
 		      (int) XPLMGetDatab(clientdata[offset].dataref, NULL,0,0));
 		  /*
 		    snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
 			   "Dataref differs in # elements: %i (client) vs. %i (X-Plane)",
 			   clientdata[offset].nelements, (int) XPLMGetDatab(clientdata[offset].dataref, NULL,0,0));
-	          return -1;
+	          return 2;
 		  */
 	        }
 	        break;
@@ -340,6 +345,7 @@ int check_clientdata(int offset) {
 
   } else {
     if (verbose > 0) fprintf(logfileptr,"Cannot check dataref with offset %i: clientdata structure not allocated \n",offset);
+    return -1;
   }
 
   return 0;

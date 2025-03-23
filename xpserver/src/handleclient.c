@@ -467,31 +467,33 @@ void receive_client(int clntSock) {
 	      
 	  /* allocate data */
 	  if (allocate_clientdata(offset, type, nelements, index, precision, datarefname) == 0) {
-	    /* checking client dataref info for consistency with x-plane dataref */
-	    retval = check_clientdata(offset);
 
-	    if (retval == 1) {
-	      /* dataref not found in X-Plane, try allocating custom dataref */
-
-	      /* a custom dataref which is shared from this plugin to other plugins and registered clients
-		 has to start with the package name: "xpserver" */
-	      if (!strncmp(datarefname,PACKAGE_NAME,strlen(PACKAGE_NAME))) {
-		if (allocate_customdata(type, nelements, datarefname) == 0) {
-		  /* checking client dataref info for consistency with custom dataref */
-		  retval = check_clientdata(offset);
-		} else {
-		  snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
-			   "Failed to create custom dataref");
-		  retval = -1;
-		}
-	      }	else {
+	    /* a custom dataref (not from X-Plane) which is shared from this plugin to other plugins and registered clients
+	       has to start with the package name: "xpserver" */
+	    if (!strncmp(datarefname,PACKAGE_NAME,strlen(PACKAGE_NAME))) {
+	      /* allocate custom dataref in X-Plane and check for it */
+	      if (allocate_customdata(type, nelements, datarefname) == 0) {
+		/* checking client dataref info for consistency with custom dataref */
+		retval = check_clientdata(offset);
+	      } else {
 		snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
-			 "Dataref not found in X-Plane and not qualified as custom dataref.");
+			 "Failed to create custom dataref");
 		retval = -1;
-	      }	
+	      }
+	    } else {
+	      /* A regular X-Plane dataref or plugin dataref registered in X-Plane:
+		 checking client dataref info for consistency with x-plane dataref */
+	      retval = check_clientdata(offset);
+	    }
+	    
+	    if ((retval != 0) && (retval != 2)) {
+	      /* could not initialize dataref */
+	      snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
+		       "Dataref not found in X-Plane and not qualified as custom dataref.");
+	      retval = -1;
 	    }
 
-	    if (retval == -1) {
+	    if (retval == 2) {
 	      /* check failed, unset dataref pointer */
 	      /* dataref name will now contain an error message */
 	      /* thus wait for deallocation of data for offset until the error message has been sent */
@@ -860,41 +862,6 @@ void send_client(int clntSock) {
 	      break;
 	    case XPTYPE_CMD_ONCE:
 	      // nothing to be sent back here since a one time command
-	      // OLD CODE DO NOT USE ANY MORE:
-	      /* /\* we need to report back that the command was executed */
-	      /* 	 and reset the command from 1 to 0. But in order to allow for */
-	      /* 	 state changes in other plugins we first set it to 2 and only to 0 */
-	      /* 	 after the next callback so that our external plugins know */
-	      /* 	 that they can only execute another command after the command is */
-	      /* 	 back to 0. The state 2 is kept internally here. It is not */
-	      /* 	 sent to the client. *\/ */
-	      /* datai = *(int *) clientdata[i].data; */
-	      /* if (datai == 2) { */
-	      /* 	 // second cycle: reset to 0 */
-	      /* 	changed = 1; */
-	      /* 	datai = 0; */
-	      /* 	memcpy(clientdata[i].data,&datai,sizeof(int)); */
-	      /* } */
-	      /* if (datai == 1) { */
-	      /* 	// first cycle: report 2 */
-	      /* 	datai = 2;  */
-	      /* 	memcpy(clientdata[i].data,&datai,sizeof(int)); */
-	      /* } */
-	      /* if (changed == 1) { */
-	      /* 	if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) { */
-	      /* 	  first = MARK_DATA + i; */
-	      /* 	  memcpy(&sendBuffer[send_left],&first,sizeof(int)); */
-	      /* 	  send_left += sizeof(int); */
-		  
-	      /* 	  memcpy(&sendBuffer[send_left],&datai,sizeof(int)); */
-	      /* 	  memcpy(clientdata[i].data,&datai,sizeof(int)); */
-	      /* 	  send_left += sizeof(int); */
-		  
-	      /* 	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i commandref %s: %i \n", clntSock, i, clientdata[i].datarefname, datai); */
-	      /* 	} else { */
-	      /* 	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i commandref %s \n",clntSock, i, clientdata[i].datarefname); */
-	      /* 	} */
-	      /* } */
 	      break;
 	    case XPTYPE_CMD_HOLD:
 	      // nothing to be sent back here since the user releases the button at some point
