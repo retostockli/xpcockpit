@@ -113,7 +113,7 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
       return -1;
     }
  
-    if (verbose > 0) fprintf(logfileptr,"Existing custom dataref: %s \n",datarefname);
+    if (verbose > 1) fprintf(logfileptr,"Existing custom dataref: %s \n",datarefname);
 
   } else {
     /* create a new data element for this custom dataref */
@@ -230,9 +230,9 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
       return -1;
     }
       
-    if (verbose > 0) fprintf(logfileptr, "Registered custom dataref in X-Plane %s. \n",datarefname);
+    if (verbose > 1) fprintf(logfileptr, "Registered custom dataref in X-Plane %s \n",datarefname);
   } else {
-    if (verbose > 0) fprintf(logfileptr, "Could not register custom dataref %s. \n",datarefname);
+    if (verbose > 0) fprintf(logfileptr, "Could not register custom dataref %s \n",datarefname);
     return -1;
   }
 

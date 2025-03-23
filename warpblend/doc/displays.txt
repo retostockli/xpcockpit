@@ -1,0 +1,6 @@
+Displays on Flight Simulator PC need to be ordered from left to right like this:
+
+3 JNI
+2 Optoma left
+4 Optoma center
+1 Optoma right

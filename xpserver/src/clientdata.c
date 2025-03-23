@@ -102,7 +102,7 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
     }
   } else {
     /* allocate clientdata structure */
-    if (verbose > 0) fprintf(logfileptr,"clientdata structure not yet allocated \n");
+    if (verbose > 1) fprintf(logfileptr,"clientdata structure not yet allocated \n");
   }
 
   if (found) {
