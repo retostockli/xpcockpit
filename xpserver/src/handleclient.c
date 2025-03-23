@@ -471,27 +471,15 @@ void receive_client(int clntSock) {
 	    /* a custom dataref (not from X-Plane) which is shared from this plugin to other plugins and registered clients
 	       has to start with the package name: "xpserver" */
 	    if (!strncmp(datarefname,PACKAGE_NAME,strlen(PACKAGE_NAME))) {
-	      /* allocate custom dataref in X-Plane and check for it */
-	      if (allocate_customdata(type, nelements, datarefname) == 0) {
-		/* checking client dataref info for consistency with custom dataref */
-		retval = check_clientdata(offset);
-	      } else {
+	      /* allocate custom dataref in X-Plane */
+	      if (allocate_customdata(type, nelements, datarefname)!=0) {
 		snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
 			 "Failed to create custom dataref");
-		retval = -1;
 	      }
-	    } else {
-	      /* A regular X-Plane dataref or plugin dataref registered in X-Plane:
-		 checking client dataref info for consistency with x-plane dataref */
-	      retval = check_clientdata(offset);
 	    }
 	    
-	    if ((retval != 0) && (retval != 2)) {
-	      /* could not initialize dataref */
-	      snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
-		       "Dataref not found in X-Plane and not qualified as custom dataref.");
-	      retval = -1;
-	    }
+	    /* checking client dataref info for consistency with x-plane dataref */
+	    retval = check_clientdata(offset);
 
 	    if (retval == 2) {
 	      /* check failed, unset dataref pointer */
@@ -506,43 +494,68 @@ void receive_client(int clntSock) {
 	      clientdata[offset].status = XPSTATUS_LINK;
 	    }
 	  } else {
-	    if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Allocation failed for dataref/command %s. \n",clntSock, datarefname);
-	  }
+	    if (verbose > 0) {
+	      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Allocation failed for dataref/command %s. \n",
+		      clntSock, datarefname);
+	      fflush(logfileptr);
+	    }
+ 	  }
 	      	      
 	} else {
-	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Link data for offset %i dataref/command %s incomplete. \n", clntSock, offset, clientdata[offset].datarefname);
-	  recv_left = 0;
+	  if (verbose > 0) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Link data for offset %i dataref/command %s incomplete. \n",
+		    clntSock, offset, clientdata[offset].datarefname);
+	    fflush(logfileptr);
+	  }
+ 	  recv_left = 0;
 	}
 	    
       }
 
       /* dataref unlink request */
       if ((first >= MARK_UNLINK) && (first < MARK_EOT)) {
-	if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received UNLINK Marker \n",clntSock);
-	    
+	if (verbose > 1) {
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received UNLINK Marker \n",clntSock);
+	    fflush(logfileptr);
+	  }	    
 	if (recv_left >= (sizeof(int)+sizeof(datarefname))) {
 	  offset = first - MARK_UNLINK;
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Offset: %i \n",clntSock, offset);
-	      
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Offset: %i \n",clntSock, offset);
+	    fflush(logfileptr);
+	  }	      
 	  memcpy(&datarefname,&recvBuffer[recvMsgSize-recv_left],sizeof(datarefname));
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : dataref/command: %s \n",clntSock, datarefname);
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : dataref/command: %s \n",clntSock, datarefname);
+	    fflush(logfileptr);
+	  }
 	  recv_left -= sizeof(datarefname);
 
 	  clientdata[offset].status = XPSTATUS_UNLINK;
 
 	} else {
-	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Unlink data for offset %i dataref/command %s incomplete. \n", clntSock, offset, clientdata[offset].datarefname);
+	  if (verbose > 0) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Unlink data for offset %i dataref/command %s incomplete. \n",
+		    clntSock, offset, clientdata[offset].datarefname);
+	    fflush(logfileptr);
+	  }	    
 	  recv_left = 0;
 	}
 	    
       }
 	  
       if (first == MARK_EOT) {
-	if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received EOT Marker \n",clntSock);
+	if (verbose > 1) {
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received EOT Marker \n",clntSock);
+	  fflush(logfileptr);
+	}
       }
 	  
       if (first == MARK_DISCONNECT) {
-	if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received Disconnect Marker \n",clntSock);
+	if (verbose > 1) {
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received Disconnect Marker \n",clntSock);
+	  fflush(logfileptr);
+	}
 	socketStatus = status_Disconnected;
       }
 	  

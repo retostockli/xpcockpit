@@ -14,7 +14,7 @@
    If not, see <http://www.gnu.org/licenses/>. 
 */
 
-#define MAXCUSTOMALLOC 100
+#define MAXCUSTOMALLOC 150
 
 typedef struct {
   char datarefname[100];  /* name of custom dataref */

@@ -56,7 +56,10 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
 
   /* check for zero or negative number of elements elements */
   if (nelements < 1) {
-    if (verbose > 0) fprintf(logfileptr,"Number of elements < 1 for dataref %s \n",datarefname);
+    if (verbose > 0) {
+      fprintf(logfileptr,"Number of elements < 1 for dataref %s \n",datarefname);
+      fflush(logfileptr);
+    }
     return -1;
   }
  
@@ -64,20 +67,29 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
   /* index of 0 .. nelements-1 : select individual element of array */
   /* index of -1 : transfer all elements of array */
   if (index < -1) {
-    if (verbose > 0) fprintf(logfileptr,"Index of element < -1 for dataref %s \n",datarefname);
+    if (verbose > 0) {
+      fprintf(logfileptr,"Index of element < -1 for dataref %s \n",datarefname);
+      fflush(logfileptr);
+    }
     return -1;
   }
 
 
   /* check for too high elment index */
   if (index >= nelements) {
-    if (verbose > 0) fprintf(logfileptr,"Index of element > %i for dataref %s \n",nelements,datarefname);
+    if (verbose > 0) {
+      fprintf(logfileptr,"Index of element > %i for dataref %s \n",nelements,datarefname);
+      fflush(logfileptr);
+    }
     return -1;
   }
 
   /* check for zero length string in datarefname */
   if (!strcmp(datarefname,"")) {
-    if (verbose > 0) fprintf(logfileptr,"Dataref has no name. Not created\n");
+    if (verbose > 0) {
+      fprintf(logfileptr,"Dataref has no name. Not created\n");
+      fflush(logfileptr);
+    }
     return -1;
   }
 
@@ -88,8 +100,11 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
   }
 
   if (((precision > 10) || (precision < -10)) && (precision != INT_MISS)) {
-    if (verbose > 0) fprintf(logfileptr,"Precision %i for dataref %s outside of range -10..10 Setting to missing \n",
-			     precision, datarefname);
+    if (verbose > 0) {
+      fprintf(logfileptr,"Precision %i for dataref %s outside of range -10..10 Setting to missing \n",
+	      precision, datarefname);
+      fflush(logfileptr);
+    }      
     precision = INT_MISS;
   }
 
@@ -102,7 +117,10 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
     }
   } else {
     /* allocate clientdata structure */
-    if (verbose > 1) fprintf(logfileptr,"clientdata structure not yet allocated \n");
+    if (verbose > 1) {
+      fprintf(logfileptr,"clientdata structure not yet allocated \n");
+      fflush(logfileptr);
+    }      
   }
 
   if (found) {
@@ -110,31 +128,46 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
 
     //    if (type != clientdata[offset].type) {
     if ((clientdata[offset].type & type) != type) {
-      if (verbose > 0) fprintf(logfileptr,"Requested type %i does not match type %i for dataref %s \n",
-	     type,clientdata[offset].type,datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Requested type %i does not match type %i for dataref %s \n",
+		type,clientdata[offset].type,datarefname);
+	fflush(logfileptr);
+      }	
       return -1;
     }
 
     if (nelements != clientdata[offset].nelements) {
-      if (verbose > 0) fprintf(logfileptr,"Requested elements %i does not match elements %i for dataref %s \n",
-	     nelements,clientdata[offset].nelements,datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Requested elements %i does not match elements %i for dataref %s \n",
+		nelements,clientdata[offset].nelements,datarefname);
+	fflush(logfileptr);
+      }
       return -1;
     }
 
     if (index != clientdata[offset].index) {
-      if (verbose > 0) fprintf(logfileptr,"Requested index %i does not match index %i for dataref %s \n",
-	     index,clientdata[offset].index,datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Requested index %i does not match index %i for dataref %s \n",
+		index,clientdata[offset].index,datarefname);
+	fflush(logfileptr);
+      }
       return -1;
     }
 
     if (precision != clientdata[offset].precision) {
-      if (verbose > 0) fprintf(logfileptr,"Requested precision %i does not match precision %i for dataref %s \n",
-	     precision,clientdata[offset].precision,datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Requested precision %i does not match precision %i for dataref %s \n",
+		precision,clientdata[offset].precision,datarefname);
+	fflush(logfileptr);
+      }	
       return -1;
     }
 
-    if (verbose > 0) fprintf(logfileptr,"Existing dataref: %s \n",datarefname);
-
+    if (verbose > 0) {
+      fprintf(logfileptr,"Using existing dataref storage: %s \n",datarefname);
+      fflush(logfileptr);
+    }
+ 
   } else {
     /* create a new data element for this dataref */
 
@@ -142,8 +175,11 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
     if (offset >= numalloc) {
       void *tmp = realloc(clientdata, sizeof(clientdata_struct) * (offset+1));
       if (tmp == NULL) { 
-	if (verbose > 0) fprintf(logfileptr,"Memory allocation error when allocating %i data elements \n", offset+1);
-	return -1;
+	if (verbose > 0) {
+	  fprintf(logfileptr,"Memory allocation error when allocating %i data elements \n", offset+1);
+	  fflush(logfileptr);
+	}
+ 	return -1;
       } else {
 	clientdata = tmp;
 	numalloc=(offset+1);
@@ -206,20 +242,29 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
       *(int*) clientdata[offset].data = INT_MISS;
       break;
     default:
-      if (verbose > 0) fprintf(logfileptr,"Unknown data type for dataref %s \n",datarefname);
-      if (verbose > 0) fprintf(logfileptr,"Type %i Number of elements %i Index %i Precision %i \n", 
-			       type, nelements, index, precision);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Unknown data type for dataref %s \n",datarefname);
+	fprintf(logfileptr,"Type %i Number of elements %i Index %i Precision %i \n", 
+		type, nelements, index, precision);
+	fflush(logfileptr);
+      }	
       clientdata[offset].data = NULL;
       break;
     }
 
     if (((precision > 10) || (precision < -10)) && (precision != INT_MISS)) {
-      if (verbose > 0) fprintf(logfileptr,"Precision %i outside of range -10..10 Setting to missing \n",precision);      
+      if (verbose > 0) {
+	fprintf(logfileptr,"Precision %i outside of range -10..10 Setting to missing \n",precision);      
+	fflush(logfileptr);
+      }
       precision = INT_MISS;
     }
 
     if (clientdata[offset].data == NULL) {
-      if (verbose > 0) fprintf(logfileptr,"Memory allocation error for dataref %s \n",datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Memory allocation error for dataref %s \n",datarefname);
+	fflush(logfileptr);
+      }
       return -1;
     } else {
       strcpy(clientdata[offset].datarefname,datarefname);
@@ -228,9 +273,12 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
       clientdata[offset].nelements = nelements;
       clientdata[offset].index = index;
       clientdata[offset].precision = precision;
-      if (verbose > 0) fprintf(logfileptr,"Created dataref: %s \n",datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Created dataref storage: %s \n",datarefname);
+	fflush(logfileptr);
+      }
     }
-
+    
   }
 
   return 0;
@@ -243,7 +291,7 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
     0=OK
     1=dataref not found in x-plane
     2=type/nelements/etc wrong
-   -1=offset/clientdata not allocated */
+   -1=offset/clientdata not allocated  */
 
 int check_clientdata(int offset) {
 
@@ -260,7 +308,10 @@ int check_clientdata(int offset) {
 	  if (clientdata[offset].dataref != NULL) {
 	    clientdata[offset].write = 1;
           } else {
-	    if (verbose > 0) fprintf(logfileptr, "Command %s not found in X-Plane. \n",clientdata[offset].datarefname);
+	    if (verbose > 0) {
+	      fprintf(logfileptr, "Command %s not found in X-Plane. \n",clientdata[offset].datarefname);
+	      fflush(logfileptr);
+	    } 
 	    return 1;
           }
 	  break;
@@ -275,9 +326,12 @@ int check_clientdata(int offset) {
 	      } */
 	    //	    if (clientdata[offset].type != xptype) {
 	    if ((xptype & clientdata[offset].type) != clientdata[offset].type) {
-	      if (verbose > 0) fprintf(logfileptr, "Dataref %s differs in type: %i (client) vs. %i (X-Plane) \n",
-		  clientdata[offset].datarefname, clientdata[offset].type, 
-		  XPLMGetDataRefTypes(clientdata[offset].dataref));
+	      if (verbose > 0) {
+		fprintf(logfileptr, "Dataref %s differs in type: %i (client) vs. %i (X-Plane) \n",
+			clientdata[offset].datarefname, clientdata[offset].type, 
+			XPLMGetDataRefTypes(clientdata[offset].dataref));
+		fflush(logfileptr);
+	      }
 	      snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
 		       "Dataref differs in type: %i (client) vs. %i (X-Plane)",
 		       clientdata[offset].type, XPLMGetDataRefTypes(clientdata[offset].dataref));
@@ -288,20 +342,24 @@ int check_clientdata(int offset) {
 	      switch (clientdata[offset].type) {
 	      case XPTYPE_FLT_ARR: 
 	        if (clientdata[offset].nelements != XPLMGetDatavf(clientdata[offset].dataref, NULL,0,0)) {
-	          if (verbose > 0) fprintf(logfileptr, "Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
-		      clientdata[offset].datarefname, clientdata[offset].nelements, 
-		      (int) XPLMGetDatavf(clientdata[offset].dataref, NULL,0,0));
+	          if (verbose > 0) { fprintf(logfileptr, "Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
+					     clientdata[offset].datarefname, clientdata[offset].nelements, 
+					     (int) XPLMGetDatavf(clientdata[offset].dataref, NULL,0,0));
+		    fflush(logfileptr);
+		  }
 		  snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
 			   "Dataref differs in # elements: %i (client) vs. %i (X-Plane)",
 			   clientdata[offset].nelements, (int) XPLMGetDatavf(clientdata[offset].dataref, NULL,0,0));
-	          return 2;
+		  return 2;
 	        }
 	        break;
 	      case XPTYPE_INT_ARR:
 	        if (clientdata[offset].nelements != XPLMGetDatavi(clientdata[offset].dataref, NULL,0,0)) {
-	          if (verbose > 0) fprintf(logfileptr, "Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
+	          if (verbose > 0) {fprintf(logfileptr, "Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
 		      clientdata[offset].datarefname, clientdata[offset].nelements, 
 		      (int) XPLMGetDatavi(clientdata[offset].dataref, NULL,0,0));
+		    fflush(logfileptr);
+		  }		    
 		  snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),"Dataref differs in # elements: %i (client) vs. %i (X-Plane)",clientdata[offset].nelements, (int) XPLMGetDatavi(clientdata[offset].dataref, NULL,0,0));
 	          return 2;
 	        }
@@ -311,9 +369,12 @@ int check_clientdata(int offset) {
 		   may vary in size also during runtime. Optimally, only valid elements will be read
 		   even if the client specifies less or more elements than the dataref holds */
 	        if (clientdata[offset].nelements != XPLMGetDatab(clientdata[offset].dataref, NULL,0,0)) {
-	          if (verbose > 1) fprintf(logfileptr, "Warning-only for Strings: Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
+	          if (verbose > 1) {
+		    fprintf(logfileptr, "Warning-only for Strings: Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
 		      clientdata[offset].datarefname, clientdata[offset].nelements, 
 		      (int) XPLMGetDatab(clientdata[offset].dataref, NULL,0,0));
+		    fflush(logfileptr);
+		  }
 		  /*
 		    snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
 			   "Dataref differs in # elements: %i (client) vs. %i (X-Plane)",
@@ -332,19 +393,28 @@ int check_clientdata(int offset) {
 
           } else {
 	    /* x-plane dataref not found */
-	    if (verbose > 0) fprintf(logfileptr, "Dataref %s not found in X-Plane. \n",clientdata[offset].datarefname);
+	    if (verbose > 0) {
+	      fprintf(logfileptr, "Dataref %s not found in X-Plane. \n",clientdata[offset].datarefname);
+	      fflush(logfileptr);
+	    }
 	    return 1;
 	  }
 	  break;
       } // switch command or dataref  
       
     } else {
-      if (verbose > 0) fprintf(logfileptr,"Cannot check dataref with offset %i: offset does not exist \n",offset);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Cannot check dataref with offset %i: offset does not exist \n",offset);
+	fflush(logfileptr);
+      }
       return -1;
     }
 
   } else {
-    if (verbose > 0) fprintf(logfileptr,"Cannot check dataref with offset %i: clientdata structure not allocated \n",offset);
+    if (verbose > 0) {
+      fprintf(logfileptr,"Cannot check dataref with offset %i: clientdata structure not allocated \n",offset);
+      fflush(logfileptr);
+    }
     return -1;
   }
 
@@ -371,14 +441,22 @@ int deallocate_clientdata(int offset) {
       clientdata[offset].status = XPSTATUS_DEALLOC;
       memset(clientdata[offset].datarefname,0,sizeof(clientdata[offset].datarefname));
       
-      if (verbose > 0) fprintf(logfileptr,"Deallocated dataref with offset %i \n",offset);
-      
+      if (verbose > 0) {
+	fprintf(logfileptr,"Deallocated dataref with offset %i \n",offset);
+	fflush(logfileptr);
+      }
     } else {
-      if (verbose > 0) fprintf(logfileptr,"Cannot deallocate dataref with offset %i: offset does not exist \n",offset);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Cannot deallocate dataref with offset %i: offset does not exist \n",offset);
+	fflush(logfileptr);
+      }
       return -1;
     }
   } else {
-    if (verbose > 0) fprintf(logfileptr,"Cannot deallocate dataref with offset %i: clientdata structure not allocated \n",offset);
+    if (verbose > 0) {
+      fprintf(logfileptr,"Cannot deallocate dataref with offset %i: clientdata structure not allocated \n",offset);
+      fflush(logfileptr);
+    }
     return -1;
   }
 
@@ -393,7 +471,10 @@ void clear_clientdata() {
   if (clientdata != NULL) {
     for (offset=0;offset<numalloc;offset++) {
       if (clientdata[offset].data != NULL) {
-	if (verbose > 0) fprintf(logfileptr,"Cleared clientdata entry %i \n",offset);
+	if (verbose > 0) {
+	  fprintf(logfileptr,"Cleared clientdata entry %i \n",offset);
+	  fflush(logfileptr);
+	}
 	free(clientdata[offset].data);
 	clientdata[offset].data = NULL;
       } 	   

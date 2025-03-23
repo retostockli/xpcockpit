@@ -58,13 +58,19 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
     
   /* check for zero or negative number of elements elements */
   if (nelements < 1) {
-    if (verbose > 0) fprintf(logfileptr,"Number of elements < 1 for custom dataref %s \n",datarefname);
+    if (verbose > 0) {
+      fprintf(logfileptr,"Number of elements < 1 for custom dataref %s \n",datarefname);
+      fflush(logfileptr);
+    }
     return -1;
   }
            
   /* check for zero length string in datarefname */
   if (!strcmp(datarefname,"")) {
-    if (verbose > 0) fprintf(logfileptr,"Custom dataref has no name. Not created\n");
+    if (verbose > 0) {
+      fprintf(logfileptr,"Custom dataref has no name. Not created\n");
+      fflush(logfileptr);
+    }
     return -1;
   }
 
@@ -80,7 +86,10 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
     }
   } else {
     /* allocate customdata structure */
-    if (verbose > 0) fprintf(logfileptr,"Allocating memory for custom dataref structure \n");
+    if (verbose > 0) {
+      fprintf(logfileptr,"Allocating memory for custom dataref structure \n");
+      fflush(logfileptr);
+    }
 
     /* allocate memory for customdata */
     /* we cannot re-allocate with each new custom data like done for the clientdata structure
@@ -90,7 +99,10 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
        set at compile time. Any better solution is welcome */
     customdata = realloc(customdata, sizeof(customdata_struct) * MAXCUSTOMALLOC);
     if (customdata == NULL) { 
-      if (verbose > 0) fprintf(logfileptr,"Memory allocation error when allocating %i custom dataref elements \n", MAXCUSTOMALLOC);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Memory allocation error when allocating %i custom dataref elements \n", MAXCUSTOMALLOC);
+	fflush(logfileptr);
+      }	
       return -1;
     }
     for (offset=0;offset<MAXCUSTOMALLOC;offset++) {
@@ -102,19 +114,26 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
     /* check if dataref is consistent */
 
     if (type != customdata[offset].type) {
-      if (verbose > 0) fprintf(logfileptr,"Requested type %i does not match type %i for custom dataref %s \n",
-			       type,customdata[offset].type,datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Requested type %i does not match type %i for custom dataref %s \n",
+		type,customdata[offset].type,datarefname);
+      }
       return -1;
     }
 
     if (nelements != customdata[offset].nelements) {
-      if (verbose > 0) fprintf(logfileptr,"Requested elements %i does not match elements %i for custom dataref %s \n",
-			       nelements,customdata[offset].nelements,datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Requested elements %i does not match elements %i for custom dataref %s \n",
+		nelements,customdata[offset].nelements,datarefname);
+	fflush(logfileptr);
+      }	
       return -1;
     }
  
-    if (verbose > 1) fprintf(logfileptr,"Existing custom dataref: %s \n",datarefname);
-
+    if (verbose > 0) {
+      fprintf(logfileptr,"Using existing custom dataref: %s \n",datarefname);
+      fflush(logfileptr);
+    }
   } else {
     /* create a new data element for this custom dataref */
 
@@ -124,12 +143,15 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
       if (!strcmp(customdata[offset].datarefname,"")) {
 	found = 1;
       } else {
-	offset ++;
+	offset++;
       }
     }
 
     if (found == 0) {
-      if (verbose > 0) fprintf(logfileptr,"Maximum number of custom dataref elements exceeded: %i \n",MAXCUSTOMALLOC);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Maximum number of custom dataref elements exceeded: %i \n",MAXCUSTOMALLOC);
+	fflush(logfileptr);
+      }
       return -1;
     }
 
@@ -166,19 +188,29 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
       }
       break;
     default:
-      if (verbose > 0) fprintf(logfileptr,"Unsupported data type %i for custom dataref %s \n",type,datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Unsupported data type %i for custom dataref %s \n",type,datarefname);
+	fflush(logfileptr);
+      }
       customdata[offset].data = NULL;
       break;
     }
  
     if (customdata[offset].data == NULL) {
-      if (verbose > 0) fprintf(logfileptr,"Custom dataref %s not created \n",datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Custom dataref %s not created \n",datarefname);
+	fflush(logfileptr);
+      }	
       return -1;
     } else {
       strcpy(customdata[offset].datarefname,datarefname);
       customdata[offset].type = type;
       customdata[offset].nelements = nelements;
-      if (verbose > 0) fprintf(logfileptr,"Created custom dataref structure: %s \n",datarefname);
+      if (verbose > 0) {
+	fprintf(logfileptr,"Created custom dataref storage: %s offset %i \n",datarefname,offset);
+	fflush(logfileptr);
+      }
+	
     }
       
   }
