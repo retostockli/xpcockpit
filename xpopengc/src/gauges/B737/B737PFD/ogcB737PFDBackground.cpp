@@ -1090,7 +1090,7 @@ namespace OpenGC
     }
 
     // draw minimum altitude (feet)
-    if (*altimeter_minimum != FLT_MISS) {
+    if ((*altimeter_minimum != FLT_MISS) && (*altimeter_minimum >= 0.0)) {
       m_pFontManager->SetSize(m_Font, fontWidth, fontHeight);
       glColor3ub(COLOR_GREEN);
       if ((acf_type == 2) || (acf_type == 3)) {

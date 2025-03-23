@@ -120,6 +120,8 @@ namespace OpenGC
 
       m_pFontManager->SetSize(m_Font, 6.0, bigFontHeight);
 
+      //printf("%f %i \n",*pressure_altitude,alt);
+      
       // Draw text in white
       glColor3ub(COLOR_WHITE);
 
@@ -133,7 +135,7 @@ namespace OpenGC
 	  alt = alt-100000*(int)(alt/100000);
 	}
       // 10000's
-      if(abs(alt) >= 10000)
+      if(abs(alt) >= 9980)
 	{
 	  int tenthousand = abs(alt)/10000;
 	  int tenthousandup = (tenthousand+1)%10;
@@ -164,8 +166,8 @@ namespace OpenGC
 	    snprintf(buffer, sizeof(buffer), "-");
 	    m_pFontManager->Print(5.0, texty + bigFontHeight/10.0, &buffer[0], m_Font);
 	  } else {
-	    if(abs(alt) <= 9999) {
-	      /* do only draw the square if 9999 and below, else we fill the still present 1 of 10000 */
+	    if(abs(alt) < 9980) {
+	      /* do only draw the square if 9980 and below, else we fill the still present 1 of 10000 */
 	      glColor3ub(COLOR_GREEN);
 	      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	      glBegin(GL_POLYGON);

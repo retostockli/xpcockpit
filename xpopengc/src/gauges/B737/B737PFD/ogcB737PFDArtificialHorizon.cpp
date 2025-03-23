@@ -611,7 +611,7 @@ namespace OpenGC
 	// Move to the center of the window
 	glTranslatef(47,49,0);
 	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(lineWidth);
+	glLineWidth(1.5*lineWidth);
     
 	glTranslatef(0,*fd_pitch*2.0,0);
 	glBegin(GL_LINES);
@@ -629,7 +629,7 @@ namespace OpenGC
 	// Move to the center of the window
 	glTranslatef(47,49,0);
 	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(lineWidth);
+	glLineWidth(1.5*lineWidth);
 
 	glTranslatef(*fd_roll,0,0);
 	glBegin(GL_LINES);
