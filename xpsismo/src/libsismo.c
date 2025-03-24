@@ -12,7 +12,6 @@
    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
    See the GNU General Public License for more details.
-
    You should have received a copy of the GNU General Public License along with this program.  
    If not, see <http://www.gnu.org/licenses/>. */
 
@@ -796,7 +795,7 @@ int servo_outputf(int card, int servo, float *fvalue, float fminval, float fmaxv
 	    if (data != sismo[card].servos[servo]) {
 	      sismo[card].servos[servo] = data;
 	      sismo[card].servos_changed[servo] = CHANGED;
-	      if (verbose > 2) printf("Servo %i of card %i changed to %i \n",
+	      if (verbose > 0) printf("Servo %i of card %i changed to %i \n",
 				      servo,card,data);
 	    }
 	  }
