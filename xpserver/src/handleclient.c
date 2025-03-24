@@ -851,7 +851,7 @@ void send_client(int clntSock) {
 		  }
 		  if ((changed == 1) && (verbose > 1)) {
 		    for (j=0;j<nelements;j++) {
-		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %u \n", clntSock,i, clientdata[i].datarefname,j,datab[j]);
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %u %i %i \n", clntSock,i, clientdata[i].datarefname,j,datab[j],send_left,TCPBUFSIZE);
 		    }
 		  }
 		} else {
