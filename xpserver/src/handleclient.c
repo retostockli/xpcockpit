@@ -89,7 +89,10 @@ void close_client(int clntSock) {
     memcpy(&sendBuffer[send_left],&datai,sizeof(int));
     send_left += sizeof(int);
     
-    if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Sending connection terminator to client. \n");
+    if (verbose > 0) {
+      fprintf(logfileptr,"HANDLECLIENT: Sending connection terminator to client. \n");
+      fflush(logfileptr);
+    }
     
     message_ptr = sendBuffer;
     while ((send_left > 0) && (socketStatus != status_Error)) {
@@ -97,7 +100,10 @@ void close_client(int clntSock) {
       sendMsgSize = send(clntSock, message_ptr, send_left, 0);
       
       if (sendMsgSize == -1) {
-	if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Error Sending data to client socket %i \n",clntSock);
+	if (verbose > 0) {
+	  fprintf(logfileptr,"HANDLECLIENT: Error Sending data to client socket %i \n",clntSock);
+	  fflush(logfileptr);
+	}
 	socketStatus = status_Error; // signal a real error.
       } else {
 	send_left -= sendMsgSize;
@@ -147,7 +153,10 @@ void receive_client(int clntSock) {
 #endif
 
     if (recv_left == 0) { // disconnection
-      if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Disconnected. \n", clntSock);
+      if (verbose > 0) {
+	fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Disconnected. \n", clntSock);
+	fflush(logfileptr);
+      }
       socketStatus = status_Disconnected;
       recvMsgSize = 0;
       break;
@@ -158,7 +167,10 @@ void receive_client(int clntSock) {
 #else
       if (errno == EWOULDBLOCK) { // just no data yet ...
 #endif
-	if (verbose > 2) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : No data yet. \n", clntSock);
+	if (verbose > 3) {
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : No data yet. \n", clntSock);
+	  fflush(logfileptr);
+	}
 	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
       } else {
 #ifdef WIN
@@ -170,13 +182,19 @@ void receive_client(int clntSock) {
 	    (errno == ECONNRESET)   || (errno == EHOSTUNREACH) ||
 	    (errno == ENETDOWN)     || (errno == ENETRESET)) { // now we have a network status
 #endif
-	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Disconnected!\n",clntSock);
+	  if (verbose > 0) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Disconnected!\n",clntSock);
+	    fflush(logfileptr);
+	  }
 	  socketStatus = status_Disconnected;
 	  recv_left = 0;
 	  recvMsgSize = 0;
 	  break;
 	} else { // here a real error
-	  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Error!\n",clntSock);
+	  if (verbose > 0) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Error!\n",clntSock);
+	    fflush(logfileptr);
+	  }
 	  socketStatus = status_Error;	// signal a real error.
 	  recv_left = 0;
 	  recvMsgSize = 0;
@@ -195,11 +213,17 @@ void receive_client(int clntSock) {
       memcpy(&datai,&recvBuffer[recvMsgSize-sizeof(int)],sizeof(int));
       if ((datai == MARK_EOT) || (datai == MARK_DISCONNECT)) {	
 	/* received full message with EOT or DISCONNECT marker at the end */
-	if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received Total %i bytes \n",clntSock, recvMsgSize);
+	if (verbose > 1) {
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received Total %i bytes \n",clntSock, recvMsgSize);
+	  fflush(logfileptr);
+	}
 	break;
       } else {
 	/* only partial message received */
-	if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received Partial %i bytes \n",clntSock, recv_left);
+	if (verbose > 1) {
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received Partial %i bytes \n",clntSock, recv_left);
+	  fflush(logfileptr);
+	}
       }
 
     }
@@ -239,14 +263,26 @@ void receive_client(int clntSock) {
 		  if (datai != INT_MISS) {
 		    memcpy(clientdata[offset].data,&datai,sizeof(int));
 		    XPLMSetDatai(clientdata[offset].dataref, datai);
-		    if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s: %i \n", clntSock, offset, clientdata[offset].datarefname, datai);
+		    if (verbose > 1) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s: %i \n",
+			      clntSock, offset, clientdata[offset].datarefname, datai);
+		      fflush(logfileptr);
+		    }
 		  }
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n", clntSock, offset, clientdata[offset].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n",
+			    clntSock, offset, clientdata[offset].datarefname);
+		    fflush(logfileptr);
+		  }
 		}
 		recv_left -= sizeof(int);
 	      } else {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n", clntSock, offset, clientdata[offset].datarefname);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n",
+			  clntSock, offset, clientdata[offset].datarefname);
+		  fflush(logfileptr);
+		}
 		recv_left = 0;
 	      }
 	      break;
@@ -257,14 +293,26 @@ void receive_client(int clntSock) {
 		  if (dataf != FLT_MISS) {
 		    memcpy(clientdata[offset].data,&dataf,sizeof(float));
 		    XPLMSetDataf(clientdata[offset].dataref, dataf);
-		    if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s: %f \n", clntSock, offset, clientdata[offset].datarefname, dataf);
+		    if (verbose > 1) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s: %f \n",
+			      clntSock, offset, clientdata[offset].datarefname, dataf);
+		      fflush(logfileptr);
+		    }
 		  }
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n", clntSock, offset, clientdata[offset].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n",
+			    clntSock, offset, clientdata[offset].datarefname);
+		    fflush(logfileptr);
+		  }
 		}
 		recv_left -= sizeof(float);
 	      } else {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n", clntSock, offset, clientdata[offset].datarefname);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n",
+			  clntSock, offset, clientdata[offset].datarefname);
+		  fflush(logfileptr);
+		}
 		recv_left = 0;
 	      }
 	      break;
@@ -275,14 +323,26 @@ void receive_client(int clntSock) {
 		  if (datad != DBL_MISS) {
 		    memcpy(clientdata[offset].data,&datad,sizeof(double));
 		    XPLMSetDatad(clientdata[offset].dataref, datad);
-		    if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s: %f \n", clntSock, offset, clientdata[offset].datarefname, datad);
+		    if (verbose > 1) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s: %f \n",
+			      clntSock, offset, clientdata[offset].datarefname, datad);
+		      fflush(logfileptr);
+		    }
 		  }
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n", clntSock, offset, clientdata[offset].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n",
+			    clntSock, offset, clientdata[offset].datarefname);
+		    fflush(logfileptr);
+		  }
 		}
 		recv_left -= sizeof(double);
 	      } else {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n", clntSock, offset, clientdata[offset].datarefname);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n",
+			  clntSock, offset, clientdata[offset].datarefname);
+		  fflush(logfileptr);
+		}
 		recv_left = 0;
 	      }
 	      break;
@@ -297,25 +357,41 @@ void receive_client(int clntSock) {
 			if (datavf[j] != FLT_MISS) {
 			  XPLMSetDatavf(clientdata[offset].dataref,&datavf[j],j,1);
 			  memcpy(&((float*) clientdata[offset].data)[j],&datavf[j],sizeof(float));
-			  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %f \n", clntSock, offset, clientdata[offset].datarefname, j, datavf[j]);
+			  if (verbose > 1) {
+			    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %f \n",
+				    clntSock, offset, clientdata[offset].datarefname, j, datavf[j]);
+			    fflush(logfileptr);
+			  }
 			}
 		      }
 		    } else {
 		      if (*datavf != FLT_MISS) {
 			XPLMSetDatavf(clientdata[offset].dataref,datavf,clientdata[offset].index,1);
 			memcpy(clientdata[offset].data,datavf,sizeof(float));
-			if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %f \n", clntSock, offset, clientdata[offset].datarefname, clientdata[offset].index, *datavf);
+			if (verbose > 1) {
+			  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %f \n",
+				  clntSock, offset, clientdata[offset].datarefname, clientdata[offset].index, *datavf);
+			  fflush(logfileptr);
+			}
 		      }
 		    }
 		  }
 		  free(datavf);
 		  datavf=NULL;
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n", clntSock, offset, clientdata[offset].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n",
+			    clntSock, offset, clientdata[offset].datarefname);
+		    fflush(logfileptr);
+		  }
 		}
 		recv_left -= nelements*sizeof(float);
 	      } else {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n", clntSock, offset, clientdata[offset].datarefname);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n",
+			  clntSock, offset, clientdata[offset].datarefname);
+		  fflush(logfileptr);
+		}
 		recv_left = 0;
 	      }
 	      break;
@@ -330,25 +406,41 @@ void receive_client(int clntSock) {
 			if (datavi[j] != INT_MISS) {
 			  XPLMSetDatavi(clientdata[offset].dataref,&datavi[j],j,1);
 			  memcpy(&((int*) clientdata[offset].data)[j],&datavi[j],sizeof(int));
-			  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %i \n", clntSock, offset, clientdata[offset].datarefname, j, datavi[j]);
+			  if (verbose > 1) {
+			    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %i \n",
+				    clntSock, offset, clientdata[offset].datarefname, j, datavi[j]);
+			    fflush(logfileptr);
+			  }
 			}
 		      }
 		    } else {
 		      if (*datavi != INT_MISS) {
 			XPLMSetDatavi(clientdata[offset].dataref,datavi,clientdata[offset].index,1);
 			memcpy(clientdata[offset].data,datavi,sizeof(int));
-			if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %i \n", clntSock, offset, clientdata[offset].datarefname, clientdata[offset].index, *datavi);
+			if (verbose > 1) {
+			  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %i \n",
+				  clntSock, offset, clientdata[offset].datarefname, clientdata[offset].index, *datavi);
+			  fflush(logfileptr);
+			}
 		      }
 		    }
 		  }
 		  free(datavi);
 		  datavi=NULL;
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n",clntSock, offset, clientdata[offset].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n",
+			    clntSock, offset, clientdata[offset].datarefname);
+		    fflush(logfileptr);
+		  }
 		}
 		recv_left -= nelements*sizeof(int);
 	      } else {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n", clntSock, offset, clientdata[offset].datarefname);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n",
+			  clntSock, offset, clientdata[offset].datarefname);
+		  fflush(logfileptr);
+		}
 		recv_left = 0;
 	      }
 	      break;
@@ -362,22 +454,38 @@ void receive_client(int clntSock) {
 		      for (j=0;j<nelements;j++) {
 			XPLMSetDatab(clientdata[offset].dataref,&datab[j],j,1);
 			memcpy(&((unsigned char*) clientdata[offset].data)[j],&datab[j],sizeof(unsigned char));
-			if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %u \n", clntSock, offset, clientdata[offset].datarefname, j, datab[j]);
+			if (verbose > 1) {
+			  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %u \n",
+				  clntSock, offset, clientdata[offset].datarefname, j, datab[j]);
+			  fflush(logfileptr);
+			}
 		      }
 		    } else {
 		      XPLMSetDatab(clientdata[offset].dataref,datab,clientdata[offset].index,1);
 		      memcpy(clientdata[offset].data,datab,sizeof(unsigned char));
-		      if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %u \n",clntSock, offset, clientdata[offset].datarefname, clientdata[offset].index, *datab);
+		      if (verbose > 1) {
+			fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i dataref %s index %i: %u \n",
+				clntSock, offset, clientdata[offset].datarefname, clientdata[offset].index, *datab);
+			fflush(logfileptr);
+		      }
 		    }
 		  }
 		  free(datab);
 		  datab=NULL;
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n", clntSock, offset, clientdata[offset].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i dataref %s not ready/writable. Discarding data. \n",
+			    clntSock, offset, clientdata[offset].datarefname);
+		    fflush(logfileptr);
+		  }
 		}
 		recv_left -= nelements*sizeof(unsigned char);
 	      } else {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n", clntSock, offset, clientdata[offset].datarefname);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i dataref %s incomplete. Discarding. \n",
+			  clntSock, offset, clientdata[offset].datarefname);
+		  fflush(logfileptr);
+		}
 		recv_left = 0;
 	      }
 	      break;
@@ -387,17 +495,29 @@ void receive_client(int clntSock) {
 		  memcpy(&datai,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
 		  if (datai != INT_MISS) {
 		    memcpy(clientdata[offset].data,&datai,sizeof(int));
-		    if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i command %s: %i \n", clntSock, offset, clientdata[offset].datarefname, datai);
+		    if (verbose > 1) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i command %s: %i \n",
+			      clntSock, offset, clientdata[offset].datarefname, datai);
+		      fflush(logfileptr);
+		    }
 		    if (datai == 1) {
 		      XPLMCommandOnce(clientdata[offset].dataref);
 		    }
 		  }
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i command %s not ready. Discarding data. \n",clntSock, offset, clientdata[offset].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i command %s not ready. Discarding data. \n",
+			    clntSock, offset, clientdata[offset].datarefname);
+		    fflush(logfileptr);
+		  }
 		}
 		recv_left -= sizeof(int);
 	      } else {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i command %s incomplete. Discarding. \n", clntSock, offset, clientdata[offset].datarefname);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i command %s incomplete. Discarding. \n",
+			  clntSock, offset, clientdata[offset].datarefname);
+		  fflush(logfileptr);
+		}
 		recv_left = 0;
 	      }
 	      break;
@@ -407,7 +527,11 @@ void receive_client(int clntSock) {
 		  memcpy(&datai,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
 		  if (datai != INT_MISS) {
 		    memcpy(clientdata[offset].data,&datai,sizeof(int));
-		    if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i command %s: %i \n", clntSock, offset, clientdata[offset].datarefname, datai);
+		    if (verbose > 1) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received data for offset %i command %s: %i \n",
+			      clntSock, offset, clientdata[offset].datarefname, datai);
+		      fflush(logfileptr);
+		    }
 		    if (datai == 1) {
 		      XPLMCommandBegin(clientdata[offset].dataref);
 		    } else {
@@ -415,11 +539,19 @@ void receive_client(int clntSock) {
 		    }
 		  }
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i command %s not ready. Discarding data. \n", clntSock, offset, clientdata[offset].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received offset %i command %s not ready. Discarding data. \n",
+			    clntSock, offset, clientdata[offset].datarefname);
+		    fflush(logfileptr);
+		  }
 		}
 		recv_left -= sizeof(int);
 	      } else {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i command %s incomplete. Discarding. \n", clntSock, offset, clientdata[offset].datarefname);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Data stream for offset %i command %s incomplete. Discarding. \n",
+			  clntSock, offset, clientdata[offset].datarefname);
+		  fflush(logfileptr);
+		}
 		recv_left = 0;
 	      }
 	      break;
@@ -435,34 +567,58 @@ void receive_client(int clntSock) {
 	  
       /* dataref link request */
       if ((first >= MARK_LINK) && (first < MARK_UNLINK)) {
-	if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received LINK Marker \n",clntSock);
+	if (verbose > 1) {
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received LINK Marker \n",clntSock);
+	  fflush(logfileptr);
+	}
 	    
 	if (recv_left >= (4*sizeof(int)+sizeof(datarefname)+sizeof(clientname))) {
 	  offset = first - MARK_LINK;
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Offset: %i \n",clntSock,offset);
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Offset: %i \n",clntSock,offset);
+	    fflush(logfileptr);
+	  }
 	      
 	  memcpy(&type,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : data type: %i \n",clntSock,type);
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : data type: %i \n",clntSock,type);
+	    fflush(logfileptr);
+	  }
 	  recv_left -= sizeof(int);
 	      
 	  memcpy(&nelements,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : number of elements: %i \n",clntSock,nelements);
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : number of elements: %i \n",clntSock,nelements);
+	    fflush(logfileptr);
+	  }
 	  recv_left -= sizeof(int);
 	      
 	  memcpy(&index,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : index of element: %i \n",clntSock,index);
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : index of element: %i \n",clntSock,index);
+	    fflush(logfileptr);
+	  }
 	  recv_left -= sizeof(int);
 	      
 	  memcpy(&precision,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : precision: %i \n",clntSock,precision);
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : precision: %i \n",clntSock,precision);
+	    fflush(logfileptr);
+	  }
 	  recv_left -= sizeof(int);
 	      
 	  memcpy(&datarefname,&recvBuffer[recvMsgSize-recv_left],sizeof(datarefname));
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : dataref/command: %s \n",clntSock,datarefname);
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : dataref/command: %s \n",clntSock,datarefname);
+	    fflush(logfileptr);
+	  }
 	  recv_left -= sizeof(datarefname);
 	      
 	  memcpy(&clientname,&recvBuffer[recvMsgSize-recv_left],sizeof(clientname));
-	  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : client name: %s \n",clntSock, clientname);
+	  if (verbose > 1) {
+	    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : client name: %s \n",clntSock, clientname);
+	    fflush(logfileptr);
+	  }
 	  recv_left -= sizeof(clientname);
 	      
 	  /* allocate data */
@@ -612,8 +768,11 @@ void send_client(int clntSock) {
 	    /* validity of dataref checked. Send result to client */
 	    if ((send_left+sizeof(int)+sizeof(clientdata[i].datarefname)) <= TCPBUFSIZE) {
 
-	      if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : sending link status: %s \n",
-				       clntSock, clientdata[i].datarefname);
+	      if (verbose > 1) {
+		fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : sending link status: %s \n",
+			clntSock, clientdata[i].datarefname);
+		fflush(logfileptr);
+	      }	    
 	      
 	      first = MARK_LINK + i;
 	      memcpy(&sendBuffer[send_left],&first,sizeof(int));
@@ -629,11 +788,18 @@ void send_client(int clntSock) {
 	      } else {
 		/* deallocate data for invalid or inexistent dataref */
 		if (deallocate_clientdata(i) != 0) {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : failed to deallocate offset %i \n",clntSock, i);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : failed to deallocate offset %i \n",clntSock, i);
+		    fflush(logfileptr);
+		  }	    
 		}
 	      }
 	    } else {
-	      if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending link offset %i dataref/command %s \n", clntSock, i, clientdata[i].datarefname);
+	      if (verbose > 0) {
+		fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending link offset %i dataref/command %s \n",
+			clntSock, i, clientdata[i].datarefname);
+		fflush(logfileptr);
+	      }	    
 	    }
 	    break;
 
@@ -648,15 +814,25 @@ void send_client(int clntSock) {
 	      memcpy(&sendBuffer[send_left],&clientdata[i].datarefname,sizeof(clientdata[i].datarefname));
 	      send_left += sizeof(clientdata[i].datarefname);
 	      
-	      if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : confirming unlinking dataref/command: %s \n", clntSock, clientdata[i].datarefname);
+	      if (verbose > 1) {
+		fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : confirming unlinking dataref/command: %s \n", clntSock, clientdata[i].datarefname);
+		fflush(logfileptr);
+	      }	    
 	      /* deallocate data */
 	      if (deallocate_clientdata(i) != 0) {
-		if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : failed to deallocate offset %i \n",clntSock, i);
+		if (verbose > 0) {
+		  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : failed to deallocate offset %i \n",clntSock, i);
+		  fflush(logfileptr);
+		}	    
 	      }
 	      count_clientdata();
 
 	    } else {
-	      if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending unlink offset %i dataref/command %s \n",clntSock, i, clientdata[i].datarefname);
+	      if (verbose > 0) {
+		fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending unlink offset %i dataref/command %s \n",
+			clntSock, i, clientdata[i].datarefname);
+		fflush(logfileptr);
+	      }	    
 	    }
 	    break;
 
@@ -689,9 +865,17 @@ void send_client(int clntSock) {
 		  memcpy(clientdata[i].data,&datai,sizeof(int));
 		  send_left += sizeof(int);
 		  
-		  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s: %i \n", clntSock, i, clientdata[i].datarefname, datai);
+		  if (verbose > 1) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s: %i \n",
+			    clntSock, i, clientdata[i].datarefname, datai);
+		    fflush(logfileptr);
+		  }	    
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",clntSock, i, clientdata[i].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",
+			    clntSock, i, clientdata[i].datarefname);
+		    fflush(logfileptr);
+		  }	    
 		}
 	      }
 	      break;
@@ -712,9 +896,17 @@ void send_client(int clntSock) {
 		  memcpy(clientdata[i].data,&dataf,sizeof(float));
 		  send_left += sizeof(float);
 		  
-		  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s: %f \n", clntSock, i, clientdata[i].datarefname, dataf);
+		  if (verbose > 1) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s: %f \n",
+			    clntSock, i, clientdata[i].datarefname, dataf);
+		    fflush(logfileptr);
+		  }	    
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",clntSock, i, clientdata[i].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",
+			    clntSock, i, clientdata[i].datarefname);
+		    fflush(logfileptr);
+		  }	    
 		}
 	      }
 	      break;
@@ -735,9 +927,17 @@ void send_client(int clntSock) {
 		  memcpy(clientdata[i].data,&datad,sizeof(double));
 		  send_left += sizeof(double);
 		  
-		  if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s: %f \n", clntSock, i, clientdata[i].datarefname, datad);
+		  if (verbose > 1) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s: %f \n",
+			    clntSock, i, clientdata[i].datarefname, datad);
+		    fflush(logfileptr);
+		  }	    		    
 		} else {
-		  if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n", clntSock, i, clientdata[i].datarefname);
+		  if (verbose > 0) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",
+			    clntSock, i, clientdata[i].datarefname);
+		    fflush(logfileptr);
+		  }	    
 		}
 	      }
 	      break;
@@ -758,7 +958,9 @@ void send_client(int clntSock) {
 		  }
 		  if ((changed == 1) && (verbose > 1)) {
 		    for (j=0;j<nelements;j++) {
-		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %f \n", clntSock, i, clientdata[i].datarefname,j,datavf[j]);
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %f \n",
+			      clntSock, i, clientdata[i].datarefname,j,datavf[j]);
+		      fflush(logfileptr);
 		    }
 		  }
 		} else {
@@ -768,8 +970,11 @@ void send_client(int clntSock) {
 		  } else {
 		    if ((int) roundf(*(float *) clientdata[i].data * scale) != (int) roundf(*datavf * scale)) changed = 1;
 		  }
-		  if ((changed == 1) && (verbose > 1)) 
-		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %f \n", clntSock, i, clientdata[i].datarefname, clientdata[i].index, *datavf);
+		  if ((changed == 1) && (verbose > 1)) {
+		    fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %f \n",
+			    clntSock, i, clientdata[i].datarefname, clientdata[i].index, *datavf);
+		    fflush(logfileptr);
+		  }
 		}
 
 		if (changed == 1) {
@@ -783,7 +988,11 @@ void send_client(int clntSock) {
 		    send_left += nelements*sizeof(float);
 		    
 		  } else {
-		    if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",clntSock,i, clientdata[i].datarefname);
+		    if (verbose > 0) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",
+			      clntSock,i, clientdata[i].datarefname);
+		      fflush(logfileptr);
+		    }
 		  }
 		}
 	      }
@@ -805,7 +1014,9 @@ void send_client(int clntSock) {
 		  }
 		  if ((changed == 1) && (verbose > 1)) {
 		    for (j=0;j<nelements;j++) {
-		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %i \n", clntSock, i, clientdata[i].datarefname,j,datavi[j]);
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %i \n",
+			      clntSock, i, clientdata[i].datarefname,j,datavi[j]);
+		      fflush(logfileptr);
 		    }
 		  }
 
@@ -813,7 +1024,11 @@ void send_client(int clntSock) {
 		  retval = XPLMGetDatavi(clientdata[i].dataref,datavi,clientdata[i].index,1);
 		  if (*(int *) clientdata[i].data != *datavi) {
 		    changed = 1;
-		    if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %i \n", clntSock, i, clientdata[i].datarefname, clientdata[i].index, *datavi);
+		    if (verbose > 1) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %i \n",
+			      clntSock, i, clientdata[i].datarefname, clientdata[i].index, *datavi);
+		      fflush(logfileptr);
+		    }
 		  }
 		}
 
@@ -828,8 +1043,11 @@ void send_client(int clntSock) {
 		    send_left += nelements*sizeof(int);
 		    
 		  } else {
-		    if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",
+		    if (verbose > 0) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",
 					     clntSock,i, clientdata[i].datarefname);
+		      fflush(logfileptr);
+		    }
 		  }
 		}
 	      }
@@ -851,14 +1069,20 @@ void send_client(int clntSock) {
 		  }
 		  if ((changed == 1) && (verbose > 1)) {
 		    for (j=0;j<nelements;j++) {
-		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %u %i %i \n", clntSock,i, clientdata[i].datarefname,j,datab[j],send_left,TCPBUFSIZE);
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %u \n",
+			      clntSock,i, clientdata[i].datarefname,j,datab[j]);
+		      fflush(logfileptr);
 		    }
 		  }
 		} else {
 		  retval = XPLMGetDatab(clientdata[i].dataref,datab,clientdata[i].index,1);
 		  if (*(unsigned char *) clientdata[i].data != *datab) {
 		    changed = 1;
-		    if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %u \n", clntSock, i, clientdata[i].datarefname, clientdata[i].index, *datab);
+		    if (verbose > 1) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Sending data for offset %i dataref %s index %i: %u \n",
+			      clntSock, i, clientdata[i].datarefname, clientdata[i].index, *datab);
+		      fflush(logfileptr);
+		    }
 		  }
 		}
 
@@ -873,7 +1097,11 @@ void send_client(int clntSock) {
 		    send_left += nelements*sizeof(unsigned char);
 		    
 		  } else {
-		    if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",clntSock,i, clientdata[i].datarefname);
+		    if (verbose > 0) {
+		      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TCP buffer overflow sending data for offset %i dataref %s \n",
+			      clntSock,i, clientdata[i].datarefname);
+		      fflush(logfileptr);
+		    }
 		  }
 		}
 	      }
@@ -908,8 +1136,11 @@ void send_client(int clntSock) {
 	memcpy(&sendBuffer[send_left],&datai,sizeof(int));
 	send_left += sizeof(int);
 
-	if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TOTAL Sending %i bytes \n",
-				 clntSock,send_left);	      
+	if (verbose > 1) {
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : TOTAL Sending %i bytes \n",
+		  clntSock,send_left);	      
+	  fflush(logfileptr);
+	}
 	
 	message_ptr = sendBuffer;
 	while ((send_left > 0) && (socketStatus != status_Error)) {
@@ -924,21 +1155,30 @@ void send_client(int clntSock) {
 #else
 	    if (errno == EWOULDBLOCK) {
 #endif
-	      if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Caught EAGAIN signal sending data.\n",
-				       clntSock);
+	      if (verbose > 0) {
+		fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Caught EAGAIN signal sending data.\n",
+			clntSock);
+		fflush(logfileptr);
+	      }
 	    } else {
-	      if (verbose > 0) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Error sending data. \n", 
-				       clntSock);
+	      if (verbose > 0) {
+		fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Error sending data. \n", 
+			clntSock);
+		fflush(logfileptr);
+	      }
 	      socketStatus = status_Error;	/* signal a transmission error */
 	    }
 	  } else {
-	    if (verbose > 1) fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Partial Sending %i bytes \n",
-				     clntSock,sendMsgSize);	      
+	    if (verbose > 1) {
+	      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Partial Sending %i bytes \n",
+		      clntSock,sendMsgSize);	      
+	      fflush(logfileptr);
+	    }
 	    send_left -= sendMsgSize;
 	    message_ptr += sendMsgSize;
 	  }
 	} 
-	
+	  
       } /* data to send */
 
     } /* clientdata structure allocated */
