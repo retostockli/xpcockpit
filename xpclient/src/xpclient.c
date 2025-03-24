@@ -67,7 +67,7 @@ int main (int argc,char **argv)
   // the plane's latitude
   double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
   // the EGT of engine 0
-  float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, 0);
+  float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, -1);
   // the EGT of engine 1
   float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 16, 1, 0);
  

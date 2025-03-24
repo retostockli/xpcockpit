@@ -468,19 +468,26 @@ void receive_client(int clntSock) {
 	  /* allocate data */
 	  if (allocate_clientdata(offset, type, nelements, index, precision, datarefname) == 0) {
 
-	    /* a custom dataref (not from X-Plane) which is shared from this plugin to other plugins and registered clients
-	       has to start with the package name: "xpserver" */
+	    /* a custom dataref (not from X-Plane) which is shared from this plugin
+	       to other plugins and registered clients has to start with the package name: "xpserver" */
 	    if (!strncmp(datarefname,PACKAGE_NAME,strlen(PACKAGE_NAME))) {
-	      /* allocate custom dataref in X-Plane */
-	      if (allocate_customdata(type, nelements, datarefname)!=0) {
+	      /* allocate custom dataref in X-Plane and check if it matches
+	       already allocated custom dataref structure (e.g. type, precision etc.) */
+	      retval = allocate_customdata(type, nelements, datarefname);
+	      if (retval == 0) {
+		/* checking client dataref info for consistency with x-plane dataref */
+		/* custom dataref will be handled like x-plane dataref */
+		retval = check_clientdata(offset);
+	      } else if (retval == 2) {
 		snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname),
-			 "Failed to create custom dataref");
+			 "Custom Dataref differs in # elements %i or Type %i from already allocated Custom Dataref",
+			 clientdata[offset].nelements,clientdata[offset].type);
 	      }
+	    } else {
+	      /* checking client dataref info for consistency with x-plane dataref */
+	      retval = check_clientdata(offset);
 	    }
-	    
-	    /* checking client dataref info for consistency with x-plane dataref */
-	    retval = check_clientdata(offset);
-
+	      
 	    if (retval == 2) {
 	      /* check failed, unset dataref pointer */
 	      /* dataref name will now contain an error message */

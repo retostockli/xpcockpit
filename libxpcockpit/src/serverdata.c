@@ -230,7 +230,7 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
 
   /* check for zero or negative number of elements elements */
   if (nelements < 1) {
-    printf("Number of elements < 1 for dataref %s \n",datarefname);
+    printf("\033[1;31m Number of elements < 1 for dataref %s \033[0m \n",datarefname);
     return NULL;
   }
  
@@ -238,19 +238,19 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
   /* index of 0 .. nelements-1 : select individual element of array */
   /* index of -1 : transfer all elements of array */
   if (index < -1) {
-    printf("Index of element < -1 for dataref %s \n",datarefname);
+    printf("\033[1;31m Index of element < -1 for dataref %s \033[0m \n",datarefname);
     return NULL;
   }
 
   /* check for too high elment index */
   if (index >= nelements) {
-    printf("Index of element > %i for dataref %s \n",nelements,datarefname);
+    printf("\033[1;31m Index of element > %i for dataref %s \033[0m \n",nelements,datarefname);
     return NULL;
   }
 
   /* check for zero length string in datarefname */
   if (!strcmp(datarefname,"")) {
-    printf("Dataref has no name. Not created \n");      
+    printf("\033[1;31m Dataref has no name. Not created \033[0m \n");      
     return NULL;
   }
 
@@ -261,7 +261,8 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
   }
 
   if (((precision > 10) || (precision < -10)) && (precision != INT_MISS)) {
-    printf("Precision %i for dataref %s outside of range -10..10 Setting to missing \n",precision, datarefname);
+    printf("\033[1;31m Precision %i for dataref %s outside of range -10..10 Setting to missing \033[0m \n",
+	   precision, datarefname);
     precision = INT_MISS;
   }
 
@@ -350,7 +351,7 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
       numalloc++;
       void *tmp = realloc(serverdata, sizeof(serverdata_struct)*numalloc);
       if (tmp == NULL) { 
-	printf("Memory allocation error when allocating %i data elements \n",numalloc);
+	printf("\033[1;31m Memory allocation error when allocating %i data elements \033[0m \n",numalloc);
 	numalloc--;
 	return NULL;
       } else {
@@ -435,14 +436,14 @@ void *link_dataref(const char datarefname[], int type, int nelements, int index,
 	*((int*) serverdata[i].data_old) = INT_MISS;
       break;
     default:
-      printf("Unknown data type for dataref %s \n",datarefname);
+      printf("\033[1;31m Unknown data type for dataref %s \033[0m \n",datarefname);
       serverdata[i].data = NULL;
       serverdata[i].data_old = NULL;
       break;
     }
 
     if ((serverdata[i].data == NULL) || (serverdata[i].data_old == NULL)) {
-      printf("Memory allocation error for dataref %s \n",datarefname);
+      printf("\033[1;31m Memory allocation error for dataref %s \033[0m \n",datarefname);
       return NULL;
     } else {
       memset(serverdata[i].datarefname,0,sizeof(serverdata[i].datarefname));

@@ -118,7 +118,7 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
 	fprintf(logfileptr,"Requested type %i does not match type %i for custom dataref %s \n",
 		type,customdata[offset].type,datarefname);
       }
-      return -1;
+      return 2;
     }
 
     if (nelements != customdata[offset].nelements) {
@@ -127,7 +127,7 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
 		nelements,customdata[offset].nelements,datarefname);
 	fflush(logfileptr);
       }	
-      return -1;
+      return 2;
     }
  
     if (verbose > 0) {
