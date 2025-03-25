@@ -381,6 +381,7 @@ int receive_xpserver(void) {
   int *datavi;
   unsigned char *datab;
   int disconnected;
+  int num_partial;
 
   /* update interval counter for up/down states */
   interval_counter++;
@@ -391,16 +392,17 @@ int receive_xpserver(void) {
   disconnected = 0;
   datai = 0;
   recvMsgSize = 0;
-  recvBuffer[recvMsgSize] = 0;
+  recvBuffer[0] = 0;
   message_ptr = recvBuffer;
-
+  num_partial = 0;
+  
   /* reset received flag of datarefs */
   reset_received();
 
   while (socketStatus == status_Connected) {
     
     /* Check for new data from server */
-    recv_left = recv(clntSock, message_ptr, TCPBUFSIZE, 0);
+    recv_left = recv(clntSock, message_ptr, TCPBUFSIZE-recvMsgSize, 0);
 #ifdef WIN
     int wsaerr = WSAGetLastError();
 #endif
@@ -416,778 +418,781 @@ int receive_xpserver(void) {
 #ifdef WIN
       if (wsaerr == WSAEWOULDBLOCK) { // just no data yet ...
 #else
-	if (errno == EWOULDBLOCK) { // just no data yet ...
+      if (errno == EWOULDBLOCK) { // just no data yet ...
 #endif
-	  if (handleserver_verbose > 3) printf("HANDLESERVER: Client Socket: no data yet. \n");
-	  if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
-	} else {
+	if (handleserver_verbose > 3) printf("HANDLESERVER: Client Socket: no data yet. \n");
+	if (recvMsgSize == 0) break; /* else continue waiting for the end of the packet */
+      } else {
 #ifdef WIN
-	  if ((wsaerr == WSAECONNABORTED) || (wsaerr == WSAECONNREFUSED) ||
-	      (wsaerr == WSAECONNRESET)   || (wsaerr == WSAEHOSTUNREACH) ||
-	      (wsaerr == WSAENETDOWN)     || (wsaerr == WSAENETRESET)    ||
-	      (wsaerr == WSAENETUNREACH)  || (wsaerr == WSAETIMEDOUT)) { // now we have a network status
+	if ((wsaerr == WSAECONNABORTED) || (wsaerr == WSAECONNREFUSED) ||
+	    (wsaerr == WSAECONNRESET)   || (wsaerr == WSAEHOSTUNREACH) ||
+	    (wsaerr == WSAENETDOWN)     || (wsaerr == WSAENETRESET)    ||
+	    (wsaerr == WSAENETUNREACH)  || (wsaerr == WSAETIMEDOUT)) { // now we have a network status
 #else
-	    if ((errno == ECONNABORTED) || (errno == ECONNREFUSED) ||
-		(errno == ECONNRESET)   || (errno == EHOSTUNREACH) ||
-		(errno == ENETDOWN)     || (errno == ENETRESET)    ||
-		(errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
+	if ((errno == ECONNABORTED) || (errno == ECONNREFUSED) ||
+	    (errno == ECONNRESET)   || (errno == EHOSTUNREACH) ||
+	    (errno == ENETDOWN)     || (errno == ENETRESET)    ||
+	    (errno == ENETUNREACH)  || (errno == ETIMEDOUT)) { // now we have a network status
 #endif
-	      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane disconnected without notice from client socket. Error! \n");
-	      socketStatus = status_Init;
-	      disconnected = 1;
-	      recv_left = 0;
-	      recvMsgSize = 0;
-	      break;
-	    } else { // here we have a real error
-	      if (handleserver_verbose > 0) printf("HANDLESERVER: Client Socket Error. Received %i bytes \n",recv_left);
-	      socketStatus = status_Error;
-	      recv_left = 0; 
-	      recvMsgSize = 0;
-	      break;
-	    } 
-	  }
+	  if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane disconnected without notice from client socket. Error! \n");
+	  socketStatus = status_Init;
+	  disconnected = 1;
+	  recv_left = 0;
+	  recvMsgSize = 0;
+	  break;
+	} else { // here we have a real error
+	  if (handleserver_verbose > 0) printf("HANDLESERVER: Client Socket Error. Received %i bytes \n",recv_left);
+	  socketStatus = status_Error;
+	  recv_left = 0; 
+	  recvMsgSize = 0;
+	  break;
 	} 
+      }
+    } 
 
-	if (recv_left > 0) {
-
-	  /* augment receive pointer and total size */
-	  recvMsgSize += recv_left;
-	  message_ptr += recv_left;
+    if (recv_left > 0) {
+      
+      /* augment receive pointer and total size */
+      recvMsgSize += recv_left;
+      message_ptr += recv_left;
 
       
-	  /* check last transmitted value: is it end of transmission? */
-	  memcpy(&datai,&recvBuffer[recvMsgSize-sizeof(int)],sizeof(int));
-	  if ((datai == MARK_EOT) || (datai == MARK_DISCONNECT)) {	
-	    /* received full message with EOT or DISCONNECT marker at the end */
-	    if (handleserver_verbose > 1) printf("HANDLESERVER: Received Total %i bytes \n",recvMsgSize);
-	    break;
-	  } else {
-	    /* only partial message received */
-	    if (handleserver_verbose > 1) printf("HANDLESERVER: Received Partial %i bytes \n",recv_left);
-	  }
+      /* check last transmitted value: is it end of transmission? */
+      memcpy(&datai,&recvBuffer[recvMsgSize-sizeof(int)],sizeof(int));
+      if ((datai == MARK_EOT) || (datai == MARK_DISCONNECT)) {	
+	/* received full message with EOT or DISCONNECT marker at the end */
+	if (handleserver_verbose > 1) printf("HANDLESERVER: Received Total %i bytes \n",recvMsgSize);
+	break;
+      } else {
+	/* only partial message received */
+	num_partial++;
+	if (handleserver_verbose > 1) printf("HANDLESERVER: Received Partial Message %i with %i bytes \n",
+					     num_partial,recv_left);
+      }
       
-	}
-    
-      } /* while connected and data coming in (else break the loop) */
-  
-      /*  received a complete transmission */
-      if (recvMsgSize > 0)  {
-    
-	recv_left = recvMsgSize;
-
-	while (recv_left > 0) {
-
-	  /* decode first integer: type of transmission */
-	  memcpy(&first,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
-	  recv_left -= sizeof(int);
-	  
-	  if ((first >= MARK_DATA) && (first < MARK_LINK)) {
-	    offset = first - MARK_DATA;
-
-	    if (serverdata != NULL) {
-
-	      if (offset<numalloc) {   
-
-		if (serverdata[offset].index == -1) {
-		  nelements = serverdata[offset].nelements;
-		} else {
-		  nelements = 1;
-		}
-
-		serverdata[offset].received = 1;
-		serverdata[offset].nrecv++;
-	    
-		switch (serverdata[offset].type) {
-		case XPTYPE_INT:		
-		  if (recv_left >= sizeof(int)) {
-		    if (serverdata[offset].status == XPSTATUS_VALID) {
-		      memcpy(&datai,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
-		      if (datai != INT_MISS) {
-			memcpy(serverdata[offset].data,&datai,sizeof(int));
-			memcpy(serverdata[offset].data_old,&datai,sizeof(int));
-			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %i \n",
-						offset,serverdata[offset].datarefname,datai);
-		      }
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
-					      offset,serverdata[offset].datarefname);
-		    }
-		    recv_left -= sizeof(int);
-		  } else {
-		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
-		    recv_left = 0;
-		  }
-		  break;
-		case XPTYPE_FLT:
-		  if (recv_left >= sizeof(float)) {
-		    if (serverdata[offset].status == XPSTATUS_VALID) {
-		      memcpy(&dataf,&recvBuffer[recvMsgSize-recv_left],sizeof(float));
-		      if (dataf != FLT_MISS) {
-			memcpy(serverdata[offset].data,&dataf,sizeof(float));
-			memcpy(serverdata[offset].data_old,&dataf,sizeof(float));
-			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %f \n",
-						offset,serverdata[offset].datarefname,dataf);
-		      }
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
-					      offset,serverdata[offset].datarefname);
-		    }
-		    recv_left -= sizeof(float);
-		  } else {
-		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
-		    recv_left = 0;
-		  }
-		  break;
-		case XPTYPE_DBL:
-		  if (recv_left >= sizeof(double)) {
-		    if (serverdata[offset].status == XPSTATUS_VALID) {
-		      memcpy(&datad,&recvBuffer[recvMsgSize-recv_left],sizeof(double));
-		      if (datad != DBL_MISS) {
-			memcpy(serverdata[offset].data,&datad,sizeof(double));
-			memcpy(serverdata[offset].data_old,&datad,sizeof(double));
-			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %f \n",
-						offset,serverdata[offset].datarefname, datad);
-		      }
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
-					      offset,serverdata[offset].datarefname);
-		    }
-		    recv_left -= sizeof(double);
-		  } else {
-		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
-		    recv_left = 0;
-		  }
-		  break;
-		case XPTYPE_FLT_ARR:
-		  if (recv_left >= (nelements*sizeof(float))) {
-		    if (serverdata[offset].status == XPSTATUS_VALID) {
-		      datavf = malloc(nelements*sizeof(float));
-		      if (datavf != NULL) {
-			memcpy(datavf,&recvBuffer[recvMsgSize-recv_left],nelements*sizeof(float));
-			if (serverdata[offset].index == -1) {
-			  for (j=0;j<nelements;j++) {
-			    if (datavf[j] != FLT_MISS) {
-			      memcpy(&((float*) serverdata[offset].data)[j],&datavf[j],sizeof(float));
-			      memcpy(&((float*) serverdata[offset].data_old)[j],&datavf[j],sizeof(float));
-			      if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %f \n",
-						      offset,serverdata[offset].datarefname, j, datavf[j]);
-			    }
-			  }
-			} else {
-			  if (*datavf != FLT_MISS) {
-			    memcpy(serverdata[offset].data,datavf,sizeof(float));
-			    memcpy(serverdata[offset].data_old,datavf,sizeof(float));
-			    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %f \n",
-						    offset,serverdata[offset].datarefname, serverdata[offset].index, *datavf);
-			  }
-			}
-		      }
-		      free(datavf);
-		      datavf=NULL;
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
-					      offset, serverdata[offset].datarefname);
-		    }
-		    recv_left -= nelements*sizeof(float);
-		  } else {
-		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
-					    offset, serverdata[offset].datarefname);
-		    recv_left = 0;
-		  }
-		  break;
-		case XPTYPE_INT_ARR:
-		  if (recv_left >= (nelements*sizeof(int))) {
-		    if (serverdata[offset].status == XPSTATUS_VALID) {
-		      datavi = malloc(nelements*sizeof(int));
-		      if (datavi != NULL) {
-			memcpy(datavi,&recvBuffer[recvMsgSize-recv_left],nelements*sizeof(int));
-			if (serverdata[offset].index == -1) {
-			  for (j=0;j<nelements;j++) {
-			    if (datavi[j] != INT_MISS) {
-			      memcpy(&((int*) serverdata[offset].data)[j],&datavi[j],sizeof(int));
-			      memcpy(&((int*) serverdata[offset].data_old)[j],&datavi[j],sizeof(int));
-			      if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %i \n",
-						      offset, serverdata[offset].datarefname, j, datavi[j]);
-			    }
-			  }
-			} else {
-			  if (*datavi != INT_MISS) {
-			    memcpy(serverdata[offset].data,datavi,sizeof(int));
-			    memcpy(serverdata[offset].data_old,datavi,sizeof(int));
-			    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %i \n",
-						    offset, serverdata[offset].datarefname, serverdata[offset].index, *datavi);
-			  }
-			}
-		      }
-		      free(datavi);
-		      datavf=NULL;
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
-					      offset, serverdata[offset].datarefname);
-		    }
-		    recv_left -= nelements*sizeof(int);
-		  } else {
-		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
-					    offset, serverdata[offset].datarefname);
-		    recv_left = 0;
-		  }
-		  break;
-		case XPTYPE_BYTE_ARR:
-		  if (recv_left >= (nelements*sizeof(unsigned char))) {
-		    if (serverdata[offset].status == XPSTATUS_VALID) {
-		      datab = malloc(nelements*sizeof(unsigned char));
-		      if (datab != NULL) {
-			memcpy(datab,&recvBuffer[recvMsgSize-recv_left],nelements*sizeof(unsigned char));
-			if (serverdata[offset].index == -1) {
-			  for (j=0;j<nelements;j++) {
-			    memcpy(&((unsigned char*) serverdata[offset].data)[j],&datab[j],sizeof(unsigned char));
-			    memcpy(&((unsigned char*) serverdata[offset].data_old)[j],&datab[j],sizeof(unsigned char));
-			    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %u \n",
-						    offset, serverdata[offset].datarefname, j, datab[j]);
-			  }
-			} else {
-			  memcpy(serverdata[offset].data,datab,sizeof(unsigned char));
-			  memcpy(serverdata[offset].data_old,datab,sizeof(unsigned char));
-			  if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %u \n",
-						  offset, serverdata[offset].datarefname, serverdata[offset].index, *datab);
-			}
-		      }
-		      free(datab);
-		      datab=NULL;
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
-					      offset, serverdata[offset].datarefname );
-		    }
-		    recv_left -= nelements*sizeof(unsigned char);
-		  } else {
-		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
-					    offset, serverdata[offset].datarefname);
-		    recv_left = 0;
-		  }
-		  break;
-		case XPTYPE_CMD_ONCE:
-		case XPTYPE_CMD_HOLD:
-		  if (recv_left >= sizeof(int)) {
-		    if (serverdata[offset].status == XPSTATUS_VALID) {
-		      memcpy(&datai,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
-		      if (datai != INT_MISS) {
-			memcpy(serverdata[offset].data,&datai,sizeof(int));
-			memcpy(serverdata[offset].data_old,&datai,sizeof(int));
-			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %i \n",
-						offset,serverdata[offset].datarefname,datai);
-		      }
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
-					      offset,serverdata[offset].datarefname);
-		    }
-		    recv_left -= sizeof(int);
-		  } else {
-		    if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
-		    recv_left = 0;
-		  }
-		  break;
-		default:
-		  break;
-		}
-		  
-	      }
-
-	    }
-
-	  }
-
-	  if ((first >= MARK_LINK) && (first < MARK_UNLINK)) {
-
-	    if (recv_left >= (sizeof(errorstring))) {
-	      offset = first - MARK_LINK;
-
-	      memcpy(&errorstring,&recvBuffer[recvMsgSize-recv_left],sizeof(errorstring));
-	      recv_left -= sizeof(errorstring);
-	      
-	      if (strncmp(serverdata[offset].datarefname,errorstring,sizeof(errorstring))) {
-		if (handleserver_verbose > 0) {
-		  printf("\033[1;31m");
-		  printf("HANDLESERVER: X-Plane cannot link offset %i dataref %s: %s \n",
-			 offset,serverdata[offset].datarefname,errorstring);
-		  printf("\033[0m");
-		}
-	      } else {
-		if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane linked offset %i dataref %s \n",
-					offset, serverdata[offset].datarefname);
-
-		serverdata[offset].status = XPSTATUS_VALID;
-		serverdata[offset].received = 1;
-		count_dataref();
-	      }
-
-	    } else {
-	      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane link confirmation for offset %i dataref %s incomplete. \n",
-				      offset, serverdata[offset].datarefname);
-	      recv_left = 0;
-	    }
-	    
-	  }
-
-	  if ((first >= MARK_UNLINK) && (first < MARK_EOT)) {
-
-	    if (recv_left >= (sizeof(errorstring))) {
-	      offset = first - MARK_UNLINK;
-	      
-	      memcpy(&errorstring,&recvBuffer[recvMsgSize-recv_left],sizeof(errorstring));
-	      recv_left -= sizeof(errorstring);
-	      if (strncmp(serverdata[offset].datarefname,errorstring,sizeof(errorstring))) {
-		if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane cannot unlink offset %i dataref %s: %s \n",
-					offset,serverdata[offset].datarefname,errorstring);
-	      } else {
-		if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane unlinked offset %i dataref %s \n",
-					offset, serverdata[offset].datarefname);
-		memset(serverdata[offset].datarefname,0,sizeof(serverdata[offset].datarefname));
-
-		serverdata[offset].status = XPSTATUS_UNINITIALIZED;
-		serverdata[offset].received = 1;
-		count_dataref();
-	      }
-
-	    } else {
-	      if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane unlink confirmation for offset %i dataref %s incomplete. \n",
-				      offset, serverdata[offset].datarefname);
-	      recv_left = 0;
-	    }
-	    
-	  }
-
-
-	  if (first == MARK_EOT) {
-	    if (handleserver_verbose > 1) {printf("HANDLESERVER: Received EOT Marker \n"); fflush(stdout);}
-	  }
-
-	  if (first == MARK_DISCONNECT) {
-	    if (handleserver_verbose > 0) printf("HANDLESERVER: Received Disconnect Marker \n");
-	    
-	    socketStatus = status_Init;
-	    disconnected = 1;
-	  }
-	  
-	} /* elements present in receive buffer */
-	
-      } /* if client connected to server */
-
-
-      /* disconnect happened during receive call */
-      if (disconnected == 1) {
-    
-	/* reset x-plane data status to allocated */
-	for (i=0;i<numalloc;i++) {
-	  if (strcmp("",serverdata[i].datarefname)) {
-	    serverdata[i].status = XPSTATUS_ALLOC;
-	  }
-	}
-	/* valid dataref, check status */
-    
-#ifdef WIN
-	closesocket(clntSock);
-#else
-	close(clntSock); 
-#endif
-	if (create_tcpip_socket() < 0) {
-	  if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
-	  recvMsgSize = -123;
-	}
-    
-      } 
-
-      /* count number of received datarefs */
-      count_received();
-
-      return recvMsgSize;
     }
-
-    /* send data stream to X-Plane TCP/IP server */
-    int send_xpserver(void) {
-
-      //  struct timeval tval_before, tval_after, tval_result;
-  
-      int sendMsgSize;  /* size of sent message */
-      int send_left;
-      char *message_ptr;
-      int i,j;
-      int first;
-      int nelements;
-      int changed;
-      float scale;
-  
-      int datai;
-  
-      /* initialize or send updated data to X-Plane */
-      if ((socketStatus == status_Connected)) { 
     
+  } /* while connected and data coming in (else break the loop) */
+  
+  /*  received a complete transmission */
+  if (recvMsgSize > 0)  {
+    
+    recv_left = recvMsgSize;
+    
+    while (recv_left > 0) {
+
+      /* decode first integer: type of transmission */
+      memcpy(&first,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
+      recv_left -= sizeof(int);
+	  
+      if ((first >= MARK_DATA) && (first < MARK_LINK)) {
+	offset = first - MARK_DATA;
+
 	if (serverdata != NULL) {
-	  /* loop through datarefs */
 
-	  //gettimeofday(&tval_before, NULL);
-     
-	  send_left = 0;
-      
-	  for (i=0;i<numalloc;i++) {
+	  if (offset<numalloc) {   
 
-	    if (strcmp("",serverdata[i].datarefname)) {
-	      /* valid dataref, check status */
-	      /* check for buffer overflow! */
-	  
-	      switch (serverdata[i].status) {
+	    if (serverdata[offset].index == -1) {
+	      nelements = serverdata[offset].nelements;
+	    } else {
+	      nelements = 1;
+	    }
 
-	      case XPSTATUS_ALLOC: 
-		/* serverdata for dataref allocated: send dataref link command to X-Plane */
-		if ((send_left+6*sizeof(int)+sizeof(serverdata[i].datarefname)+sizeof(clientname)) <= TCPBUFSIZE) {
-		  if (handleserver_verbose > 1) printf("HANDLESERVER: sending definition for offset %i dataref %s \n",i, serverdata[i].datarefname);
-
-		  first = MARK_LINK + i;
-		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		  send_left += sizeof(int);
-	      
-		  memcpy(&sendBuffer[send_left],&serverdata[i].type,sizeof(int));
-		  send_left += sizeof(int);
-	      
-		  memcpy(&sendBuffer[send_left],&serverdata[i].nelements,sizeof(int));
-		  send_left += sizeof(int);
-	      
-		  memcpy(&sendBuffer[send_left],&serverdata[i].index,sizeof(int));
-		  send_left += sizeof(int);
-	      
-		  memcpy(&sendBuffer[send_left],&serverdata[i].precision,sizeof(int));
-		  send_left += sizeof(int);
-	      
-		  memcpy(&sendBuffer[send_left],&serverdata[i].datarefname,sizeof(serverdata[i].datarefname));
-		  send_left += sizeof(serverdata[i].datarefname);
-	      
-		  memcpy(&sendBuffer[send_left],&clientname,sizeof(clientname));
-		  send_left += sizeof(clientname);
-
-		  serverdata[i].status = XPSTATUS_LINK;
-		} else {
-		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending initial offset %i dataref %s \n",
-					  i, serverdata[i].datarefname);
-		}
-		break;
+	    serverdata[offset].received = 1;
+	    serverdata[offset].nrecv++;
 	    
-	      case XPSTATUS_DEALLOC:
-		/* serverdata for dataref deallocated: send dataref unlink command to X-Plane */
-		if ((send_left+sizeof(int)+sizeof(serverdata[i].datarefname)) <= TCPBUFSIZE) {
-		  first = MARK_UNLINK + i;
-		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		  send_left += sizeof(int);
-		  memcpy(&sendBuffer[send_left],&serverdata[i].datarefname,sizeof(serverdata[i].datarefname));
-		  send_left += sizeof(serverdata[i].datarefname);
-	      
-		  serverdata[i].status = XPSTATUS_UNLINK;
+	    switch (serverdata[offset].type) {
+	    case XPTYPE_INT:		
+	      if (recv_left >= sizeof(int)) {
+		if (serverdata[offset].status == XPSTATUS_VALID) {
+		  memcpy(&datai,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
+		  if (datai != INT_MISS) {
+		    memcpy(serverdata[offset].data,&datai,sizeof(int));
+		    memcpy(serverdata[offset].data_old,&datai,sizeof(int));
+		    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %i \n",
+							 offset,serverdata[offset].datarefname,datai);
+		  }
 		} else {
-		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending unlink offset %i dataref %s \n",
-					  i, serverdata[i].datarefname);
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+						       offset,serverdata[offset].datarefname);
 		}
-		break;
-	      case XPSTATUS_VALID:
-
-		changed = 0;
-
-		if (serverdata[i].index == -1) {
-		  nelements = serverdata[i].nelements;
+		recv_left -= sizeof(int);
+	      } else {
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
+		recv_left = 0;
+	      }
+	      break;
+	    case XPTYPE_FLT:
+	      if (recv_left >= sizeof(float)) {
+		if (serverdata[offset].status == XPSTATUS_VALID) {
+		  memcpy(&dataf,&recvBuffer[recvMsgSize-recv_left],sizeof(float));
+		  if (dataf != FLT_MISS) {
+		    memcpy(serverdata[offset].data,&dataf,sizeof(float));
+		    memcpy(serverdata[offset].data_old,&dataf,sizeof(float));
+		    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %f \n",
+							 offset,serverdata[offset].datarefname,dataf);
+		  }
 		} else {
-		  nelements = 1;
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+						       offset,serverdata[offset].datarefname);
 		}
-
-		if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
-		  scale = 1.0;
+		recv_left -= sizeof(float);
+	      } else {
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
+		recv_left = 0;
+	      }
+	      break;
+	    case XPTYPE_DBL:
+	      if (recv_left >= sizeof(double)) {
+		if (serverdata[offset].status == XPSTATUS_VALID) {
+		  memcpy(&datad,&recvBuffer[recvMsgSize-recv_left],sizeof(double));
+		  if (datad != DBL_MISS) {
+		    memcpy(serverdata[offset].data,&datad,sizeof(double));
+		    memcpy(serverdata[offset].data_old,&datad,sizeof(double));
+		    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %f \n",
+							 offset,serverdata[offset].datarefname, datad);
+		  }
 		} else {
-		  scale = pow(10,-serverdata[i].precision);
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+						       offset,serverdata[offset].datarefname);
 		}
-
-		switch (serverdata[i].type) {
-		case XPTYPE_INT:
-		  if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
-		  if (changed == 1) {
-		    if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
-		      first = MARK_DATA + i;
-		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		      send_left += sizeof(int);
-
-		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %i \n", 
-					      i, serverdata[i].datarefname,*(int *) serverdata[i].data);
-		  
-		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
-		      memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(int));
-		      send_left += sizeof(int);
-		  
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
-					      i, serverdata[i].datarefname);
-		    }
-		  }
-		  break;
-		case XPTYPE_FLT:
-		  if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
-		    if (*(float *) serverdata[i].data != *(float *) serverdata[i].data_old) changed = 1;
-		  } else {
-		    if ((int) roundf(*(float *) serverdata[i].data * scale) != (int) roundf(*(float *) serverdata[i].data_old * scale)) changed = 1;
-		  }
-		  if (changed == 1) {
-		    if ((send_left+2*sizeof(int)+sizeof(float)) <= TCPBUFSIZE) {
-		      first = MARK_DATA + i;
-		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		      send_left += sizeof(int);
-
-		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %f \n", 
-					      i, serverdata[i].datarefname, *(float *) serverdata[i].data);
-		  
-		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(float));
-		      memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(float));
-		      send_left += sizeof(float);
-		  
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
-					      i, serverdata[i].datarefname);
-		    }
-		  }
-		  break;
-		case XPTYPE_DBL:
-		  if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
-		    if (*(double *) serverdata[i].data != *(double *) serverdata[i].data_old) changed = 1;
-		  } else {
-		    if ((int) round(*(double *) serverdata[i].data * scale) != (int) round(*(double *) serverdata[i].data_old * scale)) changed = 1;
-		  }
-		  if (changed == 1) {
-		    if ((send_left+2*sizeof(int)+sizeof(double)) <= TCPBUFSIZE) {
-		      first = MARK_DATA + i;
-		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		      send_left += sizeof(int);
-
-		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %f \n", 
-					      i, serverdata[i].datarefname,*(double *) serverdata[i].data);
-
-		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(double));
-		      memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(double));
-		      send_left += sizeof(double);
-		  
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
-					      i, serverdata[i].datarefname);
-		    }
-		  }
-		  break;
-		case XPTYPE_FLT_ARR:
-		  changed = 0;
-		  if (serverdata[i].index == -1) {
-		    for (j=0;j<nelements;j++) {
-		      if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
-			if (((float *) serverdata[i].data)[j] != ((float *) serverdata[i].data_old)[j]) changed = 1;
-		      } else {
-			if ((int) roundf(((float *) serverdata[i].data)[j] * scale) != 
-			    (int) roundf(((float *) serverdata[i].data_old)[j] * scale)) changed = 1;
+		recv_left -= sizeof(double);
+	      } else {
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
+		recv_left = 0;
+	      }
+	      break;
+	    case XPTYPE_FLT_ARR:
+	      if (recv_left >= (nelements*sizeof(float))) {
+		if (serverdata[offset].status == XPSTATUS_VALID) {
+		  datavf = malloc(nelements*sizeof(float));
+		  if (datavf != NULL) {
+		    memcpy(datavf,&recvBuffer[recvMsgSize-recv_left],nelements*sizeof(float));
+		    if (serverdata[offset].index == -1) {
+		      for (j=0;j<nelements;j++) {
+			if (datavf[j] != FLT_MISS) {
+			  memcpy(&((float*) serverdata[offset].data)[j],&datavf[j],sizeof(float));
+			  memcpy(&((float*) serverdata[offset].data_old)[j],&datavf[j],sizeof(float));
+			  if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %f \n",
+							       offset,serverdata[offset].datarefname, j, datavf[j]);
+			}
 		      }
-
-		      if ((changed == 1) && (handleserver_verbose > 1)) 
-			printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %f \n", 
-			       i, serverdata[i].datarefname,j,((float *) serverdata[i].data)[j]);
-		    }
-		  } else {
-		    if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
-		      if (*(float *) serverdata[i].data != *(float *) serverdata[i].data_old) changed = 1;
 		    } else {
-		      if ((int) roundf(*(float *) serverdata[i].data * scale) != (int) roundf(*(float *) serverdata[i].data_old * scale)) changed = 1;
-		    }
-
-		    if ((changed == 1) && (handleserver_verbose > 1)) 
-		      printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %f \n", 
-			     i, serverdata[i].datarefname, serverdata[i].index, *(float *) serverdata[i].data);
-		  }
-		  if (changed == 1) {
-		    if ((send_left+2*sizeof(int)+nelements*sizeof(float)) <= TCPBUFSIZE) {
-		      first = MARK_DATA + i;
-		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		      send_left += sizeof(int);
-
-		      memcpy(&sendBuffer[send_left],serverdata[i].data,nelements*sizeof(float));
-		      memcpy(serverdata[i].data_old,serverdata[i].data,nelements*sizeof(float));
-		      send_left += nelements*sizeof(float);
-
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
-					      i, serverdata[i].datarefname);
+		      if (*datavf != FLT_MISS) {
+			memcpy(serverdata[offset].data,datavf,sizeof(float));
+			memcpy(serverdata[offset].data_old,datavf,sizeof(float));
+			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %f \n",
+							     offset,serverdata[offset].datarefname, serverdata[offset].index, *datavf);
+		      }
 		    }
 		  }
-		  break;
-		case XPTYPE_INT_ARR:
-		  changed = 0;
-		  if (serverdata[i].index == -1) {
-		    for (j=0;j<nelements;j++) {
-		      if (((int *) serverdata[i].data)[j] != ((int *) serverdata[i].data_old)[j]) changed = 1;
-
-		      if ((changed == 1) && (handleserver_verbose > 1)) 
-			printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %i \n", 
-			       i, serverdata[i].datarefname,j,((int *) serverdata[i].data)[j]);
-		    }
-		  } else {
-		    if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
-
-
-		    if ((changed == 1) && (handleserver_verbose > 1)) 
-		      printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %i \n", 
-			     i, serverdata[i].datarefname, serverdata[i].index, *(int *) serverdata[i].data);
-		  }
-		  if (changed == 1) {
-		    if ((send_left+2*sizeof(int)+nelements*sizeof(int)) <= TCPBUFSIZE) {
-		      first = MARK_DATA + i;
-		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		      send_left += sizeof(int);
-
-		      memcpy(&sendBuffer[send_left],serverdata[i].data,nelements*sizeof(int));
-		      memcpy(serverdata[i].data_old,serverdata[i].data,nelements*sizeof(int));
-		      send_left += nelements*sizeof(int);
-
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
-					      i, serverdata[i].datarefname);
-		    }
-		  }
-		  break;
-		case XPTYPE_BYTE_ARR:
-		  changed = 0;
-		  if (serverdata[i].index == -1) {
-		    for (j=0;j<nelements;j++) {
-		      if (((unsigned char *) serverdata[i].data)[j] != ((unsigned char *) serverdata[i].data_old)[j]) changed = 1;
-
-		      if ((changed == 1) && (handleserver_verbose > 1)) printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %u \n",
-								  i, serverdata[i].datarefname,j,((unsigned char *) serverdata[i].data)[j]);
-		    }
-		  } else {
-		    if (*(unsigned char *) serverdata[i].data != *(unsigned char *) serverdata[i].data_old) changed = 1;
-
-		    if ((changed == 1) && (handleserver_verbose > 1)) printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %u \n",
-								i, serverdata[i].datarefname, serverdata[i].index, *(unsigned char *) serverdata[i].data);
-		  }
-		  if (changed == 1) {
-		    if ((send_left+2*sizeof(int)+nelements*sizeof(unsigned char)) <= TCPBUFSIZE) {
-		      first = MARK_DATA + i;
-		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		      send_left += sizeof(int);
-
-		      memcpy(&sendBuffer[send_left],serverdata[i].data,nelements*sizeof(unsigned char));
-		      memcpy(serverdata[i].data_old,serverdata[i].data,nelements*sizeof(unsigned char));
-		      send_left += nelements*sizeof(unsigned char);
-
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
-					      i, serverdata[i].datarefname);
-		    }
-		  }
-		  break;
-		case XPTYPE_CMD_ONCE:
-		  if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
-		  if (changed == 1) {
-		    if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
-		      first = MARK_DATA + i;
-		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		      send_left += sizeof(int);
-
-		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i command %s: %i \n", 
-					      i, serverdata[i].datarefname,*(int *) serverdata[i].data);
-		  
-		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
-		      *(int *) serverdata[i].data = 0; /* RESET CMD ONCE after send */
-		      memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(int));
-		      send_left += sizeof(int);
-		  
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i command %s \n",
-					      i, serverdata[i].datarefname);
-		    }
-		  }
-		  break;
-		case XPTYPE_CMD_HOLD:
-		  if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
-		  if (changed == 1) {
-		    if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
-		      first = MARK_DATA + i;
-		      memcpy(&sendBuffer[send_left],&first,sizeof(int));
-		      send_left += sizeof(int);
-
-		      if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i command %s: %i \n", 
-					      i, serverdata[i].datarefname,*(int *) serverdata[i].data);
-		  
-		      memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
-		      memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(int));
-		      send_left += sizeof(int);
-		  
-		    } else {
-		      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i command %s \n",
-					      i, serverdata[i].datarefname);
-		    }
-		  }
-		  break;
-		default:
-		  break;
+		  free(datavf);
+		  datavf=NULL;
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+						       offset, serverdata[offset].datarefname);
 		}
-
-		if (changed == 1) serverdata[i].nsend++;
-	    
-		break;
-
-	      default:
-		break;
-
-	      } /* status of serverdata element */
-
-	    } /* valid dataref */
-
-	  } /* loop allocated elements of serverdata */
-
-	  if (send_left > 0) {
-	
-	    /* add end of transmission marker */
-	    datai = MARK_EOT;
-	    memcpy(&sendBuffer[send_left],&datai,sizeof(int));
-	    send_left += sizeof(int);
-
-	    if (handleserver_verbose > 1) printf("HANDLESERVER: TOTAL sending %i bytes \n",send_left);
-	
-	    message_ptr = sendBuffer;
-	    while ((send_left > 0) && (socketStatus == status_Connected)) {
-	  
-	      sendMsgSize = send(clntSock, message_ptr, send_left, 0);
-#ifdef WIN
-	      int wsaerr = WSAGetLastError();
-#endif
-	      if (sendMsgSize == -1) {
-#ifdef WIN
-		if (wsaerr == WSAEWOULDBLOCK) {
-#else
-		  if (errno == EWOULDBLOCK) {
-#endif
-		    if (handleserver_verbose > 1) printf("HANDLESERVER: Caught EAGAIN signal sending data to Server\n");
-		  } else {
-		    if (handleserver_verbose > 0) printf("HANDLESERVER: Error Sending data to Server \n");
-		    socketStatus = status_Error;	/* signal a transmission error */
+		recv_left -= nelements*sizeof(float);
+	      } else {
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
+						     offset, serverdata[offset].datarefname);
+		recv_left = 0;
+	      }
+	      break;
+	    case XPTYPE_INT_ARR:
+	      if (recv_left >= (nelements*sizeof(int))) {
+		if (serverdata[offset].status == XPSTATUS_VALID) {
+		  datavi = malloc(nelements*sizeof(int));
+		  if (datavi != NULL) {
+		    memcpy(datavi,&recvBuffer[recvMsgSize-recv_left],nelements*sizeof(int));
+		    if (serverdata[offset].index == -1) {
+		      for (j=0;j<nelements;j++) {
+			if (datavi[j] != INT_MISS) {
+			  memcpy(&((int*) serverdata[offset].data)[j],&datavi[j],sizeof(int));
+			  memcpy(&((int*) serverdata[offset].data_old)[j],&datavi[j],sizeof(int));
+			  if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %i \n",
+							       offset, serverdata[offset].datarefname, j, datavi[j]);
+			}
+		      }
+		    } else {
+		      if (*datavi != INT_MISS) {
+			memcpy(serverdata[offset].data,datavi,sizeof(int));
+			memcpy(serverdata[offset].data_old,datavi,sizeof(int));
+			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %i \n",
+							     offset, serverdata[offset].datarefname, serverdata[offset].index, *datavi);
+		      }
+		    }
+		  }
+		  free(datavi);
+		  datavf=NULL;
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+						       offset, serverdata[offset].datarefname);
+		}
+		recv_left -= nelements*sizeof(int);
+	      } else {
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
+						     offset, serverdata[offset].datarefname);
+		recv_left = 0;
+	      }
+	      break;
+	    case XPTYPE_BYTE_ARR:
+	      if (recv_left >= (nelements*sizeof(unsigned char))) {
+		if (serverdata[offset].status == XPSTATUS_VALID) {
+		  datab = malloc(nelements*sizeof(unsigned char));
+		  if (datab != NULL) {
+		    memcpy(datab,&recvBuffer[recvMsgSize-recv_left],nelements*sizeof(unsigned char));
+		    if (serverdata[offset].index == -1) {
+		      for (j=0;j<nelements;j++) {
+			memcpy(&((unsigned char*) serverdata[offset].data)[j],&datab[j],sizeof(unsigned char));
+			memcpy(&((unsigned char*) serverdata[offset].data_old)[j],&datab[j],sizeof(unsigned char));
+			if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %u \n",
+							     offset, serverdata[offset].datarefname, j, datab[j]);
+		      }
+		    } else {
+		      memcpy(serverdata[offset].data,datab,sizeof(unsigned char));
+		      memcpy(serverdata[offset].data_old,datab,sizeof(unsigned char));
+		      if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s index %i: %u \n",
+							   offset, serverdata[offset].datarefname, serverdata[offset].index, *datab);
+		    }
+		  }
+		  free(datab);
+		  datab=NULL;
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+						       offset, serverdata[offset].datarefname );
+		}
+		recv_left -= nelements*sizeof(unsigned char);
+	      } else {
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i dataref %s incomplete. Discarding. \n",
+						     offset, serverdata[offset].datarefname);
+		recv_left = 0;
+	      }
+	      break;
+	    case XPTYPE_CMD_ONCE:
+	    case XPTYPE_CMD_HOLD:
+	      if (recv_left >= sizeof(int)) {
+		if (serverdata[offset].status == XPSTATUS_VALID) {
+		  memcpy(&datai,&recvBuffer[recvMsgSize-recv_left],sizeof(int));
+		  if (datai != INT_MISS) {
+		    memcpy(serverdata[offset].data,&datai,sizeof(int));
+		    memcpy(serverdata[offset].data_old,&datai,sizeof(int));
+		    if (handleserver_verbose > 1) printf("HANDLESERVER: Received data for offset %i dataref %s: %i \n",
+							 offset,serverdata[offset].datarefname,datai);
 		  }
 		} else {
-		  if (handleserver_verbose > 2) printf("HANDLESERVER: Partial sending %i bytes \n",sendMsgSize);
-		  send_left -= sendMsgSize;
-		  message_ptr += sendMsgSize;
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: Received offset %i dataref %s not ready. Discarding data. \n",
+						       offset,serverdata[offset].datarefname);
 		}
+		recv_left -= sizeof(int);
+	      } else {
+		if (handleserver_verbose > 0) printf("HANDLESERVER: Data stream for offset %i incomplete. Discarding. \n",offset);
+		recv_left = 0;
+	      }
+	      break;
+	    default:
+	      break;
+	    }
+		  
+	  }
 
-	      } 
-	  
-	  
-	    } /* data to send */
-
-	    /*
-	      gettimeofday(&tval_after, NULL);
-	      timersub(&tval_after, &tval_before, &tval_result);
-	      printf("Time elapsed: %li\n",tval_result.tv_usec);
-	    */
-      
-	  } /* if serverdata is allocated */
-    
-	} /* if we have a valid connection */
-  
-	return socketStatus;
+	}
 
       }
+
+      if ((first >= MARK_LINK) && (first < MARK_UNLINK)) {
+
+	if (recv_left >= (sizeof(errorstring))) {
+	  offset = first - MARK_LINK;
+
+	  memcpy(&errorstring,&recvBuffer[recvMsgSize-recv_left],sizeof(errorstring));
+	  recv_left -= sizeof(errorstring);
+	      
+	  if (strncmp(serverdata[offset].datarefname,errorstring,sizeof(errorstring))) {
+	    if (handleserver_verbose > 0) {
+	      printf("\033[1;31m");
+	      printf("HANDLESERVER: X-Plane cannot link offset %i dataref %s: %s \n",
+		     offset,serverdata[offset].datarefname,errorstring);
+	      printf("\033[0m");
+	    }
+	  } else {
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane linked offset %i dataref %s \n",
+						 offset, serverdata[offset].datarefname);
+
+	    serverdata[offset].status = XPSTATUS_VALID;
+	    serverdata[offset].received = 1;
+	    count_dataref();
+	  }
+
+	} else {
+	  if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane link confirmation for offset %i dataref %s incomplete. \n",
+					       offset, serverdata[offset].datarefname);
+	  recv_left = 0;
+	}
+	    
+      }
+
+      if ((first >= MARK_UNLINK) && (first < MARK_EOT)) {
+
+	if (recv_left >= (sizeof(errorstring))) {
+	  offset = first - MARK_UNLINK;
+	      
+	  memcpy(&errorstring,&recvBuffer[recvMsgSize-recv_left],sizeof(errorstring));
+	  recv_left -= sizeof(errorstring);
+	  if (strncmp(serverdata[offset].datarefname,errorstring,sizeof(errorstring))) {
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane cannot unlink offset %i dataref %s: %s \n",
+						 offset,serverdata[offset].datarefname,errorstring);
+	  } else {
+	    if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane unlinked offset %i dataref %s \n",
+						 offset, serverdata[offset].datarefname);
+	    memset(serverdata[offset].datarefname,0,sizeof(serverdata[offset].datarefname));
+
+	    serverdata[offset].status = XPSTATUS_UNINITIALIZED;
+	    serverdata[offset].received = 1;
+	    count_dataref();
+	  }
+
+	} else {
+	  if (handleserver_verbose > 0) printf("HANDLESERVER: X-Plane unlink confirmation for offset %i dataref %s incomplete. \n",
+					       offset, serverdata[offset].datarefname);
+	  recv_left = 0;
+	}
+	    
+      }
+
+
+      if (first == MARK_EOT) {
+	if (handleserver_verbose > 1) {printf("HANDLESERVER: Received EOT Marker \n"); fflush(stdout);}
+      }
+
+      if (first == MARK_DISCONNECT) {
+	if (handleserver_verbose > 0) printf("HANDLESERVER: Received Disconnect Marker \n");
+	    
+	socketStatus = status_Init;
+	disconnected = 1;
+      }
+	  
+    } /* elements present in receive buffer */
+	
+  } /* if client connected to server */
+
+
+  /* disconnect happened during receive call */
+  if (disconnected == 1) {
+    
+    /* reset x-plane data status to allocated */
+    for (i=0;i<numalloc;i++) {
+      if (strcmp("",serverdata[i].datarefname)) {
+	serverdata[i].status = XPSTATUS_ALLOC;
+      }
+    }
+    /* valid dataref, check status */
+    
+#ifdef WIN
+    closesocket(clntSock);
+#else
+    close(clntSock); 
+#endif
+    if (create_tcpip_socket() < 0) {
+      if (handleserver_verbose > 0) printf("HANDLESERVER: Failed to initialize client socket \n");
+      recvMsgSize = -123;
+    }
+    
+  } 
+
+  /* count number of received datarefs */
+  count_received();
+
+  return recvMsgSize;
+}
+
+/* send data stream to X-Plane TCP/IP server */
+int send_xpserver(void) {
+
+  //  struct timeval tval_before, tval_after, tval_result;
+  
+  int sendMsgSize;  /* size of sent message */
+  int send_left;
+  char *message_ptr;
+  int i,j;
+  int first;
+  int nelements;
+  int changed;
+  float scale;
+  
+  int datai;
+  
+  /* initialize or send updated data to X-Plane */
+  if ((socketStatus == status_Connected)) { 
+    
+    if (serverdata != NULL) {
+      /* loop through datarefs */
+
+      //gettimeofday(&tval_before, NULL);
+     
+      send_left = 0;
+      
+      for (i=0;i<numalloc;i++) {
+
+	if (strcmp("",serverdata[i].datarefname)) {
+	  /* valid dataref, check status */
+	  /* check for buffer overflow! */
+	  
+	  switch (serverdata[i].status) {
+
+	  case XPSTATUS_ALLOC: 
+	    /* serverdata for dataref allocated: send dataref link command to X-Plane */
+	    if ((send_left+6*sizeof(int)+sizeof(serverdata[i].datarefname)+sizeof(clientname)) <= TCPBUFSIZE) {
+	      if (handleserver_verbose > 1) printf("HANDLESERVER: sending definition for offset %i dataref %s \n",i, serverdata[i].datarefname);
+
+	      first = MARK_LINK + i;
+	      memcpy(&sendBuffer[send_left],&first,sizeof(int));
+	      send_left += sizeof(int);
+	      
+	      memcpy(&sendBuffer[send_left],&serverdata[i].type,sizeof(int));
+	      send_left += sizeof(int);
+	      
+	      memcpy(&sendBuffer[send_left],&serverdata[i].nelements,sizeof(int));
+	      send_left += sizeof(int);
+	      
+	      memcpy(&sendBuffer[send_left],&serverdata[i].index,sizeof(int));
+	      send_left += sizeof(int);
+	      
+	      memcpy(&sendBuffer[send_left],&serverdata[i].precision,sizeof(int));
+	      send_left += sizeof(int);
+	      
+	      memcpy(&sendBuffer[send_left],&serverdata[i].datarefname,sizeof(serverdata[i].datarefname));
+	      send_left += sizeof(serverdata[i].datarefname);
+	      
+	      memcpy(&sendBuffer[send_left],&clientname,sizeof(clientname));
+	      send_left += sizeof(clientname);
+
+	      serverdata[i].status = XPSTATUS_LINK;
+	    } else {
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending initial offset %i dataref %s \n",
+						   i, serverdata[i].datarefname);
+	    }
+	    break;
+	    
+	  case XPSTATUS_DEALLOC:
+	    /* serverdata for dataref deallocated: send dataref unlink command to X-Plane */
+	    if ((send_left+sizeof(int)+sizeof(serverdata[i].datarefname)) <= TCPBUFSIZE) {
+	      first = MARK_UNLINK + i;
+	      memcpy(&sendBuffer[send_left],&first,sizeof(int));
+	      send_left += sizeof(int);
+	      memcpy(&sendBuffer[send_left],&serverdata[i].datarefname,sizeof(serverdata[i].datarefname));
+	      send_left += sizeof(serverdata[i].datarefname);
+	      
+	      serverdata[i].status = XPSTATUS_UNLINK;
+	    } else {
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending unlink offset %i dataref %s \n",
+						   i, serverdata[i].datarefname);
+	    }
+	    break;
+	  case XPSTATUS_VALID:
+
+	    changed = 0;
+
+	    if (serverdata[i].index == -1) {
+	      nelements = serverdata[i].nelements;
+	    } else {
+	      nelements = 1;
+	    }
+
+	    if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
+	      scale = 1.0;
+	    } else {
+	      scale = pow(10,-serverdata[i].precision);
+	    }
+
+	    switch (serverdata[i].type) {
+	    case XPTYPE_INT:
+	      if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
+	      if (changed == 1) {
+		if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+
+		  if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %i \n", 
+						       i, serverdata[i].datarefname,*(int *) serverdata[i].data);
+		  
+		  memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
+		  memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(int));
+		  send_left += sizeof(int);
+		  
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+						       i, serverdata[i].datarefname);
+		}
+	      }
+	      break;
+	    case XPTYPE_FLT:
+	      if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
+		if (*(float *) serverdata[i].data != *(float *) serverdata[i].data_old) changed = 1;
+	      } else {
+		if ((int) roundf(*(float *) serverdata[i].data * scale) != (int) roundf(*(float *) serverdata[i].data_old * scale)) changed = 1;
+	      }
+	      if (changed == 1) {
+		if ((send_left+2*sizeof(int)+sizeof(float)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+
+		  if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %f \n", 
+						       i, serverdata[i].datarefname, *(float *) serverdata[i].data);
+		  
+		  memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(float));
+		  memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(float));
+		  send_left += sizeof(float);
+		  
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+						       i, serverdata[i].datarefname);
+		}
+	      }
+	      break;
+	    case XPTYPE_DBL:
+	      if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
+		if (*(double *) serverdata[i].data != *(double *) serverdata[i].data_old) changed = 1;
+	      } else {
+		if ((int) round(*(double *) serverdata[i].data * scale) != (int) round(*(double *) serverdata[i].data_old * scale)) changed = 1;
+	      }
+	      if (changed == 1) {
+		if ((send_left+2*sizeof(int)+sizeof(double)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+
+		  if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i dataref %s: %f \n", 
+						       i, serverdata[i].datarefname,*(double *) serverdata[i].data);
+
+		  memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(double));
+		  memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(double));
+		  send_left += sizeof(double);
+		  
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+						       i, serverdata[i].datarefname);
+		}
+	      }
+	      break;
+	    case XPTYPE_FLT_ARR:
+	      changed = 0;
+	      if (serverdata[i].index == -1) {
+		for (j=0;j<nelements;j++) {
+		  if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
+		    if (((float *) serverdata[i].data)[j] != ((float *) serverdata[i].data_old)[j]) changed = 1;
+		  } else {
+		    if ((int) roundf(((float *) serverdata[i].data)[j] * scale) != 
+			(int) roundf(((float *) serverdata[i].data_old)[j] * scale)) changed = 1;
+		  }
+
+		  if ((changed == 1) && (handleserver_verbose > 1)) 
+		    printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %f \n", 
+			   i, serverdata[i].datarefname,j,((float *) serverdata[i].data)[j]);
+		}
+	      } else {
+		if ((serverdata[i].precision > 10) || (serverdata[i].precision < -10)) {
+		  if (*(float *) serverdata[i].data != *(float *) serverdata[i].data_old) changed = 1;
+		} else {
+		  if ((int) roundf(*(float *) serverdata[i].data * scale) != (int) roundf(*(float *) serverdata[i].data_old * scale)) changed = 1;
+		}
+
+		if ((changed == 1) && (handleserver_verbose > 1)) 
+		  printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %f \n", 
+			 i, serverdata[i].datarefname, serverdata[i].index, *(float *) serverdata[i].data);
+	      }
+	      if (changed == 1) {
+		if ((send_left+2*sizeof(int)+nelements*sizeof(float)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+
+		  memcpy(&sendBuffer[send_left],serverdata[i].data,nelements*sizeof(float));
+		  memcpy(serverdata[i].data_old,serverdata[i].data,nelements*sizeof(float));
+		  send_left += nelements*sizeof(float);
+
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+						       i, serverdata[i].datarefname);
+		}
+	      }
+	      break;
+	    case XPTYPE_INT_ARR:
+	      changed = 0;
+	      if (serverdata[i].index == -1) {
+		for (j=0;j<nelements;j++) {
+		  if (((int *) serverdata[i].data)[j] != ((int *) serverdata[i].data_old)[j]) changed = 1;
+
+		  if ((changed == 1) && (handleserver_verbose > 1)) 
+		    printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %i \n", 
+			   i, serverdata[i].datarefname,j,((int *) serverdata[i].data)[j]);
+		}
+	      } else {
+		if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
+
+
+		if ((changed == 1) && (handleserver_verbose > 1)) 
+		  printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %i \n", 
+			 i, serverdata[i].datarefname, serverdata[i].index, *(int *) serverdata[i].data);
+	      }
+	      if (changed == 1) {
+		if ((send_left+2*sizeof(int)+nelements*sizeof(int)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+
+		  memcpy(&sendBuffer[send_left],serverdata[i].data,nelements*sizeof(int));
+		  memcpy(serverdata[i].data_old,serverdata[i].data,nelements*sizeof(int));
+		  send_left += nelements*sizeof(int);
+
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+						       i, serverdata[i].datarefname);
+		}
+	      }
+	      break;
+	    case XPTYPE_BYTE_ARR:
+	      changed = 0;
+	      if (serverdata[i].index == -1) {
+		for (j=0;j<nelements;j++) {
+		  if (((unsigned char *) serverdata[i].data)[j] != ((unsigned char *) serverdata[i].data_old)[j]) changed = 1;
+
+		  if ((changed == 1) && (handleserver_verbose > 1)) printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %u \n",
+									   i, serverdata[i].datarefname,j,((unsigned char *) serverdata[i].data)[j]);
+		}
+	      } else {
+		if (*(unsigned char *) serverdata[i].data != *(unsigned char *) serverdata[i].data_old) changed = 1;
+
+		if ((changed == 1) && (handleserver_verbose > 1)) printf("HANDLESERVER: sending data for offset %i dataref %s index %i: %u \n",
+									 i, serverdata[i].datarefname, serverdata[i].index, *(unsigned char *) serverdata[i].data);
+	      }
+	      if (changed == 1) {
+		if ((send_left+2*sizeof(int)+nelements*sizeof(unsigned char)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+
+		  memcpy(&sendBuffer[send_left],serverdata[i].data,nelements*sizeof(unsigned char));
+		  memcpy(serverdata[i].data_old,serverdata[i].data,nelements*sizeof(unsigned char));
+		  send_left += nelements*sizeof(unsigned char);
+
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i dataref %s \n",
+						       i, serverdata[i].datarefname);
+		}
+	      }
+	      break;
+	    case XPTYPE_CMD_ONCE:
+	      if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
+	      if (changed == 1) {
+		if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+
+		  if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i command %s: %i \n", 
+						       i, serverdata[i].datarefname,*(int *) serverdata[i].data);
+		  
+		  memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
+		  *(int *) serverdata[i].data = 0; /* RESET CMD ONCE after send */
+		  memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(int));
+		  send_left += sizeof(int);
+		  
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i command %s \n",
+						       i, serverdata[i].datarefname);
+		}
+	      }
+	      break;
+	    case XPTYPE_CMD_HOLD:
+	      if (*(int *) serverdata[i].data != *(int *) serverdata[i].data_old) changed = 1;
+	      if (changed == 1) {
+		if ((send_left+3*sizeof(int)) <= TCPBUFSIZE) {
+		  first = MARK_DATA + i;
+		  memcpy(&sendBuffer[send_left],&first,sizeof(int));
+		  send_left += sizeof(int);
+
+		  if (handleserver_verbose > 1) printf("HANDLESERVER: sending data for offset %i command %s: %i \n", 
+						       i, serverdata[i].datarefname,*(int *) serverdata[i].data);
+		  
+		  memcpy(&sendBuffer[send_left],serverdata[i].data,sizeof(int));
+		  memcpy(serverdata[i].data_old,serverdata[i].data,sizeof(int));
+		  send_left += sizeof(int);
+		  
+		} else {
+		  if (handleserver_verbose > 0) printf("HANDLESERVER: TCP buffer overflow sending data for offset %i command %s \n",
+						       i, serverdata[i].datarefname);
+		}
+	      }
+	      break;
+	    default:
+	      break;
+	    }
+
+	    if (changed == 1) serverdata[i].nsend++;
+	    
+	    break;
+
+	  default:
+	    break;
+
+	  } /* status of serverdata element */
+
+	} /* valid dataref */
+
+      } /* loop allocated elements of serverdata */
+
+      if (send_left > 0) {
+	
+	/* add end of transmission marker */
+	datai = MARK_EOT;
+	memcpy(&sendBuffer[send_left],&datai,sizeof(int));
+	send_left += sizeof(int);
+
+	if (handleserver_verbose > 1) printf("HANDLESERVER: TOTAL sending %i bytes \n",send_left);
+	
+	message_ptr = sendBuffer;
+	while ((send_left > 0) && (socketStatus == status_Connected)) {
+	  
+	  sendMsgSize = send(clntSock, message_ptr, send_left, 0);
+#ifdef WIN
+	  int wsaerr = WSAGetLastError();
+#endif
+	  if (sendMsgSize == -1) {
+#ifdef WIN
+	    if (wsaerr == WSAEWOULDBLOCK) {
+#else
+	    if (errno == EWOULDBLOCK) {
+#endif
+	      if (handleserver_verbose > 1) printf("HANDLESERVER: Caught EAGAIN signal sending data to Server\n");
+	    } else {
+	      if (handleserver_verbose > 0) printf("HANDLESERVER: Error Sending data to Server \n");
+	      socketStatus = status_Error;	/* signal a transmission error */
+	    }
+	  } else {
+	    if (sendMsgSize != send_left) {
+	      if (handleserver_verbose > 2) printf("HANDLESERVER: Partial sending %i bytes \n",sendMsgSize);
+	    }
+	    send_left -= sendMsgSize;
+	    message_ptr += sendMsgSize;
+	  }
+
+	} 
+	    
+      } /* data to send */
+
+	/*
+	  gettimeofday(&tval_after, NULL);
+	  timersub(&tval_after, &tval_before, &tval_result);
+	  printf("Time elapsed: %li\n",tval_result.tv_usec);
+	*/
+      
+    } /* if serverdata is allocated */
+    
+  } /* if we have a valid connection */
+  
+  return socketStatus;
+
+}

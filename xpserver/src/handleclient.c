@@ -138,16 +138,19 @@ void receive_client(int clntSock) {
   float *datavf;
   int *datavi;
   unsigned char *datab;
+
+  int num_partial;
   
   datai = 0;
   recvMsgSize = 0;
-  recvBuffer[recvMsgSize] = 0;
+  recvBuffer[0] = 0;
   message_ptr = recvBuffer;
-
+  num_partial = 0;
+  
   while (socketStatus == status_Connected) {
     
     /* Check for new data from client */
-    recv_left = recv(clntSock, message_ptr, TCPBUFSIZE, 0);
+    recv_left = recv(clntSock, message_ptr, TCPBUFSIZE-recvMsgSize, 0);
 #ifdef WIN
     int wsaerr = WSAGetLastError();
 #endif
@@ -221,7 +224,9 @@ void receive_client(int clntSock) {
       } else {
 	/* only partial message received */
 	if (verbose > 1) {
-	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received Partial %i bytes \n",clntSock, recv_left);
+	  num_partial++;
+	  fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Received Partial Message %i of %i bytes \n",
+		  clntSock, num_partial, recv_left);
 	  fflush(logfileptr);
 	}
       }
@@ -1169,10 +1174,12 @@ void send_client(int clntSock) {
 	      socketStatus = status_Error;	/* signal a transmission error */
 	    }
 	  } else {
-	    if (verbose > 1) {
-	      fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Partial Sending %i bytes \n",
-		      clntSock,sendMsgSize);	      
-	      fflush(logfileptr);
+	    if (sendMsgSize != send_left) {
+	      if (verbose > 1) {
+		fprintf(logfileptr,"HANDLECLIENT: Client Socket %i : Partial Sending %i bytes \n",
+			clntSock,sendMsgSize);	      
+		fflush(logfileptr);
+	      }
 	    }
 	    send_left -= sendMsgSize;
 	    message_ptr += sendMsgSize;
