@@ -143,7 +143,7 @@ namespace OpenGC
     }
 
     // angle of attack (degrees)
-    float *aoa = link_dataref_flt("sim/flightmodel/position/alpha",-1);
+    float *aoa = link_dataref_flt("sim/flightmodel/position/alpha",0);
 
     //float *ap_athr_armed_rec;   
     //float *ap_athr_armed;   
