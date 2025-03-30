@@ -326,11 +326,15 @@ namespace OpenGC
 	glPopMatrix();
 
 	/* Update History Values of WXR gain and tilt */
-	if ((*wxr_gain != FLT_MISS) && (*wxr_tilt != FLT_MISS)) {
+	if (*wxr_gain != FLT_MISS) {
 	  for (n=NUM_HIST-2;n>=0;n--) {
 	    m_wxr_gain[n+1] = m_wxr_gain[n];
-	    m_wxr_tilt[n+1] = m_wxr_tilt[n];
 	    m_wxr_gain[0] = *wxr_gain;
+	  }
+	}
+	if (*wxr_tilt != FLT_MISS) {
+	  for (n=NUM_HIST-2;n>=0;n--) {
+	    m_wxr_tilt[n+1] = m_wxr_tilt[n];
 	    m_wxr_tilt[0] = *wxr_tilt;
 	  }
 	}
