@@ -44,8 +44,8 @@ int main (int argc,char **argv)
   memset(clientname,0,sizeof(clientname));
   strcpy(clientname,"xpclient");
 
-  int verbose=1;  
-  int interval=50;  /* poll interval in milliseconds: set between 1-999 milliseconds
+  int verbose=3;  
+  int interval=999;  /* poll interval in milliseconds: set between 1-999 milliseconds
 			 (>= 1000 ms will not work with some usleep implementations) */
 
   /* initialize handler for command-line interrupts (ctrl-c) */
@@ -70,11 +70,15 @@ int main (int argc,char **argv)
   float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, -1);
   // the EGT of engine 1
   //float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 16, 1, 0);
+
+  float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-1); /* Gain should go from 0.1 .. 2.0 */
  
     
   unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
 
   float *track_mag = link_dataref_flt("xpserver/track_mag",-1);
+  
+  float *test = link_dataref_flt("xpserver/test",-1);
   
   /*
   unsigned char *fmc1 = link_dataref_byte_arr("laminar/B738/fmc1/Line02_X", 40,-1);
@@ -145,6 +149,11 @@ int main (int argc,char **argv)
       } else {
 	*track_mag = 1.0;
       }
+
+      *test = 2.0;
+      
+      printf("wxr gain: %f \n", *wxr_gain);
+      printf("test: %f \n", *test);
 
       /* if (acf_tailnum) { */
       /* 	printf("ACF TAILNUM: %s \n",acf_tailnum); */
