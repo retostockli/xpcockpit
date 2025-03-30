@@ -76,10 +76,10 @@ int main (int argc,char **argv)
     
   //unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
 
-  //float *track_mag = link_dataref_flt("xpserver/track_mag",-1);
+  float *track_mag = link_dataref_flt("xpserver/track_mag",-1);
   
-  float *ftest = link_dataref_flt("xpserver/ftest",-1);
-  int *itest = link_dataref_int("xpserver/itest");
+  //float *ftest = link_dataref_flt("xpserver/ftest",-1);
+  //int *itest = link_dataref_int("xpserver/itest");
   
   /*
   unsigned char *fmc1 = link_dataref_byte_arr("laminar/B738/fmc1/Line02_X", 40,-1);
@@ -143,20 +143,20 @@ int main (int argc,char **argv)
       /* 	*custom = 1; */
       /* } */
 
-      /* if (*track_mag != FLT_MISS) { */
-      /* 	printf("TRACK MAG: %f \n",*track_mag); */
-      /* 	*track_mag += 1.0; */
-      /* 	if (*track_mag > 359.0) *track_mag = 0.0; */
-      /* } else { */
-      /* 	*track_mag = 1.0; */
-      /* } */
+      if (*track_mag != FLT_MISS) {
+	printf("TRACK MAG: %f \n",*track_mag);
+	*track_mag += 1.0;
+	if (*track_mag > 359.0) *track_mag = 0.0;
+      } else {
+	*track_mag = 1.0;
+      }
 
       //*itest = 2;
       //*ftest = 2.0;
       
       //printf("wxr gain: %f \n", *wxr_gain);
-      printf("int test: %f \n", *ftest);
-      printf("float test: %i \n", *itest);
+      //printf("int test: %f \n", *ftest);
+      //printf("float test: %i \n", *itest);
 
       /* if (acf_tailnum) { */
       /* 	printf("ACF TAILNUM: %s \n",acf_tailnum); */

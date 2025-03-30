@@ -165,7 +165,6 @@ void B737NAV::Render()
     } else {
       track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
     }
-    track_mag = link_dataref_flt("xpserver/track_mag",-1);
     
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
