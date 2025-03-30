@@ -59,6 +59,7 @@ extern "C" {
 #include "Test/ogcTestGauge.h"
 #include "WXR/ogcWXR.h"
 #include "BasicClock/ogcBasicClock.h"
+/*
 #include "A320/A320PFD/ogcA320PFD.h"
 #include "A320/A320ND/ogcA320ND.h"
 #include "A320/A320EWD/ogcA320EWD.h"
@@ -71,6 +72,7 @@ extern "C" {
 #include "A320/A320Stby/A320StbyAtt/ogcA320StbyAtt.h"
 #include "A320/A320Stby/A320StbyISIS/ogcA320StbyISIS.h"
 #include "A320/A320Stby/A320StbyRMI/ogcA320StbyRMI.h"
+*/
 #include "B737/B737PFD/ogcB737PFD.h"
 #include "B737/B737PFDSA/ogcB737PFDSA.h"
 #include "B737/B737EICAS/ogcB737EICAS.h"
@@ -208,7 +210,7 @@ namespace OpenGC
     if ((numreceived > 0) || (m_InitState <= 100) ||
     	(wxr_newdata == 1) || (m_FrameTest)) {
       
-       //printf("%i %i \n",numreceived,m_InitState);
+      //printf("%i %i \n",numreceived,m_InitState);
       m_pRenderWindow->redraw();
     
       Fl::flush();
@@ -334,7 +336,7 @@ namespace OpenGC
       // Set up the network data
       strcpy(m_ip_address,iniparser_getstring(ini,"network:ServerIP", default_server_ip));
       m_port = iniparser_getint(ini,"network:ServerPort", default_server_port);
-
+     
       // Set up the data source
       if (verbosity > 2) printf("AppObject - Setting up the Data Source\n");
       strcpy(temp_string,iniparser_getstring(ini,"network:DataSource", default_data_source));
@@ -459,6 +461,7 @@ namespace OpenGC
       else if (strcmp(name, "Keypad")==0) pGauge = new Keypad();
       else if (strcmp(name, "NavTestGauge")==0) pGauge = new NavTestGauge();
     */
+    /*
     else if (strcmp(name, "A320PFD")==0) pGauge = new A320PFD();
     else if (strcmp(name, "A320ND")==0) pGauge = new A320ND();
     else if (strcmp(name, "A320EWD")==0) pGauge = new A320EWD();
@@ -471,6 +474,7 @@ namespace OpenGC
     else if (strcmp(name, "A320StbyAtt")==0) pGauge = new A320StbyAtt();
     else if (strcmp(name, "A320StbyISIS")==0) pGauge = new A320StbyISIS();
     else if (strcmp(name, "A320StbyRMI")==0) pGauge = new A320StbyRMI();
+    */
     else {
       printf("Gauge %s not defined in CreateGauge. Aborting\n",name);
       exit(-1);

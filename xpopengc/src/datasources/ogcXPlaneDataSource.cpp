@@ -69,14 +69,20 @@ extern FLTKRenderWindow* m_pRenderWindow;
   
 void XPlaneDataSource::define_server(int port, string ip_address, int radardata)
 {
-  int n;
+  //int n;
   
   // TCP Server (xpserver running as an X-Plane plugin)
   strncpy(XPlaneServerIP,ip_address.c_str(),ip_address.length()); 
   XPlaneServerPort = port;
-
+ 
   wxr_type = radardata;
   wxr_initialized = 0;
+ 
+  /* initialize and start X-Plane Beacon reception */
+  if (initialize_beacon_client(verbosity)<0) exit(-8);
+
+  /* initialize TCP/IP interface */
+  if (initialize_tcpip_client(verbosity) < 0) exit(-8);
  
 }
 
@@ -87,12 +93,6 @@ XPlaneDataSource::XPlaneDataSource()
 
   /* initialize local dataref structure */
   if (initialize_dataref(verbosity) < 0) exit(-8);
- 
-  /* initialize and start X-Plane Beacon reception */
-  if (initialize_beacon_client(verbosity)<0) exit(-8);
-
-  /* initialize TCP/IP interface */
-  if (initialize_tcpip_client(verbosity) < 0) exit(-8);
   
   // initialize with default ACF
   SetAcfType(-1);
@@ -125,6 +125,8 @@ void XPlaneDataSource::OnIdle()
 {
 
   int connected;
+
+  //printf(" IP: %s \n",XPlaneServerIP);
   
   /* check for TCP/IP connection to X-Plane */
   connected = check_xpserver();

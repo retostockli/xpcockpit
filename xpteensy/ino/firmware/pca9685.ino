@@ -19,6 +19,10 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
           }
         }
 
+        pca9685[dev].begin();
+        pca9685[dev].setOscillatorFrequency(27000000);
+        pca9685[dev].setPWMFreq(50);  // Maximum PWM Frequency for PWM operation
+
         pca9685_data[dev].connected = 1;
         pca9685_data[dev].wire = wirenum;
         pca9685_data[dev].address = address;
@@ -31,20 +35,12 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
           pca9685_data[dev].val_save[pin] = INITVAL;  // reset pin state so that it will be sent to client after read
           pca9685_data[dev].pinmode[pin] = pinmode;
 
-          pca9685[dev].begin();
-          pca9685[dev].setOscillatorFrequency(27000000);
-          pca9685[dev].setPWMFreq(50);  // Maximum PWM Frequency for PWM operation
-
           if (DEBUG > 0) {
             Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as PWM \n", dev, pin);
           }
         } else if (pinmode == PINMODE_SERVO) {
           pca9685_data[dev].val_save[pin] = INITVAL;  // reset pin state so that it will be sent to client after read
           pca9685_data[dev].pinmode[pin] = pinmode;
-
-          pca9685[dev].begin();
-          pca9685[dev].setOscillatorFrequency(27000000);
-          pca9685[dev].setPWMFreq(50);  // Analog servos run at ~50 Hz updates
 
           if (DEBUG > 0) {
             Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as SERVO \n", dev, pin);
@@ -54,6 +50,7 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
             Serial.printf("INIT: PCA9685 Device %i Pin %i can only be PWM or SERVO\n", dev, pin);
           }
         }
+        pca9685_write(dev, pin, val);
       } else {
         if (DEBUG > 0) {
           Serial.printf("INIT: PCA9685 Device Number %i out of range \n", dev);

@@ -45,7 +45,7 @@ int main (int argc,char **argv)
   strcpy(clientname,"xpclient");
 
   int verbose=1;  
-  int interval=999;  /* poll interval in milliseconds: set between 1-999 milliseconds
+  int interval=50;  /* poll interval in milliseconds: set between 1-999 milliseconds
 			 (>= 1000 ms will not work with some usleep implementations) */
 
   /* initialize handler for command-line interrupts (ctrl-c) */
@@ -69,13 +69,12 @@ int main (int argc,char **argv)
   // the EGT of engine 0
   float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, -1);
   // the EGT of engine 1
-  float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 16, 1, 0);
+  //float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 16, 1, 0);
  
     
   unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
 
-  int *nav_shows_dem = link_dataref_int("xpserver/EFIS_capt_terr");
-
+  float *track_mag = link_dataref_flt("xpserver/track_mag",-1);
   
   /*
   unsigned char *fmc1 = link_dataref_byte_arr("laminar/B738/fmc1/Line02_X", 40,-1);
@@ -121,31 +120,35 @@ int main (int argc,char **argv)
     
       /***** start do something with the datarefs *****/
 
-      if (*latitude != FLT_MISS) {
-        printf("Latitude: %f\n",*latitude);
-      }
-
-      printf("TERR: %i \n",*nav_shows_dem);
-
-  *nav_shows_dem = 0;
+      /* if (*latitude != FLT_MISS) { */
+      /*   printf("Latitude: %f\n",*latitude); */
+      /* } */
       
-      if (*egt0 != FLT_MISS) {
-	printf("EGT Engine 1: %f\n",*egt0);
-      }
-      if (*egt1 != FLT_MISS) {
-	printf("EGT Engine 2: %f\n",*egt1);
-      }
+      /* if (*egt0 != FLT_MISS) { */
+      /* 	printf("EGT Engine 1: %f\n",*egt0); */
+      /* } */
+      /* if (*egt1 != FLT_MISS) { */
+      /* 	printf("EGT Engine 2: %f\n",*egt1); */
+      /* } */
 
-      if (*custom != INT_MISS) {
-	printf("CUSTOM VALUE: %i \n",*custom);
-	*custom = *custom + 1;
+      /* if (*custom != INT_MISS) { */
+      /* 	printf("CUSTOM VALUE: %i \n",*custom); */
+      /* 	*custom = *custom + 1; */
+      /* } else { */
+      /* 	*custom = 1; */
+      /* } */
+
+      if (*track_mag != FLT_MISS) {
+	printf("TRACK MAG: %f \n",*track_mag);
+	*track_mag += 1.0;
+	if (*track_mag > 359.0) *track_mag = 0.0;
       } else {
-	*custom = 1;
+	*track_mag = 1.0;
       }
 
-      if (acf_tailnum) {
-	printf("ACF TAILNUM: %s \n",acf_tailnum);
-      }
+      /* if (acf_tailnum) { */
+      /* 	printf("ACF TAILNUM: %s \n",acf_tailnum); */
+      /* } */
        
       /*
       if (*framerate != FLT_MISS) {

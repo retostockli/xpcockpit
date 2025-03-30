@@ -106,10 +106,12 @@ int initialize_tcpip_client(int init_verbose)
      UDP Multicast Beacon to find the X-Plane server on our network */
   if (strcmp(XPlaneServerIP,"")!=0) {
     XPlaneServerManual = 1;
+    printf("HANDLESERVER: Manually entered X-Plane IP Address: %s \n",XPlaneServerIP);
   } else {
     XPlaneServerManual = 0;
+    printf("HANDLESERVER: Automatic X-Plane IP Address detection via X-Plane UDP beacon \n");
   }
-  
+ 
   return create_tcpip_socket();
 }
 

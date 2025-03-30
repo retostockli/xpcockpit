@@ -34,6 +34,15 @@
 #include "serverdata.h"
 #include "test.h"
 
+/*
+LTC4316 Address Translator
+Switch		A4	A5
++0x40		ON	ON
++0x50		OFF	ON
++0x60		ON	OFF
++0x70		OFF 	OFF
+*/
+
 void init_b737_overheadfwd(void)
 {
   int te = 0;
@@ -70,10 +79,24 @@ void init_b737_overheadfwd(void)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x21; // I2C address of MCP23017 device
 
-  /* pca9685[te][0].pinmode[0] = PINMODE_PWM; */
-  /* //pca9685[te][0].pinmode[2] = PINMODE_PWM; */
-  /* pca9685[te][0].wire = 0; */
-  /* pca9685[te][0].address = 0x40; */
+  dev = 2;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=8;pin<11;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  mcp23017[te][dev].intpin = 16; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x20 ^ 0x40; // I2C address of MCP23017 device
+
+  dev = 0;
+  for (pin=0;pin<PCA9685_MAX_PINS;pin++) {
+    //for (pin=0;pin<1;pin++) {
+    pca9685[te][dev].pinmode[pin] = PINMODE_SERVO;
+  }
+  pca9685[te][dev].wire = 0;
+  pca9685[te][dev].address = 0x40;
 
 
   /* ht16k33[te][0].brightness = 10; */
@@ -108,12 +131,13 @@ void b737_overheadfwd(void)
   /* if (ret == 1) { */
   /*   printf("Analog Input changed to: %f \n",*fvalue); */
   /* } */
- 
+
+  /*** FLT CONTROL / STDBY PANEL ***/
   dev = 0;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     ret = digital_input(te, MCP23017_TYPE, dev, pin, &inputvalue, 0);
     if (ret == 1) {
-      printf("Digital Input %i changed to: %i \n", pin, inputvalue);
+      printf("Digital Input %i of MCP23017 %i changed to: %i \n", pin, dev, inputvalue);
     }
   }
 
@@ -129,15 +153,33 @@ void b737_overheadfwd(void)
   /* Yaw Damper Coil */
   ret = digital_output(te, TEENSY_TYPE, 0, 29, &zero);
 
-  *value = 0;
+  *value = 1;
   dev = 1;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     ret = digital_output(te, MCP23017_TYPE, dev, pin, value);
   }
 
-  /* change Servo according to rotary position */
-  //ret = servo_output(te, TEENSY_TYPE, 0, 23, fvalue,0.0,1.0,0.2,0.8);
-  //ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0,0.2,0.8);
+
+  /*** TEMP CONTROL PANEL ***/
+ 
+  dev = 2;
+  for (pin=0;pin<8;pin++) {
+    ret = digital_input(te, MCP23017_TYPE, dev, pin, &inputvalue, 0);
+    if (ret == 1) {
+      printf("Digital Input %i of MCP23017 %i changed to: %i \n", pin, dev, inputvalue);
+    }
+  }
+
+  dev = 2;
+  *value = 1;
+  for (pin=8;pin<11;pin++) {
+    ret = digital_output(te, MCP23017_TYPE, dev, pin, value);
+  }
+
+  /* Temp indicator Gauge Servo */
+  dev = 0;
+  *fvalue = 100.0;
+  ret = servo_output(te, PCA9685_TYPE, dev, 0, fvalue,0.0,100.0,0.1,0.93);
 
   /* *fvalue = 1.0; */
   /* ret = pwm_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0); */

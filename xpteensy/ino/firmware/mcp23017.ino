@@ -79,13 +79,12 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t
           /* read input asap when initialized */
           mcp23017_read(dev);
         } else if (pinmode == PINMODE_OUTPUT) {
-          mcp23017_data[dev].pinmode[pin] = pinmode;
-          mcp23017[dev].pinMode(pin, OUTPUT);
-          mcp23017_write(dev, pin, val);
-
           if (DEBUG > 0) {
             Serial.printf("INIT: MCP23017 Device %i Pin %i initialized as OUTPUT \n", dev, pin);
           }
+          mcp23017_data[dev].pinmode[pin] = pinmode;
+          mcp23017[dev].pinMode(pin, OUTPUT);
+          mcp23017_write(dev, pin, val);
         } else {
           if (DEBUG > 0) {
             Serial.printf("INIT: MCP23017 Device %i Pin %i can only be INPUT or OUTPUT \n", dev, pin);
@@ -134,15 +133,17 @@ void mcp23017_write(int8_t dev, int8_t pin, int16_t val) {
               mcp23017[dev].writeGPIOB(bitstate);
             }
             if (DEBUG > 1) {
-              Serial.printf("WRITE: MCP23017 Device %i Pin %i Data ", dev, pin);
+              Serial.printf("WRITE: MCP23017 Device %i Bit Data ", dev);
               for (int i = 0; i < 8; i++) {
                 bool b = bitstate & 0x80;
                 Serial.printf("%i", b);
                 bitstate = bitstate << 1;
               }
               Serial.printf("\n");
+            } else if (DEBUG > 0) {
+              Serial.printf("WRITE: MCP23017 Device %i Pin %i Digital Value %i \n", dev, pin,val);            
             }
-          }  // value is 0 or 1
+          } // value is 0 or 1 
         }    // value has changed
       } else {
         if (DEBUG > 0) {

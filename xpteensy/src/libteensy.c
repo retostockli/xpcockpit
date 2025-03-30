@@ -716,7 +716,7 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 	    retval = -1;
 	  }
 	} else if (type == MCP23017_TYPE) {
-	  if ((dev <= 0) && (dev < MAX_DEV)) {
+	  if ((dev >= 0) && (dev < MAX_DEV)) {
 	    if (mcp23017[te][dev].connected == 1) {
 		if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
 		  if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) {

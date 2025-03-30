@@ -158,13 +158,15 @@ void B737NAV::Render()
     
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
-    float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
+    //float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
     float *track_mag;
     if (is_captain) {
       track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
     } else {
       track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
     }
+    track_mag = link_dataref_flt("xpserver/track_mag",-1);
+    
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
     // Get Map Mode (APP/VOR/MAP/PLN)
