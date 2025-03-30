@@ -439,10 +439,10 @@ void read_wxr() {
 	      /* interpolate temporary WXR array into WXR array */
 	      //nearest_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
 	      //nearest_int(wxr_height_tmp, wxr_height, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
-	      //bilinear_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
-	      //bilinear_int(wxr_height_tmp, wxr_height, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
-	      bicubic_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
-	      bicubic_int(wxr_height_tmp, wxr_height, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      bilinear_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      bilinear_int(wxr_height_tmp, wxr_height, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      //bicubic_uchar(wxr_data_tmp, wxr_data, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
+	      //bicubic_int(wxr_height_tmp, wxr_height, wxr_ncol_tmp, wxr_nlin_tmp, wxr_ncol, wxr_nlin);
 	    } else {
 	      /* copy temporary WXR array to WXR array */
 	      for (j = 0; j < wxr_nlin; j++) {

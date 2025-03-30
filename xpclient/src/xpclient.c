@@ -63,22 +63,23 @@ int main (int argc,char **argv)
   /* subscribe to specific datarefs */
 
   // a custom dataref which can be accessed by other plugins/clients
-  int *custom = link_dataref_int("xpserver/customdataref");
+  //int *custom = link_dataref_int("xpserver/customdataref");
   // the plane's latitude
-  double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
+  //double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
   // the EGT of engine 0
-  float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, -1);
+  //float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, -1);
   // the EGT of engine 1
   //float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 16, 1, 0);
 
-  float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-1); /* Gain should go from 0.1 .. 2.0 */
+  //float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-1); /* Gain should go from 0.1 .. 2.0 */
  
     
-  unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
+  //unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
 
-  float *track_mag = link_dataref_flt("xpserver/track_mag",-1);
+  //float *track_mag = link_dataref_flt("xpserver/track_mag",-1);
   
-  float *test = link_dataref_flt("xpserver/test",-1);
+  float *ftest = link_dataref_flt("xpserver/ftest",-1);
+  int *itest = link_dataref_int("xpserver/itest");
   
   /*
   unsigned char *fmc1 = link_dataref_byte_arr("laminar/B738/fmc1/Line02_X", 40,-1);
@@ -142,18 +143,20 @@ int main (int argc,char **argv)
       /* 	*custom = 1; */
       /* } */
 
-      if (*track_mag != FLT_MISS) {
-	printf("TRACK MAG: %f \n",*track_mag);
-	*track_mag += 1.0;
-	if (*track_mag > 359.0) *track_mag = 0.0;
-      } else {
-	*track_mag = 1.0;
-      }
+      /* if (*track_mag != FLT_MISS) { */
+      /* 	printf("TRACK MAG: %f \n",*track_mag); */
+      /* 	*track_mag += 1.0; */
+      /* 	if (*track_mag > 359.0) *track_mag = 0.0; */
+      /* } else { */
+      /* 	*track_mag = 1.0; */
+      /* } */
 
-      *test = 2.0;
+      //*itest = 2;
+      //*ftest = 2.0;
       
-      printf("wxr gain: %f \n", *wxr_gain);
-      printf("test: %f \n", *test);
+      //printf("wxr gain: %f \n", *wxr_gain);
+      printf("int test: %f \n", *ftest);
+      printf("float test: %i \n", *itest);
 
       /* if (acf_tailnum) { */
       /* 	printf("ACF TAILNUM: %s \n",acf_tailnum); */

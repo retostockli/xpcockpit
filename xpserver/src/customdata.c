@@ -212,60 +212,59 @@ int allocate_customdata(int type, int nelements, char datarefname[]) {
       }
 	
     }
-      
-  }
 
-  // Create our custom integer dataref
-  dataref = XPLMRegisterDataAccessor(datarefname,
-				     type,                     // The types we support
-				     1,                        // Writable
-				     GetDataiCB,  SetDataiCB,  // Integer accessors
-				     GetDatafCB,  SetDatafCB,  // Float accessors
-				     GetDatadCB,  SetDatadCB,  // Doubles accessors
-				     GetDataviCB, SetDataviCB, // Int array accessors
-				     GetDatavfCB, SetDatavfCB, // Float array accessors
-				     GetDatabCB,  SetDatabCB,  // Raw data accessors
-				     &customdata[offset],      // Read Refcon
-				     &customdata[offset]);     // Write Refcon
-  if (XPLMIsDataRefGood(dataref)) {
-    /* dataref created, reset it to missing value and set it to writable */
-    switch (type) {
-    case XPTYPE_INT:
-      XPLMSetDatai(dataref, INT_MISS);
-      break;
-    case XPTYPE_FLT:
-      XPLMSetDataf(dataref, FLT_MISS);
-      break;
-    case XPTYPE_DBL:
-      XPLMSetDatad(dataref, DBL_MISS);
-      break;
-    case XPTYPE_INT_ARR:
-      datai = INT_MISS;
-      for (j=0;j<nelements;j++) {
-	XPLMSetDatavi(dataref, &datai,j,1);
+    // Create our custom integer dataref
+    dataref = XPLMRegisterDataAccessor(datarefname,
+				       type,                     // The types we support
+				       1,                        // Writable
+				       GetDataiCB,  SetDataiCB,  // Integer accessors
+				       GetDatafCB,  SetDatafCB,  // Float accessors
+				       GetDatadCB,  SetDatadCB,  // Doubles accessors
+				       GetDataviCB, SetDataviCB, // Int array accessors
+				       GetDatavfCB, SetDatavfCB, // Float array accessors
+				       GetDatabCB,  SetDatabCB,  // Raw data accessors
+				       &customdata[offset],      // Read Refcon
+				       &customdata[offset]);     // Write Refcon
+    if (XPLMIsDataRefGood(dataref)) {
+      /* dataref created, reset it to missing value and set it to writable */
+      switch (type) {
+      case XPTYPE_INT:
+	XPLMSetDatai(dataref, INT_MISS);
+	break;
+      case XPTYPE_FLT:
+	XPLMSetDataf(dataref, FLT_MISS);
+	break;
+      case XPTYPE_DBL:
+	XPLMSetDatad(dataref, DBL_MISS);
+	break;
+      case XPTYPE_INT_ARR:
+	datai = INT_MISS;
+	for (j=0;j<nelements;j++) {
+	  XPLMSetDatavi(dataref, &datai,j,1);
+	}
+	break;
+      case XPTYPE_FLT_ARR:
+	dataf = FLT_MISS;
+	for (j=0;j<nelements;j++) {
+	  XPLMSetDatavf(dataref, &dataf,j,1);
+	}
+	break;
+      case XPTYPE_BYTE_ARR:
+	datab = 0;
+	for (j=0;j<nelements;j++) {
+	  XPLMSetDatab(dataref, &datab,j,1);
+	}
+	break;
+      default:
+	if (verbose > 0) fprintf(logfileptr,"Unsupported data type %i for custom dataref %s \n",type,datarefname);
+	return -1;
       }
-      break;
-    case XPTYPE_FLT_ARR:
-      dataf = FLT_MISS;
-      for (j=0;j<nelements;j++) {
-	XPLMSetDatavf(dataref, &dataf,j,1);
-      }
-      break;
-    case XPTYPE_BYTE_ARR:
-      datab = 0;
-      for (j=0;j<nelements;j++) {
-	XPLMSetDatab(dataref, &datab,j,1);
-      }
-      break;
-    default:
-      if (verbose > 0) fprintf(logfileptr,"Unsupported data type %i for custom dataref %s \n",type,datarefname);
+      
+      if (verbose > 1) fprintf(logfileptr, "Registered custom dataref in X-Plane %s \n",datarefname);
+    } else {
+      if (verbose > 0) fprintf(logfileptr, "Could not register custom dataref %s \n",datarefname);
       return -1;
     }
-      
-    if (verbose > 1) fprintf(logfileptr, "Registered custom dataref in X-Plane %s \n",datarefname);
-  } else {
-    if (verbose > 0) fprintf(logfileptr, "Could not register custom dataref %s \n",datarefname);
-    return -1;
   }
 
   return 0;
