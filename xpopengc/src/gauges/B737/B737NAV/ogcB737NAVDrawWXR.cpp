@@ -159,7 +159,7 @@ namespace OpenGC
 
 	/* free WXR array and recreate it if we have new WXR data */
 	float mean_wxr_gain = Mean(NUM_HIST,m_wxr_gain);
-	//printf("%f %f \n",*wxr_gain,mean_wxr_gain);
+	printf("%i %f %f \n",wxr_newdata,*wxr_gain,mean_wxr_gain);
 	if ((wxr_newdata == 1) || (*wxr_gain <= (mean_wxr_gain - 0.03)) || (*wxr_gain >= (mean_wxr_gain + 0.03))) {
 	  printf("Plotting New WXR Data in NAV Display\n");
 	  m_wxr_ncol = wxr_ncol;
