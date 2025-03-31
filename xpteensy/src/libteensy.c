@@ -176,6 +176,9 @@ int init_teensy() {
 	} /* pin defined */
       } /* loop over pins */
 
+      /* wait for 10 ms to make sure teensy hardware has initialized */
+      usleep(10000);
+
       /* initialize MCP23017 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if (mcp23017[te][dev].connected == 1) {
@@ -213,6 +216,9 @@ int init_teensy() {
 	  } /* loop over pins */
 	}
       }
+
+      /* wait for 10 ms to make sure teensy hardware has initialized */
+      usleep(10000);
       
       /* initialize PCA9685 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
@@ -252,6 +258,9 @@ int init_teensy() {
 	  } /* loop over pins */
 	}
       }
+
+      /* wait for 10 ms to make sure teensy hardware has initialized */
+      usleep(10000);
       
       /* initialize AS5048B boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
@@ -284,6 +293,9 @@ int init_teensy() {
 	  }
 	}
       }
+
+      /* wait for 10 ms to make sure teensy hardware has initialized */
+      usleep(10000);
       
       /* initialize HT16K33 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
@@ -307,6 +319,9 @@ int init_teensy() {
 	  }
 	}
       }
+
+      /* wait for 10 ms to make sure teensy hardware has initialized */
+      usleep(10000);
           
       /* initialize internal programs on Teensy */
       /* initialize last, since motors, potentiometers etc. used by programs need to be known before */

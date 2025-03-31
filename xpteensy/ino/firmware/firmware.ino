@@ -81,7 +81,7 @@ void setup() {
   teensy_data.mac[0] = mac[4];
   teensy_data.mac[1] = mac[5];
   Udp.begin(teensy_data.port);
-  Udp.setReceiveQueueCapacity(100);
+  Udp.setReceiveQueueCapacity(1000);
   Serial.printf("UDP: initialized.\n");
 
   // init teensy data structure
@@ -100,6 +100,7 @@ void setup() {
   //Wire2.begin();
   //Wire.setClock(1000000); // 1MHz is fast but may not work with all I2C devices
   Wire.setClock(400000);  // 400kHz is fine
+  //Wire.setClock(100000);  // 100kHz is fine
                           //Wire1.setClock(400000);
                           //Wire2.setClock(400000);
 }

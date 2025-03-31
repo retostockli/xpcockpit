@@ -23,7 +23,7 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t
 
         if (ret == 0) {
           if (DEBUG > 0) {
-            Serial.printf("INIT: MCP23017 Device %i could not be connected to I2C bus \n", dev);
+            Serial.printf("INIT: MCP23017 Device %i could not be connected to I2C bus %i with address 0x%02x \n", dev,wirenum,address);
           }
         } else {
           if (intpin == INITVAL) {
@@ -32,7 +32,7 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t
             mcp23017_data[dev].wire = wirenum;
             mcp23017_data[dev].address = address;
             if (DEBUG > 0) {
-              Serial.printf("INIT: MCP23017 Device %i connected to I2C bus %i (OUTPUT ONLY)\n", dev, wirenum);
+              Serial.printf("INIT: MCP23017 Device %i connected to I2C bus %i with address 0x%02x (OUTPUT ONLY)\n", dev, wirenum,address);
             }
           } else {
             /* Interrupt pin: used for inputs */
@@ -43,7 +43,7 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t
 
             if (teensy_data.pinmode[intpin] == PINMODE_INTERRUPT) {
               if (DEBUG > 0) {
-                Serial.printf("INIT: MCP23017 Device %i connected to I2C bus %i with Teensy Interrupt Pin %i \n", dev, wirenum, intpin);
+                Serial.printf("INIT: MCP23017 Device %i connected to I2C bus %i with address 0x%02x with Teensy Interrupt Pin %i \n", dev, wirenum, address, intpin);
               }
               mcp23017_data[dev].connected = 1;
               mcp23017_data[dev].wire = wirenum;

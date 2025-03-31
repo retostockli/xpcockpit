@@ -63,13 +63,22 @@ void init_b737_overheadfwd(void)
   // Controls Overhead-to-Pedestal Light Intensity from Pedestal Potentiometer
   teensy[te].pinmode[28] = PINMODE_PWM; 
 
+  /* Analog Inputs on Teensy:
+     38 (A14) CONT CAB
+     39 (A15) FWD CAB
+     40 (A16) AFT CAB
+     41 (A17) CIRCUIT BREAKER POT */
+  for (pin=38;pin<42;pin++) {
+    teensy[te].pinmode[pin] = PINMODE_ANALOGINPUTMEDIAN;
+  }
+  
   dev = 0;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
   mcp23017[te][dev].intpin = 0; // also define pin 6 of teensy as INTERRUPT above!
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x20; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x20 ^ 0x50; // I2C address of MCP23017 device
   
   dev = 1;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
@@ -77,7 +86,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = INITVAL; // also define pin 6 of teensy as INTERRUPT above!
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x21; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x21 ^ 0x50; // I2C address of MCP23017 device
 
   dev = 2;
   for (pin=0;pin<8;pin++) {
@@ -93,7 +102,8 @@ void init_b737_overheadfwd(void)
   dev = 0;
   for (pin=0;pin<PCA9685_MAX_PINS;pin++) {
     //for (pin=0;pin<1;pin++) {
-    pca9685[te][dev].pinmode[pin] = PINMODE_SERVO;
+    //pca9685[te][dev].pinmode[pin] = PINMODE_SERVO;
+    pca9685[te][dev].pinmode[pin] = PINMODE_PWM;
   }
   pca9685[te][dev].wire = 0;
   pca9685[te][dev].address = 0x40;
@@ -153,7 +163,7 @@ void b737_overheadfwd(void)
   /* Yaw Damper Coil */
   ret = digital_output(te, TEENSY_TYPE, 0, 29, &zero);
 
-  *value = 1;
+  *value = 0;
   dev = 1;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     ret = digital_output(te, MCP23017_TYPE, dev, pin, value);
@@ -170,16 +180,23 @@ void b737_overheadfwd(void)
     }
   }
 
+  /* read analog input (Pin 38 / A14) for CONT CAB TEMPERATURE */
+  ret = analog_input(te,38,fvalue,0.0,100.0);
+  if (ret == 1) {
+    printf("Analog Input changed to: %f \n",*fvalue);
+  }
+    
   dev = 2;
-  *value = 1;
+  *value = 0;
   for (pin=8;pin<11;pin++) {
     ret = digital_output(te, MCP23017_TYPE, dev, pin, value);
   }
-
+  
   /* Temp indicator Gauge Servo */
   dev = 0;
   *fvalue = 100.0;
-  ret = servo_output(te, PCA9685_TYPE, dev, 0, fvalue,0.0,100.0,0.1,0.93);
+  //ret = servo_output(te, PCA9685_TYPE, dev, 0, fvalue,0.0,100.0,0.05,0.93);
+  ret = pwm_output(te, PCA9685_TYPE, dev, 0, fvalue,0.0,100.0);
 
   /* *fvalue = 1.0; */
   /* ret = pwm_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0); */

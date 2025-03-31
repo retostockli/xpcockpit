@@ -9,23 +9,40 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
 
         if (wirenum == 0) {
           pca9685[dev] = Adafruit_PWMServoDriver(address, Wire);
+          //pca9685[dev] = Adafruit_PWMServoDriver();
         } else if (wirenum == 1) {
           pca9685[dev] = Adafruit_PWMServoDriver(address, Wire1);
         } else if (wirenum == 2) {
           pca9685[dev] = Adafruit_PWMServoDriver(address, Wire2);
-        } else {
+        }
+
+        if ((wirenum < 0) || (wirenum > 2)) {
           if (DEBUG > 0) {
             Serial.printf("INIT: PCA9685 Dev %i Wire Number %i Out of Range. Wire Number can only be 0, 1 or 2 \n", dev, wirenum);
           }
+        } else {
+          if (pca9685[dev].begin()) {
+            //pca9685[dev].reset();
+            //pca9685[dev].wakeup();
+            pca9685[dev].setOscillatorFrequency(27000000);
+            pca9685[dev].setPWMFreq(50);  // Maximum PWM Frequency for PWM operation
+            //pca9685[dev].setPWMFreq(1600);  // Maximum PWM Frequency for PWM operation
+
+            pca9685_data[dev].connected = 1;
+            pca9685_data[dev].wire = wirenum;
+            pca9685_data[dev].address = address;
+
+            delay(10);
+
+            if (DEBUG > 0) {
+              Serial.printf("INIT: PCA9685 Device %i connected to I2C bus %i with address 0x%02x \n", dev, wirenum, address);
+            }
+          } else {
+            if (DEBUG > 0) {
+              Serial.printf("INIT: PCA9685 Device %i could not be connected to I2C bus %i with address 0x%02x \n", dev, wirenum, address);
+            }
+          }
         }
-
-        pca9685[dev].begin();
-        pca9685[dev].setOscillatorFrequency(27000000);
-        pca9685[dev].setPWMFreq(50);  // Maximum PWM Frequency for PWM operation
-
-        pca9685_data[dev].connected = 1;
-        pca9685_data[dev].wire = wirenum;
-        pca9685_data[dev].address = address;
       }
 
       /* Only initialize pins of connected devices */
@@ -36,30 +53,31 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
           pca9685_data[dev].pinmode[pin] = pinmode;
 
           if (DEBUG > 0) {
-            Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as PWM \n", dev, pin);
+            Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as PWM with value %i \n", dev, pin, val);
           }
         } else if (pinmode == PINMODE_SERVO) {
           pca9685_data[dev].val_save[pin] = INITVAL;  // reset pin state so that it will be sent to client after read
           pca9685_data[dev].pinmode[pin] = pinmode;
 
           if (DEBUG > 0) {
-            Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as SERVO \n", dev, pin);
+            Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as SERVO with value %i \n", dev, pin, val);
           }
         } else {
           if (DEBUG > 0) {
             Serial.printf("INIT: PCA9685 Device %i Pin %i can only be PWM or SERVO\n", dev, pin);
           }
         }
+        pca9685_data[dev].val[pin] = INITVAL;
         pca9685_write(dev, pin, val);
-      } else {
-        if (DEBUG > 0) {
-          Serial.printf("INIT: PCA9685 Device Number %i out of range \n", dev);
-        }
       }
     } else {
       if (DEBUG > 0) {
-        Serial.printf("INIT: PCA9685 Device %i Pin %i out of range \n", dev, pin);
+        Serial.printf("INIT: PCA9685 Device Number %i out of range \n", dev);
       }
+    }
+  } else {
+    if (DEBUG > 0) {
+      Serial.printf("INIT: PCA9685 Device %i Pin %i out of range \n", dev, pin);
     }
   }
 }
@@ -75,7 +93,8 @@ void pca9685_write(int8_t dev, int8_t pin, int16_t val) {
 
               if ((val >= 0) && (val < pow(2, PCA9685_PWM_NBITS))) {
                 pca9685_data[dev].val[pin] = val;
-                pca9685[dev].setPin(pin, val);
+                //pca9685[dev].setPin(pin, val);
+                pca9685[dev].setPWM(pin, 2000, val);
                 if (DEBUG > 0) {
                   Serial.printf("WRITE: PCA9685 Device %i PWM %i has value %i \n", dev, pin, val);
                 }
