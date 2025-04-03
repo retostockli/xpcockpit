@@ -11,6 +11,10 @@
 //#define IP "192.168.1.66" /* Boeing 737 Throttle Quadrant */
 #define IP "192.168.1.67" /* Boeing 737 Forward Overhead */
 
+//#define WIRESPEED 1000000  /* 1 MHz mostly too fast for some devices */
+#define WIRESPEED 400000  /* 400 kHz mostly ok */
+//#define WIRESPEED 100000  /* 100 kHz always ok for all devices */
+
 //#include <Ethernet.h>
 //#include <EthernetUdp.h>
 #include <QNEthernet.h>
@@ -96,13 +100,13 @@ void setup() {
   // current of the Teensy controller and leads to large noise in the
   // analog inputs
   Wire.begin();
+  Wire.setClock(WIRESPEED);
+  
   // Wire1.begin();
-  //Wire2.begin();
-  //Wire.setClock(1000000); // 1MHz is fast but may not work with all I2C devices
-  Wire.setClock(400000);  // 400kHz is fine
-  //Wire.setClock(100000);  // 100kHz is fine
-                          //Wire1.setClock(400000);
-                          //Wire2.setClock(400000);
+  // Wire1.setClock(WIRESPEED);
+  // Wire2.begin();
+  // Wire2.setClock(WIRESPEED);
+  
 }
 
 void loop() {

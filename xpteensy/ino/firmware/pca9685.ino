@@ -9,7 +9,6 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
 
         if (wirenum == 0) {
           pca9685[dev] = Adafruit_PWMServoDriver(address, Wire);
-          //pca9685[dev] = Adafruit_PWMServoDriver();
         } else if (wirenum == 1) {
           pca9685[dev] = Adafruit_PWMServoDriver(address, Wire1);
         } else if (wirenum == 2) {
@@ -22,8 +21,15 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
           }
         } else {
           if (pca9685[dev].begin()) {
-            //pca9685[dev].reset();
-            //pca9685[dev].wakeup();
+            /* reset wire speed since pca9685 begin sets it to 100 kHz */
+            if (wirenum == 0) {
+              Wire.setClock(WIRESPEED);
+            } else if (wirenum == 1) {
+              Wire1.setClock(WIRESPEED);
+            } else if (wirenum == 2) {
+              Wire2.setClock(WIRESPEED);
+            }
+
             pca9685[dev].setOscillatorFrequency(27000000);
             pca9685[dev].setPWMFreq(50);  // Maximum PWM Frequency for PWM operation
             //pca9685[dev].setPWMFreq(1600);  // Maximum PWM Frequency for PWM operation
@@ -93,8 +99,8 @@ void pca9685_write(int8_t dev, int8_t pin, int16_t val) {
 
               if ((val >= 0) && (val < pow(2, PCA9685_PWM_NBITS))) {
                 pca9685_data[dev].val[pin] = val;
-                //pca9685[dev].setPin(pin, val);
-                pca9685[dev].setPWM(pin, 2000, val);
+                pca9685[dev].setPin(pin, val);
+                //pca9685[dev].setPWM(pin, 0, val);
                 if (DEBUG > 0) {
                   Serial.printf("WRITE: PCA9685 Device %i PWM %i has value %i \n", dev, pin, val);
                 }

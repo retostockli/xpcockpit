@@ -735,31 +735,33 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 	    if (mcp23017[te][dev].connected == 1) {
 		if ((pin >= 0) && (pin < MCP23017_MAX_PINS)) {
 		  if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) {
-		    if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
-		      if (input_type == 0) {
-			/* simple pushbutton / switch */
-			if (*value != mcp23017[te][dev].val[pin]) {
-			  if (verbose > 1) printf("Pushbutton: Teensy %i MCP23017 %i Pin %i Changed to %i %i \n",
-						  te, dev, pin, *value,mcp23017[te][dev].val[pin]);
-			  *value = mcp23017[te][dev].val[pin];
-			  retval = 1;
-			}
-		      } else {
-			/* toggle state everytime you press button */
-			/* check if the switch state changed from 0 -> 1 */
-			if ((mcp23017[te][dev].val[pin] == 1) && (mcp23017[te][dev].val_save[pin] == 0)) {
-			  /* toggle */
-			  if (*value != INT_MISS) {
-			    if ((*value == 0) || (*value == 1)) {
-			      *value = 1 - (*value);
-			      retval = 1;
-			      if (verbose > 1) printf("Toogle Switch: Teensy %i MCP23017 %i Pin %i Changed to %i \n",
-						      te, dev, pin, *value);
-			    } else {
-			      printf("Toogle Switch: Teensy %i MCP23017 %i Pin %i Needs to be 0 or 1, has value %i \n",
-				     te, dev, pin, *value);
-			      retval = -1;
-			    }
+		    if (input_type == 0) {
+		      /* simple pushbutton / switch */
+		      if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
+			if (verbose > 1) printf("Pushbutton: Teensy %i MCP23017 %i Pin %i Changed to %i %i \n",
+						te, dev, pin, *value,mcp23017[te][dev].val[pin]);
+			*value = mcp23017[te][dev].val[pin];
+			retval = 1;
+		      }
+		      /* always return current value if not initial value */
+		      if (mcp23017[te][dev].val[pin] != INITVAL) {
+			*value = mcp23017[te][dev].val[pin];
+		      } 
+		    } else {
+		      /* toggle state everytime you press button */
+		      /* check if the switch state changed from 0 -> 1 */
+		      if ((mcp23017[te][dev].val[pin] == 1) && (mcp23017[te][dev].val_save[pin] == 0)) {
+			/* toggle */
+			if (*value != INT_MISS) {
+			  if ((*value == 0) || (*value == 1)) {
+			    *value = 1 - (*value);
+			    retval = 1;
+			    if (verbose > 1) printf("Toogle Switch: Teensy %i MCP23017 %i Pin %i Changed to %i \n",
+						    te, dev, pin, *value);
+			  } else {
+			    printf("Toogle Switch: Teensy %i MCP23017 %i Pin %i Needs to be 0 or 1, has value %i \n",
+				   te, dev, pin, *value);
+			    retval = -1;
 			  }
 			}
 		      }
