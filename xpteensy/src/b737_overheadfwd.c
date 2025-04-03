@@ -261,17 +261,20 @@ void b737_overheadfwd(void)
     dev = 0;
     int *alt_flaps_ctrl_up = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps_ctrl_up");
     int *alt_flaps_ctrl_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps_ctrl_dn");
+    int *alt_flaps_ctrl_dn_HOLD = link_dataref_cmd_hold("laminar/B738/toggle_switch/alt_flaps_ctrl_dn");
     float *alt_flaps_ctrl_pos = link_dataref_flt("laminar/B738/toggle_switch/alt_flaps_ctrl",0);
-    ival = 0;
-    ival2 = 0;
-    ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
-    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival2, 0);
-    fval = 0;
-    if (ival == 1) fval = 1;
-    if (ival2 == 1) fval = -1;
-    ret = set_state_updnf(&fval,alt_flaps_ctrl_pos,alt_flaps_ctrl_dn,alt_flaps_ctrl_up);
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, alt_flaps_ctrl_dn_HOLD, 0);
     if (ret != 0) {
-      printf("ALT FLAPS CTRL %f %i %i  \n",fval,ival,ival2);
+      printf("ALT FLAPS CTRL %i \n",*alt_flaps_ctrl_dn_HOLD);
+    }
+    
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival, 0);
+    if (*alt_flaps_ctrl_dn_HOLD == 0) {
+      if (ival == 1) {fval = -1.0;} else {fval = 0.0;};
+      ret = set_state_updnf(&fval,alt_flaps_ctrl_pos,alt_flaps_ctrl_dn,alt_flaps_ctrl_up);
+      if (ret != 0) {
+	printf("ALT FLAPS CTRL %f \n",fval);
+      }
     }
 
     for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
