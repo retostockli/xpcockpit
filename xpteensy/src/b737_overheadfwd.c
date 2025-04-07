@@ -200,7 +200,7 @@ void b737_overheadfwd(void)
 
   if (*fvalue == FLT_MISS) *fvalue = 0.0;
   if (*value == INT_MISS) *value = 1;
-
+ 
   /* only run for Laminar 737 or ZIBO 737 */
   if ((acf_type == 2) || (acf_type == 3)) {
     
@@ -259,24 +259,8 @@ void b737_overheadfwd(void)
     /* ----------------- */
 
     dev = 0;
-    int *alt_flaps_ctrl_up = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps_ctrl_up");
-    int *alt_flaps_ctrl_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps_ctrl_dn");
-    int *alt_flaps_ctrl_dn_HOLD = link_dataref_cmd_hold("laminar/B738/toggle_switch/alt_flaps_ctrl_dn");
-    float *alt_flaps_ctrl_pos = link_dataref_flt("laminar/B738/toggle_switch/alt_flaps_ctrl",0);
-    ret = digital_input(te, MCP23017_TYPE, dev, 2, alt_flaps_ctrl_dn_HOLD, 0);
-    if (ret != 0) {
-      printf("ALT FLAPS CTRL %i \n",*alt_flaps_ctrl_dn_HOLD);
-    }
-    
-    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival, 0);
-    if (*alt_flaps_ctrl_dn_HOLD == 0) {
-      if (ival == 1) {fval = -1.0;} else {fval = 0.0;};
-      ret = set_state_updnf(&fval,alt_flaps_ctrl_pos,alt_flaps_ctrl_dn,alt_flaps_ctrl_up);
-      if (ret != 0) {
-	printf("ALT FLAPS CTRL %f \n",fval);
-      }
-    }
 
+    /* FOR TESTING */
     for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
       ret = digital_input(te, MCP23017_TYPE, dev, pin, &inputvalue, 0);
       if (ret == 1) {
@@ -290,8 +274,91 @@ void b737_overheadfwd(void)
       }
     }
 
-    /* Yaw Damper Coil */
-    ret = digital_output(te, TEENSY_TYPE, 0, 29, &zero);
+    int *spoiler_A_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_A");
+    float *spoiler_A_pos = link_dataref_flt("laminar/B738/switches/spoiler_A_pos",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
+    if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
+    ret = set_state_togglef(&fval,spoiler_A_pos,spoiler_A_toggle);
+    if (ret != 0) {
+      printf("SPOILER A OFF %i \n",(int) fval);
+    }
+
+    int *spoiler_B_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_B");
+    float *spoiler_B_pos = link_dataref_flt("laminar/B738/switches/spoiler_B_pos",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
+    if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
+    ret = set_state_togglef(&fval,spoiler_B_pos,spoiler_B_toggle);
+    if (ret != 0) {
+      printf("SPOILER B OFF %i \n",(int) fval);
+    }
+
+    int *alt_flaps_ctrl_up = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps_ctrl_up");
+    int *alt_flaps_ctrl_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps_ctrl_dn");
+    int *alt_flaps_ctrl_dn_HOLD = link_dataref_cmd_hold("laminar/B738/toggle_switch/alt_flaps_ctrl_dn");
+    float *alt_flaps_ctrl_pos = link_dataref_flt("laminar/B738/toggle_switch/alt_flaps_ctrl",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, alt_flaps_ctrl_dn_HOLD, 0);
+    if (ret != 0) {
+      printf("ALT FLAPS CTRL DOWN HOLD %i \n",*alt_flaps_ctrl_dn_HOLD);
+    }
+    
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival, 0);
+    if ((*alt_flaps_ctrl_dn_HOLD == 0) && (*alt_flaps_ctrl_pos != 1.0)) {
+      if (ival == 1) {fval = -1.0;} else {fval = 0.0;};
+      ret = set_state_updnf(&fval,alt_flaps_ctrl_pos,alt_flaps_ctrl_dn,alt_flaps_ctrl_up);
+      if (ret != 0) {
+	printf("ALT FLAPS CTRL %i \n",(int) fval);
+      }
+    }
+
+    int *alt_flaps_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps");
+    float *alt_flaps_pos = link_dataref_flt("laminar/B738/switches/alt_flaps_pos",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
+    ret = set_state_togglef(&fval,alt_flaps_pos,alt_flaps_toggle);
+    if (ret != 0) {
+      printf("ALTERNATE FLAPS ARM: %i \n",(int) fval);
+    }
+
+    int *flt_ctrl_A_up = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_ctr_A_up");
+    int *flt_ctrl_A_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_ctr_A_dn");
+    float *flt_ctrl_A_pos = link_dataref_flt("laminar/B738/switches/flt_ctr_A_pos",0);
+    fval = 0.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 8, &ival, 0);
+    if (ival == 1) fval = 1.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 9, &ival, 0);
+    if (ival == 1) fval = -1.0;
+    ret = set_state_updnf(&fval,flt_ctrl_A_pos,flt_ctrl_A_dn,flt_ctrl_A_up);
+    if (ret != 0) {
+      printf("FLT CTRL A %i \n",(int) fval);
+    }
+
+    int *flt_ctrl_B_up = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_ctr_B_up");
+    int *flt_ctrl_B_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_ctr_B_dn");
+    float *flt_ctrl_B_pos = link_dataref_flt("laminar/B738/switches/flt_ctr_B_pos",0);
+    fval = 0.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 10, &ival, 0);
+    if (ival == 1) fval = 1.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 11, &ival, 0);
+    if (ival == 1) fval = -1.0;
+    ret = set_state_updnf(&fval,flt_ctrl_B_pos,flt_ctrl_B_dn,flt_ctrl_B_up);
+    if (ret != 0) {
+      printf("FLT CTRL B %i \n",(int) fval);
+    }
+
+    int *yaw_damper_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/yaw_dumper");
+    float *yaw_damper_pos = link_dataref_flt("laminar/B738/toggle_switch/yaw_dumper_pos",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 12, &ival, 0);
+    if (ival == 1) { fval = 1.0; } else { fval = 0.0; };
+    ret = set_state_togglef(&fval,yaw_damper_pos,yaw_damper_toggle);
+    if (ret != 0) {
+      printf("YAW DAMPER %i %f %i \n",ival, *yaw_damper_pos, *yaw_damper_toggle);
+    }
+
+    /* Yaw Damper Coil: activate if X-Plane's YD Switch is ON.
+       This needs at least one ping pong round of signal between
+       pressing the hardware switch and receiving the switch position
+       back from X-Plane. But this allows that X-Plane cancels the coil. */
+    ret = digital_outputf(te, TEENSY_TYPE, 0, 29, yaw_damper_pos);
 
     *value = 0;
     dev = 1;
