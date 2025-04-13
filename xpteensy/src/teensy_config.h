@@ -46,7 +46,7 @@
 #define SERVO_MINANGLE 0       /* minimum angle of servos (deg) */
 #define SERVO_MAXANGLE 180     /* maximum angle of servos (deg)*/
 #define SERVO_MINPULSE 600     /* minimum pulse width of servos (us) default 544 */
-#define SERVO_MAXPULSE 2600    /* maximum pulse width of servos (us) default 2400 */
+#define SERVO_MAXPULSE 2400    /* maximum pulse width of servos (us) default 2400 */
 #define MAX_PROG 5        // maximum number of programs
 #define MAX_VARS 10       // maximum number of internal variables for programs
 #define MAX_PINS 42       // maximum number of pins on a teensy

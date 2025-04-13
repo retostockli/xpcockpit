@@ -181,7 +181,7 @@ int init_teensy() {
 
       /* initialize MCP23017 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
-	if (mcp23017[te][dev].connected == 1) {
+	if ((mcp23017[te][dev].connected == 1) && (mcp23017[te][dev].wire != INITVAL)) {
 	  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
 	    if ((mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) ||
 		(mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)) {
@@ -222,7 +222,7 @@ int init_teensy() {
       
       /* initialize PCA9685 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
-	if (pca9685[te][dev].connected == 1) {
+	if ((pca9685[te][dev].connected == 1) && (pca9685[te][dev].wire != INITVAL)) {
 	  for (pin=0;pin<PCA9685_MAX_PINS;pin++) {
 	    if ((pca9685[te][dev].pinmode[pin] == PINMODE_PWM) ||
 		(pca9685[te][dev].pinmode[pin] == PINMODE_SERVO)) {
@@ -264,7 +264,7 @@ int init_teensy() {
       
       /* initialize AS5048B boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
-	if (as5048b[te][dev].connected == 1) {
+	if ((as5048b[te][dev].connected == 1) && (as5048b[te][dev].wire != INITVAL)) {
 	  memset(teensySendBuffer,0,SENDMSGLEN);
 	  if (verbose > 0) {
 	    if (as5048b[te][dev].type == 0)
@@ -299,7 +299,7 @@ int init_teensy() {
       
       /* initialize HT16K33 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
-	if (ht16k33[te][dev].connected == 1) {
+	if ((ht16k33[te][dev].connected == 1) && (ht16k33[te][dev].wire != INITVAL)) {
 	  memset(teensySendBuffer,0,SENDMSGLEN);
 	  if (verbose > 0) printf("Teensy %i HT16K33 %i Initialized \n",te,dev);
 	  teensySendBuffer[0] = TEENSY_ID1; /* T */
@@ -328,7 +328,7 @@ int init_teensy() {
       /* for now: send 3x 16 bit values and 3x 8 bit values (may need extension for other programs) */
       /* also: programs may send values back (not currently implemented) */
       for (prog=0;prog<MAX_PROG;prog++) {
-	if (program[te][prog].connected == 1) {
+	if ((program[te][prog].connected == 1) && (program[te][prog].type != INITVAL)) {
 	  memset(teensySendBuffer,0,SENDMSGLEN);
 	  if (verbose > 0) {
 	    if (program[te][prog].type == PROGRAM_CLOSEDLOOP) {
@@ -413,7 +413,7 @@ int send_teensy() {
 
       /* Send changed values to MCP23017 daughter board outputs via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
-	if (mcp23017[te][dev].connected == 1) {
+	if ((mcp23017[te][dev].connected == 1) && (mcp23017[te][dev].wire != INITVAL)) {
 	  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
 	    if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT) {
 	      if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
@@ -443,7 +443,7 @@ int send_teensy() {
 
       /* Send changed values to PCA9685 daughter board pwm/servos via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
-	if (pca9685[te][dev].connected == 1) {
+	if ((pca9685[te][dev].connected == 1) && (pca9685[te][dev].wire != INITVAL)) {
 	  for (pin=0;pin<PCA9685_MAX_PINS;pin++) {
 	    if ((pca9685[te][dev].pinmode[pin] == PINMODE_PWM) ||
 		(pca9685[te][dev].pinmode[pin] == PINMODE_SERVO)) {
@@ -474,7 +474,7 @@ int send_teensy() {
 
       /* Send changed values to HT16K33 daughter board via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
-	if (ht16k33[te][dev].connected == 1) {
+	if ((ht16k33[te][dev].connected == 1) && (ht16k33[te][dev].wire != INITVAL)) {
 	  for (dig=0;dig<HT16K33_MAX_DIG;dig++) {
 	    if (ht16k33[te][dev].val[dig] != ht16k33[te][dev].val_save[dig]) {
 	      memset(teensySendBuffer,0,SENDMSGLEN);
@@ -502,7 +502,7 @@ int send_teensy() {
 
       /* Send changed values to internal program running on Teensy */
       for (prog=0;prog<MAX_PROG;prog++) {
-	if (program[te][prog].connected == 1) {
+	if ((program[te][prog].connected == 1) && (program[te][prog].type != INITVAL)) {
 	  if ((program[te][prog].val8[0] != program[te][prog].val8_save[0]) ||
 	      (program[te][prog].val8[1] != program[te][prog].val8_save[1]) ||
 	      (program[te][prog].val8[2] != program[te][prog].val8_save[2]) ||

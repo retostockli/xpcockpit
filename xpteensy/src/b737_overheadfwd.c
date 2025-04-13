@@ -43,25 +43,10 @@
   XOR 0x70       	OFF 	OFF
 */
 
-/* permanent storage */
-float dc_power_pos;
-float ac_power_pos;
-float l_eng_start_pos;
-float r_eng_start_pos;
-float air_valve_ctrl_pos;
-float l_wiper_pos;
-float r_wiper_pos;
-float vhf_nav_source_pos;
-float irs_source_pos;
-float display_source_pos;
-float control_panel_source_pos;
-float flt_ctrl_A_pos;
-float flt_ctrl_B_pos;
-
-int smoking1;
-int smoking2;
-
 int count;
+
+float l_wiper;
+float r_wiper;
 
 void init_b737_overheadfwd(void)
 {
@@ -134,7 +119,7 @@ void init_b737_overheadfwd(void)
   /* ht16k33[te][0].wire = 0; */
   /* ht16k33[te][0].address = 0x70; */
     
-  /* ---- -----------  */
+  /* ----------------- */
   /* FLT CONTROL PANEL */
   /* ----------------- */
   
@@ -142,7 +127,7 @@ void init_b737_overheadfwd(void)
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
-  mcp23017[te][dev].intpin = 0; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][dev].intpin = 0; // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x20 ^ 0x70; // I2C address of MCP23017 device
 
@@ -150,15 +135,70 @@ void init_b737_overheadfwd(void)
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
   }
-  mcp23017[te][dev].intpin = INITVAL; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][dev].intpin = INITVAL;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x21 ^ 0x70; // I2C address of MCP23017 device
 
+  /* -----------------------  */
+  /* NAV / DISP CONTROL PANEL */
+  /* ------------------------ */
+  
+  dev = 2;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 1;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x22 ^ 0x70; // I2C address of MCP23017 device
+
+  /* --------------- */
+  /* FUEL PUMP Panel */
+  /* --------------- */
+
+  dev = 3;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x23 ^ 0x70; // I2C address of MCP23017 device
+
+  /* ------------- */
+  /*  CENTER Panel */
+  /* ------------- */
+
+  dev = 8;
+  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 8;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x20; // I2C address of MCP23017 device
+  
+  /* --------------------- */
+  /*  LANDING LIGHTS Panel */
+  /* --------------------- */
+
+  dev = 9;
+  for (pin=0;pin<4;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=4;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 9;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x21; // I2C address of MCP23017 device
+  
+ 
   /* ------------------ */
   /* TEMP CONTROL PANEL */
   /* ------------------ */
   
-  dev = 2;  // CHANGE ME
+  dev = 10;  // CHANGE ME
   for (pin=0;pin<8;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
@@ -176,11 +216,10 @@ void b737_overheadfwd(void)
 
   int ret;
   int te = 0;
-  int pin;
   int dev;
 
-  int one = 1;
-  int zero = 0;
+  //int one = 1;
+  //int zero = 0;
 
   int ival;
   int ival2;
@@ -190,16 +229,11 @@ void b737_overheadfwd(void)
   char buffer[100];
   int cover;
   int ncover;
- 
-  int inputvalue;
 
-
-  /* link integer data like a switch in the cockpit */
-  int *value = link_dataref_int("xpserver/digitalvalue");
-  float *fvalue = link_dataref_flt("xpserver/analogvalue",0);
-
-  if (*fvalue == FLT_MISS) *fvalue = 0.0;
-  if (*value == INT_MISS) *value = 1;
+  /* SET CONT CAB POTENTIOMETER IN TEMP PANEL TO TEST SERVOS IN OVHD PANEL */
+  float servoval;
+  int servotest = 0;
+  ret = analog_input(te,38,&servoval,0.0,1.0);
  
   /* only run for Laminar 737 or ZIBO 737 */
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -247,9 +281,8 @@ void b737_overheadfwd(void)
 
     /* Pedestal Light PWM controlled by Pedestal Potentiometer */
     /* TODO: LINK PEDESTAL POTENTIOMETER DATAREF */
-    *fvalue = 0.5;
     ret = digital_output(te, TEENSY_TYPE, 0, 26, avionics_on);
-    ret = pwm_output(te, TEENSY_TYPE, 0, 28, fvalue,0.0,1.0);
+    //ret = pwm_output(te, TEENSY_TYPE, 0, 28, fvalue,0.0,1.0);
 
     /* Background Lighting (Direct Potentiometer MOSFET control */
     ret = digital_output(te, TEENSY_TYPE, 0, 27, avionics_on);
@@ -261,18 +294,18 @@ void b737_overheadfwd(void)
     dev = 0;
 
     /* FOR TESTING */
-    for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
-      ret = digital_input(te, MCP23017_TYPE, dev, pin, &inputvalue, 0);
-      if (ret == 1) {
-	printf("Digital Input %i of MCP23017 %i changed to: %i \n", pin, dev, inputvalue);
+    /* for (pin=0;pin<MCP23017_MAX_PINS;pin++) { */
+    /*   ret = digital_input(te, MCP23017_TYPE, dev, pin, &inputvalue, 0); */
+    /*   if (ret == 1) { */
+    /* 	printf("Digital Input %i of MCP23017 %i changed to: %i \n", pin, dev, inputvalue); */
 
-	if (inputvalue == 1) {
-	  count ++;
-	  if (count > 15) count = 0;
-	  printf("COUNT: %i \n",count);
-	}
-      }
-    }
+    /* 	if (inputvalue == 1) { */
+    /* 	  count ++; */
+    /* 	  if (count > 15) count = 0; */
+    /* 	  printf("COUNT: %i \n",count); */
+    /* 	} */
+    /*   } */
+    /* } */
 
     int *spoiler_A_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_A");
     float *spoiler_A_pos = link_dataref_flt("laminar/B738/switches/spoiler_A_pos",0);
@@ -352,7 +385,10 @@ void b737_overheadfwd(void)
     ret = set_state_togglef(&fval,yaw_damper_pos,yaw_damper_toggle);
     if (ret != 0) {
       printf("YAW DAMPER %i %f %i \n",ival, *yaw_damper_pos, *yaw_damper_toggle);
-    }
+      count ++;
+      if (count > 15) count = 0;
+      printf("COUNT: %i \n",count);
+     }
 
     /* Yaw Damper Coil: activate if X-Plane's YD Switch is ON.
        This needs at least one ping pong round of signal between
@@ -360,41 +396,428 @@ void b737_overheadfwd(void)
        back from X-Plane. But this allows that X-Plane cancels the coil. */
     ret = digital_outputf(te, TEENSY_TYPE, 0, 29, yaw_damper_pos);
 
-    *value = 0;
+    /* Annunciators */
     dev = 1;
-    for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
-     ret = digital_output(te, MCP23017_TYPE, dev, pin, value);
+
+    if ((*lights_test == 1.0) && (*avionics_on == 1)) {ival = 1;} else {ival = 0;};
+
+    /* FEEL DIFF PRESS 0 */
+    float *diff_press = link_dataref_flt("laminar/B738/annunciator/feel_diff_press",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 0, diff_press);
+    /* SPEED TRIM FAIL 1 */
+    ret = digital_output(te, MCP23017_TYPE, dev, 1, &ival);
+    /* MACH TRIM FAIL 2 */
+    ret = digital_output(te, MCP23017_TYPE, dev, 2, &ival);
+    /* AUTO SLAT FAIL 3 */
+    float *auto_slat_fail = link_dataref_flt("laminar/B738/annunciator/auto_slat_fail",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 3, auto_slat_fail);
+    /* STDBY HYDRAULICS LOW QUANTITY 4 */
+    ret = digital_output(te, MCP23017_TYPE, dev, 4, &ival);
+    /* STDBY HYDRAULICS LOW_PRESSURE 5 */
+    float *stby_hyd_press = link_dataref_flt("laminar/B738/annunciator/hyd_stdby_rud",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, stby_hyd_press);
+    /* STDBY HYDRAULICS STBY RUD ON 6 */
+    float *stby_rud_on = link_dataref_flt("laminar/B738/annunciator/std_rud_on",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 6, stby_rud_on);
+    /* YAW DAMPER 8 */
+    float *yaw_damper_on = link_dataref_flt("laminar/B738/annunciator/yaw_damp",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, yaw_damper_on);
+    /* FLT CONTROL B LOW PRESSURE 9 */
+    float *hyd_B_press = link_dataref_flt("laminar/B738/annunciator/hyd_B_rud",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, hyd_B_press);
+    /* FLT CONTROL A LOW PRESSURE 10 */
+    float *hyd_A_press = link_dataref_flt("laminar/B738/annunciator/hyd_A_rud",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, hyd_A_press);
+
+
+    /* -----------------------  */
+    /* NAV / DISP CONTROL PANEL */
+    /* ------------------------ */
+    
+    dev = 2;
+
+    int *vhf_nav_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/vhf_nav_source_lft");
+    int *vhf_nav_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/vhf_nav_source_rgt");
+    float *vhf_nav_source_pos = link_dataref_flt("laminar/B738/toggle_switch/vhf_nav_source",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival2, 0);
+    float vhf_nav_source = 0.0;
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) vhf_nav_source = (float) (ival2 - ival);
+    ret = set_state_updnf(&vhf_nav_source,vhf_nav_source_pos,vhf_nav_source_right,vhf_nav_source_left);
+    if (ret != 0) {
+      printf("VHF NAV SOURCE %i \n",(int) vhf_nav_source);
     }
+    
+    int *irs_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_source_left");
+    int *irs_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_source_right");
+    float *irs_source_pos = link_dataref_flt("laminar/B738/toggle_switch/irs_source",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival2, 0);
+    float irs_source = 0.0;
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) irs_source = (float) (ival2 - ival);
+    ret = set_state_updnf(&irs_source,irs_source_pos,irs_source_right,irs_source_left);
+    if (ret != 0) {
+      printf("IRS SOURCE %i \n",(int) irs_source);
+    }
+
+    int *control_panel_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/dspl_ctrl_pnl_left");
+    int *control_panel_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/dspl_ctrl_pnl_right");
+    float *control_panel_source_pos = link_dataref_flt("laminar/B738/toggle_switch/dspl_ctrl_pnl",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival2, 0);
+    float control_panel_source = 0.0;
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) control_panel_source = (float) (ival2 - ival);
+    ret = set_state_updnf(&control_panel_source,control_panel_source_pos,
+			  control_panel_source_right,control_panel_source_left);
+    if (ret != 0) {
+      printf("CONTROL PANEL SOURCE %i \n",(int) control_panel_source);
+    }
+
+    int *display_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/dspl_source_left");
+    int *display_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/dspl_source_right");
+    float *display_source_pos = link_dataref_flt("laminar/B738/toggle_switch/dspl_source",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 6, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 7, &ival2, 0);
+    float display_source = 0.0;
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) display_source = (float) (ival2 - ival);
+    ret = set_state_updnf(&display_source,display_source_pos,display_source_right,display_source_left);
+    if (ret != 0) {
+      printf("DISPLAY SOURCE %i \n",(int) display_source);
+    }
+    
+    /* --------------- */
+    /* FUEL PUMP Panel */
+    /* --------------- */
+    
+    dev = 3;
+
+    float *cross_feed = link_dataref_flt("laminar/B738/knobs/cross_feed_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 8, cross_feed, 0);
+    if (ret != 0) {
+      printf("CROSS FEED %i \n",(int) *cross_feed);
+    }
+    float *fuel_pump_ctr_1_on = link_dataref_flt("laminar/B738/fuel/fuel_tank_pos_ctr1",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 9, fuel_pump_ctr_1_on, 0);
+    if (ret != 0) {
+      printf("CENTER FUEL PUMP L %i \n",(int) *fuel_pump_ctr_1_on);
+    }
+    float *fuel_pump_ctr_2_on = link_dataref_flt("laminar/B738/fuel/fuel_tank_pos_ctr2",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 10, fuel_pump_ctr_2_on, 0);
+    if (ret != 0) {
+      printf("CENTER FUEL PUMP R %i \n",(int) *fuel_pump_ctr_2_on);
+    }
+    float *fuel_pump_aft_1_on = link_dataref_flt("laminar/B738/fuel/fuel_tank_pos_lft1",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 11, fuel_pump_aft_1_on, 0);
+    if (ret != 0) {
+      printf("AFT FUEL PUMP 1 %i \n",(int) *fuel_pump_aft_1_on);
+    }
+    float *fuel_pump_fwd_1_on = link_dataref_flt("laminar/B738/fuel/fuel_tank_pos_lft2",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 12, fuel_pump_fwd_1_on, 0);
+    if (ret != 0) {
+      printf("FWD FUEL PUMP 1 %i \n",(int) *fuel_pump_fwd_1_on);
+    }
+    float *fuel_pump_fwd_2_on = link_dataref_flt("laminar/B738/fuel/fuel_tank_pos_rgt2",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 13, fuel_pump_fwd_2_on, 0);
+    if (ret != 0) {
+      printf("FWD FUEL PUMP 2 %i \n",(int) *fuel_pump_fwd_2_on);
+    }
+    float *fuel_pump_aft_2_on = link_dataref_flt("laminar/B738/fuel/fuel_tank_pos_rgt1",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 14, fuel_pump_aft_2_on, 0);
+    if (ret != 0) {
+      printf("AFT FUEL PUMP 2 %i \n",(int) *fuel_pump_aft_2_on);
+    }
+
+    float *bypass_filter_1 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 0, bypass_filter_1);
+    float *bypass_filter_2 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 1, bypass_filter_2);
+    float *low_press_ctr_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 2, low_press_ctr_1);
+    float *low_press_ctr_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 3, low_press_ctr_2);
+    float *low_press_aft_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 4, low_press_aft_1);
+    float *low_press_fwd_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, low_press_fwd_1);
+    float *low_press_fwd_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 6, low_press_fwd_2);
+    float *low_press_aft_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 7, low_press_aft_2);
+
+    dev = 1;
+    float *eng_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/eng1_valve_closed",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 0, eng_valve_closed_1,0.0,1.0);
+    float *spar_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/spar1_valve_closed",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 1, spar_valve_closed_1,0.0,1.0);
+    float *eng_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/eng2_valve_closed",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 2, eng_valve_closed_2,0.0,1.0);
+    float *spar_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/spar2_valve_closed",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 3, spar_valve_closed_2,0.0,1.0);
+    float *cross_feed_valve = link_dataref_flt("laminar/B738/annunciator/crossfeed",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 4, cross_feed_valve,0.0,1.0);
+
+    dev = 0;
+    float *fuel_temp = link_dataref_flt("laminar/B738/engine/fuel_temp",0);
+    if (servotest == 1) {
+      ret = servo_output(te, PCA9685_TYPE, dev, 1, &servoval,0.0,1.0,0.0,1.0);
+    } else {
+      ret = servo_output(te, PCA9685_TYPE, dev, 1, fuel_temp,-50.0,50.0,0.089,0.96);
+    }
+
+
+    /* ------------- */
+    /*  CENTER Panel */
+    /* ------------- */
+    
+    dev = 8;
+
+    /* Fasten Seat Belts */
+    int *belts_up = link_dataref_cmd_once("laminar/B738/toggle_switch/seatbelt_sign_up");
+    int *belts_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/seatbelt_sign_dn");
+    float *belts_pos = link_dataref_flt("laminar/B738/toggle_switch/seatbelt_sign_pos",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival2, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
+    float belts;
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) belts = (float) (ival*2 + (1-ival)*(1-ival2));
+    ret = set_state_updnf(&belts,belts_pos,belts_dn,belts_up);
+    if (ret == 1) {
+      printf("Fasten Belts: %i \n",(int) belts);
+    }
+    
+    /* Chimes Only / No Smoking */
+    /* TEMPORARY Set to Payload Presets */
+    int *zone1 = link_dataref_int_arr("laminar/B738/tab/zone1_payload",3,-1);
+    int *zone2 = link_dataref_int_arr("laminar/B738/tab/zone2_payload",3,-1);
+    int *zone3 = link_dataref_int_arr("laminar/B738/tab/zone3_payload",3,-1);
+    int *zone4 = link_dataref_int_arr("laminar/B738/tab/zone4_payload",3,-1);
+    int *zone5 = link_dataref_int_arr("laminar/B738/tab/zone5_payload",3,-1);
+    int *cargo1 = link_dataref_int("laminar/B738/tab/zone_cargo1_payload");
+    int *cargo2 = link_dataref_int("laminar/B738/tab/zone_cargo2_payload");
+
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival2, 0);
+    if (ret == 1) {
+      if (ival2 == 0) {
+	printf("Aircraft Payload: Medium\n");
+      } else {
+	printf("Aircraft Payload: Full\n");
+      }
+    }
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
+    if (ret == 1) {
+      if (ival == 1) {
+	printf("Aircraft Payload: Empty\n");
+      } else {
+	printf("Aircraft Payload: Medium\n");
+      }
+    }
+
+    if ((ival == 0) && (ival2 == 1)) {
+      /* Empty */
+      zone1[0] = 0;
+      zone1[1] = 0;
+      zone1[2] = 0;
+      zone2[0] = 0;
+      zone2[1] = 0;
+      zone2[2] = 0;
+      zone3[0] = 0;
+      zone3[1] = 0;
+      zone3[2] = 0;
+      zone4[0] = 0;
+      zone4[1] = 0;
+      zone4[2] = 0;
+      zone5[0] = 0;
+      zone5[1] = 0;
+      zone5[2] = 0;
+      *cargo1 = 0;
+      *cargo2 = 0;
+    } else if ((ival == 0) && (ival2 == 0)) {
+      /* Medium */
+      zone1[0] = 2;
+      zone1[1] = 3;
+      zone1[2] = 2;
+      zone2[0] = 6;
+      zone2[1] = 6;
+      zone2[2] = 6;
+      zone3[0] = 6;
+      zone3[1] = 6;
+      zone3[2] = 6;
+      zone4[0] = 6;
+      zone4[1] = 6;
+      zone4[2] = 6;
+      zone5[0] = 6;
+      zone5[1] = 6;
+      zone5[2] = 6;
+      *cargo1 = 1650;
+      *cargo2 = 2300;
+     } else {
+      /* Full */
+      zone1[0] = 6;
+      zone1[1] = 4;
+      zone1[2] = 6;
+      zone2[0] = 12;
+      zone2[1] = 12;
+      zone2[2] = 12;
+      zone3[0] = 12;
+      zone3[1] = 12;
+      zone3[2] = 12;
+      zone4[0] = 12;
+      zone4[1] = 12;
+      zone4[2] = 12;
+      zone5[0] = 12;
+      zone5[1] = 12;
+      zone5[2] = 12;
+      *cargo1 = 3500;
+      *cargo2 = 4600;
+     }
+
+    int *exit_lights_up = link_dataref_cmd_once("laminar/B738/toggle_switch/emer_exit_lights_up");
+    int *exit_lights_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/emer_exit_lights_dn");
+    float *exit_lights_pos = link_dataref_flt("laminar/B738/toggle_switch/emer_exit_lights",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival2, 0);
+    float exit_lights = 0.0;
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) exit_lights = (float) (2*ival2 + (1-ival));
+    ret = set_state_updnf(&exit_lights,exit_lights_pos,exit_lights_dn,exit_lights_up);
+    if (ret == 1) {
+      printf("EMERGENCY Exit Lights: %i \n",(int) exit_lights);
+    }
+
+    float *eq_cool_supply = link_dataref_flt("laminar/B738/toggle_switch/eq_cool_supply",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 7, eq_cool_supply, 0);
+    if (ret == 1) {
+      printf("EQUIP COOLING SUPPLY: %i \n",(int) *eq_cool_supply);
+    }
+    float *eq_cool_exhaust = link_dataref_flt("laminar/B738/toggle_switch/eq_cool_exhaust",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 6, eq_cool_exhaust, 0);
+    if (ret == 1) {
+      printf("EQUIP COOLING EXHAUST: %i \n",(int) *eq_cool_exhaust);
+    }
+      
+    int *attend = link_dataref_cmd_hold("laminar/B738/push_button/attend");
+    ret = digital_input(te, MCP23017_TYPE, dev, 8, attend, 0);
+    if (ret == 1) {
+      printf("ATTEND: %i \n",*attend);
+    }
+
+    int *grd_call = link_dataref_cmd_hold("laminar/B738/push_button/grd_call");
+    ret = digital_input(te, MCP23017_TYPE, dev, 9, grd_call, 0);
+    if (ret == 1) {
+      printf("GRD CALL: %i \n",*grd_call);
+    }
+     
+    ret = digital_input(te, MCP23017_TYPE, dev, 10, &ival, 0);
+    if (ret == 1) {
+      printf("RAIN REPPELLENT L: %i \n",ival);
+    }
+     
+    ret = digital_input(te, MCP23017_TYPE, dev, 11, &ival, 0);
+    if (ret == 1) {
+      printf("RAIN REPPELLENT R: %i \n",ival);
+    }
+     
+    int *r_wiper_up = link_dataref_cmd_once("laminar/B738/knob/right_wiper_up");
+    int *r_wiper_dn = link_dataref_cmd_once("laminar/B738/knob/right_wiper_dn");
+    float *r_wiper_pos = link_dataref_flt("laminar/B738/switches/right_wiper_pos",0);
+
+    ret = digital_input(te, MCP23017_TYPE, dev, 12, &ival, 0);
+    if (ival == 1) r_wiper = 0.0; // PARK
+    ret = digital_input(te, MCP23017_TYPE, dev, 13, &ival, 0);
+    if (ival == 1) r_wiper = 1.0; // INT
+    ret = digital_input(te, MCP23017_TYPE, dev, 14, &ival, 0);
+    if (ival == 1) r_wiper = 2.0; // LOW
+    ret = digital_input(te, MCP23017_TYPE, dev, 15, &ival, 0);
+    if (ival == 1) r_wiper = 3.0; // HIGHT
+
+    ret = set_state_updnf(&r_wiper,r_wiper_pos,r_wiper_up,r_wiper_dn);
+    if (ret != 0) {
+      printf("Right Wiper %i \n",(int) r_wiper);
+    }
+
+    
+    /* --------------------- */
+    /*  LANDING LIGHTS Panel */
+    /* --------------------- */
+    
+    dev = 9;
+
+    ival = 1;
+    /* ALTERNATE EQ EXHAUST OFF */
+    ret = digital_output(te, MCP23017_TYPE, dev, 0, &ival);
+    ival = 1;
+    /* ALTERNATE EQ SUPPLY OFF */
+    ret = digital_output(te, MCP23017_TYPE, dev, 1, &ival);
+    ival = 1;
+    /* NOT ARMED Annunciator */
+    ret = digital_output(te, MCP23017_TYPE, dev, 2, &ival);
+    ival = 1;
+    /* CALL Annunciator */
+    ret = digital_output(te, MCP23017_TYPE, dev, 3, &ival);
 
 
     /* ------------------ */
     /* TEMP CONTROL PANEL */
     /* ------------------ */
- 
-    dev = 2;
-    for (pin=0;pin<8;pin++) {
-      ret = digital_input(te, MCP23017_TYPE, dev, pin, &inputvalue, 0);
-      if (ret == 1) {
-	printf("Digital Input %i of MCP23017 %i changed to: %i \n", pin, dev, inputvalue);
-      }
-    }
-    
-    dev = 2;
-    *value = 1;
-    for (pin=8;pin<11;pin++) {
-      ret = digital_output(te, MCP23017_TYPE, dev, pin, value);
-    }
 
-    /* read analog input (Pin 38 / A14) for CONT CAB TEMPERATURE */
-    ret = analog_input(te,38,fvalue,0.0,100.0);
+    /* Air Temperature Source Selector Knob */
+    dev = 10;
+    
+    float *air_temp_source = link_dataref_flt("laminar/B738/toggle_switch/air_temp_source",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
+    if (ival == 1) *air_temp_source = 0.0; // DUCT SUPPLY CONT CAB
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
+    if (ival == 1) *air_temp_source = 1.0; // DUCT SUPPLY FWD
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
+    if (ival == 1) *air_temp_source = 2.0; // DUCT SUPPLY AFT
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival, 0);
+    if (ival == 1) *air_temp_source = 3.0; // PASS CAB FWD
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    if (ival == 1) *air_temp_source = 4.0; // PASS CAB AFT
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival, 0);
+    if (ival == 1) *air_temp_source = 5.0; // PACK R
+    ret = digital_input(te, MCP23017_TYPE, dev, 6, &ival, 0);
+    if (ival == 1) *air_temp_source = 6.0; // PACK L
+
+    /* Trim Air Switch */
+    float *trim_air = link_dataref_flt("laminar/B738/air/trim_air_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 7, trim_air, 0);
+
+    /* Yellow Annunciators */  
+ 
+    if ((*lights_test == 1.0) && (*avionics_on == 1)) {ival = 1;} else {ival = 0;};
+
+    /* CONT CAB ZONE TEMP ANNUNCIATOR */
+    ret = digital_output(te, MCP23017_TYPE, dev, 8, &ival);
+    /* FWD CAB ZONE TEMP ANNUNCIATOR */
+    ret = digital_output(te, MCP23017_TYPE, dev, 9, &ival);
+    /* AFT CAB ZONE TEMP ANNUNCIATOR */
+    ret = digital_output(te, MCP23017_TYPE, dev, 10, &ival);
+
+    /* Zone Temp Potentiometers */
+    float *cont_cab_rheostat = link_dataref_flt("laminar/B738/air/cont_cab_temp/rheostat",-2);
+    ret = analog_input(te,38,cont_cab_rheostat,0.0,1.0);
     if (ret == 1) {
-      printf("Analog Input changed to: %f \n",*fvalue);
+      printf("CONT CAB TEMP RHEO: %f \n",*cont_cab_rheostat);
+    }
+    float *fwd_cab_rheostat = link_dataref_flt("laminar/B738/air/fwd_cab_temp/rheostat",-2);
+    ret = analog_input(te,39,fwd_cab_rheostat,0.0,1.0);
+    if (ret == 1) {
+      printf("FWD CAB TEMP RHEO: %f \n",*fwd_cab_rheostat);
+    }
+    float *aft_cab_rheostat = link_dataref_flt("laminar/B738/air/aft_cab_temp/rheostat",-2);
+    ret = analog_input(te,40,aft_cab_rheostat,0.0,1.0);
+    if (ret == 1) {
+      printf("AFT CAB TEMP RHEO: %f \n",*aft_cab_rheostat);
     }
   
     /* Temp indicator Gauge Servo */
     dev = 0;
-    ret = servo_output(te, PCA9685_TYPE, dev, 0, fvalue,0.0,100.0,0.04,0.85);
-
+    float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",0);
+    if (servotest == 1) {
+      ret = servo_output(te, PCA9685_TYPE, dev, 0, &servoval,0.0,1.0,0.07,0.90);
+    } else {
+      ret = servo_output(te, PCA9685_TYPE, dev, 0, zone_temp,0.0,100.0,0.03,0.87);
+    }
+      
   } else {
     /* A few basic switches for other ACF */
   }

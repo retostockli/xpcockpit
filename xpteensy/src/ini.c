@@ -260,6 +260,7 @@ int ini_read(char* programPath, char* iniName)
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
  	printf("PROGRAMS: %i\n",ival);
 	for (j=0;j<MAX_PROG;j++) {
+	  program[i][j].type = INITVAL;
 	  for (k=0;k<MAX_VARS;k++) {
 	    program[i][j].val8[k] = INITVAL;
 	    program[i][j].val16[k] = INITVAL;

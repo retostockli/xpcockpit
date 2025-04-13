@@ -59,14 +59,22 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
           pca9685_data[dev].pinmode[pin] = pinmode;
 
           if (DEBUG > 0) {
-            Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as PWM with value %i \n", dev, pin, val);
+            if (val == INITVAL) {
+             Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as PWM \n", dev, pin);
+            } else {
+              Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as PWM with value %i \n", dev, pin, val);
+            }
           }
         } else if (pinmode == PINMODE_SERVO) {
           pca9685_data[dev].val_save[pin] = INITVAL;  // reset pin state so that it will be sent to client after read
           pca9685_data[dev].pinmode[pin] = pinmode;
 
           if (DEBUG > 0) {
-            Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as SERVO with value %i \n", dev, pin, val);
+            if (val == INITVAL) {
+              Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as SERVO \n", dev, pin);
+            } else {
+              Serial.printf("INIT: PCA9685 Device %i Pin %i initialized as SERVO with value %i \n", dev, pin, val);
+            }
           }
         } else {
           if (DEBUG > 0) {
