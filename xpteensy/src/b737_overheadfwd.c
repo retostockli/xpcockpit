@@ -45,8 +45,12 @@
 
 int count;
 
+/* to be preserved variables */
 float l_wiper;
 float r_wiper;
+float l_eng_start;
+float r_eng_start;
+
 
 void init_b737_overheadfwd(void)
 {
@@ -129,7 +133,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = 0; // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x20 ^ 0x70; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x20 ^ 0x70; //(0x50) I2C address of MCP23017 device
 
   dev = 1;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
@@ -137,7 +141,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = INITVAL;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x21 ^ 0x70; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x21 ^ 0x70; // (0x51) I2C address of MCP23017 device
 
   /* -----------------------  */
   /* NAV / DISP CONTROL PANEL */
@@ -149,7 +153,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = 1;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x22 ^ 0x70; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x22 ^ 0x70; // (0x52) I2C address of MCP23017 device
 
   /* --------------- */
   /* FUEL PUMP Panel */
@@ -164,7 +168,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x23 ^ 0x70; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x23 ^ 0x70; // (0x53) I2C address of MCP23017 device
 
   /* ------------- */
   /*  CENTER Panel */
@@ -193,12 +197,24 @@ void init_b737_overheadfwd(void)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x21; // I2C address of MCP23017 device
   
+  /* ------------------------------------- */
+  /*  AIRCRAFT LIGHTS & ENGINE START Panel */
+  /* ------------------------------------- */
+
+  dev = 10;
+  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 10;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x22; // I2C address of MCP23017 device
+  
  
   /* ------------------ */
   /* TEMP CONTROL PANEL */
   /* ------------------ */
   
-  dev = 10;  // CHANGE ME
+  dev = 19;  // CHANGE ME
   for (pin=0;pin<8;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
@@ -207,7 +223,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = 16; // also define pin 6 of teensy as INTERRUPT above!
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x20 ^ 0x40; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x20 ^ 0x40; // (0x60) I2C address of MCP23017 device
  
 }
 
@@ -234,12 +250,13 @@ void b737_overheadfwd(void)
   float servoval;
   int servotest = 0;
   ret = analog_input(te,38,&servoval,0.0,1.0);
+
+  int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
  
   /* only run for Laminar 737 or ZIBO 737 */
   if ((acf_type == 2) || (acf_type == 3)) {
     
     float *lights_test = link_dataref_flt("laminar/B738/annunciator/test",-1);
-    int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
 
 
     /* ------------- */
@@ -309,20 +326,26 @@ void b737_overheadfwd(void)
 
     int *spoiler_A_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_A");
     float *spoiler_A_pos = link_dataref_flt("laminar/B738/switches/spoiler_A_pos",0);
+    ival = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
-    if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
-    ret = set_state_togglef(&fval,spoiler_A_pos,spoiler_A_toggle);
-    if (ret != 0) {
-      printf("SPOILER A OFF %i \n",(int) fval);
+    if (ival != INT_MISS) {
+      if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
+      ret = set_state_togglef(&fval,spoiler_A_pos,spoiler_A_toggle);
+      if (ret != 0) {
+	printf("SPOILER A OFF %i \n",(int) fval);
+      }
     }
 
     int *spoiler_B_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_B");
     float *spoiler_B_pos = link_dataref_flt("laminar/B738/switches/spoiler_B_pos",0);
+    ival = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
-    if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
-    ret = set_state_togglef(&fval,spoiler_B_pos,spoiler_B_toggle);
-    if (ret != 0) {
-      printf("SPOILER B OFF %i \n",(int) fval);
+    if (ival != INT_MISS) {
+      if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
+      ret = set_state_togglef(&fval,spoiler_B_pos,spoiler_B_toggle);
+      if (ret != 0) {
+	printf("SPOILER B OFF %i \n",(int) fval);
+      }
     }
 
     int *alt_flaps_ctrl_up = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps_ctrl_up");
@@ -333,9 +356,10 @@ void b737_overheadfwd(void)
     if (ret != 0) {
       printf("ALT FLAPS CTRL DOWN HOLD %i \n",*alt_flaps_ctrl_dn_HOLD);
     }
-    
+
+    ival = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival, 0);
-    if ((*alt_flaps_ctrl_dn_HOLD == 0) && (*alt_flaps_ctrl_pos != 1.0)) {
+    if ((*alt_flaps_ctrl_dn_HOLD == 0) && (*alt_flaps_ctrl_pos != 1.0) && (ival != INT_MISS)) {
       if (ival == 1) {fval = -1.0;} else {fval = 0.0;};
       ret = set_state_updnf(&fval,alt_flaps_ctrl_pos,alt_flaps_ctrl_dn,alt_flaps_ctrl_up);
       if (ret != 0) {
@@ -345,8 +369,13 @@ void b737_overheadfwd(void)
 
     int *alt_flaps_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/alt_flaps");
     float *alt_flaps_pos = link_dataref_flt("laminar/B738/switches/alt_flaps_pos",0);
+    ival = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
-    if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
+    if (ival != INT_MISS) {
+      if (ival == 0) { fval = 1.0; } else { fval = 0.0; };
+    } else {
+      fval = FLT_MISS;
+    }
     ret = set_state_togglef(&fval,alt_flaps_pos,alt_flaps_toggle);
     if (ret != 0) {
       printf("ALTERNATE FLAPS ARM: %i \n",(int) fval);
@@ -380,8 +409,13 @@ void b737_overheadfwd(void)
 
     int *yaw_damper_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/yaw_dumper");
     float *yaw_damper_pos = link_dataref_flt("laminar/B738/toggle_switch/yaw_dumper_pos",0);
+    ival = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 12, &ival, 0);
-    if (ival == 1) { fval = 1.0; } else { fval = 0.0; };
+    if (ival != INT_MISS) {
+      if (ival == 1) { fval = 1.0; } else { fval = 0.0; };
+    } else {
+      fval = FLT_MISS;
+    }
     ret = set_state_togglef(&fval,yaw_damper_pos,yaw_damper_toggle);
     if (ret != 0) {
       printf("YAW DAMPER %i %f %i \n",ival, *yaw_damper_pos, *yaw_damper_toggle);
@@ -439,9 +473,11 @@ void b737_overheadfwd(void)
     int *vhf_nav_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/vhf_nav_source_lft");
     int *vhf_nav_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/vhf_nav_source_rgt");
     float *vhf_nav_source_pos = link_dataref_flt("laminar/B738/toggle_switch/vhf_nav_source",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
     ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival2, 0);
-    float vhf_nav_source = 0.0;
+    float vhf_nav_source = FLT_MISS;
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) vhf_nav_source = (float) (ival2 - ival);
     ret = set_state_updnf(&vhf_nav_source,vhf_nav_source_pos,vhf_nav_source_right,vhf_nav_source_left);
     if (ret != 0) {
@@ -451,9 +487,11 @@ void b737_overheadfwd(void)
     int *irs_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_source_left");
     int *irs_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_source_right");
     float *irs_source_pos = link_dataref_flt("laminar/B738/toggle_switch/irs_source",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
     ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival2, 0);
-    float irs_source = 0.0;
+    float irs_source = FLT_MISS;
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) irs_source = (float) (ival2 - ival);
     ret = set_state_updnf(&irs_source,irs_source_pos,irs_source_right,irs_source_left);
     if (ret != 0) {
@@ -463,9 +501,11 @@ void b737_overheadfwd(void)
     int *control_panel_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/dspl_ctrl_pnl_left");
     int *control_panel_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/dspl_ctrl_pnl_right");
     float *control_panel_source_pos = link_dataref_flt("laminar/B738/toggle_switch/dspl_ctrl_pnl",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
     ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival2, 0);
-    float control_panel_source = 0.0;
+    float control_panel_source = FLT_MISS;
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) control_panel_source = (float) (ival2 - ival);
     ret = set_state_updnf(&control_panel_source,control_panel_source_pos,
 			  control_panel_source_right,control_panel_source_left);
@@ -476,9 +516,11 @@ void b737_overheadfwd(void)
     int *display_source_left = link_dataref_cmd_once("laminar/B738/toggle_switch/dspl_source_left");
     int *display_source_right = link_dataref_cmd_once("laminar/B738/toggle_switch/dspl_source_right");
     float *display_source_pos = link_dataref_flt("laminar/B738/toggle_switch/dspl_source",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 6, &ival, 0);
     ret = digital_input(te, MCP23017_TYPE, dev, 7, &ival2, 0);
-    float display_source = 0.0;
+    float display_source = FLT_MISS;
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) display_source = (float) (ival2 - ival);
     ret = set_state_updnf(&display_source,display_source_pos,display_source_right,display_source_left);
     if (ret != 0) {
@@ -577,7 +619,7 @@ void b737_overheadfwd(void)
     float *belts_pos = link_dataref_flt("laminar/B738/toggle_switch/seatbelt_sign_pos",0);
     ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival2, 0);
     ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
-    float belts;
+    float belts = FLT_MISS;
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) belts = (float) (ival*2 + (1-ival)*(1-ival2));
     ret = set_state_updnf(&belts,belts_pos,belts_dn,belts_up);
     if (ret == 1) {
@@ -675,7 +717,7 @@ void b737_overheadfwd(void)
     float *exit_lights_pos = link_dataref_flt("laminar/B738/toggle_switch/emer_exit_lights",0);
     ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
     ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival2, 0);
-    float exit_lights = 0.0;
+    float exit_lights = FLT_MISS;
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) exit_lights = (float) (2*ival2 + (1-ival));
     ret = set_state_updnf(&exit_lights,exit_lights_pos,exit_lights_dn,exit_lights_up);
     if (ret == 1) {
@@ -719,6 +761,7 @@ void b737_overheadfwd(void)
     int *r_wiper_dn = link_dataref_cmd_once("laminar/B738/knob/right_wiper_dn");
     float *r_wiper_pos = link_dataref_flt("laminar/B738/switches/right_wiper_pos",0);
 
+    ival = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 12, &ival, 0);
     if (ival == 1) r_wiper = 0.0; // PARK
     ret = digital_input(te, MCP23017_TYPE, dev, 13, &ival, 0);
@@ -727,6 +770,8 @@ void b737_overheadfwd(void)
     if (ival == 1) r_wiper = 2.0; // LOW
     ret = digital_input(te, MCP23017_TYPE, dev, 15, &ival, 0);
     if (ival == 1) r_wiper = 3.0; // HIGHT
+
+    if ((r_wiper < 0.0) || (r_wiper > 3.0) || (ival == INT_MISS)) r_wiper = FLT_MISS;
 
     ret = set_state_updnf(&r_wiper,r_wiper_pos,r_wiper_up,r_wiper_dn);
     if (ret != 0) {
@@ -739,29 +784,273 @@ void b737_overheadfwd(void)
     /* --------------------- */
     
     dev = 9;
-
-    ival = 1;
+  
+    /* CHECK AVAILABILITY OF THOSE ANNUNCIATORS IN ZIBO */
+    
+    if ((*lights_test == 1.0) && (*avionics_on == 1)) {ival = 1;} else {ival = 0;};
     /* ALTERNATE EQ EXHAUST OFF */
     ret = digital_output(te, MCP23017_TYPE, dev, 0, &ival);
-    ival = 1;
     /* ALTERNATE EQ SUPPLY OFF */
     ret = digital_output(te, MCP23017_TYPE, dev, 1, &ival);
-    ival = 1;
     /* NOT ARMED Annunciator */
     ret = digital_output(te, MCP23017_TYPE, dev, 2, &ival);
-    ival = 1;
     /* CALL Annunciator */
     ret = digital_output(te, MCP23017_TYPE, dev, 3, &ival);
 
+    
+    /* Left Retractable Landing Light */
+    int *l_land_retractable_up = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_left_up");
+    int *l_land_retractable_dn = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_left_dn");
+    float *l_land_retractable_pos = link_dataref_flt("laminar/B738/switch/land_lights_ret_left_pos",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival2, 0);
+    float l_land_retractable = FLT_MISS;
+    if ((ival2 != INT_MISS) && (ival != INT_MISS)) l_land_retractable = (float) (ival + ival2);
+    ret = set_state_updnf(&l_land_retractable,l_land_retractable_pos,l_land_retractable_dn,l_land_retractable_up);
+    if (ret != 0) {
+      printf("Left Retractable Landing Light %i \n",(int) l_land_retractable);
+    }
 
+     /* Right Retractable Landing Light */
+    int *r_land_retractable_up = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_right_up");
+    int *r_land_retractable_dn = link_dataref_cmd_once("laminar/B738/switch/land_lights_ret_right_dn");
+    float *r_land_retractable_pos = link_dataref_flt("laminar/B738/switch/land_lights_ret_right_pos",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 6, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 7, &ival2, 0);
+    float r_land_retractable = FLT_MISS;
+    if ((ival2 != INT_MISS) && (ival != INT_MISS)) r_land_retractable = (float) (ival + ival2);
+    ret = set_state_updnf(&r_land_retractable,r_land_retractable_pos,r_land_retractable_dn,r_land_retractable_up);
+    if (ret != 0) {
+      printf("Right Retractable Landing Light %i \n",(int) r_land_retractable);
+    }
+
+    /* Left Landing Light */
+    int *l_land_off = link_dataref_cmd_once("laminar/B738/switch/land_lights_left_off");
+    int *l_land_on = link_dataref_cmd_once("laminar/B738/switch/land_lights_left_on");
+    float *l_land_pos = link_dataref_flt("laminar/B738/switch/land_lights_left_pos",0);
+    float l_land = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 8, &l_land, 0);
+    ret = set_state_updnf(&l_land,l_land_pos,l_land_on,l_land_off);
+    if (ret != 0) {
+      printf("Left Landing Light %i \n",(int) l_land);
+    }
+
+    /* Right Landing Light */
+    int *r_land_off = link_dataref_cmd_once("laminar/B738/switch/land_lights_right_off");
+    int *r_land_on = link_dataref_cmd_once("laminar/B738/switch/land_lights_right_on");
+    float *r_land_pos = link_dataref_flt("laminar/B738/switch/land_lights_right_pos",0);
+    float r_land = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 9, &r_land, 0);
+    ret = set_state_updnf(&r_land,r_land_pos,r_land_on,r_land_off);
+    if (ret != 0) {
+      printf("Right Landing Light %i \n",(int) r_land);
+    }
+
+    /* Left Runway Turnoff Light */
+    int *l_rwy_off = link_dataref_cmd_once("laminar/B738/switch/rwy_light_left_off");
+    int *l_rwy_on = link_dataref_cmd_once("laminar/B738/switch/rwy_light_left_on");
+    float *l_rwy_pos = link_dataref_flt("laminar/B738/toggle_switch/rwy_light_left",0);
+    float l_rwy = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 10, &l_rwy, 0);
+    ret = set_state_updnf(&l_rwy,l_rwy_pos,l_rwy_on,l_rwy_off);
+    if (ret != 0) {
+      printf("Left RWY TURNOFF Light %i \n",(int) l_rwy);
+    }
+    
+    /* Right Runway Turnoff Light */
+    int *r_rwy_off = link_dataref_cmd_once("laminar/B738/switch/rwy_light_right_off");
+    int *r_rwy_on = link_dataref_cmd_once("laminar/B738/switch/rwy_light_right_on");
+    float *r_rwy_pos = link_dataref_flt("laminar/B738/toggle_switch/rwy_light_right",0);
+    float r_rwy = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 11, &r_rwy, 0);
+    ret = set_state_updnf(&r_rwy,r_rwy_pos,r_rwy_on,r_rwy_off);
+    if (ret != 0) {
+      printf("Right RWY TURNOFF Light %i \n",(int) r_rwy);
+    }
+   
+    /* Taxi Light */
+    int *taxi_off = link_dataref_cmd_once("laminar/B738/toggle_switch/taxi_light_brightness_off");
+    int *taxi_on = link_dataref_cmd_once("laminar/B738/toggle_switch/taxi_light_brightness_on");
+    float *taxi_pos = link_dataref_flt("laminar/B738/toggle_switch/taxi_light_brightness_pos",0);
+    float taxi = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 12, &taxi, 0);
+    if (taxi == 1.0) taxi = 2.0; // Taxi light dataref is either 0 or 2 (?)
+    ret = set_state_updnf(&taxi,taxi_pos,taxi_on,taxi_off);
+    if (ret != 0) {
+      printf("Taxi Light %f \n", taxi);
+    }
+
+    /* APU Switch */
+    int *apu_dn = link_dataref_cmd_once("laminar/B738/spring_toggle_switch/APU_start_pos_dn");
+    int *apu_up = link_dataref_cmd_once("laminar/B738/spring_toggle_switch/APU_start_pos_up");
+    int *apu_hold_dn = link_dataref_cmd_hold("laminar/B738/spring_toggle_switch/APU_start_pos_dn");
+    float *apu_pos = link_dataref_flt("laminar/B738/spring_toggle_switch/APU_start_pos",0);
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 13, &ival, 0);
+    float apu = FLT_MISS;
+    if (*apu_pos <= 1.0) {
+      if ((ival != INT_MISS) && (ival2 != INT_MISS)) apu = (float) (1 - ival); 
+      ret = set_state_updnf(&apu,apu_pos,apu_dn,apu_up);
+      if (ret != 0) {
+	printf("APU Switch ON %i \n",(int) apu);
+      }
+    }
+    if (*apu_pos >= 1.0) {
+      ret = digital_input(te, MCP23017_TYPE, dev, 14, apu_hold_dn, 0);
+      if (ret != 0) {
+	printf("APU Switch START %i \n", *apu_hold_dn);
+      }
+    }
+    
+    /* --------------------------------------- */
+    /*  AIRCRAFT LIGHTS AND ENGINE START Panel */
+    /* --------------------------------------- */
+
+    dev = 10;
+
+    /* Ignitior Switch */
+    float *ign_source = link_dataref_flt("laminar/B738/toggle_switch/eng_start_source",0);
+    *ign_source = 0.0;
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 8, &ival, 0);
+    if (ival == 1) *ign_source = 1.0;
+    if (ret == 1) {
+      printf("IGN SOURCE %i \n",(int) *ign_source);
+    }
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 9, &ival, 0);
+    if (ival == 1) *ign_source = -1.0;
+    if (ret == 1) {
+      printf("IGN SOURCE %i \n",(int) *ign_source);
+    }
+
+    /* Left Engine Start Knob */
+    int *l_eng_start_left = link_dataref_cmd_once("laminar/B738/knob/eng1_start_left");
+    int *l_eng_start_right = link_dataref_cmd_once("laminar/B738/knob/eng1_start_right");
+    float *l_eng_start_pos = link_dataref_flt("laminar/B738/engine/starter1_pos",-1);
+    
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
+    if (ival == 1) l_eng_start = 0.0; // GRD
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
+    if (ival == 1) l_eng_start = 1.0; // AUTO
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
+    if (ival == 1) l_eng_start = 2.0; // CONT
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival, 0);
+    if (ival == 1) l_eng_start = 3.0; // FLT
+
+    if ((l_eng_start < 0.0) || (l_eng_start > 3.0) || (ival == INT_MISS)) l_eng_start = FLT_MISS;
+
+    ret = set_state_updnf(&l_eng_start,l_eng_start_pos,l_eng_start_right,l_eng_start_left);
+    if (ret != 0) {
+      printf("L Engine Start %f %f %i %i \n",
+	     l_eng_start,*l_eng_start_pos,*l_eng_start_right,*l_eng_start_left);
+    }
+
+    /* SET RELAY */
+    ival = 0;
+    if ((*l_eng_start_pos <= 0.5) && (*l_eng_start_pos != FLT_MISS)) ival = 1;
+    ret = digital_output(te, TEENSY_TYPE, 0, 30, &ival);
+
+    /* Right Engine Start Knob */
+    int *r_eng_start_left = link_dataref_cmd_once("laminar/B738/knob/eng2_start_left");
+    int *r_eng_start_right = link_dataref_cmd_once("laminar/B738/knob/eng2_start_right");
+    float *r_eng_start_pos = link_dataref_flt("laminar/B738/engine/starter2_pos",-1);
+
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    if (ival == 1) r_eng_start = 0.0; // GRD
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival, 0);
+    if (ival == 1) r_eng_start = 1.0; // AUTO
+    ret = digital_input(te, MCP23017_TYPE, dev, 6, &ival, 0);
+    if (ival == 1) r_eng_start = 2.0; // CONT
+    ret = digital_input(te, MCP23017_TYPE, dev, 7, &ival, 0);
+    if (ival == 1) r_eng_start = 3.0; // FLT
+
+    if ((r_eng_start < 0.0) || (r_eng_start > 3.0) || (ival == INT_MISS)) r_eng_start = FLT_MISS;
+    
+    ret = set_state_updnf(&r_eng_start,r_eng_start_pos,r_eng_start_right,r_eng_start_left);
+    if (ret != 0) {
+      printf("R Engine Start %f %f %i %i \n",
+	     r_eng_start,*r_eng_start_pos,*r_eng_start_right,*r_eng_start_left);
+    }
+
+    /* SET RELAY */
+    ival = 0;
+    if ((*r_eng_start_pos <= 0.5) && (*r_eng_start_pos != FLT_MISS)) ival = 1;
+    ret = digital_output(te, TEENSY_TYPE, 0, 31, &ival);
+
+    
+    /* Logo */
+    int *logo_off = link_dataref_cmd_once("laminar/B738/switch/logo_light_off");
+    int *logo_on = link_dataref_cmd_once("laminar/B738/switch/logo_light_on");
+    float *logo_pos = link_dataref_flt("laminar/B738/toggle_switch/logo_light",0);
+    float logo = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 12, &logo, 0);
+    ret = set_state_updnf(&logo,logo_pos,logo_on,logo_off);
+    if (ret != 0) {
+      printf("Logo Light %i \n",(int) logo);
+    }
+
+    /* Position Steady */
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 11, &ival, 0);
+    /* Position Strobe */
+    ival2 = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 14, &ival2, 0);
+    int *position_up = link_dataref_cmd_once("laminar/B738/toggle_switch/position_light_up");
+    int *position_dn = link_dataref_cmd_once("laminar/B738/toggle_switch/position_light_down");
+    float *position_pos = link_dataref_flt("laminar/B738/toggle_switch/position_light_pos",0);
+    float position = FLT_MISS;
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) position = (float) (-ival + ival2);
+    ret = set_state_updnf(&position,position_pos,position_up,position_dn);
+    if (ret != 0) {
+      printf("Position Light %i \n",(int) position);
+    }
+
+    /* Anti Collision: ZIBO INOP? */
+    int *beacon = link_dataref_int("sim/cockpit/electrical/beacon_lights_on");
+    ret = digital_input(te, MCP23017_TYPE, dev, 10, beacon, 0);
+    if (ret == 1) {
+      printf("Anti Collision Light %i \n", *beacon);
+    }
+
+    /* Wing: ZIBO need state dataref */
+    int *wing_off = link_dataref_cmd_once("laminar/B738/switch/wing_light_off");
+    int *wing_on = link_dataref_cmd_once("laminar/B738/switch/wing_light_on");
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 15, &ival, 0);
+    if ((ret == 1) && (ival == 1)) *wing_on = 1;
+    if ((ret == 1) && (ival == 0)) *wing_off = 1;
+    if (ret == 1) {
+      printf("Wing Light %i \n", ival);
+    }
+
+    /* Wheel Well */
+    int *wheel_off = link_dataref_cmd_once("laminar/B738/switch/wheel_light_off");
+    int *wheel_on = link_dataref_cmd_once("laminar/B738/switch/wheel_light_on");
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 13, &ival, 0);
+    if ((ret == 1) && (ival == 0)) *wheel_on = 1;
+    if ((ret == 1) && (ival == 1)) *wheel_off = 1;        
+    if (ret == 1) {
+      printf("Wheel Well Light %i \n", ival);
+    }
+
+    
     /* ------------------ */
     /* TEMP CONTROL PANEL */
     /* ------------------ */
 
     /* Air Temperature Source Selector Knob */
-    dev = 10;
+    dev = 19;
     
     float *air_temp_source = link_dataref_flt("laminar/B738/toggle_switch/air_temp_source",0);
+    ival = INT_MISS;
     ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
     if (ival == 1) *air_temp_source = 0.0; // DUCT SUPPLY CONT CAB
     ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
@@ -786,10 +1075,13 @@ void b737_overheadfwd(void)
     if ((*lights_test == 1.0) && (*avionics_on == 1)) {ival = 1;} else {ival = 0;};
 
     /* CONT CAB ZONE TEMP ANNUNCIATOR */
+    ival = INT_MISS;
     ret = digital_output(te, MCP23017_TYPE, dev, 8, &ival);
     /* FWD CAB ZONE TEMP ANNUNCIATOR */
+    ival = INT_MISS;
     ret = digital_output(te, MCP23017_TYPE, dev, 9, &ival);
     /* AFT CAB ZONE TEMP ANNUNCIATOR */
+    ival = INT_MISS;
     ret = digital_output(te, MCP23017_TYPE, dev, 10, &ival);
 
     /* Zone Temp Potentiometers */
