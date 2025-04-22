@@ -50,6 +50,8 @@ float l_wiper;
 float r_wiper;
 float l_eng_start;
 float r_eng_start;
+float ac_power;
+float dc_power;
 
 
 void init_b737_overheadfwd(void)
@@ -108,20 +110,12 @@ void init_b737_overheadfwd(void)
   pca9685[te][dev].address = 0x41;
 
   /* -------------- */
-  /* DISPLAY CARD 1 */
-  /* -------------- */
-  
-  /* ht16k33[te][0].brightness = 10; */
-  /* ht16k33[te][0].wire = 0; */
-  /* ht16k33[te][0].address = 0x70; */
-    
-  /* -------------- */
   /* DISPLAY CARD 2 */
   /* -------------- */
   
-  /* ht16k33[te][0].brightness = 10; */
-  /* ht16k33[te][0].wire = 0; */
-  /* ht16k33[te][0].address = 0x70; */
+  /* ht16k33[te][0].brightness = 10; // Display Brightness (0-15) */
+  /* ht16k33[te][0].wire = 0; // I2C Bus: 0, 1 or 2 */
+  /* ht16k33[te][0].address = 0x70; // (0xXX) I2C address of HT16K33 device */
     
   /* ----------------- */
   /* FLT CONTROL PANEL */
@@ -133,7 +127,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = 0; // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x20 ^ 0x70; //(0x50) I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x20 ^ 0x50; //(0x70) I2C address of MCP23017 device
 
   dev = 1;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
@@ -141,7 +135,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = INITVAL;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x21 ^ 0x70; // (0x51) I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x21 ^ 0x50; // (0x71) I2C address of MCP23017 device
 
   /* -----------------------  */
   /* NAV / DISP CONTROL PANEL */
@@ -153,7 +147,7 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = 1;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x22 ^ 0x70; // (0x52) I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x22 ^ 0x50; // (0x72) I2C address of MCP23017 device
 
   /* --------------- */
   /* FUEL PUMP Panel */
@@ -168,8 +162,68 @@ void init_b737_overheadfwd(void)
   }
   mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x23 ^ 0x70; // (0x53) I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x23 ^ 0x50; // (0x73) I2C address of MCP23017 device
 
+  /* --------------------- */
+  /* Power & Battery Panel */
+  /* --------------------- */
+
+  dev = 4;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=8;pin<11;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  mcp23017[te][dev].intpin = 3;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x24 ^ 0x50; // (0x74) I2C address of MCP23017 device
+
+  dev = 5;
+  for (pin=0;pin<2;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 4;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x25 ^ 0x50; // (0x75) I2C address of MCP23017 device
+
+  dev = 0;
+  ht16k33[te][dev].brightness = 10; // Display Brightness (0-15)
+  ht16k33[te][dev].wire = 0; // I2C Bus: 0, 1 or 2
+  ht16k33[te][dev].address = 0x77 ^ 0x50; // (0x27) I2C address of HT16K33 device
+
+  /* ------------------- */
+  /*  POWER SOURCE Panel */
+  /* ------------------- */
+    
+  dev = 6;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=8;pin<11;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=11;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 5;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x26 ^ 0x50; // (0x76) I2C address of MCP23017 device
+  
+  dev = 7;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  mcp23017[te][dev].intpin = 6;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x27 ^ 0x50; // (0x77) I2C address of MCP23017 device
+  
   /* ------------- */
   /*  CENTER Panel */
   /* ------------- */
@@ -231,6 +285,7 @@ void b737_overheadfwd(void)
 {
 
   int ret;
+  int ret2;
   int te = 0;
   int dev;
 
@@ -248,7 +303,7 @@ void b737_overheadfwd(void)
 
   /* SET CONT CAB POTENTIOMETER IN TEMP PANEL TO TEST SERVOS IN OVHD PANEL */
   float servoval;
-  int servotest = 0;
+  int servotest = 1;
   ret = analog_input(te,38,&servoval,0.0,1.0);
 
   int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
@@ -606,6 +661,297 @@ void b737_overheadfwd(void)
       ret = servo_output(te, PCA9685_TYPE, dev, 1, fuel_temp,-50.0,50.0,0.089,0.96);
     }
 
+
+    /* --------------------- */
+    /* Power & Battery Panel */
+    /* --------------------- */
+
+    dev = 4;
+    
+    /* AC Power Knob */
+    int *ac_power_up = link_dataref_cmd_once("laminar/B738/knob/ac_power_up");
+    int *ac_power_dn = link_dataref_cmd_once("laminar/B738/knob/ac_power_dn");
+    float *ac_power_pos = link_dataref_flt("laminar/B738/knob/ac_power",0);
+    
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
+    if (ival == 1) ac_power = 0.0; // STBY PWR
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
+    if (ival == 1) ac_power = 1.0; // GRD PWR
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
+    if (ival == 1) ac_power = 2.0; // GEN1
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival, 0);
+    if (ival == 1) ac_power = 3.0; // APU GEN
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    if (ival == 1) ac_power = 4.0; // GEN2
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival, 0);
+    if (ival == 1) ac_power = 5.0; // INV
+    ret = digital_input(te, MCP23017_TYPE, dev, 6, &ival, 0);
+    if (ival == 1) ac_power = 6.0; // TEST
+
+    if ((ac_power < 0.0) || (ac_power > 6.0) || (ival == INT_MISS)) ac_power = FLT_MISS;
+
+    ret = set_state_updnf(&ac_power,ac_power_pos,ac_power_up,ac_power_dn);
+    if (ret != 0) {
+      printf("AC Power knob %i \n",(int) ac_power);
+    }
+
+    /* MAINT Pushbutton */
+    int *maint = link_dataref_cmd_once("laminar/B738/push_button/acdc_maint");
+    ret = digital_input(te, MCP23017_TYPE, dev, 7, maint, 0);
+    if (ret == 1) {
+      printf("MAINT Button %i \n",*maint);
+    }
+
+    /* Annunciators */
+    float *bat_discharge = link_dataref_flt("laminar/B738/annunciator/bat_discharge",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, bat_discharge);
+    float *tr_unit = link_dataref_flt("laminar/B738/annunciator/tr_unit",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, tr_unit);
+    float *elec = link_dataref_flt("laminar/B738/annunciator/elec",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, elec);
+ 
+    dev = 5;
+
+    /* Galley PWR */
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
+    if (ret == 1) {
+      printf("Galley PWR %i \n",ival);
+    }
+
+    /* Battery Switch: dn is moving switch to 1 and up to 0 */
+    int *battery_up = link_dataref_cmd_once("laminar/B738/push_button/batt_full_off"); // includes guard
+    //int *battery_up = link_dataref_cmd_once("laminar/B738/switch/battery_up");
+    int *battery_dn = link_dataref_cmd_once("laminar/B738/switch/battery_dn");
+    float *battery_pos = link_dataref_flt("laminar/B738/electric/battery_pos",0);
+    float battery = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 1, &battery, 0);
+    if (battery != FLT_MISS) battery = 1.0 - battery;
+    
+    ret = set_state_updnf(&battery,battery_pos,battery_dn,battery_up);
+    if (ret != 0) {
+      printf("Battery Switch %i \n",(int) battery);
+    }
+
+    /* DC Power Knob */
+    int *dc_power_up = link_dataref_cmd_once("laminar/B738/knob/dc_power_up");
+    int *dc_power_dn = link_dataref_cmd_once("laminar/B738/knob/dc_power_dn");
+    float *dc_power_pos = link_dataref_flt("laminar/B738/knob/dc_power",0);
+   
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 8, &ival, 0);
+    if (ival == 1) dc_power = 0.0; // STBY PWR
+    ret = digital_input(te, MCP23017_TYPE, dev, 9, &ival, 0);
+    if (ival == 1) dc_power = 1.0; // BAT BUS
+    ret = digital_input(te, MCP23017_TYPE, dev, 10, &ival, 0);
+    if (ival == 1) dc_power = 2.0; // BAT
+    ret = digital_input(te, MCP23017_TYPE, dev, 11, &ival, 0);
+    if (ival == 1) dc_power = 2.0; // AUX BAT (INOP in ZIBO
+    ret = digital_input(te, MCP23017_TYPE, dev, 12, &ival, 0);
+    if (ival == 1) dc_power = 3.0; // TR1
+    ret = digital_input(te, MCP23017_TYPE, dev, 13, &ival, 0);
+    if (ival == 1) dc_power = 4.0; // TR2
+    ret = digital_input(te, MCP23017_TYPE, dev, 14, &ival, 0);
+    if (ival == 1) dc_power = 5.0; // TR3
+    ret = digital_input(te, MCP23017_TYPE, dev, 15, &ival, 0);
+    if (ival == 1) dc_power = 6.0; // TEST
+
+    if ((dc_power < 0.0) || (dc_power > 6.0) || (ival == INT_MISS)) dc_power = FLT_MISS;
+
+    ret = set_state_updnf(&dc_power,dc_power_pos,dc_power_up,dc_power_dn);
+    if (ret != 0) {
+      printf("DC Power knob %i \n",(int) dc_power);
+    }
+    
+    /* 7 Segment Amps & Volts */
+    dev = 0;
+    
+    float *dc_volt = link_dataref_flt("laminar/B738/dc_volt_value",0);
+    float *dc_amps = link_dataref_flt("laminar/B738/dc_amp_value",0);
+    float *ac_volt = link_dataref_flt("laminar/B738/ac_volt_value",0);
+    float *ac_amps = link_dataref_flt("laminar/B738/ac_amp_value",0);
+    float *ac_freq = link_dataref_flt("laminar/B738/ac_freq_value",0);
+    int brightness = 10;
+    int dp = -1;
+    if (*avionics_on == 1) {      
+      ret = display_outputf(te, HT16K33_TYPE, dev, 6, 2, dc_amps, dp, brightness);
+      ret = display_outputf(te, HT16K33_TYPE, dev, 3, 3, ac_freq, dp, brightness);
+      ret = display_outputf(te, HT16K33_TYPE, dev, 13, 2, dc_volt, dp, brightness);
+      ret = display_outputf(te, HT16K33_TYPE, dev, 11, 2, ac_amps, dp, brightness);
+      ret = display_outputf(te, HT16K33_TYPE, dev, 8, 3, ac_volt, dp, brightness);
+    } else {
+      ival = 22;
+      for (int i=0;i<16;i++) {
+	ret = display_output(te, HT16K33_TYPE, dev, i, 1, &ival, dp, brightness);
+      }
+    }
+    
+
+    /* ------------------- */
+    /*  POWER SOURCE Panel */
+    /* ------------------- */
+
+    dev = 6;
+
+    int *grd_pwr_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/gpu_up");
+    int *grd_pwr_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/gpu_dn");
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, grd_pwr_dn, 0);
+    if (ret == 1) {
+      printf("GRD PWR ON %i \n", *grd_pwr_dn);
+    }
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, grd_pwr_up, 0);
+    if (ret == 1) {
+      printf("GRD PWR OFF %i \n", *grd_pwr_up);
+    }
+     
+    int *bus_transfer = link_dataref_int("sim/cockpit2/electrical/cross_tie");
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
+    if (ival != INT_MISS) *bus_transfer = 1-ival;
+    if (ret == 1) {
+      printf("BUS TRANSFER %i \n", *bus_transfer);
+    }
+    
+    int *l_wiper_up = link_dataref_cmd_once("laminar/B738/knob/left_wiper_up");
+    int *l_wiper_dn = link_dataref_cmd_once("laminar/B738/knob/left_wiper_dn");
+    float *l_wiper_pos = link_dataref_flt("laminar/B738/switches/left_wiper_pos",0);
+
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival, 0);
+    if (ival == 1) l_wiper = 0.0; // PARK
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    if (ival == 1) l_wiper = 1.0; // INT
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival, 0);
+    if (ival == 1) l_wiper = 2.0; // LOW
+    ret = digital_input(te, MCP23017_TYPE, dev, 6, &ival, 0);
+    if (ival == 1) l_wiper = 3.0; // HIGH
+
+    if ((l_wiper < 0.0) || (l_wiper > 3.0) || (ival == INT_MISS)) l_wiper = FLT_MISS;
+
+    ret = set_state_updnf(&l_wiper,l_wiper_pos,l_wiper_up,l_wiper_dn);
+    if (ret != 0) {
+      printf("Left Wiper %i \n",(int) l_wiper);
+    }
+
+    float *standby_power_switch = link_dataref_flt("laminar/B738/electric/standby_bat_pos",0);
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 11, &ival, 0);
+    ival2 = INT_MISS;
+    ret2 = digital_input(te, MCP23017_TYPE, dev, 12, &ival2, 0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *standby_power_switch = (float) (ival2 - ival);
+    if ((ret == 1) || (ret2 == 1)) {
+      printf("STANDBY PWR Switch %i \n",(int) *standby_power_switch);
+    }
+
+    int *drive_discon_1_up = link_dataref_cmd_once("laminar/B738/one_way_switch/drive_disconnect1");
+    int *drive_discon_1_dn = link_dataref_cmd_once("laminar/B738/one_way_switch/drive_disconnect1_off");
+    float *drive_discon_1_pos = link_dataref_flt("laminar/B738/one_way_switch/drive_disconnect1_pos",0);
+
+    float drive_discon_1 = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 14, &drive_discon_1, 0);
+    ret = set_state_updnf(&drive_discon_1,drive_discon_1_pos,drive_discon_1_up,drive_discon_1_dn);
+    if (ret != 0) {
+      printf("Drive Disconnect 1 %i \n",(int) drive_discon_1);
+    }
+    
+    int *drive_discon_2_up = link_dataref_cmd_once("laminar/B738/one_way_switch/drive_disconnect2");
+    int *drive_discon_2_dn = link_dataref_cmd_once("laminar/B738/one_way_switch/drive_disconnect2_off");
+    float *drive_discon_2_pos = link_dataref_flt("laminar/B738/one_way_switch/drive_disconnect2_pos",0);
+
+    float drive_discon_2 = FLT_MISS;
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 13, &drive_discon_2, 0);
+    ret = set_state_updnf(&drive_discon_2,drive_discon_2_pos,drive_discon_2_up,drive_discon_2_dn);
+    if (ret != 0) {
+      printf("Drive Disconnect 1 %i \n",(int) drive_discon_2);
+    }
+    
+    float *drive_1_ann = link_dataref_flt("laminar/B738/annunciator/drive1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, drive_1_ann);
+    float *standby_pwr_ann = link_dataref_flt("laminar/B738/annunciator/standby_pwr_off",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, standby_pwr_ann);
+    float *drive_2_ann = link_dataref_flt("laminar/B738/annunciator/drive2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, drive_2_ann);
+
+    dev = 7;
+
+    int *gen1_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen1_up");
+    int *gen1_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen1_dn");
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, gen1_switch_dn, 0);
+    if (ret == 1) {
+      printf("GEN 1 ON %i \n", *gen1_switch_dn);
+    }
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, gen1_switch_up, 0);
+    if (ret == 1) {
+      printf("GEN 1 OFF %i \n", *gen1_switch_up);
+    }
+
+    int *apu_gen1_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/apu_gen1_up");
+    int *apu_gen1_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/apu_gen1_dn");
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, apu_gen1_switch_dn, 0);
+    if (ret == 1) {
+      printf("APU GEN 1 ON %i \n", *apu_gen1_switch_dn);
+    }
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, apu_gen1_switch_up, 0);
+    if (ret == 1) {
+      printf("APU GEN 1 OFF %i \n", *apu_gen1_switch_up);
+    }
+
+    int *apu_gen2_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/apu_gen2_up");
+    int *apu_gen2_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/apu_gen2_dn");
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, apu_gen2_switch_dn, 0);
+    if (ret == 1) {
+      printf("APU GEN 2 ON %i \n", *apu_gen2_switch_dn);
+    }
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, apu_gen2_switch_up, 0);
+    if (ret == 1) {
+      printf("APU GEN 2 OFF %i \n", *apu_gen2_switch_up);
+    }
+
+    int *gen2_switch_up = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen2_up");
+    int *gen2_switch_dn = link_dataref_cmd_hold("laminar/B738/toggle_switch/gen2_dn");
+    ret = digital_input(te, MCP23017_TYPE, dev, 6, gen2_switch_dn, 0);
+    if (ret == 1) {
+      printf("GEN 2 ON %i \n", *gen2_switch_dn);
+    }
+    ret = digital_input(te, MCP23017_TYPE, dev, 7, gen2_switch_up, 0);
+    if (ret == 1) {
+      printf("GEN 2 OFF %i \n", *gen2_switch_up);
+    }
+
+    float *transfer_bus_off_1 = link_dataref_flt("laminar/B738/annunciator/trans_bus_off1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, transfer_bus_off_1);
+    float *source_off_1 = link_dataref_flt("laminar/B738/annunciator/source_off1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, source_off_1);
+    float *transfer_bus_off_2 = link_dataref_flt("laminar/B738/annunciator/trans_bus_off2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, transfer_bus_off_2);
+    float *source_off_2 = link_dataref_flt("laminar/B738/annunciator/source_off2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 11, source_off_2);
+    float *apu_low_oil = link_dataref_flt("laminar/B738/annunciator/apu_low_oil",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 12, apu_low_oil);
+    float *apu_fault = link_dataref_flt("laminar/B738/annunciator/apu_fault",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 13, apu_fault);
+    /* YELLOW OVER SPEED ANNUNCIATOR NOT YET AVAILABLE IN ZIBO MOD */
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 14, lights_test);
+
+
+    /* Blue Annunciators via PWM driver */
+    dev = 1;
+    float *grd_pwr_avail = link_dataref_flt("laminar/B738/annunciator/ground_power_avail",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 5, grd_pwr_avail,0.0,1.0);
+    
+    float *gen_off_bus_1 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus1",-1);
+    float *apu_gen_off_bus = link_dataref_flt("laminar/B738/annunciator/apu_gen_off_bus",-1);
+    float *gen_off_bus_2 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus2",-1);
+    /* BLUE MAINT ANNUNCIATOR NOT YET AVAILABLE IN ZIBO MOD */
+
+    dev = 0;
+    float *apu_temp = link_dataref_flt("laminar/B738/electrical/apu_temp",-1);
+    if (servotest == 1) {
+      ret = servo_output(te, PCA9685_TYPE, dev, 2, &servoval,0.0,1.0,0.0,1.0);
+    } else {
+      ret = servo_output(te, PCA9685_TYPE, dev, 2, apu_temp,0.0,100.0,0.089,0.96);
+    }
 
     /* ------------- */
     /*  CENTER Panel */

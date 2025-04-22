@@ -26,7 +26,7 @@ void ht16k33_init(int8_t dev, int8_t wirenum, uint8_t address) {
       ht16k33[dev].clearAll();
 
       if (DEBUG > 0) {
-        Serial.printf("INIT: HT16K33 Device Number %i initialized \n", dev);
+        Serial.printf("INIT: HT16K33 Device Number %i connected to I2C bus %i with address 0x%02x \n", dev, wirenum, address);
       }
 
       ht16k33_data[dev].connected = 1;
@@ -54,7 +54,7 @@ void ht16k33_write(int8_t dev, int8_t dig, int16_t val, int8_t dp, int8_t bright
           ht16k33[dev].sendLed();
 
           if (DEBUG > 0) {
-            Serial.printf("INIT: HT16K33 Send Value %i to Digit %i Brightness %i \n", val, dig, brightness);
+            Serial.printf("WRITE: HT16K33 Send Value %i to Digit %i Brightness %i \n", val, dig, brightness);
           }
 
         }  // value has changed

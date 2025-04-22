@@ -1293,7 +1293,9 @@ int display_output(int te, int type, int dev, int pos, int n, int *value, int dp
   int negative;
   int16_t single;
 
-  /* Digits go from 0-F, 16-18 are blank, 19 is negative sign, 20 is degree sign, 21 is underscore */
+  /* You can use special signs for single digits (n=1) : */
+  /* Single Digits go from 0-F, 16-18 are blank, 19 is negative sign, 20 is degree sign, 21 is underscore */
+  /* This way you can also blank individual or all digits */
 
   if (value != NULL) {
 
@@ -1309,82 +1311,99 @@ int display_output(int te, int type, int dev, int pos, int n, int *value, int dp
 
 		  ht16k33[te][dev].brightness = brightness;
 		
-		  /* Regular Case with integer number distributed over n 7-segment displays */
-		  /* generate temporary storage of input value */
-		  tempval = *value;
-
-		  /* reverse negative numbers: find treatment for - sign */
-		  /* use first digit for negative sign */
-		  if (tempval < 0) {
-		    tempval = -tempval;
-		    negative = 1;
-		  } else {
-		    negative = 0;
-		  }
-		
-		  /* read individual digits from integer */
-		  /* blank leftmost 0 values except if it is the first one */ 
-		  count = 0;
-		  while ((tempval) && (count<n))
-		    {
-		      if (dp == count) {
-			ht16k33[te][dev].decimalpoint[pos+count] = 1;
-		      } else {
-			ht16k33[te][dev].decimalpoint[pos+count] = 0;
-		      }
-		      
-		      single = tempval % 10;
-		      if (ht16k33[te][dev].val[pos+count] != single) {
-			ht16k33[te][dev].val[pos+count] = single;
-			changed = 1;
-		      }
-		      tempval /= 10;
-		      count++;
-		    }
+		  if (n > 1) {
 		    
-		  while (count<n)
-		    {
-		      if (negative) {
-			/* set negative sign */
-			if (count > dp) {
-			  single = 19;
-			  if (ht16k33[te][dev].val[pos+count] != single) {
-			    ht16k33[te][dev].val[pos+count] = single;
-			    changed = 1;
-			  }
-			  negative = 0;
+		    /* Regular Case with integer number distributed over n 7-segment displays */
+		    /* generate temporary storage of input value */
+		    tempval = *value;
+
+		    /* reverse negative numbers: find treatment for - sign */
+		    /* use first digit for negative sign */
+		    if (tempval < 0) {
+		      tempval = -tempval;
+		      negative = 1;
+		    } else {
+		      negative = 0;
+		    }
+		
+		    /* read individual digits from integer */
+		    /* blank leftmost 0 values except if it is the first one */ 
+		    count = 0;
+		    while ((tempval) && (count<n))
+		      {
+			if (dp == count) {
+			  ht16k33[te][dev].decimalpoint[pos+count] = 1;
+			} else {
+			  ht16k33[te][dev].decimalpoint[pos+count] = 0;
 			}
-		      } else {
-			if ((count == 0) || (dp >= count)) {
-			  /* do not blank leftmost 0 display or if it has a decimal point */
-			  /* this allows to display for instance 0.04 */
-			  if (dp == count) {
-			    ht16k33[te][dev].decimalpoint[pos+count] = 1;
-			  } else {
-			    ht16k33[te][dev].decimalpoint[pos+count] = 0;
-			  }
-			
-			  single = 0;
-			  if (ht16k33[te][dev].val[pos+count] != single) {
-			    ht16k33[te][dev].val[pos+count] = single;
-			    changed = 1;
+		      
+			single = tempval % 10;
+			if (ht16k33[te][dev].val[pos+count] != single) {
+			  ht16k33[te][dev].val[pos+count] = single;
+			  changed = 1;
+			}
+			tempval /= 10;
+			count++;
+		      }
+		    
+		    while (count<n)
+		      {
+			if (negative) {
+			  /* set negative sign */
+			  if (count > dp) {
+			    single = 19;
+			    if (ht16k33[te][dev].val[pos+count] != single) {
+			      ht16k33[te][dev].val[pos+count] = single;
+			      changed = 1;
+			    }
+			    negative = 0;
 			  }
 			} else {
-			  /* blank all other displays in front of number */
-			  single = 16;
-			  if (ht16k33[te][dev].val[pos+count] != single) {
-			    ht16k33[te][dev].val[pos+count] = single;
-			    changed = 1;
+			  if ((count == 0) || (dp >= count)) {
+			    /* do not blank leftmost 0 display or if it has a decimal point */
+			    /* this allows to display for instance 0.04 */
+			    if (dp == count) {
+			      ht16k33[te][dev].decimalpoint[pos+count] = 1;
+			    } else {
+			      ht16k33[te][dev].decimalpoint[pos+count] = 0;
+			    }
+			
+			    single = 0;
+			    if (ht16k33[te][dev].val[pos+count] != single) {
+			      ht16k33[te][dev].val[pos+count] = single;
+			      changed = 1;
+			    }
+			  } else {
+			    /* blank all other displays in front of number */
+			    single = 16;
+			    if (ht16k33[te][dev].val[pos+count] != single) {
+			      ht16k33[te][dev].val[pos+count] = single;
+			      changed = 1;
+			    }
 			  }
 			}
+			count++;
 		      }
-		      count++;
+
+		    if (changed == 1) {
+		      if (verbose > 0) printf("Display Output Digit range %i-%i of Teensy %i HT16K33 %i changed to %i \n",
+					      pos,pos+n-1,te,dev,*value);
 		    }
 
-		  if (changed == 1) {
-		    if (verbose > 0) printf("Display Output Digit range %i-%i of Teensy %i HT16K33 %i changed to %i \n",
-					    pos,pos+n-1,te,dev,*value);
-		  }
+		  } else {
+		    /* special case: single digit (n=1): also plot special symbols */
+		    if (dp == pos) {
+		      ht16k33[te][dev].decimalpoint[pos] = 1;
+		    } else {
+		      ht16k33[te][dev].decimalpoint[pos] = 0;
+		    }
+		    
+		    if (ht16k33[te][dev].val[pos] != *value) {
+		      ht16k33[te][dev].val[pos] = *value;
+		      if (verbose > 0) printf("Display Output Digit %i of Teensy %i HT16K33 %i changed to %i \n",
+					      pos,te,dev,*value);
+		    }		    
+		  }		  
 		} else {
 		  if (verbose > 0) printf("Display Output digit range %i-%i above maximum # of Digits %i of HT16K33 \n",
 					  pos,pos+n-1,HT16K33_MAX_DIG);
