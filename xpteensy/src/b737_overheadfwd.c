@@ -264,7 +264,32 @@ void init_b737_overheadfwd(void)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x22; // I2C address of MCP23017 device
   
- 
+  /* -------------------------- */
+  /*  WINDOW & PROBE HEAT Panel */
+  /* -------------------------- */
+
+  dev = 11;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  mcp23017[te][dev].intpin = 11;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x23; // I2C address of MCP23017 device
+  
+  dev = 12;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 12;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x24; // I2C address of MCP23017 device
+  
   /* ------------------ */
   /* TEMP CONTROL PANEL */
   /* ------------------ */
@@ -291,7 +316,7 @@ void b737_overheadfwd(void)
   int dev;
 
   //int one = 1;
-  //int zero = 0;
+  int zero = 0;
 
   int ival;
   int ival2;
@@ -1391,6 +1416,119 @@ void b737_overheadfwd(void)
     if (ret == 1) {
       printf("Wheel Well Light %i \n", ival);
     }
+
+    
+    /* -------------------------- */
+    /*  WINDOW & PROBE HEAT Panel */
+    /* -------------------------- */
+    
+    dev = 11;
+
+    int *tat_test = link_dataref_cmd_hold("laminar/B738/push_button/tat_test");
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, tat_test, 0);
+    if (ret == 1) {
+      printf("TAT Test: %i \n",*tat_test);
+    }
+
+    float *probe_heat_fo = link_dataref_flt("laminar/B738/toggle_switch/fo_probes_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 1, probe_heat_fo, 0);
+    if (ret == 1) {
+      printf("Probe Heat First Officer: %i \n",(int) *probe_heat_fo);
+    }
+ 
+    float *window_heat_r_side = link_dataref_flt("laminar/B738/ice/window_heat_r_side_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 2, window_heat_r_side, 0);
+    if (ret == 1) {
+      printf("Window Heat Right Side: %i \n",(int) *window_heat_r_side);
+    }
+
+    float *window_heat_r_fwd = link_dataref_flt("laminar/B738/ice/window_heat_r_fwd_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 3, window_heat_r_fwd, 0);
+    if (ret == 1) {
+      printf("Window Heat Right forward: %i \n",(int) *window_heat_r_fwd);
+    }
+
+    float *window_overheat_test = link_dataref_flt("laminar/B738/toggle_switch/window_ovht_test",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival2, 0);
+    if (ret == 1) {
+      printf("PROBE HEAT OVHT TEST: %i \n",ival2);
+    }
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival, 0);
+    if (ret == 1) {
+      printf("PROBE HEAT PWR TEST: %i \n",ival);
+    }
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) *window_overheat_test = (float) (ival - ival2);
+
+    float *window_ovht_r_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_rf",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, window_ovht_r_fwd_ann);
+    float *window_ovht_r_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_rs",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, window_ovht_r_side_ann);
+
+    float *window_heat_r_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_r_fwd",-1);
+    if (*avionics_on) {
+      ret = digital_outputf(te, MCP23017_TYPE, dev, 10, window_heat_r_fwd_ann);
+    } else {
+      ret = digital_output(te, MCP23017_TYPE, dev, 10, &zero);
+    }
+    float *window_heat_r_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_r_side",-1);
+    if (*avionics_on) {
+      ret = digital_outputf(te, MCP23017_TYPE, dev, 11, window_heat_r_side_ann);
+    } else {
+      ret = digital_output(te, MCP23017_TYPE, dev, 11, &zero);
+    }
+
+    float *fo_pitot = link_dataref_flt("laminar/B738/annunciator/fo_pitot_off",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 12, fo_pitot); // FO PITOT
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 13, fo_pitot); // R ELEV PITOT
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 15, fo_pitot); // AUX PITOT
+    float *fo_aoa = link_dataref_flt("laminar/B738/annunciator/fo_aoa_off",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 14, fo_aoa); // R ALPHA VANE
+
+    dev = 12;
+    float *window_heat_l_side = link_dataref_flt("laminar/B738/ice/window_heat_l_side_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 8, window_heat_l_side, 0);
+    if (ret == 1) {
+      printf("Window Heat Left Side: %i \n",(int) *window_heat_l_side);
+    }
+    
+    float *window_heat_l_fwd = link_dataref_flt("laminar/B738/ice/window_heat_l_fwd_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 9, window_heat_l_fwd, 0);
+    if (ret == 1) {
+      printf("Window Heat Left forward: %i \n",(int) *window_heat_l_fwd);
+    }
+    
+    float *probe_heat_capt = link_dataref_flt("laminar/B738/toggle_switch/capt_probes_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 10, probe_heat_capt, 0);
+    if (ret == 1) {
+      printf("Probe Heat Captain: %i \n",(int) *probe_heat_capt);
+    }
+
+    float *window_ovht_l_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_ls",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 0, window_ovht_l_side_ann);
+    float *window_ovht_l_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_lf",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 1, window_ovht_l_fwd_ann);
+
+    float *window_heat_l_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_l_side",-1);
+    if (*avionics_on) {
+      ret = digital_outputf(te, MCP23017_TYPE, dev, 2, window_heat_l_side_ann);
+    } else {
+      ret = digital_output(te, MCP23017_TYPE, dev, 2, &zero);
+    }
+    float *window_heat_l_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_l_fwd",-1);
+    if (*avionics_on) {
+      ret = digital_outputf(te, MCP23017_TYPE, dev, 3, window_heat_l_fwd_ann);
+    } else {
+      ret = digital_output(te, MCP23017_TYPE, dev, 3, &zero);
+    }
+
+    float *capt_pitot = link_dataref_flt("laminar/B738/annunciator/capt_pitot_off",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 4, capt_pitot); // CAPT PITOT
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, capt_pitot); // L ELEV PITOT
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 7, capt_pitot); // TEMP PROBE
+    float *capt_aoa = link_dataref_flt("laminar/B738/annunciator/capt_aoa_off",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 6, capt_aoa); // L ALPHA VANE
 
     
     /* ------------------ */
