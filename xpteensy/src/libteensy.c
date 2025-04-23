@@ -179,48 +179,9 @@ int init_teensy() {
       /* wait for 10 ms to make sure teensy hardware has initialized */
       usleep(10000);
 
-      /* initialize MCP23017 boards connected via I2C */
-      for (dev=0;dev<MAX_DEV;dev++) {
-	if ((mcp23017[te][dev].connected == 1) && (mcp23017[te][dev].wire != INITVAL)) {
-	  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
-	    if ((mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) ||
-		(mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)) {
-	      memset(teensySendBuffer,0,SENDMSGLEN);
-	      if (verbose > 0) {
-		if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT)
-		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Input \n",te,dev,pin);
-		if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)
-		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Output with Value %i \n",
-			 te,dev,pin,mcp23017[te][dev].val[pin]);
-	      }
-	      teensySendBuffer[0] = TEENSY_ID1; /* T */
-	      teensySendBuffer[1] = TEENSY_ID2; /* E */
-	      teensySendBuffer[2] = 0x00;
-	      teensySendBuffer[3] = 0x00; 
-	      teensySendBuffer[4] = TEENSY_INIT;
-	      teensySendBuffer[5] = MCP23017_TYPE;
-	      teensySendBuffer[6] = dev;
-	      teensySendBuffer[7] = pin;
-	      memcpy(&teensySendBuffer[8],&mcp23017[te][dev].val[pin],sizeof(mcp23017[te][dev].val[pin]));
-	      teensySendBuffer[10] = mcp23017[te][dev].pinmode[pin];
-	      teensySendBuffer[11] = mcp23017[te][dev].intpin; 
-	      teensySendBuffer[12] = mcp23017[te][dev].wire;
-	      teensySendBuffer[13] = (int8_t) mcp23017[te][dev].address; 
-	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	      if (ret == SENDMSGLEN) {
-		if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
-	      } else {
-		printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
-	      }
-	    } /* pin defined */
-	  } /* loop over pins */
-	}
-      }
-
-      /* wait for 10 ms to make sure teensy hardware has initialized */
-      usleep(10000);
-      
       /* initialize PCA9685 boards connected via I2C */
+      /* PCA9685 0x40 and 0x41 is incompatible with MCP23017 at 0x20
+	 Solution is to initialize PCA9685 before MCP23017. Why???? */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if ((pca9685[te][dev].connected == 1) && (pca9685[te][dev].wire != INITVAL)) {
 	  for (pin=0;pin<PCA9685_MAX_PINS;pin++) {
@@ -253,6 +214,47 @@ int init_teensy() {
 		if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i PCA9685 %i \n", ret,te,dev);
 	      } else {
 		printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i PCA9685 %i \n", ret,te,dev);
+	      }
+	    } /* pin defined */
+	  } /* loop over pins */
+	}
+      }
+
+      /* wait for 10 ms to make sure teensy hardware has initialized */
+      usleep(10000);
+      
+      /* initialize MCP23017 boards connected via I2C */
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if ((mcp23017[te][dev].connected == 1) && (mcp23017[te][dev].wire != INITVAL)) {
+	  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
+	    if ((mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT) ||
+		(mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)) {
+	      memset(teensySendBuffer,0,SENDMSGLEN);
+	      if (verbose > 0) {
+		if (mcp23017[te][dev].pinmode[pin] == PINMODE_INPUT)
+		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Input \n",te,dev,pin);
+		if (mcp23017[te][dev].pinmode[pin] == PINMODE_OUTPUT)
+		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Output with Value %i \n",
+			 te,dev,pin,mcp23017[te][dev].val[pin]);
+	      }
+	      teensySendBuffer[0] = TEENSY_ID1; /* T */
+	      teensySendBuffer[1] = TEENSY_ID2; /* E */
+	      teensySendBuffer[2] = 0x00;
+	      teensySendBuffer[3] = 0x00; 
+	      teensySendBuffer[4] = TEENSY_INIT;
+	      teensySendBuffer[5] = MCP23017_TYPE;
+	      teensySendBuffer[6] = dev;
+	      teensySendBuffer[7] = pin;
+	      memcpy(&teensySendBuffer[8],&mcp23017[te][dev].val[pin],sizeof(mcp23017[te][dev].val[pin]));
+	      teensySendBuffer[10] = mcp23017[te][dev].pinmode[pin];
+	      teensySendBuffer[11] = mcp23017[te][dev].intpin; 
+	      teensySendBuffer[12] = mcp23017[te][dev].wire;
+	      teensySendBuffer[13] = (int8_t) mcp23017[te][dev].address; 
+	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	      if (ret == SENDMSGLEN) {
+		if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
+	      } else {
+		printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
 	      }
 	    } /* pin defined */
 	  } /* loop over pins */

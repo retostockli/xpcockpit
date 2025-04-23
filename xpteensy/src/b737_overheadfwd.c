@@ -120,6 +120,7 @@ void init_b737_overheadfwd(void)
   /* ----------------- */
   /* FLT CONTROL PANEL */
   /* ----------------- */
+
   
   dev = 0;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
@@ -303,8 +304,8 @@ void b737_overheadfwd(void)
 
   /* SET CONT CAB POTENTIOMETER IN TEMP PANEL TO TEST SERVOS IN OVHD PANEL */
   float servoval;
-  int servotest = 1;
-  ret = analog_input(te,38,&servoval,0.0,1.0);
+  int servotest = 0;
+  ret = analog_input(te,38,&servoval,0.0,100.0);
 
   int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
  
@@ -656,7 +657,7 @@ void b737_overheadfwd(void)
     dev = 0;
     float *fuel_temp = link_dataref_flt("laminar/B738/engine/fuel_temp",0);
     if (servotest == 1) {
-      ret = servo_output(te, PCA9685_TYPE, dev, 1, &servoval,0.0,1.0,0.0,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 1, &servoval,0.0,100.0,0.0,1.0);
     } else {
       ret = servo_output(te, PCA9685_TYPE, dev, 1, fuel_temp,-50.0,50.0,0.089,0.96);
     }
@@ -774,7 +775,7 @@ void b737_overheadfwd(void)
     float *ac_freq = link_dataref_flt("laminar/B738/ac_freq_value",0);
     int brightness = 10;
     int dp = -1;
-    if (*avionics_on == 1) {      
+    if (*avionics_on == 1) {
       ret = display_outputf(te, HT16K33_TYPE, dev, 6, 2, dc_amps, dp, brightness);
       ret = display_outputf(te, HT16K33_TYPE, dev, 3, 3, ac_freq, dp, brightness);
       ret = display_outputf(te, HT16K33_TYPE, dev, 13, 2, dc_volt, dp, brightness);
@@ -938,19 +939,23 @@ void b737_overheadfwd(void)
     /* Blue Annunciators via PWM driver */
     dev = 1;
     float *grd_pwr_avail = link_dataref_flt("laminar/B738/annunciator/ground_power_avail",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 5, grd_pwr_avail,0.0,1.0);
-    
+    ret = pwm_output(te, PCA9685_TYPE, dev, 5, grd_pwr_avail,0.0,1.0);    
     float *gen_off_bus_1 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus1",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 8, gen_off_bus_1,0.0,1.0);    
     float *apu_gen_off_bus = link_dataref_flt("laminar/B738/annunciator/apu_gen_off_bus",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 9, apu_gen_off_bus,0.0,1.0);    
     float *gen_off_bus_2 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus2",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 10, gen_off_bus_2,0.0,1.0);    
     /* BLUE MAINT ANNUNCIATOR NOT YET AVAILABLE IN ZIBO MOD */
+    ret = pwm_output(te, PCA9685_TYPE, dev, 11, lights_test,0.0,1.0);    
 
     dev = 0;
+    /* EGT dataref: A value of 100 means 800 degrees, so multiply by 1.25 */
     float *apu_temp = link_dataref_flt("laminar/B738/electrical/apu_temp",-1);
     if (servotest == 1) {
-      ret = servo_output(te, PCA9685_TYPE, dev, 2, &servoval,0.0,1.0,0.0,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 2, &servoval,0.0,100.0,0.13,0.94);
     } else {
-      ret = servo_output(te, PCA9685_TYPE, dev, 2, apu_temp,0.0,100.0,0.089,0.96);
+      ret = servo_output(te, PCA9685_TYPE, dev, 2, apu_temp,0.0,125.0,0.13,0.94);
     }
 
     /* ------------- */
@@ -1451,7 +1456,7 @@ void b737_overheadfwd(void)
     dev = 0;
     float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",0);
     if (servotest == 1) {
-      ret = servo_output(te, PCA9685_TYPE, dev, 0, &servoval,0.0,1.0,0.07,0.90);
+      ret = servo_output(te, PCA9685_TYPE, dev, 0, &servoval,0.0,100.0,0.07,0.90);
     } else {
       ret = servo_output(te, PCA9685_TYPE, dev, 0, zone_temp,0.0,100.0,0.03,0.87);
     }
