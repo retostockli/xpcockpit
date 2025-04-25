@@ -70,6 +70,7 @@ void init_b737_overheadfwd(void)
   /* 29: On/Off Yaw Damper Coil */
   /* 30: On/Off Engine 1 Start Switch Coil */
   /* 31: On/Off Engine 2 Start Switch Coil */
+  /* 32: On/Off Wing Anti Ice Switch Coil */
   for (pin=26;pin<34;pin++) {
     if (pin != 28) {
       teensy[te].pinmode[pin] = PINMODE_OUTPUT;
@@ -120,7 +121,6 @@ void init_b737_overheadfwd(void)
   /* ----------------- */
   /* FLT CONTROL PANEL */
   /* ----------------- */
-
   
   dev = 0;
   for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
@@ -289,6 +289,36 @@ void init_b737_overheadfwd(void)
   mcp23017[te][dev].intpin = 12;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x24; // I2C address of MCP23017 device
+
+  /* ------------------------------ */
+  /*  Anti Ice and Hydraulics Panel */
+  /* ------------------------------ */
+
+  dev = 13;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 13;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x25; // I2C address of MCP23017 device
+  
+  /* ------------------------------ */
+  /*  Doors, CVR and Altitude Panel */
+  /* ------------------------------ */
+
+  dev = 14;
+  for (pin=0;pin<11;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=12;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 14;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x26; // I2C address of MCP23017 device
   
   /* ------------------ */
   /* TEMP CONTROL PANEL */
@@ -329,7 +359,7 @@ void b737_overheadfwd(void)
 
   /* SET CONT CAB POTENTIOMETER IN TEMP PANEL TO TEST SERVOS IN OVHD PANEL */
   float servoval;
-  int servotest = 0;
+  int servotest = 1;
   ret = analog_input(te,38,&servoval,0.0,100.0);
 
   int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
@@ -500,10 +530,7 @@ void b737_overheadfwd(void)
     ret = set_state_togglef(&fval,yaw_damper_pos,yaw_damper_toggle);
     if (ret != 0) {
       printf("YAW DAMPER %i %f %i \n",ival, *yaw_damper_pos, *yaw_damper_toggle);
-      count ++;
-      if (count > 15) count = 0;
-      printf("COUNT: %i \n",count);
-     }
+    }
 
     /* Yaw Damper Coil: activate if X-Plane's YD Switch is ON.
        This needs at least one ping pong round of signal between
@@ -1531,6 +1558,139 @@ void b737_overheadfwd(void)
     ret = digital_outputf(te, MCP23017_TYPE, dev, 6, capt_aoa); // L ALPHA VANE
 
     
+    /* ------------------------------ */
+    /*  Anti Ice and Hydraulics Panel */
+    /* ------------------------------ */
+
+    dev = 13;
+    
+    float *hydro_pumps1 = link_dataref_flt("laminar/B738/toggle_switch/hydro_pumps1_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 8, hydro_pumps1, 0);
+    if (ret == 1) {
+      printf("Hydraulic Pumps 1: %i \n",(int) *hydro_pumps1);
+    }
+    float *elec_hydro_pumps1 = link_dataref_flt("laminar/B738/toggle_switch/electric_hydro_pumps1_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 9, elec_hydro_pumps1, 0);
+    if (ret == 1) {
+      printf("Electric Hydraulic Pumps 1: %i \n",(int) *elec_hydro_pumps1);
+    }
+    float *elec_hydro_pumps2 = link_dataref_flt("laminar/B738/toggle_switch/electric_hydro_pumps2_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 10, elec_hydro_pumps2, 0);
+    if (ret == 1) {
+      printf("Electric Hydraulic Pumps 2: %i \n",(int) *elec_hydro_pumps2);
+    }
+    float *hydro_pumps2 = link_dataref_flt("laminar/B738/toggle_switch/hydro_pumps2_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 11, hydro_pumps2, 0);
+    if (ret == 1) {
+      printf("Hydraulic Pumps 2: %i \n",(int) *hydro_pumps2);
+    }
+
+    float *wing_anti_ice_pos = link_dataref_flt("laminar/B738/ice/wing_heat_pos",0);
+    int *wing_anti_ice_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/wing_heat");
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 12, &ival, 0);
+    if (ival != INT_MISS) {
+      if (ival == 1) { fval = 1.0; } else { fval = 0.0; };
+    } else {
+      fval = FLT_MISS;
+    }
+    ret = set_state_togglef(&fval,wing_anti_ice_pos,wing_anti_ice_toggle);
+    if (ret != 0) {
+      printf("WING ANTI ICE %i %f %i \n",ival, *wing_anti_ice_pos, *wing_anti_ice_toggle);
+    }
+
+    /* Wing Anti Ice Coil: activate if X-Plane's Wing Anti Ice Switch is ON.
+       This needs at least one ping pong round of signal between
+       pressing the hardware switch and receiving the switch position
+       back from X-Plane. But this allows that X-Plane cancels the coil. */
+    ret = digital_outputf(te, TEENSY_TYPE, 0, 32, wing_anti_ice_pos);
+
+    float *eng1_anti_ice = link_dataref_flt("laminar/B738/ice/eng1_heat_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 13, eng1_anti_ice, 0);
+    if (ret == 1) {
+      printf("Engine 1 Anti Ice: %i \n",(int) *eng1_anti_ice);
+    }
+    float *eng2_anti_ice = link_dataref_flt("laminar/B738/ice/eng2_heat_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 14, eng2_anti_ice, 0);
+    if (ret == 1) {
+      printf("Engine 2 Anti Ice: %i \n",(int) *eng2_anti_ice);
+    }
+
+    /* Yellow Annunciators */
+    float *elec_hydro_ovht1 = link_dataref_flt("laminar/B738/annunciator/el_hyd_ovht_1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 0, elec_hydro_ovht1);
+    float *elec_hydro_ovht2 = link_dataref_flt("laminar/B738/annunciator/el_hyd_ovht_2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 1, elec_hydro_ovht2);
+    float *hydro_press1 = link_dataref_flt("laminar/B738/annunciator/hyd_press_a",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 2, hydro_press1);
+    float *elec_hydro_press1 = link_dataref_flt("laminar/B738/annunciator/hyd_el_press_a",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 3, elec_hydro_press1);
+    float *elec_hydro_press2 = link_dataref_flt("laminar/B738/annunciator/hyd_el_press_b",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 4, elec_hydro_press2);
+    float *hydro_press2 = link_dataref_flt("laminar/B738/annunciator/hyd_press_b",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, hydro_press2);
+    float *cowl_anti_ice1 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_0",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 6, cowl_anti_ice1);
+    float *cowl_anti_ice2 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 7, cowl_anti_ice2);
+
+    /* Blue Annunciators */
+    dev = 1;
+    float *wing_anti_ice1 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_L",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 12, wing_anti_ice1,0.0,1.0);
+    float *wing_anti_ice2 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_R",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 13, wing_anti_ice2,0.0,1.0);
+    float *cowl_valve_open1 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_0",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 14, cowl_valve_open1,0.0,1.0);
+    float *cowl_valve_open2 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_1",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 15, cowl_valve_open2,0.0,1.0);
+
+    /* ------------------------------ */
+    /*  Doors, CVR and Altitude Panel */
+    /* ------------------------------ */
+    
+    dev = 14;
+    
+    float *fwd_entry_door = link_dataref_flt("laminar/B738/annunciator/fwd_entry",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 0, fwd_entry_door);
+    float *fwd_service_door = link_dataref_flt("laminar/B738/annunciator/fwd_service",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 1, fwd_service_door);
+    float *left_fwd_overwing_door = link_dataref_flt("laminar/B738/annunciator/left_fwd_overwing",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 2, left_fwd_overwing_door);
+    float *right_fwd_overwing_door = link_dataref_flt("laminar/B738/annunciator/right_fwd_overwing",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 3, right_fwd_overwing_door);
+    float *fwd_cargo_door = link_dataref_flt("laminar/B738/annunciator/fwd_cargo",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 4, fwd_cargo_door);
+    float *equip_door = link_dataref_flt("laminar/B738/annunciator/equip_door",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, equip_door);
+    float *left_aft_overwing_door = link_dataref_flt("laminar/B738/annunciator/left_aft_overwing",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 6, left_aft_overwing_door);
+    float *right_aft_overwing_door = link_dataref_flt("laminar/B738/annunciator/right_aft_overwing",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 7, right_aft_overwing_door);
+    float *aft_cargo_door = link_dataref_flt("laminar/B738/annunciator/aft_cargo",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, aft_cargo_door);
+    float *aft_entry_door = link_dataref_flt("laminar/B738/annunciator/aft_entry",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, aft_entry_door);
+    float *aft_service_door = link_dataref_flt("laminar/B738/annunciator/aft_service",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, aft_service_door);
+
+
+    float *cabin_climb = link_dataref_flt("laminar/B738/cabin_vvi",1);    
+    float *cabin_altitude = link_dataref_flt("laminar/B738/cabin_alt",2);
+    float *cabin_pressure_diff = link_dataref_flt("laminar/B738/cabin_pressure_diff",-1);
+
+    dev = 0;
+    if (servotest == 1) {
+      ret = servo_output(te, PCA9685_TYPE, dev, 3, &servoval,0.0,100.0,0.11,0.90);
+      ret = servo_output(te, PCA9685_TYPE, dev, 4, &servoval,0.0,100.0,0.04,0.96);
+      ret = servo_output(te, PCA9685_TYPE, dev, 5, &servoval,0.0,100.0,0.04,1.0);
+   } else {
+      ret = servo_output(te, PCA9685_TYPE, dev, 3, cabin_climb,-2000.0,2000.0,0.11,0.90);
+      ret = servo_output(te, PCA9685_TYPE, dev, 4, cabin_altitude,0.0,26000,0.0,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 5, cabin_pressure_diff,0.0,7.0,0.0,1.0);
+    }
+     
+     
     /* ------------------ */
     /* TEMP CONTROL PANEL */
     /* ------------------ */

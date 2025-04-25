@@ -92,7 +92,7 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t
         }
       } else {
         if (DEBUG > 0) {
-          Serial.printf("INIT: MCP23017 Device Number %i out of range \n", dev);
+          Serial.printf("INIT: MCP23017 Device Number %i not connected \n", dev);
         }
       }
     } else {
