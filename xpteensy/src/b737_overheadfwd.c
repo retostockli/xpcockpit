@@ -52,7 +52,7 @@ float l_eng_start;
 float r_eng_start;
 float ac_power;
 float dc_power;
-
+float air_valve_ctrl;
 
 void init_b737_overheadfwd(void)
 {
@@ -109,15 +109,7 @@ void init_b737_overheadfwd(void)
   }
   pca9685[te][dev].wire = 0;
   pca9685[te][dev].address = 0x41;
-
-  /* -------------- */
-  /* DISPLAY CARD 2 */
-  /* -------------- */
   
-  /* ht16k33[te][0].brightness = 10; // Display Brightness (0-15) */
-  /* ht16k33[te][0].wire = 0; // I2C Bus: 0, 1 or 2 */
-  /* ht16k33[te][0].address = 0x70; // (0xXX) I2C address of HT16K33 device */
-    
   /* ----------------- */
   /* FLT CONTROL PANEL */
   /* ----------------- */
@@ -324,7 +316,7 @@ void init_b737_overheadfwd(void)
   /* TEMP CONTROL PANEL */
   /* ------------------ */
   
-  dev = 19;  // CHANGE ME
+  dev = 15; 
   for (pin=0;pin<8;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
@@ -334,6 +326,44 @@ void init_b737_overheadfwd(void)
   mcp23017[te][dev].intpin = 16; // also define pin 6 of teensy as INTERRUPT above!
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x20 ^ 0x40; // (0x60) I2C address of MCP23017 device
+
+  /* --------------- */
+  /* Air Bleed Panel */
+  /* --------------- */
+
+  /* dev = 16;  */
+  /* for (pin=0;pin<MCP23017_MAX_PINS;pin++) { */
+  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT; */
+  /* } */
+  /* mcp23017[te][dev].intpin = 17; // also define pin 6 of teensy as INTERRUPT above! */
+  /* mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2 */
+  /* mcp23017[te][dev].address = 0x21 ^ 0x40; // (0x61) I2C address of MCP23017 device */
+    
+  /* dev = 17; */
+  /* for (pin=0;pin<MCP23017_MAX_PINS;pin++) { */
+  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT; */
+  /* } */
+  /* mcp23017[te][dev].intpin = 20; // also define pin 6 of teensy as INTERRUPT above! */
+  /* mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2 */
+  /* mcp23017[te][dev].address = 0x22 ^ 0x40; // (0x62) I2C address of MCP23017 device */
+ 
+  /* -------------- */
+  /* ALTITUDE Panel */
+  /* -------------- */
+
+  dev = 18;
+  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 21; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x23 ^ 0x40; // (0x63) I2C address of MCP23017 device
+
+  dev = 1;
+  ht16k33[te][dev].brightness = 10; // Display Brightness (0-15)
+  ht16k33[te][dev].wire = 0; // I2C Bus: 0, 1 or 2
+  ht16k33[te][dev].address = 0x70 ^ 0x40; // (0x30) I2C address of HT16K33 device
+     
  
 }
 
@@ -709,9 +739,9 @@ void b737_overheadfwd(void)
     dev = 0;
     float *fuel_temp = link_dataref_flt("laminar/B738/engine/fuel_temp",0);
     if (servotest == 1) {
-      ret = servo_output(te, PCA9685_TYPE, dev, 1, &servoval,0.0,100.0,0.0,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 1, &servoval,0.0,100.0,0.03,0.85);
     } else {
-      ret = servo_output(te, PCA9685_TYPE, dev, 1, fuel_temp,-50.0,50.0,0.089,0.96);
+      ret = servo_output(te, PCA9685_TYPE, dev, 1, fuel_temp,-50.0,50.0,0.03,0.85);
     }
 
 
@@ -1674,6 +1704,9 @@ void b737_overheadfwd(void)
     float *aft_service_door = link_dataref_flt("laminar/B738/annunciator/aft_service",-1);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 10, aft_service_door);
 
+    /* Altitude Warning Horn Cutout */
+    int *alt_horn_cutout = link_dataref_cmd_hold("laminar/B738/alert/alt_horn_cutout");
+    ret = digital_input(te, MCP23017_TYPE, dev, 14, alt_horn_cutout, 0);
 
     float *cabin_climb = link_dataref_flt("laminar/B738/cabin_vvi",1);    
     float *cabin_altitude = link_dataref_flt("laminar/B738/cabin_alt",2);
@@ -1681,22 +1714,21 @@ void b737_overheadfwd(void)
 
     dev = 0;
     if (servotest == 1) {
-      ret = servo_output(te, PCA9685_TYPE, dev, 3, &servoval,0.0,100.0,0.11,0.90);
-      ret = servo_output(te, PCA9685_TYPE, dev, 4, &servoval,0.0,100.0,0.04,0.96);
-      ret = servo_output(te, PCA9685_TYPE, dev, 5, &servoval,0.0,100.0,0.04,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 3, &servoval,0.0,100.0,0.10,0.90);
+      ret = servo_output(te, PCA9685_TYPE, dev, 4, &servoval,0.0,100.0,0.06,0.97);
+      ret = servo_output(te, PCA9685_TYPE, dev, 5, &servoval,0.0,100.0,0.03,0.99);
    } else {
       ret = servo_output(te, PCA9685_TYPE, dev, 3, cabin_climb,-2000.0,2000.0,0.11,0.90);
-      ret = servo_output(te, PCA9685_TYPE, dev, 4, cabin_altitude,0.0,26000,0.0,1.0);
-      ret = servo_output(te, PCA9685_TYPE, dev, 5, cabin_pressure_diff,0.0,7.0,0.0,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 4, cabin_altitude,0.0,28000,0.06,0.97);
+      ret = servo_output(te, PCA9685_TYPE, dev, 5, cabin_pressure_diff,0.0,8.0,0.03,0.99);
     }
-     
      
     /* ------------------ */
     /* TEMP CONTROL PANEL */
     /* ------------------ */
 
     /* Air Temperature Source Selector Knob */
-    dev = 19;
+    dev = 15;
     
     float *air_temp_source = link_dataref_flt("laminar/B738/toggle_switch/air_temp_source",0);
     ival = INT_MISS;
@@ -1758,7 +1790,88 @@ void b737_overheadfwd(void)
     } else {
       ret = servo_output(te, PCA9685_TYPE, dev, 0, zone_temp,0.0,100.0,0.03,0.87);
     }
-      
+
+    
+    /* --------------- */
+    /* Air Bleed Panel */
+    /* --------------- */
+
+    dev = 16;
+
+
+    dev = 17;
+    
+
+
+    /* -------------- */
+    /* ALTITUDE Panel */
+    /* -------------- */
+
+    dev = 18;
+     
+    float *flt_alt = link_dataref_flt("sim/cockpit2/pressurization/actuators/max_allowable_altitude_ft",0);
+    float *land_alt = link_dataref_flt("laminar/B738/pressurization/knobs/landing_alt",0);
+
+    ret = encoder_inputf(te, MCP23017_TYPE, dev, 0, 1, flt_alt, 50, 2);
+    if (*flt_alt != FLT_MISS) {
+      if (*flt_alt < -1000.0) *flt_alt = -1000.0;
+      if (*flt_alt > 42000.0) *flt_alt = 42000.0;
+    }
+    if (ret == 1) printf("Flight Altitude Selector: %f \n",*flt_alt);
+    
+    ret = encoder_inputf(te, MCP23017_TYPE, dev, 3, 2, land_alt, 50, 2);
+    if (*land_alt != FLT_MISS) {
+      if (*land_alt < -1000.0) *land_alt = -1000.0;
+      if (*land_alt > 42000.0) *land_alt = 42000.0;
+    }
+    if (ret == 1) printf("Landing Altitude Selector: %f \n",*land_alt);
+
+    int *air_valve_manual_left = link_dataref_cmd_hold("laminar/B738/toggle_switch/air_valve_manual_left");
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, air_valve_manual_left, 0);
+    if (ret != 0) {
+      printf("Air Valve Manual CLOSED: %i \n",*air_valve_manual_left);
+    }
+    int *air_valve_manual_right = link_dataref_cmd_hold("laminar/B738/toggle_switch/air_valve_manual_right");
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, air_valve_manual_right, 0);
+    if (ret != 0) {
+      printf("Air Valve Manual OPEN: %i \n",*air_valve_manual_right);
+    }
+
+    int *air_valve_ctrl_left = link_dataref_cmd_once("laminar/B738/toggle_switch/air_valve_ctrl_left");
+    int *air_valve_ctrl_right = link_dataref_cmd_once("laminar/B738/toggle_switch/air_valve_ctrl_right");
+    float *air_valve_ctrl_pos = link_dataref_flt("laminar/B738/toggle_switch/air_valve_ctrl",0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 8, &ival, 0);
+    if (ival == 1) air_valve_ctrl = 0.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 9, &ival, 0);
+    if (ival == 1) air_valve_ctrl = 1.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 10, &ival, 0);
+    if (ival == 1) air_valve_ctrl = 2.0;
+    ret = set_state_updnf(&air_valve_ctrl,air_valve_ctrl_pos,air_valve_ctrl_right,air_valve_ctrl_left);
+    if (ret != 0) {
+      printf("ALTN Selector: %i \n",(int) air_valve_ctrl);
+    }
+
+    dev = 0;
+    float *outflow_valve = link_dataref_flt("laminar/B738/outflow_valve",-2);
+    if (servotest == 1) {
+      ret = servo_output(te, PCA9685_TYPE, dev, 8, &servoval,0.0,100.0,0.02,0.46);
+    } else {
+      ret = servo_output(te, PCA9685_TYPE, dev, 8, outflow_valve,0.0,1.0,0.02,0.46);
+    }
+
+    dev = 1;
+    brightness = 10;
+    dp = -1;
+    if (*avionics_on == 1) {
+      ret = display_outputf(te, HT16K33_TYPE, dev, 0, 5, flt_alt, dp, brightness);
+      ret = display_outputf(te, HT16K33_TYPE, dev, 8, 5, land_alt, dp, brightness);
+    } else {
+      ival = 22;
+      for (int i=0;i<16;i++) {
+	ret = display_output(te, HT16K33_TYPE, dev, i, 1, &ival, dp, brightness);
+      }
+    }
+    
   } else {
     /* A few basic switches for other ACF */
   }

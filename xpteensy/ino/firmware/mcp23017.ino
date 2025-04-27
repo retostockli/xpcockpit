@@ -180,6 +180,12 @@ void mcp23017_read(int8_t dev) {
       //Time3 = Time2 - Time1;
 
       //if (DEBUG>0) {
+      //  Serial.printf("READ: MCP23017 Device %i on Wire %i with Interrupt %i and I2C Address 0x%02x \n",
+      //    dev,mcp23017_data[dev].wire,mcp23017_data[dev].intpin,mcp23017_data[dev].address);
+      //}
+    
+ 
+      //if (DEBUG>0) {
       //  Serial.print("MCP23017 Read Time (us): ");
       //  Serial.println(Time3);
       //}

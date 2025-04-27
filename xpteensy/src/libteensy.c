@@ -298,7 +298,7 @@ int init_teensy() {
 
       /* wait for 10 ms to make sure teensy hardware has initialized */
       usleep(10000);
-      
+     
       /* initialize HT16K33 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if ((ht16k33[te][dev].connected == 1) && (ht16k33[te][dev].wire != INITVAL)) {
@@ -324,7 +324,7 @@ int init_teensy() {
 
       /* wait for 10 ms to make sure teensy hardware has initialized */
       usleep(10000);
-          
+           
       /* initialize internal programs on Teensy */
       /* initialize last, since motors, potentiometers etc. used by programs need to be known before */
       /* for now: send 3x 16 bit values and 3x 8 bit values (may need extension for other programs) */
@@ -1052,9 +1052,9 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 			    
 			    dt = ((float)(newtime.tv_sec - oldtime.tv_sec) +
 				  ((float)(newtime.tv_usec - oldtime.tv_usec)) / 1000000.0)*1000.0;
-			    //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
+			    //printf("%f %i \n",dt,1 + (int) (50.0/MAX(dt,5.0)));
 		  
-			    *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
+			    *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (50.0/MAX(dt,5.0)));
 			    retval = 1;
 			  }
 			} else if (encoder_type == 2) {
@@ -1094,9 +1094,9 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 			    
 			    dt = ((float)(newtime.tv_sec - oldtime.tv_sec) +
 				  ((float)(newtime.tv_usec - oldtime.tv_usec)) / 1000000.0)*1000.0;
-			    //printf("%f %i \n",dt,1 + (int) (10.0/MAX(dt,1.0)));
+			    //printf("%f %i \n",dt,1 + (int) (50.0/MAX(dt,5.0)));
 
-			    *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (10.0/MAX(dt,1.0)));
+			    *value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (50.0/MAX(dt,5.0)));
 			    retval = 1;
 			  }
 			} else {
