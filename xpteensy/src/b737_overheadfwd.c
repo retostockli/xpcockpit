@@ -331,21 +331,27 @@ void init_b737_overheadfwd(void)
   /* Air Bleed Panel */
   /* --------------- */
 
-  /* dev = 16;  */
-  /* for (pin=0;pin<MCP23017_MAX_PINS;pin++) { */
-  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT; */
-  /* } */
-  /* mcp23017[te][dev].intpin = 17; // also define pin 6 of teensy as INTERRUPT above! */
-  /* mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2 */
-  /* mcp23017[te][dev].address = 0x21 ^ 0x40; // (0x61) I2C address of MCP23017 device */
+  dev = 16;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  mcp23017[te][dev].intpin = 17; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x21 ^ 0x40; // (0x61) I2C address of MCP23017 device
     
-  /* dev = 17; */
-  /* for (pin=0;pin<MCP23017_MAX_PINS;pin++) { */
-  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT; */
-  /* } */
-  /* mcp23017[te][dev].intpin = 20; // also define pin 6 of teensy as INTERRUPT above! */
-  /* mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2 */
-  /* mcp23017[te][dev].address = 0x22 ^ 0x40; // (0x62) I2C address of MCP23017 device */
+  dev = 17;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  mcp23017[te][dev].intpin = 20; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x22 ^ 0x40; // (0x62) I2C address of MCP23017 device
  
   /* -------------- */
   /* ALTITUDE Panel */
@@ -389,7 +395,7 @@ void b737_overheadfwd(void)
 
   /* SET CONT CAB POTENTIOMETER IN TEMP PANEL TO TEST SERVOS IN OVHD PANEL */
   float servoval;
-  int servotest = 1;
+  int servotest = 0;
   ret = analog_input(te,38,&servoval,0.0,100.0);
 
   int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
@@ -1751,18 +1757,13 @@ void b737_overheadfwd(void)
     float *trim_air = link_dataref_flt("laminar/B738/air/trim_air_pos",0);
     ret = digital_inputf(te, MCP23017_TYPE, dev, 7, trim_air, 0);
 
-    /* Yellow Annunciators */  
- 
+    /* Yellow Annunciators (INOP IN ZIBO)*/   
     if ((*lights_test == 1.0) && (*avionics_on == 1)) {ival = 1;} else {ival = 0;};
-
     /* CONT CAB ZONE TEMP ANNUNCIATOR */
-    ival = INT_MISS;
     ret = digital_output(te, MCP23017_TYPE, dev, 8, &ival);
     /* FWD CAB ZONE TEMP ANNUNCIATOR */
-    ival = INT_MISS;
     ret = digital_output(te, MCP23017_TYPE, dev, 9, &ival);
     /* AFT CAB ZONE TEMP ANNUNCIATOR */
-    ival = INT_MISS;
     ret = digital_output(te, MCP23017_TYPE, dev, 10, &ival);
 
     /* Zone Temp Potentiometers */
@@ -1798,11 +1799,140 @@ void b737_overheadfwd(void)
 
     dev = 16;
 
+    /* L Recirculation Fan Switch */
+    float *l_recirc_fan = link_dataref_flt("laminar/B738/air/l_recirc_fan_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 0, l_recirc_fan, 0);
+    if (ret == 1) {
+      printf("L RECIRC FAN AUTO %i \n",(int) *l_recirc_fan);
+    }
+    /* R Recirculation Fan Switch */
+    float *r_recirc_fan = link_dataref_flt("laminar/B738/air/r_recirc_fan_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 1, r_recirc_fan, 0);
+    if (ret == 1) {
+      printf("R RECIRC FAN AUTO %i \n",(int) *r_recirc_fan);
+    }
 
-    dev = 17;
+    /* L Pack Switch */
+    float *l_pack = link_dataref_flt("laminar/B738/air/l_pack_pos",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 2, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 3, &ival2, 0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) {
+      *l_pack = (float) ((1-ival) + ival2);
+    }
+    if ((ret == 1) || (ret2 == 1)) {
+      printf("L PACK SWITCH %i \n",(int) *l_pack);
+    }
+
+    /* Isolation Valve Switch */
+    float *isolation_valve = link_dataref_flt("laminar/B738/air/isolation_valve_pos",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 4, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 5, &ival2, 0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) {
+      *isolation_valve = (float) ((1-ival) + ival2);
+    }
+    if ((ret == 1) || (ret2 == 1)) {
+      printf("ISOLATION VALVE SWITCH %i \n",(int) *isolation_valve);
+    }
     
+    /* R Pack Switch */
+    float *r_pack = link_dataref_flt("laminar/B738/air/r_pack_pos",0);
+    ival = INT_MISS;
+    ival2 = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 6, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 7, &ival2, 0);
+    if ((ival != INT_MISS) && (ival2 != INT_MISS)) {
+      *r_pack = (float) ((1-ival) + ival2);
+    }
+    if ((ret == 1) || (ret2 == 1)) {
+      printf("R PACK SWITCH %i \n",(int) *r_pack);
+    }
+
+    float *dual_bleed = link_dataref_flt("laminar/B738/annunciator/dual_bleed",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, dual_bleed);
+    float *pack_left = link_dataref_flt("laminar/B738/annunciator/pack_left",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, pack_left);
+    float *wing_ovht_left = link_dataref_flt("laminar/B738/annunciator/wing_body_ovht_left",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, wing_ovht_left);
+    float *bleed_trip_left = link_dataref_flt("laminar/B738/annunciator/bleed_trip_1",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 11, bleed_trip_left);
+    float *pack_right = link_dataref_flt("laminar/B738/annunciator/pack_right",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 12, pack_right);
+    float *wing_ovht_right = link_dataref_flt("laminar/B738/annunciator/wing_body_ovht_right",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 13, wing_ovht_right);
+    float *bleed_trip_right = link_dataref_flt("laminar/B738/annunciator/bleed_trip_2",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 14, bleed_trip_right);
+    
+    dev = 17;
+
+    /* Duct Overheat Test */
+    int *duct_ovht_test = link_dataref_cmd_hold("laminar/B738/push_button/duct_ovht_test");
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, duct_ovht_test, 0);
+    if (ret == 1) {
+      printf("DUCT OVHT TEST %i \n", *duct_ovht_test);
+    }
+    
+    /* Trip Reset */
+    int *trip_reset = link_dataref_cmd_hold("laminar/B738/push_button/bleed_trip_reset");
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, trip_reset, 0);
+    if (ret == 1) {
+      printf("TRIP RESET %i \n", *trip_reset);
+    }
+    
+    /* L Bleed Air Switch */
+    float *l_bleed_air = link_dataref_flt("laminar/B738/toggle_switch/bleed_air_1_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 2, l_bleed_air, 0);
+    if (ret == 1) {
+      printf("L BLEED AIR %i \n",(int) *l_bleed_air);
+    }
+
+    /* APU Bleed Air Switch */
+    float *apu_bleed_air = link_dataref_flt("laminar/B738/toggle_switch/bleed_air_apu_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 3, apu_bleed_air, 0);
+    if (ret == 1) {
+      printf("APU BLEED AIR %i \n",(int) *apu_bleed_air);
+    }
+
+    /* R Bleed Air Switch */
+    float *r_bleed_air = link_dataref_flt("laminar/B738/toggle_switch/bleed_air_2_pos",0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 4, r_bleed_air, 0);
+    if (ret == 1) {
+      printf("R BLEED AIR %i \n",(int) *r_bleed_air);
+    }
 
 
+    float *auto_fail = link_dataref_flt("laminar/B738/annunciator/autofail",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, auto_fail);
+    float *off_sched_descent = link_dataref_flt("laminar/B738/annunciator/off_sched_descent",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, off_sched_descent);
+    float *altn_press = link_dataref_flt("laminar/B738/annunciator/altn_press",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, altn_press);
+    float *manual_press = link_dataref_flt("laminar/B738/annunciator/manual_press",-1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 11, manual_press);
+
+    /* Blue Annunciators */
+    dev = 1;
+    float *l_ram_door = link_dataref_flt("laminar/B738/annunciator/ram_door_open1",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 6, l_ram_door,0.0,1.0);    
+    float *r_ram_door = link_dataref_flt("laminar/B738/annunciator/ram_door_open2",-1);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 7, r_ram_door,0.0,1.0);    
+
+    /* Duct Press Gauge */
+    dev = 0;
+    float *duct_press_left = link_dataref_flt("laminar/B738/indicators/duct_press_L",0);
+    float *duct_press_right = link_dataref_flt("laminar/B738/indicators/duct_press_R",0);
+    if (*servotest == 1) {
+      ret = servo_output(te, PCA9685_TYPE, dev, 6, &servoval,0.0,100.0,0.0,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 7, &servoval,0.0,100.0,0.0,1.0);
+    } else {
+      ret = servo_output(te, PCA9685_TYPE, dev, 6, duct_press_left,0.0,80.0,0.0,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 7, duct_press_right,0.0,80.0,0.0,1.0);
+    }
+
+    
     /* -------------- */
     /* ALTITUDE Panel */
     /* -------------- */
@@ -1873,7 +2003,126 @@ void b737_overheadfwd(void)
     }
     
   } else {
+
     /* A few basic switches for other ACF */
-  }
+
+  /*   device = mastercard; */
+  /*   card = 0; */
+    
+  /*   int *battery_i = link_dataref_int("sim/cockpit/electrical/battery_on"); */
+  /*   int *avionics_i = link_dataref_int("sim/cockpit2/switches/avionics_power_on"); */
+  /*   ret = digital_input(device,card,8,&ival,0); */
+  /*   if (ival != INT_MISS) { */
+  /*     *battery_i = 1-ival; */
+  /*     *avionics_i = 1-ival; */
+  /*   } */
+
+  /*   /\* set relay 0 on output 49 on relay card through d-sub con *\/ */
+  /*   /\* Backlighting Only when Battery is on *\/ */
+  /*   device = mastercard; */
+  /*   card = 0; */
+  /*   ret = digital_output(device,card,49,battery_i); */
+   
+  /*   /\* Ignitior Switch for first engine *\/ */
+  /*   device = mastercard; */
+  /*   card = 0; */
+  /*   int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on", 16,-1); */
+  /*   for (int i=0;i<8;i++) { */
+  /*     ignition_on[i] = 3; */
+  /*     ret = digital_input(device,card,27,&ival,0); */
+  /*     if (ival == 1) ignition_on[i] = 2; */
+  /*     ret = digital_input(device,card,28,&ival,0); */
+  /*     if (ival == 1) ignition_on[i] = 1; */
+  /*   } */
+    
+  /*   /\* Engine Starters *\/ */
+  /*   device = mastercard; */
+  /*   card = 0; */
+  /*   int *engine_start = link_dataref_cmd_hold("sim/engines/engage_starters"); */
+  /*   ret = digital_input(device,card,18,engine_start,0); */
+
+  /*   /\* Blank Altitude Panel *\/ */
+  /*   device = mastercard; */
+  /*   card = 0; */
+  /*   ival = 10; */
+  /*   ret = mastercard_display(device,card,0,5,&ival,1); */
+  /*   ret = mastercard_display(device,card,6,5,&ival,1); */
+    
+  /*   /\* Fuel Pump *\/ */
+  /*   device = mastercard; */
+  /*   card = 1; */
+  /*   int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on", 16,-1); */
+  /*   ret = digital_input(device,card,67,&ival,0); */
+  /*   if (ival != INT_MISS) { */
+  /*     for (int i=0;i<8;i++) { */
+  /* 	fuel_pump_on[i] = ival; */
+  /*     } */
+  /*   } */
+
+  /*   /\* Turn off Voltage / Amperage Display *\/ */
+  /*   device = mastercard; */
+  /*   card = 1; */
+  /*   ival = 10; */
+  /*   ret = mastercard_display(device,card,11,2,&ival,1); */
+  /*   ret = mastercard_display(device,card,6,2,&ival,1); */
+  /*   ret = mastercard_display(device,card,1,3,&ival,1); */
+  /*   ret = mastercard_display(device,card,4,2,&ival,1); */
+  /*   ret = mastercard_display(device,card,8,3,&ival,1); */
+
+
+  /*   /\* weapon arming for fighter jets *\/ */
+  /*   int *weapons_arm_cover_pos = link_dataref_int("laminar/f14/anm/weapons/arm_switch_guard_target_pos"); */
+  /*   int *weapons_arm_cover_toggle = link_dataref_cmd_once("laminar/f14/weapons/switch/master_arm_switch_guard"); */
+  /*   ival = 1; */
+  /*   float cover_pos = FLT_MISS; */
+  /*   if (*weapons_arm_cover_pos != INT_MISS) { */
+  /*     cover_pos = (float) *weapons_arm_cover_pos; */
+  /*   }     */
+  /*   ret = set_switch_cover(&cover_pos,weapons_arm_cover_toggle,ival); */
+
+  /*   int *weapons_arm_pos = link_dataref_int("sim/cockpit2/weapons/master_arm"); */
+  /*   int *weapons_arm_toggle = link_dataref_cmd_once("sim/weapons/master_arm_on"); */
+  /*   device = mastercard; */
+  /*   card = 1; */
+  /*   ret = digital_input(device,card,16,&ival,0); */
+  /*   if (ret == 1) { */
+  /*     printf("Weapons armed: %i \n",ival); */
+  /*   } */
+  /*   ret = set_state_toggle(&ival,weapons_arm_pos,weapons_arm_toggle); */
+
+  /*   device = mastercard; */
+  /*   card = 1; */
+
+  /*   /\* GRD CALL BUTTON: air to ground missile *\/ */
+  /*   int *air2ground = link_dataref_cmd_once("sim/weapons/fire_air_to_ground"); */
+  /*   ret = digital_input(device,card,31,air2ground,0); */
+  /*   if (ret == 1) { */
+  /*     printf("FIRE AIR TO GROUND MISSILE/BOMB: %i \n",*air2ground); */
+  /*   } */
+     
+  /*   device = mastercard; */
+  /*   card = 0; */
+
+  /*   /\* ATTEND BUTTON: air to air missile *\/ */
+  /*   int *air2air = link_dataref_cmd_once("sim/weapons/fire_air_to_air"); */
+  /*   ret = digital_input(device,card,53,air2air,0); */
+  /*   if (ret == 1) { */
+  /*     printf("FIRE AIR TO AIR MISSILE: %i \n",*air2air); */
+  /*   } */
+    
+  /*   /\* CVR ERASE: deploy flares *\/ */
+  /*   int *flares = link_dataref_cmd_once("sim/weapons/deploy_flares"); */
+  /*   ret = digital_input(device,card,70,flares,0); */
+  /*   if (ret == 1) { */
+  /*     printf("DEPLOY FLARES: %i \n",*flares); */
+  /*   } */
+  /*   /\* CVR Test: deploy chaff *\/ */
+  /*   int *chaff= link_dataref_cmd_once("sim/weapons/deploy_chaff"); */
+  /*   ret = digital_input(device,card,71,chaff,0); */
+  /*   if (ret == 1) { */
+  /*     printf("DEPLOY CHAFF: %i \n",*chaff); */
+  /*   } */
+    
+  /* } */
     
 }
