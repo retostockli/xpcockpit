@@ -85,6 +85,9 @@ int main(int argc, char **argv) {
      for teensy and daughter boards */
   if (strcmp(argv[1],"test") == 0) {
     init_test();
+  } else if (strcmp(argv[1],"boeing737") == 0) {
+    init_b737_tq();
+    init_b737_overheadfwd();
   } else if (strcmp(argv[1],"boeing737tq") == 0) {
     init_b737_tq();
   } else if (strcmp(argv[1],"boeing737ovhfwd") == 0) {
@@ -113,6 +116,9 @@ int main(int argc, char **argv) {
 
     if (strcmp(argv[1],"test") == 0) {
       test();
+    } else if (strcmp(argv[1],"boeing737") == 0) {
+      b737_tq();
+      b737_overheadfwd();
     } else if (strcmp(argv[1],"boeing737tq") == 0) {
       b737_tq();
     } else if (strcmp(argv[1],"boeing737ovhfwd") == 0) {

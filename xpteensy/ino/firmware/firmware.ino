@@ -13,6 +13,7 @@
 
 //#define WIRESPEED 1000000  /* 1 MHz mostly too fast for some devices */
 #define WIRESPEED 400000  /* 400 kHz mostly ok */
+//#define WIRESPEED 200000  /* 200 kHz always ok for all devices */
 //#define WIRESPEED 100000  /* 100 kHz always ok for all devices */
 
 //#include <Ethernet.h>

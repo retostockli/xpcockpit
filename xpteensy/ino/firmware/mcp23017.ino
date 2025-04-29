@@ -21,9 +21,18 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t
           }
         }
 
+        /* reset wire speed since mcp23017 begin may reset it to 100 kHz */
+        if (wirenum == 0) {
+          Wire.setClock(WIRESPEED);
+        } else if (wirenum == 1) {
+          Wire1.setClock(WIRESPEED);
+        } else if (wirenum == 2) {
+          Wire2.setClock(WIRESPEED);
+        }
+
         if (ret == 0) {
           if (DEBUG > 0) {
-            Serial.printf("INIT: MCP23017 Device %i could not be connected to I2C bus %i with address 0x%02x \n", dev,wirenum,address);
+            Serial.printf("INIT: MCP23017 Device %i could not be connected to I2C bus %i with address 0x%02x \n", dev, wirenum, address);
           }
         } else {
           if (intpin == INITVAL) {
@@ -32,7 +41,7 @@ void mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int8_t
             mcp23017_data[dev].wire = wirenum;
             mcp23017_data[dev].address = address;
             if (DEBUG > 0) {
-              Serial.printf("INIT: MCP23017 Device %i connected to I2C bus %i with address 0x%02x (OUTPUT ONLY)\n", dev, wirenum,address);
+              Serial.printf("INIT: MCP23017 Device %i connected to I2C bus %i with address 0x%02x (OUTPUT ONLY)\n", dev, wirenum, address);
             }
           } else {
             /* Interrupt pin: used for inputs */
@@ -141,9 +150,9 @@ void mcp23017_write(int8_t dev, int8_t pin, int16_t val) {
               }
               Serial.printf("\n");
             } else if (DEBUG > 0) {
-              Serial.printf("WRITE: MCP23017 Device %i Pin %i Digital Output Value %i \n", dev, pin,val);            
+              Serial.printf("WRITE: MCP23017 Device %i Pin %i Digital Output Value %i \n", dev, pin, val);
             }
-          } // value is 0 or 1 
+          }  // value is 0 or 1
         }    // value has changed
       } else {
         if (DEBUG > 0) {
@@ -179,13 +188,7 @@ void mcp23017_read(int8_t dev) {
       //Time2 = micros();
       //Time3 = Time2 - Time1;
 
-      //if (DEBUG>0) {
-      //  Serial.printf("READ: MCP23017 Device %i on Wire %i with Interrupt %i and I2C Address 0x%02x \n",
-      //    dev,mcp23017_data[dev].wire,mcp23017_data[dev].intpin,mcp23017_data[dev].address);
-      //}
-    
- 
-      //if (DEBUG>0) {
+      //if (DEBUG > 0) {
       //  Serial.print("MCP23017 Read Time (us): ");
       //  Serial.println(Time3);
       //}

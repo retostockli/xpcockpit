@@ -19,6 +19,15 @@ void ht16k33_init(int8_t dev, int8_t wirenum, uint8_t address) {
         }
       }
 
+      /* reset wire speed since ht16k33 begin may reset it to 100 kHz */
+      if (wirenum == 0) {
+        Wire.setClock(WIRESPEED);
+      } else if (wirenum == 1) {
+        Wire1.setClock(WIRESPEED);
+      } else if (wirenum == 2) {
+        Wire2.setClock(WIRESPEED);
+      }
+
       /* Load Font Table */
       ht16k33[dev].define7segFont((uint8_t*)&fontTable);
 

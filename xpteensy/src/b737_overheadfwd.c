@@ -56,7 +56,7 @@ float air_valve_ctrl;
 
 void init_b737_overheadfwd(void)
 {
-  int te = 0;
+  int te = 1; // Teensy Number (as in ini file)
   int pin;
   int dev;
 
@@ -376,9 +376,10 @@ void init_b737_overheadfwd(void)
 void b737_overheadfwd(void)
 {
 
+  int te = 1; // Teensy Number (as in ini file)
+
   int ret;
   int ret2;
-  int te = 0;
   int dev;
 
   //int one = 1;
@@ -393,7 +394,8 @@ void b737_overheadfwd(void)
   int cover;
   int ncover;
 
-  /* SET CONT CAB POTENTIOMETER IN TEMP PANEL TO TEST SERVOS IN OVHD PANEL */
+  /* SET CONT CAB POTENTIOMETER IN TEMP PANEL TO TEST SERVOS IN OVHD PANEL
+     AND ADJUST THEIR RANGE */
   float servoval;
   int servotest = 0;
   ret = analog_input(te,38,&servoval,0.0,100.0);
@@ -441,8 +443,6 @@ void b737_overheadfwd(void)
       ret = set_switch_cover(switch_cover_pos,switch_cover_toggle,ival);
     }
 
-
-
     /* Pedestal Light PWM controlled by Pedestal Potentiometer */
     /* TODO: LINK PEDESTAL POTENTIOMETER DATAREF */
     ret = digital_output(te, TEENSY_TYPE, 0, 26, avionics_on);
@@ -456,20 +456,6 @@ void b737_overheadfwd(void)
     /* ----------------- */
 
     dev = 0;
-
-    /* FOR TESTING */
-    /* for (pin=0;pin<MCP23017_MAX_PINS;pin++) { */
-    /*   ret = digital_input(te, MCP23017_TYPE, dev, pin, &inputvalue, 0); */
-    /*   if (ret == 1) { */
-    /* 	printf("Digital Input %i of MCP23017 %i changed to: %i \n", pin, dev, inputvalue); */
-
-    /* 	if (inputvalue == 1) { */
-    /* 	  count ++; */
-    /* 	  if (count > 15) count = 0; */
-    /* 	  printf("COUNT: %i \n",count); */
-    /* 	} */
-    /*   } */
-    /* } */
 
     int *spoiler_A_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/spoiler_A");
     float *spoiler_A_pos = link_dataref_flt("laminar/B738/switches/spoiler_A_pos",0);
@@ -1787,9 +1773,9 @@ void b737_overheadfwd(void)
     dev = 0;
     float *zone_temp = link_dataref_flt("laminar/B738/zone_temp",0);
     if (servotest == 1) {
-      ret = servo_output(te, PCA9685_TYPE, dev, 0, &servoval,0.0,100.0,0.07,0.90);
+      ret = servo_output(te, PCA9685_TYPE, dev, 0, &servoval,0.0,100.0,0.05,0.9);
     } else {
-      ret = servo_output(te, PCA9685_TYPE, dev, 0, zone_temp,0.0,100.0,0.03,0.87);
+      ret = servo_output(te, PCA9685_TYPE, dev, 0, zone_temp,0.0,100.0,0.05,0.9);
     }
 
     
@@ -1924,12 +1910,12 @@ void b737_overheadfwd(void)
     dev = 0;
     float *duct_press_left = link_dataref_flt("laminar/B738/indicators/duct_press_L",0);
     float *duct_press_right = link_dataref_flt("laminar/B738/indicators/duct_press_R",0);
-    if (*servotest == 1) {
-      ret = servo_output(te, PCA9685_TYPE, dev, 6, &servoval,0.0,100.0,0.0,1.0);
-      ret = servo_output(te, PCA9685_TYPE, dev, 7, &servoval,0.0,100.0,0.0,1.0);
+    if (servotest == 1) {
+      ret = servo_output(te, PCA9685_TYPE, dev, 6, &servoval,0.0,100.0,0.02,0.93);
+      ret = servo_output(te, PCA9685_TYPE, dev, 7, &servoval,0.0,100.0,0.02,0.88);
     } else {
-      ret = servo_output(te, PCA9685_TYPE, dev, 6, duct_press_left,0.0,80.0,0.0,1.0);
-      ret = servo_output(te, PCA9685_TYPE, dev, 7, duct_press_right,0.0,80.0,0.0,1.0);
+      ret = servo_output(te, PCA9685_TYPE, dev, 6, duct_press_left,0.0,80.0,0.02,0.93);
+      ret = servo_output(te, PCA9685_TYPE, dev, 7, duct_press_right,0.0,80.0,0.02,0.88);
     }
 
     
@@ -2123,6 +2109,6 @@ void b737_overheadfwd(void)
   /*     printf("DEPLOY CHAFF: %i \n",*chaff); */
   /*   } */
     
-  /* } */
+  }
     
 }

@@ -122,57 +122,62 @@ int init_teensy() {
 	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_I2C)) {
-	  memset(teensySendBuffer,0,SENDMSGLEN);
-	  if (verbose > 0) {
-	    if (teensy[te].pinmode[pin] == PINMODE_INPUT) printf("Teensy %i Pin %i Initialized as Input \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) printf("Teensy %i Pin %i Initialized as Output with Value %i \n",
-								  te,pin,teensy[te].val[pin][0]);
-	    if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM with Value %i \n",
-							       te,pin,teensy[te].val[pin][0]);
-	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Median Filter) \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Mean Filter) \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) printf("Teensy %i Pin %i Initialized as ANALOG INPUT \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_SERVO) printf("Teensy %i Pin %i Initialized as SERVO with Value %i \n",
+
+	  if ((pin == I2C_SCL_PIN) || (pin == I2C_SDA_PIN)) {
+	    printf("ERROR: Teensy %i Pin %i is a I2C SDA / SCL Pin \n",te,pin);
+	  } else {
+	    memset(teensySendBuffer,0,SENDMSGLEN);
+	    if (verbose > 0) {
+	      if (teensy[te].pinmode[pin] == PINMODE_INPUT) printf("Teensy %i Pin %i Initialized as Input \n",te,pin);
+	      if (teensy[te].pinmode[pin] == PINMODE_OUTPUT) printf("Teensy %i Pin %i Initialized as Output with Value %i \n",
+								    te,pin,teensy[te].val[pin][0]);
+	      if (teensy[te].pinmode[pin] == PINMODE_PWM) printf("Teensy %i Pin %i Initialized as PWM with Value %i \n",
 								 te,pin,teensy[te].val[pin][0]);
-	    if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
-	      printf("Teensy %i Pin %i Initialized as Motor with Value %i \n",te,pin,teensy[te].val[pin][0]);
-	      printf("       with Direction Pins %i %i \n",teensy[te].arg1[pin],teensy[te].arg2[pin]);
-	      if (teensy[te].arg1[pin] == INITVAL) printf("ERROR: NO DIRECTION PIN 1 DEFINED!!!! \n");
-	      if (teensy[te].arg2[pin] == INITVAL) printf("ERROR: NO DIRECTION PIN 2 DEFINED!!!! \n");
-	      if (teensy[te].arg3[pin] != INITVAL) printf("       with Current Sensing Pin %i \n",teensy[te].arg3[pin]);
+	      if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEDIAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Median Filter) \n",te,pin);
+	      if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) printf("Teensy %i Pin %i Initialized as ANALOG INPUT (Mean Filter) \n",te,pin);
+	      if (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) printf("Teensy %i Pin %i Initialized as ANALOG INPUT \n",te,pin);
+	      if (teensy[te].pinmode[pin] == PINMODE_SERVO) printf("Teensy %i Pin %i Initialized as SERVO with Value %i \n",
+								   te,pin,teensy[te].val[pin][0]);
+	      if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
+		printf("Teensy %i Pin %i Initialized as Motor with Value %i \n",te,pin,teensy[te].val[pin][0]);
+		printf("       with Direction Pins %i %i \n",teensy[te].arg1[pin],teensy[te].arg2[pin]);
+		if (teensy[te].arg1[pin] == INITVAL) printf("ERROR: NO DIRECTION PIN 1 DEFINED!!!! \n");
+		if (teensy[te].arg2[pin] == INITVAL) printf("ERROR: NO DIRECTION PIN 2 DEFINED!!!! \n");
+		if (teensy[te].arg3[pin] != INITVAL) printf("       with Current Sensing Pin %i \n",teensy[te].arg3[pin]);
+	      }
+	      if (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) printf("Teensy %i Pin %i Initialized as INTERRUPT \n",te,pin);
+	      if (teensy[te].pinmode[pin] == PINMODE_I2C) printf("Teensy %i Pin %i Initialized as I2C Pin \n",te,pin);
 	    }
-	    if (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) printf("Teensy %i Pin %i Initialized as INTERRUPT \n",te,pin);
-	    if (teensy[te].pinmode[pin] == PINMODE_I2C) printf("Teensy %i Pin %i Initialized as I2C Pin \n",te,pin);
-	  }
-	  teensySendBuffer[0] = TEENSY_ID1; /* T */
-	  teensySendBuffer[1] = TEENSY_ID2; /* E */
-	  if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
-	    /* also send maximum allowable current for motor */
-	    memcpy(&teensySendBuffer[2],&teensy[te].arg6[pin],sizeof(teensy[te].arg6[pin]));
-	  } else {
-	    teensySendBuffer[2] = 0x00;
-	    teensySendBuffer[3] = 0x00;
-	  }
-	  teensySendBuffer[4] = TEENSY_INIT;
-	  teensySendBuffer[5] = TEENSY_TYPE;
-	  teensySendBuffer[6] = 0;
-	  teensySendBuffer[7] = pin;
-	  memcpy(&teensySendBuffer[8],&teensy[te].val[pin][0],sizeof(teensy[te].val[pin][0]));
-	  teensySendBuffer[10] = teensy[te].pinmode[pin];
-	  if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
-	    /* also send the two direction pins for IN1 and IN2 and the Current Sense pin */
-	    teensySendBuffer[11] = teensy[te].arg1[pin]; // IN1 Pin
-	    teensySendBuffer[12] = teensy[te].arg2[pin]; // IN2 Pin
-	    teensySendBuffer[13] = teensy[te].arg3[pin]; // Current Sense Pin
-	    teensySendBuffer[14] = teensy[te].arg4[pin]; // Min speed (0..255)
-	    teensySendBuffer[15] = teensy[te].arg5[pin]; // Max speed (0..255)
-	  }
-	  ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	  if (ret == SENDMSGLEN) {
-	    if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i \n", ret,te);
-	  } else {
-	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i \n", ret,te);
-	  }
+	    teensySendBuffer[0] = TEENSY_ID1; /* T */
+	    teensySendBuffer[1] = TEENSY_ID2; /* E */
+	    if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
+	      /* also send maximum allowable current for motor */
+	      memcpy(&teensySendBuffer[2],&teensy[te].arg6[pin],sizeof(teensy[te].arg6[pin]));
+	    } else {
+	      teensySendBuffer[2] = 0x00;
+	      teensySendBuffer[3] = 0x00;
+	    }
+	    teensySendBuffer[4] = TEENSY_INIT;
+	    teensySendBuffer[5] = TEENSY_TYPE;
+	    teensySendBuffer[6] = 0;
+	    teensySendBuffer[7] = pin;
+	    memcpy(&teensySendBuffer[8],&teensy[te].val[pin][0],sizeof(teensy[te].val[pin][0]));
+	    teensySendBuffer[10] = teensy[te].pinmode[pin];
+	    if (teensy[te].pinmode[pin] == PINMODE_MOTOR) {
+	      /* also send the two direction pins for IN1 and IN2 and the Current Sense pin */
+	      teensySendBuffer[11] = teensy[te].arg1[pin]; // IN1 Pin
+	      teensySendBuffer[12] = teensy[te].arg2[pin]; // IN2 Pin
+	      teensySendBuffer[13] = teensy[te].arg3[pin]; // Current Sense Pin
+	      teensySendBuffer[14] = teensy[te].arg4[pin]; // Min speed (0..255)
+	      teensySendBuffer[15] = teensy[te].arg5[pin]; // Max speed (0..255)
+	    }
+	    ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	    if (ret == SENDMSGLEN) {
+	      if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i \n", ret,te);
+	    } else {
+	      printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i \n", ret,te);
+	    }
+	  } /* pin not a I2C pin */
 	} /* pin defined */
       } /* loop over pins */
 
@@ -237,25 +242,30 @@ int init_teensy() {
 		  printf("Teensy %i MCP23017 %i Pin %i Initialized as Output with Value %i \n",
 			 te,dev,pin,mcp23017[te][dev].val[pin]);
 	      }
-	      teensySendBuffer[0] = TEENSY_ID1; /* T */
-	      teensySendBuffer[1] = TEENSY_ID2; /* E */
-	      teensySendBuffer[2] = 0x00;
-	      teensySendBuffer[3] = 0x00; 
-	      teensySendBuffer[4] = TEENSY_INIT;
-	      teensySendBuffer[5] = MCP23017_TYPE;
-	      teensySendBuffer[6] = dev;
-	      teensySendBuffer[7] = pin;
-	      memcpy(&teensySendBuffer[8],&mcp23017[te][dev].val[pin],sizeof(mcp23017[te][dev].val[pin]));
-	      teensySendBuffer[10] = mcp23017[te][dev].pinmode[pin];
-	      teensySendBuffer[11] = mcp23017[te][dev].intpin; 
-	      teensySendBuffer[12] = mcp23017[te][dev].wire;
-	      teensySendBuffer[13] = (int8_t) mcp23017[te][dev].address; 
-	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
-	      if (ret == SENDMSGLEN) {
-		if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
-	      } else {
-		printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
-	      }
+	      if ((mcp23017[te][dev].intpin == I2C_SCL_PIN) || (mcp23017[te][dev].intpin == I2C_SDA_PIN)) {
+		printf("ERROR: Teensy %i Interrupt Pin %i for MCP23017 %i is a I2C SDA / SCL Pin \n",
+		       te,mcp23017[te][dev].intpin,dev);
+	      } else {	      
+		teensySendBuffer[0] = TEENSY_ID1; /* T */
+		teensySendBuffer[1] = TEENSY_ID2; /* E */
+		teensySendBuffer[2] = 0x00;
+		teensySendBuffer[3] = 0x00; 
+		teensySendBuffer[4] = TEENSY_INIT;
+		teensySendBuffer[5] = MCP23017_TYPE;
+		teensySendBuffer[6] = dev;
+		teensySendBuffer[7] = pin;
+		memcpy(&teensySendBuffer[8],&mcp23017[te][dev].val[pin],sizeof(mcp23017[te][dev].val[pin]));
+		teensySendBuffer[10] = mcp23017[te][dev].pinmode[pin];
+		teensySendBuffer[11] = mcp23017[te][dev].intpin; 
+		teensySendBuffer[12] = mcp23017[te][dev].wire;
+		teensySendBuffer[13] = (int8_t) mcp23017[te][dev].address; 
+		ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+		if (ret == SENDMSGLEN) {
+		  if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
+		} else {
+		  printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i MCP23017 %i \n", ret,te,dev);
+		}
+	      } /* pin not I2C pin */
 	    } /* pin defined */
 	  } /* loop over pins */
 	}

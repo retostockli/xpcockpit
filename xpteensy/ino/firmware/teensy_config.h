@@ -97,6 +97,17 @@
 #define PINMODE_MOTOR 9 // L298 motor driver (for now)
 #define PINMODE_I2C 10
 
+/* Wire Pins on Teensy (Wire Interface 0) */
+#define I2C_SDA_PIN 18  
+#define I2C_SCL_PIN 19
+
+/* Error Codes */
+#define ERROR_INIT -10
+#define ERROR_PIN_RANGE -11
+#define ERROR_DEV_RANGE -12
+#define ERROR_PINMODE -13
+#define ERROR_WRITE -14
+
 #include <stdint.h>
 
 typedef struct {
