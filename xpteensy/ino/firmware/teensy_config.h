@@ -72,6 +72,7 @@
 #define TEENSY_INIT 1       // Initialization data packet
 #define TEENSY_REGULAR 2    // Regular data packet with data
 #define TEENSY_RESEND 3     // Request to resend states /* INOP */
+#define TEENSY_ERROR 9      // Message with Error state
 #define TEENSY_SHUTDOWN 10  // Request to shutdown /* INOP */
 
 /* Teensy type of connected daughter boards */
@@ -103,10 +104,15 @@
 
 /* Error Codes */
 #define ERROR_INIT -10
-#define ERROR_PIN_RANGE -11
-#define ERROR_DEV_RANGE -12
-#define ERROR_PINMODE -13
-#define ERROR_WRITE -14
+#define ERROR_INIT_I2C -11
+#define ERROR_WIRE_RANGE -12
+#define ERROR_INIT_INTERRUPT -13
+#define ERROR_NOT_CONNECTED -14
+#define ERROR_PIN_RANGE -15
+#define ERROR_DEV_RANGE -16
+#define ERROR_PINMODE -17
+#define ERROR_WRITE -18
+#define ERROR_VAL_RANGE -19
 
 #include <stdint.h>
 

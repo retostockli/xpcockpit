@@ -656,6 +656,29 @@ int recv_teensy() {
 	  } else {
 	    printf("Received value for unknown device type\n");
 	  }
+	} else if (recv_type == TEENSY_ERROR) {
+	  printf("\033[1;31m");
+	  printf("RECEIVED ERROR: Teensy %i ",te);
+	  if (dev_type == MCP23017_TYPE) printf("MCP23017 Device %i ",dev_num);
+	  if (dev_type == PCA9685_TYPE) printf("PCA9685 Device %i ",dev_num);
+	  if (dev_type == HT16K33_TYPE) {
+	    printf("HT16K33 Device %i ",dev_num);
+	    printf("Display %i ",pin);
+	  } else {
+	    printf("Pin %i ",pin);
+	  }
+	  if (val == ERROR_INIT) printf(" --> DEVICE COULD NOT BE INITIALIZED");
+	  if (val == ERROR_INIT_I2C) printf(" --> I2C COULD NOT BE INITIALIZED");
+	  if (val == ERROR_WIRE_RANGE) printf(" --> I2C WIRE NUMBER OUT OF RANGE");
+	  if (val == ERROR_INIT_INTERRUPT) printf(" --> INTERRUPT COULD NOT BE ASSIGNED");
+	  if (val == ERROR_NOT_CONNECTED) printf(" --> DEVICE IS NOT CONNECTED");
+	  if (val == ERROR_PIN_RANGE) printf(" --> PIN NUMBER OUT OF RANGE");
+	  if (val == ERROR_DEV_RANGE) printf(" --> DEVICE NUMBER OUT OF RANGE");
+	  if (val == ERROR_PINMODE) printf(" --> WRONG PINMODE");
+	  if (val == ERROR_WRITE) printf(" --> WRITE TO DEVICE / PIN FAILED");
+	  printf("\n");
+	  printf("\033[0m");
+
 	}
 	
 	// printf("Left to Read: %i \n",udpReadLeft);

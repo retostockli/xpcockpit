@@ -1,6 +1,8 @@
 Adafruit_PWMServoDriver pca9685[MAX_DEV];
 
-void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_t address, int16_t val) {
+int16_t pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_t address, int16_t val) {
+
+  int16_t retval = 0;
 
   if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
     if ((dev >= 0) && (dev < MAX_DEV)) {
@@ -16,6 +18,7 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
         }
 
         if ((wirenum < 0) || (wirenum > 2)) {
+          retval = ERROR_WIRE_RANGE;
           if (DEBUG > 0) {
             Serial.printf("INIT: PCA9685 Dev %i Wire Number %i Out of Range. Wire Number can only be 0, 1 or 2 \n", dev, wirenum);
           }
@@ -28,7 +31,7 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
               Wire1.setClock(WIRESPEED);
             } else if (wirenum == 2) {
               Wire2.setClock(WIRESPEED);
-            }
+            } 
 
             pca9685[dev].setOscillatorFrequency(27000000);
             pca9685[dev].setPWMFreq(50);  // Maximum PWM Frequency for PWM operation
@@ -44,6 +47,7 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
               Serial.printf("INIT: PCA9685 Device %i connected to I2C bus %i with address 0x%02x \n", dev, wirenum, address);
             }
           } else {
+            retval = ERROR_INIT;
             if (DEBUG > 0) {
               Serial.printf("INIT: PCA9685 Device %i could not be connected to I2C bus %i with address 0x%02x \n", dev, wirenum, address);
             }
@@ -77,6 +81,7 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
             }
           }
         } else {
+          retval = ERROR_PINMODE;
           if (DEBUG > 0) {
             Serial.printf("INIT: PCA9685 Device %i Pin %i can only be PWM or SERVO\n", dev, pin);
           }
@@ -85,18 +90,25 @@ void pca9685_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t wirenum, uint8_
         pca9685_write(dev, pin, val);
       }
     } else {
+      retval = ERROR_DEV_RANGE;
       if (DEBUG > 0) {
         Serial.printf("INIT: PCA9685 Device Number %i out of range \n", dev);
       }
     }
   } else {
+    retval = ERROR_PIN_RANGE;
     if (DEBUG > 0) {
       Serial.printf("INIT: PCA9685 Device %i Pin %i out of range \n", dev, pin);
     }
   }
+
+  return retval;
+
 }
 
-void pca9685_write(int8_t dev, int8_t pin, int16_t val) {
+int16_t pca9685_write(int8_t dev, int8_t pin, int16_t val) {
+
+  int16_t retval = 0;
 
   if ((pin >= 0) && (pin < PCA9685_MAX_PINS)) {
     if ((dev >= 0) && (dev < MAX_DEV)) {
@@ -113,6 +125,7 @@ void pca9685_write(int8_t dev, int8_t pin, int16_t val) {
                   Serial.printf("WRITE: PCA9685 Device %i PWM %i has value %i \n", dev, pin, val);
                 }
               } else {
+                retval = ERROR_VAL_RANGE;
                 if (DEBUG > 0) {
                   Serial.printf("WRITE: PCA9685 Device %i PWM %i value out of range %i \n", dev, pin, val);
                 }
@@ -126,11 +139,13 @@ void pca9685_write(int8_t dev, int8_t pin, int16_t val) {
                   Serial.printf("WRITE: PCA9685 Device %i SERVO %i has value %i \n", dev, pin, val);
                 }
               } else {
+                retval = ERROR_VAL_RANGE;
                 if (DEBUG > 0) {
                   Serial.printf("WRITE: PCA9685 Device %i SERVO %i value out of range %i \n", dev, pin, val);
                 }
               }
             } else {
+              retval = ERROR_PINMODE;
               if (DEBUG > 0) {
                 Serial.printf("WRITE: PCA9685 Device %i Pin %i can only be PWM or SERVO\n", dev, pin);
               }
@@ -138,14 +153,23 @@ void pca9685_write(int8_t dev, int8_t pin, int16_t val) {
           }  // not initialization value
         }    // value has changed
       } else {
+        retval = ERROR_NOT_CONNECTED;
         if (DEBUG > 0) {
-          Serial.printf("WRITE: PCA9685 Device Number %i out of range \n", dev);
+          Serial.printf("WRITE: PCA9685 Device Number %i not connected \n", dev);
         }
       }
     } else {
+      retval = ERROR_DEV_RANGE;
       if (DEBUG > 0) {
-        Serial.printf("WRITE: PCA9685 Device %i Pin %i out of range \n", dev, pin);
+        Serial.printf("WRITE: PCA9685 Device Number %i out of range \n", dev);
       }
     }
+  } else {
+    retval = ERROR_PIN_RANGE;
+    if (DEBUG > 0) {
+      Serial.printf("WRITE: PCA9685 Device %i Pin %i out of range \n", dev, pin);
+    }
   }
+
+  return retval;
 }

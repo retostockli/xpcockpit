@@ -7,6 +7,8 @@ void udp_receive(void) {
   int8_t ivalue8;
   int8_t prog;
 
+  int16_t retval;
+
   // if there's data available, read a packet
   int packetSize = Udp.parsePacket();
   if (packetSize > 0) {
@@ -48,7 +50,7 @@ void udp_receive(void) {
               Serial.printf("RECV: PING Request\n");
             }
             ivalue16 = 0;
-            udp_send(TEENSY_TYPE, 0, INITVAL, ivalue16);
+            udp_send(TEENSY_TYPE, 0, TEENSY_PING, INITVAL, ivalue16);
           } else if (recvBuffer[4] == TEENSY_INIT) {
             /* initialize pin or daughter board as requested */
             memcpy(&ivalue16, &recvBuffer[8], 2);
@@ -64,29 +66,37 @@ void udp_receive(void) {
           /* Init or Regular Data Packet */
           if (recvBuffer[4] == TEENSY_INIT) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            mcp23017_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[11], recvBuffer[12], recvBuffer[13], ivalue16);
+            retval = mcp23017_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[11], recvBuffer[12], recvBuffer[13], ivalue16);
+            if (retval != 0) udp_send(MCP23017_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            mcp23017_write(recvBuffer[6], recvBuffer[7], ivalue16);
+            retval = mcp23017_write(recvBuffer[6], recvBuffer[7], ivalue16);
+            if (retval != 0) udp_send(MCP23017_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
           }
         } else if (recvBuffer[5] == PCA9685_TYPE) {
           /* It is a PCA9685 daughter board */
           /* Init or Regular Data Packet */
           if (recvBuffer[4] == TEENSY_INIT) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            pca9685_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[12], recvBuffer[13], ivalue16);
-          } else if (recvBuffer[4] == TEENSY_REGULAR) {
+            retval = pca9685_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[12], recvBuffer[13], ivalue16);
+            if (retval != 0) udp_send(PCA9685_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
+            Serial.printf("RETVAL: %i\n",retval);
+
+           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            pca9685_write(recvBuffer[6], recvBuffer[7], ivalue16);
-          }
+            retval = pca9685_write(recvBuffer[6], recvBuffer[7], ivalue16);
+            if (retval != 0) udp_send(PCA9685_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
+         }
         } else if (recvBuffer[5] == HT16K33_TYPE) {
           /* It is a HT16K33 daughter board */
           /* Init or Regular Data Packet */
           if (recvBuffer[4] == TEENSY_INIT) {
-            ht16k33_init(recvBuffer[6], recvBuffer[12], recvBuffer[13]);
+            retval = ht16k33_init(recvBuffer[6], recvBuffer[12], recvBuffer[13]);
+            if (retval != 0) udp_send(HT16K33_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
           } else if (recvBuffer[4] == TEENSY_REGULAR) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
-            ht16k33_write(recvBuffer[6], recvBuffer[7], ivalue16, recvBuffer[10], recvBuffer[11]);
+            retval = ht16k33_write(recvBuffer[6], recvBuffer[7], ivalue16, recvBuffer[10], recvBuffer[11]);
+            if (retval != 0) udp_send(HT16K33_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
           }
         } else if (recvBuffer[5] == AS5048B_TYPE) {
           /* It is a AS5048B daughter board */

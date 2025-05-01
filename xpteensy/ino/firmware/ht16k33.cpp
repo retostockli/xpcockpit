@@ -82,18 +82,22 @@ HT16K33::HT16K33(){
 // param  addr The 7-bit I2C address for the device
 // param  theWire The I2C bus to use, defaults to &Wire
 //
-void HT16K33::begin(uint8_t address, TwoWire *theWire){
+uint8_t HT16K33::begin(uint8_t address, TwoWire *theWire){
   _address=address;
   _wire=theWire;
  
-  i2c_write(HT16K33_SS  | HT16K33_SS_NORMAL); // Wakeup
-  i2c_write(HT16K33_DSP | HT16K33_DSP_ON | HT16K33_DSP_NOBLINK); // Display on and no blinking
-  i2c_write(HT16K33_RIS | HT16K33_RIS_OUT); // INT pin works as row output 
-  i2c_write(HT16K33_DIM | HT16K33_DIM_16);  // Brightness set to max
+  uint8_t ret = 0;
+
+  ret = i2c_write(HT16K33_SS  | HT16K33_SS_NORMAL); // Wakeup
+  ret = i2c_write(HT16K33_DSP | HT16K33_DSP_ON | HT16K33_DSP_NOBLINK); // Display on and no blinking
+  ret = i2c_write(HT16K33_RIS | HT16K33_RIS_OUT); // INT pin works as row output 
+  ret = i2c_write(HT16K33_DIM | HT16K33_DIM_16);  // Brightness set to max
   //Clear all lights
   //  memset(displayRam,0,sizeof(displayRam));
   //  i2c_write(HT16K33_DDAP, displayRam,sizeof(displayRam),true);
   clearAll();
+
+  return ret;
 } // begin
 
 /****************************************************************/
@@ -135,7 +139,8 @@ uint8_t HT16K33::i2c_write(uint8_t cmd,uint8_t *data,uint8_t size,boolean LSB){
   if (ret != 0) {
     Serial.printf("I2C Device Address 0x%x Write Error: %i \n",_address,ret);
   }
-  return ret;} // i2c_write
+  return ret;
+} // i2c_write
 
 /****************************************************************/
 // internal function - read a byte from specific address (send one byte(address to read) and read a byte)

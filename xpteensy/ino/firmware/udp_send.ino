@@ -1,5 +1,5 @@
 
-int udp_send(int8_t dev_type, int8_t dev_num, int8_t pin_num, int16_t val) {
+int udp_send(int8_t dev_type, int8_t dev_num, int8_t send_type, int8_t pin_num, int16_t val) {
 
   int ret = 0;
 
@@ -10,17 +10,11 @@ int udp_send(int8_t dev_type, int8_t dev_num, int8_t pin_num, int16_t val) {
     sendBuffer[1] = TEENSY_ID2; /* E */
     sendBuffer[2] = teensy_data.mac[0];
     sendBuffer[3] = teensy_data.mac[1];
-    if (pin_num == INITVAL) {
-      sendBuffer[4] = TEENSY_PING;
-      sendBuffer[5] = dev_type;
-      sendBuffer[6] = dev_num;
-    } else {
-      sendBuffer[4] = TEENSY_REGULAR;
-      sendBuffer[5] = dev_type;
-      sendBuffer[6] = dev_num;
-      sendBuffer[7] = pin_num;
-      memcpy(&sendBuffer[8], &val, sizeof(val));
-    }
+    sendBuffer[4] = send_type;
+    sendBuffer[5] = dev_type;
+    sendBuffer[6] = dev_num;
+    sendBuffer[7] = pin_num;
+    memcpy(&sendBuffer[8], &val, sizeof(val));
     //ret = Udp.send(remoteIP, remotePort,sendBuffer, SENDMSGLEN);
     Udp.beginPacket(remoteIP, remotePort);
     ret = Udp.write(sendBuffer, SENDMSGLEN);

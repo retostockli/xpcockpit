@@ -116,13 +116,13 @@ void as5048b_read() {
 
               if (as5048b_data[dev].type == 1) {
                 /* send current angle value */
-                ret = udp_send(AS5048B_TYPE, dev, 0, angle);
+                ret = udp_send(AS5048B_TYPE, dev, TEENSY_REGULAR, 0, angle);
               } else {
                 /* send up / down value */
                 if (up) {
-                  ret = udp_send(AS5048B_TYPE, dev, 0, 1);
+                  ret = udp_send(AS5048B_TYPE, dev, TEENSY_REGULAR, 0, 1);
                 } else {
-                  ret = udp_send(AS5048B_TYPE, dev, 0, -1);
+                  ret = udp_send(AS5048B_TYPE, dev, TEENSY_REGULAR,  0, -1);
                 }
               }
               if (DEBUG > 0) {

@@ -125,7 +125,7 @@ void init_test(void)
 
   ht16k33[te][0].brightness = 10;
   ht16k33[te][0].wire = 0;
-  ht16k33[te][0].address = 0x70 ^ 0x40;
+  ht16k33[te][0].address = 0x27;
  
   
 }

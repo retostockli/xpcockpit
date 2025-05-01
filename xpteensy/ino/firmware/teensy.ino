@@ -193,7 +193,7 @@ void teensy_read() {
         if (DEBUG > 0) {
           Serial.printf("READ: Teensy Pin %i New Digital Value %i\n", pin, teensy_data.val[pin][0]);
         }
-        ret = udp_send(TEENSY_TYPE, 0, pin, teensy_data.val[pin][0]);
+        ret = udp_send(TEENSY_TYPE, 0, TEENSY_REGULAR, pin, teensy_data.val[pin][0]);
         if (ret == SENDMSGLEN) {
           teensy_data.val_save[pin] = teensy_data.val[pin][0];
         }
@@ -250,7 +250,7 @@ void teensy_read() {
                 }
 
                 /* send current input value (not the mean value, since that one is delayed) */
-                ret = udp_send(TEENSY_TYPE, 0, pin, val);
+                ret = udp_send(TEENSY_TYPE, 0, TEENSY_REGULAR, pin, val);
 
                 /* save new mean value for later comparison */
                 teensy_data.val_save[pin] = meanval;
@@ -280,7 +280,7 @@ void teensy_read() {
               }
 
               /* send current value (not the median value since that one is delayed) */
-              ret = udp_send(TEENSY_TYPE, 0, pin, val);
+              ret = udp_send(TEENSY_TYPE, 0, TEENSY_REGULAR, pin, val);
 
               /* save new median value for later comparison */
               teensy_data.val_save[pin] = median;
@@ -297,7 +297,7 @@ void teensy_read() {
             }
 
             /* send current value */
-            ret = udp_send(TEENSY_TYPE, 0, pin, val);
+            ret = udp_send(TEENSY_TYPE, 0, TEENSY_REGULAR, pin, val);
 
             /* save new median value for later comparison */
             teensy_data.val_save[pin] = val;
