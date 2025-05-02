@@ -1993,69 +1993,50 @@ void b737_overheadfwd(void)
 
     /* A few basic switches for other ACF */
 
-  /*   device = mastercard; */
-  /*   card = 0; */
-    
-  /*   int *battery_i = link_dataref_int("sim/cockpit/electrical/battery_on"); */
-  /*   int *avionics_i = link_dataref_int("sim/cockpit2/switches/avionics_power_on"); */
-  /*   ret = digital_input(device,card,8,&ival,0); */
-  /*   if (ival != INT_MISS) { */
-  /*     *battery_i = 1-ival; */
-  /*     *avionics_i = 1-ival; */
-  /*   } */
+    /* Avionics / Battery */
+    dev = 5;    
+    int *battery_i = link_dataref_int("sim/cockpit/electrical/battery_on");
+    int *avionics_i = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, &ival, 0);
+    if (ival != INT_MISS) {
+      *battery_i = 1-ival;
+      *avionics_i = 1-ival;
+    }
 
-  /*   /\* set relay 0 on output 49 on relay card through d-sub con *\/ */
-  /*   /\* Backlighting Only when Battery is on *\/ */
-  /*   device = mastercard; */
-  /*   card = 0; */
-  /*   ret = digital_output(device,card,49,battery_i); */
+    /* Background Lighting (Direct Potentiometer MOSFET control */
+    ret = digital_output(te, TEENSY_TYPE, 0, 27, avionics_i);
    
-  /*   /\* Ignitior Switch for first engine *\/ */
-  /*   device = mastercard; */
-  /*   card = 0; */
-  /*   int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on", 16,-1); */
-  /*   for (int i=0;i<8;i++) { */
-  /*     ignition_on[i] = 3; */
-  /*     ret = digital_input(device,card,27,&ival,0); */
-  /*     if (ival == 1) ignition_on[i] = 2; */
-  /*     ret = digital_input(device,card,28,&ival,0); */
-  /*     if (ival == 1) ignition_on[i] = 1; */
-  /*   } */
+    /* Set ignitior Switch of first engine for all engines */
+    dev = 10;
+    //int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on", 8,-1);
+    int *ignition_on = link_dataref_int_arr("sim/cockpit/engine/ignition_on", 16,-1);
+    for (int i=0;i<8;i++) {
+      ignition_on[i] = 3;
+      ival = INT_MISS;
+      ret = digital_input(te, MCP23017_TYPE, dev, 9, &ival, 0);
+      if (ival == 1) ignition_on[i] = 2;
+      ival = INT_MISS;
+      ret = digital_input(te, MCP23017_TYPE, dev, 8, &ival, 0);
+      if (ival == 1) ignition_on[i] = 1;
+    }
     
-  /*   /\* Engine Starters *\/ */
-  /*   device = mastercard; */
-  /*   card = 0; */
-  /*   int *engine_start = link_dataref_cmd_hold("sim/engines/engage_starters"); */
-  /*   ret = digital_input(device,card,18,engine_start,0); */
-
-  /*   /\* Blank Altitude Panel *\/ */
-  /*   device = mastercard; */
-  /*   card = 0; */
-  /*   ival = 10; */
-  /*   ret = mastercard_display(device,card,0,5,&ival,1); */
-  /*   ret = mastercard_display(device,card,6,5,&ival,1); */
-    
-  /*   /\* Fuel Pump *\/ */
-  /*   device = mastercard; */
-  /*   card = 1; */
-  /*   int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on", 16,-1); */
-  /*   ret = digital_input(device,card,67,&ival,0); */
-  /*   if (ival != INT_MISS) { */
-  /*     for (int i=0;i<8;i++) { */
-  /* 	fuel_pump_on[i] = ival; */
-  /*     } */
-  /*   } */
-
-  /*   /\* Turn off Voltage / Amperage Display *\/ */
-  /*   device = mastercard; */
-  /*   card = 1; */
-  /*   ival = 10; */
-  /*   ret = mastercard_display(device,card,11,2,&ival,1); */
-  /*   ret = mastercard_display(device,card,6,2,&ival,1); */
-  /*   ret = mastercard_display(device,card,1,3,&ival,1); */
-  /*   ret = mastercard_display(device,card,4,2,&ival,1); */
-  /*   ret = mastercard_display(device,card,8,3,&ival,1); */
-
+    /* Engine Starters */
+    dev = 10;
+    int *engine_start = link_dataref_cmd_hold("sim/engines/engage_starters");
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, engine_start, 0);
+   
+    /* Fuel Pump */
+    dev = 3;
+    //int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on", 8,-1);
+    int *fuel_pump_on = link_dataref_int_arr("sim/cockpit/engine/fuel_pump_on", 16,-1);
+    ival = INT_MISS;
+    ret = digital_input(te, MCP23017_TYPE, dev, 11, &ival, 0);
+    if (ival != INT_MISS) {
+      for (int i=0;i<8;i++) {
+	fuel_pump_on[i] = ival;
+      }
+    }
 
   /*   /\* weapon arming for fighter jets *\/ */
   /*   int *weapons_arm_cover_pos = link_dataref_int("laminar/f14/anm/weapons/arm_switch_guard_target_pos"); */
