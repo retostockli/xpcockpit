@@ -5,7 +5,7 @@ count=$(ps -a | grep xpteensy | grep -v xpteensy.sh | wc -l)
 if [ $count = 0 ] ; then
 
     cd ~/xpcockpit/xpteensy/bin
-    ./xpteensy boeing737tq
+    ./xpteensy boeing737
 
     exit 0
 
