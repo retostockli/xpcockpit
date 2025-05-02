@@ -1,9 +1,6 @@
-/* This is the xpusb.h header to xpusb.c
+/* This is the xpleo.h header to xpleo.c
 
-   Copyright (C) 2009 - 2014 Reto Stockli
-
-   Additions for analog axes treatment by Hans Jansen 2011
-   Also several cosmetic changes and changes for Linux compilation
+   Copyright (C) 2025 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -19,4 +16,4 @@
 
 /* Prototype functions */
 int initialize_signal_handler(void);
-void exit_xpusb(int ret);
+void exit_xpleo(int ret);

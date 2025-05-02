@@ -553,6 +553,7 @@ void b737_overheadfwd(void)
     if (ret != 0) {
       printf("YAW DAMPER %i %f %i \n",ival, *yaw_damper_pos, *yaw_damper_toggle);
     }
+   
 
     /* Yaw Damper Coil: activate if X-Plane's YD Switch is ON.
        This needs at least one ping pong round of signal between
@@ -780,9 +781,9 @@ void b737_overheadfwd(void)
 
     /* Annunciators */
     float *bat_discharge = link_dataref_flt("laminar/B738/annunciator/bat_discharge",-1);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, bat_discharge);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, bat_discharge);
     float *tr_unit = link_dataref_flt("laminar/B738/annunciator/tr_unit",-1);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, tr_unit);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, tr_unit);
     float *elec = link_dataref_flt("laminar/B738/annunciator/elec",-1);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, elec);
  

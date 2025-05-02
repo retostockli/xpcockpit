@@ -1,7 +1,7 @@
-/* This is the common.h header to the usbiocards code defining common variables
+/* This is the common.h header to the xpleo code defining common variables
    and functions in common.c
 
-   Copyright (C) 2020  Reto Stockli
+   Copyright (C) 2025  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -17,5 +17,5 @@
 
 #include "check_aircraft.h"
 
-/* verbosity of xpusb (0-4) */
+/* verbosity of xpleo (0-4) */
 extern int verbose;

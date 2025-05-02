@@ -1,6 +1,6 @@
-/* This is the common.c to the usbiocards code defining common functions
+/* This is the common.c to the xpleo code defining common functions
 
-   Copyright (C) 2020  Reto Stockli
+   Copyright (C) 2025  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
