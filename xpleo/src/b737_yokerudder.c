@@ -24,7 +24,7 @@
 #include <sys/time.h>
 
 #include "common.h"
-#include "libiocards.h"
+#include "libleo.h"
 #include "serverdata.h"
 #include "b737_yokerudder.h"
 
@@ -57,8 +57,7 @@ void b737_yokerudder(void)
 {
 
   int ret = 0;
-  int device = 4;
-  int card = 0;
+  int device = 0;
   float minval = 0.0;
   float maxval = 100.0;
 
@@ -157,7 +156,7 @@ void b737_yokerudder(void)
   }
 
   /* yoke buttons */
-  ret = digital_input(device,card,0,&button,0);
+  ret = digital_input(device,0,&button,0);
   if (button == 1) {
     printf("stab trim down \n");
     *stab_trim_down = 1;
@@ -166,7 +165,7 @@ void b737_yokerudder(void)
     *stab_trim_down = 0;
   }
    
-  ret = digital_input(device,card,1,&button,0);
+  ret = digital_input(device,1,&button,0);
   if (button == 1) {
     printf("stab trim up \n");
     *stab_trim_up = 1;
@@ -175,7 +174,7 @@ void b737_yokerudder(void)
   }
 
   /* AP disconnect button */
-    ret = digital_input(device,card,4,ap_disconnect,0);
+    ret = digital_input(device,4,ap_disconnect,0);
   /* hat switch buttons */
   /* 
      6 up
@@ -191,13 +190,13 @@ void b737_yokerudder(void)
 
   /* Fighter Jet */
   /* if (acf_type == 5) { */
-  /*   ret = digital_input(device,card,3,&button,0); */
+  /*   ret = digital_input(device,3,&button,0); */
   /*   *fire_guns = button;       */
   /* } */
   
   /* INT MIC button on Yoke resets view to default */
   /* CAPTAIN */
-  ret = digital_input(device,card,2,&button,0);
+  ret = digital_input(device,2,&button,0);
   if ((ret == 1) && (button == 1)) {
     view_is_copilot = 0;
     *viewmode=0;
@@ -208,7 +207,7 @@ void b737_yokerudder(void)
     viewmode_changed = 1;
   }
   /* COPILOT */
-  ret = digital_input(device,card,16,&button,0);
+  ret = digital_input(device,16,&button,0);
   if ((ret == 1) && (button == 1)) {
     view_is_copilot = 1;
     *viewmode=0;
@@ -219,7 +218,7 @@ void b737_yokerudder(void)
     viewmode_changed = 1;
   }
   
-  ret = digital_input(device,card,10,&button,0);
+  ret = digital_input(device,10,&button,0);
   if ((ret == 1) && (button == 1)) {
     /* we have a bouncing effect on the yoke viewmode pushbutton so check time since last press */
     gettimeofday(&newtime,NULL);
@@ -283,25 +282,25 @@ void b737_yokerudder(void)
       *pilot_heading = 0.0;
     }
     
-    ret = digital_input(device,card,8,&button,0);
+    ret = digital_input(device,8,&button,0);
     if (button == 1) {
       *view_left = 1;
     } else {
       *view_left = 0;
     }
-    ret = digital_input(device,card,9,&button,0);
+    ret = digital_input(device,9,&button,0);
     if (button == 1) {
       *view_right = 1;
     } else {
       *view_right = 0;
     }
-    ret = digital_input(device,card,6,&button,0);
+    ret = digital_input(device,6,&button,0);
     if (button == 1) {
       *view_up = 1;
     } else {
       *view_up = 0;
     }
-    ret = digital_input(device,card,7,&button,0);
+    ret = digital_input(device,7,&button,0);
     if (button == 1) {
       *view_down = 1;
     } else {

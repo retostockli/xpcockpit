@@ -1,8 +1,8 @@
 #!/usr/bin/env xdg-open
 
 [Desktop Entry]
-Name=Start Teensy Controller
-GenericName=Start Teensy Controller
+Name=Start Teensy Interfaces
+GenericName=Start Teensy Interfaces
 Exec=xterm -e "\\${HOME}/xpcockpit/scripts/xpteensy.sh; \\$SHELL"
 Terminal=false
 Icon=/home/stockli/xpcockpit/applications/xpteensy.png

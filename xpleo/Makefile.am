@@ -1,4 +1,5 @@
 SUBDIRS=src
 EXTRA_DIST=inidata
-pkgdata_DATA=inidata/boeing737.ini
+pkgdata_DATA=inidata/boeing737.ini inidata/test.ini
+
 

@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.50])
 AC_INIT([xpleo], [0.10], [Reto Stockli])
-AC_CONFIG_SRCDIR([src/xpusb.c])
+AC_CONFIG_SRCDIR([src/xpleo.c])
 
 # produce makefiles (turn on warnings on automake!)
 AM_INIT_AUTOMAKE([-Wall])
@@ -165,7 +165,7 @@ fi
 #if test "x$prefix" = xNONE; then
 #    prefix=`pwd`;
 #fi
-AC_MSG_NOTICE([xpusb will be installed in $prefix])
+AC_MSG_NOTICE([xpleo will be installed in $prefix])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile])

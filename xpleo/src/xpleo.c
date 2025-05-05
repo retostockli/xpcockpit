@@ -27,16 +27,18 @@
 #include <sys/time.h>
 #include <signal.h>
 
-/* xpusb headers */
+/* xpleo headers */
 #include "common.h"
-#include "xpusb.h"
-#include "libiocards.h"
+#include "xpleo.h"
+#include "libleo.h"
+
+/* libxpcockpit headers */
 #include "serverdata.h"
 #include "handleserver.h"
 #include "xplanebeacon.h"
 
 /* headers to user space modules */
-#include "bu0836_test.h"
+#include "test.h"
 #include "b737_yokerudder.h"
 
 /* Main program for data exchange between X-Plane and the OpenCockpits IOCARDS */
@@ -99,11 +101,11 @@ int main (int argc, char **argv)
       check_aircraft();
 
       /*** user-space modules start here ***/
-      if (strcmp("boeing737",argv[1]) == 0) {
+      if (strcmp(argv[1],"boeing737") == 0) {
 	b737_yokerudder();
       }
       if (strcmp(argv[1],"test") == 0) {
-	bu0836_test();
+	test();
       }
       /*** user-space modules end here ***/
       

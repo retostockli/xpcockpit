@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Name=Start Leo Bodnar Interface
+GenericName=Start Leo Bodnar Interface
+Exec=xterm -e "\\${HOME}/xpcockpit/scripts/xpleo.sh; \\$SHELL"
+Terminal=false
+Icon=/home/stockli/xpcockpit/applications/xpleo.png
+Type=Application

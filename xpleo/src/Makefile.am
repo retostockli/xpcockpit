@@ -14,14 +14,13 @@ OS_SRC = hid_windows.c
 endif
 
 # The Sources needed to build the programs
-xpusb_SOURCES = $(OS_SRC) \
+xpleo_SOURCES = $(OS_SRC) \
 common.c \
 xpleo.c \
 libleo.c \
 libusb_interface.c \
 hidapi_interface.c \
-iocard_test.c \
-bu0836_test.c \
+test.c \
 b737_yokerudder.c
 
 hidls_SOURCES = $(OS_SRC) hidls.c
@@ -34,5 +33,5 @@ xpleo.h \
 libleo.h \
 libusb_interface.h \
 hidapi_interface.h \
-bu0836_test.h \
+test.h \
 b737_yokerudder.h

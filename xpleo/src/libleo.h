@@ -1,8 +1,6 @@
-/* This is the libiocards.h header to the libiocards.c library 
+/* This is the libleo.h header to the libleo.c library 
 
-   Copyright (C) 2009 - 2013 Reto Stockli
-   Additions for analog axes treatment by Hans Jansen 2011
-   Also several cosmetic changes
+   Copyright (C) 2025 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -20,13 +18,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-//#include <arpa/inet.h>
 #include <sys/types.h>
 
 #include <errno.h>
 #include <stdlib.h>
 
-/* LIBIOCARDS DEFINE STATEMENTS */
+/* LIBLEO DEFINE STATEMENTS */
 
 #define MAXDEVICES 10     /* maximum number of simultaneous USB devices */
 
@@ -35,24 +32,27 @@
 #define MAXAXES 8         /* number of analog axes available on the BU0836X/A card */
 #define MAXINPUTS 32      /* number of digital inputs available on the BU0836X/A card */
 
-/* LIBIOCARDS PARAMETERS */
+/* LIBLEO PARAMETERS */
 
 typedef struct {
   /* prescribe for each card in usbiocards.ini file (mandatory) */
-  char name[30];         /* IOCard name e.g. IOCardUSB, IOCardStepper */
+  char name[30];         /* USB Device name, e.g. BU0836X */
   uint16_t vendor;       /* 16 bit vendor code */
   uint16_t product;      /* 16 bit product code */
-  /* prescribe for each card in usbiocards.ini file (voluntary) */
+  /* prescribe for each card in .ini file (voluntary) */
   uint8_t bus;           /* 8 bit bus address number */
   uint8_t address;       /* 8 bit device address number */
   char path[255];        /* Platform specific device / USB connector path:
                             Changes when you plug device to different USB port
-			    May also change when you unplug an upstream device (TBD) */
+			    May also change when you unplug an upstream device
+			    (Optional) */
   char serial[50];        /* Serial Number (Optional) */
   /* the numbers below should be determined either automatically */
   /* or from the initialization script for each card */
   /* memory for input/outputs/servos etc. should then be dynamically allocated */
-  int naxes;             /* number of axes used on the USB expansion card */
+  int ninputs;           /* number of inputs used on the Leo Bodnar Card */
+  int naxes;             /* number of analog axes used on the Leo Bodnar Card */
+  int nbits;             /* number of bits for analog axes */
   int status;
   /* status values:
      =-1 : disconnected
@@ -89,6 +89,8 @@ int copy_leodata(void);
 int get_acceleration (int device, int input, int accelerator);
 int digital_inputf(int device, int input, float *fvalue, int type);
 int digital_input(int device, int input, int *value, int type);
+int encoder_inputf(int device, int input, float *fvalue, float fmultiplier, int accelerator, int type);
+int encoder_input(int device, int input, int *value, int multiplier, int accelerator, int type);
 int axis_input(int device, int input, float *value, float minval, float maxval);
 
 /* Prototype functions for Iocards communication (do not use directly in your code) */
@@ -99,6 +101,6 @@ void print_license(void);
 int read_ini(char* programPath, char* iniName);
 
 /* Prototype functions for initializations and exiting */
-int initialize_iocards(void);
+int initialize_leo(void);
 int initialize_usb(void);
 void terminate_usb(void);

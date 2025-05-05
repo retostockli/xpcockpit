@@ -1,10 +1,8 @@
-/* This is the libiocards.c code which contains all functions to interact with
-   the IOCARDS devices via USB interface 
+/* This is the libleo.c code which contains all functions to interact with
+   the Leo Bodnar Devices via USB interface 
 
-   Copyright (C) 2009 - 2013 Reto Stockli
+   Copyright (C) 2025 Reto Stockli
 
-   Additions for analog axes treatment by Hans Jansen 2011
-   Also several cosmetic changes and changes for Linux compilation
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
    either version 3 of the License, or (at your option) any later version.
@@ -30,7 +28,8 @@
 
 #include "common.h"
 #include "iniparser.h"
-#include "libleos.h"
+#include "libleo.h"
+
 #include "handleserver.h"
 #include "serverdata.h"
 
@@ -86,8 +85,6 @@ int read_ini(char* programPath, char* iniName)
   uint8_t default_address = 0xFF;
   char default_path[] = "";
   int default_naxes = 0;
-  int default_nbits = 8;
-  int default_ninputs = 0;
   int default_status = -1;
 
   memset(XPlaneServerIP,0,sizeof(XPlaneServerIP));
@@ -169,7 +166,7 @@ int read_ini(char* programPath, char* iniName)
       memset(sdevice,0,sizeof(sdevice));
       sprintf(sdevice,"device%i:Naxes",device);
       leo[device].naxes = iniparser_getint(ini,sdevice, default_naxes);
-
+      
       leo[device].status = default_status;
       
       if (!strcmp(leo[device].name,default_name)) {
@@ -196,7 +193,7 @@ int read_ini(char* programPath, char* iniName)
 }
 
 /* this routine calculates the acceleration of rotary encoder based on last rotation time */
-int get_acceleration (int device, int card, int input, int accelerator) 
+int get_acceleration (int device, int input, int accelerator) 
 {
   struct timeval t2;
   struct timeval t1;
@@ -208,7 +205,7 @@ int get_acceleration (int device, int card, int input, int accelerator)
 
   /* get new time */
   gettimeofday(&t1,NULL);
-  t2 = leo[device].time_enc[card][input];
+  t2 = leo[device].time_enc[input];
   
   dt = - ((t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0);
 
@@ -216,7 +213,7 @@ int get_acceleration (int device, int card, int input, int accelerator)
 
     acceleration = 1 + (int) ( (maxtime / dt) * (float) accelerator);
 
-    leo[device].time_enc[card][input] = t1;
+    leo[device].time_enc[input] = t1;
     
   } else {
     /* likely a switch bounce during change, do not count! */
@@ -226,8 +223,8 @@ int get_acceleration (int device, int card, int input, int accelerator)
   }
 
   if (verbose > 2) {
-    printf("LIBLEO: difference=%f [seconds], acceleration=%f for input=%i device=%i card=%i\n", 
-	   dt, acceleration,input,device,card);
+    printf("LIBLEO: difference=%f [seconds], acceleration=%f for input=%i device=%i \n", 
+	   dt, acceleration,input,device);
   }
 
   return acceleration;
@@ -320,7 +317,7 @@ int initialize_leodata(void)
 /* saves a copy of all LEO I/O states */
 /* this is needed because, at each step, only the modified values */
 /* are communicated either via TCP/IP or USB to X-Plane and LEO */
-int copy_iocardsdata(void)
+int copy_leodata(void)
 {
   int device;
   int count;
@@ -331,9 +328,9 @@ int copy_iocardsdata(void)
     /* else keep the new input data */
     
     for (count=0;count<leo[device].ninputs;count++) {
-      if (leo[device].inputs_read[card][count] == 1) {
-	leo[device].inputs_old[card][count] = leo[device].inputs[card][count];
-	leo[device].inputs_read[card][count] = 0;
+      if (leo[device].inputs_read[count] == 1) {
+	leo[device].inputs_old[count] = leo[device].inputs[count];
+	leo[device].inputs_read[count] = 0;
       }
     }
 
@@ -355,11 +352,22 @@ int copy_iocardsdata(void)
 
 }
 
-/* retrieve input value from given input position on MASTERCARD or BU0836X/A Interface */
+/* wrapper for digital_input with floating point values */
+int digital_inputf(int device, int input, float *fvalue, int type)
+{
+  int value = INT_MISS;
+  if (*fvalue != FLT_MISS) value = (int) lroundf(*fvalue);
+  int ret = digital_input(device, input, &value, type);
+  if (value != INT_MISS) *fvalue = (float) value;
+  return ret;
+    
+}
+
+/* retrieve input value from given input of the BU0836X/A Interface */
 /* Two types : */
 /* 0: pushbutton */
 /* 1: toggle switch */
-int digital_input(int device, int card, int input, int *value, int type)
+int digital_input(int device, int input, int *value, int type)
 {
   char device_name1[] = "BU0836X Interface";
   char device_name2[] = "BU0836A Interface";
@@ -368,45 +376,45 @@ int digital_input(int device, int card, int input, int *value, int type)
   if (value != NULL) {
 
     /* check if we have a connected and initialized device */
-    if ((!strcmp(iocard[device].name,device_name1) ||
-	 !strcmp(iocard[device].name,device_name2)) 
-	&& (iocard[device].status == 1)) {
+    if ((!strcmp(leo[device].name,device_name1) ||
+	 !strcmp(leo[device].name,device_name2)) 
+	&& (leo[device].status == 1)) {
 
       
-	if ((input >=0) && (input<iocard[device].ninputs)) {
-	  iocard[device].inputs_read[card][input] = 1;
+	if ((input >=0) && (input<leo[device].ninputs)) {
+	  leo[device].inputs_read[input] = 1;
 	  if (type == 0) {
 	    /* simple pushbutton / switch */
-	    if (iocard[device].inputs_old[card][input] != iocard[device].inputs[card][input]) {
+	    if (leo[device].inputs_old[input] != leo[device].inputs[input]) {
 	      /* something changed */
-	      *value = iocard[device].inputs[card][input];
+	      *value = leo[device].inputs[input];
 	      retval = 1;
 	      if (verbose > 1) {
-		printf("LIBIOCARDS: Pushbutton                  : device=%i card=%i input=%i value=%i \n",
-		       device, card, input, iocard[device].inputs[card][input]);
+		printf("LIBLEO: Pushbutton                  : device=%i input=%i value=%i \n",
+		       device, input, leo[device].inputs[input]);
 	      }
 	    } else {
 	      /* nothing changed */
-	      *value = iocard[device].inputs[card][input];
+	      *value = leo[device].inputs[input];
 	      retval = 0;
 	    }
 	  } else if (type == 1) {
 	    /* toggle state everytime you press button */
 	    /* inputs_old[input] always stores last state */
 	    /* new state is then stored in inputs[input] */
-	    if ((iocard[device].inputs_old[card][input] == 0) && (iocard[device].inputs[card][input] == 1)) {
+	    if ((leo[device].inputs_old[input] == 0) && (leo[device].inputs[input] == 1)) {
 	      /* toggle */
 	      if (*value != INT_MISS) {
 		if ((*value == 0) || (*value == 1)) {
 		  *value = 1 - (*value);
 		  retval = 1;
 		  if (verbose > 1) {
-		    printf("LIBIOCARDS: Toggle Switch               :  device=%i card=%i input=%i value=%i \n",
-			   device, card, input, *value);
+		    printf("LIBLEO: Toggle Switch               :  device=%i input=%i value=%i \n",
+			   device, input, *value);
 		  }
 		} else {
-		  printf("LIBIOCARDS: Toggle Switch Needs to have 0 or 1  :  device=%i card=%i input=%i value=%i \n",
-			 device, card, input, *value);
+		  printf("LIBLEO: Toggle Switch Needs to have 0 or 1  :  device=%i input=%i value=%i \n",
+			 device, input, *value);
 		}
 	      }
 	    } else {
@@ -419,14 +427,14 @@ int digital_input(int device, int card, int input, int *value, int type)
 	       FOR PERMANENT SWITCH STATE OF 0 OR 1 OR A SWITH STATE 
 	       CHANGE FROM 1 TO 0 THE VALUE IS PRESERVED.
 	       THIS IS GOOD FOR EXECUTING COMMANDS WITH LINK_DATAREF_CMD_ONCE  */
-	    if ((iocard[device].inputs_old[card][input] == 0) &&
-		(iocard[device].inputs[card][input] == 1)) {
+	    if ((leo[device].inputs_old[input] == 0) &&
+		(leo[device].inputs[input] == 1)) {
 	      /* something changed */
-	      *value = iocard[device].inputs[card][input];
+	      *value = leo[device].inputs[input];
 	      retval = 1;
 	      if (verbose > 1) {
-		printf("LIBIOCARDS: Pushbutton                  : device=%i card=%i input=%i value=%i \n",
-		  device, card, input, iocard[device].inputs[card][input]);
+		printf("LIBLEO: Pushbutton                  : device=%i input=%i value=%i \n",
+		  device, input, leo[device].inputs[input]);
 	      }
 	    } else {
 	      /* nothing changed */
@@ -435,12 +443,12 @@ int digital_input(int device, int card, int input, int *value, int type)
 	  }
 	} else {
 	  retval = -1;
-	  if (verbose > 0) printf("LIBIOCARDS: Invalid input position detected: %i \n", input);
+	  if (verbose > 0) printf("LIBLEO: Invalid input position detected: %i \n", input);
 	}
 
     } else {
       retval = -1;
-      if (verbose > 1) printf("LIBIOCARDS: Device either not a MASTERCARD or BU0836X/A Interface or not ready: %i \n", device);
+      if (verbose > 1) printf("LIBLEO: Device not a BU0836X/A Interface or not ready: %i \n", device);
     }
   
   }
@@ -448,18 +456,26 @@ int digital_input(int device, int card, int input, int *value, int type)
   return(retval);
 }
 
-/* retrieve encoder value and for given encoder type from given input position on MASTERCARD OR BU0836X/A Interface */
+/* integer wrapper of encoder input below */
+int encoder_input(int device, int input, int *value, int multiplier, int accelerator, int type)
+{
+  float fvalue = FLT_MISS;
+  if (*value != INT_MISS) fvalue = (float) *value;  
+  int ret = encoder_inputf(device, input, &fvalue, (float) multiplier, accelerator, type);
+  if (fvalue != FLT_MISS) *value = (int) lroundf(fvalue);
+  return ret;
+}
+
+/* retrieve encoder value and for given encoder type from given input of BU0836X/A Interface */
 /* three type of encoders: */
 /* 0: 1x12 rotary switch, wired like demonstrated on OpenCockpits website */
 /* 1: optical rotary encoder using the Encoder II card */
 /* 2: 2 bit gray type mechanical encoder */
 /* 3: optical rotary encoder without the Encoder II card */
-int mastercard_encoder(int device, int card, int input, float *value, float multiplier, int accelerator, int type)
+int encoder_inputf(int device, int input, float *value, float multiplier, int accelerator, int type)
 {
-  char device_name1[] = "USB-Expancion V3";
-  char device_name2[] = "USBexp V2";
-  char device_name3[] = "BU0836X Interface";
-  char device_name4[] = "BU0836A Interface";
+  char device_name1[] = "BU0836X Interface";
+  char device_name2[] = "BU0836A Interface";
   int oldcount, newcount; /* encoder integer counters */
   int updown = 0; /* encoder direction */
   int retval = 0; /* returns 1 if something changed, 0 if nothing changed and -1 if something went wrong */
@@ -469,224 +485,216 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
   if (value != NULL) {
 
     /* check if we have a connected and initialized device */
-    if ((!strcmp(iocard[device].name,device_name1) ||
-	 !strcmp(iocard[device].name,device_name2) ||
-	 !strcmp(iocard[device].name,device_name3) ||
-	 !strcmp(iocard[device].name,device_name4)) 
-	&& (iocard[device].status == 1)) {
-
-      if ((card >=0) && (card<iocard[device].ncards)) {
-
-	if (*value != FLT_MISS) {
-
-	  if (((input >=0) && (input<(iocard[device].ninputs-2)) && (type==0)) || 
-	      ((input >=0) && (input<(iocard[device].ninputs-1)) && (type>0))) {
-
-	    iocard[device].inputs_read[card][input] = 1;
-	    iocard[device].inputs_read[card][input+1] = 1;
-	    if (type == 0) iocard[device].inputs_read[card][input+2] = 1;
-	    
-	    if (type == 0) { 
-	      /* simulated encoder out of a 1x12 rotary switch */
-	
-	      if ((iocard[device].inputs[card][input]+
-		   iocard[device].inputs[card][input+1]+
-		   iocard[device].inputs[card][input+2]) == 0)
-		/* 0 0 0 is a wrong measurement due to switch mechanics: do not count */
-		{
-
-		  iocard[device].inputs[card][input] = iocard[device].inputs_old[card][input];
-		  iocard[device].inputs[card][input+1] = iocard[device].inputs_old[card][input+1];
-		  iocard[device].inputs[card][input+2] = iocard[device].inputs_old[card][input+2];
-		} else {
-	  
-		if (((iocard[device].inputs[card][input] != iocard[device].inputs_old[card][input]) ||
-		     (iocard[device].inputs[card][input+1] != iocard[device].inputs_old[card][input+1]) ||
-		     (iocard[device].inputs[card][input+2] != iocard[device].inputs_old[card][input+2])) &&
-		    (iocard[device].inputs_old[card][input] != INITVAL) && 
-		    (iocard[device].inputs_old[card][input+1] != INITVAL) &&
-		    (iocard[device].inputs_old[card][input+2] != INITVAL)) {
-		  /* something has changed */
-	    
-		  if (verbose > 1) {
-		    printf("LIBIOCARDS: Rotary Encoder    1x12 Type : device=%i card=%i inputs=%i-%i values=%i %i %i \n",
-			   device, card, input, input+2, iocard[device].inputs[card][input],
-			   iocard[device].inputs[card][input+1], iocard[device].inputs[card][input+2]);
-		  }
-	    
-		  newcount = iocard[device].inputs[card][input] + 
-		    iocard[device].inputs[card][input+1]*2 + iocard[device].inputs[card][input+2]*3;
-		  oldcount = iocard[device].inputs_old[card][input] + 
-		    iocard[device].inputs_old[card][input+1]*2 + iocard[device].inputs_old[card][input+2]*3;
-	    
-		  if (newcount > oldcount) {
-		    updown = 1;
-		  } else {
-		    updown = -1;
-		  }
-	    
-		  if ((oldcount == 3) && (newcount == 1)) {
-		    updown = 1;
-		  }
-		  if ((oldcount == 1) && (newcount == 3)) {
-		    updown = -1;
-		  }	    
-
-		  if (updown != 0) {
-		    *value = *value + (float) (updown * get_acceleration(device, card, input, accelerator)) * multiplier;
-		    retval = 1;
-		  }
-
-		} 
-	      }
-	    }
+    if ((!strcmp(leo[device].name,device_name1) ||
+	 !strcmp(leo[device].name,device_name2)) 
+	&& (leo[device].status == 1)) {
       
-	    if (type == 1) {
-	      /* optical rotary encoder using the Encoder II card */
-		
-	      if (((iocard[device].inputs[card][input] != iocard[device].inputs_old[card][input]) || 
-		   (iocard[device].inputs[card][input+1] != iocard[device].inputs_old[card][input+1]))
-		  && (iocard[device].inputs_old[card][input] != INITVAL) && (iocard[device].inputs_old[card][input+1] != INITVAL)) {
-		/* something has changed */
-	  
-		if (verbose > 1) {
-		  printf("LIBIOCARDS: Rotary Encoder Optical Type : device=%i card=%i inputs=%i-%i values=%i %i \n",
-			 device,card,input,input+1,iocard[device].inputs[card][input],iocard[device].inputs[card][input+1]);
-		}
+      if (*value != FLT_MISS) {
 
-		if (iocard[device].inputs[card][input+1] == 1) {
+	if (((input >=0) && (input<(leo[device].ninputs-2)) && (type==0)) || 
+	    ((input >=0) && (input<(leo[device].ninputs-1)) && (type>0))) {
+
+	  leo[device].inputs_read[input] = 1;
+	  leo[device].inputs_read[input+1] = 1;
+	  if (type == 0) leo[device].inputs_read[input+2] = 1;
+	    
+	  if (type == 0) { 
+	    /* simulated encoder out of a 1x12 rotary switch */
+	
+	    if ((leo[device].inputs[input]+
+		 leo[device].inputs[input+1]+
+		 leo[device].inputs[input+2]) == 0)
+	      /* 0 0 0 is a wrong measurement due to switch mechanics: do not count */
+	      {
+
+		leo[device].inputs[input] = leo[device].inputs_old[input];
+		leo[device].inputs[input+1] = leo[device].inputs_old[input+1];
+		leo[device].inputs[input+2] = leo[device].inputs_old[input+2];
+	      } else {
+	  
+	      if (((leo[device].inputs[input] != leo[device].inputs_old[input]) ||
+		   (leo[device].inputs[input+1] != leo[device].inputs_old[input+1]) ||
+		   (leo[device].inputs[input+2] != leo[device].inputs_old[input+2])) &&
+		  (leo[device].inputs_old[input] != INITVAL) && 
+		  (leo[device].inputs_old[input+1] != INITVAL) &&
+		  (leo[device].inputs_old[input+2] != INITVAL)) {
+		/* something has changed */
+	    
+		if (verbose > 1) {
+		  printf("LIBLEO: Rotary Encoder    1x12 Type : device=%i inputs=%i-%i values=%i %i %i \n",
+			 device, input, input+2, leo[device].inputs[input],
+			 leo[device].inputs[input+1], leo[device].inputs[input+2]);
+		}
+	    
+		newcount = leo[device].inputs[input] + 
+		  leo[device].inputs[input+1]*2 + leo[device].inputs[input+2]*3;
+		oldcount = leo[device].inputs_old[input] + 
+		  leo[device].inputs_old[input+1]*2 + leo[device].inputs_old[input+2]*3;
+	    
+		if (newcount > oldcount) {
 		  updown = 1;
 		} else {
 		  updown = -1;
 		}
-
-		if (updown != 0) {
-		  *value = *value + (float) (updown * get_acceleration(device, card, input, accelerator)) * multiplier;
-		  retval = 1;
-		}
-
-	      }
-	
-	    }
-      
-	    if (type == 2) {
-	      /* 2 bit gray type encoder */
-
-	      if (((iocard[device].inputs[card][input] != iocard[device].inputs_old[card][input]) || 
-		   (iocard[device].inputs[card][input+1] != iocard[device].inputs_old[card][input+1])) 
-		  && (iocard[device].inputs_old[card][input] != INITVAL) && (iocard[device].inputs_old[card][input+1] != INITVAL)) {
-		/* something has changed */
-	
-		/*
-		  printf("%i %i %i %i %i %i %i %i\n",device,card,input,input+1,
-		  iocard[device].inputs_old[card][input],
-		  iocard[device].inputs_old[card][input+1],
-		  iocard[device].inputs[card][input],
-		  iocard[device].inputs[card][input+1]);
-		*/
-
-		if (verbose > 1) {
-		  printf("LIBIOCARDS: Rotary Encoder    Gray Type : device=%i card=%i inputs=%i-%i values=%i %i \n",
-			 device,card,input,input+1,iocard[device].inputs[card][input],iocard[device].inputs[card][input+1]);
-		}
-
-		/* derive last encoder count */
-		obits[0] = iocard[device].inputs_old[card][input];
-		obits[1] = iocard[device].inputs_old[card][input+1];
-		oldcount = obits[0]+2*obits[1];
-	  
-		/* derive new encoder count */
-		nbits[0] = iocard[device].inputs[card][input];
-		nbits[1] = iocard[device].inputs[card][input+1];
-		newcount = nbits[0]+2*nbits[1];
-
-		/* forward */
-		if (((oldcount == 0) && (newcount == 1)) ||
-		    ((oldcount == 1) && (newcount == 3)) ||
-		    ((oldcount == 3) && (newcount == 2)) ||
-		    ((oldcount == 2) && (newcount == 0))) {
+	    
+		if ((oldcount == 3) && (newcount == 1)) {
 		  updown = 1;
 		}
-	  
-		/* backward */
-		if (((oldcount == 2) && (newcount == 3)) ||
-		    ((oldcount == 3) && (newcount == 1)) ||
-		    ((oldcount == 1) && (newcount == 0)) ||
-		    ((oldcount == 0) && (newcount == 2))) {
+		if ((oldcount == 1) && (newcount == 3)) {
 		  updown = -1;
-		}
-	  
+		}	    
+
 		if (updown != 0) {
-		  *value = *value + (float) (updown * get_acceleration(device, card, input, accelerator)) * multiplier;
+		  *value = *value + (float) (updown * get_acceleration(device, input, accelerator)) * multiplier;
 		  retval = 1;
 		}
-	  
+
 	      } 
-	
-	    }
-
-	    if (type == 3) {
-	      /* 2 bit optical encoder: phase e.g. EC11 from ALPS */
-	
-	      if (((iocard[device].inputs[card][input] != iocard[device].inputs_old[card][input]) || 
-		   (iocard[device].inputs[card][input+1] != iocard[device].inputs_old[card][input+1]))
-		  && (iocard[device].inputs_old[card][input] != INITVAL) && (iocard[device].inputs_old[card][input+1] != INITVAL)) {
-		/* something has changed */
-	  
-		if (verbose > 1) {
-		  printf("LIBIOCARDS: Rotary Encoder  Phased Type : device=%i card=%i inputs=%i-%i values=%i %i \n",
-			 device,card,input,input+1,iocard[device].inputs[card][input],iocard[device].inputs[card][input+1]);
-		}
-
-		/* derive last encoder count */
-		obits[0] = iocard[device].inputs_old[card][input];
-		obits[1] = iocard[device].inputs_old[card][input+1];
-		/* derive new encoder count */
-		nbits[0] = iocard[device].inputs[card][input];
-		nbits[1] = iocard[device].inputs[card][input+1];
-	  
-		if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-		  updown = -1;
-		} else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
-		  updown = 1;
-		} else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
-		  updown = -1;
-		} else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
-		  updown = 1;
-		}
-	  
-		if (updown != 0) {
-		  *value = *value + (float) (updown * get_acceleration(device, card, input, accelerator)) * multiplier;
-		  retval = 1;
-		}
-	  
-	      } 
-	
-	    }
-
-	  } else {
-	    retval = -1;
-	    if (type == 0) {
-	      printf("LIBIOCARDS: Invalid input position detected: %i - %i \n", input,input+2);
-	    } else {
-	      printf("LIBIOCARDS: Invalid input position detected: %i - %i \n", input,input+1);
 	    }
 	  }
+      
+	  if (type == 1) {
+	    /* optical rotary encoder using the Encoder II extension (INOP ON LEO BODNAR) */
+		
+	    if (((leo[device].inputs[input] != leo[device].inputs_old[input]) || 
+		 (leo[device].inputs[input+1] != leo[device].inputs_old[input+1]))
+		&& (leo[device].inputs_old[input] != INITVAL) && (leo[device].inputs_old[input+1] != INITVAL)) {
+	      /* something has changed */
+	  
+	      if (verbose > 1) {
+		printf("LIBLEO: Rotary Encoder Optical Type : device=%i inputs=%i-%i values=%i %i \n",
+		       device,input,input+1,leo[device].inputs[input],leo[device].inputs[input+1]);
+	      }
 
-	} /* input encoder value not missing */
-      } else {
-	retval = -1;
-	if (verbose > 0) printf("LIBIOCARDS: Invalid card number detected: %i \n", card);
-      }
+	      if (leo[device].inputs[input+1] == 1) {
+		updown = 1;
+	      } else {
+		updown = -1;
+	      }
+
+	      if (updown != 0) {
+		*value = *value + (float) (updown * get_acceleration(device, input, accelerator)) * multiplier;
+		retval = 1;
+	      }
+
+	    }
+	
+	  }
+      
+	  if (type == 2) {
+	    /* 2 bit gray type encoder */
+
+	    if (((leo[device].inputs[input] != leo[device].inputs_old[input]) || 
+		 (leo[device].inputs[input+1] != leo[device].inputs_old[input+1])) 
+		&& (leo[device].inputs_old[input] != INITVAL) && (leo[device].inputs_old[input+1] != INITVAL)) {
+	      /* something has changed */
+	
+	      /*
+		printf("%i %i %i %i %i %i %i %i\n",device,input,input+1,
+		leo[device].inputs_old[input],
+		leo[device].inputs_old[input+1],
+		leo[device].inputs[input],
+		leo[device].inputs[input+1]);
+	      */
+
+	      if (verbose > 1) {
+		printf("LIBLEO: Rotary Encoder    Gray Type : device=%i inputs=%i-%i values=%i %i \n",
+		       device,input,input+1,leo[device].inputs[input],leo[device].inputs[input+1]);
+	      }
+
+	      /* derive last encoder count */
+	      obits[0] = leo[device].inputs_old[input];
+	      obits[1] = leo[device].inputs_old[input+1];
+	      oldcount = obits[0]+2*obits[1];
+	  
+	      /* derive new encoder count */
+	      nbits[0] = leo[device].inputs[input];
+	      nbits[1] = leo[device].inputs[input+1];
+	      newcount = nbits[0]+2*nbits[1];
+
+	      /* forward */
+	      if (((oldcount == 0) && (newcount == 1)) ||
+		  ((oldcount == 1) && (newcount == 3)) ||
+		  ((oldcount == 3) && (newcount == 2)) ||
+		  ((oldcount == 2) && (newcount == 0))) {
+		updown = 1;
+	      }
+	  
+	      /* backward */
+	      if (((oldcount == 2) && (newcount == 3)) ||
+		  ((oldcount == 3) && (newcount == 1)) ||
+		  ((oldcount == 1) && (newcount == 0)) ||
+		  ((oldcount == 0) && (newcount == 2))) {
+		updown = -1;
+	      }
+	  
+	      if (updown != 0) {
+		*value = *value + (float) (updown * get_acceleration(device, input, accelerator)) * multiplier;
+		retval = 1;
+	      }
+	  
+	    } 
+	
+	  }
+
+	  if (type == 3) {
+	    /* 2 bit optical encoder: phase e.g. EC11 from ALPS */
+	
+	    if (((leo[device].inputs[input] != leo[device].inputs_old[input]) || 
+		 (leo[device].inputs[input+1] != leo[device].inputs_old[input+1]))
+		&& (leo[device].inputs_old[input] != INITVAL) && (leo[device].inputs_old[input+1] != INITVAL)) {
+	      /* something has changed */
+	  
+	      if (verbose > 1) {
+		printf("LIBLEO: Rotary Encoder  Phased Type : device=%i inputs=%i-%i values=%i %i \n",
+		       device,input,input+1,leo[device].inputs[input],leo[device].inputs[input+1]);
+	      }
+
+	      /* derive last encoder count */
+	      obits[0] = leo[device].inputs_old[input];
+	      obits[1] = leo[device].inputs_old[input+1];
+	      /* derive new encoder count */
+	      nbits[0] = leo[device].inputs[input];
+	      nbits[1] = leo[device].inputs[input+1];
+	  
+	      if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		updown = -1;
+	      } else if ((obits[0] == 0) && (obits[1] == 1) && (nbits[0] == 1) && (nbits[1] == 1)) {
+		updown = 1;
+	      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
+		updown = -1;
+	      } else if ((obits[0] == 1) && (obits[1] == 0) && (nbits[0] == 0) && (nbits[1] == 0)) {
+		updown = 1;
+	      }
+	  
+	      if (updown != 0) {
+		*value = *value + (float) (updown * get_acceleration(device, input, accelerator)) * multiplier;
+		retval = 1;
+	      }
+	  
+	    } 
+	
+	  }
+
+	} else {
+	  retval = -1;
+	  if (type == 0) {
+	    printf("LIBLEO: Invalid input position detected: %i - %i \n", input,input+2);
+	  } else {
+	    printf("LIBLEO: Invalid input position detected: %i - %i \n", input,input+1);
+	  }
+	}
+
+      } /* input encoder value not missing */
 
       if ((type<0) || (type>3)) {
 	retval = -1;
-	if (verbose > 0) printf("LIBIOCARDS: Invalid encoder type detected: %i \n", type);
+	if (verbose > 0) printf("LIBLEO: Invalid encoder type detected: %i \n", type);
       }
 
     } else {
       retval = -1;
-      if (verbose > 1)	printf("LIBIOCARDS: Device either not a MASTERCARD or BU0836X/A Interface or not ready: %i \n", device);
+      if (verbose > 1)	printf("LIBLEO: Device  not a BU0836X/A Interface or not ready: %i \n", device);
     }
 
   }
@@ -694,55 +702,45 @@ int mastercard_encoder(int device, int card, int input, float *value, float mult
   return(retval);
 }
 
-/* retrieve input value from given axis on USB expander, USBServos, DCMotors PLUS or BU0836X/A Interface card */
+/* retrieve input value from given axis on BU0836X/A Interface card */
 int axis_input(int device, int input, float *value, float minval, float maxval)
 {
-  char device_name1[] = "USB-Expancion V3";
-  char device_name2[] = "USBexp V2";
-  char device_name3[] = "IOCard-USBServos";
-  char device_name4[] = "USBServos v3";
-  char device_name5[] = "DCMotors PLUS";
-  char device_name6[] = "BU0836X Interface";
-  char device_name7[] = "BU0836A Interface";
+  char device_name1[] = "BU0836X Interface";
+  char device_name2[] = "BU0836A Interface";
   int retval = 0; /* returns 1 if something changed, and 0 if nothing changed, and -1 if something went wrong */
 
   if (value != NULL) {
 
-    /* check if we have a connected and initialized Expansion card */
-    if ((!strcmp(iocard[device].name,device_name1) ||
-	 !strcmp(iocard[device].name,device_name2) ||
-	 !strcmp(iocard[device].name,device_name3) || 
-	 !strcmp(iocard[device].name,device_name4) || 
-	 !strcmp(iocard[device].name,device_name5) || 
-	 !strcmp(iocard[device].name,device_name6) || 
-	 !strcmp(iocard[device].name,device_name7)) &&
-	(iocard[device].status == 1)) {
+    /* check if we have a connected and initialized usb device */
+    if ((!strcmp(leo[device].name,device_name1) ||
+	 !strcmp(leo[device].name,device_name2)) &&
+	(leo[device].status == 1)) {
 
-      if ((input>=0) && (input<iocard[device].naxes)) {
+      if ((input>=0) && (input<leo[device].naxes)) {
 	
-	if (iocard[device].axes_old[input] != iocard[device].axes[input]) {
+	if (leo[device].axes_old[input] != leo[device].axes[input]) {
 	  /* something changed */
-	  *value = ((float) iocard[device].axes[input]) / (float) pow(2,iocard[device].nbits) * 
+	  *value = ((float) leo[device].axes[input]) / (float) pow(2,leo[device].nbits) * 
 	    (maxval - minval) + minval;
 	  retval = 1;
 	  if (verbose > 3) {
-	    printf("LIBIOCARDS: Axis                        : device=%i input=%i value=%i %i \n",
-		   device, input, iocard[device].axes[input],iocard[device].axes_old[input]);
+	    printf("LIBLEO: Axis                        : device=%i input=%i value=%i %i \n",
+		   device, input, leo[device].axes[input],leo[device].axes_old[input]);
 	  }
 	} else {
 	  /* nothing changed */
-	  if (iocard[device].axes[input] != INITVAL) {
-	    *value = ((float) iocard[device].axes[input]) / (float) pow(2,iocard[device].nbits) * (maxval - minval) + minval;
+	  if (leo[device].axes[input] != INITVAL) {
+	    *value = ((float) leo[device].axes[input]) / (float) pow(2,leo[device].nbits) * (maxval - minval) + minval;
 	  }
 	  retval = 0;
 	}
       } else {
 	retval = -1;
-	if (verbose > 0) printf("LIBIOCARDS: Invalid axis number %i on device %i detected \n",input,device);
+	if (verbose > 0) printf("LIBLEO: Invalid axis number %i on device %i detected \n",input,device);
       }
     } else {
       retval = -1;
-      if (verbose > 1)	printf("LIBIOCARDS: Device either not a USB Expansion, USBServos, DCMotors PLUS or BU0836X/A Interface card or not ready: %i \n", device);
+      if (verbose > 1)	printf("LIBLEO: Device either not a BU0836X/A USB interface or not ready: %i \n", device);
     }
 
   }
@@ -750,10 +748,10 @@ int axis_input(int device, int input, float *value, float minval, float maxval)
   return(retval);
 }
 
-/* receive USB data from a BU0836X Interface or BU0836A Interface card */
+/* receive USB data from a BU0836X Interface or BU0836A Interface */
 /* containing the data from the analog axes and the buttons of */
 /* Leo Bodnar's Joystick card */
-/* BU0836X Interface Card: */
+/* BU0836X Interface: */
 /* The configuration of the read data really depends very much on the */
 /* configuration of the card. This read script is configured for: */
 /* naxes analog inputs and 32 buttons */
@@ -772,7 +770,6 @@ int receive_bu0836(void)
   int byte;
   int bit;
   int nbutton = 32;
-  int card = 0;
   unsigned char recv_data[buffersize];	/* BU0836X/A Interface raw IO data */
 
   int val;
@@ -783,9 +780,9 @@ int receive_bu0836(void)
 
   for (device=0;device<MAXDEVICES;device++) {
 
-    /* check if we have a IOCard-USBServos card */
-    if ((!strcmp(iocard[device].name,device_name1) || !strcmp(iocard[device].name,device_name2))
-	&& (iocard[device].status == 1)) {
+    /* check if we have a Leo Bodnar Interface */
+    if ((!strcmp(leo[device].name,device_name1) || !strcmp(leo[device].name,device_name2))
+	&& (leo[device].status == 1)) {
       
       /* check whether there is new data on the read buffer */
       do {
@@ -794,26 +791,26 @@ int receive_bu0836(void)
 
 	if (recv_status > 0) {
 
-	  if (verbose > 3) printf("LIBIOCARDS: received %i bytes from BU0836X/A Interface \n",recv_status);
+	  if (verbose > 3) printf("LIBLEO: received %i bytes from BU0836X/A Interface \n",recv_status);
 
 	  /* read analog axis (2 bytes per axis) */
-	  for (axis=0;axis<iocard[device].naxes;axis++) {
+	  for (axis=0;axis<leo[device].naxes;axis++) {
 	    
 	    val = recv_data[2*axis] + recv_data[2*axis+1]*256;
 	    
-	    if (verbose > 3) printf("LIBIOCARDS: Device %i Axis %i Value %i \n",device,axis,val);
+	    if (verbose > 3) printf("LIBLEO: Device %i Axis %i Value %i \n",device,axis,val);
 	    
 	    /* Analog input values are flickering with spikes (up to 10 out of a range of 1023)
 	       which is because of imprecision of potentiometers and power supply.
 	       A change does not necessarily mean that we turned the potentiometer,
 	       Here we use a median filter */
       
-	    memcpy(temparr,&iocard[device].axes_hist[axis],MAX_HIST*sizeof(int));
+	    memcpy(temparr,&leo[device].axes_hist[axis],MAX_HIST*sizeof(int));
 	    quicksort(temparr,0,MAX_HIST-1);
 	    median = temparr[MAX_HIST/2];
 	    
 	    //if (axis == 0)
-	    //  printf("%i %i %i \n",val,iocard[device].axes_old[axis],iocard[device].axes[axis]);
+	    //  printf("%i %i %i \n",val,leo[device].axes_old[axis],leo[device].axes[axis]);
 	    
 	    if ((val != INITVAL) && (median != INITVAL)) {
 	      /* compare to median of history values */
@@ -821,33 +818,33 @@ int receive_bu0836(void)
 		  (val > (median + noise))) {
 		/* save current value */
 	        //if (axis == 0) printf("%i %i \n",median,val);
-		iocard[device].axes[axis] = val;		
+		leo[device].axes[axis] = val;		
 	      }      	  
 	    } else {
 	      /* initialize current value */
-	      iocard[device].axes[axis] = val;		
+	      leo[device].axes[axis] = val;		
 	    }
 
 	    /* Shift History of analog inputs and update current value */
 	    for (h = MAX_HIST-2; h >= 0; h--) {
-	      iocard[device].axes_hist[axis][h+1] = iocard[device].axes_hist[axis][h];
+	      leo[device].axes_hist[axis][h+1] = leo[device].axes_hist[axis][h];
 	    }
-	    iocard[device].axes_hist[axis][0] = recv_data[2*axis] + recv_data[2*axis+1]*256;
+	    leo[device].axes_hist[axis][0] = recv_data[2*axis] + recv_data[2*axis+1]*256;
 
 	  }
 	    
 	  for (button=0;button<nbutton;button++) {
-	    if (strcmp(iocard[device].serial,"B37271")==0) {
-	      /* BU0836X card in my CFY TQ */
-	      byte = 2*iocard[device].naxes + 1 + button/8;
+	    if (strcmp(leo[device].serial,"B37271")==0) {
+	      /* BU0836X in my CFY TQ */
+	      byte = 2*leo[device].naxes + 1 + button/8;
 	    } else {
 	      /* All other BU0836X/A */
-	      byte = 2*iocard[device].naxes + button/8;
+	      byte = 2*leo[device].naxes + button/8;
 	    }
 	    bit = button - (button/8)*8;
-	    iocard[device].inputs[card][button] = (recv_data[byte] >> bit) & 0x01;
-	    if (verbose > 2) printf("LIBIOCARDS: Device %i Button %i Value %i %i %i \n",device,button,
-				    iocard[device].inputs[card][button], byte, bit);
+	    leo[device].inputs[button] = (recv_data[byte] >> bit) & 0x01;
+	    if (verbose > 2) printf("LIBLEO: Device %i Button %i Value %i %i %i \n",device,button,
+				    leo[device].inputs[button], byte, bit);
 	  }
 	}
 
@@ -860,44 +857,14 @@ int receive_bu0836(void)
 
 }
 
-/* initialize Leo Bodnar's BU0836X Interface card (do not send anything, this card just has an Input descriptor) */
-int initialize_bu0836(int device)
-{
-  char device_name1[] = "BU0836X Interface";
-  char device_name2[] = "BU0836A Interface";
-  int result = 0;
-  int buffersize = 32;
-
-  /* check if we have a connected BU0836X Interface card */
-  if ((!strcmp(iocard[device].name,device_name1) || (!strcmp(iocard[device].name,device_name2))) &&
-      (iocard[device].status == 0)) {
-
-    /* allocate input buffer */
-    result = setbuffer_usb(device,buffersize);
-
-    iocard[device].ncards = 1;
-    // iocard[device].naxes = 2; // given in ini file
-    iocard[device].noutputs = 0;
-    iocard[device].ninputs = 32;
-    iocard[device].nservos = 0;
-    iocard[device].nmotors = 0;
-    iocard[device].ndisplays = 0;
-    iocard[device].nbits = 12;
-
-    if (verbose > 0) printf("LIBIOCARDS: Initialized BU0836X/A Interface (device %i) with %i axes \n",
-			    device, iocard[device].naxes);
-
-    result = 1;
-
-  }
-
-  return result;
-}
-
 /* loop through selected devices and check if some have been connected
    or disconnected. Initialize or free devices as needed */
 int initialize_leo(void)
 {
+  char device_name1[] = "BU0836X Interface";
+  char device_name2[] = "BU0836A Interface";
+  int buffersize = 32;
+
   int device;
   int ret;
   char device_none[] = "none";
@@ -906,27 +873,50 @@ int initialize_leo(void)
   if (verbose > 0) printf("\n");
   for (device=0;device<MAXDEVICES;device++) {
 
-    if (strcmp(iocard[device].name,device_none) && (iocard[device].status == -1)) {
+    if (strcmp(leo[device].name,device_none) && (leo[device].status == -1)) {
       if (verbose > 0) {
 	printf("\n");
-	printf("LIBIOCARDS: Initialize device: %i Name: %s \n",device,iocard[device].name);
+	printf("LIBLEO: Initialize device: %i Name: %s \n",device,leo[device].name);
       }
 	
-      ret = check_usb(iocard[device].name,device,iocard[device].vendor,iocard[device].product,
-		      iocard[device].bus, iocard[device].address,
-		      iocard[device].path, iocard[device].serial);
+      ret = check_usb(leo[device].name,device,leo[device].vendor,leo[device].product,
+		      leo[device].bus, leo[device].address,
+		      leo[device].path, leo[device].serial);
 
       if (ret<0) {
 	result = ret;
 	break;
       } else {
-	iocard[device].status = 0;
+	leo[device].status = 0;
 	
-	if (initialize_bu0836(device) == 1) {
-	  iocard[device].status = 1;
+	/* check if we have a connected BU0836X Interface card */
+	if ((!strcmp(leo[device].name,device_name1) || (!strcmp(leo[device].name,device_name2))) &&
+	    (leo[device].status == 0)) {
+
+	  if (leo[device].naxes > MAXAXES) {
+
+	    printf("LIBLEO: Number of defined axes %i for device: %i exceeds maximum %i \n",leo[device].naxes,device,MAXAXES);
+
+	    result = -1;
+
+	  } else {
+	  
+	    /* allocate input buffer */
+	    result = setbuffer_usb(device,buffersize);
+	    
+	    // leo[device].naxes = 2; // given in ini file
+	    leo[device].ninputs = 32;
+	    leo[device].nbits = 12;
+	    
+	    if (verbose > 0) printf("LIBLEO: Initialized BU0836X/A Interface (device %i) with %i axes \n",
+				    device, leo[device].naxes);
+	    leo[device].status = 1;
+
+	  }
+	    
 	} else {
-	  if (verbose > 0) printf("LIBIOCARDS: No initialization code for device: %i \n",device);
-	  iocard[device].status = 0;
+	  printf("LIBLEO: No initialization code for device: %i with Name: %s \n",device,leo[device].name);
+	  leo[device].status = 0;
 	  result = -1;
 	}
       }

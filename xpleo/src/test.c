@@ -1,7 +1,7 @@
-/* This is the bu0836_test.c code which contains a sample set-up for how to communicate with the 
+/* This is the test.c code which contains a sample set-up for how to communicate with the 
    BU0836X or BU0836A card from Leo Bodnar
 
-   Copyright (C) 2009 - 2014  Reto Stockli
+   Copyright (C) 2025  Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -24,17 +24,17 @@
 #include <unistd.h>
 
 #include "common.h"
-#include "libiocards.h"
+#include "libleo.h"
 #include "serverdata.h"
-#include "bu0836_test.h"
+#include "test.h"
 
-void bu0836_test(void)
+int encodervalue;
+
+void test(void)
 {
 
   int ret = 0;
-  //  int device = 5;
-  int device = 3;
-  int card = 0;
+  int device = 0;
   int axis;
   int input;
   float minval = 0.0;
@@ -43,8 +43,9 @@ void bu0836_test(void)
   int test;
   float value;
 
+  int *encodervalue = link_dataref_int("sim/cockpit/radios/transponder_code");
+  
   /* read potentiometer from analog input #1 on BU0836X/A card, scale it to the range 0-100 */
-  //for (axis=0; axis<iocard[device].naxes; axis++) {
   for (axis=0; axis<1; axis++) {
     ret = axis_input(device,axis,&value,minval,maxval);
     if ((ret == 1) && (axis == 0)) {
@@ -54,10 +55,19 @@ void bu0836_test(void)
 
   /* read buttons of BU0836X/A card */
   for (input=0; input<15; input++) {
-    ret = digital_input(device,card,input,&test,0);
+    ret = digital_input(device,input,&test,0);
     if (ret == 1) {
       printf("Button %i has value %i \n",input,test);
     }
   }
 
+  /* read encoder connected to buttons 2 and 3 */
+  int acceleration = 1;
+  int multiplier = 1;
+  ret = encoder_input(device, 2, encodervalue, multiplier, acceleration, 2);
+  if (ret == 1) {
+    printf("Encoder Value: %i \n",*encodervalue);
+  }
+  
+  
 }
