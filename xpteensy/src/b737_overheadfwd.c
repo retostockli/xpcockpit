@@ -443,10 +443,12 @@ void b737_overheadfwd(void)
       ret = set_switch_cover(switch_cover_pos,switch_cover_toggle,ival);
     }
 
-    /* Pedestal Light PWM controlled by Pedestal Potentiometer */
-    /* TODO: LINK PEDESTAL POTENTIOMETER DATAREF */
+    /* Pedestal Flood Light On/Off */
     ret = digital_output(te, TEENSY_TYPE, 0, 26, avionics_on);
-    //ret = pwm_output(te, TEENSY_TYPE, 0, 28, fvalue,0.0,1.0);
+
+    /* Pedestal Flood Light PWM controlled by Pedestal Potentiometer */
+    float *flood_brightness = link_dataref_flt("xpserver/pedestal_flood_brightness",-1);
+    ret = pwm_output(te, TEENSY_TYPE, 0, 28, flood_brightness,0.1,1.0);
 
     /* Background Lighting (Direct Potentiometer MOSFET control */
     ret = digital_output(te, TEENSY_TYPE, 0, 27, avionics_on);

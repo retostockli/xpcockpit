@@ -180,7 +180,6 @@ void b737_pedestal(void)
   float trim_min = -1.0;
   float trim_max = 1.0;
 
-  float flood_brightness;
 
   /* x-plane data */
   int *nav1_freq_active = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
@@ -392,7 +391,10 @@ void b737_pedestal(void)
   } else {
     lights_test = link_dataref_flt("xpserver/lights_test",0);
   }
-    
+
+
+  float *flood_brightness = link_dataref_flt("xpserver/pedestal_flood_brightness",-1);
+  
   /*** Background Lighting ***/
 
   /* blank displays if avionics are off */
@@ -1396,13 +1398,10 @@ void b737_pedestal(void)
   /* Panel Brightness: HARDWARE */
 
   /* Flood Brightness */
-  ret = analog_input(card,a0+0,&flood_brightness,0.0,1.0);
+  ret = analog_input(card,a0+0,flood_brightness,0.0,1.0);
   if (ret == 1) {
-    //printf("FLOOD LIGHT BRIGHTNESS: %f \n",flood_brightness);
+    printf("FLOOD LIGHT BRIGHTNESS: %f \n",*flood_brightness);
   }
-  //ret = servo_outputf(card,0,&flood_brightness,0.0,1.0);
-
-
 
   
   /*** DOOR PANEL ***/
