@@ -109,6 +109,19 @@ int init_teensy() {
   
   for (te=0;te<MAXTEENSYS;te++) {
     if ((teensy[te].connected == 1) && (teensy[te].online == 1) && (teensy[te].initialized == 0)) {
+      /* Reset local configuration on Teensy */
+      memset(teensySendBuffer,0,SENDMSGLEN);
+      teensySendBuffer[0] = TEENSY_ID1; /* T */
+      teensySendBuffer[1] = TEENSY_ID2; /* E */
+      teensySendBuffer[4] = TEENSY_RESET;
+      teensySendBuffer[5] = TEENSY_TYPE;
+      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+      if (ret == SENDMSGLEN) {
+	if (verbose > 1) printf("RESET: Sent %i bytes to Teensy %i \n", ret,te);
+      } else {
+	printf("INCOMPLETE RESET: Sent %i bytes to Teensy %i \n", ret,te);
+      }
+
       /* initialize teensy mother board */
       /* initialize pins selected for digital input */
       for (pin=0;pin<MAX_PINS;pin++) {
@@ -223,12 +236,11 @@ int init_teensy() {
 	    } /* pin defined */
 	  } /* loop over pins */
 	}
+	/* wait for 10 ms to make sure teensy hardware has initialized */
+	usleep(20000);
       }
 
-      /* wait for 10 ms to make sure teensy hardware has initialized */
-      usleep(10000);
-      
-      /* initialize MCP23017 boards connected via I2C */
+     /* initialize MCP23017 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if ((mcp23017[te][dev].connected == 1) && (mcp23017[te][dev].wire != INITVAL)) {
 	  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
@@ -269,10 +281,10 @@ int init_teensy() {
 	    } /* pin defined */
 	  } /* loop over pins */
 	}
-      }
+	/* wait for 10 ms to make sure teensy hardware has initialized */
+	usleep(20000);
+       }
 
-      /* wait for 10 ms to make sure teensy hardware has initialized */
-      usleep(10000);
       
       /* initialize AS5048B boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
@@ -304,12 +316,11 @@ int init_teensy() {
 	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i AS5048B %i \n", ret,te,dev);
 	  }
 	}
+	/* wait for 10 ms to make sure teensy hardware has initialized */
+	usleep(20000);
       }
 
-      /* wait for 10 ms to make sure teensy hardware has initialized */
-      usleep(10000);
-     
-      /* initialize HT16K33 boards connected via I2C */
+     /* initialize HT16K33 boards connected via I2C */
       for (dev=0;dev<MAX_DEV;dev++) {
 	if ((ht16k33[te][dev].connected == 1) && (ht16k33[te][dev].wire != INITVAL)) {
 	  memset(teensySendBuffer,0,SENDMSGLEN);
@@ -330,11 +341,10 @@ int init_teensy() {
 	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i HT16K33 %i \n", ret,te,dev);
 	  }
 	}
-      }
+	/* wait for 10 ms to make sure teensy hardware has initialized */
+	usleep(20000);
+       }
 
-      /* wait for 10 ms to make sure teensy hardware has initialized */
-      usleep(10000);
-           
       /* initialize internal programs on Teensy */
       /* initialize last, since motors, potentiometers etc. used by programs need to be known before */
       /* for now: send 3x 16 bit values and 3x 8 bit values (may need extension for other programs) */
@@ -368,7 +378,9 @@ int init_teensy() {
 	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
 	  }
 	}
-      }
+	/* wait for 10 ms to make sure teensy hardware has initialized */
+	usleep(20000);
+       }
       
       teensy[te].initialized = 1;
 

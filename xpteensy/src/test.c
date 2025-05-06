@@ -77,12 +77,15 @@ void init_test(void)
 
   int dev = 0;
   int pin;
-  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
-  mcp23017[te][dev].intpin = 9; // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x21; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x23 ^ 0x50; // (0x73) I2C address of MCP23017 device
   
 
   /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
@@ -134,7 +137,9 @@ void test(void)
 {
 
   int ret;
+  int pin;
   int te = 0;
+  int ival;
 
   /* link integer data like a switch in the cockpit */
   //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -173,9 +178,12 @@ void test(void)
   
   /* read digital input (#3) */  
   //ret = digital_input(te, TEENSY_TYPE, 0, 4, &digitalvalue, 0);
-  ret = digital_input(te, MCP23017_TYPE, 0, 12, digitalvalue, 0);
-  if (ret == 1) {
-    printf("Digital Input changed to: %i \n",*digitalvalue);
+  int dev = 0;
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    ret = digital_input(te, MCP23017_TYPE, dev, pin, &ival, 0);
+    if (ret == 1) {
+      printf("Digital Input %i changed to: %i \n",pin,ival);
+    }
   }
 
 
@@ -230,11 +238,13 @@ void test(void)
   /* ret = program_closedloop(te, 1, direction, &fencodervalue, 0.0, 100.0); */
   
   /* set LED connected to first output (#0) to value landing lights dataref */
-  //digitalvalue = 1;
+  *digitalvalue = 1;
   //analogvalue = 0.5;
   //ret = digital_output(te, TEENSY_TYPE, 0, 23, &direction);
   /* ret = digital_output(te, MCP23017_TYPE, 0, 5, &digitalvalue); */
-  /* ret = digital_output(te, MCP23017_TYPE, 0, 7, &digitalvalue); */
+  for (pin=0;pin<8;pin++) {
+    ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue);
+  }
   //ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,5.0,1023.0);
 
   /* change Servo according to rotary position */
