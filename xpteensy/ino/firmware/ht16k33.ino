@@ -80,7 +80,7 @@ int16_t ht16k33_write(int8_t dev, int8_t dig, int16_t val, int8_t dp, int8_t bri
           ht16k33[dev].sendLed();
 
           if (DEBUG > 0) {
-            Serial.printf("WRITE: HT16K33 Send Value %i to Digit %i Brightness %i \n", val, dig, brightness);
+            Serial.printf("WRITE: HT16K33 Device %i Send Value %i to Digit %i Brightness %i \n", dev, val, dig, brightness);
           }
 
         }  // value has changed

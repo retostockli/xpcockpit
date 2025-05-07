@@ -237,7 +237,7 @@ int init_teensy() {
 	  } /* loop over pins */
 	}
 	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(20000);
+	usleep(10000);
       }
 
      /* initialize MCP23017 boards connected via I2C */
@@ -282,7 +282,7 @@ int init_teensy() {
 	  } /* loop over pins */
 	}
 	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(20000);
+	usleep(10000);
        }
 
       
@@ -317,7 +317,7 @@ int init_teensy() {
 	  }
 	}
 	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(20000);
+	usleep(10000);
       }
 
      /* initialize HT16K33 boards connected via I2C */
@@ -342,7 +342,7 @@ int init_teensy() {
 	  }
 	}
 	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(20000);
+	usleep(10000);
        }
 
       /* initialize internal programs on Teensy */
@@ -379,7 +379,7 @@ int init_teensy() {
 	  }
 	}
 	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(20000);
+	usleep(10000);
        }
       
       teensy[te].initialized = 1;
@@ -1220,14 +1220,16 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 
 
 /* wrapper for digital_output when supplying floating point value
-   Values < 0.5 are set to 0 output and values >= 0.5 are set to 1 output */
+   Values < 0.5 are set to 0 output and values >= 0.5 are set to 1 output
+   FIX: Annunciator Dataref have low values down to 0.05 at night, which is still illuminated
+   SET: Threshold to 0.04 for now */
 int digital_outputf(int te, int type, int dev, int output, float *fvalue) {
 
   int value;
   
   if (*fvalue == FLT_MISS) {
     value = INT_MISS;
-  } else if (*fvalue >= 0.5) {
+  } else if (*fvalue >= 0.04) {
     value = 1;
   } else {
     value = 0;

@@ -51,8 +51,11 @@ void udp_receive(void) {
             }
             ivalue16 = 0;
             udp_send(TEENSY_TYPE, 0, TEENSY_PING, INITVAL, ivalue16);
+          } else if (recvBuffer[4] == TEENSY_RESET) {
+            /* reset teensy data structure */
+            init_data();
           } else if (recvBuffer[4] == TEENSY_INIT) {
-            /* initialize pin or daughter board as requested */
+            /* initialize pin as requested */
             memcpy(&ivalue16, &recvBuffer[8], 2);
             memcpy(&ivalue16b, &recvBuffer[2], 2);
             teensy_init(recvBuffer[7], recvBuffer[10], ivalue16, recvBuffer[11], recvBuffer[12], recvBuffer[13],recvBuffer[14], recvBuffer[15], ivalue16b);

@@ -74,6 +74,7 @@
 #define TEENSY_RESEND 3     // Request to resend states /* INOP */
 #define TEENSY_ERROR 9      // Message with Error state
 #define TEENSY_SHUTDOWN 10  // Request to shutdown /* INOP */
+#define TEENSY_RESET 11     // Reset Teensy Configuration (and all attached I2C devices)
 
 /* Teensy type of connected daughter boards */
 #define TEENSY_TYPE 0        // Host Teensy Microcontroller

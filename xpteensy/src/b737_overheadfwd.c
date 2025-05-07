@@ -567,35 +567,34 @@ void b737_overheadfwd(void)
     dev = 1;
 
     if ((*lights_test == 1.0) && (*avionics_on == 1)) {ival = 1;} else {ival = 0;};
-
+    
     /* FEEL DIFF PRESS 0 */
-    float *diff_press = link_dataref_flt("laminar/B738/annunciator/feel_diff_press",-1);
+    float *diff_press = link_dataref_flt("laminar/B738/annunciator/feel_diff_press",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 0, diff_press);
     /* SPEED TRIM FAIL 1 */
     ret = digital_output(te, MCP23017_TYPE, dev, 1, &ival);
     /* MACH TRIM FAIL 2 */
     ret = digital_output(te, MCP23017_TYPE, dev, 2, &ival);
     /* AUTO SLAT FAIL 3 */
-    float *auto_slat_fail = link_dataref_flt("laminar/B738/annunciator/auto_slat_fail",-1);
+    float *auto_slat_fail = link_dataref_flt("laminar/B738/annunciator/auto_slat_fail",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 3, auto_slat_fail);
     /* STDBY HYDRAULICS LOW QUANTITY 4 */
     ret = digital_output(te, MCP23017_TYPE, dev, 4, &ival);
     /* STDBY HYDRAULICS LOW_PRESSURE 5 */
-    float *stby_hyd_press = link_dataref_flt("laminar/B738/annunciator/hyd_stdby_rud",-1);
+    float *stby_hyd_press = link_dataref_flt("laminar/B738/annunciator/hyd_stdby_rud",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 5, stby_hyd_press);
     /* STDBY HYDRAULICS STBY RUD ON 6 */
-    float *stby_rud_on = link_dataref_flt("laminar/B738/annunciator/std_rud_on",-1);
+    float *stby_rud_on = link_dataref_flt("laminar/B738/annunciator/std_rud_on",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 6, stby_rud_on);
     /* YAW DAMPER 8 */
-    float *yaw_damper_on = link_dataref_flt("laminar/B738/annunciator/yaw_damp",-1);
+    float *yaw_damper_on = link_dataref_flt("laminar/B738/annunciator/yaw_damp",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, yaw_damper_on);
     /* FLT CONTROL B LOW PRESSURE 9 */
-    float *hyd_B_press = link_dataref_flt("laminar/B738/annunciator/hyd_B_rud",-1);
+    float *hyd_B_press = link_dataref_flt("laminar/B738/annunciator/hyd_B_rud",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 9, hyd_B_press);
     /* FLT CONTROL A LOW PRESSURE 10 */
-    float *hyd_A_press = link_dataref_flt("laminar/B738/annunciator/hyd_A_rud",-1);
+    float *hyd_A_press = link_dataref_flt("laminar/B738/annunciator/hyd_A_rud",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 10, hyd_A_press);
-
 
     /* -----------------------  */
     /* NAV / DISP CONTROL PANEL */
@@ -702,34 +701,34 @@ void b737_overheadfwd(void)
       printf("AFT FUEL PUMP 2 %i \n",(int) *fuel_pump_aft_2_on);
     }
 
-    float *bypass_filter_1 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_1",-1);
+    float *bypass_filter_1 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 0, bypass_filter_1);
-    float *bypass_filter_2 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_2",-1);
+    float *bypass_filter_2 = link_dataref_flt("laminar/B738/annunciator/bypass_filter_2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 1, bypass_filter_2);
-    float *low_press_ctr_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c1",-1);
+    float *low_press_ctr_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 2, low_press_ctr_1);
-    float *low_press_ctr_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c2",-1);
+    float *low_press_ctr_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_c2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 3, low_press_ctr_2);
-    float *low_press_aft_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l1",-1);
+    float *low_press_aft_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 4, low_press_aft_1);
-    float *low_press_fwd_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l2",-1);
+    float *low_press_fwd_1 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_l2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 5, low_press_fwd_1);
-    float *low_press_fwd_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r2",-1);
+    float *low_press_fwd_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 6, low_press_fwd_2);
-    float *low_press_aft_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r1",-1);
+    float *low_press_aft_2 = link_dataref_flt("laminar/B738/annunciator/low_fuel_press_r1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 7, low_press_aft_2);
 
     dev = 1;
-    float *eng_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/eng1_valve_closed",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 0, eng_valve_closed_1,0.0,1.0);
-    float *spar_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/spar1_valve_closed",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 1, spar_valve_closed_1,0.0,1.0);
-    float *eng_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/eng2_valve_closed",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 2, eng_valve_closed_2,0.0,1.0);
-    float *spar_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/spar2_valve_closed",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 3, spar_valve_closed_2,0.0,1.0);
-    float *cross_feed_valve = link_dataref_flt("laminar/B738/annunciator/crossfeed",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 4, cross_feed_valve,0.0,1.0);
+    float *eng_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/eng1_valve_closed",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 0, eng_valve_closed_1,0.0,0.05);
+    float *spar_valve_closed_1 = link_dataref_flt("laminar/B738/annunciator/spar1_valve_closed",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 1, spar_valve_closed_1,0.0,0.05);
+    float *eng_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/eng2_valve_closed",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 2, eng_valve_closed_2,0.0,0.05);
+    float *spar_valve_closed_2 = link_dataref_flt("laminar/B738/annunciator/spar2_valve_closed",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 3, spar_valve_closed_2,0.0,0.05);
+    float *cross_feed_valve = link_dataref_flt("laminar/B738/annunciator/crossfeed",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 4, cross_feed_valve,0.0,0.05);
 
     dev = 0;
     float *fuel_temp = link_dataref_flt("laminar/B738/engine/fuel_temp",0);
@@ -782,11 +781,11 @@ void b737_overheadfwd(void)
     }
 
     /* Annunciators */
-    float *bat_discharge = link_dataref_flt("laminar/B738/annunciator/bat_discharge",-1);
+    float *bat_discharge = link_dataref_flt("laminar/B738/annunciator/bat_discharge",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 9, bat_discharge);
-    float *tr_unit = link_dataref_flt("laminar/B738/annunciator/tr_unit",-1);
+    float *tr_unit = link_dataref_flt("laminar/B738/annunciator/tr_unit",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 10, tr_unit);
-    float *elec = link_dataref_flt("laminar/B738/annunciator/elec",-1);
+    float *elec = link_dataref_flt("laminar/B738/annunciator/elec",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, elec);
  
     dev = 5;
@@ -859,7 +858,7 @@ void b737_overheadfwd(void)
       ret = display_outputf(te, HT16K33_TYPE, dev, 11, 2, ac_amps, dp, brightness);
       ret = display_outputf(te, HT16K33_TYPE, dev, 8, 3, ac_volt, dp, brightness);
     } else {
-      ival = 22;
+      ival = 16;
       for (int i=0;i<16;i++) {
 	ret = display_output(te, HT16K33_TYPE, dev, i, 1, &ival, dp, brightness);
       }
@@ -944,11 +943,11 @@ void b737_overheadfwd(void)
       printf("Drive Disconnect 1 %i \n",(int) drive_discon_2);
     }
     
-    float *drive_1_ann = link_dataref_flt("laminar/B738/annunciator/drive1",-1);
+    float *drive_1_ann = link_dataref_flt("laminar/B738/annunciator/drive1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, drive_1_ann);
-    float *standby_pwr_ann = link_dataref_flt("laminar/B738/annunciator/standby_pwr_off",-1);
+    float *standby_pwr_ann = link_dataref_flt("laminar/B738/annunciator/standby_pwr_off",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 9, standby_pwr_ann);
-    float *drive_2_ann = link_dataref_flt("laminar/B738/annunciator/drive2",-1);
+    float *drive_2_ann = link_dataref_flt("laminar/B738/annunciator/drive2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 10, drive_2_ann);
 
     dev = 7;
@@ -997,17 +996,17 @@ void b737_overheadfwd(void)
       printf("GEN 2 OFF %i \n", *gen2_switch_up);
     }
 
-    float *transfer_bus_off_1 = link_dataref_flt("laminar/B738/annunciator/trans_bus_off1",-1);
+    float *transfer_bus_off_1 = link_dataref_flt("laminar/B738/annunciator/trans_bus_off1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, transfer_bus_off_1);
-    float *source_off_1 = link_dataref_flt("laminar/B738/annunciator/source_off1",-1);
+    float *source_off_1 = link_dataref_flt("laminar/B738/annunciator/source_off1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 9, source_off_1);
-    float *transfer_bus_off_2 = link_dataref_flt("laminar/B738/annunciator/trans_bus_off2",-1);
+    float *transfer_bus_off_2 = link_dataref_flt("laminar/B738/annunciator/trans_bus_off2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 10, transfer_bus_off_2);
-    float *source_off_2 = link_dataref_flt("laminar/B738/annunciator/source_off2",-1);
+    float *source_off_2 = link_dataref_flt("laminar/B738/annunciator/source_off2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 11, source_off_2);
-    float *apu_low_oil = link_dataref_flt("laminar/B738/annunciator/apu_low_oil",-1);
+    float *apu_low_oil = link_dataref_flt("laminar/B738/annunciator/apu_low_oil",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 12, apu_low_oil);
-    float *apu_fault = link_dataref_flt("laminar/B738/annunciator/apu_fault",-1);
+    float *apu_fault = link_dataref_flt("laminar/B738/annunciator/apu_fault",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 13, apu_fault);
     /* YELLOW OVER SPEED ANNUNCIATOR NOT YET AVAILABLE IN ZIBO MOD */
     ret = digital_outputf(te, MCP23017_TYPE, dev, 14, lights_test);
@@ -1015,16 +1014,16 @@ void b737_overheadfwd(void)
 
     /* Blue Annunciators via PWM driver */
     dev = 1;
-    float *grd_pwr_avail = link_dataref_flt("laminar/B738/annunciator/ground_power_avail",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 5, grd_pwr_avail,0.0,1.0);    
-    float *gen_off_bus_1 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus1",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 8, gen_off_bus_1,0.0,1.0);    
-    float *apu_gen_off_bus = link_dataref_flt("laminar/B738/annunciator/apu_gen_off_bus",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 9, apu_gen_off_bus,0.0,1.0);    
-    float *gen_off_bus_2 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus2",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 10, gen_off_bus_2,0.0,1.0);    
+    float *grd_pwr_avail = link_dataref_flt("laminar/B738/annunciator/ground_power_avail",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 5, grd_pwr_avail,0.0,0.05);    
+    float *gen_off_bus_1 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus1",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 8, gen_off_bus_1,0.0,0.05);    
+    float *apu_gen_off_bus = link_dataref_flt("laminar/B738/annunciator/apu_gen_off_bus",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 9, apu_gen_off_bus,0.0,0.05);    
+    float *gen_off_bus_2 = link_dataref_flt("laminar/B738/annunciator/gen_off_bus2",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 10, gen_off_bus_2,0.0,0.05);    
     /* BLUE MAINT ANNUNCIATOR NOT YET AVAILABLE IN ZIBO MOD */
-    ret = pwm_output(te, PCA9685_TYPE, dev, 11, lights_test,0.0,1.0);    
+    ret = pwm_output(te, PCA9685_TYPE, dev, 11, lights_test,0.0,0.05);    
 
     dev = 0;
     /* EGT dataref: A value of 100 means 800 degrees, so multiply by 1.25 */
@@ -1513,29 +1512,29 @@ void b737_overheadfwd(void)
     }
     if ((ival != INT_MISS) && (ival2 != INT_MISS)) *window_overheat_test = (float) (ival - ival2);
 
-    float *window_ovht_r_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_rf",-1);
+    float *window_ovht_r_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_rf",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, window_ovht_r_fwd_ann);
-    float *window_ovht_r_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_rs",-1);
+    float *window_ovht_r_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_rs",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 9, window_ovht_r_side_ann);
 
-    float *window_heat_r_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_r_fwd",-1);
+    float *window_heat_r_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_r_fwd",-2);
     if (*avionics_on) {
       ret = digital_outputf(te, MCP23017_TYPE, dev, 10, window_heat_r_fwd_ann);
     } else {
       ret = digital_output(te, MCP23017_TYPE, dev, 10, &zero);
     }
-    float *window_heat_r_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_r_side",-1);
+    float *window_heat_r_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_r_side",-2);
     if (*avionics_on) {
       ret = digital_outputf(te, MCP23017_TYPE, dev, 11, window_heat_r_side_ann);
     } else {
       ret = digital_output(te, MCP23017_TYPE, dev, 11, &zero);
     }
 
-    float *fo_pitot = link_dataref_flt("laminar/B738/annunciator/fo_pitot_off",-1);
+    float *fo_pitot = link_dataref_flt("laminar/B738/annunciator/fo_pitot_off",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 12, fo_pitot); // FO PITOT
     ret = digital_outputf(te, MCP23017_TYPE, dev, 13, fo_pitot); // R ELEV PITOT
     ret = digital_outputf(te, MCP23017_TYPE, dev, 15, fo_pitot); // AUX PITOT
-    float *fo_aoa = link_dataref_flt("laminar/B738/annunciator/fo_aoa_off",-1);
+    float *fo_aoa = link_dataref_flt("laminar/B738/annunciator/fo_aoa_off",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 14, fo_aoa); // R ALPHA VANE
 
     dev = 12;
@@ -1557,29 +1556,29 @@ void b737_overheadfwd(void)
       printf("Probe Heat Captain: %i \n",(int) *probe_heat_capt);
     }
 
-    float *window_ovht_l_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_ls",-1);
+    float *window_ovht_l_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_ls",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 0, window_ovht_l_side_ann);
-    float *window_ovht_l_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_lf",-1);
+    float *window_ovht_l_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_ovht_lf",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 1, window_ovht_l_fwd_ann);
 
-    float *window_heat_l_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_l_side",-1);
+    float *window_heat_l_side_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_l_side",-2);
     if (*avionics_on) {
       ret = digital_outputf(te, MCP23017_TYPE, dev, 2, window_heat_l_side_ann);
     } else {
       ret = digital_output(te, MCP23017_TYPE, dev, 2, &zero);
     }
-    float *window_heat_l_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_l_fwd",-1);
+    float *window_heat_l_fwd_ann = link_dataref_flt("laminar/B738/annunciator/window_heat_l_fwd",-2);
     if (*avionics_on) {
       ret = digital_outputf(te, MCP23017_TYPE, dev, 3, window_heat_l_fwd_ann);
     } else {
       ret = digital_output(te, MCP23017_TYPE, dev, 3, &zero);
     }
 
-    float *capt_pitot = link_dataref_flt("laminar/B738/annunciator/capt_pitot_off",-1);
+    float *capt_pitot = link_dataref_flt("laminar/B738/annunciator/capt_pitot_off",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 4, capt_pitot); // CAPT PITOT
     ret = digital_outputf(te, MCP23017_TYPE, dev, 5, capt_pitot); // L ELEV PITOT
     ret = digital_outputf(te, MCP23017_TYPE, dev, 7, capt_pitot); // TEMP PROBE
-    float *capt_aoa = link_dataref_flt("laminar/B738/annunciator/capt_aoa_off",-1);
+    float *capt_aoa = link_dataref_flt("laminar/B738/annunciator/capt_aoa_off",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 6, capt_aoa); // L ALPHA VANE
 
     
@@ -1642,33 +1641,33 @@ void b737_overheadfwd(void)
     }
 
     /* Yellow Annunciators */
-    float *elec_hydro_ovht1 = link_dataref_flt("laminar/B738/annunciator/el_hyd_ovht_1",-1);
+    float *elec_hydro_ovht1 = link_dataref_flt("laminar/B738/annunciator/el_hyd_ovht_1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 0, elec_hydro_ovht1);
-    float *elec_hydro_ovht2 = link_dataref_flt("laminar/B738/annunciator/el_hyd_ovht_2",-1);
+    float *elec_hydro_ovht2 = link_dataref_flt("laminar/B738/annunciator/el_hyd_ovht_2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 1, elec_hydro_ovht2);
-    float *hydro_press1 = link_dataref_flt("laminar/B738/annunciator/hyd_press_a",-1);
+    float *hydro_press1 = link_dataref_flt("laminar/B738/annunciator/hyd_press_a",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 2, hydro_press1);
-    float *elec_hydro_press1 = link_dataref_flt("laminar/B738/annunciator/hyd_el_press_a",-1);
+    float *elec_hydro_press1 = link_dataref_flt("laminar/B738/annunciator/hyd_el_press_a",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 3, elec_hydro_press1);
-    float *elec_hydro_press2 = link_dataref_flt("laminar/B738/annunciator/hyd_el_press_b",-1);
+    float *elec_hydro_press2 = link_dataref_flt("laminar/B738/annunciator/hyd_el_press_b",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 4, elec_hydro_press2);
-    float *hydro_press2 = link_dataref_flt("laminar/B738/annunciator/hyd_press_b",-1);
+    float *hydro_press2 = link_dataref_flt("laminar/B738/annunciator/hyd_press_b",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 5, hydro_press2);
-    float *cowl_anti_ice1 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_0",-1);
+    float *cowl_anti_ice1 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_0",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 6, cowl_anti_ice1);
-    float *cowl_anti_ice2 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_1",-1);
+    float *cowl_anti_ice2 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 7, cowl_anti_ice2);
 
     /* Blue Annunciators */
     dev = 1;
-    float *wing_anti_ice1 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_L",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 12, wing_anti_ice1,0.0,1.0);
-    float *wing_anti_ice2 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_R",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 13, wing_anti_ice2,0.0,1.0);
-    float *cowl_valve_open1 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_0",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 14, cowl_valve_open1,0.0,1.0);
-    float *cowl_valve_open2 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_1",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 15, cowl_valve_open2,0.0,1.0);
+    float *wing_anti_ice1 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_L",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 12, wing_anti_ice1,0.0,0.05);
+    float *wing_anti_ice2 = link_dataref_flt("laminar/B738/annunciator/wing_ice_on_R",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 13, wing_anti_ice2,0.0,0.05);
+    float *cowl_valve_open1 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_0",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 14, cowl_valve_open1,0.0,0.05);
+    float *cowl_valve_open2 = link_dataref_flt("laminar/B738/annunciator/cowl_ice_on_1",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 15, cowl_valve_open2,0.0,0.05);
 
     /* ------------------------------ */
     /*  Doors, CVR and Altitude Panel */
@@ -1676,27 +1675,27 @@ void b737_overheadfwd(void)
     
     dev = 14;
     
-    float *fwd_entry_door = link_dataref_flt("laminar/B738/annunciator/fwd_entry",-1);
+    float *fwd_entry_door = link_dataref_flt("laminar/B738/annunciator/fwd_entry",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 0, fwd_entry_door);
-    float *fwd_service_door = link_dataref_flt("laminar/B738/annunciator/fwd_service",-1);
+    float *fwd_service_door = link_dataref_flt("laminar/B738/annunciator/fwd_service",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 1, fwd_service_door);
-    float *left_fwd_overwing_door = link_dataref_flt("laminar/B738/annunciator/left_fwd_overwing",-1);
+    float *left_fwd_overwing_door = link_dataref_flt("laminar/B738/annunciator/left_fwd_overwing",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 2, left_fwd_overwing_door);
-    float *right_fwd_overwing_door = link_dataref_flt("laminar/B738/annunciator/right_fwd_overwing",-1);
+    float *right_fwd_overwing_door = link_dataref_flt("laminar/B738/annunciator/right_fwd_overwing",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 3, right_fwd_overwing_door);
-    float *fwd_cargo_door = link_dataref_flt("laminar/B738/annunciator/fwd_cargo",-1);
+    float *fwd_cargo_door = link_dataref_flt("laminar/B738/annunciator/fwd_cargo",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 4, fwd_cargo_door);
-    float *equip_door = link_dataref_flt("laminar/B738/annunciator/equip_door",-1);
+    float *equip_door = link_dataref_flt("laminar/B738/annunciator/equip_door",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 5, equip_door);
-    float *left_aft_overwing_door = link_dataref_flt("laminar/B738/annunciator/left_aft_overwing",-1);
+    float *left_aft_overwing_door = link_dataref_flt("laminar/B738/annunciator/left_aft_overwing",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 6, left_aft_overwing_door);
-    float *right_aft_overwing_door = link_dataref_flt("laminar/B738/annunciator/right_aft_overwing",-1);
+    float *right_aft_overwing_door = link_dataref_flt("laminar/B738/annunciator/right_aft_overwing",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 7, right_aft_overwing_door);
-    float *aft_cargo_door = link_dataref_flt("laminar/B738/annunciator/aft_cargo",-1);
+    float *aft_cargo_door = link_dataref_flt("laminar/B738/annunciator/aft_cargo",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, aft_cargo_door);
-    float *aft_entry_door = link_dataref_flt("laminar/B738/annunciator/aft_entry",-1);
+    float *aft_entry_door = link_dataref_flt("laminar/B738/annunciator/aft_entry",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 9, aft_entry_door);
-    float *aft_service_door = link_dataref_flt("laminar/B738/annunciator/aft_service",-1);
+    float *aft_service_door = link_dataref_flt("laminar/B738/annunciator/aft_service",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 10, aft_service_door);
 
     /* Altitude Warning Horn Cutout */
@@ -1840,19 +1839,19 @@ void b737_overheadfwd(void)
       printf("R PACK SWITCH %i \n",(int) *r_pack);
     }
 
-    float *dual_bleed = link_dataref_flt("laminar/B738/annunciator/dual_bleed",-1);
+    float *dual_bleed = link_dataref_flt("laminar/B738/annunciator/dual_bleed",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, dual_bleed);
-    float *pack_left = link_dataref_flt("laminar/B738/annunciator/pack_left",-1);
+    float *pack_left = link_dataref_flt("laminar/B738/annunciator/pack_left",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 9, pack_left);
-    float *wing_ovht_left = link_dataref_flt("laminar/B738/annunciator/wing_body_ovht_left",-1);
+    float *wing_ovht_left = link_dataref_flt("laminar/B738/annunciator/wing_body_ovht_left",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 10, wing_ovht_left);
-    float *bleed_trip_left = link_dataref_flt("laminar/B738/annunciator/bleed_trip_1",-1);
+    float *bleed_trip_left = link_dataref_flt("laminar/B738/annunciator/bleed_trip_1",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 11, bleed_trip_left);
-    float *pack_right = link_dataref_flt("laminar/B738/annunciator/pack_right",-1);
+    float *pack_right = link_dataref_flt("laminar/B738/annunciator/pack_right",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 12, pack_right);
-    float *wing_ovht_right = link_dataref_flt("laminar/B738/annunciator/wing_body_ovht_right",-1);
+    float *wing_ovht_right = link_dataref_flt("laminar/B738/annunciator/wing_body_ovht_right",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 13, wing_ovht_right);
-    float *bleed_trip_right = link_dataref_flt("laminar/B738/annunciator/bleed_trip_2",-1);
+    float *bleed_trip_right = link_dataref_flt("laminar/B738/annunciator/bleed_trip_2",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 14, bleed_trip_right);
     
     dev = 17;
@@ -1893,21 +1892,21 @@ void b737_overheadfwd(void)
     }
 
 
-    float *auto_fail = link_dataref_flt("laminar/B738/annunciator/autofail",-1);
+    float *auto_fail = link_dataref_flt("laminar/B738/annunciator/autofail",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 8, auto_fail);
-    float *off_sched_descent = link_dataref_flt("laminar/B738/annunciator/off_sched_descent",-1);
+    float *off_sched_descent = link_dataref_flt("laminar/B738/annunciator/off_sched_descent",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 9, off_sched_descent);
-    float *altn_press = link_dataref_flt("laminar/B738/annunciator/altn_press",-1);
+    float *altn_press = link_dataref_flt("laminar/B738/annunciator/altn_press",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 10, altn_press);
-    float *manual_press = link_dataref_flt("laminar/B738/annunciator/manual_press",-1);
+    float *manual_press = link_dataref_flt("laminar/B738/annunciator/manual_press",-2);
     ret = digital_outputf(te, MCP23017_TYPE, dev, 11, manual_press);
 
     /* Blue Annunciators */
     dev = 1;
-    float *l_ram_door = link_dataref_flt("laminar/B738/annunciator/ram_door_open1",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 6, l_ram_door,0.0,1.0);    
-    float *r_ram_door = link_dataref_flt("laminar/B738/annunciator/ram_door_open2",-1);
-    ret = pwm_output(te, PCA9685_TYPE, dev, 7, r_ram_door,0.0,1.0);    
+    float *l_ram_door = link_dataref_flt("laminar/B738/annunciator/ram_door_open1",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 6, l_ram_door,0.0,0.05);    
+    float *r_ram_door = link_dataref_flt("laminar/B738/annunciator/ram_door_open2",-2);
+    ret = pwm_output(te, PCA9685_TYPE, dev, 7, r_ram_door,0.0,0.05);    
 
     /* Duct Press Gauge */
     dev = 0;
@@ -1985,12 +1984,12 @@ void b737_overheadfwd(void)
       ret = display_outputf(te, HT16K33_TYPE, dev, 0, 5, flt_alt, dp, brightness);
       ret = display_outputf(te, HT16K33_TYPE, dev, 8, 5, land_alt, dp, brightness);
     } else {
-      ival = 22;
+      ival = 16;
       for (int i=0;i<16;i++) {
 	ret = display_output(te, HT16K33_TYPE, dev, i, 1, &ival, dp, brightness);
       }
     }
-    
+
   } else {
 
     /* A few basic switches for other ACF */

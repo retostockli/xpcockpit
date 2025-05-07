@@ -42,7 +42,9 @@ int direction;
 void init_test(void)
 {
   int te = 0;
-
+  int pin;
+  int dev;
+  
   /*
   for (int i=0;i<42;i++) {
     teensy[te].pinmode[i] = PINMODE_INPUT;
@@ -74,9 +76,8 @@ void init_test(void)
   //teensy[te].arg3[24] = 38; // motor Current Sense
 
   teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
-
-  int dev = 0;
-  int pin;
+ 
+  dev = 3;
   for (pin=0;pin<8;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
   }
@@ -86,7 +87,6 @@ void init_test(void)
   mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x23 ^ 0x50; // (0x73) I2C address of MCP23017 device
-  
 
   /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
   /* mcp23017[te][1].pinmode[3] = PINMODE_INPUT; */
@@ -178,7 +178,7 @@ void test(void)
   
   /* read digital input (#3) */  
   //ret = digital_input(te, TEENSY_TYPE, 0, 4, &digitalvalue, 0);
-  int dev = 0;
+  int dev = 3;
   for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
     ret = digital_input(te, MCP23017_TYPE, dev, pin, &ival, 0);
     if (ret == 1) {
@@ -238,7 +238,8 @@ void test(void)
   /* ret = program_closedloop(te, 1, direction, &fencodervalue, 0.0, 100.0); */
   
   /* set LED connected to first output (#0) to value landing lights dataref */
-  *digitalvalue = 1;
+  ret = digital_input(te, MCP23017_TYPE, dev, 14, digitalvalue, 0);
+  //*digitalvalue = 1;
   //analogvalue = 0.5;
   //ret = digital_output(te, TEENSY_TYPE, 0, 23, &direction);
   /* ret = digital_output(te, MCP23017_TYPE, 0, 5, &digitalvalue); */
