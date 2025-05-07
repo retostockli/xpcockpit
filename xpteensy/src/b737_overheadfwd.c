@@ -859,7 +859,7 @@ void b737_overheadfwd(void)
       ret = display_outputf(te, HT16K33_TYPE, dev, 11, 2, ac_amps, dp, brightness);
       ret = display_outputf(te, HT16K33_TYPE, dev, 8, 3, ac_volt, dp, brightness);
     } else {
-      ival = 22;
+      ival = 16;
       for (int i=0;i<16;i++) {
 	ret = display_output(te, HT16K33_TYPE, dev, i, 1, &ival, dp, brightness);
       }
@@ -1985,7 +1985,7 @@ void b737_overheadfwd(void)
       ret = display_outputf(te, HT16K33_TYPE, dev, 0, 5, flt_alt, dp, brightness);
       ret = display_outputf(te, HT16K33_TYPE, dev, 8, 5, land_alt, dp, brightness);
     } else {
-      ival = 22;
+      ival = 16;
       for (int i=0;i<16;i++) {
 	ret = display_output(te, HT16K33_TYPE, dev, i, 1, &ival, dp, brightness);
       }
