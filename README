@@ -1,4 +1,4 @@
-2024/07/11
+2025/05/07
 
 This is the xpcockpit Project by Reto Stockli, supported by Hans Jansen.
 
@@ -9,7 +9,8 @@ currently supported hardware is:
 - Leo Bodnar's BU0836A/X
 - Sismo Soluciones Ethernet Board
 - Arduino (development ceased)
-- Teensy (in development) 
+- Teensy 
+- Raspberry PI
 
 The project also includes the glass cockpit software xpopengc which
 is a further development of the OpenGC project for Boeing 737 and Airbus 320.
@@ -23,11 +24,12 @@ libxpcockpit: a library containing I/O functions of all xpcockpit clients. Needs
 xpserver: the plugin to X-Plane which handles dataref/command I/O via TCP/IP
 xpclient: a sample client software to show how to subscribe and use datarefs
 xpusb: the client which interacts with OpenCockpits/Leo Bodnar's Hardware
+xpleo: the client which interacts with Leo Bodnar's Hardware only
 xpopengc: the glass cockpit software client that simulates B737/A320 Gauges
 xppi: the client which enables the Rasperry Pi GPIO usage with X-Plane
 xpsismo: the client which communicates to the SISMO Ethernet Modules
 xparduino: the client which communicates to Arduino (demo only, not operational)
-xpteensy: the client to the teensy microcontroller (in dvelopment)
+xpteensy: the client to the teensy microcontroller
 warpblend: the scripts and code to create warp&blend drivers for multiple projectors
 scripts: scripts I use myself to control a the cockpit components including automated install on raspberry pi's
 applications: application definitions for Linux so that binary files can be accessed via the Linux application menu

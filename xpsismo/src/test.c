@@ -76,7 +76,7 @@ void test(void)
 
   /* read encoder at inputs 70 and 71 */
 
-  ret = encoder_input(card, 0, 1, encodervalue, -1, 1);
+  ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
@@ -85,10 +85,10 @@ void test(void)
   //ret = servo_output(card,0,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
-  for (i=0;i<64;i++) {
-    ret = digital_output(card, i, &one);
+  //for (i=0;i<64;i++) {
+  //  ret = digital_output(card, i, &one);
   //ret = digital_output(card, i, &zero);
-  }
+  //}
 
 
   /*
@@ -102,9 +102,9 @@ void test(void)
   }
   */
 
-  display = 88888;
+  //display = 88888;
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  ret = display_output(card, 0, 5, &display, 0, 0);
+  //ret = display_output(card, 0, 5, &display, 0, 0);
 
 }
