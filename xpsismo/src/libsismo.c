@@ -1130,11 +1130,11 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			   concurrently due to timing issue, assume that the last direction is still valid.
 			   ONLY USE WITH FAST TURNING DT < 100 ms */
 		      } else if ((obits[0] == 1) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			printf("MISSED\n");
-			//if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
+			printf("MISSED dt: %f \n",dt);
+			if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
 		      } else if ((obits[0] == 0) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			printf("MISSED\n");
-			//if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
+			printf("MISSED dt: %f \n",dt);
+			if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
 		      }
 
 		      if (updown != 0) {
@@ -1148,9 +1148,9 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		      
 		      if (updown != 0) {
 			/* ADD ACCELERATION WITH SPEED OF TURNING ENCODER */
-			//*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (60.0/max(dt,1.0)));
+			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (50.0/max(dt,5.0)));
 			/* NO ACCELERATION WITH TURNING SPEED */
-			*value = *value + ((float) updown)  * multiplier;
+			//*value = *value + ((float) updown)  * multiplier;
 			retval = 1;
 
 			//printf("UPDN %i %f \n",updown,*value);
@@ -1193,7 +1193,7 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 
 		      if (updown != 0) {
 			/* ADD ACCELERATION WITH SPEED OF TURNING ENCODER */
-			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (60.0/max(dt,1.0)));
+			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (50.0/max(dt,5.0)));
 			/* NO ACCELERATION WITH TURNING SPEED */
 			//*value = *value + ((float) updown)  * multiplier;
 

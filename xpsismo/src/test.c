@@ -74,7 +74,7 @@ void test(void)
     //  }
    
 
-  /* read encoder at inputs 70 and 71 */
+  /* read encoder at inputs 0 and 1 */
 
   ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
   if (ret == 1) {
