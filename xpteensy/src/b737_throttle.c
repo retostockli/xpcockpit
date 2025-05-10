@@ -40,7 +40,7 @@
 /* Min and Max Potentiometer Values for Levers */
 #define THROTTLE_MIN 0.03
 #define THROTTLE_MAX 0.98
-#define SPEEDBRAKE_LOCK 0.330 // speedbrake mechanical detent preventing movement3
+#define SPEEDBRAKE_LOCK 0.330 // speedbrake mechanical detent preventing movement
 #define SPEEDBRAKE_MIN 0.400
 #define SPEEDBRAKE_ARM 0.510 
 #define SPEEDBRAKE_MAX 0.995
@@ -735,13 +735,14 @@ void b737_tq(void)
   if (*stabilizer_xplane != FLT_MISS) {
     /* left */
     fvalue = (1.0 - (*stabilizer_xplane - minstabilizer_xplane)/(maxstabilizer_xplane - minstabilizer_xplane));
-    //    printf("%f %f %f %f \n",*stabilizer_xplane,minstabilizer,maxstabilizer,value);
-    ret = servo_output(te, TEENSY_TYPE, 0, 36, &fvalue, 0.0, 1.0, 0.115, 0.64);
+    //    printf("%f %f %f %f \n",*stabilizer_xplane,minstabilizer_xplane,maxstabilizer_xplane,fvalue);
+    //ret = servo_output(te, TEENSY_TYPE, 0, 36, &fvalue, 0.0, 1.0, 0.1, 0.75);
+    ret = servo_output(te, TEENSY_TYPE, 0, 36, &fvalue, 0.0, 1.0, 0.08, 0.72);
    
     /* right */
     fvalue = ((*stabilizer_xplane) - minstabilizer_xplane)/(maxstabilizer_xplane - minstabilizer_xplane);
-    //    printf("%f %f %f %f \n",*stabilizer_xplane,minstabilizer,maxstabilizer,value);
-    ret = servo_output(te, TEENSY_TYPE, 0, 37, &fvalue, 0.0, 1.0, 0.28, 0.825);
+    //printf("%f %f %f %f \n",*stabilizer_xplane,minstabilizer_xplane,maxstabilizer_xplane,fvalue);
+    ret = servo_output(te, TEENSY_TYPE, 0, 37, &fvalue, 0.0, 1.0, 0.32, 0.93);
 
   }
 
