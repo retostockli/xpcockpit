@@ -53,11 +53,12 @@ namespace OpenGC
       /* Do not draw TCAS in plan mode */
       /* ADD: and maybe not in other modes as well */
 
-      /* Test whether TCAS is shown */
+      /* Examine whether TCAS is shown */
       bool show_tcas;
       if ((acf_type == 2) || (acf_type == 3)) {
 	float *transponder_mode = link_dataref_flt("laminar/B738/knob/transponder_pos",0);
-	if ((*transponder_mode == 4) || (*transponder_mode == 5)) {
+	int *xpilot_status = link_dataref_int("xpilot/login/status");
+	if (((*transponder_mode == 4) || (*transponder_mode == 5)) && (*xpilot_status == 1)) {
 	  show_tcas = true;
 	} else {
 	  show_tcas = false;
