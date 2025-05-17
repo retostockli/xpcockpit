@@ -52,7 +52,20 @@ namespace OpenGC
     if (mapMode != 3) {
       /* Do not draw TCAS in plan mode */
       /* ADD: and maybe not in other modes as well */
-    
+
+      /* Test whether TCAS is shown */
+      bool show_tcas;
+      if ((acf_type == 2) || (acf_type == 3)) {
+	float *transponder_mode = link_dataref_flt("laminar/B738/knob/transponder_pos",0);
+	if ((*transponder_mode == 4) || (*transponder_mode == 5)) {
+	  show_tcas = true;
+	} else {
+	  show_tcas = false;
+	} 
+      } else {
+	show_tcas = true;
+      }
+      
       char buffer[15];
     
       // define geometric stuff
@@ -91,11 +104,11 @@ namespace OpenGC
       float *plon = link_dataref_flt_arr("sim/cockpit2/tcas/targets/position/lon",MAXMP,-1,-2); 
       float *plat = link_dataref_flt_arr("sim/cockpit2/tcas/targets/position/lat",MAXMP,-1,-2); 
       float *pele = link_dataref_flt_arr("sim/cockpit2/tcas/targets/position/ele",MAXMP,-1,2);
-      //float *pspd = link_dataref_flt_arr("sim/cockpit2/tcas/targets/position/V_msc",MAXMP,-1,1); // not populated by xPilot
+      float *pspd = link_dataref_flt_arr("sim/cockpit2/tcas/targets/position/V_msc",MAXMP,-1,1); // not populated by xPilot
     
       // The input coordinates are in lon/lat, so we have to rotate against true heading
       // despite the NAV display is showing mag heading
-      if (heading_map != FLT_MISS) {
+      if ((heading_map != FLT_MISS) && (show_tcas)) {
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -142,8 +155,9 @@ namespace OpenGC
 	      }
 	    */
 	    //printf("%i %i %f %f %f \n",i,mp_alive[i],mp_lon[i],mp_lat[i],mp_alt[i]);
-	  
-	    if (pele[i] != 0.0) {
+
+	    /* Only Draw TCAS Blobs if they have valid elevation and speed above 50 kts */
+	    if ((pele[i] != 0.0) && ((pspd[i]*1.94) > 50.0)) {
 	      double lon = (double) plon[i];
 	      double lat = (double) plat[i];
 	      double easting;

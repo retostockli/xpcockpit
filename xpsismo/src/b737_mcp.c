@@ -430,7 +430,7 @@ void b737_mcp(void)
   ret = digital_input(card,18,ap_alt_hld,0);
   if (ret == 1) printf("ALT HLD Button: %i \n",*ap_alt_hld);
   if (acf_type == 1) {
-    ret = digital_input(card,29,ap_vs_arm,1);
+    ret = digital_input(card,23,ap_vs_arm,1);
     if (ret == 1) {
       printf("V/S Button: %i \n",*ap_vs_arm);
       if (*ap_vs_arm == 1) {

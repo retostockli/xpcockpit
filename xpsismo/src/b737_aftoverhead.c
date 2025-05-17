@@ -354,7 +354,7 @@ void b737_aftoverhead(void)
     if ((col<0) || (col>=nCols)) col = 0;
     if ((counter<0) || (counter>COUNT_MAX)) counter = 0;
     
-    for (c=0;c<nCols;c++) {
+IRS EN    for (c=0;c<nCols;c++) {
       if (c==col) { outvalue = 0; } else { outvalue = 1; }
       ret = digital_output(card,o0+c,&outvalue);
     }

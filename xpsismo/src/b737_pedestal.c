@@ -1490,17 +1490,17 @@ void b737_pedestal(void)
     /* Fire Handle APU */
     ret = digital_inputf(card,i0+3,&fire_apu_pulled_input,-1);
     if (ret == 1) {
-      printf("FIRE HANDLE ENG 1 PULLED: %f \n",fire_apu_pulled_input);
+      printf("FIRE HANDLE APU PULLED: %f \n",fire_apu_pulled_input);
     }
     ret = set_state_togglef(&fire_apu_pulled_input, fire_apu_pulled_status, fire_apu_pulled);
 
     ret = digital_inputf(card,i0+4,&fire_apu_rotate_l_input,0);
     if (ret == 1) {
-      printf("FIRE HANDLE ENG 1 ROTATE LEFT: %f \n",fire_apu_rotate_l_input);
+      printf("FIRE HANDLE APU ROTATE LEFT: %f \n",fire_apu_rotate_l_input);
     }
     ret = digital_inputf(card,i0+5,&fire_apu_rotate_r_input,0);
     if (ret == 1) {
-      printf("FIRE HANDLE ENG 1 ROTATE RIGHT: %f \n",fire_apu_rotate_r_input);
+      printf("FIRE HANDLE APU ROTATE RIGHT: %f \n",fire_apu_rotate_r_input);
     }
     float fire_apu_rotate_input = -fire_apu_rotate_l_input + fire_apu_rotate_r_input;
     ret = set_state_updnf(&fire_apu_rotate_input, fire_apu_rotate_status, fire_apu_rotate_r, fire_apu_rotate_l);
@@ -1508,17 +1508,17 @@ void b737_pedestal(void)
     /* Fire Handle ENG2 */
     ret = digital_inputf(card,i0+8,&fire_eng2_pulled_input,-1);
     if (ret == 1) {
-      printf("FIRE HANDLE ENG 1 PULLED: %f \n",fire_eng2_pulled_input);
+      printf("FIRE HANDLE ENG 2 PULLED: %f \n",fire_eng2_pulled_input);
     }
     ret = set_state_togglef(&fire_eng2_pulled_input, fire_eng2_pulled_status, fire_eng2_pulled);
 
     ret = digital_inputf(card,i0+9,&fire_eng2_rotate_l_input,0);
     if (ret == 1) {
-      printf("FIRE HANDLE ENG 1 ROTATE LEFT: %f \n",fire_eng2_rotate_l_input);
+      printf("FIRE HANDLE ENG 2 ROTATE LEFT: %f \n",fire_eng2_rotate_l_input);
     }
     ret = digital_inputf(card,i0+10,&fire_eng2_rotate_r_input,0);
     if (ret == 1) {
-      printf("FIRE HANDLE ENG 1 ROTATE RIGHT: %f \n",fire_eng2_rotate_r_input);
+      printf("FIRE HANDLE ENG 2 ROTATE RIGHT: %f \n",fire_eng2_rotate_r_input);
     }
     float fire_eng2_rotate_input = -fire_eng2_rotate_l_input + fire_eng2_rotate_r_input;
     ret = set_state_updnf(&fire_eng2_rotate_input, fire_eng2_rotate_status, fire_eng2_rotate_r, fire_eng2_rotate_l);
