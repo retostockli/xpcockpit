@@ -9,7 +9,8 @@
 #define GATEWAY "192.168.1.1"
 
 //#define IP "192.168.1.66" /* Boeing 737 Throttle Quadrant */
-#define IP "192.168.1.67" /* Boeing 737 Forward Overhead */
+//#define IP "192.168.1.67" /* Boeing 737 Forward Overhead */
+#define IP "192.168.1.99" /* TEST Board */
 
 //#define WIRESPEED 1000000  /* 1 MHz mostly too fast for some devices */
 #define WIRESPEED 400000  /* 400 kHz mostly ok */

@@ -50,6 +50,9 @@ void init_test(void)
     teensy[te].pinmode[i] = PINMODE_INPUT;
   }
   */
+
+  teensy[te].pinmode[0] = PINMODE_INPUT;
+  teensy[te].pinmode[1] = PINMODE_OUTPUT;
   
   /* teensy[te].pinmode[37] = PINMODE_PWM; */
   /* //  teensy[te].pinmode[0] = PINMODE_OUTPUT; */
@@ -75,18 +78,16 @@ void init_test(void)
   /* teensy[te].arg2[24] = 25; // motor IN1 */
   //teensy[te].arg3[24] = 38; // motor Current Sense
 
-  teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
- 
-  dev = 3;
-  for (pin=0;pin<8;pin++) {
-    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
-  }
-  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
-    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
-  }
-  mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
-  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x23 ^ 0x50; // (0x73) I2C address of MCP23017 device
+  /* dev = 3; */
+  /* for (pin=0;pin<8;pin++) { */
+  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT; */
+  /* } */
+  /* for (pin=8;pin<MCP23017_MAX_PINS;pin++) { */
+  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT; */
+  /* } */
+  /* mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE) */
+  /* mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2 */
+  /* mcp23017[te][dev].address = 0x23 ^ 0x50; // (0x73) I2C address of MCP23017 device */
 
   /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
   /* mcp23017[te][1].pinmode[3] = PINMODE_INPUT; */
@@ -101,10 +102,10 @@ void init_test(void)
   /* mcp23017[te][1].address = 0x20; // I2C address of MCP23017 device */
 
 
-  pca9685[te][0].pinmode[5] = PINMODE_PWM;
-  //pca9685[te][0].pinmode[2] = PINMODE_SERVO;
-  pca9685[te][0].wire = 0;
-  pca9685[te][0].address = 0x41;
+  /* pca9685[te][0].pinmode[5] = PINMODE_PWM; */
+  /* //pca9685[te][0].pinmode[2] = PINMODE_SERVO; */
+  /* pca9685[te][0].wire = 0; */
+  /* pca9685[te][0].address = 0x41; */
 
 
   /* as5048b[te][0].nangle = 10; */
@@ -126,9 +127,9 @@ void init_test(void)
   /* program[te][1].val8[1] = 15;  // servo potentiometer pin number (needs to be defined separately above) */
   /* program[te][1].val8[2] = 24;  // servo motor pin number (first pin, full motor separately defined above) */
 
-  ht16k33[te][0].brightness = 10;
-  ht16k33[te][0].wire = 0;
-  ht16k33[te][0].address = 0x27;
+  /* ht16k33[te][0].brightness = 10; */
+  /* ht16k33[te][0].wire = 0; */
+  /* ht16k33[te][0].address = 0x27; */
  
   
 }
@@ -140,6 +141,7 @@ void test(void)
   int pin;
   int te = 0;
   int ival;
+  int dev;
 
   /* link integer data like a switch in the cockpit */
   //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
@@ -160,10 +162,10 @@ void test(void)
   //if (*value == INT_MISS) *value = 1;
 
   /* read analog input (A14) */
-  ret = analog_input(te,38,fvalue,0.0,100.0);
-  if (ret == 1) {
-    printf("Analog Input changed to: %f \n",*fvalue);
-  }
+  /* ret = analog_input(te,38,fvalue,0.0,100.0); */
+  /* if (ret == 1) { */
+  /*   printf("Analog Input changed to: %f \n",*fvalue); */
+  /* } */
 
   //float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
   //float *time = link_dataref_flt("sim/time/framerate_period",-3);
@@ -175,17 +177,6 @@ void test(void)
   /*   printf("Encoder changed to: %i \n",*encodervalue); */
   /* } */
  
-  
-  /* read digital input (#3) */  
-  //ret = digital_input(te, TEENSY_TYPE, 0, 4, &digitalvalue, 0);
-  int dev = 3;
-  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
-    ret = digital_input(te, MCP23017_TYPE, dev, pin, &ival, 0);
-    if (ret == 1) {
-      printf("Digital Input %i changed to: %i \n",pin,ival);
-    }
-  }
-
 
   /* ret = digital_input(te, TEENSY_TYPE, 0, 30, &direction, 0); */
   /* if (ret == 1) { */
@@ -238,14 +229,17 @@ void test(void)
   /* ret = program_closedloop(te, 1, direction, &fencodervalue, 0.0, 100.0); */
   
   /* set LED connected to first output (#0) to value landing lights dataref */
-  ret = digital_input(te, MCP23017_TYPE, dev, 14, digitalvalue, 0);
+  dev = 0;
+  ret = digital_input(te, TEENSY_TYPE, dev, 0, digitalvalue, 0);
+  ret = digital_output(te, TEENSY_TYPE, dev, 1, digitalvalue);
+  
   //*digitalvalue = 1;
   //analogvalue = 0.5;
   //ret = digital_output(te, TEENSY_TYPE, 0, 23, &direction);
   /* ret = digital_output(te, MCP23017_TYPE, 0, 5, &digitalvalue); */
-  for (pin=0;pin<8;pin++) {
-    ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue);
-  }
+  /* for (pin=0;pin<8;pin++) { */
+  /*   ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue); */
+  /* } */
   //ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,5.0,1023.0);
 
   /* change Servo according to rotary position */
@@ -253,13 +247,13 @@ void test(void)
   //ret = servo_output(te, PCA9685_TYPE, 0, 0, fvalue,0.0,1.0,0.2,0.8);
 
   //*fvalue = 1.0;
-  ret = pwm_output(te, PCA9685_TYPE, 0, 5, fvalue,0.0,100.0);
+  //ret = pwm_output(te, PCA9685_TYPE, 0, 5, fvalue,0.0,100.0);
   //ret = servo_output(te, PCA9685_TYPE, 0, 2, fvalue,0.0,100.0,0.0,1.0);
 
-  int value = 12345;
-  int dp = -1;
-  int brightness = 8;
+  /* int value = 12345; */
+  /* int dp = -1; */
+  /* int brightness = 8; */
   
-  ret = display_output(te, HT16K33_TYPE, 0, 8, 5, &value, dp, brightness);
+  /* ret = display_output(te, HT16K33_TYPE, 0, 8, 5, &value, dp, brightness); */
   
 }

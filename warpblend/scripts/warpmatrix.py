@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 1
+setting = 7
 
 # Plot Warping grid for Checking
 doplot = True
@@ -212,9 +212,9 @@ elif setting == 7:
 		outfile = "../data/X-Plane Window Positions_TWOMON.prf"
 		nmon = 2  # number of monitors
 		ceiling = True  # projector ceiling mount instead of table mount
-		cylindrical = [False,True]  # apply flat plane to cylinder warping
-		projection = [False,True]  # apply projection onto curved surfae
-		epsilon = [0.0,6.42]         # projector tilt [deg]
+		cylindrical = [False,False]  # apply flat plane to cylinder warping
+		projection = [False,False]  # apply projection onto curved surfae
+		epsilon = [0.0,0.0]         # projector tilt [deg]
 		frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
 		lateral_offset = [0.0,0.0]  # lateral offset [deg]
 		vertical_offset = [0.0,0.0]    # vertical offset [deg]
@@ -229,7 +229,7 @@ elif setting == 7:
 		gridtest = False # display grid test pattern
 		blendtest = False  # cut blend sharp for testing
 		forwin = False  # create for windows or for linux
-		savegrid = True # save proection grid or just FOV
+		savegrid = False # save proection grid or just FOV
 
 #----------- FUNCTIONS --------------
 

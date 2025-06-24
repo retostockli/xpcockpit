@@ -69,6 +69,13 @@ if test -z "$HAVE_XLIB"; then
     AC_MSG_ERROR([Can't find X11 library or headers. Please try installing 'libx11-dev'.])
 fi
 
+HAVE_XEXTLIB=yes
+AC_CHECK_LIB([Xext],[main],,unset HAVE_XEXTLIB)
+
+if test -z "$HAVE_XEXTLIB"; then
+    AC_MSG_ERROR([Can't find Xext library. Please try installing 'libxext-dev'.])
+fi
+
 HAVE_XNVCtrl=yes
 AC_CHECK_LIB([XNVCtrl],[main],,unset HAVE_XNVCtrl)
 AC_CHECK_HEADERS(NVCtrl/NVCtrl.h NVCtrl/NVCtrlLib.h,,unset HAVE_XNVCtrl,[#include <X11/Xlib.h>])
