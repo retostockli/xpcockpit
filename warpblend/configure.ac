@@ -60,7 +60,6 @@ CFLAGS="$CFLAGS -pthread"
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h stdbool.h assert.h string.h ctype.h unistd.h stdio.h stdbool.h math.h signal.h sys/types.h sys/time.h errno.h])
 
-
 HAVE_XLIB=yes
 AC_CHECK_LIB([X11],[main],,unset HAVE_XLIB)
 AC_CHECK_HEADERS([X11/Xlib.h X11/Xutil.h],,unset HAVE_XLIB)
@@ -76,14 +75,37 @@ if test -z "$HAVE_XEXTLIB"; then
     AC_MSG_ERROR([Can't find Xext library. Please try installing 'libxext-dev'.])
 fi
 
-HAVE_XNVCtrl=yes
-AC_CHECK_LIB([XNVCtrl],[main],,unset HAVE_XNVCtrl)
-AC_CHECK_HEADERS(NVCtrl/NVCtrl.h NVCtrl/NVCtrlLib.h,,unset HAVE_XNVCtrl,[#include <X11/Xlib.h>])
-
-if test -z "$HAVE_XNVCtrl"; then
-    AC_MSG_ERROR([Can't find XNVCtrl library or headers. Please try installing 'libxnvctrl-dev'.])
+BUILD_TARGET=`uname -s`_`uname -m`
+HAVE_NVIDIASETTINGS=yes
+AC_MSG_CHECKING([whether a location for the nvidia-settings source was specified])
+AC_ARG_WITH([nvidiasettings],
+[AS_HELP_STRING([--with-nvidiasettings=<directory>],
+                [Specify location for the compiled nvidia-settings source. Configure will expect
+to find headers of libXNVCtrl in <directory>/src/libXNVCtrl and libraries in <directory>/src/libXNVCtrl/_out/BUILD_TARGET.])]
+,
+                [NVIDIASETTINGSDIR=$with_nvidiasettings])
+if test -z "$NVIDIASETTINGSDIR" ; then
+    AC_MSG_RESULT([no])
+    unset HAVE_NVIDIASETTINGS
+else
+    AC_MSG_RESULT([$NVIDIASETTINGSDIR])
+    LIBS="$LIBS -L$NVIDIASETTINGSDIR/src/libXNVCtrl/_out/$BUILD_TARGET"
+    CPPFLAGS="$CPPFLAGS -I$NVIDIASETTINGSDIR/src/libXNVCtrl"
 fi
 
+HAVE_XNVCtrl=yes
+AC_CHECK_LIB([XNVCtrl],[main],,unset HAVE_XNVCtrl)
+if test -z "$HAVE_NVIDIASETTINGS"; then
+    echo "Using System-installed libXNVCtrl ..."
+    AC_CHECK_HEADERS(NVCtrl/NVCtrl.h NVCtrl/NVCtrlLib.h,,unset HAVE_XNVCtrl,[#include <X11/Xlib.h>])
+else
+    echo "Using libXNVCtrl from nvidia-settings ..."
+    AC_CHECK_HEADERS(NVCtrl.h NVCtrlLib.h,,unset HAVE_XNVCtrl,[#include <X11/Xlib.h>])
+fi
+
+if test -z "$HAVE_XNVCtrl"; then
+    AC_MSG_ERROR([Can't find XNVCtrl library or headers. Please try fetching and compiling nvidia-settings from github or installing 'libxnvctrl-dev'.])
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SSIZE_T
