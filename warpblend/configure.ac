@@ -85,9 +85,11 @@ to find headers of libXNVCtrl in <directory>/src/libXNVCtrl and libraries in <di
 ,
                 [NVIDIASETTINGSDIR=$with_nvidiasettings])
 if test -z "$NVIDIASETTINGSDIR" ; then
+    AC_DEFINE([HAVE_NVIDIASETTINGS],[0],[Use XNVCtrl Library from NVIDIA-SETTINGS])
     AC_MSG_RESULT([no])
     unset HAVE_NVIDIASETTINGS
 else
+    AC_DEFINE([HAVE_NVIDIASETTINGS],[1],[Use XNVCtrl Library from NVIDIA-SETTINGS])
     AC_MSG_RESULT([$NVIDIASETTINGSDIR])
     LIBS="$LIBS -L$NVIDIASETTINGSDIR/src/libXNVCtrl/_out/$BUILD_TARGET"
     CPPFLAGS="$CPPFLAGS -I$NVIDIASETTINGSDIR/src/libXNVCtrl"

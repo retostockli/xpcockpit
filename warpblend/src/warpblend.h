@@ -21,6 +21,10 @@
  * SOFTWARE.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -30,8 +34,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#ifdef HAVE_NVIDIASETTINGS
+#include "NVCtrl.h"
+#include "NVCtrlLib.h"
+#else
 #include "NVCtrl/NVCtrl.h"
 #include "NVCtrl/NVCtrlLib.h"
+#endif
 
 /*
  * The scanout composition pipeline provides infrastructure to:
