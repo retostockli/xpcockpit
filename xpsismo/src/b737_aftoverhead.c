@@ -354,7 +354,7 @@ void b737_aftoverhead(void)
     if ((col<0) || (col>=nCols)) col = 0;
     if ((counter<0) || (counter>COUNT_MAX)) counter = 0;
     
-IRS EN    for (c=0;c<nCols;c++) {
+    for (c=0;c<nCols;c++) {
       if (c==col) { outvalue = 0; } else { outvalue = 1; }
       ret = digital_output(card,o0+c,&outvalue);
     }
@@ -758,6 +758,30 @@ IRS EN    for (c=0;c<nCols;c++) {
     printf("ACP3 ALT / NORM Switch: %i \n",acp3_alt_norm);
   }
 
+  /* USE ACP3 MIC SELECTORS as FAILURE SELECTOR */
+  /* ACP 3 ALT/NORM Switch has to be in ALT position for activating failures */
+
+  if (acp3_alt_norm == 1) {
+    int nfail = 70;
+    float *failure_electric = link_dataref_flt_arr("laminar/B738/failure/electric",nfail,-1,0);
+    float *failure_engine = link_dataref_flt_arr("laminar/B738/failure/engine",nfail,-1,0);
+    float *failure_hydraulic = link_dataref_flt_arr("laminar/B738/failure/hydraulic",nfail,-1,0);
+    float *failure_pressurisation = link_dataref_flt_arr("laminar/B738/failure/pressurisation",nfail,-1,0);
+    float *failure_system = link_dataref_flt_arr("laminar/B738/failure/system",nfail,-1,0);
+
+    /* reset failures */
+    if (acp3_micsel_pa == 1) {
+      for (i = 0;i<nfail;i++) {
+	failure_electric[i] = 0;
+	failure_engine[i] = 0;
+	failure_hydraulic[i] = 0;
+	failure_pressurisation[i] = 0;
+	failure_system[i] = 0;
+      }
+      acp3_micsel_pa == 0;
+    }
+  }
+  
   /* Audio Volume Potentiometers */
   ret = analog_input(card,a0+0,&acp3_vol_vhf1,0.0,1.0);
   if (ret == 1) {
