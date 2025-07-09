@@ -72,7 +72,10 @@ namespace OpenGC
 
     float *engn_vibration1;
     float *engn_vibration2;
-    if (acf_type == 1) {
+    if ((acf_type == 2) || (acf_type == 3)) {
+      engn_vibration1 = link_dataref_flt("laminar/B738/engine/indicators/eng1_vib",2);
+      engn_vibration2 = link_dataref_flt("laminar/B738/engine/indicators/eng2_vib",2);
+    } else if (acf_type == 1) {
       engn_vibration1 = link_dataref_flt("x737/engine/viblevel_1",-2);
       engn_vibration2 = link_dataref_flt("x737/engine/viblevel_2",-2);
     } else {
