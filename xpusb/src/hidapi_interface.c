@@ -19,6 +19,9 @@ device_struct device[MAXDEVICES];
 /* thread parameters */
 pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 
+/* prototype functions */
+void *poll_thread_main(void *arg);
+
 void *poll_thread_main(void *arg)
 /* thread handles all HID read calls by use of blocking read and a read buffer per device */
 {

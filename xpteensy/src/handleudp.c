@@ -65,6 +65,9 @@ pthread_t udp_poll_thread;                /* read thread */
 int udp_poll_thread_exit_code;            /* read thread exit code */
 pthread_mutex_t udp_exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 
+/* prototype functions */
+void *udpclient_thread_main(void *);
+
 /* set up udp server socket with given server address and port */
 int init_udp_server(char server_ip[],int server_port)
 {
@@ -126,7 +129,7 @@ int init_udp_server(char server_ip[],int server_port)
   return 0;
 }
 
-void *udpclient_thread_main()
+void *udpclient_thread_main(void *)
 /* thread handles udp receive on the server socket by use of blocking read and a read buffer */
 {
   int ret = 0;

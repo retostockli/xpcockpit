@@ -111,7 +111,10 @@ int somethingPressed;
 
 int fmc_is_initialized;
 
-void *poll_thread_main()
+/* prototype functions */
+void *poll_thread_main(void *);
+
+void *poll_thread_main(void *)
 /* thread handles inputs which change faster than xppi cycle */
 {
 

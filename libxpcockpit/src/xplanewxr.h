@@ -44,7 +44,6 @@ extern int wxr_is_xp12;   /* WXR data is from XP12 instead from XP11 */
 int init_wxr_server(void);
 int init_wxr_client(void);
 int init_wxr_receive();
-void *wxr_poll_thread_main();
 void exit_wxr_server(void);
 void exit_wxr_client(void);
 int send_wxr_to_server(void);

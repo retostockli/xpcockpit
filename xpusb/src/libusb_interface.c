@@ -40,6 +40,9 @@ pthread_t poll_thread;
 pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
 int thread_exit_code = 0; /* thread exit code */
 
+/* prototype functions */
+void *poll_thread_main(void *arg);
+
 void *poll_thread_main(void *arg)
 /* single thread handles all asynchronous USB transfers */
 {
