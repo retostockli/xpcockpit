@@ -62,7 +62,7 @@ void init_test(void)
   /* teensy[te].pinmode[41] = PINMODE_ANALOGINPUTMEAN  ; */
   /* //  teensy[te].pinmode[6] = PINMODE_INTERRUPT; */
   /* //  teensy[te].pinmode[7] = PINMODE_INTERRUPT; */
-  /* teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN; */
+  teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN;
   /* teensy[te].pinmode[16] = PINMODE_I2C; */
   /* teensy[te].pinmode[17] = PINMODE_I2C; */
   /* teensy[te].pinmode[23] = PINMODE_OUTPUT; */
@@ -130,7 +130,10 @@ void init_test(void)
   /* ht16k33[te][0].brightness = 10; */
   /* ht16k33[te][0].wire = 0; */
   /* ht16k33[te][0].address = 0x27; */
- 
+
+  pga2311[te][0].spi = 0; // SPI Bus number
+  pga2311[te][0].cs = 10; // Chip Select Pin
+  
   
 }
 
@@ -162,11 +165,14 @@ void test(void)
   //if (*value == INT_MISS) *value = 1;
 
   /* read analog input (A14) */
-  /* ret = analog_input(te,38,fvalue,0.0,100.0); */
-  /* if (ret == 1) { */
-  /*   printf("Analog Input changed to: %f \n",*fvalue); */
-  /* } */
+  ret = analog_input(te,14,fvalue,0.0,100.0);
+  if (ret == 1) {
+    printf("Analog Input changed to: %f \n",*fvalue);
+  }
 
+  ret = volume_output(te, PGA2311_TYPE, 0, 0, fvalue, 0.0, 100.0);
+
+  
   //float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
   //float *time = link_dataref_flt("sim/time/framerate_period",-3);
 

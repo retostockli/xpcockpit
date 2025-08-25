@@ -37,6 +37,7 @@ extern pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 extern pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 extern as5048b_struct as5048b[MAXTEENSYS][MAX_DEV];
 extern ht16k33_struct ht16k33[MAXTEENSYS][MAX_DEV];
+extern pga2311_struct pga2311[MAXTEENSYS][MAX_DEV];
 
 /* Prototype Functions */
 int ping_teensy(void);
@@ -57,5 +58,6 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, float servo_min, float servo_max);
 int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake);
 int angle_input(int te, int type, int dev, int input_type, int *value);
+int volume_output(int te, int type, int dev, int channel, float *fvalue, float minval, float maxval);
 int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval);
 

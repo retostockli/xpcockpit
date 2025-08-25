@@ -30,9 +30,12 @@
 
 using namespace qindesign::network;
 
+/* Currently only single wire interface supported*/
 extern TwoWire Wire0;
 //extern TwoWire Wire1;
 //extern TwoWire Wire2;
+
+bool spi_initialized = false; // will become true if spi_init() was called in code
 
 // data storage
 teensy_struct teensy_data;
@@ -40,6 +43,7 @@ mcp23017_struct mcp23017_data[MAX_DEV];
 pca9685_struct pca9685_data[MAX_DEV];
 as5048b_struct as5048b_data[MAX_DEV];
 ht16k33_struct ht16k33_data[MAX_DEV];
+pga2311_struct pga2311_data[MAX_DEV];
 program_struct program_data[MAX_PROG];
 
 // An EthernetUDP instance to let us send and receive packets over UDP

@@ -256,6 +256,23 @@ int ini_read(char* programPath, char* iniName)
 	  }
 	}
 
+	sprintf(tmp,"teensy%i:PGA2311",i);
+	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
+ 	printf("PGA2311: %i\n",ival);
+	for (j=0;j<MAX_DEV;j++) {
+	  for (k=0;k<PGA2311_MAX_CHANNELS;k++) {
+	    pga2311[i][j].val[k] = INITVAL;
+	    pga2311[i][j].val_save[k] = INITVAL;
+	  }
+	  pga2311[i][j].spi = INITVAL;
+	  pga2311[i][j].cs = INITVAL;
+	  if (j<ival) {
+	    pga2311[i][j].connected = 1;
+	  } else {
+	    pga2311[i][j].connected = 0;
+	  }
+	}
+
 	sprintf(tmp,"teensy%i:PROGRAMS",i);
 	ival = iniparser_getint(ini,tmp, default_teensy_daughter);
  	printf("PROGRAMS: %i\n",ival);
@@ -341,6 +358,14 @@ int reset_teensydata()
 	}
       }
       
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if (pga2311[te][dev].connected == 1) {
+	  for (pin=0;pin<PGA2311_MAX_CHANNELS;pin++) {
+	    pga2311[te][dev].val_save[pin] = pga2311[te][dev].val[pin];
+	  }
+	}
+      }
+
       for (prog=0;prog<MAX_PROG;prog++) {
 	if (program[te][prog].connected == 1) {
 	  for (var=0;var<MAX_VARS;var++) {

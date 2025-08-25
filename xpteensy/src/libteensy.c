@@ -47,6 +47,8 @@ pca9685_struct pca9685[MAXTEENSYS][MAX_DEV];
 pcf8591_struct pcf8591[MAXTEENSYS][MAX_DEV];
 as5048b_struct as5048b[MAXTEENSYS][MAX_DEV];
 ht16k33_struct ht16k33[MAXTEENSYS][MAX_DEV];
+pga2311_struct pga2311[MAXTEENSYS][MAX_DEV];
+
 
 /* Send a Ping to the Teensy until it responds */
 /* Makes sure Teensy is online before we send init strings */
@@ -134,7 +136,8 @@ int init_teensy() {
 	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUTMEAN) ||
 	    (teensy[te].pinmode[pin] == PINMODE_ANALOGINPUT) ||
 	    (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) ||
-	    (teensy[te].pinmode[pin] == PINMODE_I2C)) {
+	    (teensy[te].pinmode[pin] == PINMODE_I2C) ||
+	    (teensy[te].pinmode[pin] == PINMODE_SPI)) {
 
 	  if ((pin == I2C_SCL_PIN) || (pin == I2C_SDA_PIN)) {
 	    printf("ERROR: Teensy %i Pin %i is a I2C SDA / SCL Pin \n",te,pin);
@@ -160,6 +163,7 @@ int init_teensy() {
 	      }
 	      if (teensy[te].pinmode[pin] == PINMODE_INTERRUPT) printf("Teensy %i Pin %i Initialized as INTERRUPT \n",te,pin);
 	      if (teensy[te].pinmode[pin] == PINMODE_I2C) printf("Teensy %i Pin %i Initialized as I2C Pin \n",te,pin);
+	      if (teensy[te].pinmode[pin] == PINMODE_SPI) printf("Teensy %i Pin %i Initialized as SPI Pin \n",te,pin);
 	    }
 	    teensySendBuffer[0] = TEENSY_ID1; /* T */
 	    teensySendBuffer[1] = TEENSY_ID2; /* E */
@@ -345,6 +349,40 @@ int init_teensy() {
 	usleep(10000);
        }
 
+      /* initialize PGA2311 chips connected via SPI */
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if ((pga2311[te][dev].connected == 1) && (pga2311[te][dev].spi != INITVAL)) {
+	  for (pin=0;pin<PGA2311_MAX_CHANNELS;pin++) {
+	    memset(teensySendBuffer,0,SENDMSGLEN);
+	    if (verbose > 0) {
+	      printf("Teensy %i PGA2311 %i Channel %i Initialized with Value %i \n",
+		     te,dev,pin,pga2311[te][dev].val[pin]);
+	    }
+	    teensySendBuffer[0] = TEENSY_ID1; /* T */
+	    teensySendBuffer[1] = TEENSY_ID2; /* E */
+	    teensySendBuffer[2] = 0x00;
+	    teensySendBuffer[3] = 0x00; 
+	    teensySendBuffer[4] = TEENSY_INIT;
+	    teensySendBuffer[5] = PGA2311_TYPE;
+	    teensySendBuffer[6] = dev;
+	    teensySendBuffer[7] = pin;
+	    memcpy(&teensySendBuffer[8],&pga2311[te][dev].val[pin],sizeof(pga2311[te][dev].val[pin]));
+	    teensySendBuffer[10] = 0;
+	    teensySendBuffer[11] = 0; 
+	    teensySendBuffer[12] = pga2311[te][dev].spi;
+	    teensySendBuffer[13] = pga2311[te][dev].cs; 
+	    ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	    if (ret == SENDMSGLEN) {
+	      if (verbose > 1) printf("INIT: Sent %i bytes to Teensy %i PGA2311 %i \n", ret,te,dev);
+	    } else {
+	      printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i PGA2311 %i \n", ret,te,dev);
+	    }
+	  } /* loop over pins */
+	}
+	/* wait for 10 ms to make sure teensy hardware has initialized */
+	usleep(10000);
+      }
+
       /* initialize internal programs on Teensy */
       /* initialize last, since motors, potentiometers etc. used by programs need to be known before */
       /* for now: send 3x 16 bit values and 3x 8 bit values (may need extension for other programs) */
@@ -524,6 +562,34 @@ int send_teensy() {
 	} /* HT16K33 connected */
       } /* loop over HT16K33 devices */
 
+      /* Send changed values to PGA2311 daughter board pwm/servos via SPI */
+      for (dev=0;dev<MAX_DEV;dev++) {
+	if ((pga2311[te][dev].connected == 1) && (pga2311[te][dev].spi != INITVAL)) {
+	  for (pin=0;pin<PGA2311_MAX_CHANNELS;pin++) {
+	    if (pga2311[te][dev].val[pin] != pga2311[te][dev].val_save[pin]) {
+	      memset(teensySendBuffer,0,SENDMSGLEN);
+	      teensySendBuffer[0] = TEENSY_ID1; /* T */
+	      teensySendBuffer[1] = TEENSY_ID2; /* E */
+	      teensySendBuffer[2] = 0x00;
+	      teensySendBuffer[3] = 0x00; 
+	      teensySendBuffer[4] = TEENSY_REGULAR;
+	      teensySendBuffer[5] = PGA2311_TYPE;
+	      teensySendBuffer[6] = dev;
+	      teensySendBuffer[7] = pin;
+	      memcpy(&teensySendBuffer[8],&pga2311[te][dev].val[pin],sizeof(pga2311[te][dev].val[pin]));
+	      teensySendBuffer[10] = 0;
+	      teensySendBuffer[11] = 0;
+	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
+	      if (ret == SENDMSGLEN) {
+		if (verbose > 1) printf("SEND: Sent %i bytes to Teensy %i PGA2311 %i Channel %i \n", ret,te,dev,pin);
+	      } else {
+		printf("INCOMPLETE SEND: Sent %i bytes to Teensy %i PGA2311 %i Channel %i \n", ret,te,dev,pin);
+	      }
+	    } /* value changed since last send */
+	  } /* loop over pins of PGA2311 */
+	} /* PGA2311 connected */
+      } /* loop over PGA2311 devices */
+
       /* Send changed values to internal program running on Teensy */
       for (prog=0;prog<MAX_PROG;prog++) {
 	if ((program[te][prog].connected == 1) && (program[te][prog].type != INITVAL)) {
@@ -673,6 +739,7 @@ int recv_teensy() {
 	  printf("RECEIVED ERROR: Teensy %i ",te);
 	  if (dev_type == MCP23017_TYPE) printf("MCP23017 Device %i ",dev_num);
 	  if (dev_type == PCA9685_TYPE) printf("PCA9685 Device %i ",dev_num);
+	  if (dev_type == PGA2311_TYPE) printf("PGA2311 Device %i ",dev_num);
 	  if (dev_type == HT16K33_TYPE) {
 	    printf("HT16K33 Device %i ",dev_num);
 	    printf("Display %i ",pin);
@@ -688,6 +755,7 @@ int recv_teensy() {
 	  if (val == ERROR_DEV_RANGE) printf(" --> DEVICE NUMBER OUT OF RANGE");
 	  if (val == ERROR_PINMODE) printf(" --> WRONG PINMODE");
 	  if (val == ERROR_WRITE) printf(" --> WRITE TO DEVICE / PIN FAILED");
+	  if (val == ERROR_SPI_INIT) printf(" --> SPI INITIIALIZATION FAILED");
 	  printf("\n");
 	  printf("\033[0m");
 
@@ -1725,6 +1793,60 @@ int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval
 
   return retval;
 }
+
+/* Set digital audio volume on PGA2311 left (0) or right (1) channel */
+int volume_output(int te, int type, int dev, int channel, float *fvalue, float minval, float maxval) {
+
+  int retval = 0;
+  int ival;
+
+  if (fvalue != NULL) {
+
+    if (*fvalue != FLT_MISS) {
+      
+      if (te < MAXTEENSYS) {
+	if (teensy[te].connected) {
+	  if ((dev >= 0) && (dev < MAX_DEV)) {
+	    if (pga2311[te][dev].connected == 1) {
+	      if ((channel >= 0) && (channel < PGA2311_MAX_CHANNELS)) {
+		/* scale value to PGA2311 output range */
+		ival = (int) ( (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)) *
+			       ((float) PGA2311_MAXVAL - (float) PGA2311_MINVAL) );
+		if (ival != pga2311[te][dev].val[channel]) {
+		  pga2311[te][dev].val[channel] = ival;
+		  if (verbose > 0) printf("Channel %i of Teensy %i PGA2311 %i changed to %i \n", channel, te, dev, ival);
+		}
+
+	      } else {
+		if (verbose > 0) printf("Volume Output %i above maximum # of Channels %i of Teensy %i PGA2311 %i \n",
+					channel, PGA2311_MAX_CHANNELS, te, dev);
+		retval = -1;
+	      }
+	      
+	    } else {
+	      if (verbose > 0) printf("PGA2311 %i not connected to Teensy %i \n", dev,te);
+	      retval = -1;
+	    }
+	  } else {
+	    if (verbose > 0) printf("PGA2311 %i above maximum # of devices %i of Teensy %i \n", dev,MAX_DEV,te);
+	    retval = -1;
+	  }
+	} else {
+	  if (verbose > 2) printf("Channel %i on PGA2311 %i cannot be written. Teensy %i not connected \n", channel, dev, te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 0) printf("Channel %i on PGA2311 %i cannot be written. Teensy %i >= %i \n", channel, dev, te, MAXTEENSYS);
+	retval = -1;
+      }
+      
+    }
+    
+  }
+
+  return retval;
+}
+
 
 /* This program simulates a servo using a real motor and a potentiometer */
 int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval) {

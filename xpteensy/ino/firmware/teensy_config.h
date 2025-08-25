@@ -67,6 +67,11 @@
 /* HT16K33 16x8 LED 7-segment Defines */
 #define HT16K33_MAX_DIG 16   // maximum number of digits on HT16K33
 
+/* PGA2311 Digial Volume Control Defines */
+#define PGA2311_MAX_CHANNELS 2 // number of audio channels of this device
+#define PGA2311_MINVAL 0       // Volume -95.5 dB (1) or MUTE (0)
+#define PGA2311_MAXVAL 255     // Volume +31.5 dB
+
 /* Teensy I/O Protocol */
 #define TEENSY_PING 0       // PING data packet
 #define TEENSY_INIT 1       // Initialization data packet
@@ -85,6 +90,7 @@
 #define PCF8591_TYPE 110     // 8 bit DAC/DAC via I2C
 #define AS5048B_TYPE 111     // Rotation Angle Encoder via I2C
 #define HT16K33_TYPE 112     // 7 segment display driver via I2C
+#define PGA2311_TYPE 113     // Digital Volume Control via SPI
 
 #define PROGRAM_CLOSEDLOOP 1 // Program steering a dc motor in a closed loop (servo) controlled by a potentiometer
 
@@ -98,6 +104,7 @@
 #define PINMODE_SERVO 8
 #define PINMODE_MOTOR 9 // L298 motor driver (for now)
 #define PINMODE_I2C 10
+#define PINMODE_SPI 11
 
 /* Wire Pins on Teensy (Wire Interface 0) */
 #define I2C_SDA_PIN 18  
@@ -114,6 +121,7 @@
 #define ERROR_PINMODE -17
 #define ERROR_WRITE -18
 #define ERROR_VAL_RANGE -19
+#define ERROR_SPI_INIT -20
 
 #include <stdint.h>
 
@@ -201,3 +209,12 @@ typedef struct {
   int8_t wire;  // I2C bus (0,1,2)
   uint8_t address; // I2C address 0x70 - 0x77
 } ht16k33_struct;
+
+typedef struct {
+  int8_t connected;    // Device connected (1) or not (0)
+  int16_t val[PGA2311_MAX_CHANNELS]; // current values on device (0-255)
+  int16_t val_save[PGA2311_MAX_CHANNELS]; // current values on device (0-255)
+  int8_t spi;         // SPI bus (0,1)
+  int8_t cs;     // Chip Select Pin for device
+} pga2311_struct;
+

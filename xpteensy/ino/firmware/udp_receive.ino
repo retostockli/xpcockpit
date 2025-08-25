@@ -83,13 +83,11 @@ void udp_receive(void) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             retval = pca9685_init(recvBuffer[6], recvBuffer[7], recvBuffer[10], recvBuffer[12], recvBuffer[13], ivalue16);
             if (retval != 0) udp_send(PCA9685_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
-            Serial.printf("RETVAL: %i\n",retval);
-
-           } else if (recvBuffer[4] == TEENSY_REGULAR) {
+          } else if (recvBuffer[4] == TEENSY_REGULAR) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             retval = pca9685_write(recvBuffer[6], recvBuffer[7], ivalue16);
             if (retval != 0) udp_send(PCA9685_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
-         }
+          }
         } else if (recvBuffer[5] == HT16K33_TYPE) {
           /* It is a HT16K33 daughter board */
           /* Init or Regular Data Packet */
@@ -107,6 +105,18 @@ void udp_receive(void) {
           if (recvBuffer[4] == TEENSY_INIT) {
             memcpy(&ivalue16, &recvBuffer[8], 2);
             as5048b_init(recvBuffer[6], recvBuffer[10], recvBuffer[11], recvBuffer[12], recvBuffer[13], ivalue16);
+          }
+        } else if (recvBuffer[5] == PGA2311_TYPE) {
+          /* It is a PGA2311 daughter board */
+          /* Init or Regular Data Packet */
+          if (recvBuffer[4] == TEENSY_INIT) {
+            memcpy(&ivalue16, &recvBuffer[8], 2);
+            retval = pga2311_init(recvBuffer[6], recvBuffer[7], recvBuffer[12], recvBuffer[13], ivalue16);
+            if (retval != 0) udp_send(PGA2311_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
+          } else if (recvBuffer[4] == TEENSY_REGULAR) {
+            memcpy(&ivalue16, &recvBuffer[8], 2);
+            retval = pga2311_write(recvBuffer[6], recvBuffer[7], ivalue16);
+            if (retval != 0) udp_send(PGA2311_TYPE, recvBuffer[6], TEENSY_ERROR, recvBuffer[7], retval);
           }
         } else if (recvBuffer[5] == PROGRAM_TYPE) {
           /* It is data for a program */

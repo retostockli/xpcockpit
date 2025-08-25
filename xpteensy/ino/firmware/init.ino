@@ -84,8 +84,20 @@ void init_data() {
     as5048b_data[dev].connected = 0;
   }
 
-
   Serial.printf("AS5048B Data initialized\n");
+
+
+  for (dev = 0; dev < MAX_DEV; dev++) {
+    for (k = 0; k < PGA2311_MAX_CHANNELS; k++) {
+      pga2311_data[dev].val[k] = INITVAL;
+    }
+    pga2311_data[dev].spi = INITVAL;
+    pga2311_data[dev].cs = INITVAL;
+    pga2311_data[dev].connected = 0;
+  }
+
+  Serial.printf("PGA2311 Data initialized\n");
+
 }
 
 int init_ethernet(void) {
