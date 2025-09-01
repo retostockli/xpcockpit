@@ -39,6 +39,9 @@ extern as5048b_struct as5048b[MAXTEENSYS][MAX_DEV];
 extern ht16k33_struct ht16k33[MAXTEENSYS][MAX_DEV];
 extern pga2311_struct pga2311[MAXTEENSYS][MAX_DEV];
 
+/* Flag if SPI interface is used */
+extern int SPI_active[MAXTEENSYS];
+
 /* Prototype Functions */
 int ping_teensy(void);
 int recv_teensy(void);

@@ -110,6 +110,11 @@
 #define I2C_SDA_PIN 18  
 #define I2C_SCL_PIN 19
 
+/* SPI Pins on Teensy (SPI Interface 0) */
+#define SPI_MOSI_PIN 11
+#define SPI_MISO_PIN 12
+#define SPI_SCLK_PIN 13
+
 /* Error Codes */
 #define ERROR_INIT -10
 #define ERROR_INIT_I2C -11

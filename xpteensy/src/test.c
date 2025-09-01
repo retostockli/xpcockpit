@@ -33,11 +33,11 @@
 #include "serverdata.h"
 #include "test.h"
 
-int digitalvalue;
-float analogvalue;
+//int digitalvalue;
+//float analogvalue;
 
-int brake;
-int direction;
+//int brake;
+//int direction;
 
 void init_test(void)
 {

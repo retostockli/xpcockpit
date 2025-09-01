@@ -49,6 +49,7 @@ as5048b_struct as5048b[MAXTEENSYS][MAX_DEV];
 ht16k33_struct ht16k33[MAXTEENSYS][MAX_DEV];
 pga2311_struct pga2311[MAXTEENSYS][MAX_DEV];
 
+int SPI_active[MAXTEENSYS];
 
 /* Send a Ping to the Teensy until it responds */
 /* Makes sure Teensy is online before we send init strings */
@@ -141,6 +142,8 @@ int init_teensy() {
 
 	  if ((pin == I2C_SCL_PIN) || (pin == I2C_SDA_PIN)) {
 	    printf("ERROR: Teensy %i Pin %i is a I2C SDA / SCL Pin \n",te,pin);
+	  } else if ((SPI_active[te] == 1) && ((pin == SPI_MOSI_PIN) || (pin == SPI_MISO_PIN) || (pin == SPI_SCLK_PIN))) {
+	    printf("ERROR: Teensy %i Pin %i is a SPI SCLK, MOSI or MISO Pin and SPI is active on Teensy \n",te,pin);
 	  } else {
 	    memset(teensySendBuffer,0,SENDMSGLEN);
 	    if (verbose > 0) {

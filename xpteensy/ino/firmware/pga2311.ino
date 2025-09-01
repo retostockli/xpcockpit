@@ -36,7 +36,7 @@ int16_t pga2311_init(int8_t dev, int8_t channel, int8_t spinum, int8_t cspin, in
           if (teensy_data.pinmode[cspin] != INITVAL) {
             retval = ERROR_INIT;
             if (DEBUG > 0) {
-              Serial.printf("INIT: PGA2311 Device %i could not be connected to SPI bus %i with CS pin %i \n", dev, spinum, cspin);
+              Serial.printf("INIT: PGA2311 Device %i CS pin %i already assigned. Please make sure it is free before using it for SPI \n", dev, spinum, cspin);
             }
           } else {
             teensy_data.pinmode[cspin] = PINMODE_SPI;

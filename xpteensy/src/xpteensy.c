@@ -45,6 +45,7 @@
 #include "test.h"
 #include "b737_throttle.h"
 #include "b737_overheadfwd.h"
+#include "b737_audio.h"
 
 // Driver code 
 int main(int argc, char **argv) {
@@ -92,6 +93,8 @@ int main(int argc, char **argv) {
     init_b737_tq();
   } else if (strcmp(argv[1],"boeing737ovhfwd") == 0) {
     init_b737_overheadfwd();
+  } else if (strcmp(argv[1],"boeing737audio") == 0) {
+    init_b737_audio();
   }
   
   while (1) {
@@ -123,6 +126,8 @@ int main(int argc, char **argv) {
       b737_tq();
     } else if (strcmp(argv[1],"boeing737ovhfwd") == 0) {
       b737_overheadfwd();
+    } else if (strcmp(argv[1],"boeing737audio") == 0) {
+      b737_audio();
     }
 
     /**** User Modules End Here ****/

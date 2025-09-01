@@ -121,6 +121,9 @@ int ini_read(char* programPath, char* iniName)
     gettimeofday(&newtime,NULL);
 
     for(i=0;i<MAXTEENSYS;i++) {
+
+      SPI_active[i] = 0;
+      
       sprintf(tmp,"teensy%i:Address",i);
       strcpy(teensy[i].ip,iniparser_getstring(ini,tmp, default_teensy_ip));
       sprintf(tmp,"teensy%i:Port",i);
@@ -267,6 +270,7 @@ int ini_read(char* programPath, char* iniName)
 	  pga2311[i][j].spi = INITVAL;
 	  pga2311[i][j].cs = INITVAL;
 	  if (j<ival) {
+	    SPI_active[i] = 1; // This teensy has at least one SPI device
 	    pga2311[i][j].connected = 1;
 	  } else {
 	    pga2311[i][j].connected = 0;
