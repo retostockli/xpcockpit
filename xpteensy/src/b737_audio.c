@@ -37,13 +37,17 @@ void init_b737_audio(void)
 {
   int te = 2;
 
-  teensy[te].pinmode[0] = PINMODE_INPUT;
-  teensy[te].pinmode[3] = PINMODE_OUTPUT;
-  teensy[te].pinmode[4] = PINMODE_OUTPUT;
-  teensy[te].pinmode[5] = PINMODE_OUTPUT;
-  teensy[te].pinmode[6] = PINMODE_OUTPUT;
+  /* Captain ACP */
+  teensy[te].pinmode[0] = PINMODE_INPUT;  /* Hand Mic PTT */
+  teensy[te].pinmode[3] = PINMODE_OUTPUT; /* Headset Mic Enable */
+  teensy[te].pinmode[4] = PINMODE_OUTPUT; /* Hand Mic Enable */
+  teensy[te].pinmode[5] = PINMODE_OUTPUT; /* Mask Mic Enable */
+  teensy[te].pinmode[6] = PINMODE_OUTPUT; /* Mic to Line IN Enable */
 
   /* For testing */
+  teensy[te].pinmode[9] = PINMODE_INPUT;
+  teensy[te].pinmode[10] = PINMODE_INPUT;
+
   teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
   teensy[te].pinmode[39] = PINMODE_ANALOGINPUTMEAN;
   teensy[te].pinmode[40] = PINMODE_ANALOGINPUTMEAN;
@@ -54,6 +58,10 @@ void init_b737_audio(void)
   pga2311[te][1].spi = 0; // SPI Bus number
   pga2311[te][1].cs = 2; // Chip Select Pin
   
+  mcp23017[te][0].pinmode[0] = PINMODE_OUTPUT;
+  mcp23017[te][0].intpin = INITVAL; // also define pin 6 of teensy as INTERRUPT above!
+  mcp23017[te][0].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][0].address = 0x20; // I2C address of MCP23017 device
   
 }
 
@@ -63,8 +71,8 @@ void b737_audio(void)
   int ret;
   int te = 2;
 
-  int one = 1;
-  int zero = 0;
+  //int one = 1;
+  //int zero = 0;
   
   /* link floating point dataref with precision 10e-1 to local variable. This means
      that we only transfer the variable if changed by 0.1 or more */
@@ -73,6 +81,13 @@ void b737_audio(void)
   float *volume_headset = link_dataref_flt("xpserver/volume_headset",-3);
   float *volume_speaker = link_dataref_flt("xpserver/volume_speaker",-3);
 
+  int *switch_boommask = link_dataref_int("xpserver/switch_boommask");
+  int *switch_ptt = link_dataref_int("xpserver/switch_ptt");
+
+  int switch_headsetmic = 0;
+  int switch_handmic = 0;
+  int switch_maskmic = 0;
+  
   /* read analog input (A14) */
   ret = analog_input(te,38,volume_headset,0.0,100.0);
   if (ret == 1) {
@@ -91,11 +106,48 @@ void b737_audio(void)
     printf("VHF Volume changed to: %f \n",*volume_vhf);
   }
 
-  /* Enable Captain Headset Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 3, &one);
+  /* read headset enable switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 9, switch_boommask,0);
+  if (ret == 1) {
+    printf("BOOM / MASK SWITCH changed to: %i \n",*switch_boommask);
+  }
+  
+  /* read ptt switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 10,switch_ptt,0);
+  if (ret == 1) {
+    printf("PTT SWITCH changed to: %i \n",*switch_ptt);
+  }
+  
+  /* read Hand Mic switch */
+  ret = digital_input(te, TEENSY_TYPE, 0, 0,&switch_handmic,0);
+  if (ret == 1) {
+    printf("HAND MIC SWITCH changed to: %i \n",switch_handmic);
+  }
+  
+  ret = digital_output(te, MCP23017_TYPE, 0, 0, switch_boommask);
 
-  /* Enable Captain Mic Output to PC */
-  ret = digital_output(te, TEENSY_TYPE, 0, 6, &one);
+  if (switch_handmic == 1) {
+    switch_headsetmic = 0;
+    switch_maskmic = 0;
+  } else {
+    if (*switch_boommask == 1) {
+      switch_headsetmic = 1;
+      switch_maskmic = 0;
+    } else {
+      switch_headsetmic = 0;
+      switch_maskmic = 1;
+    }
+  }
+  
+  /* Enable Captain Headset Mic */
+  ret = digital_output(te, TEENSY_TYPE, 0, 3, &switch_headsetmic);
+  /* Enable Captain Hand Mic */
+  ret = digital_output(te, TEENSY_TYPE, 0, 4, &switch_handmic);
+  /* Enable Captain Mask Mic */
+  ret = digital_output(te, TEENSY_TYPE, 0, 5, &switch_maskmic);
+
+  /* PTT Switch: Enable Captain Mic Output to PC */
+  ret = digital_output(te, TEENSY_TYPE, 0, 6, switch_ptt);
 
   /* Change volume of right VHF channel */
   ret = volume_output(te, PGA2311_TYPE, 0, 1, volume_vhf, 0.0, 100.0);
