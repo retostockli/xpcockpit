@@ -41,6 +41,7 @@ int16_t pga2311_init(int8_t dev, int8_t channel, int8_t spinum, int8_t cspin, in
           } else {
             teensy_data.pinmode[cspin] = PINMODE_SPI;
             pinMode(cspin, OUTPUT);
+            digitalWrite(cspin, HIGH);    //CS = off
             pga2311_data[dev].connected = 1;
           }
 
@@ -77,8 +78,6 @@ int16_t pga2311_write(int8_t dev, int8_t channel, int16_t val) {
 
   int16_t retval = 0;
   
-  Serial.printf("WRITE: PGA2311 Device %i Channel %i Volume %i \n", dev, channel, val);
-
   if ((channel >= 0) && (channel < PGA2311_MAX_CHANNELS)) {
     if ((dev >= 0) && (dev < MAX_DEV)) {
       if (pga2311_data[dev].connected == 1) {
@@ -91,17 +90,21 @@ int16_t pga2311_write(int8_t dev, int8_t channel, int16_t val) {
           uint8_t left = (uint8_t) pga2311_data[dev].val[0];
           uint8_t right = (uint8_t) pga2311_data[dev].val[1];
 
-          //SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
+          //SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
           digitalWrite(pga2311_data[dev].cs, LOW);     //CS = on
-          //delayMicroseconds(10);
+          //delayMicroseconds(2);
+
+          //uint16_t combined = ((uint16_t)left << 8) | right;
+          //SPI.transfer16(combined);
           SPI.transfer(right);
           SPI.transfer(left);
+          //delayMicroseconds(2);
           digitalWrite(pga2311_data[dev].cs, HIGH);    //CS = off
-          //delayMicroseconds(10);
           //SPI.endTransaction(); 
-          //delay(100);
 
-          Serial.printf("WRITE: PGA2311 Device %i Channel %i Volume %i \n", dev, channel, val);
+          if (DEBUG > 0) {
+            Serial.printf("WRITE: PGA2311 Device %i Channel %i Volume %i \n", dev, channel, val);
+          }
         }    // value has changed
       } else {
         retval = ERROR_NOT_CONNECTED;

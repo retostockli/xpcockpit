@@ -89,7 +89,7 @@ void init_data() {
 
   for (dev = 0; dev < MAX_DEV; dev++) {
     for (k = 0; k < PGA2311_MAX_CHANNELS; k++) {
-      pga2311_data[dev].val[k] = INITVAL;
+      pga2311_data[dev].val[k] = 0; /* Set quiet at start */
     }
     pga2311_data[dev].spi = INITVAL;
     pga2311_data[dev].cs = INITVAL;

@@ -53,18 +53,11 @@ int acp3_micsel_flt;
 int acp3_micsel_svc;
 int acp3_micsel_pa;
 int acp3_rt_ic;
-int acp3_mask_boom;
 int acp3_sel_v;
 int acp3_sel_b;
 int acp3_sel_r;
 int acp3_sel_vbr;
 int acp3_alt_norm;
-
-float acp3_vol_vhf1;
-float acp3_vol_vhf2;
-float acp3_vol_pa;
-float acp3_vol_mkr;
-float acp3_vol_spkr;
 
 int temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8,temp9,temp10,temp11,temp12,temp13;
 
@@ -597,6 +590,13 @@ void b737_aftoverhead(void)
   o0 = 32;
   a0 = 0;
 
+  int *acp3_mask_boom = link_dataref_int("xpserver/acp3_mask_boom");
+
+  float *acp3_vol_vhf1 = link_dataref_flt("xpserver/acp3_vol_vhf1",0);
+  float *acp3_vol_vhf2 = link_dataref_flt("xpserver/acp3_vol_vhf2",0);
+  float *acp3_vol_pa = link_dataref_flt("xpserver/acp3_vol_pa",0);
+  float *acp3_vol_spkr = link_dataref_flt("xpserver/acp3_vol_spkr",0);
+
   /* MIC Selectors */
   ret = digital_input(card,i0+0,&acp3_micsel_vhf1,1);
   if (ret == 1) {
@@ -732,9 +732,9 @@ void b737_aftoverhead(void)
     printf("ACP3 R/T I/C Switch: %i \n",acp3_rt_ic);
   }    
 
-  ret = digital_input(card,i0+9,&acp3_mask_boom,0);
+  ret = digital_input(card,i0+9,acp3_mask_boom,0);
   if (ret == 1) {
-    printf("ACP3 MASK/BOOM Switch: %i \n",acp3_mask_boom);
+    printf("ACP3 MASK/BOOM Switch: %i \n",*acp3_mask_boom);
   }    
   
   ret = digital_input(card,i0+10,&acp3_sel_v,0);
@@ -797,21 +797,21 @@ void b737_aftoverhead(void)
   }
   
   /* Audio Volume Potentiometers */
-  ret = analog_input(card,a0+0,&acp3_vol_vhf1,0.0,1.0);
+  ret = analog_input(card,a0+0,acp3_vol_vhf1,0.0,100.0);
   if (ret == 1) {
-    //  printf("ACP3 Volume VHF1: %f \n",acp3_vol_vhf1);
+    //  printf("ACP3 Volume VHF1: %f \n",*acp3_vol_vhf1);
   }
-  ret = analog_input(card,a0+1,&acp3_vol_vhf2,0.0,1.0);
+  ret = analog_input(card,a0+1,acp3_vol_vhf2,0.0,100.0);
   if (ret == 1) {
-    //  printf("ACP3 Volume VHF2: %f \n",acp3_vol_vhf2);
+    //  printf("ACP3 Volume VHF2: %f \n",*acp3_vol_vhf2);
   }
-  ret = analog_input(card,a0+2,&acp3_vol_pa,0.0,1.0);
+  ret = analog_input(card,a0+2,acp3_vol_pa,0.0,100.0);
   if (ret == 1) {
-    //  printf("ACP3 Volume PA: %f \n",acp3_vol_pa);
+    //  printf("ACP3 Volume PA: %f \n",*acp3_vol_pa);
   }
-  ret = analog_input(card,a0+3,&acp3_vol_spkr,0.0,1.0);
+  ret = analog_input(card,a0+3,acp3_vol_spkr,0.0,100.0);
   if (ret == 1) {
-    //  printf("ACP3 Volume SPKR: %f \n",acp3_vol_spkr);
+    //  printf("ACP3 Volume SPKR: %f \n",*acp3_vol_spkr);
   }
 
   /*** ENGINE / EEC Panel ***/

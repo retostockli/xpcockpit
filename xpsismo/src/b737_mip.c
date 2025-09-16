@@ -469,11 +469,11 @@ void b737_mip(void)
     /* MIC Button */
     ret = digital_input(card,72,mic_capt,0);
     if (ret == 1) {
-      printf("MIC CAPTAIN\n");
+      printf("MIC CAPTAIN ON MCP/EFIS \n");
     }
     ret = digital_input(card,80,mic_fo,0);
     if (ret == 1) {
-      printf("MIC COPILOT\n");
+      printf("MIC COPILOT ON MCP/EFIS \n");
     }
  
     if ((*mic_capt == 1) || (*mic_fo == 1)) {

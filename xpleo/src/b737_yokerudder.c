@@ -135,7 +135,27 @@ void b737_yokerudder(void)
     stab_trim_down = link_dataref_cmd_hold("sim/flight_controls/pitch_trim_down");
     ap_disconnect = link_dataref_cmd_hold("sim/autopilot/servos_off_any");
   }
- 
+
+  //int *ptt = link_dataref_cmd_hold("xpilot/ptt");
+  int *mic_capt_yoke = link_dataref_int("xpserver/mic_capt_yoke");
+  int *mic_fo_yoke = link_dataref_int("xpserver/mic_fo_yoke");
+
+  /* MIC Buttons */
+  ret = digital_input(device,3,mic_capt_yoke,0);
+  if (ret == 1) {
+    printf("MIC CAPTAIN ON YOKE \n");
+  }
+  ret = digital_input(device,17,mic_fo_yoke,0);
+  if (ret == 1) {
+    printf("MIC COPILOT ON YOKE\n");
+  }
+  
+  /* if ((*mic_capt_yoke == 1) || (*mic_fo_yoke == 1)) { */
+  /*   *ptt = 1; */
+  /* } else { */
+  /*   *ptt = 0; */
+  /* } */
+  
   /* read potentiometer from analog input #1 on BU0836A card, scale it to the range 0-100 */
   ret1 = axis_input(device,3,&value1,minval,maxval);
   ret2 = axis_input(device,5,&value2,minval,maxval);

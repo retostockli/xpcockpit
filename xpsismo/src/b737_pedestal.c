@@ -56,8 +56,6 @@ int adf2_ant_switch;
 int adf2_tone_switch;
 
 
-int acp1_micsel_vhf1;
-int acp1_micsel_vhf2;
 int acp1_micsel_vhf3;
 int acp1_micsel_hf1;
 int acp1_micsel_hf2;
@@ -65,22 +63,12 @@ int acp1_micsel_flt;
 int acp1_micsel_svc;
 int acp1_micsel_pa;
 int acp1_rt_ic;
-int acp1_mask_boom;
 int acp1_sel_v;
 int acp1_sel_b;
 int acp1_sel_r;
 int acp1_sel_vbr;
 int acp1_alt_norm;
 
-float acp1_vol_vhf1;
-float acp1_vol_vhf2;
-float acp1_vol_pa;
-float acp1_vol_mkr;
-float acp1_vol_spkr;
-
-
-int acp2_micsel_vhf1;
-int acp2_micsel_vhf2;
 int acp2_micsel_vhf3;
 int acp2_micsel_hf1;
 int acp2_micsel_hf2;
@@ -88,18 +76,11 @@ int acp2_micsel_flt;
 int acp2_micsel_svc;
 int acp2_micsel_pa;
 int acp2_rt_ic;
-int acp2_mask_boom;
 int acp2_sel_v;
 int acp2_sel_b;
 int acp2_sel_r;
 int acp2_sel_vbr;
 int acp2_alt_norm;
-
-float acp2_vol_vhf1;
-float acp2_vol_vhf2;
-float acp2_vol_pa;
-float acp2_vol_mkr;
-float acp2_vol_spkr;
 
 int xpndr_sel_switch;
 int xpndr_src_switch;
@@ -392,7 +373,26 @@ void b737_pedestal(void)
     lights_test = link_dataref_flt("xpserver/lights_test",0);
   }
 
-
+  int *acp1_micsel_vhf1 = link_dataref_int("xpserver/acp1_micsel_vhf1");
+  int *acp1_micsel_vhf2 = link_dataref_int("xpserver/acp1_micsel_vhf2");
+  int *acp1_mask_boom = link_dataref_int("xpserver/acp1_mask_boom");
+  
+  float *acp1_vol_vhf1 = link_dataref_flt("xpserver/acp1_vol_vhf1",0);
+  float *acp1_vol_vhf2 = link_dataref_flt("xpserver/acp1_vol_vhf2",0);
+  float *acp1_vol_pa = link_dataref_flt("xpserver/acp1_vol_pa",0);
+  float *acp1_vol_mkr = link_dataref_flt("xpserver/acp1_vol_mkr",0);
+  float *acp1_vol_spkr = link_dataref_flt("xpserver/acp1_vol_spkr",0);
+  
+  int *acp2_micsel_vhf1 = link_dataref_int("xpserver/acp2_micsel_vhf1");
+  int *acp2_micsel_vhf2 = link_dataref_int("xpserver/acp2_micsel_vhf2");
+  int *acp2_mask_boom = link_dataref_int("xpserver/acp2_mask_boom");
+  
+  float *acp2_vol_vhf1 = link_dataref_flt("xpserver/acp2_vol_vhf1",0);
+  float *acp2_vol_vhf2 = link_dataref_flt("xpserver/acp2_vol_vhf2",0);
+  float *acp2_vol_pa = link_dataref_flt("xpserver/acp2_vol_pa",0);
+  float *acp2_vol_mkr = link_dataref_flt("xpserver/acp2_vol_mkr",0);
+  float *acp2_vol_spkr = link_dataref_flt("xpserver/acp2_vol_spkr",0);
+  
   float *flood_brightness = link_dataref_flt("xpserver/pedestal_flood_brightness",-1);
   
   /*** Background Lighting ***/
@@ -745,12 +745,12 @@ void b737_pedestal(void)
   a0 = 5;
 
   /* MIC Selectors */
-  ret = digital_input(card,i0+0,&acp1_micsel_vhf1,1);
+  ret = digital_input(card,i0+0,acp1_micsel_vhf1,1);
   if (ret == 1) {
-    printf("ACP1 MIC SELECTOR VHF1: %i \n",acp1_micsel_vhf1);
-    if (acp1_micsel_vhf1 == 1) {
-      //acp1_micsel_vhf1 = 0;
-      acp1_micsel_vhf2 = 0;
+    printf("ACP1 MIC SELECTOR VHF1: %i \n",*acp1_micsel_vhf1);
+    if (*acp1_micsel_vhf1 == 1) {
+      //*acp1_micsel_vhf1 = 0;
+      *acp1_micsel_vhf2 = 0;
       acp1_micsel_vhf3 = 0;
       acp1_micsel_hf1 = 0;
       acp1_micsel_hf2 = 0;
@@ -759,14 +759,14 @@ void b737_pedestal(void)
       acp1_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+0,&acp1_micsel_vhf1);
+  ret = digital_output(card,o0+0,acp1_micsel_vhf1);
 
-  ret = digital_input(card,i0+1,&acp1_micsel_vhf2,1);
+  ret = digital_input(card,i0+1,acp1_micsel_vhf2,1);
   if (ret == 1) {
-    printf("ACP1 MIC SELECTOR VHF2: %i \n",acp1_micsel_vhf2);
-    if (acp1_micsel_vhf2 == 1) {
-      acp1_micsel_vhf1 = 0;
-      //acp1_micsel_vhf2 = 0;
+    printf("ACP1 MIC SELECTOR VHF2: %i \n",*acp1_micsel_vhf2);
+    if (*acp1_micsel_vhf2 == 1) {
+      *acp1_micsel_vhf1 = 0;
+      //*acp1_micsel_vhf2 = 0;
       acp1_micsel_vhf3 = 0;
       acp1_micsel_hf1 = 0;
       acp1_micsel_hf2 = 0;
@@ -775,14 +775,14 @@ void b737_pedestal(void)
       acp1_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+1,&acp1_micsel_vhf2);
+  ret = digital_output(card,o0+1,acp1_micsel_vhf2);
   
   ret = digital_input(card,i0+2,&acp1_micsel_vhf3,1);
   if (ret == 1) {
     printf("ACP1 MIC SELECTOR VHF3: %i \n",acp1_micsel_vhf3);
     if (acp1_micsel_vhf3 == 1) {
-      acp1_micsel_vhf1 = 0;
-      acp1_micsel_vhf2 = 0;
+      *acp1_micsel_vhf1 = 0;
+      *acp1_micsel_vhf2 = 0;
       //acp1_micsel_vhf3 = 0;
       acp1_micsel_hf1 = 0;
       acp1_micsel_hf2 = 0;
@@ -797,8 +797,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP1 MIC SELECTOR HF1: %i \n",acp1_micsel_hf1);
     if (acp1_micsel_hf1 == 1) {
-      acp1_micsel_vhf1 = 0;
-      acp1_micsel_vhf2 = 0;
+      *acp1_micsel_vhf1 = 0;
+      *acp1_micsel_vhf2 = 0;
       acp1_micsel_vhf3 = 0;
       //acp1_micsel_hf1 = 0;
       acp1_micsel_hf2 = 0;
@@ -813,8 +813,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP1 MIC SELECTOR HF2: %i \n",acp1_micsel_hf2);
     if (acp1_micsel_hf2 == 1) {
-      acp1_micsel_vhf1 = 0;
-      acp1_micsel_vhf2 = 0;
+      *acp1_micsel_vhf1 = 0;
+      *acp1_micsel_vhf2 = 0;
       acp1_micsel_vhf3 = 0;
       acp1_micsel_hf1 = 0;
       //acp1_micsel_hf2 = 0;
@@ -829,8 +829,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP1 MIC SELECTOR FLT: %i \n",acp1_micsel_flt);
     if (acp1_micsel_flt == 1) {
-      acp1_micsel_vhf1 = 0;
-      acp1_micsel_vhf2 = 0;
+      *acp1_micsel_vhf1 = 0;
+      *acp1_micsel_vhf2 = 0;
       acp1_micsel_vhf3 = 0;
       acp1_micsel_hf1 = 0;
       acp1_micsel_hf2 = 0;
@@ -845,8 +845,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP1 MIC SELECTOR SVC: %i \n",acp1_micsel_svc);
     if (acp1_micsel_svc == 1) {
-      acp1_micsel_vhf1 = 0;
-      acp1_micsel_vhf2 = 0;
+      *acp1_micsel_vhf1 = 0;
+      *acp1_micsel_vhf2 = 0;
       acp1_micsel_vhf3 = 0;
       acp1_micsel_hf1 = 0;
       acp1_micsel_hf2 = 0;
@@ -861,8 +861,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP1 MIC SELECTOR PA: %i \n",acp1_micsel_pa);
     if (acp1_micsel_pa == 1) {
-      acp1_micsel_vhf1 = 0;
-      acp1_micsel_vhf2 = 0;
+      *acp1_micsel_vhf1 = 0;
+      *acp1_micsel_vhf2 = 0;
       acp1_micsel_vhf3 = 0;
       acp1_micsel_hf1 = 0;
       acp1_micsel_hf2 = 0;
@@ -879,9 +879,9 @@ void b737_pedestal(void)
     printf("ACP1 R/T I/C Switch: %i \n",acp1_rt_ic);
   }    
 
-  ret = digital_input(card,i0+9,&acp1_mask_boom,0);
+  ret = digital_input(card,i0+9,acp1_mask_boom,0);
   if (ret == 1) {
-    printf("ACP1 MASK/BOOM Switch: %i \n",acp1_mask_boom);
+    printf("ACP1 MASK/BOOM Switch: %i \n",*acp1_mask_boom);
   }    
   
   ret = digital_input(card,i0+10,&acp1_sel_v,0);
@@ -906,25 +906,25 @@ void b737_pedestal(void)
   }
 
   /* Audio Volume Potentiometers */
-  ret = analog_input(card,a0+0,&acp1_vol_vhf1,0.0,1.0);
+  ret = analog_input(card,a0+0,acp1_vol_vhf1,0.0,100.0);
   if (ret == 1) {
-    //    printf("ACP1 Volume VHF1: %f \n",acp1_vol_vhf1);
+    //    printf("ACP1 Volume VHF1: %f \n",*acp1_vol_vhf1);
   }
-  ret = analog_input(card,a0+1,&acp1_vol_vhf2,0.0,1.0);
+  ret = analog_input(card,a0+1,acp1_vol_vhf2,0.0,100.0);
   if (ret == 1) {
-    //    printf("ACP1 Volume VHF2: %f \n",acp1_vol_vhf2);
+    //    printf("ACP1 Volume VHF2: %f \n",*acp1_vol_vhf2);
   }
-  ret = analog_input(card,a0+2,&acp1_vol_pa,0.0,1.0);
+  ret = analog_input(card,a0+2,acp1_vol_pa,0.0,100.0);
   if (ret == 1) {
-    //    printf("ACP1 Volume PA: %f \n",acp1_vol_pa);
+    //    printf("ACP1 Volume PA: %f \n",*acp1_vol_pa);
   }
-  ret = analog_input(card,a0+3,&acp1_vol_mkr,0.0,1.0);
+  ret = analog_input(card,a0+3,acp1_vol_mkr,0.0,100.0);
   if (ret == 1) {
-    //    printf("ACP1 Volume MKR: %f \n",acp1_vol_mkr);
+    //    printf("ACP1 Volume MKR: %f \n",*acp1_vol_mkr);
   }
-  ret = analog_input(card,a0+4,&acp1_vol_spkr,0.0,1.0);
+  ret = analog_input(card,a0+4,acp1_vol_spkr,0.0,100.0);
   if (ret == 1) {
-    //    printf("ACP1 Volume SPKR: %f \n",acp1_vol_spkr);
+    //    printf("ACP1 Volume SPKR: %f \n",*acp1_vol_spkr);
   }
 
 
@@ -936,12 +936,12 @@ void b737_pedestal(void)
   a0 = 10;
 
   /* MIC Selectors */
-  ret = digital_input(card,i0+0,&acp2_micsel_vhf1,1);
+  ret = digital_input(card,i0+0,acp2_micsel_vhf1,1);
   if (ret == 1) {
-    printf("ACP2 MIC SELECTOR VHF1: %i \n",acp2_micsel_vhf1);
-    if (acp2_micsel_vhf1 == 1) {
-      //acp2_micsel_vhf1 = 0;
-      acp2_micsel_vhf2 = 0;
+    printf("ACP2 MIC SELECTOR VHF1: %i \n",*acp2_micsel_vhf1);
+    if (*acp2_micsel_vhf1 == 1) {
+      //*acp2_micsel_vhf1 = 0;
+      *acp2_micsel_vhf2 = 0;
       acp2_micsel_vhf3 = 0;
       acp2_micsel_hf1 = 0;
       acp2_micsel_hf2 = 0;
@@ -950,14 +950,14 @@ void b737_pedestal(void)
       acp2_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+0,&acp2_micsel_vhf1);
+  ret = digital_output(card,o0+0,acp2_micsel_vhf1);
 
-  ret = digital_input(card,i0+1,&acp2_micsel_vhf2,1);
+  ret = digital_input(card,i0+1,acp2_micsel_vhf2,1);
   if (ret == 1) {
-    printf("ACP2 MIC SELECTOR VHF2: %i \n",acp2_micsel_vhf2);
-    if (acp2_micsel_vhf2 == 1) {
-      acp2_micsel_vhf1 = 0;
-      //acp2_micsel_vhf2 = 0;
+    printf("ACP2 MIC SELECTOR VHF2: %i \n",*acp2_micsel_vhf2);
+    if (*acp2_micsel_vhf2 == 1) {
+      *acp2_micsel_vhf1 = 0;
+      //*acp2_micsel_vhf2 = 0;
       acp2_micsel_vhf3 = 0;
       acp2_micsel_hf1 = 0;
       acp2_micsel_hf2 = 0;
@@ -966,14 +966,14 @@ void b737_pedestal(void)
       acp2_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+1,&acp2_micsel_vhf2);
+  ret = digital_output(card,o0+1,acp2_micsel_vhf2);
   
   ret = digital_input(card,i0+2,&acp2_micsel_vhf3,1);
   if (ret == 1) {
     printf("ACP2 MIC SELECTOR VHF3: %i \n",acp2_micsel_vhf3);
     if (acp2_micsel_vhf3 == 1) {
-      acp2_micsel_vhf1 = 0;
-      acp2_micsel_vhf2 = 0;
+      *acp2_micsel_vhf1 = 0;
+      *acp2_micsel_vhf2 = 0;
       //acp2_micsel_vhf3 = 0;
       acp2_micsel_hf1 = 0;
       acp2_micsel_hf2 = 0;
@@ -988,8 +988,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP2 MIC SELECTOR HF1: %i \n",acp2_micsel_hf1);
     if (acp2_micsel_hf1 == 1) {
-      acp2_micsel_vhf1 = 0;
-      acp2_micsel_vhf2 = 0;
+      *acp2_micsel_vhf1 = 0;
+      *acp2_micsel_vhf2 = 0;
       acp2_micsel_vhf3 = 0;
       //acp2_micsel_hf1 = 0;
       acp2_micsel_hf2 = 0;
@@ -1004,8 +1004,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP2 MIC SELECTOR HF2: %i \n",acp2_micsel_hf2);
     if (acp2_micsel_hf2 == 1) {
-      acp2_micsel_vhf1 = 0;
-      acp2_micsel_vhf2 = 0;
+      *acp2_micsel_vhf1 = 0;
+      *acp2_micsel_vhf2 = 0;
       acp2_micsel_vhf3 = 0;
       acp2_micsel_hf1 = 0;
       //acp2_micsel_hf2 = 0;
@@ -1020,8 +1020,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP2 MIC SELECTOR FLT: %i \n",acp2_micsel_flt);
     if (acp2_micsel_flt == 1) {
-      acp2_micsel_vhf1 = 0;
-      acp2_micsel_vhf2 = 0;
+      *acp2_micsel_vhf1 = 0;
+      *acp2_micsel_vhf2 = 0;
       acp2_micsel_vhf3 = 0;
       acp2_micsel_hf1 = 0;
       acp2_micsel_hf2 = 0;
@@ -1036,8 +1036,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP2 MIC SELECTOR SVC: %i \n",acp2_micsel_svc);
     if (acp2_micsel_svc == 1) {
-      acp2_micsel_vhf1 = 0;
-      acp2_micsel_vhf2 = 0;
+      *acp2_micsel_vhf1 = 0;
+      *acp2_micsel_vhf2 = 0;
       acp2_micsel_vhf3 = 0;
       acp2_micsel_hf1 = 0;
       acp2_micsel_hf2 = 0;
@@ -1052,8 +1052,8 @@ void b737_pedestal(void)
   if (ret == 1) {
     printf("ACP2 MIC SELECTOR PA: %i \n",acp2_micsel_pa);
     if (acp2_micsel_pa == 1) {
-      acp2_micsel_vhf1 = 0;
-      acp2_micsel_vhf2 = 0;
+      *acp2_micsel_vhf1 = 0;
+      *acp2_micsel_vhf2 = 0;
       acp2_micsel_vhf3 = 0;
       acp2_micsel_hf1 = 0;
       acp2_micsel_hf2 = 0;
@@ -1070,9 +1070,9 @@ void b737_pedestal(void)
     printf("ACP2 R/T I/C Switch: %i \n",acp2_rt_ic);
   }    
 
-  ret = digital_input(card,i0+9,&acp2_mask_boom,0);
+  ret = digital_input(card,i0+9,acp2_mask_boom,0);
   if (ret == 1) {
-    printf("ACP2 MASK/BOOM Switch: %i \n",acp2_mask_boom);
+    printf("ACP2 MASK/BOOM Switch: %i \n",*acp2_mask_boom);
   }    
   
   ret = digital_input(card,i0+10,&acp2_sel_v,0);
@@ -1097,25 +1097,25 @@ void b737_pedestal(void)
   }
 
   /* Audio Volume Potentiometers */
-  ret = analog_input(card,a0+0,&acp2_vol_vhf1,0.0,1.0);
+  ret = analog_input(card,a0+0,acp2_vol_vhf1,0.0,100.0);
   if (ret == 1) {
-    //printf("ACP2 Volume VHF1: %f \n",acp2_vol_vhf1);
+    //printf("ACP2 Volume VHF1: %f \n",*acp2_vol_vhf1);
   }
-  ret = analog_input(card,a0+1,&acp2_vol_vhf2,0.0,1.0);
+  ret = analog_input(card,a0+1,acp2_vol_vhf2,0.0,100.0);
   if (ret == 1) {
-    // printf("ACP2 Volume VHF2: %f \n",acp2_vol_vhf2);
+    // printf("ACP2 Volume VHF2: %f \n",*acp2_vol_vhf2);
   }
-  ret = analog_input(card,a0+2,&acp2_vol_pa,0.0,1.0);
+  ret = analog_input(card,a0+2,acp2_vol_pa,0.0,100.0);
   if (ret == 1) {
-    // printf("ACP2 Volume PA: %f \n",acp2_vol_pa);
+    // printf("ACP2 Volume PA: %f \n",*acp2_vol_pa);
   }
-  ret = analog_input(card,a0+3,&acp2_vol_mkr,0.0,1.0);
+  ret = analog_input(card,a0+3,acp2_vol_mkr,0.0,100.0);
   if (ret == 1) {
-    // printf("ACP2 Volume MKR: %f \n",acp2_vol_mkr);
+    // printf("ACP2 Volume MKR: %f \n",*acp2_vol_mkr);
   }
-  ret = analog_input(card,a0+4,&acp2_vol_spkr,0.0,1.0);
+  ret = analog_input(card,a0+4,acp2_vol_spkr,0.0,100.0);
   if (ret == 1) {
-    //printf("ACP2 Volume SPKR: %f \n",acp2_vol_spkr);
+    //printf("ACP2 Volume SPKR: %f \n",*acp2_vol_spkr);
   }
 
 
