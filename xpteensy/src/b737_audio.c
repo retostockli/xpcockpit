@@ -50,7 +50,7 @@ void init_b737_audio(void)
   pga2311[te][1].cs = 2; // Chip Select Pin
 
   /* First Officer ACP Mixer */
-  teensy[te].pinmode[16] = PINMODE_INPUT;   /* Hand Mic PTT */
+  teensy[te].pinmode[16] = PINMODE_INPUT;  /* Hand Mic PTT */
   teensy[te].pinmode[21] = PINMODE_OUTPUT; /* Headset Mic Enable */
   teensy[te].pinmode[22] = PINMODE_OUTPUT; /* Hand Mic Enable */
   teensy[te].pinmode[23] = PINMODE_OUTPUT; /* Mask Mic Enable */
@@ -62,7 +62,7 @@ void init_b737_audio(void)
   pga2311[te][3].cs = 20; // Chip Select Pin
 
   /* Jump Seat ACP Mixer */
-  teensy[te].pinmode[26] = PINMODE_INPUT;   /* Hand Mic PTT */
+  teensy[te].pinmode[26] = PINMODE_INPUT;  /* Hand Mic PTT */
   teensy[te].pinmode[29] = PINMODE_OUTPUT; /* Headset Mic Enable */
   teensy[te].pinmode[30] = PINMODE_OUTPUT; /* Hand Mic Enable */
   teensy[te].pinmode[31] = PINMODE_OUTPUT; /* Mask Mic Enable */
@@ -73,7 +73,7 @@ void init_b737_audio(void)
   pga2311[te][5].spi = 0; // SPI Bus number
   pga2311[te][5].cs = 28; // Chip Select Pin
 
-  /* For testing */
+  /* For testing inputs directly on Teensy in Audio Box */
   teensy[te].pinmode[9] = PINMODE_INPUT;
   teensy[te].pinmode[10] = PINMODE_INPUT;
 
@@ -94,10 +94,7 @@ void b737_audio(void)
 
   int ret;
   int te = 2;
-
-  //int one = 1;
-  float zero = 0.0;
-  
+ 
   int *mic_capt_yoke = link_dataref_int("xpserver/mic_capt_yoke");
   int *mic_fo_yoke = link_dataref_int("xpserver/mic_fo_yoke");
   int *mic_capt = link_dataref_int("xpserver/mic_capt");
@@ -128,131 +125,227 @@ void b737_audio(void)
   float *acp3_vol_pa = link_dataref_flt("xpserver/acp3_vol_pa",0);
   float *acp3_vol_spkr = link_dataref_flt("xpserver/acp3_vol_spkr",0);
 
+  int switch_handmic_captain = 0;
+  int switch_handmic_copilot = 0;
+  int switch_handmic_jumpseat = 0;
+  int switch_headsetmic_captain = 0;
+  int switch_headsetmic_copilot = 0;
+  int switch_headsetmic_jumpseat = 0;
+  int switch_maskmic_captain = 0;
+  int switch_maskmic_copilot = 0;
+  int switch_maskmic_jumpseat = 0;
+  int switch_ptt_captain = 0;
+  int switch_ptt_copilot = 0;
+  int switch_ptt_jumpseat = 0;
   
-  float *volume_vhf = link_dataref_flt("xpserver/volume_vhf",-3);
-  float *volume_headset = link_dataref_flt("xpserver/volume_headset",-3);
-  float *volume_speaker = link_dataref_flt("xpserver/volume_speaker",-3);
+  /* Potentiometers and Switches connected directly to Teensy in Audio Box
+     for Testing Purpose */  
+  //float *volume_vhf = link_dataref_flt("xpserver/volume_vhf",-3);
+  // float *volume_headset = link_dataref_flt("xpserver/volume_headset",-3);
+  //float *volume_speaker = link_dataref_flt("xpserver/volume_speaker",-3);
 
-  int *switch_boommask = link_dataref_int("xpserver/switch_boommask");
-  int *switch_ptt = link_dataref_int("xpserver/switch_ptt");
-
-  int switch_headsetmic = 0;
-  int switch_handmic = 0;
-  int switch_maskmic = 0;
+  //int *switch_boommask = link_dataref_int("xpserver/switch_boommask");
+  //int *switch_ptt = link_dataref_int("xpserver/switch_ptt");
   
   /* read analog input (A14) */
-  ret = analog_input(te,38,volume_headset,0.0,100.0);
-  if (ret == 1) {
-    printf("HEADSET Volume changed to: %f \n",*volume_headset);
-  }
+  //ret = analog_input(te,38,volume_headset,0.0,100.0);
+  //if (ret == 1) {
+  //  printf("HEADSET Volume changed to: %f \n",*volume_headset);
+  //}
 
   /* read analog input (A15) */
-  ret = analog_input(te,39,volume_speaker,0.0,100.0);
-  if (ret == 1) {
-    printf("SPEAKER Volume changed to: %f \n",*volume_speaker);
-  }
+  //ret = analog_input(te,39,volume_speaker,0.0,100.0);
+  //if (ret == 1) {
+  //  printf("SPEAKER Volume changed to: %f \n",*volume_speaker);
+  //}
 
   /* read analog input (A16) */
-  ret = analog_input(te,40,volume_vhf,0.0,100.0);
-  if (ret == 1) {
-    printf("VHF Volume changed to: %f \n",*volume_vhf);
-  }
+  //ret = analog_input(te,40,volume_vhf,0.0,100.0);
+  //if (ret == 1) {
+  //  printf("VHF Volume changed to: %f \n",*volume_vhf);
+  //}
 
   /* read headset enable switch */
-  ret = digital_input(te, TEENSY_TYPE, 0, 9, switch_boommask,0);
-  if (ret == 1) {
-    printf("BOOM / MASK SWITCH changed to: %i \n",*switch_boommask);
-  }
+  //ret = digital_input(te, TEENSY_TYPE, 0, 9, switch_boommask,0);
+  //if (ret == 1) {
+  //  printf("BOOM / MASK SWITCH changed to: %i \n",*switch_boommask);
+  //}
   
   /* read ptt switch */
-  ret = digital_input(te, TEENSY_TYPE, 0, 10,switch_ptt,0);
-  if (ret == 1) {
-    printf("PTT SWITCH changed to: %i \n",*switch_ptt);
-  }
+  //ret = digital_input(te, TEENSY_TYPE, 0, 10,switch_ptt,0);
+  //if (ret == 1) {
+  //  printf("PTT SWITCH changed to: %i \n",*switch_ptt);
+  //}
   
   /* read Hand Mic switch */
-  ret = digital_input(te, TEENSY_TYPE, 0, 0,&switch_handmic,0);
-  //ret = digital_input(te, TEENSY_TYPE, 0, 16,&switch_handmic,0);
-  //ret = digital_input(te, TEENSY_TYPE, 0, 26,&switch_handmic,0);
+  ret = digital_input(te, TEENSY_TYPE, 0, 0,&switch_handmic_captain,0);
   if (ret == 1) {
-    printf("HAND MIC SWITCH changed to: %i \n",switch_handmic);
+    printf("CAPTAIN HAND MIC SWITCH changed to: %i \n",switch_handmic_captain);
+  }
+  ret = digital_input(te, TEENSY_TYPE, 0, 16,&switch_handmic_copilot,0);
+  if (ret == 1) {
+    printf("COPILOT HAND MIC SWITCH changed to: %i \n",switch_handmic_copilot);
+  }
+  ret = digital_input(te, TEENSY_TYPE, 0, 26,&switch_handmic_jumpseat,0);
+  if (ret == 1) {
+    printf("JUMPSEAT HAND MIC SWITCH changed to: %i \n",switch_handmic_jumpseat);
+  }
+
+  /* if hand mic button is pressed, headset and mask mic are off
+     on each acp you can also choose whether headset (boom) or mask mic are used */
+
+  /* CAPTAIN */
+  if (switch_handmic_captain == 1) {
+    switch_headsetmic_captain = 0;
+    switch_maskmic_captain = 0;
+  } else {
+    if (*acp1_mask_boom == 0) {
+      switch_headsetmic_captain = 1;
+      switch_maskmic_captain = 0;
+    } else {
+      switch_headsetmic_captain = 0;
+      switch_maskmic_captain = 1;
+    }
+  }
+
+  /* FIRST OFFICER */
+  if (switch_handmic_copilot == 1) {
+    switch_headsetmic_copilot = 0;
+    switch_maskmic_copilot = 0;
+  } else {
+    if (*acp2_mask_boom == 0) {
+      switch_headsetmic_copilot = 1;
+      switch_maskmic_copilot = 0;
+    } else {
+      switch_headsetmic_copilot = 0;
+      switch_maskmic_copilot = 1;
+    }
   }
   
-  //ret = digital_output(te, MCP23017_TYPE, 0, 0, switch_boommask);
-
-  if (switch_handmic == 1) {
-    switch_headsetmic = 0;
-    switch_maskmic = 0;
+  /* JUMP SEAT (has no hand mic, however) */
+  if (switch_handmic_jumpseat == 1) {
+    switch_headsetmic_jumpseat = 0;
+    switch_maskmic_jumpseat = 0;
   } else {
-    if (*switch_boommask == 1) {
-      switch_headsetmic = 1;
-      switch_maskmic = 0;
+    if (*acp3_mask_boom == 0) {
+      switch_headsetmic_jumpseat = 1;
+      switch_maskmic_jumpseat = 0;
     } else {
-      switch_headsetmic = 0;
-      switch_maskmic = 1;
+      switch_headsetmic_jumpseat = 0;
+      switch_maskmic_jumpseat = 1;
     }
   }
   
   /* Enable Captain Headset Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 3, &switch_headsetmic);
-
+  ret = digital_output(te, TEENSY_TYPE, 0, 3, &switch_headsetmic_captain);
+  if (ret == 1) {
+    printf("CAPTAIN HEADSET MIC SWITCH changed to: %i \n",switch_headsetmic_captain);
+  }
+  
   /* Enable First Officer Headset Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 21, &switch_headsetmic);
+  ret = digital_output(te, TEENSY_TYPE, 0, 21, &switch_headsetmic_copilot);
+  if (ret == 1) {
+    printf("COPILOT HEADSET MIC SWITCH changed to: %i \n",switch_headsetmic_copilot);
+  }
 
   /* Enable Jump Seat Headset Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 29, &switch_headsetmic);
+  ret = digital_output(te, TEENSY_TYPE, 0, 29, &switch_headsetmic_jumpseat);
+  if (ret == 1) {
+    printf("JUMP SEAT HEADSET MIC SWITCH changed to: %i \n",switch_headsetmic_jumpseat);
+  }
 
   /* Enable Captain Hand Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 4, &switch_handmic);
+  ret = digital_output(te, TEENSY_TYPE, 0, 4, &switch_handmic_captain);
+  if (ret == 1) {
+    printf("CAPTAIN HAND MIC SWITCH changed to: %i \n",switch_handmic_captain);
+  }
 
   /* Enable First Officer Hand Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 22, &switch_handmic);
+  ret = digital_output(te, TEENSY_TYPE, 0, 22, &switch_handmic_copilot);
+  if (ret == 1) {
+    printf("COPILOT HAND MIC SWITCH changed to: %i \n",switch_handmic_copilot);
+  }
 
   /* Enable Jump Seat Hand Mic (INOP) */
-  ret = digital_output(te, TEENSY_TYPE, 0, 30, &switch_handmic);
+  ret = digital_output(te, TEENSY_TYPE, 0, 30, &switch_handmic_jumpseat);
+  if (ret == 1) {
+    printf("JUMPSEAT HAND MIC SWITCH changed to: %i \n",switch_handmic_jumpseat);
+  }
 
   /* Enable Captain Mask Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 5, &switch_maskmic);
+  ret = digital_output(te, TEENSY_TYPE, 0, 5, &switch_maskmic_captain);
+  if (ret == 1) {
+    printf("CAPTAIN MASK MIC SWITCH changed to: %i \n",switch_maskmic_captain);
+  }
 
   /* Enable First Officer Mask Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 23, &switch_maskmic);
+  ret = digital_output(te, TEENSY_TYPE, 0, 23, &switch_maskmic_copilot);
+  if (ret == 1) {
+    printf("COPILOT MASK MIC SWITCH changed to: %i \n",switch_maskmic_copilot);
+  }
 
   /* Enable Jump Seat Mask Mic */
-  ret = digital_output(te, TEENSY_TYPE, 0, 31, &switch_maskmic);
+  ret = digital_output(te, TEENSY_TYPE, 0, 31, &switch_maskmic_jumpseat);
+  if (ret == 1) {
+    printf("JUMPSEAT MASK MIC SWITCH changed to: %i \n",switch_maskmic_jumpseat);
+  }
 
+  if ((*mic_capt == 1) || (*mic_capt_yoke == 1)) switch_ptt_captain = 1;
+  if ((*mic_fo == 1) || (*mic_fo_yoke == 1)) switch_ptt_copilot = 1;
+  
   /* PTT Switch: Enable Captain Mic Output to PC */
-  ret = digital_output(te, TEENSY_TYPE, 0, 6, switch_ptt);
-
-  int switch_temp = 0;
-  if (*switch_ptt == 0) switch_temp = 1;
+  ret = digital_output(te, TEENSY_TYPE, 0, 6, &switch_ptt_captain);
+  if (ret == 1) {
+    printf("CAPTAIN MIC OUTPUT TO PC changed to: %i \n",switch_ptt_captain);
+  }
   
   /* PTT Switch: Enable First Officer Mic Output to PC */
-  ret = digital_output(te, TEENSY_TYPE, 0, 24, &switch_temp);
-  //ret = digital_output(te, TEENSY_TYPE, 0, 32, &switch_temp);
-
-  /* Change volume of right VHF channel */
-  ret = volume_output(te, PGA2311_TYPE, 0, 0, volume_vhf, 0.0, 100.0);
-  ret = volume_output(te, PGA2311_TYPE, 0, 1, &zero, 0.0, 100.0);
-
-  ret = volume_output(te, PGA2311_TYPE, 2, 0, volume_vhf, 0.0, 100.0);
-  ret = volume_output(te, PGA2311_TYPE, 2, 1, &zero, 0.0, 100.0);
+  ret = digital_output(te, TEENSY_TYPE, 0, 24, &switch_ptt_copilot);
+  if (ret == 1) {
+    printf("COPILOT MIC OUTPUT TO PC changed to: %i \n",switch_ptt_copilot);
+  }
   
-  ret = volume_output(te, PGA2311_TYPE, 4, 0, volume_vhf, 0.0, 100.0);
-  ret = volume_output(te, PGA2311_TYPE, 4, 1, &zero, 0.0, 100.0);
+  /* PTT Switch: Enable Jumpseat Mic Output to PC (jump seat has no mic button, however) */
+  ret = digital_output(te, TEENSY_TYPE, 0, 32, &switch_ptt_jumpseat);
+  if (ret == 1) {
+    printf("JUMPSEAT MIC OUTPUT TO PC changed to: %i \n",switch_ptt_jumpseat);
+  }
 
-  /* Change volume of Headset */
-  ret = volume_output(te, PGA2311_TYPE, 1, 1, volume_headset, 0.0, 100.0);
+  /* Change volume of Captain VHF1 channel */
+  ret = volume_output(te, PGA2311_TYPE, 0, 0, acp1_vol_vhf1, 0.0, 100.0);
 
-  ret = volume_output(te, PGA2311_TYPE, 3, 1, volume_headset, 0.0, 100.0);
+  /* Change volume of Captain VHF2 channel */
+  ret = volume_output(te, PGA2311_TYPE, 0, 1, acp1_vol_vhf2, 0.0, 100.0);
+
+  /* Change volume of First Officer VHF1 channel */
+  ret = volume_output(te, PGA2311_TYPE, 2, 0, acp2_vol_vhf1, 0.0, 100.0);
+
+  /* Change volume of First Officer VHF2 channel */
+  ret = volume_output(te, PGA2311_TYPE, 2, 1, acp2_vol_vhf2, 0.0, 100.0);
   
-  ret = volume_output(te, PGA2311_TYPE, 5, 1, volume_headset, 0.0, 100.0);
+  /* Change volume of Jump Seat VHF1 channel */
+  ret = volume_output(te, PGA2311_TYPE, 4, 0, acp3_vol_vhf1, 0.0, 100.0);
 
-  /* Change volume of Speaker */
-  ret = volume_output(te, PGA2311_TYPE, 1, 0, volume_speaker, 0.0, 100.0);
+  /* Change volume of Jump Seat VHF2 channel */
+  ret = volume_output(te, PGA2311_TYPE, 4, 1, acp3_vol_vhf2, 0.0, 100.0);
 
-  ret = volume_output(te, PGA2311_TYPE, 3, 0, volume_speaker, 0.0, 100.0);
+  /* Change volume of Captain Headset */
+  ret = volume_output(te, PGA2311_TYPE, 1, 1, acp1_vol_pa, 0.0, 100.0);
+
+  /* Change volume of First Officer Headset */
+  ret = volume_output(te, PGA2311_TYPE, 3, 1, acp2_vol_pa, 0.0, 100.0);
   
-  ret = volume_output(te, PGA2311_TYPE, 5, 0, volume_speaker, 0.0, 100.0);
+  /* Change volume of Jump Seat Headset */
+  ret = volume_output(te, PGA2311_TYPE, 5, 1, acp3_vol_pa, 0.0, 100.0);
+
+  /* Change volume of Captain Speaker */
+  ret = volume_output(te, PGA2311_TYPE, 1, 0, acp1_vol_spkr, 0.0, 100.0);
+
+  /* Change volume of First Officer Speaker */
+  ret = volume_output(te, PGA2311_TYPE, 3, 0, acp2_vol_spkr, 0.0, 100.0);
+  
+  /* Change volume of Jump Seat Speaker */
+  ret = volume_output(te, PGA2311_TYPE, 5, 0, acp3_vol_spkr, 0.0, 100.0);
 
  
 }

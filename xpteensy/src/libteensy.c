@@ -1327,6 +1327,7 @@ int digital_output(int te, int type, int dev, int pin, int *value) {
 		  if (*value != teensy[te].val[pin][0]) {
 		    teensy[te].val[pin][0] = *value;
 		    if (verbose > 1) printf("Digital Output %i of Teensy %i changed to %i \n", pin,te,*value);
+		    retval = 1;
 		  }
 		} else {
 		  if (verbose > 0) printf("Pin %i is not defined as digital output of Teensy %i \n", pin, te);
@@ -1347,6 +1348,7 @@ int digital_output(int te, int type, int dev, int pin, int *value) {
 			mcp23017[te][dev].val[pin] = *value;
 			if (verbose > 1) printf("Digital Output %i of Teensy %i MCP23017 %i changed to %i \n",
 						pin,te,dev,*value);
+			retval = 1;
 		      }
 		    } else {
 		      if (verbose > 0) printf("Pin %i is not defined as digital output of Teensy %i MCP23017 %i \n",
