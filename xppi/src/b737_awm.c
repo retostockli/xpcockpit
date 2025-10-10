@@ -97,7 +97,8 @@ void b737_awm(void)
  
     /* link integer data like a switch in the cockpit */
     float *ap_disconnect = link_dataref_flt("laminar/b738/fmodpack/fmod_ap_disconnect",0);
-    int *belts = link_dataref_int("laminar/b738/fmodpack/play_seatbelt_no_smoke");
+    //float *belts = link_dataref_flt("laminar/b738/fmodpack/play_seatbelt_no_smoke",0);
+    float *belts = link_dataref_flt("laminar/b738/fmodpack/seatbelt_on_light",0);
     float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
     float *mach_warn = link_dataref_flt("laminar/B738/fmod/mach_warn",0);
     float *fire_bell = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
@@ -128,8 +129,13 @@ void b737_awm(void)
 #endif
 
     int hi_chime;
-    if ((*belts != INT_MISS) && (*belts_test != INT_MISS) && (hi_chime != hi_chime_save)) {
-      hi_chime = 1;
+    if ((*belts != FLT_MISS) && (*belts_test != INT_MISS)) {
+      hi_chime = ((int) *belts) || *belts_test;
+      if (hi_chime != hi_chime_save) {
+	hi_chime = 1;
+      } else {
+	hi_chime = 0;
+      }
       hi_chime_save = hi_chime;
       printf("BELTS\n");
     } else {
