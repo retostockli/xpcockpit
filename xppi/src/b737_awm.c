@@ -52,7 +52,7 @@
 #define CLACKER_PIN 10
 #define FIRE_BELL_PIN 9
 
-int hi_chime_save;
+int hi_chime_status_save;
 struct timeval attend_time1;
 
 int b737_awm_init(void) {
@@ -77,7 +77,7 @@ int b737_awm_init(void) {
   pinMode(FIRE_BELL_PIN, OUTPUT);
 #endif
   
-  hi_chime_save = 0;
+  hi_chime_status_save = 0;
   
   return 0;
   
@@ -130,14 +130,14 @@ void b737_awm(void)
 
     int hi_chime;
     if ((*belts != FLT_MISS) && (*belts_test != INT_MISS)) {
-      hi_chime = ((int) *belts) || *belts_test;
-      if (hi_chime != hi_chime_save) {
+      int hi_chime_status = ((int) *belts) || *belts_test;
+      if (hi_chime_status != hi_chime_status_save) {
 	printf("BELTS\n");
 	hi_chime = 1;
       } else {
 	hi_chime = 0;
       }
-      hi_chime_save = hi_chime;
+      hi_chime_status_save = hi_chime_status;
     } else {
       hi_chime = 0;
     }
