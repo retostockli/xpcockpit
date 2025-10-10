@@ -56,12 +56,6 @@ int adf2_ant_switch;
 int adf2_tone_switch;
 
 
-int acp1_micsel_vhf3;
-int acp1_micsel_hf1;
-int acp1_micsel_hf2;
-int acp1_micsel_flt;
-int acp1_micsel_svc;
-int acp1_micsel_pa;
 int acp1_rt_ic;
 int acp1_sel_v;
 int acp1_sel_b;
@@ -69,12 +63,6 @@ int acp1_sel_r;
 int acp1_sel_vbr;
 int acp1_alt_norm;
 
-int acp2_micsel_vhf3;
-int acp2_micsel_hf1;
-int acp2_micsel_hf2;
-int acp2_micsel_flt;
-int acp2_micsel_svc;
-int acp2_micsel_pa;
 int acp2_rt_ic;
 int acp2_sel_v;
 int acp2_sel_b;
@@ -375,23 +363,35 @@ void b737_pedestal(void)
 
   int *acp1_micsel_vhf1 = link_dataref_int("xpserver/acp1_micsel_vhf1");
   int *acp1_micsel_vhf2 = link_dataref_int("xpserver/acp1_micsel_vhf2");
-  int *acp1_mask_boom = link_dataref_int("xpserver/acp1_mask_boom");
+  int *acp1_micsel_vhf3 = link_dataref_int("xpserver/acp1_micsel_vhf3");
+  int *acp1_micsel_hf1  = link_dataref_int("xpserver/acp1_micsel_hf1");
+  int *acp1_micsel_hf2  = link_dataref_int("xpserver/acp1_micsel_hf2");
+  int *acp1_micsel_flt  = link_dataref_int("xpserver/acp1_micsel_flt");
+  int *acp1_micsel_svc  = link_dataref_int("xpserver/acp1_micsel_svc");
+  int *acp1_micsel_pa   = link_dataref_int("xpserver/acp1_micsel_pa");
+  int *acp1_mask_boom   = link_dataref_int("xpserver/acp1_mask_boom");
   
-  float *acp1_vol_vhf1 = link_dataref_flt("xpserver/acp1_vol_vhf1",0);
-  float *acp1_vol_vhf2 = link_dataref_flt("xpserver/acp1_vol_vhf2",0);
-  float *acp1_vol_pa = link_dataref_flt("xpserver/acp1_vol_pa",0);
-  float *acp1_vol_mkr = link_dataref_flt("xpserver/acp1_vol_mkr",0);
-  float *acp1_vol_spkr = link_dataref_flt("xpserver/acp1_vol_spkr",0);
+  float *acp1_vol_vhf1  = link_dataref_flt("xpserver/acp1_vol_vhf1",0);
+  float *acp1_vol_vhf2  = link_dataref_flt("xpserver/acp1_vol_vhf2",0);
+  float *acp1_vol_pa    = link_dataref_flt("xpserver/acp1_vol_pa",0);
+  float *acp1_vol_mkr   = link_dataref_flt("xpserver/acp1_vol_mkr",0);
+  float *acp1_vol_spkr  = link_dataref_flt("xpserver/acp1_vol_spkr",0);
   
   int *acp2_micsel_vhf1 = link_dataref_int("xpserver/acp2_micsel_vhf1");
   int *acp2_micsel_vhf2 = link_dataref_int("xpserver/acp2_micsel_vhf2");
-  int *acp2_mask_boom = link_dataref_int("xpserver/acp2_mask_boom");
+  int *acp2_micsel_vhf3 = link_dataref_int("xpserver/acp2_micsel_vhf3");
+  int *acp2_micsel_hf1  = link_dataref_int("xpserver/acp2_micsel_hf1");
+  int *acp2_micsel_hf2  = link_dataref_int("xpserver/acp2_micsel_hf2");
+  int *acp2_micsel_flt  = link_dataref_int("xpserver/acp2_micsel_flt");
+  int *acp2_micsel_svc  = link_dataref_int("xpserver/acp2_micsel_svc");
+  int *acp2_micsel_pa   = link_dataref_int("xpserver/acp2_micsel_pa");
+  int *acp2_mask_boom   = link_dataref_int("xpserver/acp2_mask_boom");
   
-  float *acp2_vol_vhf1 = link_dataref_flt("xpserver/acp2_vol_vhf1",0);
-  float *acp2_vol_vhf2 = link_dataref_flt("xpserver/acp2_vol_vhf2",0);
-  float *acp2_vol_pa = link_dataref_flt("xpserver/acp2_vol_pa",0);
-  float *acp2_vol_mkr = link_dataref_flt("xpserver/acp2_vol_mkr",0);
-  float *acp2_vol_spkr = link_dataref_flt("xpserver/acp2_vol_spkr",0);
+  float *acp2_vol_vhf1  = link_dataref_flt("xpserver/acp2_vol_vhf1",0);
+  float *acp2_vol_vhf2  = link_dataref_flt("xpserver/acp2_vol_vhf2",0);
+  float *acp2_vol_pa    = link_dataref_flt("xpserver/acp2_vol_pa",0);
+  float *acp2_vol_mkr   = link_dataref_flt("xpserver/acp2_vol_mkr",0);
+  float *acp2_vol_spkr  = link_dataref_flt("xpserver/acp2_vol_spkr",0);
   
   float *flood_brightness = link_dataref_flt("xpserver/pedestal_flood_brightness",-1);
   
@@ -744,6 +744,17 @@ void b737_pedestal(void)
   o0 = 32+8;
   a0 = 5;
 
+  if ((*acp1_micsel_vhf1 == INT_MISS) || (*avionics_on != 1)) {
+    *acp1_micsel_vhf1 = 0;
+    *acp1_micsel_vhf2 = 0;
+    *acp1_micsel_vhf3 = 0;
+    *acp1_micsel_hf1 = 0;
+    *acp1_micsel_hf2 = 0;
+    *acp1_micsel_flt = 0;
+    *acp1_micsel_svc = 0;
+    *acp1_micsel_pa = 0;
+  }
+  
   /* MIC Selectors */
   ret = digital_input(card,i0+0,acp1_micsel_vhf1,1);
   if (ret == 1) {
@@ -751,12 +762,12 @@ void b737_pedestal(void)
     if (*acp1_micsel_vhf1 == 1) {
       //*acp1_micsel_vhf1 = 0;
       *acp1_micsel_vhf2 = 0;
-      acp1_micsel_vhf3 = 0;
-      acp1_micsel_hf1 = 0;
-      acp1_micsel_hf2 = 0;
-      acp1_micsel_flt = 0;
-      acp1_micsel_svc = 0;
-      acp1_micsel_pa = 0;
+      *acp1_micsel_vhf3 = 0;
+      *acp1_micsel_hf1 = 0;
+      *acp1_micsel_hf2 = 0;
+      *acp1_micsel_flt = 0;
+      *acp1_micsel_svc = 0;
+      *acp1_micsel_pa = 0;
     }
   }    
   ret = digital_output(card,o0+0,acp1_micsel_vhf1);
@@ -767,111 +778,111 @@ void b737_pedestal(void)
     if (*acp1_micsel_vhf2 == 1) {
       *acp1_micsel_vhf1 = 0;
       //*acp1_micsel_vhf2 = 0;
-      acp1_micsel_vhf3 = 0;
-      acp1_micsel_hf1 = 0;
-      acp1_micsel_hf2 = 0;
-      acp1_micsel_flt = 0;
-      acp1_micsel_svc = 0;
-      acp1_micsel_pa = 0;
+      *acp1_micsel_vhf3 = 0;
+      *acp1_micsel_hf1 = 0;
+      *acp1_micsel_hf2 = 0;
+      *acp1_micsel_flt = 0;
+      *acp1_micsel_svc = 0;
+      *acp1_micsel_pa = 0;
     }
   }    
   ret = digital_output(card,o0+1,acp1_micsel_vhf2);
   
-  ret = digital_input(card,i0+2,&acp1_micsel_vhf3,1);
+  ret = digital_input(card,i0+2,acp1_micsel_vhf3,1);
   if (ret == 1) {
-    printf("ACP1 MIC SELECTOR VHF3: %i \n",acp1_micsel_vhf3);
-    if (acp1_micsel_vhf3 == 1) {
+    printf("ACP1 MIC SELECTOR VHF3: %i \n",*acp1_micsel_vhf3);
+    if (*acp1_micsel_vhf3 == 1) {
       *acp1_micsel_vhf1 = 0;
       *acp1_micsel_vhf2 = 0;
-      //acp1_micsel_vhf3 = 0;
-      acp1_micsel_hf1 = 0;
-      acp1_micsel_hf2 = 0;
-      acp1_micsel_flt = 0;
-      acp1_micsel_svc = 0;
-      acp1_micsel_pa = 0;
+      //*acp1_micsel_vhf3 = 0;
+      *acp1_micsel_hf1 = 0;
+      *acp1_micsel_hf2 = 0;
+      *acp1_micsel_flt = 0;
+      *acp1_micsel_svc = 0;
+      *acp1_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+2,&acp1_micsel_vhf3);
+  ret = digital_output(card,o0+2,acp1_micsel_vhf3);
   
-  ret = digital_input(card,i0+3,&acp1_micsel_hf1,1);
+  ret = digital_input(card,i0+3,acp1_micsel_hf1,1);
   if (ret == 1) {
-    printf("ACP1 MIC SELECTOR HF1: %i \n",acp1_micsel_hf1);
-    if (acp1_micsel_hf1 == 1) {
+    printf("ACP1 MIC SELECTOR HF1: %i \n",*acp1_micsel_hf1);
+    if (*acp1_micsel_hf1 == 1) {
       *acp1_micsel_vhf1 = 0;
       *acp1_micsel_vhf2 = 0;
-      acp1_micsel_vhf3 = 0;
-      //acp1_micsel_hf1 = 0;
-      acp1_micsel_hf2 = 0;
-      acp1_micsel_flt = 0;
-      acp1_micsel_svc = 0;
-      acp1_micsel_pa = 0;
+      *acp1_micsel_vhf3 = 0;
+      //*acp1_micsel_hf1 = 0;
+      *acp1_micsel_hf2 = 0;
+      *acp1_micsel_flt = 0;
+      *acp1_micsel_svc = 0;
+      *acp1_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+3,&acp1_micsel_hf1);
+  ret = digital_output(card,o0+3,acp1_micsel_hf1);
   
-  ret = digital_input(card,i0+4,&acp1_micsel_hf2,1);
+  ret = digital_input(card,i0+4,acp1_micsel_hf2,1);
   if (ret == 1) {
-    printf("ACP1 MIC SELECTOR HF2: %i \n",acp1_micsel_hf2);
-    if (acp1_micsel_hf2 == 1) {
+    printf("ACP1 MIC SELECTOR HF2: %i \n",*acp1_micsel_hf2);
+    if (*acp1_micsel_hf2 == 1) {
       *acp1_micsel_vhf1 = 0;
       *acp1_micsel_vhf2 = 0;
-      acp1_micsel_vhf3 = 0;
-      acp1_micsel_hf1 = 0;
-      //acp1_micsel_hf2 = 0;
-      acp1_micsel_flt = 0;
-      acp1_micsel_svc = 0;
-      acp1_micsel_pa = 0;
+      *acp1_micsel_vhf3 = 0;
+      *acp1_micsel_hf1 = 0;
+      //*acp1_micsel_hf2 = 0;
+      *acp1_micsel_flt = 0;
+      *acp1_micsel_svc = 0;
+      *acp1_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+4,&acp1_micsel_hf2);
+  ret = digital_output(card,o0+4,acp1_micsel_hf2);
   
-  ret = digital_input(card,i0+5,&acp1_micsel_flt,1);
+  ret = digital_input(card,i0+5,acp1_micsel_flt,1);
   if (ret == 1) {
-    printf("ACP1 MIC SELECTOR FLT: %i \n",acp1_micsel_flt);
-    if (acp1_micsel_flt == 1) {
+    printf("ACP1 MIC SELECTOR FLT: %i \n",*acp1_micsel_flt);
+    if (*acp1_micsel_flt == 1) {
       *acp1_micsel_vhf1 = 0;
       *acp1_micsel_vhf2 = 0;
-      acp1_micsel_vhf3 = 0;
-      acp1_micsel_hf1 = 0;
-      acp1_micsel_hf2 = 0;
-      //acp1_micsel_flt = 0;
-      acp1_micsel_svc = 0;
-      acp1_micsel_pa = 0;
+      *acp1_micsel_vhf3 = 0;
+      *acp1_micsel_hf1 = 0;
+      *acp1_micsel_hf2 = 0;
+      //*acp1_micsel_flt = 0;
+      *acp1_micsel_svc = 0;
+      *acp1_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+5,&acp1_micsel_flt);
+  ret = digital_output(card,o0+5,acp1_micsel_flt);
   
-  ret = digital_input(card,i0+6,&acp1_micsel_svc,1);
+  ret = digital_input(card,i0+6,acp1_micsel_svc,1);
   if (ret == 1) {
-    printf("ACP1 MIC SELECTOR SVC: %i \n",acp1_micsel_svc);
-    if (acp1_micsel_svc == 1) {
+    printf("ACP1 MIC SELECTOR SVC: %i \n",*acp1_micsel_svc);
+    if (*acp1_micsel_svc == 1) {
       *acp1_micsel_vhf1 = 0;
       *acp1_micsel_vhf2 = 0;
-      acp1_micsel_vhf3 = 0;
-      acp1_micsel_hf1 = 0;
-      acp1_micsel_hf2 = 0;
-      acp1_micsel_flt = 0;
-      //acp1_micsel_svc = 0;
-      acp1_micsel_pa = 0;
+      *acp1_micsel_vhf3 = 0;
+      *acp1_micsel_hf1 = 0;
+      *acp1_micsel_hf2 = 0;
+      *acp1_micsel_flt = 0;
+      //*acp1_micsel_svc = 0;
+      *acp1_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+6,&acp1_micsel_svc);
+  ret = digital_output(card,o0+6,acp1_micsel_svc);
   
-  ret = digital_input(card,i0+7,&acp1_micsel_pa,1);
+  ret = digital_input(card,i0+7,acp1_micsel_pa,1);
   if (ret == 1) {
-    printf("ACP1 MIC SELECTOR PA: %i \n",acp1_micsel_pa);
-    if (acp1_micsel_pa == 1) {
+    printf("ACP1 MIC SELECTOR PA: %i \n",*acp1_micsel_pa);
+    if (*acp1_micsel_pa == 1) {
       *acp1_micsel_vhf1 = 0;
       *acp1_micsel_vhf2 = 0;
-      acp1_micsel_vhf3 = 0;
-      acp1_micsel_hf1 = 0;
-      acp1_micsel_hf2 = 0;
-      acp1_micsel_flt = 0;
-      acp1_micsel_svc = 0;
-      //acp1_micsel_pa = 0;
+      *acp1_micsel_vhf3 = 0;
+      *acp1_micsel_hf1 = 0;
+      *acp1_micsel_hf2 = 0;
+      *acp1_micsel_flt = 0;
+      *acp1_micsel_svc = 0;
+      //*acp1_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+7,&acp1_micsel_pa);
+  ret = digital_output(card,o0+7,acp1_micsel_pa);
 
   /* Other Switches */
   ret = digital_input(card,i0+8,&acp1_rt_ic,0);
@@ -935,6 +946,17 @@ void b737_pedestal(void)
   o0 = 32+16;
   a0 = 10;
 
+  if ((*acp2_micsel_vhf1 == INT_MISS) || (*avionics_on != 1)) {
+    *acp2_micsel_vhf1 = 0;
+    *acp2_micsel_vhf2 = 0;
+    *acp2_micsel_vhf3 = 0;
+    *acp2_micsel_hf1 = 0;
+    *acp2_micsel_hf2 = 0;
+    *acp2_micsel_flt = 0;
+    *acp2_micsel_svc = 0;
+    *acp2_micsel_pa = 0;
+  }
+  
   /* MIC Selectors */
   ret = digital_input(card,i0+0,acp2_micsel_vhf1,1);
   if (ret == 1) {
@@ -942,12 +964,12 @@ void b737_pedestal(void)
     if (*acp2_micsel_vhf1 == 1) {
       //*acp2_micsel_vhf1 = 0;
       *acp2_micsel_vhf2 = 0;
-      acp2_micsel_vhf3 = 0;
-      acp2_micsel_hf1 = 0;
-      acp2_micsel_hf2 = 0;
-      acp2_micsel_flt = 0;
-      acp2_micsel_svc = 0;
-      acp2_micsel_pa = 0;
+      *acp2_micsel_vhf3 = 0;
+      *acp2_micsel_hf1 = 0;
+      *acp2_micsel_hf2 = 0;
+      *acp2_micsel_flt = 0;
+      *acp2_micsel_svc = 0;
+      *acp2_micsel_pa = 0;
     }
   }    
   ret = digital_output(card,o0+0,acp2_micsel_vhf1);
@@ -958,111 +980,111 @@ void b737_pedestal(void)
     if (*acp2_micsel_vhf2 == 1) {
       *acp2_micsel_vhf1 = 0;
       //*acp2_micsel_vhf2 = 0;
-      acp2_micsel_vhf3 = 0;
-      acp2_micsel_hf1 = 0;
-      acp2_micsel_hf2 = 0;
-      acp2_micsel_flt = 0;
-      acp2_micsel_svc = 0;
-      acp2_micsel_pa = 0;
+      *acp2_micsel_vhf3 = 0;
+      *acp2_micsel_hf1 = 0;
+      *acp2_micsel_hf2 = 0;
+      *acp2_micsel_flt = 0;
+      *acp2_micsel_svc = 0;
+      *acp2_micsel_pa = 0;
     }
   }    
   ret = digital_output(card,o0+1,acp2_micsel_vhf2);
   
-  ret = digital_input(card,i0+2,&acp2_micsel_vhf3,1);
+  ret = digital_input(card,i0+2,acp2_micsel_vhf3,1);
   if (ret == 1) {
-    printf("ACP2 MIC SELECTOR VHF3: %i \n",acp2_micsel_vhf3);
-    if (acp2_micsel_vhf3 == 1) {
+    printf("ACP2 MIC SELECTOR VHF3: %i \n",*acp2_micsel_vhf3);
+    if (*acp2_micsel_vhf3 == 1) {
       *acp2_micsel_vhf1 = 0;
       *acp2_micsel_vhf2 = 0;
-      //acp2_micsel_vhf3 = 0;
-      acp2_micsel_hf1 = 0;
-      acp2_micsel_hf2 = 0;
-      acp2_micsel_flt = 0;
-      acp2_micsel_svc = 0;
-      acp2_micsel_pa = 0;
+      //*acp2_micsel_vhf3 = 0;
+      *acp2_micsel_hf1 = 0;
+      *acp2_micsel_hf2 = 0;
+      *acp2_micsel_flt = 0;
+      *acp2_micsel_svc = 0;
+      *acp2_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+2,&acp2_micsel_vhf3);
+  ret = digital_output(card,o0+2,acp2_micsel_vhf3);
   
-  ret = digital_input(card,i0+3,&acp2_micsel_hf1,1);
+  ret = digital_input(card,i0+3,acp2_micsel_hf1,1);
   if (ret == 1) {
-    printf("ACP2 MIC SELECTOR HF1: %i \n",acp2_micsel_hf1);
-    if (acp2_micsel_hf1 == 1) {
+    printf("ACP2 MIC SELECTOR HF1: %i \n",*acp2_micsel_hf1);
+    if (*acp2_micsel_hf1 == 1) {
       *acp2_micsel_vhf1 = 0;
       *acp2_micsel_vhf2 = 0;
-      acp2_micsel_vhf3 = 0;
-      //acp2_micsel_hf1 = 0;
-      acp2_micsel_hf2 = 0;
-      acp2_micsel_flt = 0;
-      acp2_micsel_svc = 0;
-      acp2_micsel_pa = 0;
+      *acp2_micsel_vhf3 = 0;
+      //*acp2_micsel_hf1 = 0;
+      *acp2_micsel_hf2 = 0;
+      *acp2_micsel_flt = 0;
+      *acp2_micsel_svc = 0;
+      *acp2_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+3,&acp2_micsel_hf1);
+  ret = digital_output(card,o0+3,acp2_micsel_hf1);
   
-  ret = digital_input(card,i0+4,&acp2_micsel_hf2,1);
+  ret = digital_input(card,i0+4,acp2_micsel_hf2,1);
   if (ret == 1) {
-    printf("ACP2 MIC SELECTOR HF2: %i \n",acp2_micsel_hf2);
-    if (acp2_micsel_hf2 == 1) {
+    printf("ACP2 MIC SELECTOR HF2: %i \n",*acp2_micsel_hf2);
+    if (*acp2_micsel_hf2 == 1) {
       *acp2_micsel_vhf1 = 0;
       *acp2_micsel_vhf2 = 0;
-      acp2_micsel_vhf3 = 0;
-      acp2_micsel_hf1 = 0;
-      //acp2_micsel_hf2 = 0;
-      acp2_micsel_flt = 0;
-      acp2_micsel_svc = 0;
-      acp2_micsel_pa = 0;
+      *acp2_micsel_vhf3 = 0;
+      *acp2_micsel_hf1 = 0;
+      //*acp2_micsel_hf2 = 0;
+      *acp2_micsel_flt = 0;
+      *acp2_micsel_svc = 0;
+      *acp2_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+4,&acp2_micsel_hf2);
+  ret = digital_output(card,o0+4,acp2_micsel_hf2);
   
-  ret = digital_input(card,i0+5,&acp2_micsel_flt,1);
+  ret = digital_input(card,i0+5,acp2_micsel_flt,1);
   if (ret == 1) {
-    printf("ACP2 MIC SELECTOR FLT: %i \n",acp2_micsel_flt);
-    if (acp2_micsel_flt == 1) {
+    printf("ACP2 MIC SELECTOR FLT: %i \n",*acp2_micsel_flt);
+    if (*acp2_micsel_flt == 1) {
       *acp2_micsel_vhf1 = 0;
       *acp2_micsel_vhf2 = 0;
-      acp2_micsel_vhf3 = 0;
-      acp2_micsel_hf1 = 0;
-      acp2_micsel_hf2 = 0;
-      //acp2_micsel_flt = 0;
-      acp2_micsel_svc = 0;
-      acp2_micsel_pa = 0;
+      *acp2_micsel_vhf3 = 0;
+      *acp2_micsel_hf1 = 0;
+      *acp2_micsel_hf2 = 0;
+      //*acp2_micsel_flt = 0;
+      *acp2_micsel_svc = 0;
+      *acp2_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+5,&acp2_micsel_flt);
+  ret = digital_output(card,o0+5,acp2_micsel_flt);
   
-  ret = digital_input(card,i0+6,&acp2_micsel_svc,1);
+  ret = digital_input(card,i0+6,acp2_micsel_svc,1);
   if (ret == 1) {
-    printf("ACP2 MIC SELECTOR SVC: %i \n",acp2_micsel_svc);
-    if (acp2_micsel_svc == 1) {
+    printf("ACP2 MIC SELECTOR SVC: %i \n",*acp2_micsel_svc);
+    if (*acp2_micsel_svc == 1) {
       *acp2_micsel_vhf1 = 0;
       *acp2_micsel_vhf2 = 0;
-      acp2_micsel_vhf3 = 0;
-      acp2_micsel_hf1 = 0;
-      acp2_micsel_hf2 = 0;
-      acp2_micsel_flt = 0;
-      //acp2_micsel_svc = 0;
-      acp2_micsel_pa = 0;
+      *acp2_micsel_vhf3 = 0;
+      *acp2_micsel_hf1 = 0;
+      *acp2_micsel_hf2 = 0;
+      *acp2_micsel_flt = 0;
+      //*acp2_micsel_svc = 0;
+      *acp2_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+6,&acp2_micsel_svc);
+  ret = digital_output(card,o0+6,acp2_micsel_svc);
   
-  ret = digital_input(card,i0+7,&acp2_micsel_pa,1);
+  ret = digital_input(card,i0+7,acp2_micsel_pa,1);
   if (ret == 1) {
-    printf("ACP2 MIC SELECTOR PA: %i \n",acp2_micsel_pa);
-    if (acp2_micsel_pa == 1) {
+    printf("ACP2 MIC SELECTOR PA: %i \n",*acp2_micsel_pa);
+    if (*acp2_micsel_pa == 1) {
       *acp2_micsel_vhf1 = 0;
       *acp2_micsel_vhf2 = 0;
-      acp2_micsel_vhf3 = 0;
-      acp2_micsel_hf1 = 0;
-      acp2_micsel_hf2 = 0;
-      acp2_micsel_flt = 0;
-      acp2_micsel_svc = 0;
-      //acp2_micsel_pa = 0;
+      *acp2_micsel_vhf3 = 0;
+      *acp2_micsel_hf1 = 0;
+      *acp2_micsel_hf2 = 0;
+      *acp2_micsel_flt = 0;
+      *acp2_micsel_svc = 0;
+      //*acp2_micsel_pa = 0;
     }
   }    
-  ret = digital_output(card,o0+7,&acp2_micsel_pa);
+  ret = digital_output(card,o0+7,acp2_micsel_pa);
 
   /* Other Switches */
   ret = digital_input(card,i0+8,&acp2_rt_ic,0);
