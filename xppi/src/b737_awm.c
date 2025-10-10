@@ -195,33 +195,30 @@ void b737_awm(void)
 #endif
   
     /* CONFIG and ALT Warn have the same sound */
-    if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS)) {
-      int int_horn = (int) *config_warn || (int) *alt_warn;
-#ifdef PIGPIO
-      gpioWrite(INT_HORN_PIN, int_horn);
-#else
-      digitalWrite(INT_HORN_PIN, int_horn);
-#endif
+    int int_horn;
+    if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS) && (*config_warn_test != INT_MISS)) {
+      int_horn = (int) *config_warn || (int) *alt_warn || *config_warn_test;
     } else {
-#ifdef PIGPIO
-      gpioWrite(INT_HORN_PIN, 0);
-#else
-      digitalWrite(INT_HORN_PIN, 0);
-#endif
+      int_horn = 0;
     }
-    if (*gear_warn != FLT_MISS) {
 #ifdef PIGPIO
-      gpioWrite(CONT_HORN_PIN, (int) *gear_warn);
+    gpioWrite(INT_HORN_PIN, int_horn);
 #else
-      digitalWrite(CONT_HORN_PIN, (int) *gear_warn);
+    digitalWrite(INT_HORN_PIN, int_horn);
 #endif
+
+    int cont_horn;
+    if ((*gear_warn != FLT_MISS) && (*gear_warn_test != INT_MISS)) {
+      cont_horn = (int) *gear_warn || *gear_warn_test;
     } else {
-#ifdef PIGPIO
-      gpioWrite(CONT_HORN_PIN, 0);
-#else
-      digitalWrite(CONT_HORN_PIN, 0);
-#endif
+      cont_horn = 0;
     }
+      
+#ifdef PIGPIO
+    gpioWrite(CONT_HORN_PIN, cont_horn);
+#else
+    digitalWrite(CONT_HORN_PIN, cont_horn);
+#endif
     
   }
   
