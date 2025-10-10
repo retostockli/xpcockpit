@@ -168,20 +168,19 @@ void b737_awm(void)
 #else
     digitalWrite(HILOW_CHIME_PIN, hilow_chime);
 #endif
-   
-    if (*mach_warn != FLT_MISS) {
-#ifdef PIGPIO
-      gpioWrite(CLACKER_PIN, (int) *mach_warn);
-#else
-      digitalWrite(CLACKER_PIN, (int) *mach_warn);
-#endif
+
+    int clacker;
+    if ((*mach_warn != FLT_MISS) || (*mach_warn_test != INT_MISS)) {
+      clacker = ((int) *mach_warn) || *mach_warn_test;
     } else {
-#ifdef PIGPIO
-      gpioWrite(CLACKER_PIN, 0);
-#else
-      digitalWrite(CLACKER_PIN, 0);
-#endif
+      clacker = 0;
     }
+#ifdef PIGPIO
+    gpioWrite(CLACKER_PIN, clacker);
+#else
+    digitalWrite(CLACKER_PIN, clacker);
+#endif
+
     if (*fire_bell != FLT_MISS) {
       int fb = (int) (*fire_bell > 0.5);
 #ifdef PIGPIO
