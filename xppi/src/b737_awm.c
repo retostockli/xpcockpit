@@ -127,21 +127,18 @@ void b737_awm(void)
     digitalWrite(AP_DISC_PIN, ap_disc);
 #endif
 
-    
-    if ((*belts != INT_MISS) && (*belts != belts_save)) {
-#ifdef PIGPIO
-      gpioWrite(HI_CHIME_PIN, 1);
-#else
-      digitalWrite(HI_CHIME_PIN, 1);
-#endif
-      belts_save = *belts;
+    int hi_chime;
+    if ((*belts != INT_MISS) && (*belts_test != INT_MISS) && (*belts != belts_save)) {
+      hi_chime = 1;
+      belts_save = *belts || *belts_test;
     } else {
-#ifdef PIGPIO
-      gpioWrite(HI_CHIME_PIN, 0);
-#else
-      digitalWrite(HI_CHIME_PIN, 0);
-#endif
+      hi_chime = 0;
     }
+#ifdef PIGPIO
+    gpioWrite(HI_CHIME_PIN, hi_chime);
+#else
+    digitalWrite(HI_CHIME_PIN, hi_chime);
+#endif
     
     if (*attend != FLT_MISS) {
       gettimeofday(&attend_time2,NULL);
