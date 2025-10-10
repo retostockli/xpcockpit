@@ -132,7 +132,6 @@ void b737_awm(void)
     if ((*belts != FLT_MISS) && (*belts_test != INT_MISS)) {
       int hi_chime_status = ((int) *belts) || *belts_test;
       if (hi_chime_status != hi_chime_status_save) {
-	printf("BELTS\n");
 	hi_chime = 1;
       } else {
 	hi_chime = 0;
@@ -146,36 +145,30 @@ void b737_awm(void)
 #else
     digitalWrite(HI_CHIME_PIN, hi_chime);
 #endif
-    
-    if (*attend != FLT_MISS) {
-      gettimeofday(&attend_time2,NULL);
-      if ((int) *attend == 1) {
-#ifdef PIGPIO
-	gpioWrite(HILOW_CHIME_PIN, 1);
-#else
-	digitalWrite(HILOW_CHIME_PIN, 1);
-#endif
-	gettimeofday(&attend_time1,NULL);
-      } else {
-	dtime = ((attend_time2.tv_sec - attend_time1.tv_sec) +
-		   (attend_time2.tv_usec - attend_time1.tv_usec) / 1000000.0);
-	if (dtime > 1.0) {
-#ifdef PIGPIO
-	  gpioWrite(HILOW_CHIME_PIN, 0);
-#else
-	  digitalWrite(HILOW_CHIME_PIN, 0);
-#endif
-	}
-      } 
-    } else {
-#ifdef PIGPIO
-      gpioWrite(HILOW_CHIME_PIN, 0);
-#else
-      digitalWrite(HILOW_CHIME_PIN, 0);
-#endif
-    }
 
-    
+    int hilow_chime;
+    if ((*attend != FLT_MISS) && (*attend_test != INT_MISS)) {
+      if (((int) *attend == 1) || (*attend_test == 1)) {
+	gettimeofday(&attend_time1,NULL);
+      }
+      gettimeofday(&attend_time2,NULL);
+      dtime = ((attend_time2.tv_sec - attend_time1.tv_sec) +
+	       (attend_time2.tv_usec - attend_time1.tv_usec) / 1000000.0);
+      if (dtime < 1.0) {
+	hilow_chime = 1;
+      } else {
+	hilow_chime = 0;
+      }
+    } else {
+      hilow_chime = 0;
+    }
+          
+#ifdef PIGPIO
+    gpioWrite(HILOW_CHIME_PIN, hilow_chime);
+#else
+    digitalWrite(HILOW_CHIME_PIN, hilow_chime);
+#endif
+   
     if (*mach_warn != FLT_MISS) {
 #ifdef PIGPIO
       gpioWrite(CLACKER_PIN, (int) *mach_warn);
