@@ -193,7 +193,6 @@ void b737_awm(void)
 #else
     digitalWrite(FIRE_BELL_PIN, fire_bell);
 #endif
-    }
   
     /* CONFIG and ALT Warn have the same sound */
     if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS)) {
