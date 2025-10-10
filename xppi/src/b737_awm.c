@@ -104,20 +104,29 @@ void b737_awm(void)
     float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
     float *alt_warn = link_dataref_flt("laminar/b738/fmodpack/horn_alert",0);
-    
-    if (*ap_disconnect != FLT_MISS) {
-#ifdef PIGPIO
-      gpioWrite(AP_DISC_PIN, (int) *ap_disconnect);
-#else
-      digitalWrite(AP_DISC_PIN, (int) *ap_disconnect);
-#endif
+
+    /* BUTTONS ON ACP1 to test the AWM */
+    int *ap_disconnect_test = link_dataref_int("xpserver/acp1_micsel_vhf3");
+    int *belts_test  = link_dataref_int("xpserver/acp1_micsel_hf1");
+    int *attend_test  = link_dataref_int("xpserver/acp1_micsel_hf2");
+    int *mach_warn_test  = link_dataref_int("xpserver/acp1_micsel_flt");
+    int *config_warn_test  = link_dataref_int("xpserver/acp1_micsel_svc");
+    int *gear_warn_test   = link_dataref_int("xpserver/acp1_micsel_pa");
+
+
+    int ap_disc;
+    if ((*ap_disconnect != FLT_MISS) && (*ap_disconnect_test != INT_MISS)) {
+      ap_disc = ((int) *ap_disconnect) || *ap_disconnect_test;
     } else {
-#ifdef PIGPIO
-      gpioWrite(AP_DISC_PIN, 0);
-#else
-      digitalWrite(AP_DISC_PIN, 0);
-#endif
+      ap_disc = 0;
     }
+    
+#ifdef PIGPIO
+    gpioWrite(AP_DISC_PIN, ap_disc);
+#else
+    digitalWrite(AP_DISC_PIN, ap_disc);
+#endif
+
     
     if ((*belts != INT_MISS) && (*belts != belts_save)) {
 #ifdef PIGPIO
@@ -190,6 +199,7 @@ void b737_awm(void)
       digitalWrite(FIRE_BELL_PIN, 0);
 #endif
     }
+    /* CONFIG and ALT Warn have the same sound */
     if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS)) {
       int int_horn = (int) *config_warn || (int) *alt_warn;
 #ifdef PIGPIO
