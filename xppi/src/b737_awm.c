@@ -131,6 +131,7 @@ void b737_awm(void)
     if ((*belts != INT_MISS) && (*belts_test != INT_MISS) && (*belts != belts_save)) {
       hi_chime = 1;
       belts_save = *belts || *belts_test;
+      printf("BELTS\n");
     } else {
       hi_chime = 0;
     }
