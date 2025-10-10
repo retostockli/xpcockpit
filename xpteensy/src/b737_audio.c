@@ -125,6 +125,16 @@ void b737_audio(void)
   float *acp3_vol_pa = link_dataref_flt("xpserver/acp3_vol_pa",0);
   float *acp3_vol_spkr = link_dataref_flt("xpserver/acp3_vol_spkr",0);
 
+  int *tx_com1;
+  int *tx_com2;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    tx_com1 = link_dataref_cmd_once("laminar/B738/audio/capt/mic_push1");
+    tx_com2 = link_dataref_cmd_once("laminar/B738/audio/capt/mic_push2");
+  } else {
+    tx_com1 = link_dataref_int("xpserver/tx_com1");
+    tx_com2 = link_dataref_int("xpserver/tx_com2");
+  }
+    
   int switch_handmic_captain = 0;
   int switch_handmic_copilot = 0;
   int switch_handmic_jumpseat = 0;
@@ -297,12 +307,26 @@ void b737_audio(void)
   ret = digital_output(te, TEENSY_TYPE, 0, 6, &switch_ptt_captain);
   if (ret == 1) {
     printf("CAPTAIN MIC OUTPUT TO PC changed to: %i \n",switch_ptt_captain);
+    if (switch_ptt_captain == 1) {
+      if (*acp1_micsel_vhf1 == 1) {
+	*tx_com1 = 1;
+      } else {
+	*tx_com2 = 1;
+      }
+    }
   }
   
   /* PTT Switch: Enable First Officer Mic Output to PC */
   ret = digital_output(te, TEENSY_TYPE, 0, 24, &switch_ptt_copilot);
   if (ret == 1) {
     printf("COPILOT MIC OUTPUT TO PC changed to: %i \n",switch_ptt_copilot);
+    if (switch_ptt_copilot == 1) {
+      if (*acp2_micsel_vhf1 == 1) {
+	*tx_com1 = 1;
+      } else {
+	*tx_com2 = 1;
+      }
+    }
   }
   
   /* PTT Switch: Enable Jumpseat Mic Output to PC (jump seat has no mic button, however) */
