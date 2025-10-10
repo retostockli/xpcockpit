@@ -101,7 +101,7 @@ void b737_awm(void)
     float *belts = link_dataref_flt("laminar/b738/fmodpack/seatbelt_on_light",0);
     float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
     float *mach_warn = link_dataref_flt("laminar/B738/fmod/mach_warn",0);
-    float *fire_bell = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
+    float *fire_warn = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
     float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
     float *alt_warn = link_dataref_flt("laminar/b738/fmodpack/horn_alert",0);
@@ -181,20 +181,20 @@ void b737_awm(void)
     digitalWrite(CLACKER_PIN, clacker);
 #endif
 
-    if (*fire_bell != FLT_MISS) {
-      int fb = (int) (*fire_bell > 0.5);
-#ifdef PIGPIO
-      gpioWrite(FIRE_BELL_PIN, fb);
-#else
-      digitalWrite(FIRE_BELL_PIN, fb);
-#endif
+    int fire_bell;
+    if (*fire_warn != FLT_MISS) {
+      fire_bell = (int) (*fire_warn > 0.5);
     } else {
+      fire_bell = 0;
+    }
+      
 #ifdef PIGPIO
-      gpioWrite(FIRE_BELL_PIN, 0);
+    gpioWrite(FIRE_BELL_PIN, fire_bell);
 #else
-      digitalWrite(FIRE_BELL_PIN, 0);
+    digitalWrite(FIRE_BELL_PIN, fire_bell);
 #endif
     }
+  
     /* CONFIG and ALT Warn have the same sound */
     if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS)) {
       int int_horn = (int) *config_warn || (int) *alt_warn;
