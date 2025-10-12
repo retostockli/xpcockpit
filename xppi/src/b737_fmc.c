@@ -112,9 +112,11 @@ int somethingPressed;
 int fmc_is_initialized;
 
 /* prototype functions */
-void *poll_thread_main(void *);
+//void *poll_thread_main(void *); --> Works on Linux but not on RPI
+void *poll_thread_main();
 
-void *poll_thread_main(void *)
+//void *poll_thread_main(void *) --> Works on Linux but not on RPI
+void *poll_thread_main()
 /* thread handles inputs which change faster than xppi cycle */
 {
 

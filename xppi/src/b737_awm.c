@@ -52,7 +52,7 @@
 #define CLACKER_PIN 10
 #define FIRE_BELL_PIN 9
 
-int belts_save;
+int hi_chime_status_save;
 struct timeval attend_time1;
 
 int b737_awm_init(void) {
@@ -77,7 +77,7 @@ int b737_awm_init(void) {
   pinMode(FIRE_BELL_PIN, OUTPUT);
 #endif
   
-  belts_save = 0;
+  hi_chime_status_save = 0;
   
   return 0;
   
@@ -97,126 +97,128 @@ void b737_awm(void)
  
     /* link integer data like a switch in the cockpit */
     float *ap_disconnect = link_dataref_flt("laminar/b738/fmodpack/fmod_ap_disconnect",0);
-    int *belts = link_dataref_int("laminar/b738/fmodpack/play_seatbelt_no_smoke");
+    //float *belts = link_dataref_flt("laminar/b738/fmodpack/play_seatbelt_no_smoke",0);
+    float *belts = link_dataref_flt("laminar/b738/fmodpack/seatbelt_on_light",0);
     float *attend = link_dataref_flt("laminar/B738/push_button/attend_pos",0);
     float *mach_warn = link_dataref_flt("laminar/B738/fmod/mach_warn",0);
-    float *fire_bell = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
+    float *fire_warn = link_dataref_flt("laminar/B738/annunciator/fire_bell_annun2",-1);
     float *config_warn = link_dataref_flt("laminar/B738/system/takeoff_config_warn",0);
     float *gear_warn = link_dataref_flt("laminar/b738/fmodpack/msg_too_low_gear",0);
     float *alt_warn = link_dataref_flt("laminar/b738/fmodpack/horn_alert",0);
-    
-    if (*ap_disconnect != FLT_MISS) {
-#ifdef PIGPIO
-      gpioWrite(AP_DISC_PIN, (int) *ap_disconnect);
-#else
-      digitalWrite(AP_DISC_PIN, (int) *ap_disconnect);
-#endif
-    } else {
-#ifdef PIGPIO
-      gpioWrite(AP_DISC_PIN, 0);
-#else
-      digitalWrite(AP_DISC_PIN, 0);
-#endif
-    }
-    
-    if ((*belts != INT_MISS) && (*belts != belts_save)) {
-#ifdef PIGPIO
-      gpioWrite(HI_CHIME_PIN, 1);
-#else
-      digitalWrite(HI_CHIME_PIN, 1);
-#endif
-      belts_save = *belts;
-    } else {
-#ifdef PIGPIO
-      gpioWrite(HI_CHIME_PIN, 0);
-#else
-      digitalWrite(HI_CHIME_PIN, 0);
-#endif
-    }
-    
-    if (*attend != FLT_MISS) {
-      gettimeofday(&attend_time2,NULL);
-      if ((int) *attend == 1) {
-#ifdef PIGPIO
-	gpioWrite(HILOW_CHIME_PIN, 1);
-#else
-	digitalWrite(HILOW_CHIME_PIN, 1);
-#endif
-	gettimeofday(&attend_time1,NULL);
-      } else {
-	dtime = ((attend_time2.tv_sec - attend_time1.tv_sec) +
-		   (attend_time2.tv_usec - attend_time1.tv_usec) / 1000000.0);
-	if (dtime > 1.0) {
-#ifdef PIGPIO
-	  gpioWrite(HILOW_CHIME_PIN, 0);
-#else
-	  digitalWrite(HILOW_CHIME_PIN, 0);
-#endif
-	}
-      } 
-    } else {
-#ifdef PIGPIO
-      gpioWrite(HILOW_CHIME_PIN, 0);
-#else
-      digitalWrite(HILOW_CHIME_PIN, 0);
-#endif
-    }
 
+    /* BUTTONS ON ACP1 to test the AWM */
+    int *ap_disconnect_test = link_dataref_int("xpserver/acp1_micsel_vhf3");
+    int *belts_test  = link_dataref_int("xpserver/acp1_micsel_hf1");
+    int *attend_test  = link_dataref_int("xpserver/acp1_micsel_hf2");
+    int *mach_warn_test  = link_dataref_int("xpserver/acp1_micsel_flt");
+    int *config_warn_test  = link_dataref_int("xpserver/acp1_micsel_svc");
+    int *gear_warn_test   = link_dataref_int("xpserver/acp1_micsel_pa");
+
+
+    int ap_disc;
+    if ((*ap_disconnect != FLT_MISS) && (*ap_disconnect_test != INT_MISS)) {
+      ap_disc = ((int) *ap_disconnect) || *ap_disconnect_test;
+    } else {
+      ap_disc = 0;
+    }
     
-    if (*mach_warn != FLT_MISS) {
 #ifdef PIGPIO
-      gpioWrite(CLACKER_PIN, (int) *mach_warn);
+    gpioWrite(AP_DISC_PIN, ap_disc);
 #else
-      digitalWrite(CLACKER_PIN, (int) *mach_warn);
+    digitalWrite(AP_DISC_PIN, ap_disc);
 #endif
+
+    int hi_chime;
+    if ((*belts != FLT_MISS) && (*belts_test != INT_MISS)) {
+      int hi_chime_status = ((int) *belts) || *belts_test;
+      if (hi_chime_status != hi_chime_status_save) {
+	hi_chime = 1;
+      } else {
+	hi_chime = 0;
+      }
+      hi_chime_status_save = hi_chime_status;
     } else {
-#ifdef PIGPIO
-      gpioWrite(CLACKER_PIN, 0);
-#else
-      digitalWrite(CLACKER_PIN, 0);
-#endif
+      hi_chime = 0;
     }
-    if (*fire_bell != FLT_MISS) {
-      int fb = (int) (*fire_bell > 0.5);
 #ifdef PIGPIO
-      gpioWrite(FIRE_BELL_PIN, fb);
+    gpioWrite(HI_CHIME_PIN, hi_chime);
 #else
-      digitalWrite(FIRE_BELL_PIN, fb);
+    digitalWrite(HI_CHIME_PIN, hi_chime);
 #endif
+
+    int hilow_chime;
+    if ((*attend != FLT_MISS) && (*attend_test != INT_MISS)) {
+      if (((int) *attend == 1) || (*attend_test == 1)) {
+	gettimeofday(&attend_time1,NULL);
+      }
+      gettimeofday(&attend_time2,NULL);
+      dtime = ((attend_time2.tv_sec - attend_time1.tv_sec) +
+	       (attend_time2.tv_usec - attend_time1.tv_usec) / 1000000.0);
+      if (dtime < 1.0) {
+	hilow_chime = 1;
+      } else {
+	hilow_chime = 0;
+      }
     } else {
-#ifdef PIGPIO
-      gpioWrite(FIRE_BELL_PIN, 0);
-#else
-      digitalWrite(FIRE_BELL_PIN, 0);
-#endif
+      hilow_chime = 0;
     }
-    if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS)) {
-      int int_horn = (int) *config_warn || (int) *alt_warn;
+          
 #ifdef PIGPIO
-      gpioWrite(INT_HORN_PIN, int_horn);
+    gpioWrite(HILOW_CHIME_PIN, hilow_chime);
 #else
-      digitalWrite(INT_HORN_PIN, int_horn);
+    digitalWrite(HILOW_CHIME_PIN, hilow_chime);
 #endif
+
+    int clacker;
+    if ((*mach_warn != FLT_MISS) || (*mach_warn_test != INT_MISS)) {
+      clacker = ((int) *mach_warn) || *mach_warn_test;
     } else {
-#ifdef PIGPIO
-      gpioWrite(INT_HORN_PIN, 0);
-#else
-      digitalWrite(INT_HORN_PIN, 0);
-#endif
+      clacker = 0;
     }
-    if (*gear_warn != FLT_MISS) {
 #ifdef PIGPIO
-      gpioWrite(CONT_HORN_PIN, (int) *gear_warn);
+    gpioWrite(CLACKER_PIN, clacker);
 #else
-      digitalWrite(CONT_HORN_PIN, (int) *gear_warn);
+    digitalWrite(CLACKER_PIN, clacker);
 #endif
+
+    int fire_bell;
+    if (*fire_warn != FLT_MISS) {
+      fire_bell = (int) (*fire_warn > 0.5);
     } else {
-#ifdef PIGPIO
-      gpioWrite(CONT_HORN_PIN, 0);
-#else
-      digitalWrite(CONT_HORN_PIN, 0);
-#endif
+      fire_bell = 0;
     }
+      
+#ifdef PIGPIO
+    gpioWrite(FIRE_BELL_PIN, fire_bell);
+#else
+    digitalWrite(FIRE_BELL_PIN, fire_bell);
+#endif
+  
+    /* CONFIG and ALT Warn have the same sound */
+    int int_horn;
+    if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS) && (*config_warn_test != INT_MISS)) {
+      int_horn = (int) *config_warn || (int) *alt_warn || *config_warn_test;
+    } else {
+      int_horn = 0;
+    }
+#ifdef PIGPIO
+    gpioWrite(INT_HORN_PIN, int_horn);
+#else
+    digitalWrite(INT_HORN_PIN, int_horn);
+#endif
+
+    int cont_horn;
+    if ((*gear_warn != FLT_MISS) && (*gear_warn_test != INT_MISS)) {
+      cont_horn = (int) *gear_warn || *gear_warn_test;
+    } else {
+      cont_horn = 0;
+    }
+      
+#ifdef PIGPIO
+    gpioWrite(CONT_HORN_PIN, cont_horn);
+#else
+    digitalWrite(CONT_HORN_PIN, cont_horn);
+#endif
     
   }
   
