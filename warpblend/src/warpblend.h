@@ -34,12 +34,12 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#ifdef HAVE_NVIDIASETTINGS
-#include "NVCtrl.h"
-#include "NVCtrlLib.h"
-#else
+#ifdef HAVE_NVCTRL_NVCTRL_H
 #include "NVCtrl/NVCtrl.h"
 #include "NVCtrl/NVCtrlLib.h"
+#else
+#include "NVCtrl.h"
+#include "NVCtrlLib.h"
 #endif
 
 /*
