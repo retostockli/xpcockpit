@@ -3,8 +3,10 @@ import random
 
 # --- constants --- (UPPER_CASE names)
 
-SCREEN_WIDTH  = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_WIDTH  = 500
+SCREEN_HEIGHT = 500
+SCREEN_XPOS = 100
+SCREEN_YPOS = 100
 
 DISTANCE = 50
 NUMBER = (SCREEN_WIDTH // DISTANCE) + 1
@@ -37,10 +39,13 @@ data = [random.randint(0, SCREEN_HEIGHT) for _ in range(NUMBER)]
 
 
 root = Tk()
-root.geometry('{}x{}'.format(SCREEN_WIDTH, SCREEN_HEIGHT))
+root.geometry('{}x{}+{}+{}'.format(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_XPOS, SCREEN_YPOS))
+
+# Use overrideredirect() method
+root.overrideredirect(True)
 
 #Full Screen Window
-root.attributes('-fullscreen', True)
+#root.attributes('-fullscreen', True)
 
 def quit_root():
    root.destroy()

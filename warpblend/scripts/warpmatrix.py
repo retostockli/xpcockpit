@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 
 # Which of the settings below do you want
-setting = 7
+setting = 6
 
 # Plot Warping grid for Checking
 doplot = True
