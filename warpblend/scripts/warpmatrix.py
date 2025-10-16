@@ -24,7 +24,7 @@ import matplotlib.pyplot as plot
 setting = 6
 
 # Plot Warping grid for Checking
-doplot = True
+doplot = False
 
 # Utilize new X-Plane 12 Window Position File Format
 xp12 = True
@@ -189,19 +189,19 @@ elif setting == 6:
 		outfile = "../data/X-Plane Window Positions_ONEMON.prf"
 		nmon = 1  # number of monitors
 		ceiling = True  # projector ceiling mount instead of table mount
-		cylindrical = [False]  # apply flat plane to cylinder warping
+		cylindrical = [True]  # apply flat plane to cylinder warping
 		projection = [True]  # apply projection onto curved surfae
-		epsilon = [6.5]         # projector tilt [deg]
+		epsilon = [0.0]         # projector tilt [deg]
 		frustum = 0.0 # vertical shift of horizon in normalized image coordinates [-1..1]
-		lateral_offset = [0.0]  # lateral offset [deg]
+		lateral_offset = [-68.1]  # lateral offset [deg]
 		vertical_offset = [0.0]    # vertical offset [deg]
-		vertical_shift = [0.0]    # vertical shift [pixel]
-		vertical_scale = [1.0]    # vertical scale [-]
+		vertical_shift = [12.0]    # vertical shift [pixel]
+		vertical_scale = [0.99]    # vertical scale [-]
 		blending = [True]   # apply blending at sides
 		# blending maximum widths per screen (0.0 means no blending) [-]
-		blend_left_top = [0.14]
-		blend_left_bot = [0.10]
-		blend_right_top = [0.14]
+		blend_left_top = [0.11]
+		blend_left_bot = [0.05]
+		blend_right_top = [0.15]
 		blend_right_bot = [0.10]
 		gridtest = True # display grid test pattern
 		blendtest = True  # cut blend sharp for testing
@@ -705,7 +705,10 @@ for mon in range(0,nmon,1):
 								
 								xdif[gx,gy] += ex - px
 								ydif[gx,gy] += ey - py
-
+								
+								if (gx == 0) & (gy == 0):
+										print(ex)
+										print(ey)
 		# End loop of xy grid
 		
 		# inverse x and y array for ceiling mount
