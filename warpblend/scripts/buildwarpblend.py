@@ -88,12 +88,12 @@ def calc_warpgrid(mon):
             if cylindrical[mon]:
                 ex, ey = calc_planar_to_cylindrical(px, py, nx[mon], ny[mon], FOVx, FOVy, frustum, vert_stretch)
                
-                xdif[gx,gy] += ex - px
-                ydif[gx,gy] += ey - py
+ #               xdif[gx,gy] += ex - px
+ #               ydif[gx,gy] += ey - py
 
                 # update grid coordinates for keystone and projection calculation
-                px += xdif[gx,gy]
-                py += ydif[gx,gy]
+  #              px += xdif[gx,gy]
+  #              py += ydif[gx,gy]
 
             # 2. Add vertical shift and scale if needed
             # This has to go after planar to cylindrical projection
@@ -124,9 +124,9 @@ def calc_warpgrid(mon):
 
  		
     # inverse x and y array for ceiling mount
-    if ceiling:
-        ydif = -np.flip(ydif,axis=1)
-        xdif = np.flip(xdif,axis=1)
+#    if ceiling:
+#        ydif = -np.flip(ydif,axis=1)
+#        xdif = np.flip(xdif,axis=1)
                 
     return xabs, yabs, xdif, ydif
 
