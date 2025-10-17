@@ -156,7 +156,7 @@ def PanoramaProj_forward(xy,FOVx,FOVy,vert_stretch):
 		return thetaphi
 
 
-def create_blendimage_unwarped(left_top,left_bot,right_top,right_bot):
+def create_blendimage_unwarped(nx, ny, blend_alpha, left_top,left_bot,right_top,right_bot):
 		# returns full blendimage (e.g. for NVIDIA driver) in unwarped display space
 		# would only be applied if warp-after-blend is working in NVIDIA
 		
@@ -185,7 +185,7 @@ def create_blendimage_unwarped(left_top,left_bot,right_top,right_bot):
 
 		return blendimage
 
-def create_blendgrid_warped(left_top,left_bot,right_top,right_bot,xwarp,ywarp):
+def create_blendgrid_warped(nx, ny, ngx, ngy, xdif, blend_exp, left_top,left_bot,right_top,right_bot,xwarp,ywarp):
 		# returns blending grid in warped space. Currently simplified assumption
 		# of warping is done.
 		# safe for applying in XP12 natively (after version 12.10, when a blending image can be read)

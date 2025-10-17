@@ -24,7 +24,7 @@ import matplotlib.pyplot as plot
 setting = 6
 
 # Plot Warping grid for Checking
-doplot = False
+doplot = True
 
 # Utilize new X-Plane 12 Window Position File Format
 xp12 = True
@@ -705,10 +705,10 @@ for mon in range(0,nmon,1):
 								
 								xdif[gx,gy] += ex - px
 								ydif[gx,gy] += ey - py
-								
-								if (gx == 0) & (gy == 0):
-										print(ex)
-										print(ey)
+
+#								if (gx == 0) & (gy == 0):
+#										print(ex)
+#										print(ey)
 		# End loop of xy grid
 		
 		# inverse x and y array for ceiling mount
@@ -716,6 +716,11 @@ for mon in range(0,nmon,1):
 				ydif = -np.flip(ydif,axis=1)
 				xdif = np.flip(xdif,axis=1)
 		
+		print(xdif[0,0])
+		print(ydif[0,0])
+		print(xdif[0,ngy-1])
+		print(ydif[0,ngy-1])
+
 		# write header per monitor
 		if mon == 0:
 				con.write("monitor/"+str(mon)+"/m_window_idx 0"+"\n")

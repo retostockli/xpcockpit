@@ -1,4 +1,5 @@
-from __future__ import print_function
+from tkinter import *
+#from __future__ import print_function
 import math
 import numpy as np
 import matplotlib.pyplot as plot
@@ -7,8 +8,6 @@ from utility import *
 from calc_vert_stretch import *
 from calc_planar_to_cylindrical import *
 from calc_projector_screen import *
-
-print(r2d)
 
 inifile="singlemon.ini"
 
@@ -25,8 +24,6 @@ stepy = int((ngy-1)/(dragy-1)) # make sure this is integer and stepy * (dragy-1)
 blend_alpha = [0.0,0.45,0.8,1.0]
 blend_exp = 1.0 # exponent of the blend function (distance^exponent)
 
-
-
 # General Calculations independent of pixel position (cm or degrees)
 beta = math.atan(1.0/(2.0*tr))*r2d # Maximum horizontal FOV from Projector [deg]
 beta1 = 180.-beta   # well ... check out the drawing yourself
@@ -37,7 +34,7 @@ d_1 = R_1*math.cos(beta*d2r) # distance of projector to hypothetical planar scre
 w_h = R_1*math.sin(beta*d2r) # half of hypothetical planar image width at screen distance
 
 # loop through monitors
-for mon in range(0,nmon,1):
+def calc_warpgrid(mon):
 
     print("------------------------")
     print("Monitor: "+str(mon))
@@ -45,7 +42,6 @@ for mon in range(0,nmon,1):
     ar =  float(nx[mon]) / float(ny[mon])  # aspect ratio of projector image
     w = 2.0*w_h    # planar image width at screen distance (as if projection would be on planar scren)
     h = w / ar     # planar image height at screen distance (as if projection ... )
-    h_h = 0.5 * h  # half height of hypothetical planar image
 
     print("Flat Screen Dimension at distance d0+d1: ")
     print(w,h)
@@ -56,7 +52,7 @@ for mon in range(0,nmon,1):
     # calculate larger FOVy for planar to cylindrical transformation
     # need this also for the no projection file for X-Plane
     f = w_h / math.tan(0.5*FOVx*d2r)
-    FOVy = 2.0*math.atan(h_h/f)*r2d
+    FOVy = 2.0*math.atan(0.5*h/f)*r2d
 
     print("FOVx:    "+str(FOVx))
     print("FOVy:    "+str(FOVy))
@@ -121,9 +117,9 @@ for mon in range(0,nmon,1):
                 xdif[gx,gy] += ex - px
                 ydif[gx,gy] += ey - py
 
-                if (gx == 0) & (gy == 0):
-                    print(ex)
-                    print(ey)
+#                if (gx == 0) & (gy == 0):
+#                    print(ex)
+#                    print(ey)
 
 
  		
@@ -132,3 +128,66 @@ for mon in range(0,nmon,1):
         ydif = -np.flip(ydif,axis=1)
         xdif = np.flip(xdif,axis=1)
                 
+    return xabs, yabs, xdif, ydif
+
+# ----- PROJECTION GRID -----
+
+def draw_projectiongrid():
+   for gy in range(0,ngy,1):
+        for gx in range(0,ngx,1):
+
+            x = xabs[gx,gy] + xdif[gx,gy]
+            y = yabs[gx,gy] + ydif[gx,gy]
+
+            r = 3 # radius of the point
+            canvas.create_oval(x - r, y - r, x + r, y + r, fill="red", outline="blue")            
+
+
+
+# ----- MAIN -----
+
+xabs, yabs, xdif, ydif = calc_warpgrid(0)
+
+print(xdif[0,0])
+print(ydif[0,0])
+print(xdif[0,ngy-1])
+print(ydif[0,ngy-1])
+
+root = Tk()
+root.geometry('{}x{}+{}+{}'.format(nx[0], ny[0], 1920, 0))
+
+# No border
+root.overrideredirect(True)
+
+#Full Screen Window
+#root.attributes('-fullscreen', True)
+
+def quit_root():
+   root.destroy()
+
+canvas = Canvas(root, width=nx[0], height=ny[0])
+canvas.pack()
+
+# Create a Quit Button
+button=Button(root,text="Quit", font=('Comic Sans', 13, 'bold'), command= quit_root)
+
+draw_projectiongrid()
+
+r = 8
+x = 0
+y = 0
+canvas.create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
+x = 0
+y = ny[0]-1
+canvas.create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
+r = 8
+x = nx[0]-1
+y = 0
+canvas.create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
+x = nx[0]-1
+y = ny[0]-1
+canvas.create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
+# Place (embed) the button inside the canvas at (200, 150)
+canvas.create_window(nx[0]/2, ny[0]/10, window=button)
+
+root.mainloop()
