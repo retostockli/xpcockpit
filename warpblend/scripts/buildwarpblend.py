@@ -5,9 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plot
 from read_ini import *
 from utility import *
-from calc_vert_stretch import *
-from calc_planar_to_cylindrical import *
-from calc_projector_screen import *
+from calc_warpgrid import *
+
+ROOT_NX = 500
+ROOT_NY = 500
 
 inifile="singlemon.ini"
 
@@ -33,161 +34,113 @@ R_1 = R*math.sin(gamma*d2r)/math.sin(beta1*d2r) # Maximum Distance of Projector 
 d_1 = R_1*math.cos(beta*d2r) # distance of projector to hypothetical planar screen in front of cylindrical screen
 w_h = R_1*math.sin(beta*d2r) # half of hypothetical planar image width at screen distance
 
-# loop through monitors
-def calc_warpgrid(mon):
-
-    print("------------------------")
-    print("Monitor: "+str(mon))
-
-    ar =  float(nx[mon]) / float(ny[mon])  # aspect ratio of projector image
-    w = 2.0*w_h    # planar image width at screen distance (as if projection would be on planar scren)
-    h = w / ar     # planar image height at screen distance (as if projection ... )
-
-    print("Flat Screen Dimension at distance d0+d1: ")
-    print(w,h)
-
-    # calculate FOV of monitor
-    FOVx = 2.0*gamma
-                    
-    # calculate larger FOVy for planar to cylindrical transformation
-    # need this also for the no projection file for X-Plane
-    f = w_h / math.tan(0.5*FOVx*d2r)
-    FOVy = 2.0*math.atan(0.5*h/f)*r2d
-
-    print("FOVx:    "+str(FOVx))
-    print("FOVy:    "+str(FOVy))
-					 
-    ## reset projection grid
-    xabs = np.zeros((ngx, ngy))
-    yabs = np.zeros((ngx, ngy))
-    xdif = np.zeros((ngx, ngy))
-    ydif = np.zeros((ngx, ngy))
-		
-    # For Cylindrical Projection we have to expand image in the vertical
-    # and increase vertical FOV:
-    if cylindrical[mon]:
-        vert_stretch = calc_vert_stretch(FOVx,FOVy)
-
-    # loop through grid
-    # grid vertical: gy goes from bottom to top
-    # grid horizontal: gx from left to right
-    for gy in range(0,ngy,1):
-        for gx in range(0,ngx,1):
-            
-            # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
-            # ARE WE SURE WE RANGE FROM 0 .. nx? OR RATHER 0 .. nx-1?
-            px = float(nx[mon]) * float(gx) / float(ngx-1)
-            py = float(ny[mon]) * float(gy) / float(ngy-1)
-            xabs[gx,gy] = px
-            yabs[gx,gy] = py
-            
-            # 1. Transformation from planar to cylindrical rendering
-            # --> This has nothing to do with the projector orientation and mount etc.
-            # --> This is needed since X-Plane renders on a plane but we need a cylindrical rendering
-            # Please see planar_to_cylindrical.pdf
-            if cylindrical[mon]:
-                ex, ey = calc_planar_to_cylindrical(px, py, nx[mon], ny[mon], FOVx, FOVy, frustum, vert_stretch)
-               
- #               xdif[gx,gy] += ex - px
- #               ydif[gx,gy] += ey - py
-
-                # update grid coordinates for keystone and projection calculation
-  #              px += xdif[gx,gy]
-  #              py += ydif[gx,gy]
-
-            # 2. Add vertical shift and scale if needed
-            # This has to go after planar to cylindrical projection
-            # since that projection works in original input coordinates
-            # where horizon is centered in image
-            if (vertical_scale[mon] != 0.0) or (vertical_shift[mon] != 0.0):
-                    ey = py * vertical_scale[mon] + vertical_shift[mon]
-                    ydif[gx,gy] += ey - py
-                    py += ydif[gx,gy]
-
-                                                    
-            # 3. Warping the planar projection of a regular table or ceiling mounted projector
-            # onto a cylindrical screen. This is needed since the projector image is only ok
-            # on a flat screen. We need to squeeze it onto a cylinder.
-            # Please see projection_geometry.pdf
-            if projection[mon]:
-                ex, ey = calc_projector_screen(px, py, nx[mon], ny[mon], R, h, h_0, d_0, d_1, w, w_h, gamma, epsilon[mon])
-
-                # print(ex,ey)
-                
-                xdif[gx,gy] += ex - px
-                ydif[gx,gy] += ey - py
-
-#                if (gx == 0) & (gy == 0):
-#                    print(ex)
-#                    print(ey)
-
-
- 		
-    # inverse x and y array for ceiling mount
-#    if ceiling:
-#        ydif = -np.flip(ydif,axis=1)
-#        xdif = np.flip(xdif,axis=1)
-                
-    return xabs, yabs, xdif, ydif
 
 # ----- PROJECTION GRID -----
 
-def draw_projectiongrid():
-   for gy in range(0,ngy,1):
-        for gx in range(0,ngx,1):
+def draw_projectiongrid(mon):
+   for gy in range(0,ngy-1,1):
+        for gx in range(0,ngx-1,1):
 
-            x = xabs[gx,gy] + xdif[gx,gy]
-            y = yabs[gx,gy] + ydif[gx,gy]
+            # create subdivisions every 10th control point
+            sgx = gx // 10
+            sgy = gy // 10
 
-            r = 3 # radius of the point
-            canvas.create_oval(x - r, y - r, x + r, y + r, fill="red", outline="blue")            
+            if sgx % 2 == 0:
+                if sgy % 2 == 0:
+                    fillcolor = "lightgray"
+                else:
+                    fillcolor = "darkgray"
+            else:
+                if sgy % 2 == 0:
+                    fillcolor = "darkgray"
+                else:
+                    fillcolor = "lightgray"
+
+            x0 = xabs[gx,gy] + xdif[gx,gy]
+            y0 = yabs[gx,gy] + ydif[gx,gy]
+            x1 = xabs[gx+1,gy] + xdif[gx+1,gy]
+            y1 = yabs[gx+1,gy] + ydif[gx+1,gy]
+            x2 = xabs[gx+1,gy+1] + xdif[gx+1,gy+1]
+            y2 = yabs[gx+1,gy+1] + ydif[gx+1,gy+1]
+            x3 = xabs[gx,gy+1] + xdif[gx,gy+1]
+            y3 = yabs[gx,gy+1] + ydif[gx,gy+1]
+            #r = 3 # radius of the point
+            #canvas[mon].create_oval(x0 - r, y0 - r, x0 + r, y0 + r, fill="red", outline="blue") 
+            canvas[mon].create_polygon(x0, y0, x1, y1, x2, y2, x3, y3, fill=fillcolor)
 
 
 
 # ----- MAIN -----
 
-xabs, yabs, xdif, ydif = calc_warpgrid(0)
-
-print(xdif[0,0])
-print(ydif[0,0])
-print(xdif[0,ngy-1])
-print(ydif[0,ngy-1])
-
 root = Tk()
-root.geometry('{}x{}+{}+{}'.format(nx[0], ny[0], 1920, 0))
-
-# No border
-root.overrideredirect(True)
-
-#Full Screen Window
-#root.attributes('-fullscreen', True)
+root.geometry('{}x{}'.format(ROOT_NX, ROOT_NY))
+root.title("Main Window")
 
 def quit_root():
    root.destroy()
 
-canvas = Canvas(root, width=nx[0], height=ny[0])
-canvas.pack()
-
 # Create a Quit Button
-button=Button(root,text="Quit", font=('Comic Sans', 13, 'bold'), command= quit_root)
+root_button=Button(root,text="Quit", font=('Comic Sans', 13, 'bold'), command= quit_root)
 
-draw_projectiongrid()
+# Place the button in the window
+root_button.pack(padx=20, pady=20)
 
-r = 8
-x = 0
-y = 0
-canvas.create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
-x = 0
-y = ny[0]-1
-canvas.create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
-r = 8
-x = nx[0]-1
-y = 0
-canvas.create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
-x = nx[0]-1
-y = ny[0]-1
-canvas.create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
-# Place (embed) the button inside the canvas at (200, 150)
-canvas.create_window(nx[0]/2, ny[0]/10, window=button)
+# List to store windows/canvas/buttons
+win = [None] * nmon
+canvas = [None] * nmon
+button = [None] * nmon
+
+for mon in range(0,nmon,1):
+    print("------------------------")
+    print("Monitor: "+str(mon))
+
+    # For Screen Alignment Not all calculations are needed
+    alignment = True
+
+    xabs, yabs, xdif, ydif = calc_warpgrid(nx[mon], ny[mon], ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                                           vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+
+    print(xdif[0,0])
+    print(ydif[0,0])
+    print(xdif[0,ngy-1])
+    print(ydif[0,ngy-1])
+
+    px, py = calc_warppoint(nx[mon], ny[mon], 0, 0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                                           vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+    
+    print(px)
+    print(py)
+
+  
+    win[mon] = Toplevel(root)
+    win[mon].geometry('{}x{}+{}+{}'.format(nx[mon], ny[mon], 0, 0))
+    win[mon].title(f"Window {mon + 1}")
+    Label(win[mon], text=f"This is window {mon + 1}").pack(padx=20, pady=20)
+ 
+    win[mon].overrideredirect(True)
+
+    canvas[mon] = Canvas(win[mon], width=nx[0], height=ny[0])
+    canvas[mon].pack()
+
+    draw_projectiongrid(mon)
+
+    r = 8
+    x = 0
+    y = 0
+    canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
+    x = 0
+    y = ny[mon]-1
+    canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
+    r = 8
+    x = nx[mon]-1
+    y = 0
+    canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
+    x = nx[mon]-1
+    y = ny[mon]-1
+    canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
+    # Place (embed) the button inside the canvas at (200, 150)
+    # Create a Quit Button
+    button[mon]=Button(win[mon],text="Quit", font=('Comic Sans', 13, 'bold'), command= quit_root)
+    canvas[mon].create_window(nx[mon]/2, ny[mon]/10, window=button[mon])
 
 root.mainloop()
