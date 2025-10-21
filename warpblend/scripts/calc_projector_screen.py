@@ -1,5 +1,20 @@
 from utility import *
 
+def calc_fov(nx, ny, w_h, gamma):
+    ar =  float(nx) / float(ny)  # aspect ratio of projector image
+    w = 2.0*w_h    # planar image width at screen distance (as if projection would be on planar scren)
+    h = w / ar     # planar image height at screen distance (as if projection would be on planar screen )
+
+    # calculate FOV of monitor
+    FOVx = 2.0*gamma
+                    
+    # calculate larger FOVy for planar to cylindrical transformation
+    # need this also for the no projection file for X-Plane
+    f = w_h / math.tan(0.5*FOVx*d2r)
+    FOVy = 2.0*math.atan(0.5*h/f)*r2d
+
+    return FOVx, FOVy, h, w
+
 def calc_projector_screen(px, py, nx, ny, R, h, h_0, d_0, d_1, w, w_h, gamma, epsilon):
 
     # INPUT IS IN CYLINDRICAL COORDINATES ALREADY

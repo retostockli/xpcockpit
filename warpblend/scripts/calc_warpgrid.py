@@ -3,20 +3,11 @@ from calc_vert_stretch import *
 from calc_planar_to_cylindrical import *
 from calc_projector_screen import *
 
+
 # calculate a warped coordinate for a single point px/py
 def calc_warppoint(nx, ny, px, py, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustum, vertical_scale, vertical_shift, cylindrical, projection, ceiling, alignment):
 
-    ar =  float(nx) / float(ny)  # aspect ratio of projector image
-    w = 2.0*w_h    # planar image width at screen distance (as if projection would be on planar scren)
-    h = w / ar     # planar image height at screen distance (as if projection would be on planar screen )
-
-    # calculate FOV of monitor
-    FOVx = 2.0*gamma
-                    
-    # calculate larger FOVy for planar to cylindrical transformation
-    # need this also for the no projection file for X-Plane
-    f = w_h / math.tan(0.5*FOVx*d2r)
-    FOVy = 2.0*math.atan(0.5*h/f)*r2d
+    FOVx, FOVy, h, w = calc_fov(nx, ny, w_h, gamma)
 			
     # For Cylindrical Projection we have to expand image in the vertical
     # and increase vertical FOV:
@@ -50,20 +41,10 @@ def calc_warppoint(nx, ny, px, py, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustu
 # calculate a warping grid for all control points
 def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustum, vertical_scale, vertical_shift, cylindrical, projection, ceiling, alignment):
 
-    ar =  float(nx) / float(ny)  # aspect ratio of projector image
-    w = 2.0*w_h    # planar image width at screen distance (as if projection would be on planar scren)
-    h = w / ar     # planar image height at screen distance (as if projection would be on planar screen )
-
+    FOVx, FOVy, h, w = calc_fov(nx, ny, w_h, gamma)
+    
     print("Flat Screen Dimension at distance d0+d1: ")
     print("Horizontal: "+str(w)+" Vertical: "+str(h))
-
-    # calculate FOV of monitor
-    FOVx = 2.0*gamma
-                    
-    # calculate larger FOVy for planar to cylindrical transformation
-    # need this also for the no projection file for X-Plane
-    f = w_h / math.tan(0.5*FOVx*d2r)
-    FOVy = 2.0*math.atan(0.5*h/f)*r2d
 
     print("FOVx:    "+str(FOVx))
     print("FOVy:    "+str(FOVy))
@@ -78,6 +59,7 @@ def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frust
     # and increase vertical FOV:
     if cylindrical:
         vert_stretch = calc_vert_stretch(FOVx,FOVy)
+        print("Vert Stretch to correct Flattening: ",vert_stretch)
 
     # loop through grid
     # grid vertical: gy goes from bottom to top

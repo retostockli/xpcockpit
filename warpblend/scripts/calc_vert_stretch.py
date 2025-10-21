@@ -19,7 +19,7 @@ def calc_vert_stretch(FOVx, FOVy):
     
     vert_stretch = dx / dy
     
-    print("Vert Stretch to correct Flattening: ",vert_stretch)
+    #print("Vert Stretch to correct Flattening: ",vert_stretch)
     
     # Vert Stretch corrects for flatteing of the image due to the
     # cylindrical projection. 

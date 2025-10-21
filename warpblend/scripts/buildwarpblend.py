@@ -11,7 +11,9 @@ ROOT_NX = 500
 ROOT_NY = 500
 
 inifile="singlemon.ini"
+#inifile="test.ini"
 
+# vertical_offset is currently not used
 xp12, outfile, nmon, ngx, ngy, dragx, dragy, R, d_0, h_0, tr, nx, ny, \
 ceiling, cylindrical, projection, epsilon, frustum, \
 lateral_offset, vertical_offset, vertical_shift, vertical_scale, \
@@ -42,8 +44,8 @@ def draw_projectiongrid(mon):
         for gx in range(0,ngx-1,1):
 
             # create subdivisions every 10th control point
-            sgx = gx // 10
-            sgy = gy // 10
+            sgx = gx // 5
+            sgy = gy // 5
 
             if sgx % 2 == 0:
                 if sgy % 2 == 0:
@@ -64,17 +66,48 @@ def draw_projectiongrid(mon):
             y2 = yabs[gx+1,gy+1] + ydif[gx+1,gy+1]
             x3 = xabs[gx,gy+1] + xdif[gx,gy+1]
             y3 = yabs[gx,gy+1] + ydif[gx,gy+1]
-            #r = 3 # radius of the point
-            #canvas[mon].create_oval(x0 - r, y0 - r, x0 + r, y0 + r, fill="red", outline="blue") 
+            
             canvas[mon].create_polygon(x0, y0, x1, y1, x2, y2, x3, y3, fill=fillcolor)
 
+            if gy % 15 == 0:
+                canvas[mon].create_line(x0, y0, x1, y1, fill = "blue")
 
+            if gx % 15 == 0:
+                canvas[mon].create_line(x0, y0, x3, y3, fill = "blue")
+
+def draw_azimuthlines(mon):
+    FOVx, FOVy, h, w = calc_fov(nx[mon], ny[mon], w_h, gamma)
+
+    delta = 10
+    ANGmin = lateral_offset[mon] - FOVx/2
+    ANGmax = lateral_offset[mon] + FOVx/2
+
+    for ang in range(int(ANGmin/delta)*delta,int(ANGmax/delta)*delta,delta):
+        x = (float(ang)-ANGmin)/(ANGmax-ANGmin) * nx[mon]
+
+        for y in range(0,ny[mon]+1,10):
+            if y > 0:
+                px0 = px
+                py0 = py
+            px, py = calc_warppoint(nx[mon], ny[mon], x, y, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                                            vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+            
+            if y > 0:
+                canvas[mon].create_line(px0, py0, px, py, fill = "red",width=2)
+
+        y = ny[mon]/2
+        px, py = calc_warppoint(nx[mon], ny[mon], x+30, y, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                                            vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+        canvas[mon].create_text(px, py,text=str(ang),fill="red",font=("Helvetica", 16, "bold"))
+
+            
 
 # ----- MAIN -----
 
 root = Tk()
 root.geometry('{}x{}'.format(ROOT_NX, ROOT_NY))
 root.title("Main Window")
+
 
 def quit_root():
    root.destroy()
@@ -94,53 +127,43 @@ for mon in range(0,nmon,1):
     print("------------------------")
     print("Monitor: "+str(mon))
 
-    # For Screen Alignment Not all calculations are needed
-    alignment = True
+    if (cylindrical[mon] or projection[mon]):
 
-    xabs, yabs, xdif, ydif = calc_warpgrid(nx[mon], ny[mon], ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
-                                           vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+        # For Screen Alignment Not all calculations are needed
+        alignment = True
 
-    print(xdif[0,0])
-    print(ydif[0,0])
-    print(xdif[0,ngy-1])
-    print(ydif[0,ngy-1])
+        xabs, yabs, xdif, ydif = calc_warpgrid(nx[mon], ny[mon], ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                                            vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
 
-    px, py = calc_warppoint(nx[mon], ny[mon], 0, 0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
-                                           vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
-    
-    print(px)
-    print(py)
+        print(xdif[0,0])
+        print(ydif[0,0])
+        print(xdif[0,ngy-1])
+        print(ydif[0,ngy-1])
 
-  
-    win[mon] = Toplevel(root)
-    win[mon].geometry('{}x{}+{}+{}'.format(nx[mon], ny[mon], 0, 0))
-    win[mon].title(f"Window {mon + 1}")
-    Label(win[mon], text=f"This is window {mon + 1}").pack(padx=20, pady=20)
- 
-    win[mon].overrideredirect(True)
+        px, py = calc_warppoint(nx[mon], ny[mon], 0, 0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                                            vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+        
+        print(px)
+        print(py)
 
-    canvas[mon] = Canvas(win[mon], width=nx[0], height=ny[0])
-    canvas[mon].pack()
+        if (mon == 0):
+            x0 = 0
+        else:
+            x0 = sum(nx[0:mon-1])
+        win[mon] = Toplevel(root)
+        win[mon].geometry('{}x{}+{}+{}'.format(nx[mon], ny[mon], x0, 0))
+        win[mon].title(f"Window {mon + 1}")
+        win[mon].overrideredirect(True)  # no border
 
-    draw_projectiongrid(mon)
+        canvas[mon] = Canvas(win[mon], width=nx[0], height=ny[0])
+        canvas[mon].pack()
 
-    r = 8
-    x = 0
-    y = 0
-    canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
-    x = 0
-    y = ny[mon]-1
-    canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
-    r = 8
-    x = nx[mon]-1
-    y = 0
-    canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
-    x = nx[mon]-1
-    y = ny[mon]-1
-    canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="green", outline="white")  
-    # Place (embed) the button inside the canvas at (200, 150)
-    # Create a Quit Button
-    button[mon]=Button(win[mon],text="Quit", font=('Comic Sans', 13, 'bold'), command= quit_root)
-    canvas[mon].create_window(nx[mon]/2, ny[mon]/10, window=button[mon])
+        draw_projectiongrid(mon)
+        draw_azimuthlines(mon)
+
+        # Place (embed) the button inside the canvas at (200, 150)
+        # Create a Quit Button
+        button[mon]=Button(win[mon],text="Quit", font=('Comic Sans', 13, 'bold'), command= quit_root)
+        canvas[mon].create_window(nx[mon]/2, ny[mon]/10, window=button[mon])
 
 root.mainloop()
