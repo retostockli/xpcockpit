@@ -11,7 +11,7 @@ ROOT_NX = 500
 ROOT_NY = 500
 
 inifile="singlemon.ini"
-#inifile="test.ini"
+inifile="test.ini"
 
 # vertical_offset is currently not used
 xp12, outfile, nmon, ngx, ngy, dragx, dragy, R, d_0, h_0, tr, nx, ny, \
@@ -149,7 +149,9 @@ for mon in range(0,nmon,1):
         if (mon == 0):
             x0 = 0
         else:
-            x0 = sum(nx[0:mon-1])
+            x0 = sum(nx[0:mon])
+        print(sum(nx[0:4]))
+        print(mon,x0)
         win[mon] = Toplevel(root)
         win[mon].geometry('{}x{}+{}+{}'.format(nx[mon], ny[mon], x0, 0))
         win[mon].title(f"Window {mon + 1}")
