@@ -11,7 +11,7 @@ ROOT_NX = 500
 ROOT_NY = 500
 
 inifile="singlemon.ini"
-inifile="test.ini"
+#inifile="test.ini"
 
 # vertical_offset is currently not used
 xp12, outfile, nmon, ngx, ngy, dragx, dragy, R, d_0, h_0, tr, nx, ny, \
@@ -67,38 +67,65 @@ def draw_projectiongrid(mon):
             x3 = xabs[gx,gy+1] + xdif[gx,gy+1]
             y3 = yabs[gx,gy+1] + ydif[gx,gy+1]
             
-            canvas[mon].create_polygon(x0, y0, x1, y1, x2, y2, x3, y3, fill=fillcolor)
+            canvas[mon].create_polygon(x0, y0, x1, y1, x2, y2, x3, y3, fill=fillcolor,tags="shape")
 
             if gy % 15 == 0:
-                canvas[mon].create_line(x0, y0, x1, y1, fill = "blue")
+                canvas[mon].create_line(x0, y0, x1, y1, fill = "blue",tags="shape")
 
             if gx % 15 == 0:
-                canvas[mon].create_line(x0, y0, x3, y3, fill = "blue")
+                canvas[mon].create_line(x0, y0, x3, y3, fill = "blue",tags="shape")
 
-def draw_azimuthlines(mon):
+def draw_azimuthgrid(mon):
     FOVx, FOVy, h, w = calc_fov(nx[mon], ny[mon], w_h, gamma)
 
-    delta = 10
-    ANGmin = lateral_offset[mon] - FOVx/2
-    ANGmax = lateral_offset[mon] + FOVx/2
+    canvas[mon].delete("shape")
 
-    for ang in range(int(ANGmin/delta)*delta,int(ANGmax/delta)*delta,delta):
-        x = (float(ang)-ANGmin)/(ANGmax-ANGmin) * nx[mon]
+    div = 5  # 5 divisions per box
+    deltalabel = 10  # label every x degrees horizontal FOV (includes two boxes horizontal)
+    deltax = deltalabel // div // 2 # angle spacing for thin violet grid lines
+    ANGmin = lateral_offset[mon] - FOVx/2 # minimum angle in horizontal direction
+    ANGmax = lateral_offset[mon] + FOVx/2 # maximum angle in horizontal direction
 
-        for y in range(0,ny[mon]+1,10):
-            if y > 0:
-                px0 = px
-                py0 = py
-            px, py = calc_warppoint(nx[mon], ny[mon], x, y, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+    deltay = ny[mon] // 36
+
+    # plot grid and lines
+    for ang in range(int(ANGmin/deltax)*deltax-deltax,int(ANGmax/deltax)*deltax+deltax,deltax):
+        x0 = (float(ang)-ANGmin)/(ANGmax-ANGmin) * nx[mon]
+        x1 = (float(ang+deltax)-ANGmin)/(ANGmax-ANGmin) * nx[mon]
+
+        oddx = True if (ang // div) % 2 == 0 else False
+        labelx = True if ang % deltalabel == 0 else False
+
+        for y0 in range(0,ny[mon]+1,deltay):
+            y1 = y0 + deltay
+            oddy = True if (y0 // (div*deltay)) % 2 == 0 else False
+            labely = True if (y0 // deltay) % (div*2) == 0 else False
+
+            fillcolor = "lightgray" if (oddx and oddy) or (not oddx and not oddy) else "darkgray"
+
+            px0, py0 = calc_warppoint(nx[mon], ny[mon], x0, y0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
                                             vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
-            
-            if y > 0:
-                canvas[mon].create_line(px0, py0, px, py, fill = "red",width=2)
-
-        y = ny[mon]/2
-        px, py = calc_warppoint(nx[mon], ny[mon], x+30, y, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+            px1, py1 = calc_warppoint(nx[mon], ny[mon], x1, y0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
                                             vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
-        canvas[mon].create_text(px, py,text=str(ang),fill="red",font=("Helvetica", 16, "bold"))
+            px2, py2 = calc_warppoint(nx[mon], ny[mon], x1, y1, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                                            vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+            px3, py3 = calc_warppoint(nx[mon], ny[mon], x0, y1, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                                            vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+            canvas[mon].create_polygon(px0, py0, px1, py1, px2, py2, px3, py3, fill=fillcolor,tags="shape")
+
+            fillcolor = "white" if labelx else "violet"
+            canvas[mon].create_line(px0, py0, px3, py3, fill = fillcolor,width=2,tags="shape")
+
+            fillcolor = "white" if labely else "violet"
+            canvas[mon].create_line(px0, py0, px1, py1, fill = fillcolor,width=2,tags="shape")
+
+    # plot azimuth labels
+    for ang in range(int(ANGmin/deltalabel)*deltalabel,int(ANGmax/deltalabel)*deltalabel,deltalabel):
+        x0 = (float(ang)-ANGmin)/(ANGmax-ANGmin) * nx[mon]
+        y0 = ny[mon]//2
+        px, py = calc_warppoint(nx[mon], ny[mon], x0, y0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+                    vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+        canvas[mon].create_text(px, py,text=str(ang),fill="red",font=("Helvetica", 18, "bold"),tags="shape")
 
             
 
@@ -116,7 +143,32 @@ def quit_root():
 root_button=Button(root,text="Quit", font=('Comic Sans', 13, 'bold'), command= quit_root)
 
 # Place the button in the window
-root_button.pack(padx=20, pady=20)
+root_button.grid(row=0, column=2, padx=0, pady=0, sticky="n")
+
+# Create a label
+label = Label(root, text="R [cm] ")
+label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
+
+# Create an entry field
+entry = Entry(root, width=20)
+entry.grid(row=1, column=1, padx=10, pady=10)
+
+entry.insert(0,R)
+
+# Button to read input
+def recalc_grid():
+    global R 
+    R = float(entry.get())
+    print(R)
+    for mon in range(0,nmon,1):
+        if (cylindrical[mon] or projection[mon]):
+
+            # For Screen Alignment Not all calculations are needed
+            alignment = True
+            draw_azimuthgrid(mon)
+
+recalc_button = Button(root, text="Recalc", command=recalc_grid)
+recalc_button.grid(row=5, column=2, columnspan=2, pady=10)
 
 # List to store windows/canvas/buttons
 win = [None] * nmon
@@ -147,11 +199,10 @@ for mon in range(0,nmon,1):
         print(py)
 
         if (mon == 0):
-            x0 = 0
+            x0 = 500
         else:
             x0 = sum(nx[0:mon])
-        print(sum(nx[0:4]))
-        print(mon,x0)
+   
         win[mon] = Toplevel(root)
         win[mon].geometry('{}x{}+{}+{}'.format(nx[mon], ny[mon], x0, 0))
         win[mon].title(f"Window {mon + 1}")
@@ -160,8 +211,8 @@ for mon in range(0,nmon,1):
         canvas[mon] = Canvas(win[mon], width=nx[0], height=ny[0])
         canvas[mon].pack()
 
-        draw_projectiongrid(mon)
-        draw_azimuthlines(mon)
+        #draw_projectiongrid(mon)
+        draw_azimuthgrid(mon)
 
         # Place (embed) the button inside the canvas at (200, 150)
         # Create a Quit Button
