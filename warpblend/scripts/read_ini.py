@@ -45,6 +45,11 @@ def read_ini(inifile):
     forwin = config.getboolean('FLAGS','forwin')
     savegrid = config.getboolean('FLAGS','savegrid')
 
+    # fix for xp11
+    if not xp12:
+        ngx = 101
+        ngy = 101
+
     print("*** GENERAL ***")
     print("XP12:             "+str(xp12))
     print("Warp+Blend File:  "+outfile)

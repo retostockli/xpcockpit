@@ -39,42 +39,6 @@ w_h = R_1*math.sin(beta*d2r) # half of hypothetical planar image width at screen
 
 # ----- PROJECTION GRID -----
 
-def draw_projectiongrid(mon):
-   for gy in range(0,ngy-1,1):
-        for gx in range(0,ngx-1,1):
-
-            # create subdivisions every 10th control point
-            sgx = gx // 5
-            sgy = gy // 5
-
-            if sgx % 2 == 0:
-                if sgy % 2 == 0:
-                    fillcolor = "lightgray"
-                else:
-                    fillcolor = "darkgray"
-            else:
-                if sgy % 2 == 0:
-                    fillcolor = "darkgray"
-                else:
-                    fillcolor = "lightgray"
-
-            x0 = xabs[gx,gy] + xdif[gx,gy]
-            y0 = yabs[gx,gy] + ydif[gx,gy]
-            x1 = xabs[gx+1,gy] + xdif[gx+1,gy]
-            y1 = yabs[gx+1,gy] + ydif[gx+1,gy]
-            x2 = xabs[gx+1,gy+1] + xdif[gx+1,gy+1]
-            y2 = yabs[gx+1,gy+1] + ydif[gx+1,gy+1]
-            x3 = xabs[gx,gy+1] + xdif[gx,gy+1]
-            y3 = yabs[gx,gy+1] + ydif[gx,gy+1]
-            
-            canvas[mon].create_polygon(x0, y0, x1, y1, x2, y2, x3, y3, fill=fillcolor,tags="shape")
-
-            if gy % 15 == 0:
-                canvas[mon].create_line(x0, y0, x1, y1, fill = "blue",tags="shape")
-
-            if gx % 15 == 0:
-                canvas[mon].create_line(x0, y0, x3, y3, fill = "blue",tags="shape")
-
 def draw_azimuthgrid(mon):
     FOVx, FOVy, h, w = calc_fov(nx[mon], ny[mon], w_h, gamma)
 
@@ -95,6 +59,8 @@ def draw_azimuthgrid(mon):
 
         oddx = True if (ang // div) % 2 == 0 else False
         labelx = True if ang % deltalabel == 0 else False
+
+        alignment = True # warp for screen alignment
 
         for y0 in range(0,ny[mon]+1,deltay):
             y1 = y0 + deltay
@@ -127,7 +93,22 @@ def draw_azimuthgrid(mon):
                     vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
         canvas[mon].create_text(px, py,text=str(ang),fill="red",font=("Helvetica", 18, "bold"),tags="shape")
 
-            
+def draw_blendlines(mon):
+    deltay = 10
+    fillcolor = "red"
+    if blending[mon]:
+        if blend_left_top[mon] != 0.0 or blend_left_bot[mon] != 0.0:
+            for y0 in range(0,ny[mon]+1,deltay):
+                y1 = y0+deltay
+                x0 = (y0/(ny[mon]-1) * blend_left_bot[mon] + (1.0-y0/(ny[mon]-1)) * blend_left_top[mon])*(nx[mon]-1)
+                x1 = (y1/(ny[mon]-1) * blend_left_bot[mon] + (1.0-y1/(ny[mon]-1)) * blend_left_top[mon])*(nx[mon]-1)
+                canvas[mon].create_line(x0, y0, x1, y1, fill = fillcolor,width=2,tags="shape")
+        if blend_right_top[mon] != 0.0 or blend_right_bot[mon] != 0.0:
+            for y0 in range(0,ny[mon]+1,deltay):
+                y1 = y0+deltay
+                x0 = (nx[mon]-1) - (y0/(ny[mon]-1) * blend_right_bot[mon] + (1.0-y0/(ny[mon]-1)) * blend_right_top[mon])*(nx[mon]-1)
+                x1 = (nx[mon]-1) - (y1/(ny[mon]-1) * blend_right_bot[mon] + (1.0-y1/(ny[mon]-1)) * blend_right_top[mon])*(nx[mon]-1)
+                canvas[mon].create_line(x0, y0, x1, y1, fill = fillcolor,width=2,tags="shape")
 
 # ----- MAIN -----
 
@@ -164,8 +145,8 @@ def recalc_grid():
         if (cylindrical[mon] or projection[mon]):
 
             # For Screen Alignment Not all calculations are needed
-            alignment = True
             draw_azimuthgrid(mon)
+            draw_blendlines(mon)
 
 recalc_button = Button(root, text="Recalc", command=recalc_grid)
 recalc_button.grid(row=5, column=2, columnspan=2, pady=10)
@@ -181,22 +162,22 @@ for mon in range(0,nmon,1):
 
     if (cylindrical[mon] or projection[mon]):
 
-        # For Screen Alignment Not all calculations are needed
-        alignment = True
+        # # For Screen Alignment Not all calculations are needed
+        # alignment = True
 
-        xabs, yabs, xdif, ydif = calc_warpgrid(nx[mon], ny[mon], ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
-                                            vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+        # xabs, yabs, xdif, ydif = calc_warpgrid(nx[mon], ny[mon], ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+        #                                     vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
 
-        print(xdif[0,0])
-        print(ydif[0,0])
-        print(xdif[0,ngy-1])
-        print(ydif[0,ngy-1])
+        # print(xdif[0,0])
+        # print(ydif[0,0])
+        # print(xdif[0,ngy-1])
+        # print(ydif[0,ngy-1])
 
-        px, py = calc_warppoint(nx[mon], ny[mon], 0, 0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
-                                            vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
+        # px, py = calc_warppoint(nx[mon], ny[mon], 0, 0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
+        #                                     vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
         
-        print(px)
-        print(py)
+        # print(px)
+        # print(py)
 
         if (mon == 0):
             x0 = 500
@@ -211,12 +192,11 @@ for mon in range(0,nmon,1):
         canvas[mon] = Canvas(win[mon], width=nx[0], height=ny[0])
         canvas[mon].pack()
 
-        #draw_projectiongrid(mon)
-        draw_azimuthgrid(mon)
-
-        # Place (embed) the button inside the canvas at (200, 150)
-        # Create a Quit Button
+        # Create a Quit Button inside the canvas
         button[mon]=Button(win[mon],text="Quit", font=('Comic Sans', 13, 'bold'), command= quit_root)
         canvas[mon].create_window(nx[mon]/2, ny[mon]/10, window=button[mon])
+
+        draw_azimuthgrid(mon)
+        draw_blendlines(mon)
 
 root.mainloop()
