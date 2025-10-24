@@ -40,6 +40,9 @@ w_h = R_1*math.sin(beta*d2r) # half of hypothetical planar image width at screen
 # ----- PROJECTION GRID -----
 
 def draw_azimuthgrid(mon):
+
+    alignment = True # warp for screen alignment
+
     FOVx, FOVy, h, w = calc_fov(nx[mon], ny[mon], w_h, gamma)
 
     canvas[mon].delete("shape")
@@ -59,8 +62,6 @@ def draw_azimuthgrid(mon):
 
         oddx = True if (ang // div) % 2 == 0 else False
         labelx = True if ang % deltalabel == 0 else False
-
-        alignment = True # warp for screen alignment
 
         for y0 in range(0,ny[mon]+1,deltay):
             y1 = y0 + deltay
@@ -108,7 +109,7 @@ def draw_blendlines(mon):
                 y1 = y0+deltay
                 x0 = (nx[mon]-1) - (y0/(ny[mon]-1) * blend_right_bot[mon] + (1.0-y0/(ny[mon]-1)) * blend_right_top[mon])*(nx[mon]-1)
                 x1 = (nx[mon]-1) - (y1/(ny[mon]-1) * blend_right_bot[mon] + (1.0-y1/(ny[mon]-1)) * blend_right_top[mon])*(nx[mon]-1)
-                canvas[mon].create_line(x0, y0, x1, y1, fill = fillcolor,width=1,tags="shape")
+                canvas[mon].create_line(x0, y0, x1, y1, fill = fillcolor,width=3,tags="shape")
 
 # ----- MAIN -----
 
