@@ -10,8 +10,8 @@ from calc_warpgrid import *
 ROOT_NX = 500
 ROOT_NY = 500
 
-inifile="singlemon.ini"
-#inifile="test.ini"
+#inifile="singlemon.ini"
+inifile="test.ini"
 
 # vertical_offset is currently not used
 xp12, outfile, nmon, ngx, ngy, dragx, dragy, R, d_0, h_0, tr, nx, ny, \
@@ -108,7 +108,7 @@ def draw_blendlines(mon):
                 y1 = y0+deltay
                 x0 = (nx[mon]-1) - (y0/(ny[mon]-1) * blend_right_bot[mon] + (1.0-y0/(ny[mon]-1)) * blend_right_top[mon])*(nx[mon]-1)
                 x1 = (nx[mon]-1) - (y1/(ny[mon]-1) * blend_right_bot[mon] + (1.0-y1/(ny[mon]-1)) * blend_right_top[mon])*(nx[mon]-1)
-                canvas[mon].create_line(x0, y0, x1, y1, fill = fillcolor,width=2,tags="shape")
+                canvas[mon].create_line(x0, y0, x1, y1, fill = fillcolor,width=1,tags="shape")
 
 # ----- MAIN -----
 
@@ -180,7 +180,7 @@ for mon in range(0,nmon,1):
         # print(py)
 
         if (mon == 0):
-            x0 = 500
+            x0 = nx[0]//2
         else:
             x0 = sum(nx[0:mon])
    
