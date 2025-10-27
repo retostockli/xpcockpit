@@ -1,6 +1,7 @@
 from utility import *
 
 def calc_fov(nx, ny, w_h, gamma):
+    
     ar =  float(nx) / float(ny)  # aspect ratio of projector image
     w = 2.0*w_h    # planar image width at screen distance (as if projection would be on planar scren)
     h = w / ar     # planar image height at screen distance (as if projection would be on planar screen )
