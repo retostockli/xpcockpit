@@ -88,8 +88,8 @@ namespace OpenGC
       float map_size = m_PhysicalSize.y*(map_y_max-acf_y);
 
       // Where is the aircraft?
-      //double aircraftLon = m_NAVGauge->GetMapCtrLon();
-      //double aircraftLat = m_NAVGauge->GetMapCtrLat();
+      double aircraftLon = m_NAVGauge->GetMapCtrLon();
+      double aircraftLat = m_NAVGauge->GetMapCtrLat();
     
       // What's the heading?
       float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
@@ -129,6 +129,27 @@ namespace OpenGC
       unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",150,-1);
       unsigned char *adf2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf2_nav_id",150,-1);
 
+      float *ap_course1; // NAV autopilot course1
+      float *nav1_lon;
+      float *nav1_lat;
+      if ((acf_type == 2) || (acf_type == 3)) {
+	ap_course1 = link_dataref_flt("laminar/B738/autopilot/course_pilot",0);
+	nav1_lon = link_dataref_flt("laminar/B738/pfd/vor1_sel_lon",-4);
+	nav1_lat = link_dataref_flt("laminar/B738/pfd/vor1_sel_lat",-4);
+      } else {
+	ap_course1 = link_dataref_flt("sim/cockpit/radios/nav1_obs_degm",0);
+      }
+      float *ap_course2; // NAV autopilot course2    
+      float *nav2_lon;
+      float *nav2_lat;
+      if ((acf_type == 2) || (acf_type == 3)) {
+	ap_course2 = link_dataref_flt("laminar/B738/autopilot/course_copilot",0);
+	nav2_lon = link_dataref_flt("laminar/B738/pfd/vor2_sel_lon",-4);
+	nav2_lat = link_dataref_flt("laminar/B738/pfd/vor2_sel_lat",-4);
+      } else {
+	ap_course2 = link_dataref_flt("sim/cockpit/radios/nav2_obs_degm",0);   
+      }
+
       float *ap_vspeed = link_dataref_flt("sim/cockpit/autopilot/vertical_velocity",0);
       float *ap_altitude = link_dataref_flt("sim/cockpit/autopilot/altitude",0);
       float *speed_knots = link_dataref_flt("sim/flightmodel/position/indicated_airspeed",-1);
@@ -147,6 +168,13 @@ namespace OpenGC
 
       if ((heading_map != FLT_MISS) && (*magnetic_variation != FLT_MISS)) {
 
+	double lon;
+	double lat;
+	double northing;
+	double easting;
+	float xPos;
+	float yPos;
+	
 	float dist_to_altitude = FLT_MISS; // Miles
 	if ((*ap_altitude != FLT_MISS) && (*ap_vspeed != FLT_MISS) &&
 	    (*speed_knots != FLT_MISS) && (*pressure_altitude != FLT_MISS) &&
@@ -166,14 +194,14 @@ namespace OpenGC
 	glRotatef(heading_map + *magnetic_variation, 0, 0, 1);
 	//glRotatef(*heading_mag, 0, 0, 1);
 
-	// plot ADF / VOR 1/2 heading arrows
-	// TODO: extend to co-pilot EFIS selector
+	// plot ADF / VOR 1/2 heading arrows and course line
 
 	if ((((*efis1_selector == 0) && (*adf1_bearing != FLT_MISS) &&
 	     (strcmp((const char*) adf1_name,"") != 0)) || 
 	    ((*efis1_selector == 2) && (*nav1_bearing != FLT_MISS) &&
 	     (strcmp((const char*) nav1_name,"") != 0))) && (heading_map != FLT_MISS)) {
 
+	  // Heading arrow
 	  glPushMatrix();     
 
 	  if (*efis1_selector == 0) {
@@ -214,6 +242,41 @@ namespace OpenGC
 	  glEnd();
 
 	  glPopMatrix();
+
+	  // Course line with pilot selected course from VOR/ADF location
+	  if ((*efis1_selector == 2) && ((acf_type == 2) || (acf_type == 3)) &&
+	      (*nav1_lon != FLT_MISS) && (*nav1_lat != FLT_MISS)) {
+
+	    lon = *nav1_lon;
+	    lat = *nav1_lat;
+	    
+	    // convert to azimuthal equidistant coordinates with acf in center
+	    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+	    
+	    // Compute physical position relative to acf center on screen
+	    yPos = -northing / 1852.0 / mapRange * map_size; 
+	    xPos = easting / 1852.0  / mapRange * map_size;
+
+	    float dist = sqrt(xPos*xPos + yPos*yPos);
+	    
+	    glPushMatrix();
+	    glTranslatef(xPos, yPos, 0.0);
+	    glRotatef(-*ap_course1, 0, 0, 1);
+	    glColor3ub(COLOR_GREEN);
+
+	    glLineWidth(lineWidth);
+	    // TODO: Correct line length and plot course on line
+	    drawDashedLine(0.0,-(map_size+dist),0.0,map_size+dist,12,0.75);
+
+	    glTranslatef(-1.0*fontSize, 0.5*map_size+dist, 0);
+	    glRotatef(-90, 0, 0, 1);
+	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	    snprintf(buffer, sizeof(buffer), "%i", (int) *ap_course1);
+	    m_pFontManager->Print( 0.0, 0.0, &buffer[0], m_Font);
+
+	    glPopMatrix();
+	  }
+	  
 	}
  
 	if ((((*efis2_selector == 0) && (*adf2_bearing != FLT_MISS) &&
@@ -262,6 +325,40 @@ namespace OpenGC
 	  glEnd();
  
 	  glPopMatrix();
+	  
+	  // Course line with pilot selected course from VOR/ADF location
+	  if ((*efis2_selector == 2) && ((acf_type == 2) || (acf_type == 3)) &&
+	      (*nav2_lon != FLT_MISS) && (*nav2_lat != FLT_MISS)) {
+
+	    lon = *nav2_lon;
+	    lat = *nav2_lat;
+	    
+	    // convert to azimuthal equidistant coordinates with acf in center
+	    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+	    
+	    // Compute physical position relative to acf center on screen
+	    yPos = -northing / 1852.0 / mapRange * map_size; 
+	    xPos = easting / 1852.0  / mapRange * map_size;
+
+	    float dist = sqrt(xPos*xPos + yPos*yPos);
+	    
+	    glPushMatrix();
+	    glTranslatef(xPos, yPos, 0.0);
+	    glRotatef(-*ap_course2, 0, 0, 1);
+	    glColor3ub(COLOR_GREEN);
+
+	    glLineWidth(lineWidth);
+	    // TODO: Correct line length and plot course on line
+	    drawDashedLine(0.0,-(map_size+dist),0.0,map_size+dist,12,0.75);
+
+	    glTranslatef(-1.0*fontSize, 0.5*map_size, 0);
+	    glRotatef(-90, 0, 0, 1);
+	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	    snprintf(buffer, sizeof(buffer), "%i", (int) *ap_course2);
+	    m_pFontManager->Print( 0.0, 0.0, &buffer[0], m_Font);
+
+	    glPopMatrix();
+	  }
 	}
     
 	/* MCP selected Heading bug */

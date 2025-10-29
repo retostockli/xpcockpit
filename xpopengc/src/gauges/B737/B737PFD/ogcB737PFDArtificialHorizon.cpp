@@ -124,6 +124,16 @@ namespace OpenGC
       *irs_mode = 2;
     }
 
+    int *single_cue_fd;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      single_cue_fd = link_dataref_int("laminar/B738/single_cue_fd");
+    } else {
+      single_cue_fd = link_dataref_int("xpserver/single_cue_fd");
+      *single_cue_fd = 0;
+    }
+
+    float *sideslip = link_dataref_flt("sim/cockpit2/gauges/indicators/slip_deg",-1);
+    
     if ((*roll != FLT_MISS) && (*pitch != FLT_MISS)) {
 
       glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
@@ -432,14 +442,17 @@ namespace OpenGC
       // Specify line width
       glLineWidth(lineWidth);
 
+      float shift = 0.0;
+      if (*sideslip != FLT_MISS) shift = *sideslip * -1.0;
+      
       glBegin(GL_LINE_LOOP); // the bottom rectangle
-      glVertex2f(-4.5, 39.5);
-      glVertex2f(4.5, 39.5);
-      glVertex2f(4.5, 41.5);
-      glVertex2f(-4.5, 41.5);
+      glVertex2f(-4.5+shift, 39.5);
+      glVertex2f(4.5+shift, 39.5);
+      glVertex2f(4.5+shift, 41.5);
+      glVertex2f(-4.5+shift, 41.5);
       glEnd();
 
-      glBegin(GL_LINE_STRIP); // the top triangle
+      glBegin(GL_LINE_LOOP); // the top triangle
       glVertex2f(-4.5, 41.5);
       glVertex2f(0, 46);
       glVertex2f(4.5, 41.5);
@@ -454,85 +467,124 @@ namespace OpenGC
       // Move to the center of the window
       glTranslatef(47,49,0);
 
-      // The center axis indicator
-      // Black background
-      glColor3ub(COLOR_BLACK);
-      glBegin(GL_POLYGON);
-      glVertex2f(1.25,1.25);
-      glVertex2f(1.25,-1.25);
-      glVertex2f(-1.25,-1.25);
-      glVertex2f(-1.25,1.25);
-      glVertex2f(1.25,1.25);
-      glEnd();
-      // White lines
-      glColor3ub(COLOR_WHITE);
-      glLineWidth(lineWidth);
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(1.25,1.25);
-      glVertex2f(1.25,-1.25);
-      glVertex2f(-1.25,-1.25);
-      glVertex2f(-1.25,1.25);
-      glEnd();
+      if (*single_cue_fd) {
+	// The left part
+	// Black background
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(0,0);
+	glVertex2f(-35,-8);
+	glVertex2f(-18,-8);
+	glEnd();
+	// White lines
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(0,0);
+	glVertex2f(-35,-8);
+	glVertex2f(-18,-8);
+	glEnd();
 
-      // The left part
-      // Black background
-      glColor3ub(COLOR_BLACK);
-      glBegin(GL_POLYGON);
-      glVertex2f(-39,1.25);
-      glVertex2f(-19,1.25);
-      glVertex2f(-19,-1.25);
-      glVertex2f(-39,-1.25);
-      glVertex2f(-39,1.25);
-      glEnd();
-      glBegin(GL_POLYGON);
-      glVertex2f(-19,1.25);
-      glVertex2f(-19,-5.75);
-      glVertex2f(-22,-5.75);
-      glVertex2f(-22,1.25);
-      glVertex2f(-19,1.25);
-      glEnd();
-  
-      // White lines
-      glColor3ub(COLOR_WHITE);
-      glLineWidth(lineWidth);
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(-39,1.25);
-      glVertex2f(-19,1.25);
-      glVertex2f(-19,-5.75);
-      glVertex2f(-22,-5.75);
-      glVertex2f(-22,-1.25);
-      glVertex2f(-39,-1.25);
-      glEnd();
+	// The right part
+	// Black background
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(0,0);
+	glVertex2f(35,-8);
+	glVertex2f(18,-8);
+	glEnd();
+	// White lines
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(0,0);
+	glVertex2f(35,-8);
+	glVertex2f(18,-8);
+	glEnd();
 
-      // The right part
-      // Black background
-      glColor3ub(COLOR_BLACK);
-      glBegin(GL_POLYGON);
-      glVertex2f(39,1.25);
-      glVertex2f(19,1.25);
-      glVertex2f(19,-1.25);
-      glVertex2f(39,-1.25);
-      glVertex2f(39,1.25);
-      glEnd();
-      glBegin(GL_POLYGON);
-      glVertex2f(19,1.25);
-      glVertex2f(19,-5.75);
-      glVertex2f(22,-5.75);
-      glVertex2f(22,1.25);
-      glVertex2f(19,1.25);
-      glEnd();
+      } else {
+      
+	// The center axis indicator
+	// Black background
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(1.25,1.25);
+	glVertex2f(1.25,-1.25);
+	glVertex2f(-1.25,-1.25);
+	glVertex2f(-1.25,1.25);
+	glVertex2f(1.25,1.25);
+	glEnd();
+	// White lines
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(1.25,1.25);
+	glVertex2f(1.25,-1.25);
+	glVertex2f(-1.25,-1.25);
+	glVertex2f(-1.25,1.25);
+	glEnd();
+
+	// The left part
+	// Black background
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(-39,1.25);
+	glVertex2f(-19,1.25);
+	glVertex2f(-19,-1.25);
+	glVertex2f(-39,-1.25);
+	glVertex2f(-39,1.25);
+	glEnd();
+	glBegin(GL_POLYGON);
+	glVertex2f(-19,1.25);
+	glVertex2f(-19,-5.75);
+	glVertex2f(-22,-5.75);
+	glVertex2f(-22,1.25);
+	glVertex2f(-19,1.25);
+	glEnd();
   
-      // White lines
-      glColor3ub(COLOR_WHITE);
-      glLineWidth(lineWidth);
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(39,1.25);
-      glVertex2f(19,1.25);
-      glVertex2f(19,-5.75);
-      glVertex2f(22,-5.75);
-      glVertex2f(22,-1.25);
-      glVertex2f(39,-1.25);
-      glEnd();
+	// White lines
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(-39,1.25);
+	glVertex2f(-19,1.25);
+	glVertex2f(-19,-5.75);
+	glVertex2f(-22,-5.75);
+	glVertex2f(-22,-1.25);
+	glVertex2f(-39,-1.25);
+	glEnd();
+
+	// The right part
+	// Black background
+	glColor3ub(COLOR_BLACK);
+	glBegin(GL_POLYGON);
+	glVertex2f(39,1.25);
+	glVertex2f(19,1.25);
+	glVertex2f(19,-1.25);
+	glVertex2f(39,-1.25);
+	glVertex2f(39,1.25);
+	glEnd();
+	glBegin(GL_POLYGON);
+	glVertex2f(19,1.25);
+	glVertex2f(19,-5.75);
+	glVertex2f(22,-5.75);
+	glVertex2f(22,1.25);
+	glVertex2f(19,1.25);
+	glEnd();
+  
+	// White lines
+	glColor3ub(COLOR_WHITE);
+	glLineWidth(lineWidth);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(39,1.25);
+	glVertex2f(19,1.25);
+	glVertex2f(19,-5.75);
+	glVertex2f(22,-5.75);
+	glVertex2f(22,-1.25);
+	glVertex2f(39,-1.25);
+	glEnd();
+
+      }
 
       glPopMatrix();
       //--------------End draw attitude indicator------------
@@ -603,71 +655,92 @@ namespace OpenGC
     }
     
     //----------------Flight Director----------------
+    if (*single_cue_fd) {
+      if ((*fd_pitch_status == 1) && (*fd_pitch != FLT_MISS) &&
+	  (*fd_roll_status == 1) && (*fd_roll != FLT_MISS)) {
+
+	glPushMatrix();
+
+	// Move to the center of the window
+	glTranslatef(47,49,0);
+	glColor3ub(COLOR_MAGENTA);
+	glLineWidth(lineWidth);
     
-    if ((*fd_pitch_status == 1) && (*fd_pitch != FLT_MISS))
-      {
+	//	glTranslatef(0,*fd_pitch*2.0,0);
+	//	glRotatef(-*fd_roll,0,0,1);
+
+	// Left magenta single cue fd
+	glBegin(GL_POLYGON);
+	glVertex2f(-0.5,0.0);
+	glVertex2f(-35.0,-8);
+	glVertex2f(-40.0,-6.0);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(-0.5,0.0);
+	glVertex2f(-35.0,-8);
+	glVertex2f(-40.0,-6.0);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(-35.0,-8);
+	glVertex2f(-40.0,-6.0);
+	glVertex2f(-40.0,-10.0);
+	glEnd();
+
+	// Right magenta single cue fd
+	glBegin(GL_POLYGON);
+	glVertex2f(0.5,0.0);
+	glVertex2f(35.0,-8);
+	glVertex2f(40.0,-6.0);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(0.5,0.0);
+	glVertex2f(35.0,-8);
+	glVertex2f(40.0,-6.0);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(35.0,-8);
+	glVertex2f(40.0,-6.0);
+	glVertex2f(40.0,-10.0);
+	glEnd();
+
+	glPopMatrix();
+      }
+    } else {
+    
+      if ((*fd_pitch_status == 1) && (*fd_pitch != FLT_MISS)) {
 	glPushMatrix();
 	
 	// Move to the center of the window
 	glTranslatef(47,49,0);
 	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(1.5*lineWidth);
+	glLineWidth(2.0*lineWidth);
     
 	glTranslatef(0,*fd_pitch*2.0,0);
 	glBegin(GL_LINES);
-	glVertex2f(-20,0);
-	glVertex2f(20,0);
+	glVertex2f(-30,0);
+	glVertex2f(30,0);
 	glEnd();
 
 	glPopMatrix();
       }
 	
-    if ((*fd_roll_status == 1) && (*fd_roll != FLT_MISS))
-      {
+      if ((*fd_roll_status == 1) && (*fd_roll != FLT_MISS)) {
 	glPushMatrix();
 	
 	// Move to the center of the window
 	glTranslatef(47,49,0);
 	glColor3ub(COLOR_MAGENTA);
-	glLineWidth(1.5*lineWidth);
+	glLineWidth(2.0*lineWidth);
 
 	glTranslatef(*fd_roll,0,0);
 	glBegin(GL_LINES);
-	glVertex2f(0,-20);
-	glVertex2f(0,20);
+	glVertex2f(0,-30);
+	glVertex2f(0,30);
 	glEnd();
 	
 	glPopMatrix();
       } 
 
-    if (false) {
-      // Draw the glideslope needles only if the flight director
-      // isn't activated and the glideslope is alive
-      // extend for nav2 and gps?
-      if ((*nav1_has_glideslope == 0) && (*nav1_hdef != FLT_MISS) && (*nav1_vdef != FLT_MISS))
-	{
-	  // Move to the center of the window
-	  glTranslatef(47,49,0);
-	  glColor3ub(COLOR_MAGENTA);
-	  glLineWidth(lineWidth);
-	  
-	  glPushMatrix();
-	  glTranslatef(0,*nav1_vdef*-20, 0);
-	  glBegin(GL_LINES);
-	  glVertex2f(-20,0);
-	  glVertex2f(20,0);
-	  glEnd();
-	  glPopMatrix();
-	  
-	  glPushMatrix();
-	  glTranslatef(*nav1_hdef*20, 0, 0);
-	  glBegin(GL_LINES);
-	  glVertex2f(0,-20);
-	  glVertex2f(0,20);
-	  glEnd();
-	  glPopMatrix();
-
-	}
     }
     
   }
