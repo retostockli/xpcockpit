@@ -84,6 +84,11 @@ protected:
   /* Function to draw a dashed line since in OpenGL ES the gl_line_stipple function is not available */
   void drawDashedLine(float x0, float y0, float x1, float y1, float nper100, float ratio);
 
+  /* Function to calculate the intersection of a circle with radius R centered at 0,0
+     with a line defined by two points x1,y1 and x2,y2 */
+  int calcLineCircleIntersect( float x1, float y1, float x2, float y2, float R,
+			       float *ix1, float *iy1, float *ix2, float *iy2);
+
 } // end namespace OpenGC
 
 #endif

@@ -165,4 +165,34 @@ CircleEvaluator
     }
   }
 
+  /* Function to calculate the intersection of a circle with radius R centered at 0,0
+     with a line defined by two points x1,y1 and x2,y2 */
+  /* The result is either 0, 1 or 2 intersections */
+  int calcLineCircleIntersect( float x1, float y1, float x2, float y2, float R,
+			       float *ix1, float *iy1, float *ix2, float *iy2) {
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+    float a = dx*dx + dy*dy;
+    float b = 2 * (x1*dx + y1*dy);
+    float c = x1*x1 + y1*y1 - R*R;
+    float D = b*b - 4*a*c;
+
+    if (D < 0) {
+        // No intersection
+        return 0;
+    }
+
+    float sqrtD = sqrt(D);
+    float t1 = (-b + sqrtD) / (2*a);
+    float t2 = (-b - sqrtD) / (2*a);
+
+    *ix1 = x1 + t1*dx;
+    *iy1 = y1 + t1*dy;
+
+    *ix2 = x1 + t2*dx;
+    *iy2 = y1 + t2*dy;
+
+    return (D > 0) ? 2 : 1;  // 2 intersections or 1 intersection (tangent)
+  }
+
 } // end namespace OpenGC

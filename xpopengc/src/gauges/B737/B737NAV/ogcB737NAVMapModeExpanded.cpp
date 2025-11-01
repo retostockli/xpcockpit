@@ -62,7 +62,7 @@ namespace OpenGC
       bool mapCenter = m_NAVGauge->GetMapCenter();
       float heading_map =  m_NAVGauge->GetMapHeading();
     
-      char buffer[5];
+      char buffer[15];
 
       // define geometric stuff
       float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
@@ -172,8 +172,16 @@ namespace OpenGC
 	double lat;
 	double northing;
 	double easting;
-	float xPos;
-	float yPos;
+	float xPos1;
+	float yPos1;
+	float xPos2;
+	float yPos2;
+	float ixPos1;
+	float iyPos1;
+	float ixPos2;
+	float iyPos2;
+	float course_rad;
+	float backcourse;
 	
 	float dist_to_altitude = FLT_MISS; // Miles
 	if ((*ap_altitude != FLT_MISS) && (*ap_vspeed != FLT_MISS) &&
@@ -190,9 +198,18 @@ namespace OpenGC
     
 	// Shift center and rotate about heading
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-	//glRotatef(*track_mag, 0, 0, 1);
-	glRotatef(heading_map + *magnetic_variation, 0, 0, 1);
-	//glRotatef(*heading_mag, 0, 0, 1);
+	glRotatef(heading_map, 0, 0, 1);
+
+	// glPushMatrix();
+	// glTranslatef(20.0,0,0);
+	// glColor3ub(COLOR_YELLOW);
+	// glBegin(GL_POLYGON);
+	// glVertex2f(-2.5, -2.5);
+	// glVertex2f(2.5, -2.5);
+	// glVertex2f(2.5, 2.5);
+	// glVertex2f(-2.5, 2.5);
+	// glEnd();
+	// glPopMatrix();
 
 	// plot ADF / VOR 1/2 heading arrows and course line
 
@@ -205,10 +222,10 @@ namespace OpenGC
 	  glPushMatrix();     
 
 	  if (*efis1_selector == 0) {
-	    glRotatef(-*adf1_bearing, 0, 0, 1);
+	    glRotatef(-*adf1_bearing+*magnetic_variation, 0, 0, 1);
 	    glColor3ub(COLOR_CYAN);
 	  } else {
-	    glRotatef(-*nav1_bearing, 0, 0, 1);
+	    glRotatef(-*nav1_bearing+*magnetic_variation, 0, 0, 1);
 	    glColor3ub(COLOR_GREEN);
 	  }
 
@@ -243,6 +260,8 @@ namespace OpenGC
 
 	  glPopMatrix();
 
+	  //printf("%f %f \n",m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+
 	  // Course line with pilot selected course from VOR/ADF location
 	  if ((*efis1_selector == 2) && ((acf_type == 2) || (acf_type == 3)) &&
 	      (*nav1_lon != FLT_MISS) && (*nav1_lat != FLT_MISS)) {
@@ -254,29 +273,50 @@ namespace OpenGC
 	    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 	    
 	    // Compute physical position relative to acf center on screen
-	    yPos = -northing / 1852.0 / mapRange * map_size; 
-	    xPos = easting / 1852.0  / mapRange * map_size;
-
-	    float dist = sqrt(xPos*xPos + yPos*yPos);
+	    yPos1 = -northing / 1852.0 / mapRange * map_size; 
+	    xPos1 = easting / 1852.0  / mapRange * map_size;
 	    
-	    glPushMatrix();
-	    glTranslatef(xPos, yPos, 0.0);
-	    glRotatef(-*ap_course1, 0, 0, 1);
-	    glColor3ub(COLOR_GREEN);
+	    course_rad = *ap_course1 * M_PI / 180.0;
+ 
+	    xPos2 = xPos1 + 100.0*sin(course_rad);
+	    yPos2 = yPos1 + 100.0*cos(course_rad);
 
-	    glLineWidth(lineWidth);
-	    // TODO: Correct line length and plot course on line
-	    drawDashedLine(0.0,-(map_size+dist),0.0,map_size+dist,12,0.75);
+	    int n = calcLineCircleIntersect( xPos1, yPos1, xPos2, yPos2, map_size,
+					     &ixPos1, &iyPos1, &ixPos2, &iyPos2);
+	    
+	    if (n == 2) {
+	      glPushMatrix();
+	      
+	      glColor3ub(COLOR_GREEN);
+	      glLineWidth(lineWidth);
+	      drawDashedLine(ixPos1,iyPos1,ixPos2,iyPos2,12,0.75);
+	      
+	      glPushMatrix();
+	      glTranslatef(xPos1, yPos1, 0.0);
+	      glRotatef(-*ap_course1, 0, 0, 1);
+	      glTranslatef(0.0, 35.0, 0.0);
+	      glRotatef(-90, 0, 0, 1);
+	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	      snprintf(buffer, sizeof(buffer), "%03d", (int) *ap_course1);
+	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
+	      glPopMatrix();
 
-	    glTranslatef(-1.0*fontSize, 0.5*map_size+dist, 0);
-	    glRotatef(-90, 0, 0, 1);
-	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	    snprintf(buffer, sizeof(buffer), "%i", (int) *ap_course1);
-	    m_pFontManager->Print( 0.0, 0.0, &buffer[0], m_Font);
+	      backcourse = *ap_course1-180.0;
+	      if (backcourse < 0.0) backcourse += 360.0;
+	      glPushMatrix();
+	      glTranslatef(xPos1, yPos1, 0.0);
+	      glRotatef(-backcourse, 0, 0, 1);
+	      glTranslatef(0.0, 25.0, 0.0);
+	      glRotatef(90, 0, 0, 1);
+	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	      snprintf(buffer, sizeof(buffer), "%03d", (int) backcourse);
+	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
+	      glPopMatrix();
+	      
+	      glPopMatrix();
 
-	    glPopMatrix();
-	  }
-	  
+	    }
+	  }	  
 	}
  
 	if ((((*efis2_selector == 0) && (*adf2_bearing != FLT_MISS) &&
@@ -287,10 +327,10 @@ namespace OpenGC
 	  glPushMatrix();     
 
 	  if (*efis2_selector == 0) {
-	    glRotatef(-*adf2_bearing, 0, 0, 1);
+	    glRotatef(-*adf2_bearing+*magnetic_variation, 0, 0, 1);
 	    glColor3ub(COLOR_CYAN);
 	  } else {
-	    glRotatef(-*nav2_bearing, 0, 0, 1);
+	    glRotatef(-*nav2_bearing+*magnetic_variation, 0, 0, 1);
 	    glColor3ub(COLOR_GREEN);
 	  }
 
@@ -337,27 +377,49 @@ namespace OpenGC
 	    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 	    
 	    // Compute physical position relative to acf center on screen
-	    yPos = -northing / 1852.0 / mapRange * map_size; 
-	    xPos = easting / 1852.0  / mapRange * map_size;
-
-	    float dist = sqrt(xPos*xPos + yPos*yPos);
+	    yPos1 = -northing / 1852.0 / mapRange * map_size; 
+	    xPos1 = easting / 1852.0  / mapRange * map_size;
 	    
-	    glPushMatrix();
-	    glTranslatef(xPos, yPos, 0.0);
-	    glRotatef(-*ap_course2, 0, 0, 1);
-	    glColor3ub(COLOR_GREEN);
+	    course_rad = *ap_course2 * M_PI / 180.0;
+ 
+	    xPos2 = xPos1 + 100.0*sin(course_rad);
+	    yPos2 = yPos1 + 100.0*cos(course_rad);
 
-	    glLineWidth(lineWidth);
-	    // TODO: Correct line length and plot course on line
-	    drawDashedLine(0.0,-(map_size+dist),0.0,map_size+dist,12,0.75);
+	    int n = calcLineCircleIntersect( xPos1, yPos1, xPos2, yPos2, map_size,
+					     &ixPos1, &iyPos1, &ixPos2, &iyPos2);
+	    
+	    if (n == 2) {
+	      glPushMatrix();
+	      
+	      glColor3ub(COLOR_GREEN);
+	      glLineWidth(lineWidth);
+	      drawDashedLine(ixPos1,iyPos1,ixPos2,iyPos2,12,0.75);
+	      
+	      glPushMatrix();
+	      glTranslatef(xPos1, yPos1, 0.0);
+	      glRotatef(-*ap_course2, 0, 0, 1);
+	      glTranslatef(0.0, 35.0, 0.0);
+	      glRotatef(-90, 0, 0, 1);
+	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	      snprintf(buffer, sizeof(buffer), "%03d", (int) *ap_course2);
+	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
+	      glPopMatrix();
 
-	    glTranslatef(-1.0*fontSize, 0.5*map_size, 0);
-	    glRotatef(-90, 0, 0, 1);
-	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	    snprintf(buffer, sizeof(buffer), "%i", (int) *ap_course2);
-	    m_pFontManager->Print( 0.0, 0.0, &buffer[0], m_Font);
-
-	    glPopMatrix();
+	      backcourse = *ap_course2-180.0;
+	      if (backcourse < 0.0) backcourse += 360.0;
+	      glPushMatrix();
+	      glTranslatef(xPos1, yPos1, 0.0);
+	      glRotatef(-backcourse, 0, 0, 1);
+	      glTranslatef(0.0, 25.0, 0.0);
+	      glRotatef(90, 0, 0, 1);
+	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	      snprintf(buffer, sizeof(buffer), "%03d", (int) backcourse);
+	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
+	      glPopMatrix();
+	      
+	      glPopMatrix();
+	      
+	    }
 	  }
 	}
     
@@ -367,19 +429,10 @@ namespace OpenGC
 
 	  glPushMatrix();     
 
-	  glRotatef(-*heading_mag_ap, 0, 0, 1);
+	  glRotatef(-*heading_mag_ap + *magnetic_variation, 0, 0, 1);
 	  glColor3ub(COLOR_MAGENTA);
 	  glLineWidth(lineWidth);
 	  if (*has_heading_ap_line == 1) {
-	    /* DOES NOT WORK ON OPENGL ES
-	       glEnable(GL_LINE_STIPPLE);
-	       glLineStipple( 4, 0x0303 );
-	       glBegin(GL_LINES);
-	       glVertex2f(0.0,0.0);
-	       glVertex2f(0.0,map_size);
-	       glEnd();
-	       glDisable(GL_LINE_STIPPLE);
-	    */
 	    drawDashedLine(0.0,0.0,0.0,map_size,10,0.3);
 	  }
 	  glBegin(GL_LINE_STRIP);
@@ -441,7 +494,7 @@ namespace OpenGC
 	if (mapRange >= 5.0) {
 	  snprintf(buffer, sizeof(buffer), "%i", (int) (mapRange / 2.0));
 	} else {
-	  snprintf(buffer, sizeof(buffer), "%2.1f", mapRange / 2.0);
+	  snprintf(buffer, sizeof(buffer), "%2.1f", (float) mapRange / 2.0);
 	}
 	if ((mapRange / 2.0) < 100) {
 	  if (mapRange >= 5.0) {
@@ -547,7 +600,7 @@ namespace OpenGC
 	  
 	  glPushMatrix();
 	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	  glRotatef(heading_map - *heading_mag + *magnetic_variation,0,0,1); // put wind correction rotation here
+	  glRotatef(heading_map - *heading_mag + *magnetic_variation,0,0,1); // TODO: put wind correction rotation here
 	  
 	  // TRIANGLE ON TOP OF THE MAP MARKS THE WIND CORRECTION!
 	  glColor3ub(COLOR_WHITE);

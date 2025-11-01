@@ -183,6 +183,16 @@ namespace OpenGC
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
       glRotatef(heading_map, 0, 0, 1);
 
+      // glPushMatrix();
+      // glTranslatef(20.0,0,0);
+      // glColor3ub(COLOR_RED);
+      // glBegin(GL_POLYGON);
+      // glVertex2f(-1.5, -1.5);
+      // glVertex2f(1.5, -1.5);
+      // glVertex2f(1.5, 1.5);
+      // glVertex2f(-1.5, 1.5);
+      // glEnd();
+      // glPopMatrix();
   
       /* valid coordinates ? */
       if ((aircraftLon >= -180.0) && (aircraftLon <= 180.0) && (aircraftLat >= -90.0) && (aircraftLat <= 90.0)) {
@@ -336,7 +346,7 @@ namespace OpenGC
 
 	      lon = (*navIt)->GetDegreeLon();
 	      lat = (*navIt)->GetDegreeLat();
-
+	      
 	      // convert to azimuthal equidistant coordinates with acf in center
 	      lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 
@@ -422,7 +432,7 @@ namespace OpenGC
 			  glColor3ub(COLOR_BLACK);
 			  glLineWidth(lineWidth*2.0);
 			} else {
-			  glColor3ub(COLOR_GREEN);
+			  glColor3ub(COLOR_LIGHTBLUE);
 			  glLineWidth(lineWidth);
 			}		       
 			glBegin(GL_LINE_LOOP);
@@ -451,6 +461,7 @@ namespace OpenGC
 			glVertex2f(-1.75*ss4, 0.433*ss4);
 			glVertex2f(-ss4, 0.0);
 			glEnd();
+			
 		      }
 
 		      m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
