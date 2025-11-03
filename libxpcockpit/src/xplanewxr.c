@@ -63,7 +63,11 @@ int wxrReadLeft;                      /* counter of bytes to read from receive t
 int wxr_is_xp12;
 
 /* definition of prototype functions */
+#ifdef __arm__
+void *wxr_poll_thread_main();
+#else
 void *wxr_poll_thread_main(void *);
+#endif
 
 /* set up udp server socket with given server address and port */
 int init_wxr_server()
@@ -279,7 +283,11 @@ void exit_wxr_client(void)
 }
 
 
+#ifdef __arm__
+void *wxr_poll_thread_main()
+#else
 void *wxr_poll_thread_main(void *)
+#endif
 /* thread handles udp receive on the server socket by use of blocking read and a read buffer */
 {
   int ret = 0;
