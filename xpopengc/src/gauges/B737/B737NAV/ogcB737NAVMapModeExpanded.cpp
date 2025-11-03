@@ -133,20 +133,24 @@ namespace OpenGC
       float *ap_course1; // NAV autopilot course1
       float *nav1_lon;
       float *nav1_lat;
+      int *nav1_show;
       if ((acf_type == 2) || (acf_type == 3)) {
 	ap_course1 = link_dataref_flt("laminar/B738/autopilot/course_pilot",0);
 	nav1_lon = link_dataref_flt("laminar/B738/pfd/vor1_sel_lon",-4);
 	nav1_lat = link_dataref_flt("laminar/B738/pfd/vor1_sel_lat",-4);
+	nav1_show = link_dataref_int("laminar/B738/pfd/vor1_show");
       } else {
 	ap_course1 = link_dataref_flt("sim/cockpit/radios/nav1_obs_degm",0);
       }
       float *ap_course2; // NAV autopilot course2    
       float *nav2_lon;
       float *nav2_lat;
+      int *nav2_show;
       if ((acf_type == 2) || (acf_type == 3)) {
 	ap_course2 = link_dataref_flt("laminar/B738/autopilot/course_copilot",0);
 	nav2_lon = link_dataref_flt("laminar/B738/pfd/vor2_sel_lon",-4);
 	nav2_lat = link_dataref_flt("laminar/B738/pfd/vor2_sel_lat",-4);
+	nav2_show = link_dataref_int("laminar/B738/pfd/vor2_show");
       } else {
 	ap_course2 = link_dataref_flt("sim/cockpit/radios/nav2_obs_degm",0);   
       }
@@ -255,58 +259,61 @@ namespace OpenGC
 	  //printf("%f %f \n",m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
 
 	  // Course line with pilot selected course from VOR location
-	  if ((*efis1_selector == 1) && ((acf_type == 2) || (acf_type == 3)) &&
-	      (*nav1_lon != FLT_MISS) && (*nav1_lat != FLT_MISS)) {
+	  if ((*efis1_selector == 1) && ((acf_type == 2) || (acf_type == 3))) {
+	    
+	    if ((*nav1_show == 1) && (*nav1_lon != FLT_MISS) && (*nav1_lat != FLT_MISS)) {
 
-	    lon = *nav1_lon;
-	    lat = *nav1_lat;
+	      lon = *nav1_lon;
+	      lat = *nav1_lat;
 	    
-	    // convert to azimuthal equidistant coordinates with acf in center
-	    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+	      // convert to azimuthal equidistant coordinates with acf in center
+	      lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 	    
-	    // Compute physical position relative to acf center on screen
-	    yPos1 = -northing / 1852.0 / mapRange * map_size; 
-	    xPos1 = easting / 1852.0  / mapRange * map_size;
+	      // Compute physical position relative to acf center on screen
+	      yPos1 = -northing / 1852.0 / mapRange * map_size; 
+	      xPos1 = easting / 1852.0  / mapRange * map_size;
 	    
-	    course_rad = (*ap_course1 - *magnetic_variation) * M_PI / 180.0;
+	      course_rad = (*ap_course1 - *magnetic_variation) * M_PI / 180.0;
  
-	    xPos2 = xPos1 + 100.0*sin(course_rad);
-	    yPos2 = yPos1 + 100.0*cos(course_rad);
+	      xPos2 = xPos1 + 100.0*sin(course_rad);
+	      yPos2 = yPos1 + 100.0*cos(course_rad);
 
-	    int n = calcLineCircleIntersect( xPos1, yPos1, xPos2, yPos2, map_size,
-					     &ixPos1, &iyPos1, &ixPos2, &iyPos2);
+	      int n = calcLineCircleIntersect( xPos1, yPos1, xPos2, yPos2, map_size,
+					       &ixPos1, &iyPos1, &ixPos2, &iyPos2);
 	    
-	    if (n == 2) {
-	      glPushMatrix();
+	      if (n == 2) {
+		glPushMatrix();
 	      
-	      glColor3ub(COLOR_GREEN);
-	      glLineWidth(lineWidth);
-	      drawDashedLine(ixPos1,iyPos1,ixPos2,iyPos2,12,0.75);
+		glColor3ub(COLOR_GREEN);
+		glLineWidth(lineWidth);
+		drawDashedLine(ixPos1,iyPos1,ixPos2,iyPos2,12,0.75);
 	      
-	      glPushMatrix();
-	      glTranslatef(xPos1, yPos1, 0.0);
-	      glRotatef(-*ap_course1+*magnetic_variation, 0, 0, 1);
-	      glTranslatef(0.0, 35.0, 0.0);
-	      glRotatef(-90, 0, 0, 1);
-	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	      snprintf(buffer, sizeof(buffer), "%03d", (int) *ap_course1);
-	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
-	      glPopMatrix();
+		glPushMatrix();
+		glTranslatef(xPos1, yPos1, 0.0);
+		glRotatef(-*ap_course1+*magnetic_variation, 0, 0, 1);
+		glTranslatef(0.0, 35.0, 0.0);
+		glRotatef(-90, 0, 0, 1);
+		m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+		snprintf(buffer, sizeof(buffer), "%03d", (int) *ap_course1);
+		m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
+		glPopMatrix();
 
-	      backcourse = (*ap_course1) - 180.0;
-	      if (backcourse < 0.0) backcourse += 360.0;
-	      glPushMatrix();
-	      glTranslatef(xPos1, yPos1, 0.0);
-	      glRotatef(-backcourse+*magnetic_variation, 0, 0, 1);
-	      glTranslatef(0.0, 25.0, 0.0);
-	      glRotatef(90, 0, 0, 1);
-	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	      snprintf(buffer, sizeof(buffer), "%03d", (int) backcourse);
-	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
-	      glPopMatrix();
+		backcourse = (*ap_course1) - 180.0;
+		if (backcourse < 0.0) backcourse += 360.0;
+		glPushMatrix();
+		glTranslatef(xPos1, yPos1, 0.0);
+		glRotatef(-backcourse+*magnetic_variation, 0, 0, 1);
+		glTranslatef(0.0, 25.0, 0.0);
+		glRotatef(90, 0, 0, 1);
+		m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+		snprintf(buffer, sizeof(buffer), "%03d", (int) backcourse);
+		m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
+		glPopMatrix();
 	      
-	      glPopMatrix();
+		glPopMatrix();
 
+	      }
+	      
 	    }
 	  }	  
 	}
@@ -361,58 +368,61 @@ namespace OpenGC
 	  glPopMatrix();
 	  
 	  // Course line with pilot selected course from VOR location
-	  if ((*efis2_selector == 1) && ((acf_type == 2) || (acf_type == 3)) &&
-	      (*nav2_lon != FLT_MISS) && (*nav2_lat != FLT_MISS)) {
+	  if ((*efis2_selector == 1) && ((acf_type == 2) || (acf_type == 3))) {
+	    
+	    if ((*nav2_show == 1) && (*nav2_lon != FLT_MISS) && (*nav2_lat != FLT_MISS)) {
 
-	    lon = *nav2_lon;
-	    lat = *nav2_lat;
+	      lon = *nav2_lon;
+	      lat = *nav2_lat;
 	    
-	    // convert to azimuthal equidistant coordinates with acf in center
-	    lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
+	      // convert to azimuthal equidistant coordinates with acf in center
+	      lonlat2gnomonic(&lon, &lat, &easting, &northing, &aircraftLon, &aircraftLat);
 	    
-	    // Compute physical position relative to acf center on screen
-	    yPos1 = -northing / 1852.0 / mapRange * map_size; 
-	    xPos1 = easting / 1852.0  / mapRange * map_size;
+	      // Compute physical position relative to acf center on screen
+	      yPos1 = -northing / 1852.0 / mapRange * map_size; 
+	      xPos1 = easting / 1852.0  / mapRange * map_size;
 	    
-	    course_rad = (*ap_course2 - *magnetic_variation) * M_PI / 180.0;
+	      course_rad = (*ap_course2 - *magnetic_variation) * M_PI / 180.0;
  
-	    xPos2 = xPos1 + 100.0*sin(course_rad);
-	    yPos2 = yPos1 + 100.0*cos(course_rad);
+	      xPos2 = xPos1 + 100.0*sin(course_rad);
+	      yPos2 = yPos1 + 100.0*cos(course_rad);
 
-	    int n = calcLineCircleIntersect( xPos1, yPos1, xPos2, yPos2, map_size,
-					     &ixPos1, &iyPos1, &ixPos2, &iyPos2);
+	      int n = calcLineCircleIntersect( xPos1, yPos1, xPos2, yPos2, map_size,
+					       &ixPos1, &iyPos1, &ixPos2, &iyPos2);
 	    
-	    if (n == 2) {
-	      glPushMatrix();
+	      if (n == 2) {
+		glPushMatrix();
 	      
-	      glColor3ub(COLOR_GREEN);
-	      glLineWidth(lineWidth);
-	      drawDashedLine(ixPos1,iyPos1,ixPos2,iyPos2,12,0.75);
+		glColor3ub(COLOR_GREEN);
+		glLineWidth(lineWidth);
+		drawDashedLine(ixPos1,iyPos1,ixPos2,iyPos2,12,0.75);
 	      
-	      glPushMatrix();
-	      glTranslatef(xPos1, yPos1, 0.0);
-	      glRotatef(-*ap_course2 + *magnetic_variation, 0, 0, 1);
-	      glTranslatef(0.0, 35.0, 0.0);
-	      glRotatef(-90, 0, 0, 1);
-	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	      snprintf(buffer, sizeof(buffer), "%03d", (int) *ap_course2);
-	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
-	      glPopMatrix();
+		glPushMatrix();
+		glTranslatef(xPos1, yPos1, 0.0);
+		glRotatef(-*ap_course2 + *magnetic_variation, 0, 0, 1);
+		glTranslatef(0.0, 35.0, 0.0);
+		glRotatef(-90, 0, 0, 1);
+		m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+		snprintf(buffer, sizeof(buffer), "%03d", (int) *ap_course2);
+		m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
+		glPopMatrix();
 
-	      backcourse = (*ap_course2) - 180.0;
-	      if (backcourse < 0.0) backcourse += 360.0;
-	      glPushMatrix();
-	      glTranslatef(xPos1, yPos1, 0.0);
-	      glRotatef(-backcourse+*magnetic_variation, 0, 0, 1);
-	      glTranslatef(0.0, 25.0, 0.0);
-	      glRotatef(90, 0, 0, 1);
-	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	      snprintf(buffer, sizeof(buffer), "%03d", (int) backcourse);
-	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
-	      glPopMatrix();
+		backcourse = (*ap_course2) - 180.0;
+		if (backcourse < 0.0) backcourse += 360.0;
+		glPushMatrix();
+		glTranslatef(xPos1, yPos1, 0.0);
+		glRotatef(-backcourse+*magnetic_variation, 0, 0, 1);
+		glTranslatef(0.0, 25.0, 0.0);
+		glRotatef(90, 0, 0, 1);
+		m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+		snprintf(buffer, sizeof(buffer), "%03d", (int) backcourse);
+		m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
+		glPopMatrix();
 	      
-	      glPopMatrix();
-	      
+		glPopMatrix();
+
+	      }
+	    
 	    }
 	  }
 	}
