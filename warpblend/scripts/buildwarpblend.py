@@ -6,10 +6,10 @@ from warpblend_window import init_warpblend_window, create_warpblend_window
 from root_window import root, create_root_window
 
 
-inifile="singlemon.ini"
-#inifile="test.ini"
+params.inifile="../inidata/singlemon.ini"
+params.inifile="../inidata/test.ini"
 
-read_ini(inifile)
+read_ini()
 
 init_warpblend_window()
 create_root_window()

@@ -13,6 +13,8 @@ button = []
 
 def draw_azimuthgrid(mon):
 
+    print(params.delta)
+
     global canvas
 
     alignment = True # warp for screen alignment
@@ -148,6 +150,15 @@ def create_warpblend_window(mon):
 
 
 def redraw_warpblend_window(mon):
+
+    # General Calculations independent of pixel position (cm or degrees)
+    params.beta = math.atan(1.0/(2.0*params.tr))*r2d # Maximum horizontal FOV from Projector [deg]
+    params.beta1 = 180.-params.beta   # well ... check out the drawing yourself
+    params.delta = math.asin(params.d_0/params.R*math.sin(params.beta1*d2r))*r2d  # same here
+    params.gamma = 180.-params.beta1-params.delta  # Maximum horizontal FOV from Screen Center [deg]
+    params.R_1 = params.R*math.sin(params.gamma*d2r)/math.sin(params.beta1*d2r) # Maximum Distance of Projector to screen edge
+    params.d_1 = params.R_1*math.cos(params.beta*d2r) # distance of projector to hypothetical planar screen in front of cylindrical screen
+    params.w_h = params.R_1*math.sin(params.beta*d2r) # half of hypothetical planar image width at screen distance
 
     if (params.cylindrical[mon] or params.projection[mon]):
 

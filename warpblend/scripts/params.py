@@ -1,3 +1,6 @@
+#inifile name
+inifile = ""
+
 # Parameters stored in ini File
 xp12 = True
 outfile = ""
@@ -47,5 +50,5 @@ blend_alpha = [0.0,0.45,0.8,1.0]
 blend_exp = 1.0 # exponent of the blend function (distance^exponent)
 
 # window parameters
-ROOT_NX = 500
-ROOT_NY = 500
+ROOT_NX = 800
+ROOT_NY = 700

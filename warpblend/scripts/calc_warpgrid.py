@@ -27,7 +27,7 @@ def calc_warppoint(nx, ny, px, py, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustu
     # since that projection works in original input coordinates
     # where horizon is centered in image
     if (vertical_scale != 0.0) or (vertical_shift != 0.0):
-            py = py * vertical_scale + vertical_shift
+            py = py * vertical_scale + ny * vertical_shift
                                          
     # 3. Warping the planar projection of a regular table or ceiling mounted projector
     # onto a cylindrical screen. This is needed since the projector image is only ok
@@ -87,7 +87,7 @@ def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frust
             # since that projection works in original input coordinates
             # where horizon is centered in image
             if (vertical_scale != 0.0) or (vertical_shift != 0.0):
-                    py = py * vertical_scale + vertical_shift
+                    py = py * vertical_scale + ny * vertical_shift
                                                     
             # 3. Warping the planar projection of a regular table or ceiling mounted projector
             # onto a cylindrical screen. This is needed since the projector image is only ok

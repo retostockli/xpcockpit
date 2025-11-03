@@ -1,17 +1,22 @@
 import math
 import configparser
+#import iniparse
 import ast
 import params
 from utility import r2d, d2r
 
-def read_ini(inifile):
+def read_ini():
+
+    global config
 
     config = configparser.ConfigParser(
-        comment_prefixes=('#'),
-        inline_comment_prefixes=('#',),)
+       comment_prefixes=('#',),
+       inline_comment_prefixes=('#',),)
+
+#    config = iniparse.ConfigParser()
     config.sections()
 
-    config.read(inifile)
+    config.read(params.inifile)
 
     params.xp12 = config.getboolean('GENERAL','xp12')
     params.outfile = config.get('GENERAL','outfile')
@@ -97,13 +102,27 @@ def read_ini(inifile):
     print("Save for WIN:     "+str(params.forwin))
     print("Save GRID:        "+str(params.savegrid))
 
-    # General Calculations independent of pixel position (cm or degrees)
-    params.beta = math.atan(1.0/(2.0*params.tr))*r2d # Maximum horizontal FOV from Projector [deg]
-    params.beta1 = 180.-params.beta   # well ... check out the drawing yourself
-    params.delta = math.asin(params.d_0/params.R*math.sin(params.beta1*d2r))*r2d  # same here
-    params.gamma = 180.-params.beta1-params.delta  # Maximum horizontal FOV from Screen Center [deg]
-    params.R_1 = params.R*math.sin(params.gamma*d2r)/math.sin(params.beta1*d2r) # Maximum Distance of Projector to screen edge
-    params.d_1 = params.R_1*math.cos(params.beta*d2r) # distance of projector to hypothetical planar screen in front of cylindrical screen
-    params.w_h = params.R_1*math.sin(params.beta*d2r) # half of hypothetical planar image width at screen distance
 
+def save_ini():
 
+    global config
+
+    print(params.inifile)
+
+    config["PROJECTION"]["R"] = str(params.R)
+    config["PROJECTION"]["d_0"] = str(params.d_0)
+    config["PROJECTION"]["h_0"] = str(params.h_0)
+    config["PROJECTION"]["tr"] = str(params.tr)
+    config["PROJECTION"]["epsilon"] = str(params.epsilon)
+    config["PROJECTION"]["lateral_offset"] = str(params.lateral_offset)
+    config["PROJECTION"]["vertical_offset"] = str(params.vertical_offset)
+    config["PROJECTION"]["vertical_shift"] = str(params.vertical_shift)
+    config["PROJECTION"]["vertical_scale"] = str(params.vertical_scale)
+    config["PROJECTION"]["blend_left_top"] = str(params.blend_left_top)
+    config["PROJECTION"]["blend_left_bot"] = str(params.blend_left_bot)
+    config["PROJECTION"]["blend_right_top"] = str(params.blend_right_top)
+    config["PROJECTION"]["blend_right_bot"] = str(params.blend_right_bot)
+
+    # Save (write) the config file back to disk
+    with open(params.inifile+".SAVE", "w") as configfile:
+        config.write(configfile)
