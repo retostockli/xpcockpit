@@ -60,7 +60,11 @@ short unsigned int XPlaneBeaconPort;
 int XPlaneBeaconSocket;
 
 /* definition of prototype functions */
+#ifdef __arm__
+void *xpbeacon_poll_thread_main();
+#else
 void *xpbeacon_poll_thread_main(void *);
+#endif
 
 /* HOW TO TEST MULTICAST UDP RECEPTION FROM CMD LINE:
    iperf -s -u -B 239.255.1.1 -p 49707 -i 1
@@ -188,7 +192,11 @@ void exit_beacon_client(void)
 
 }
 
+#ifdef __arm__
+void *xpbeacon_poll_thread_main()
+#else
 void *xpbeacon_poll_thread_main(void *)
+#endif
 /* thread handles udp receive on the server socket by use of blocking read and a read buffer */
 {
 
