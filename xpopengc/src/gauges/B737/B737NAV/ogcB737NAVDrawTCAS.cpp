@@ -100,6 +100,7 @@ namespace OpenGC
     
       // What's the heading?
       float heading_map =  m_NAVGauge->GetMapHeading();
+      float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
         
       /* TCAS Datarefs (AI Planes + plugins like xPilot) */   
       float *plon = link_dataref_flt_arr("sim/cockpit2/tcas/targets/position/lon",MAXMP,-1,-2); 
@@ -109,14 +110,14 @@ namespace OpenGC
     
       // The input coordinates are in lon/lat, so we have to rotate against true heading
       // despite the NAV display is showing mag heading
-      if ((heading_map != FLT_MISS) && (show_tcas)) {
+      if ((heading_map != FLT_MISS) && (*magnetic_variation != FLT_MISS) && (show_tcas)) {
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
     
 	// Shift center and rotate about heading
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-	glRotatef(heading_map, 0, 0, 1);
+	glRotatef(heading_map - *magnetic_variation, 0, 0, 1);
 
 
 	/* valid own aircraft coordinates ? */
@@ -143,19 +144,6 @@ namespace OpenGC
 	    xPos = FLT_MISS;
 	    yPos = FLT_MISS;
 	    zPos = FLT_MISS;
-	    /*
-	      if ((*(tcas_distance+i) > 0.0) && (*(tcas_heading+i) != FLT_MISS) &&
-	      (*(tcas_altitude+i) != FLT_MISS)) {
-	    
-	      float rotateRad = (*(tcas_heading+i) + heading_map) * dtor;
-	    
-	      xPos = *(tcas_distance+i) * sin(rotateRad) / 1852.0 / mapRange * map_size; 
-	      yPos = *(tcas_distance+i) * cos(rotateRad) / 1852.0 / mapRange * map_size;
-	      zPos = *(tcas_altitude+i) *3.28084; // altitude difference to our ACF
-	      //printf("%i %f %f %f \n",i,*(tcas_distance+i),*(tcas_heading+i),*(tcas_altitude+i));
-	      }
-	    */
-	    //printf("%i %i %f %f %f \n",i,mp_alive[i],mp_lon[i],mp_lat[i],mp_alt[i]);
 
 	    /* Only Draw TCAS Blobs if they have valid elevation and speed above 50 kts */
 	    if ((pele[i] != 0.0) && ((pspd[i]*1.94) > 50.0)) {
@@ -181,7 +169,7 @@ namespace OpenGC
 	      glPushMatrix();
 
 	      glTranslatef(xPos, yPos, 0.0);
-	      glRotatef(-1.0* heading_map, 0, 0, 1);
+	      glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 
 	      glLineWidth(2.0);
 	      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);

@@ -358,7 +358,7 @@ namespace OpenGC
       
       // The input coordinates are in lon/lat, so we have to rotate against true heading
       // despite the NAV display is showing mag heading
-      if (heading_map != FLT_MISS) {
+      if ((heading_map != FLT_MISS) && (*magnetic_variation != FLT_MISS)) {
 
 	glMatrixMode(GL_MODELVIEW);
 	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
@@ -644,7 +644,7 @@ namespace OpenGC
 	      // Shift center and rotate about heading
 	      glPushMatrix();
 	      glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-	      glRotatef(heading_map, 0, 0, 1);
+	      glRotatef(heading_map - *magnetic_variation, 0, 0, 1);
 
 	      /* Draw Aircraft Symbol in Plan mode */
 	      if (mapMode == 3) {
@@ -1344,7 +1344,7 @@ namespace OpenGC
 		    // draw waypoint symbol and name
 		    glPushMatrix();
 		    glTranslatef(xPosL, yPosL, 0.0);
-		    glRotatef(-1.0* heading_map, 0, 0, 1);
+		    glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 
 		  
 		    if ((i1 == wpt_current) || (strcmp(wpt[i1].name,wpt[wpt_current].name) == 0)) {
@@ -1440,7 +1440,7 @@ namespace OpenGC
 		      glEnd();
 
 		      glTranslatef(xPos0, yPos0, 0.0);
-		      glRotatef(-1.0* heading_map, 0, 0, 1);
+		      glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 		      /* print waypoint name */
 		      m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
 		      m_pFontManager->Print(4,-1, wpt[i1].name, m_Font);
@@ -1501,7 +1501,7 @@ namespace OpenGC
 		      glEnd();
 
 		      glTranslatef(xPos0, yPos0, 0.0);
-		      glRotatef(-1.0* heading_map, 0, 0, 1);
+		      glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 		      /* print waypoint name */
 		      m_pFontManager->SetSize(m_Font, 0.65*fontSize, 0.65*fontSize);
 		      m_pFontManager->Print(4,-1, wpt[i0].name, m_Font);
@@ -1527,7 +1527,7 @@ namespace OpenGC
 		yPos = -northing / 1852.0 / mapRange * map_size; 
 		xPos = easting / 1852.0  / mapRange * map_size;
 		glTranslatef(xPos, yPos, 0.0);
-		glRotatef(-1.0* heading_map, 0, 0, 1);
+		glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 		aCircle.SetArcStartEnd(0,360);
 		aCircle.SetDegreesPerPoint(30);
 		aCircle.SetRadius(2);
@@ -1551,7 +1551,7 @@ namespace OpenGC
 		yPos = -northing / 1852.0 / mapRange * map_size; 
 		xPos = easting / 1852.0  / mapRange * map_size;
 		glTranslatef(xPos, yPos, 0.0);
-		glRotatef(-1.0* heading_map, 0, 0, 1);
+		glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 		aCircle.SetArcStartEnd(0,360);
 		aCircle.SetDegreesPerPoint(30);
 		aCircle.SetRadius(2);

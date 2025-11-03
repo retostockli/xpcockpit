@@ -158,7 +158,6 @@ void B737NAV::Render()
     
     double *aircraftLat = link_dataref_dbl("sim/flightmodel/position/latitude",-4);
     double *aircraftLon = link_dataref_dbl("sim/flightmodel/position/longitude",-4);
-    //float *heading_mag = link_dataref_flt("sim/flightmodel/position/mag_psi",-1);
     float *track_mag;
     if (is_captain) {
       track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
@@ -192,7 +191,9 @@ void B737NAV::Render()
     if (m_MapMode != 3) {
       SetMapCtrLon(*aircraftLon);
       SetMapCtrLat(*aircraftLat);
-      m_MapHeading = *track_mag - *magnetic_variation; // map shows TRACK MAG, but all symbols have coordinates TRACK TRUE
+      // map shows TRACK MAG, but symbols have coordinates TRACK TRUE, so watch out in sub-modules!
+      //m_MapHeading = *track_mag - *magnetic_variation; 
+      m_MapHeading = *track_mag;
     } else {
       // set throught DrawFMC gauge component when reading center FMS waypoint
       m_MapHeading = 0.0;
@@ -224,9 +225,7 @@ void B737NAV::Render()
     } else {
       // leave default (Expanded map)
     }
-
-    //    printf("%i %i %i \n",m_MapMode,m_MapCenter,*map_mode);
-    
+   
     // Get Navigation Map Range Selector Position and determine maximum displayable range
     int *rangesel;
     if (acf_type == 3) {

@@ -61,6 +61,7 @@ namespace OpenGC
     int mapMode = m_NAVGauge->GetMapMode();
     // float mapRange = m_NAVGauge->GetMapRange();
     float heading_map =  m_NAVGauge->GetMapHeading();
+    float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
  
     // define geometric stuff
     float fontSize = 4.0 * m_PhysicalSize.x / 150.0;
@@ -108,7 +109,6 @@ namespace OpenGC
 
     int *efis1_selector;
     int *efis2_selector;
-
     if ((acf_type == 2) || (acf_type == 3)) {
       if (is_captain) {
 	efis1_selector = link_dataref_int("laminar/B738/EFIS_control/capt/vor1_off_pos");
@@ -126,10 +126,6 @@ namespace OpenGC
 	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_copilot");
       }
     }
-    //    unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",500,-1);
-    //    unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",500,-1);
-    //    unsigned char *adf1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf1_nav_id",500,-1);
-    //    unsigned char *adf2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf2_nav_id",500,-1);
     unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",150,-1);
     unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",150,-1);
     unsigned char *adf1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf1_nav_id",150,-1);

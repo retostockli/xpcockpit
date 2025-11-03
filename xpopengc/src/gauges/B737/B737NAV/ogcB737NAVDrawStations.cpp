@@ -93,6 +93,7 @@ namespace OpenGC
    
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
+    float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
    
     // int *nav_shows_data;
     // int *nav_shows_pos;
@@ -132,15 +133,36 @@ namespace OpenGC
 	nav_shows_ndb = link_dataref_int("sim/cockpit2/EFIS/EFIS_vor_on_copilot");
       }
     }
+
+    int *efis1_selector;      
+    int *efis2_selector;
+    if ((acf_type == 2) || (acf_type == 3)) {
+      if (is_captain) {
+	efis1_selector = link_dataref_int("laminar/B738/EFIS_control/capt/vor1_off_pos");
+	efis2_selector = link_dataref_int("laminar/B738/EFIS_control/capt/vor2_off_pos");
+      } else {
+	efis1_selector = link_dataref_int("laminar/B738/EFIS_control/fo/vor1_off_pos");
+	efis2_selector = link_dataref_int("laminar/B738/EFIS_control/fo/vor2_off_pos");
+      }
+    } else {
+      if (is_captain) {
+	efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
+	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
+      } else {
+	efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
+	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_copilot");
+      }
+    }
     
+    unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",150,-1);
+    unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",150,-1);
+    unsigned char *adf1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf1_nav_id",150,-1);
+    unsigned char *adf2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf2_nav_id",150,-1);
+
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
-    if (heading_map != FLT_MISS) {
-
-      // Shift center and rotate about heading
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-    
+    if ((heading_map != FLT_MISS) && (*magnetic_variation != FLT_MISS)) {
+   
       // plot map options
       m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
       if (*nav_shows_apt == 1) {
@@ -181,7 +203,7 @@ namespace OpenGC
       }
 
       glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-      glRotatef(heading_map, 0, 0, 1);
+      glRotatef(heading_map - *magnetic_variation, 0, 0, 1);
 
       // glPushMatrix();
       // glTranslatef(20.0,0,0);
@@ -212,7 +234,14 @@ namespace OpenGC
 	float yPosR;
 	float sideL;
 	float sideR;
-
+		  
+	// calculate physical position on heading rotated nav map
+	float rotateRad = -1.0 * (heading_map - *magnetic_variation) * dtor;
+ 
+	// Shift center and rotate about heading
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+ 
 	// calculate approximate lon/lat range to search for given selected map range
 	int nlat = ceil(mapRange * 1852.0 / (2.0 * 3.141592 * 6378137.0) * 360.0);
 	int nlon;
@@ -275,18 +304,15 @@ namespace OpenGC
 		      taken = true;
 		    }
 		  }
-		  
-		  // calculate physical position on heading rotated nav map
-		  float rotateRad = -1.0 * heading_map * dtor;
-
+    
 		  xPosR = cos(rotateRad) * xPos + sin(rotateRad) * yPos;
 		  yPosR = -sin(rotateRad) * xPos + cos(rotateRad) * yPos;
-
+		  
 		  sideL = (xPosR + 0.95 * map_size) * (-0.25 * map_size - 0.75 * map_size) -
 		    (yPosR - 0.75 * map_size) * (-0.15 * map_size + 0.75 * map_size);
 		  sideR = (xPosR - 0.95 * map_size) * (-0.25 * map_size - 0.75 * map_size) -
 		    (yPosR - 0.75 * map_size) * (0.15 * map_size - 0.75 * map_size);
-
+		  
 		  // Only draw the Fix if it is in the upper section of the screen
 		  if ((sideL <= 0.0) && (sideR >= 0.0) && (!taken)) {
 		
@@ -297,7 +323,7 @@ namespace OpenGC
 		    glPushMatrix();
 		  
 		    glTranslatef(xPos, yPos, 0.0);
-		    glRotatef(-1.0* heading_map, 0, 0, 1);
+		    glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 		  
 		    /* small triangle: light blue */
 		    float ss2 = 0.40*ss;
@@ -357,9 +383,6 @@ namespace OpenGC
 	      // Only draw the NAV if it's visible within the rendering area
 	      if ( sqrt(xPos*xPos + yPos*yPos) < map_size) {
 
-		// calculate physical position on heading rotated nav map
-		float rotateRad = -1.0 * heading_map * dtor;
-
 		xPosR = cos(rotateRad) * xPos + sin(rotateRad) * yPos;
 		yPosR = -sin(rotateRad) * xPos + cos(rotateRad) * yPos;
 
@@ -373,6 +396,21 @@ namespace OpenGC
 
 		  int type = (*navIt)->GetNavaidType();
 
+		  bool station_selected = false;
+		  if (((((*efis1_selector == -1) && ((acf_type == 2) || (acf_type == 3))) ||
+			((*efis1_selector == 1) && ((acf_type != 2) && (acf_type != 3))))
+		       && (strcmp((const char*) adf1_name,(const char*)(*navIt)->GetIdentification().c_str()) == 0)) || 
+		      ((((*efis1_selector == 1) && ((acf_type == 2) || (acf_type == 3))) ||
+			((*efis1_selector == 2) && ((acf_type != 2) && (acf_type != 3))))
+		       && (strcmp((const char*) nav1_name,(const char*)(*navIt)->GetIdentification().c_str()) == 0)) ||
+		      ((((*efis2_selector == -1) && ((acf_type == 2) || (acf_type == 3))) ||
+			((*efis2_selector == 1) && ((acf_type != 2) && (acf_type != 3))))
+		       && (strcmp((const char*) adf2_name,(const char*)(*navIt)->GetIdentification().c_str()) == 0)) || 
+		      ((((*efis2_selector == 1) && ((acf_type == 2) || (acf_type == 3))) ||
+			((*efis2_selector == 2) && ((acf_type != 2) && (acf_type != 3))))
+		       && (strcmp((const char*) nav2_name,(const char*)(*navIt)->GetIdentification().c_str()) == 0)))
+		    station_selected = true;
+
 		  if (((*nav_shows_ndb == 1) || (*nav_shows_vor == 1)) &&
 		      ((type == 2) || (type == 3) || (type == 12) || (type == 13))) {
 
@@ -383,7 +421,7 @@ namespace OpenGC
 		    glPushMatrix();
 
 		    glTranslatef(xPos, yPos, 0.0);
-		    glRotatef(-1.0* heading_map, 0, 0, 1);
+		    glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 
 		    for (i=0;i<2;i++) {
       
@@ -393,7 +431,11 @@ namespace OpenGC
 			  glColor3ub(COLOR_BLACK);
 			  glLineWidth(lineWidth*2.0);
 			} else {
-			  glColor3ub(COLOR_VIOLET);
+			  if (station_selected) {
+			    glColor3ub(COLOR_GREEN);
+			  } else {
+			    glColor3ub(COLOR_VIOLET);
+			  }
 			  glLineWidth(lineWidth);
 			}
 			aCircle.SetRadius(ss);
@@ -414,7 +456,11 @@ namespace OpenGC
 			  glColor3ub(COLOR_BLACK);
 			  glLineWidth(lineWidth*2.0);
 			} else {
-			  glColor3ub(COLOR_LIGHTBLUE);
+			  if (station_selected) {
+			    glColor3ub(COLOR_GREEN);
+			  } else {
+			    glColor3ub(COLOR_LIGHTBLUE);
+			  }
 			  glLineWidth(lineWidth);
 			}
 			glBegin(GL_LINE_LOOP);
@@ -432,7 +478,11 @@ namespace OpenGC
 			  glColor3ub(COLOR_BLACK);
 			  glLineWidth(lineWidth*2.0);
 			} else {
-			  glColor3ub(COLOR_LIGHTBLUE);
+			  if (station_selected) {
+			    glColor3ub(COLOR_GREEN);
+			  } else {
+			    glColor3ub(COLOR_LIGHTBLUE);
+			  }
 			  glLineWidth(lineWidth);
 			}		       
 			glBegin(GL_LINE_LOOP);
@@ -506,9 +556,6 @@ namespace OpenGC
 		    
 		// Only draw the airport if it's visible within the rendering area
 		if ( sqrt(xPos*xPos + yPos*yPos) < map_size) {
-		
-		  // calculate physical position on heading rotated nav map
-		  float rotateRad = -1.0 * heading_map * dtor;
 
 		  xPosR = cos(rotateRad) * xPos + sin(rotateRad) * yPos;
 		  yPosR = -sin(rotateRad) * xPos + cos(rotateRad) * yPos;
@@ -530,7 +577,7 @@ namespace OpenGC
 		    glPushMatrix();
 
 		    glTranslatef(xPos, yPos, 0.0);
-		    glRotatef(-1.0* heading_map, 0, 0, 1);
+		    glRotatef(-1.0 * (heading_map - *magnetic_variation), 0, 0, 1);
 
 		    // Airports are light blue 
 		    for (i=0;i<2;i++) {

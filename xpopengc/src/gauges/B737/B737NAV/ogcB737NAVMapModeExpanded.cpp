@@ -96,19 +96,26 @@ namespace OpenGC
       //float *heading_true = link_dataref_flt("sim/flightmodel/position/psi",-1);
       float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
 
-      /*
-      float *track_mag;
-      if (is_captain) {
-	track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_pilot",-1);
-      } else {
-	track_mag = link_dataref_flt("sim/cockpit2/gauges/indicators/ground_track_mag_copilot",-1);
-	}*/
       int *efis1_selector;      
-      if (is_captain) {
-	efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
+      int *efis2_selector;
+      if ((acf_type == 2) || (acf_type == 3)) {
+	if (is_captain) {
+	  efis1_selector = link_dataref_int("laminar/B738/EFIS_control/capt/vor1_off_pos");
+	  efis2_selector = link_dataref_int("laminar/B738/EFIS_control/capt/vor2_off_pos");
+	} else {
+	  efis1_selector = link_dataref_int("laminar/B738/EFIS_control/fo/vor1_off_pos");
+	  efis2_selector = link_dataref_int("laminar/B738/EFIS_control/fo/vor2_off_pos");
+	}
       } else {
-	efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
+	if (is_captain) {
+	  efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_pilot");
+	  efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
+	} else {
+	  efis1_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_1_selection_copilot");
+	  efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_copilot");
+	}
       }
+      
       float *adf1_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/adf1_bearing_deg_mag",0);
       float *nav1_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/nav1_bearing_deg_mag",0);
       //    unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",500,-1);
@@ -116,12 +123,6 @@ namespace OpenGC
       unsigned char *nav1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav1_nav_id",150,-1);
       unsigned char *adf1_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/adf1_nav_id",150,-1);
 
-      int *efis2_selector;
-      if (is_captain) {
-	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_pilot");
-      } else {
-	efis2_selector = link_dataref_int("sim/cockpit2/EFIS/EFIS_2_selection_copilot");
-      }
       float *adf2_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/adf2_bearing_deg_mag",0);
       float *nav2_bearing = link_dataref_flt("sim/cockpit2/radios/indicators/nav2_bearing_deg_mag",0);
       //    unsigned char *nav2_name = link_dataref_byte_arr("sim/cockpit2/radios/indicators/nav2_nav_id",500,-1);
@@ -182,23 +183,13 @@ namespace OpenGC
 	float iyPos2;
 	float course_rad;
 	float backcourse;
-	
-	float dist_to_altitude = FLT_MISS; // Miles
-	if ((*ap_altitude != FLT_MISS) && (*ap_vspeed != FLT_MISS) &&
-	    (*speed_knots != FLT_MISS) && (*pressure_altitude != FLT_MISS) &&
-	    (*ap_vspeed != 0.0)) {
-	  // 1 mile has 5280 feet
-	  // one knot has 101 feet per minute
-	  dist_to_altitude = *speed_knots * 101.3 * fabs((*ap_altitude - *pressure_altitude) / *ap_vspeed) / 5280.0;
-	  //printf("%f %f %f %f %f \n",*ap_altitude,*pressure_altitude,*ap_vspeed,*speed_knots,dist_to_altitude);
-	} 
       
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
     
 	// Shift center and rotate about heading
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-	glRotatef(heading_map, 0, 0, 1);
+	glRotatef(heading_map - *magnetic_variation, 0, 0, 1);
 
 	// glPushMatrix();
 	// glTranslatef(20.0,0,0);
@@ -212,11 +203,12 @@ namespace OpenGC
 	// glPopMatrix();
 
 	// plot ADF / VOR 1/2 heading arrows and course line
-
-	if ((((*efis1_selector == 0) && (*adf1_bearing != FLT_MISS) &&
-	     (strcmp((const char*) adf1_name,"") != 0)) || 
-	    ((*efis1_selector == 2) && (*nav1_bearing != FLT_MISS) &&
-	     (strcmp((const char*) nav1_name,"") != 0))) && (heading_map != FLT_MISS)) {
+	if (((((*efis1_selector == -1) && ((acf_type == 2) || (acf_type == 3))) ||
+	      ((*efis1_selector == 1) && ((acf_type != 2) && (acf_type != 3))))
+	      && (*adf1_bearing != FLT_MISS) && (strcmp((const char*) adf1_name,"") != 0)) || 
+	    ((((*efis1_selector == 1) && ((acf_type == 2) || (acf_type == 3))) ||
+	      ((*efis1_selector == 2) && ((acf_type != 2) && (acf_type != 3))))
+	     && (*nav1_bearing != FLT_MISS) && (strcmp((const char*) nav1_name,"") != 0))) {
 
 	  // Heading arrow
 	  glPushMatrix();     
@@ -262,8 +254,8 @@ namespace OpenGC
 
 	  //printf("%f %f \n",m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
 
-	  // Course line with pilot selected course from VOR/ADF location
-	  if ((*efis1_selector == 2) && ((acf_type == 2) || (acf_type == 3)) &&
+	  // Course line with pilot selected course from VOR location
+	  if ((*efis1_selector == 1) && ((acf_type == 2) || (acf_type == 3)) &&
 	      (*nav1_lon != FLT_MISS) && (*nav1_lat != FLT_MISS)) {
 
 	    lon = *nav1_lon;
@@ -276,7 +268,7 @@ namespace OpenGC
 	    yPos1 = -northing / 1852.0 / mapRange * map_size; 
 	    xPos1 = easting / 1852.0  / mapRange * map_size;
 	    
-	    course_rad = *ap_course1 * M_PI / 180.0;
+	    course_rad = (*ap_course1 - *magnetic_variation) * M_PI / 180.0;
  
 	    xPos2 = xPos1 + 100.0*sin(course_rad);
 	    yPos2 = yPos1 + 100.0*cos(course_rad);
@@ -293,7 +285,7 @@ namespace OpenGC
 	      
 	      glPushMatrix();
 	      glTranslatef(xPos1, yPos1, 0.0);
-	      glRotatef(-*ap_course1, 0, 0, 1);
+	      glRotatef(-*ap_course1+*magnetic_variation, 0, 0, 1);
 	      glTranslatef(0.0, 35.0, 0.0);
 	      glRotatef(-90, 0, 0, 1);
 	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
@@ -301,11 +293,11 @@ namespace OpenGC
 	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
 	      glPopMatrix();
 
-	      backcourse = *ap_course1-180.0;
+	      backcourse = (*ap_course1) - 180.0;
 	      if (backcourse < 0.0) backcourse += 360.0;
 	      glPushMatrix();
 	      glTranslatef(xPos1, yPos1, 0.0);
-	      glRotatef(-backcourse, 0, 0, 1);
+	      glRotatef(-backcourse+*magnetic_variation, 0, 0, 1);
 	      glTranslatef(0.0, 25.0, 0.0);
 	      glRotatef(90, 0, 0, 1);
 	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
@@ -319,10 +311,12 @@ namespace OpenGC
 	  }	  
 	}
  
-	if ((((*efis2_selector == 0) && (*adf2_bearing != FLT_MISS) &&
-	     (strcmp((const char*) adf2_name,"") != 0)) || 
-	    ((*efis2_selector == 2) && (*nav2_bearing != FLT_MISS) &&
-	     (strcmp((const char*) nav2_name,"") != 0))) && (heading_map != FLT_MISS)) {
+	if (((((*efis2_selector == -1) && ((acf_type == 2) || (acf_type == 3))) ||
+	      ((*efis2_selector == 1) && ((acf_type != 2) && (acf_type != 3))))
+	      && (*adf2_bearing != FLT_MISS) && (strcmp((const char*) adf2_name,"") != 0)) || 
+	    ((((*efis2_selector == 1) && ((acf_type == 2) || (acf_type == 3))) ||
+	      ((*efis2_selector == 2) && ((acf_type != 2) && (acf_type != 3))))
+	     && (*nav2_bearing != FLT_MISS) && (strcmp((const char*) nav2_name,"") != 0))) {
 
 	  glPushMatrix();     
 
@@ -366,8 +360,8 @@ namespace OpenGC
  
 	  glPopMatrix();
 	  
-	  // Course line with pilot selected course from VOR/ADF location
-	  if ((*efis2_selector == 2) && ((acf_type == 2) || (acf_type == 3)) &&
+	  // Course line with pilot selected course from VOR location
+	  if ((*efis2_selector == 1) && ((acf_type == 2) || (acf_type == 3)) &&
 	      (*nav2_lon != FLT_MISS) && (*nav2_lat != FLT_MISS)) {
 
 	    lon = *nav2_lon;
@@ -380,7 +374,7 @@ namespace OpenGC
 	    yPos1 = -northing / 1852.0 / mapRange * map_size; 
 	    xPos1 = easting / 1852.0  / mapRange * map_size;
 	    
-	    course_rad = *ap_course2 * M_PI / 180.0;
+	    course_rad = (*ap_course2 - *magnetic_variation) * M_PI / 180.0;
  
 	    xPos2 = xPos1 + 100.0*sin(course_rad);
 	    yPos2 = yPos1 + 100.0*cos(course_rad);
@@ -397,7 +391,7 @@ namespace OpenGC
 	      
 	      glPushMatrix();
 	      glTranslatef(xPos1, yPos1, 0.0);
-	      glRotatef(-*ap_course2, 0, 0, 1);
+	      glRotatef(-*ap_course2 + *magnetic_variation, 0, 0, 1);
 	      glTranslatef(0.0, 35.0, 0.0);
 	      glRotatef(-90, 0, 0, 1);
 	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
@@ -405,11 +399,11 @@ namespace OpenGC
 	      m_pFontManager->Print( 0.0, -1.2*fontSize, &buffer[0], m_Font);
 	      glPopMatrix();
 
-	      backcourse = *ap_course2-180.0;
+	      backcourse = (*ap_course2) - 180.0;
 	      if (backcourse < 0.0) backcourse += 360.0;
 	      glPushMatrix();
 	      glTranslatef(xPos1, yPos1, 0.0);
-	      glRotatef(-backcourse, 0, 0, 1);
+	      glRotatef(-backcourse+*magnetic_variation, 0, 0, 1);
 	      glTranslatef(0.0, 25.0, 0.0);
 	      glRotatef(90, 0, 0, 1);
 	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
@@ -424,8 +418,7 @@ namespace OpenGC
 	}
     
 	/* MCP selected Heading bug */
-	if ((*heading_mag_ap != FLT_MISS) && (*magnetic_variation != FLT_MISS) &&
-	    (heading_map != FLT_MISS)) {
+	if (*heading_mag_ap != FLT_MISS) {
 
 	  glPushMatrix();     
 
@@ -448,170 +441,180 @@ namespace OpenGC
 	  glPopMatrix();
 	}
 
-	/* end of down-shifted coordinate system */
+	/* end of down-shifted / rotated coordinate system */
 	glPopMatrix();
 
-	//------ ACF symbol and distance circles -------
-	glPushMatrix();
+      }
+	
+      //------ ACF symbol and distance circles -------
+      glPushMatrix();
       
-	glTranslatef(0.0, 0.0, 0.0);
-	glRotatef(0, 0, 0, 1);
+      glTranslatef(0.0, 0.0, 0.0);
+      glRotatef(0, 0, 0, 1);
       
+      glColor3ub(COLOR_WHITE);
+      glLineWidth(lineWidth);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(m_PhysicalSize.x*(acf_x-0.030), m_PhysicalSize.y*(acf_y-0.070));
+      glVertex2f(m_PhysicalSize.x*(acf_x+0.030), m_PhysicalSize.y*(acf_y-0.070));
+      glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+      glEnd();
+
+      if (heading_map != FLT_MISS) {
 	glColor3ub(COLOR_WHITE);
-	glLineWidth(lineWidth);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(m_PhysicalSize.x*(acf_x-0.030), m_PhysicalSize.y*(acf_y-0.070));
-	glVertex2f(m_PhysicalSize.x*(acf_x+0.030), m_PhysicalSize.y*(acf_y-0.070));
-	glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*(acf_y+0.080));
+	glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*map_y_max);
 	glEnd();
+      } else {
+	glColor3ub(COLOR_ORANGE);
+	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y+map_size*0.35, 0);
+	m_pFontManager->SetSize( m_Font, 1.30*fontSize, 1.30*fontSize );
+	m_pFontManager->Print( -2.0*fontSize, 0.0,"MAP", m_Font);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(-2.2*fontSize, 1.6*fontSize);
+	glVertex2f(-2.2*fontSize, -0.3*fontSize);
+	glVertex2f(2.2*fontSize, -0.3*fontSize);
+	glVertex2f(2.2*fontSize, 1.6*fontSize);
+	glEnd();	  
+      }
+      
+      glPopMatrix();
+
+      // plot range scale
+      glPushMatrix();
+      glColor3ub(COLOR_WHITE);
+      glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
+      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+      if (mapRange >= 5.0) {
+	snprintf(buffer, sizeof(buffer), "%i", (int) (mapRange / 2.0));
+      } else {
+	snprintf(buffer, sizeof(buffer), "%2.1f", (float) mapRange / 2.0);
+      }
+      if ((mapRange / 2.0) < 100) {
+	if (mapRange >= 5.0) {
+	  m_pFontManager->Print( -1.5*fontSize, map_size*0.505, &buffer[0], m_Font);
+	} else {
+	  m_pFontManager->Print( -2.0*fontSize, map_size*0.505, &buffer[0], m_Font);
+	}
+      } else {
+	m_pFontManager->Print( -2.25*fontSize, map_size*0.505, &buffer[0], m_Font);
+      }
+      glPopMatrix();
+    
+      // Set up big circle for nav range
+      if (!mapCenter) {
+	glPushMatrix();
+	
+	glLineWidth(lineWidth);
+	glTranslatef(0.0, 0.0, 0.0);
+	CircleEvaluator bCircle;
+	bCircle.SetDegreesPerPoint(2);
 
 	if (heading_map != FLT_MISS) {
-	  glColor3ub(COLOR_WHITE);
+	  bCircle.SetArcStartEnd(270,90);
+	  bCircle.SetRadius(map_size*1.0);
+	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
 	  glBegin(GL_LINE_STRIP);
-	  glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*(acf_y+0.080));
-	  glVertex2f(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*map_y_max);
+	  bCircle.Evaluate();
 	  glEnd();
-	} else {
-	  glColor3ub(COLOR_ORANGE);
-	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y+map_size*0.35, 0);
-	  m_pFontManager->SetSize( m_Font, 1.30*fontSize, 1.30*fontSize );
-	  m_pFontManager->Print( -2.0*fontSize, 0.0,"MAP", m_Font);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(-2.2*fontSize, 1.6*fontSize);
-	  glVertex2f(-2.2*fontSize, -0.3*fontSize);
-	  glVertex2f(2.2*fontSize, -0.3*fontSize);
-	  glVertex2f(2.2*fontSize, 1.6*fontSize);
-	  glEnd();	  
 	}
-      
-	glPopMatrix();
 
-	// plot range scale
-	glPushMatrix();
+	bCircle.SetArcStartEnd(270,90);
+	bCircle.SetRadius(map_size*0.75);
+	bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+	glBegin(GL_LINE_STRIP);
+	bCircle.Evaluate();
+	glEnd();
+
+	bCircle.SetArcStartEnd(270,90);
+	bCircle.SetRadius(map_size*0.5);
+	bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+	glBegin(GL_LINE_STRIP);
+	bCircle.Evaluate();
+	glEnd();
+
+	bCircle.SetArcStartEnd(270,90);
+	bCircle.SetRadius(map_size*0.25);
+	bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+	glBegin(GL_LINE_STRIP);
+	bCircle.Evaluate();
+	glEnd();
+
+	
+	float dist_to_altitude = FLT_MISS; // Miles
+	if ((*ap_altitude != FLT_MISS) && (*ap_vspeed != FLT_MISS) &&
+	    (*speed_knots != FLT_MISS) && (*pressure_altitude != FLT_MISS) &&
+	    (*ap_vspeed != 0.0)) {
+	  // 1 mile has 5280 feet
+	  // one knot has 101 feet per minute
+	  dist_to_altitude = *speed_knots * 101.3 * fabs((*ap_altitude - *pressure_altitude) / *ap_vspeed) / 5280.0;
+	  //printf("%f %f %f %f %f \n",*ap_altitude,*pressure_altitude,*ap_vspeed,*speed_knots,dist_to_altitude);
+	} 
+
+	if (dist_to_altitude != FLT_MISS) {
+	  /* set up distance to AP-dialed altitude in V/S mode */
+	  glColor3ub(COLOR_GREEN);
+	  bCircle.SetArcStartEnd(345,15);
+	  bCircle.SetRadius(map_size/mapRange*dist_to_altitude);
+	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
+	  glBegin(GL_LINE_STRIP);
+	  bCircle.Evaluate();
+	  glEnd();
+	}
+
+	glPopMatrix();
+      }
+	
+      // set up tick marks
+      if ((heading_map != FLT_MISS) && (*magnetic_variation != FLT_MISS)) {
 	glColor3ub(COLOR_WHITE);
+	glPushMatrix();
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
-	if (mapRange >= 5.0) {
-	  snprintf(buffer, sizeof(buffer), "%i", (int) (mapRange / 2.0));
-	} else {
-	  snprintf(buffer, sizeof(buffer), "%2.1f", (float) mapRange / 2.0);
-	}
-	if ((mapRange / 2.0) < 100) {
-	  if (mapRange >= 5.0) {
-	    m_pFontManager->Print( -1.5*fontSize, map_size*0.505, &buffer[0], m_Font);
+	//	  glRotatef(*track_mag,0,0,1);
+	glRotatef(heading_map,0,0,1);
+	for ( int i=0; i<=71; i++ ) {
+	  float ticklen;
+	  if ( i % 2 == 0 ) {
+	    ticklen = 0.040;
 	  } else {
-	    m_pFontManager->Print( -2.0*fontSize, map_size*0.505, &buffer[0], m_Font);
+	    ticklen = 0.020;
 	  }
-	} else {
-	  m_pFontManager->Print( -2.25*fontSize, map_size*0.505, &buffer[0], m_Font);
-	}
-	glPopMatrix();
-    
-	// Set up big circle for nav range
-	if (!mapCenter) {
-	  glPushMatrix();
-	
 	  glLineWidth(lineWidth);
-	  glTranslatef(0.0, 0.0, 0.0);
-	  CircleEvaluator bCircle;
-	  bCircle.SetDegreesPerPoint(2);
-
-	  if (heading_map != FLT_MISS) {
-	    bCircle.SetArcStartEnd(270,90);
-	    bCircle.SetRadius(map_size*1.0);
-	    bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
-	    glBegin(GL_LINE_STRIP);
-	    bCircle.Evaluate();
-	    glEnd();
-	  }
-
-	  bCircle.SetArcStartEnd(270,90);
-	  bCircle.SetRadius(map_size*0.75);
-	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
 	  glBegin(GL_LINE_STRIP);
-	  bCircle.Evaluate();
+	  glVertex2f(0,map_size);
+	  glVertex2f(0,m_PhysicalSize.y*(map_y_max-acf_y-ticklen));
 	  glEnd();
-
-	  bCircle.SetArcStartEnd(270,90);
-	  bCircle.SetRadius(map_size*0.5);
-	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
-	  glBegin(GL_LINE_STRIP);
-	  bCircle.Evaluate();
-	  glEnd();
-
-	  bCircle.SetArcStartEnd(270,90);
-	  bCircle.SetRadius(map_size*0.25);
-	  bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
-	  glBegin(GL_LINE_STRIP);
-	  bCircle.Evaluate();
-	  glEnd();
-
-	  if (dist_to_altitude != FLT_MISS) {
-	    /* set up distance to AP-dialed altitude in V/S mode */
-	    glColor3ub(COLOR_GREEN);
-	    bCircle.SetArcStartEnd(345,15);
-	    bCircle.SetRadius(map_size/mapRange*dist_to_altitude);
-	    bCircle.SetOrigin(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y);
-	    glBegin(GL_LINE_STRIP);
-	    bCircle.Evaluate();
-	    glEnd();
-	  }
-
-	  glPopMatrix();
-	}
-	
-	// set up tick marks
-	if ((heading_map != FLT_MISS) && (*magnetic_variation != FLT_MISS)) {
-	  glColor3ub(COLOR_WHITE);
-	  glPushMatrix();
-	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	  //	  glRotatef(*track_mag,0,0,1);
-	  glRotatef(heading_map + *magnetic_variation,0,0,1);
-	  //glRotatef(*heading_mag,0,0,1);
-	  for ( int i=0; i<=71; i++ ) {
-	    float ticklen;
-	    if ( i % 2 == 0 ) {
-	      ticklen = 0.040;
-	    } else {
-	      ticklen = 0.020;
-	    }
-	    glLineWidth(lineWidth);
-	    glBegin(GL_LINE_STRIP);
-	    glVertex2f(0,map_size);
-	    glVertex2f(0,m_PhysicalSize.y*(map_y_max-acf_y-ticklen));
-	    glEnd();
 	    
-	    if ( i % 6 == 0 ) {
-	      m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
+	  if ( i % 6 == 0 ) {
+	    m_pFontManager->SetSize( m_Font, 0.75*fontSize, 0.75*fontSize );
 	      
-	      int deg10 = i*5/10;
-	      snprintf(buffer, sizeof(buffer), "%i", deg10);
-	      if (deg10 < 10) {
-		m_pFontManager->Print( -0.4*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
-	      } else {
-		m_pFontManager->Print( -0.8*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
-	      }
+	    int deg10 = i*5/10;
+	    snprintf(buffer, sizeof(buffer), "%i", deg10);
+	    if (deg10 < 10) {
+	      m_pFontManager->Print( -0.4*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
+	    } else {
+	      m_pFontManager->Print( -0.8*0.75*fontSize, m_PhysicalSize.y*(map_y_max-acf_y-ticklen-0.005)-0.75*fontSize, &buffer[0], m_Font);
 	    }
-	    glRotatef(-5.0,0,0,1);
 	  }
-	  
-	  glPopMatrix();
-
-	  
-	  glPushMatrix();
-	  glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
-	  glRotatef(heading_map - *heading_mag + *magnetic_variation,0,0,1); // TODO: put wind correction rotation here
-	  
-	  // TRIANGLE ON TOP OF THE MAP MARKS THE WIND CORRECTION!
-	  glColor3ub(COLOR_WHITE);
-	  glBegin(GL_LINE_LOOP);
-	  glVertex2f(0.0,map_size);
-	  glVertex2f(0.02*m_PhysicalSize.x,map_size*1.045);
-	  glVertex2f(-0.02*m_PhysicalSize.x,map_size*1.045);
-	  glEnd();
-	  glPopMatrix();
-
+	  glRotatef(-5.0,0,0,1);
 	}
+	  
+	glPopMatrix();
+
+	  
+	glPushMatrix();
+	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0);
+	glRotatef(heading_map - *heading_mag,0,0,1); // TODO: put wind correction rotation here
+	  
+	// TRIANGLE ON TOP OF THE MAP MARKS THE WIND CORRECTION!
+	glColor3ub(COLOR_WHITE);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(0.0,map_size);
+	glVertex2f(0.02*m_PhysicalSize.x,map_size*1.045);
+	glVertex2f(-0.02*m_PhysicalSize.x,map_size*1.045);
+	glEnd();
+	glPopMatrix();
 	
       }
       

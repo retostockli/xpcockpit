@@ -105,6 +105,8 @@ namespace OpenGC
 
     // What's the heading?
     float heading_map =  m_NAVGauge->GetMapHeading();
+    float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
+    
     // What's the altitude? (feet)
     float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     
@@ -139,7 +141,7 @@ namespace OpenGC
     // The input coordinates are in lon/lat, so we have to rotate against true heading
     // despite the NAV display is showing mag heading
     if ((heading_map != FLT_MISS) && (*nav_shows_wxr == 1) &&
-	(wxr_data) && (mapMode != 3) && (!mapCenter)) {
+	(*magnetic_variation != FLT_MISS) && (wxr_data) && (mapMode != 3) && (!mapCenter)) {
 	        
     // Shift center and rotate about heading
       glMatrixMode(GL_MODELVIEW);
@@ -245,7 +247,7 @@ namespace OpenGC
 	glPushMatrix();
 	
 	glTranslatef(m_PhysicalSize.x*acf_x, m_PhysicalSize.y*acf_y, 0.0);
-	glRotatef(heading_map, 0, 0, 1);
+	glRotatef(heading_map - *magnetic_variation, 0, 0, 1);
 
 	float scx = 0.5 * ((float) m_wxr_ncol) * mpplon / mapRange * map_size * cos(M_PI / 180.0 * aircraftLat);
 	float scy = 0.5 * ((float) m_wxr_nlin) * mpplat / mapRange * map_size;
