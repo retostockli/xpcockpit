@@ -3,6 +3,7 @@ from calc_projector_screen import *
 import params
 import warpblend_window
 from read_ini import save_ini
+from save_matrix import save_xpfile
 
 root = Tk()
 
@@ -34,18 +35,20 @@ def create_root_window():
             warpblend_window.redraw_warpblend_window(mon)
 
     # Save Configuration file
-    def save_config():
+    def get_inifilename():
         params.inifile = inifile_entry.get()
-        print("Save Config")
+        print("Save INI in file: "+params.inifile)
         save_ini()
 
     # Save X-Plane PRF file
-    def save_xplane():
-        print("Save X-Plane PRF")
+    def get_xpfilename():
+        params.xpfile = xpfile_entry.get()
+        save_xpfile()
 
     # Save NVIDIA Warp and Blend Grid file
-    def save_nvidia():
-        print("Save NVIDIA Warp & Blend")
+    def get_nvfilename():
+        params.nvfile = nvfile_entry.get()
+        print("Save NVIDIA Warp & Blend grid: "+params.nvfile)
 
 
     # Create a Recalc Button
@@ -53,15 +56,15 @@ def create_root_window():
     recalc_button.grid(row=0, column=0, padx = 5, pady=5, sticky ="n")
 
     # Create a Save Config Button
-    save_config_button = Button(root, text="Save INI", command=save_config)
+    save_config_button = Button(root, text="Save INI", command=get_inifilename)
     save_config_button.grid(row=0, column=1, padx = 5, pady=5, sticky ="n")
 
     # Create a Save X-Plane Button
-    save_xplane_button = Button(root, text="Save X-Plane", command=save_xplane)
+    save_xplane_button = Button(root, text="Save X-Plane", command=get_xpfilename)
     save_xplane_button.grid(row=0, column=2, padx = 5, pady=5, sticky ="n")
 
     # Create a Save NVIDIA Button
-    save_nvidia_button = Button(root, text="Save NVIDIA", command=save_nvidia)
+    save_nvidia_button = Button(root, text="Save NVIDIA", command=get_nvfilename)
     save_nvidia_button.grid(row=0, column=3, padx = 5, pady=5, sticky ="n")
 
     # Create a Quit Button
@@ -82,6 +85,12 @@ def create_root_window():
 
     inifile_label = Label(root, text="INI File: ")
     inifile_label.grid(row=2, column=2, padx=5, pady=5, sticky="e")
+
+    xpfile_label = Label(root, text="X-Plane File: ")
+    xpfile_label.grid(row=3, column=2, padx=5, pady=5, sticky="e")
+
+    nvfile_label = Label(root, text="NV Warp&Blend File: ")
+    nvfile_label.grid(row=4, column=2, padx=5, pady=5, sticky="e")
 
     row0 = 6
     monitor_label = [None] * (params.nmon + 1)
@@ -129,6 +138,14 @@ def create_root_window():
     inifile_entry = Entry(root, width=30)
     inifile_entry.grid(row=2, column=3, columnspan = 3, padx=5, pady=5)
     inifile_entry.insert(0,params.inifile)
+
+    xpfile_entry = Entry(root, width=30)
+    xpfile_entry.grid(row=3, column=3, columnspan = 3, padx=5, pady=5)
+    xpfile_entry.insert(0,params.xpfile)
+ 
+    nvfile_entry = Entry(root, width=30)
+    nvfile_entry.grid(row=4, column=3, columnspan = 3, padx=5, pady=5)
+    nvfile_entry.insert(0,params.nvfile)
 
     row0 = 6
     epsilon_entry = [None] * params.nmon

@@ -1,9 +1,10 @@
 #inifile name
 inifile = ""
+xpfile = ""
+nvfile = ""
 
 # Parameters stored in ini File
 xp12 = True
-outfile = ""
 nmon = 0
 ngx = 0
 ngy = 0

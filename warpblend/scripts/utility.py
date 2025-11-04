@@ -51,7 +51,6 @@ def Extrap(xmin,ymin,xmax,ymax,x):
 		# Linear Scaling Function
 		return (x - xmin) / (xmax - xmin) * (ymax - ymin) + ymin
 
-
 def PanoramaProj_inverse(thetaphi,FOVx,FOVy,vert_stretch):
 		# Formulas gracefully provided by Austin Meyer of X-Plane
 		# X-Plane Panorama Projection Inverse function: input is in normalized degrees horizontal
@@ -154,71 +153,3 @@ def PanoramaProj_forward(xy,FOVx,FOVy,vert_stretch):
 		# thetaphi[1] = Extrap(-max_psi,-1 , max_psi,1 , psi_rad_cylinder * r2d) 
 
 		return thetaphi
-
-
-def create_blendimage_unwarped(nx, ny, blend_alpha, left_top,left_bot,right_top,right_bot):
-		# returns full blendimage (e.g. for NVIDIA driver) in unwarped display space
-		# would only be applied if warp-after-blend is working in NVIDIA
-		
-		blendimage = np.zeros((nx, ny))
-
-		for y in range(0,ny,1):
-				xl = (y/(ny-1) * left_bot + (1.0-y/(ny-1)) * left_top)*(nx-1)
-				xr = (y/(ny-1) * right_bot + (1.0-y/(ny-1)) * right_top)*(nx-1)
-
-				xval = [0.0,0.33*xl,0.66*xl,1.0*xl,nx-1-1.0*xr,nx-1-0.66*xr,nx-1-0.33*xr,nx-1]
-				yval = [blend_alpha[0],blend_alpha[1],blend_alpha[2],blend_alpha[3],
-								blend_alpha[3],blend_alpha[2],blend_alpha[1],blend_alpha[0]]
-
-				# no blending if blend corner is at edge
-				if (xl == 0.0):
-						yval[0] = 1.0
-						yval[1] = 1.0
-						yval[2] = 1.0
-						yval[3] = 1.0
-				if (xr == 0.0):
-						yval[4] = 1.0
-						yval[5] = 1.0
-						yval[6] = 1.0
-						yval[7] = 1.0
-				blendimage[:,y] = np.interp(range(0,nx),xval,yval)        
-
-		return blendimage
-
-def create_blendgrid_warped(nx, ny, ngx, ngy, xdif, blend_exp, left_top,left_bot,right_top,right_bot,xwarp,ywarp):
-		# returns blending grid in warped space. Currently simplified assumption
-		# of warping is done.
-		# safe for applying in XP12 natively (after version 12.10, when a blending image can be read)
-		
-		blendgrid = np.zeros((ngx, ngy))
-
-		for gy in range(0,ngy,1):
-		#for gy in range(0,1,1):
-
-				x0 = xdif[0,gy]
-				x1 = xdif[ngx-1,gy]
-				xl = (gy/(ngy-1) * left_bot + (1.0-gy/(ngy-1)) * left_top) * (nx-1)
-				xr = (gy/(ngy-1) * right_bot + (1.0-gy/(ngy-1)) * right_top)*(nx-1)
-				#print(str(xl)+" "+str(xr))
-				for gx in range(0,ngx,1):
-
-						if (gx < ngx/2):
-								# left blending until center of image
-								if (xl == 0.0):
-										blendgrid[gx,gy] = 1.0
-								else:
-										blendgrid[gx,gy] = min((max(xwarp[gx,gy],0.0)/xl)**blend_exp,1.0)
-						else:
-								# right blending starting at center of image
-								if (xr == 0.0):
-										blendgrid[gx,gy] = 1.0
-								else:
-										blendgrid[gx,gy] = min((max(nx-xwarp[gx,gy],0.0)/xr)**blend_exp,1.0)
-										
-						#print(str(gx)+" "+str(xwarp[gx,gy])+" "+str(xl)+" "+str(xr)+" "+str(blendgrid[gx,gy]))
-
-		blendgrid = np.flip(blendgrid,1)
-						
-		return blendgrid
-
-

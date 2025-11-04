@@ -19,7 +19,6 @@ def read_ini():
     config.read(params.inifile)
 
     params.xp12 = config.getboolean('GENERAL','xp12')
-    params.outfile = config.get('GENERAL','outfile')
     params.nmon = config.getint('GENERAL','nmon')
     params.ngx = config.getint('GENERAL','ngx')
     params.ngy = config.getint('GENERAL','ngy')
@@ -63,7 +62,6 @@ def read_ini():
 
     print("*** GENERAL ***")
     print("XP12:             "+str(params.xp12))
-    print("Warp+Blend File:  "+params.outfile)
     print("# Monitors:       "+str(params.nmon))
     print("ngx:              "+str(params.ngx))
     print("ngy:              "+str(params.ngy))

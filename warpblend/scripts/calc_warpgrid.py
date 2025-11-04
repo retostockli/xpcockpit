@@ -27,7 +27,8 @@ def calc_warppoint(nx, ny, px, py, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustu
     # since that projection works in original input coordinates
     # where horizon is centered in image
     if (vertical_scale != 0.0) or (vertical_shift != 0.0):
-            py = py * vertical_scale + ny * vertical_shift
+        py = py * vertical_scale + vertical_shift
+#           py = py * vertical_scale + ny * vertical_shift
                                          
     # 3. Warping the planar projection of a regular table or ceiling mounted projector
     # onto a cylindrical screen. This is needed since the projector image is only ok
@@ -66,14 +67,17 @@ def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frust
     # grid horizontal: gx from left to right
     for gy in range(0,ngy,1):
         for gx in range(0,ngx,1):
-            
+#    for gy in range(0,1,1):
+#        for gx in range(0,1,1):
+           
             # Calculate Pixel position of grid point (top-left is 0/0 and bottom-right is nx/ny)
             # ARE WE SURE WE RANGE FROM 0 .. nx? OR RATHER 0 .. nx-1?
             px = float(nx) * float(gx) / float(ngx-1)
             py = float(ny) * float(gy) / float(ngy-1)
             xabs[gx,gy] = px
             yabs[gx,gy] = py
- 
+
+            #print(px,py) 
             # 1. Transformation from planar to cylindrical rendering
             # --> This has nothing to do with the projector orientation and mount etc.
             # --> This is needed since X-Plane renders on a plane but we need a cylindrical rendering
@@ -81,13 +85,16 @@ def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frust
             # No planar-to-cylindrical adjustment for visual alignment of screen coordinates
             if cylindrical and not alignment:
                 px, py = calc_planar_to_cylindrical(px, py, nx, ny, FOVx, FOVy, frustum, vert_stretch)
+            #print(px,py) 
 
             # 2. Add vertical shift and scale if needed
             # This has to go after planar to cylindrical projection
             # since that projection works in original input coordinates
             # where horizon is centered in image
             if (vertical_scale != 0.0) or (vertical_shift != 0.0):
-                    py = py * vertical_scale + ny * vertical_shift
+                py = py * vertical_scale + vertical_shift
+#               py = py * vertical_scale + ny * vertical_shift
+            #print(px,py) 
                                                     
             # 3. Warping the planar projection of a regular table or ceiling mounted projector
             # onto a cylindrical screen. This is needed since the projector image is only ok
@@ -95,6 +102,7 @@ def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frust
             # Please see projection_geometry.pdf
             if projection:
                 px, py = calc_projector_screen(px, py, nx, ny, R, h, h_0, d_0, d_1, w, w_h, gamma, epsilon)
+            #print(px,py) 
 
             xdif[gx,gy] = px - xabs[gx,gy]
             ydif[gx,gy] = py - yabs[gx,gy]
