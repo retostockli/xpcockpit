@@ -1,7 +1,7 @@
 /* This is the create_warpmatrix.c code which generates a NVIDIA warp matrix
    out of a warp grid.
 
-   Copyright (C) 2024 Reto Stockli
+   Copyright (C) 2024-2025 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -20,18 +20,20 @@
 vertexDataRec *warpData;
 
 int create_warpmatrix(void) {
-
+  
+  /* Warpmatrix consists of ngx x ngy grid points which cover the area nx x ny */
+  
   int nr;
   int nv;
 
-  int i,r,c;
+  int i,gx,gy;
  
   nv = 0;
   
   if (True) {
     /* Triangles */
     
-    nr = (nrow-1)*(ncol-1);
+    nr = (ngy-1)*(ngx-1);
     nv = nr*6;
   
     if(warpData != NULL)
@@ -41,48 +43,48 @@ int create_warpmatrix(void) {
     printf("Number of Warp Vertices allocated: %d\n",nv);
 
     i=0;
-    for(r=0; r<(nrow-1); r++) {
-      for(c=0; c<(ncol-1); c++) {
+    for(gy=0; gy<(ngy-1); gy++) {
+      for(gx=0; gx<(ngx-1); gx++) {
       
-	warpData[i * 6].pos.x = vx[r][c][0];
-	warpData[i * 6].pos.y = vy[r][c][0];
-	warpData[i * 6].tex.x = vx[r][c][1];
-	warpData[i * 6].tex.y = vy[r][c][1];
+	warpData[i * 6].pos.x = vx[gy][gx][0];
+	warpData[i * 6].pos.y = vy[gy][gx][0];
+	warpData[i * 6].tex.x = vx[gy][gx][1];
+	warpData[i * 6].tex.y = vy[gy][gx][1];
 	warpData[i * 6].tex2.x = 0.0f;	
 	warpData[i * 6].tex2.y = 1.0f;
       
-	warpData[i * 6 + 1].pos.x = vx[r][c+1][0];
-	warpData[i * 6 + 1].pos.y = vy[r][c+1][0];
-	warpData[i * 6 + 1].tex.x = vx[r][c+1][1];
-	warpData[i * 6 + 1].tex.y = vy[r][c+1][1];
+	warpData[i * 6 + 1].pos.x = vx[gy][gx+1][0];
+	warpData[i * 6 + 1].pos.y = vy[gy][gx+1][0];
+	warpData[i * 6 + 1].tex.x = vx[gy][gx+1][1];
+	warpData[i * 6 + 1].tex.y = vy[gy][gx+1][1];
 	warpData[i * 6 + 1].tex2.x = 0.0f;
 	warpData[i * 6 + 1].tex2.y = 1.0f;
       
-	warpData[i * 6 + 2].pos.x = vx[r+1][c][0];
-	warpData[i * 6 + 2].pos.y = vy[r+1][c][0];
-	warpData[i * 6 + 2].tex.x = vx[r+1][c][1];
-	warpData[i * 6 + 2].tex.y = vy[r+1][c][1];
+	warpData[i * 6 + 2].pos.x = vx[gy+1][gx][0];
+	warpData[i * 6 + 2].pos.y = vy[gy+1][gx][0];
+	warpData[i * 6 + 2].tex.x = vx[gy+1][gx][1];
+	warpData[i * 6 + 2].tex.y = vy[gy+1][gx][1];
 	warpData[i * 6 + 2].tex2.x = 0.0f;
 	warpData[i * 6 + 2].tex2.y = 1.0f;
       
-	warpData[i * 6 + 3].pos.x = vx[r][c+1][0];
-	warpData[i * 6 + 3].pos.y = vy[r][c+1][0];
-	warpData[i * 6 + 3].tex.x = vx[r][c+1][1];
-	warpData[i * 6 + 3].tex.y = vy[r][c+1][1];
+	warpData[i * 6 + 3].pos.x = vx[gy][gx+1][0];
+	warpData[i * 6 + 3].pos.y = vy[gy][gx+1][0];
+	warpData[i * 6 + 3].tex.x = vx[gy][gx+1][1];
+	warpData[i * 6 + 3].tex.y = vy[gy][gx+1][1];
 	warpData[i * 6 + 3].tex2.x = 0.0f;
 	warpData[i * 6 + 3].tex2.y = 1.0f;
       
-	warpData[i * 6 + 4].pos.x = vx[r+1][c+1][0];
-	warpData[i * 6 + 4].pos.y = vy[r+1][c+1][0];
-	warpData[i * 6 + 4].tex.x = vx[r+1][c+1][1];
-	warpData[i * 6 + 4].tex.y = vy[r+1][c+1][1];
+	warpData[i * 6 + 4].pos.x = vx[gy+1][gx+1][0];
+	warpData[i * 6 + 4].pos.y = vy[gy+1][gx+1][0];
+	warpData[i * 6 + 4].tex.x = vx[gy+1][gx+1][1];
+	warpData[i * 6 + 4].tex.y = vy[gy+1][gx+1][1];
 	warpData[i * 6 + 4].tex2.x = 0.0f;
 	warpData[i * 6 + 4].tex2.y = 1.0f;
       
-	warpData[i * 6 + 5].pos.x = vx[r+1][c][0];
-	warpData[i * 6 + 5].pos.y = vy[r+1][c][0];
-	warpData[i * 6 + 5].tex.x = vx[r+1][c][1];
-	warpData[i * 6 + 5].tex.y = vy[r+1][c][1];
+	warpData[i * 6 + 5].pos.x = vx[gy+1][gx][0];
+	warpData[i * 6 + 5].pos.y = vy[gy+1][gx][0];
+	warpData[i * 6 + 5].tex.x = vx[gy+1][gx][1];
+	warpData[i * 6 + 5].tex.y = vy[gy+1][gx][1];
 	warpData[i * 6 + 5].tex2.x = 0.0f;
 	warpData[i * 6 + 5].tex2.y = 1.0f;
 
@@ -95,7 +97,7 @@ int create_warpmatrix(void) {
   } else {
     /* Triangle Strip */
     
-    nv = (ncol * (nrow-1) * 2) + 2 * (nrow - 2);
+    nv = (ngx * (ngy-1) * 2) + 2 * (ngy - 2);
 
     if(warpData != NULL)
       free(warpData);
@@ -104,37 +106,37 @@ int create_warpmatrix(void) {
     printf("Number of Vertices allocated: %d\n",nv);
   
     i = 0; //vertex index
-    for(r=0; r<nrow-1; ++r)
+    for(gy=0; gy<ngy-1; ++gy)
       {
 	//double v1x,v1y,v2x,v2y,v3x,v3y,v4x,v4y;
 	//float t1x,t1y,t2x,t2y,t3x,t3y,t4x,t4y;
 	double v1x,v1y,v4x,v4y;
 	float t1x,t1y,t4x,t4y;
 
-	for(c=0; c<ncol; ++c)
+	for(gx=0; gx<ngx; ++gx)
 	  {
 	    // vertex coordinates
-	    v1x=vx[r][c][0];
-	    v1y=vy[r][c][0];
-	    //v2x=vx[r][c+1][0];
-	    //v2y=vy[r][c+1][0];
-	    //v3x=vx[r+1][c+1][0];
-	    //v3y=vy[r+1][c+1][0];
-	    v4x=vx[r+1][c][0];
-	    v4y=vy[r+1][c][0];
+	    v1x=vx[gy][gx][0];
+	    v1y=vy[gy][gx][0];
+	    //v2x=vx[gy][gx+1][0];
+	    //v2y=vy[gy][gx+1][0];
+	    //v3x=vx[gy+1][gx+1][0];
+	    //v3y=vy[gy+1][gx+1][0];
+	    v4x=vx[gy+1][gx][0];
+	    v4y=vy[gy+1][gx][0];
 
 	    // texture coordinates of the visual image
-	    t1x=vx[r][c][1];
-	    t1y=vy[r][c][1];
-	    //t2x=vx[r][c+1][1];
-	    //t2y=vy[r][c+1][1];
-	    //t3x=vx[r+1][c+1][1];
-	    //t3y=vy[r+1][c+1][1];
-	    t4x=vx[r+1][c][1];
-	    t4y=vy[r+1][c][1];
+	    t1x=vx[gy][gx][1];
+	    t1y=vy[gy][gx][1];
+	    //t2x=vx[gy][gx+1][1];
+	    //t2y=vy[gy][gx+1][1];
+	    //t3x=vx[gy+1][gx+1][1];
+	    //t3y=vy[gy+1][gx+1][1];
+	    t4x=vx[gy+1][gx][1];
+	    t4y=vy[gy+1][gx][1];
 
 
-	    if(c == 0 && r > 0)
+	    if(gx == 0 && gy > 0)
 	      {
 		// Add padding at beginning of row except the first
 		//printf("Front padding: %d %d\n",c,r);
@@ -164,7 +166,7 @@ int create_warpmatrix(void) {
 	    i++;
 	  }
 
-	if(r < nrow - 2)
+	if(gy < ngy - 2)
 	  {
 	    // Add padding at end of row except the last
 	    //printf("End padding: %d %d\n",c,r);

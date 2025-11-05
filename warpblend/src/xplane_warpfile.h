@@ -1,6 +1,6 @@
 /* This is the xplane_warpfile.h header for the xplane_warpfile.c file
 
-   Copyright (C) 2024 Reto Stockli
+   Copyright (C) 2024-2025 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -14,5 +14,6 @@
    If not, see <http://www.gnu.org/licenses/>. */
 
 /* Prototypes */
+int read_warpblendfile(const char warpfile[]);
 int read_warpfile(const char warpfile[],const char smonitor[]);
 char** str_split(char* a_str, const char a_delim);

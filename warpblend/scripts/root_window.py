@@ -3,7 +3,7 @@ from calc_projector_screen import *
 import params
 import warpblend_window
 from read_ini import save_ini
-from save_matrix import save_xpfile
+from save_matrix import save_xpfile, save_nvfile
 
 root = Tk()
 
@@ -37,7 +37,6 @@ def create_root_window():
     # Save Configuration file
     def get_inifilename():
         params.inifile = inifile_entry.get()
-        print("Save INI in file: "+params.inifile)
         save_ini()
 
     # Save X-Plane PRF file
@@ -48,7 +47,7 @@ def create_root_window():
     # Save NVIDIA Warp and Blend Grid file
     def get_nvfilename():
         params.nvfile = nvfile_entry.get()
-        print("Save NVIDIA Warp & Blend grid: "+params.nvfile)
+        save_nvfile()
 
 
     # Create a Recalc Button

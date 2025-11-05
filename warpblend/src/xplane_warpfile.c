@@ -2,7 +2,7 @@
    Warp & Blend information for X-Plane Windows. More specifically the 
    'X-Plane Window Positions.prf' file located in X-Plane/Output/preferences
 
-   Copyright (C) 2024 Reto Stockli
+   Copyright (C) 2024-2025 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -17,6 +17,72 @@
 
 #include "warpdata.h"
 #include "xplane_warpfile.h"
+
+int read_warpblendfile(const char warpfile[]) {
+
+  FILE *fptr;
+  char buf[256];
+  int gx;
+  int gy;
+  int x;
+  int y;
+  float val;
+  int ret;
+  
+  fptr = fopen(warpfile,"r");
+  if (fptr == NULL) {
+    printf("Error: Warpfile not found: %s \n",warpfile);
+    return -1;
+  }
+
+  ret = fscanf(fptr, "%i", &nx);  // Display horizontal # pixels
+  ret = fscanf(fptr, "%i", &ny);  // Display vertical # pixels
+  ret = fscanf(fptr, "%i", &ngx); // horizontal # gridpoints
+  ret = fscanf(fptr, "%i", &ngy); // vertical # gridpoints
+  ret = fscanf(fptr, "%s", buf); // Text showing start of warp grid
+
+  printf("Horizontal Screen Resolution: %i\n",nx);
+  printf("Vertical Screen Resolution:   %i\n",ny);
+  
+  printf("Number of Warp Grid Columns:  %i \n",ngx);
+  printf("Number of Warp Grid Rows:     %i \n",ngy);
+
+  // read warp grid
+  for (gy=0;gy<ngy;gy++) {
+    for (gx=0;gx<ngx;gx++) {
+      ret = fscanf(fptr, "%f", &val);
+      vx[gy][gx][1] = (float) gx / (float) (ngx-1);
+      vx[gy][gx][0] = val;
+    }
+  }
+  for (gy=0;gy<ngy;gy++) {
+    for (gx=0;gx<ngx;gx++) {
+      ret = fscanf(fptr, "%f", &val);
+      vy[gy][gx][1] = (float) gx / (float) (ngx-1);
+      vy[gy][gx][0] = val;
+    }
+  }
+
+  has_warp = True;
+  
+  // read blend grid
+  ret = fscanf(fptr, "%s", buf); // Text showing start of blend grid
+
+  blendData = (float*) malloc (nx * ny * sizeof(float));
+
+  for (y=0;y<ny;y++) {
+    for (x=0;x<nx;x++) {
+      ret = fscanf(fptr, "%f", &val);
+      blendData[x+nx*y] = val;
+    }
+  }
+
+  has_blend = True;
+  
+  fclose(fptr);
+
+  return 0;
+}
 
 int read_warpfile(const char warpfile[],const char smonitor[]) {
 
@@ -39,8 +105,8 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
   int row;
   float val;
 
-  int c;
-  int r;
+  int gx;
+  int gy;
   int i;
 
   int side;
@@ -58,8 +124,8 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
   has_warp = True;
   has_blend = False;
 
-  nrow = 0;
-  ncol = 0;
+  ngy = 0;
+  ngx = 0;
   
   fptr = fopen(warpfile,"r");
   if (fptr == NULL) {
@@ -71,8 +137,8 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
   /***** PLEASE MAKE NX/NY DYNAMIC AS X-PLANE PREFS MAY NOT BE THE ACTUAL MONITOR RESOLUTION *****/
   /***********************************************************************************************/
   
-  c = 0;
-  r = 0;
+  gx = 0;
+  gy = 0;
   while (fgets(buf,sizeof(buf),fptr)!=NULL) {
     buf[strlen(buf)-1] = 0;
     char **tokens;
@@ -181,34 +247,34 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
 	    }
 	  }
 	} else if (i == 4) {
-	  // first col/row information: init ncol/nrow
-	  if (nrow == 0) {
+	  // first col/row information: init ngx/ngy
+	  if (ngy == 0) {
 	    if (is_xp12) {
-	      ncol = stepx * (dragx-1) + 1;
-	      nrow = stepy * (dragy-1) + 1;
+	      ngx = stepx * (dragx-1) + 1;
+	      ngy = stepy * (dragy-1) + 1;
 	    } else {
-	      nrow = 101;
-	      ncol = 101;
+	      ngy = 101;
+	      ngx = 101;
 	    }
 	  }
 	  if (isX || isY) {
 	    if (is_xp12) {
 	      // We read horizontal or vertical shifts in pixels (xp12)
 	      str = strtok(*(tokens + i)," ");
-	      row = nrow - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
+	      row = ngy - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
 	      str = strtok(NULL," ");
 	      val = atof(str);
 	      if (isX) {
-		vx[row][col][1] = (float) col / (float) (ncol-1);
+		vx[row][col][1] = (float) col / (float) (ngx-1);
 		vx[row][col][0] = val;
 		//if ((col == 0) && (row == 0)) printf("X: %f %f \n",vx[row][col][0],vx[row][col][1]);
-		c++;
+		gx++;
 	      } else {
-		vy[row][col][1] = (float) row / (float) (nrow-1);
+		vy[row][col][1] = (float) row / (float) (ngy-1);
 		// Inverse vertical shift.
 		vy[row][col][0] = 1.0-val ;
 		//if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
-		r++;
+		gy++;
 	      }	      
 	    } else {
 	      col = atoi(*(tokens + i));
@@ -232,20 +298,20 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
 	    // We read horizontal or vertical shifts in pixels (xp11)
 	    if (isX || isY) {
 	      str = strtok(*(tokens + i)," ");
-	      row = nrow - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
+	      row = ngy - 1 - atoi(str); // Inverse Rows since X-Plane counts from bottom to top
 	      str = strtok(NULL," ");
 	      val = atof(str);
 	      if (isX) {
-		vx[row][col][1] = (float) col / (float) (ncol-1);
-		vx[row][col][0] = (val + (float) col / (float) (ncol-1) * (float) nx) / (float) nx;
+		vx[row][col][1] = (float) col / (float) (ngx-1);
+		vx[row][col][0] = (val + (float) col / (float) (ngx-1) * (float) nx) / (float) nx;
 		//if ((col == 0) && (row == 0)) printf("X: %f %f \n",vx[row][col][0],vx[row][col][1]);
-		c++;
+		gx++;
 	      } else {
-		vy[row][col][1] = (float) row / (float) (nrow-1);
+		vy[row][col][1] = (float) row / (float) (ngy-1);
 		// Inverse vertical shift.
-		vy[row][col][0] = (-val + (float) row / (float) (nrow-1) * (float) ny) / (float) ny;
+		vy[row][col][0] = (-val + (float) row / (float) (ngy-1) * (float) ny) / (float) ny;
 		//if ((col == 0) && (row == 0)) printf("Y: %f %f \n",vy[row][col][0],vy[row][col][1]);
-		r++;
+		gy++;
 	      }
 	    } else if (isA) {
 	      str = strtok(*(tokens + i)," ");
@@ -266,7 +332,7 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
 
   printf("XP12 File Format: %i \n",is_xp12);
 
-  //printf("%f %f %f %f \n",vx[0][0][0],vx[nrow-1][ncol-1][0],vy[0][0][0],vy[nrow-1][ncol-1][0]);
+  //printf("%f %f %f %f \n",vx[0][0][0],vx[ngy-1][ngx-1][0],vy[0][0][0],vy[ngy-1][ngx-1][0]);
   
   if (has_blend) {
     for (side=0;side<=1;side++) {
@@ -285,17 +351,17 @@ int read_warpfile(const char warpfile[],const char smonitor[]) {
     }
   }
   
-  c /= nrow;
-  r /= ncol;
+  gx /= ngx;
+  gy /= ngy;
 
   has_warp = True;
-  if (c != ncol) has_warp = False;
-  if (r != nrow) has_warp = False;
-  if (nrow == 0) has_warp = False;
-  if (ncol == 0) has_warp = False;
+  if (gx != ngx) has_warp = False;
+  if (gy != ngy) has_warp = False;
+  if (ngy == 0) has_warp = False;
+  if (ngx == 0) has_warp = False;
   
-  printf("Number of Warp Grid Cols read: %i (of %i)\n",c,ncol);
-  printf("Number of Warp Grid Rows read: %i (of %i)\n",r,nrow);
+  printf("Number of Warp Grid Cols read: %i (of %i)\n",gx,ngx);
+  printf("Number of Warp Grid Rows read: %i (of %i)\n",gy,ngy);
 
   return 0;
   

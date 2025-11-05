@@ -1,6 +1,6 @@
 /* This is the warpdata.c code
 
-   Copyright (C) 2024 Reto Stockli
+   Copyright (C) 2024-2025 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -26,12 +26,13 @@ int nx;
 int ny;
 
 /* Warp / Blend Grid in points */
-int ncol;
-int nrow;
+int ngx;
+int ngy;
 float vx[256][256][2]; /* Maximum Warp Grid Resolution X Positions */
 float vy[256][256][2]; /* Maximum Warp Grid Resolution Y Positions */
 
 /* Blend Data */
+float *blendData;
 float top[2];
 float bot[2];
 float alpha[2][4];

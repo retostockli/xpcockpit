@@ -4,15 +4,15 @@ from utility import *
 from calc_warpgrid import *
 from warpblend_window import init_warpblend_window, create_warpblend_window
 from root_window import root, create_root_window
-from save_matrix import save_xpfile
+from save_matrix import save_xpfile, save_nvfile
 from calc_blendgrid import calc_blendimage_unwarped
 
 
-params.inifile="../inidata/singlemon.ini"
-#params.inifile="../inidata/fourmon.ini"
+#params.inifile="../inidata/singlemon.ini"
+params.inifile="../inidata/fourmon.ini"
 
 params.xpfile="../data/X-Plane Window Positions.prf"
-params.nvfile="../data/nv_warpblend_grid.dat"
+params.nvfile="../data/nv_warpblend_grid"
 
 read_ini()
 
@@ -26,6 +26,7 @@ read_ini()
 # params.w_h = params.R_1*math.sin(params.beta*d2r) # half of hypothetical planar image width at screen distance
 
 # save_xpfile()
+# save_nvfile()
 
 
 init_warpblend_window()

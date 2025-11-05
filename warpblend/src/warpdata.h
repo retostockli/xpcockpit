@@ -1,6 +1,6 @@
 /* This is the warpdata.h header as part of the warpblend.c code
 
-   Copyright (C) 2024 Reto Stockli
+   Copyright (C) 2024-2025 Reto Stockli
 
    This program is free software: you can redistribute it and/or modify it under the 
    terms of the GNU General Public License as published by the Free Software Foundation, 
@@ -29,13 +29,14 @@ extern int screenId;
 extern int nx;
 extern int ny;
 
-/* Warp / Blend Grid in points */
-extern int ncol;
-extern int nrow;
+/* Warp Grid in points */
+extern int ngx;
+extern int ngy;
 extern float vx[256][256][2]; /* Maximum Warp Grid Resolution X Positions */
 extern float vy[256][256][2]; /* Maximum Warp Grid Resolution Y Positions */
 
 /* Blend Data */
+extern float *blendData;
 extern float top[2];
 extern float bot[2];
 extern float alpha[2][4];

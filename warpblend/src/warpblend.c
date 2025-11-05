@@ -2,7 +2,7 @@
  * Copyright (c) 2013 NVIDIA Corporation
  *
  * Changes and additions for 3 Projector Warping and Blending with the X-Plane
- * Warp and Blend Configuration file by Reto Stockli, 2023-2024
+ * Warp and Blend Configuration file by Reto Stockli, 2023-2025
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,6 +75,7 @@ int main(int ac, char **av) {
   char *warpfile = NULL;
   int strsize;
   int numVertices;
+  bool oldFile = False;
 
   has_warp = False;
   has_blend = False;
@@ -94,12 +95,12 @@ int main(int ac, char **av) {
 	printf("DPY ID: %i\n",nvDpyId);
       } else {
 	if (strcmp("--help",av[a]) == 0) {
-	  printf("Usage: ./warpblend DPI [monitor] [warpfile] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test]\n");
+	  printf("Usage: ./warpblend DPY [monitor] [warpfile] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test] \n");
 	  printf ("DPY is the Display Port, see 'nvidia-settings -q CurrentMetaMode' \n");
-	  printf ("Monitor is the monitor number in X-Plane warp file \n");
-	  printf ("Warpfile is the wapr file (e.g. X-Plane Window positions.prf) \n");
+	  printf ("Monitor is the monitor number in the warp file \n");
+	  printf ("Warpfile is the Warp & Blend Grid file (e.g. nv_warpblend_grid_0.dat) \n");
 	  printf ("Option --test does not require any other option. It generates a Test warping and blending. \n");
-	  printf ("Option --unblend and --unwarp does not require a warp file. Only a Monitor Number \n");
+	  printf ("Options --unblend and --unwarp do not require a warp file. Supply just the Monitor Number \n");
 	  return 1;
 	} else {
 	  printf("Please supply the DPY-# as first argument\n");
@@ -119,7 +120,12 @@ int main(int ac, char **av) {
 	warpfile = malloc(strsize);
 	memset(warpfile,0,strsize);
 	strncpy(warpfile, av[a],strsize);
-	printf("X-Plane Window Preference File #: %s\n",warpfile);
+	int len = strlen(warpfile);
+	if (strncmp(warpfile+len-3, "prf", 3) == 0) oldFile = True;
+	printf("Warp & Blend Grid Input File #: %s\n",warpfile);
+	if (oldFile) {
+	  printf("Old X-Plane Input File\n");
+	}
       }
     }
     if (strcmp("--warp", av[a]) == 0) warp = True;
@@ -136,14 +142,18 @@ int main(int ac, char **av) {
   }
 
   if (!(unwarp || unblend || test) && (warpfile == NULL)) {
-    printf("Please provide the X-Plane Window Preference File as third argument \n");
+    printf("Please provide the Warp & Blend Grid File as third argument \n");
     return 1;
   }
 
 
   if ((warp || blend ) && (!test)) {
     sprintf(smonitor,"%d",monitor);
-    if (read_warpfile(warpfile,smonitor)!=0) return 1;
+    if (oldFile) {
+      if (read_warpfile(warpfile,smonitor)!=0) return 1;
+    } else {
+      if (read_warpblendfile(warpfile)!=0) return 1;
+    }
     printf("Warp Information in File: %i \n",has_warp);
     printf("Blend Information in File: %i \n",has_blend);
   }
@@ -170,7 +180,7 @@ int main(int ac, char **av) {
     warpData = NULL;
     numVertices = 0;
   } else if (warp && test) {
-    printf("Create Test Warping ...\n");
+    printf("Create Test Warp Matrix ...\n");
     numVertices = create_testwarpmatrix();
     if (numVertices == 0) {
       printf("Unable to create Test Warp Matrix ... aborting \n");
@@ -178,6 +188,7 @@ int main(int ac, char **av) {
     }
      
   } else if (warp && has_warp) {
+    printf("Create Warp Matrix...\n");
     numVertices = create_warpmatrix();
     if (numVertices == 0) {
       printf("Unable to create Warp Matrix ... aborting \n");
@@ -207,11 +218,13 @@ int main(int ac, char **av) {
   if (unblend) {
     printf("Reset Blending ...\n");
   } else if (blend && test) {
+    printf("Create Test Blend Matrix...\n");
     if (create_testblendmatrix()!=0) {
       printf("Unable to create Test Blend Image ... aborting \n");
       return 1;
     }
-  } else if (blend && has_blend) {   
+  } else if (blend && has_blend) {
+    printf("Create Blend Matrix...\n");
     if (create_blendmatrix()!=0) {
       printf("Unable to create Blend Image ... aborting \n");
       return 1;

@@ -104,8 +104,8 @@ def read_ini():
 def save_ini():
 
     global config
-
-    print(params.inifile)
+    
+    print("Save INI in file: "+params.inifile)
 
     config["PROJECTION"]["R"] = str(params.R)
     config["PROJECTION"]["d_0"] = str(params.d_0)
