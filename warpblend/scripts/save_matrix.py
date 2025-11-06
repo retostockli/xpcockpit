@@ -193,10 +193,14 @@ def save_xpfile():
 
             # We also save the actual blend distance values here for the NVIDIA blending
             # Note that these values cannot be used by X-Plane. It uses the RGB blend map
-            con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft "+str(format(params.blend_left_top[mon],('.6f')))+"\n")
-            con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt "+str(format(params.blend_right_top[mon],('.6f')))+"\n")
-            con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot "+str(format(params.blend_left_bot[mon],('.6f')))+"\n")
-            con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top "+str(format(params.blend_right_bot[mon],('.6f')))+"\n")
+            #con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft "+str(format(params.blend_left_top[mon],('.6f')))+"\n")
+            #con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt "+str(format(params.blend_right_top[mon],('.6f')))+"\n")
+            #con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot "+str(format(params.blend_left_bot[mon],('.6f')))+"\n")
+            #con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top "+str(format(params.blend_right_bot[mon],('.6f')))+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot 0.000000"+"\n")
+            con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top 0.000000"+"\n")
             
         else:
             if params.blending[mon]:

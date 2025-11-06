@@ -15,13 +15,20 @@ def create_root_window():
     root.geometry('{}x{}'.format(params.ROOT_NX, params.ROOT_NY))
     root.title("Main Window")
 
-    # Recalculate Warp / Blend grids
-    def recalc_grid():
+    def update_values():
+        params.inifile = inifile_entry.get()
+        params.xpfile = xpfile_entry.get()
+        params.nvfile = nvfile_entry.get()
+
         params.R = float(R_entry.get())
         params.d_0 = float(d_0_entry.get())
         params.h_0 = float(h_0_entry.get())
         params.tr = float(tr_entry.get())
+
         params.blendtest = blend_test.get()
+        params.gridtest = grid_test.get()
+        params.savegrid = save_grid.get()
+
         for mon in range(0,params.nmon,1):
             params.epsilon[mon] = float(epsilon_entry[mon].get())
             params.lateral_offset[mon] = float(lateral_offset_entry[mon].get())
@@ -32,21 +39,27 @@ def create_root_window():
             params.blend_left_bot[mon] = float(blend_left_bot_entry[mon].get())
             params.blend_right_top[mon] = float(blend_right_top_entry[mon].get())
             params.blend_right_bot[mon] = float(blend_right_bot_entry[mon].get())
+            params.blending[mon] = blending[mon].get()
+
+    # Recalculate Warp / Blend grids
+    def recalc_grid():
+        update_values()
+        for mon in range(0,params.nmon,1):
             warpblend_window.redraw_warpblend_window(mon)
 
     # Save Configuration file
     def get_inifilename():
-        params.inifile = inifile_entry.get()
+        update_values()
         save_ini()
 
     # Save X-Plane PRF file
     def get_xpfilename():
-        params.xpfile = xpfile_entry.get()
+        update_values()
         save_xpfile()
 
     # Save NVIDIA Warp and Blend Grid file
     def get_nvfilename():
-        params.nvfile = nvfile_entry.get()
+        update_values()
         save_nvfile()
 
 
@@ -88,7 +101,7 @@ def create_root_window():
     xpfile_label = Label(root, text="X-Plane File: ")
     xpfile_label.grid(row=3, column=2, padx=5, pady=5, sticky="e")
 
-    nvfile_label = Label(root, text="NV Warp&Blend File: ")
+    nvfile_label = Label(root, text="NVIDIA File: ")
     nvfile_label.grid(row=4, column=2, padx=5, pady=5, sticky="e")
 
     row0 = 6
@@ -135,15 +148,15 @@ def create_root_window():
     tr_entry.grid(row=5, column=1, padx=5, pady=5)
 
     inifile_entry = Entry(root, width=30)
-    inifile_entry.grid(row=2, column=3, columnspan = 3, padx=5, pady=5)
+    inifile_entry.grid(row=2, column=3, columnspan = 2, padx=5, pady=5)
     inifile_entry.insert(0,params.inifile)
 
     xpfile_entry = Entry(root, width=30)
-    xpfile_entry.grid(row=3, column=3, columnspan = 3, padx=5, pady=5)
+    xpfile_entry.grid(row=3, column=3, columnspan = 2, padx=5, pady=5)
     xpfile_entry.insert(0,params.xpfile)
  
     nvfile_entry = Entry(root, width=30)
-    nvfile_entry.grid(row=4, column=3, columnspan = 3, padx=5, pady=5)
+    nvfile_entry.grid(row=4, column=3, columnspan = 2, padx=5, pady=5)
     nvfile_entry.insert(0,params.nvfile)
 
     row0 = 6
@@ -185,6 +198,21 @@ def create_root_window():
         blend_right_bot_entry[mon].insert(0,params.blend_right_bot[mon])
         blend_right_bot_entry[mon].grid(row=row0+10, column=1+mon, padx=5, pady=5)
 
+    blending = [None] * params.nmon
+    blending_checkbox = [None] * params.nmon
+    for mon in range(0,params.nmon,1):
+        blending[mon] = BooleanVar(value=params.blending[mon])
+        blending_checkbox[mon] = Checkbutton(root, variable=blending[mon])
+        blending_checkbox[mon].grid(row=row0+6,column=1+mon, padx=5, pady = 5)
+
     blend_test = BooleanVar(value=params.blendtest)
-    blend_checkbox = Checkbutton(root, text="Test", variable=blend_test)
-    blend_checkbox.grid(row=row0+6, column=2, padx=5, pady=5)
+    blend_test_checkbox = Checkbutton(root, text="Blend Test", variable=blend_test)
+    blend_test_checkbox.grid(row=row0+11, column=0, padx=5, pady=5)
+
+    grid_test = BooleanVar(value=params.gridtest)
+    grid_test_checkbox = Checkbutton(root, text="Grid Test", variable=grid_test)
+    grid_test_checkbox.grid(row=row0+11, column=2, padx=5, pady=5)
+
+    save_grid = BooleanVar(value=params.savegrid)
+    save_grid_checkbox = Checkbutton(root, text="Save Grid", variable=save_grid)
+    save_grid_checkbox.grid(row=row0+11, column=3, padx=5, pady=5)

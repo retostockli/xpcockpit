@@ -1,6 +1,5 @@
 import math
 import configparser
-#import iniparse
 import ast
 import params
 from utility import r2d, d2r
@@ -13,7 +12,6 @@ def read_ini():
        comment_prefixes=('#',),
        inline_comment_prefixes=('#',),)
 
-#    config = iniparse.ConfigParser()
     config.sections()
 
     config.read(params.inifile)
@@ -116,10 +114,16 @@ def save_ini():
     config["PROJECTION"]["vertical_offset"] = str(params.vertical_offset)
     config["PROJECTION"]["vertical_shift"] = str(params.vertical_shift)
     config["PROJECTION"]["vertical_scale"] = str(params.vertical_scale)
-    config["PROJECTION"]["blend_left_top"] = str(params.blend_left_top)
-    config["PROJECTION"]["blend_left_bot"] = str(params.blend_left_bot)
-    config["PROJECTION"]["blend_right_top"] = str(params.blend_right_top)
-    config["PROJECTION"]["blend_right_bot"] = str(params.blend_right_bot)
+
+    config["BLENDING"]["blending"] = str(params.blending)
+    config["BLENDING"]["blend_left_top"] = str(params.blend_left_top)
+    config["BLENDING"]["blend_left_bot"] = str(params.blend_left_bot)
+    config["BLENDING"]["blend_right_top"] = str(params.blend_right_top)
+    config["BLENDING"]["blend_right_bot"] = str(params.blend_right_bot)
+
+    config["FLAGS"]["gridtest"] = str(params.gridtest)
+    config["FLAGS"]["blendtest"] = str(params.blendtest)
+    config["FLAGS"]["savegrid"] = str(params.savegrid)
 
     # Save (write) the config file back to disk
     with open(params.inifile+".SAVE", "w") as configfile:

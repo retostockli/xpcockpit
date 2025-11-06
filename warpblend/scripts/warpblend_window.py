@@ -13,8 +13,6 @@ button = []
 
 def draw_azimuthgrid(mon):
 
-    print(params.delta)
-
     global canvas
 
     alignment = True # warp for screen alignment
@@ -107,27 +105,10 @@ def create_warpblend_window(mon):
     global canvas
     global button
 
-    print("------------------------")
-    print("Monitor: "+str(mon))
+    print("-------------------------")
+    print("Draw Grids for Monitor: "+str(mon))
 
     if (params.cylindrical[mon] or params.projection[mon]):
-
-        # # For Screen Alignment Not all calculations are needed
-        # alignment = True
-
-        # xabs, yabs, xdif, ydif = calc_warpgrid(nx[mon], ny[mon], ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
-        #                                     vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
-
-        # print(xdif[0,0])
-        # print(ydif[0,0])
-        # print(xdif[0,ngy-1])
-        # print(ydif[0,ngy-1])
-
-        # px, py = calc_warppoint(nx[mon], ny[mon], 0, 0, R, h_0, d_0, d_1, w_h, gamma, epsilon[mon], frustum,
-        #                                     vertical_scale[mon], vertical_shift[mon], cylindrical[mon], projection[mon], ceiling, alignment)
-        
-        # print(px)
-        # print(py)
 
         if (mon == 0):
             x0 = params.nx[0]//2
