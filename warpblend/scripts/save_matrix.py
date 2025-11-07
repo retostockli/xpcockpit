@@ -146,7 +146,9 @@ def save_xpfile():
                                                         xabs, xdif, yabs, ydif, blendimage)
 
                     if params.blendtest:
-                        blendgrid[blendgrid<1.0] = 0.0
+                        blendgrid[blendgrid<0.99] = 0.0
+
+                    blendgrid = np.flip(blendgrid,1)
                     
                     for gx in range(0,params.ngx,1):
                         for gy in range(0,params.ngy,1):
@@ -304,7 +306,7 @@ def save_nvfile():
                                                 xabs, xdif_new, yabs, ydif_new, blendimage)
             
             if params.blendtest:
-                blendgrid[blendgrid<1.0] = 0.0
+                blendgrid[blendgrid<0.99] = 0.0
  
             con.write("BLENDGRID\n")
             for y in range(0,params.ny[mon],1):

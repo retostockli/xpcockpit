@@ -70,7 +70,7 @@ blend_exp = 1.0 # exponent of the blend function (distance^exponent)
 # vertical offset [deg] is not implemented, but could be implemented in planar to cylindrical projection
 if setting == 1:
 	# Cylindrical + Projection + Blending
-	outfile = "../data/X-Plane Window Positions_FOURMON.prf"
+	outfile = "../data/X-Plane Window Positions.prf"
 	nmon = 4  # number of monitors
 	ceiling = True  # projector ceiling mount instead of table mount
 	cylindrical = [False,True,True,True]  # apply flat plane to cylinder warping

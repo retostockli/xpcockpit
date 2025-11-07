@@ -6,7 +6,7 @@ def calc_blendimage_unwarped(nx, ny, left_top, left_bot, right_top, right_bot):
     # returns full blendimage (e.g. for NVIDIA driver) in unwarped display space
     # would only be applied if warp-after-blend is working in NVIDIA
     
-    scale = 4.0  # sigmoid function scaling (ranges from - scale to scale)
+    scale = 3.0  # sigmoid function scaling (ranges from - scale to scale)
 
     blendimage = np.zeros((nx, ny))
 
@@ -35,8 +35,8 @@ def calc_blendgrid_warped(nx, ny, ngx, ngy, xabs, xdif, yabs, ydif, blendimage):
     # returns blending grid in warped space. 
     # Use if NVIDIA blend after warp is false or not working
     
-    xwarp = xabs + xdif
-    ywarp = yabs + ydif
+    xwarp = xabs # + xdif
+    ywarp = yabs #+ ydif
 
     # blendgrid = np.zeros((ngx, ngy))
 
@@ -59,8 +59,6 @@ def calc_blendgrid_warped(nx, ny, ngx, ngy, xabs, xdif, yabs, ydif, blendimage):
     blendgrid = map_coordinates(blendimage, coords, order=1, mode = 'nearest')  # order=1 = bilinear, nearest: fill with nearest valid value
 
     #print(blendgrid[ngx-5:ngx-1,ngy-1])
-
-    #blendgrid = np.flip(blendgrid,1)
                     
     return blendgrid
 

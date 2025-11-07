@@ -188,18 +188,6 @@ int create_blendmatrix(void) {
 	}
       }
 
-      if (has_blend) {
-	/* create empty pixmap */
-	blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
-				    nx, ny, DefaultDepth(xDpy,screenId));
-      
-	/* copy xImage data to pixmap */
-	XGCValues values; // graphics context values
-	GC gc; // the graphics context
-	gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
-	XPutImage(xDpy, blendPixmap, gc, blendImage, 0, 0, 0, 0, nx, ny);
-      }
-
     } else {
       // New Blending using full blend grid with nx x ny
       printf("NEW BLENDING GRID!!!\n");
@@ -214,7 +202,17 @@ int create_blendmatrix(void) {
 	}
       }
     }
-      
+
+    /* create empty pixmap */
+    blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
+				nx, ny, DefaultDepth(xDpy,screenId));
+    
+    /* copy xImage data to pixmap */
+    XGCValues values; // graphics context values
+    GC gc; // the graphics context
+    gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
+    XPutImage(xDpy, blendPixmap, gc, blendImage, 0, 0, 0, 0, nx, ny);
+    
   }
 
   return 0;
