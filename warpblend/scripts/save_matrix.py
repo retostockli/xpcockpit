@@ -309,20 +309,22 @@ def save_nvfile():
             
             if params.blendtest:
                 blendgrid[blendgrid<0.99] = 0.0
+
+            blendgrid = np.flip(blendgrid,1)
  
             con.write("BLENDGRID\n")
             for y in range(0,params.ny[mon],1):
                 yinv = params.ny[mon] - 1 - y
                 for x in range(0,params.nx[mon],1):
-                    #if params.blending[mon]:
-                    #    con.write(str(format(blendgrid[x,yinv],('.6f')))+" ")
-                    #else:
-                    #    con.write(str(format(1.0,('.6f')))+" ")
-
-                    if y < params.ny[mon]/2:
-                        con.write(str(format(0.0,('.6f')))+" ")
+                    if params.blending[mon]:
+                        con.write(str(format(blendgrid[x,yinv],('.6f')))+" ")
                     else:
                         con.write(str(format(1.0,('.6f')))+" ")
+
+                    #if y < params.ny[mon]/2:
+                    #    con.write(str(format(0.0,('.6f')))+" ")
+                    #else:
+                    #    con.write(str(format(1.0,('.6f')))+" ")
                          
                 con.write("\n")
 

@@ -35,22 +35,8 @@ def calc_blendgrid_warped(nx, ny, ngx, ngy, xabs, xdif, yabs, ydif, blendimage):
     # returns blending grid in warped space. 
     # Use if NVIDIA blend after warp is false or not working
     
-    xwarp = xabs #+ xdif
-    ywarp = yabs #+ ydif
-
-    # blendgrid = np.zeros((ngx, ngy))
-
-    # for gy in range(0,ngy,1):
-    # #for gy in range(0,1,1):
-    #     for gx in range(0,ngx,1):
-
-    #         if (xwarp[gx,gy] >= 0.0) and (xwarp[gx,gy] <= (nx-1)) and (ywarp[gx,gy] >= 0.0) and (ywarp[gx,gy] <= (ny-1)):
-    #             blendgrid[gx,gy] = blendimage[int(xwarp[gx,gy]),int(ywarp[gx,gy])]
-    #         else:
-    #             blendgrid[gx,gy] = 0.0
-
-    #         #print(gx,xwarp[gx,gy],ywarp[gx,gy],blendgrid[gx,gy])
-
+    xwarp = xabs + xdif
+    ywarp = yabs + ydif
 
     coords = np.array([xwarp,ywarp])
 

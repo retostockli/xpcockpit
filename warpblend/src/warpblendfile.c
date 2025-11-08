@@ -25,7 +25,6 @@ int read_warpblendfile(const char warpfile[]) {
   char buf[256];
   int gx;
   int gy;
-  int gyinv;
   int x;
   int y;
   float val;
@@ -51,19 +50,17 @@ int read_warpblendfile(const char warpfile[]) {
 
   // read warp grid
   for (gy=0;gy<ngy;gy++) {
-    gyinv = ngy - 1 - gy;
     for (gx=0;gx<ngx;gx++) {
       ret = fscanf(fptr, "%f", &val);
-      vx[gyinv][gx][1] = (float) gx / (float) (ngx-1);
-      vx[gyinv][gx][0] = val;
+      vx[gy][gx][1] = (float) gx / (float) (ngx-1);
+      vx[gy][gx][0] = val;
     }
   }
   for (gy=0;gy<ngy;gy++) {
-    gyinv = ngy - 1 - gy;
     for (gx=0;gx<ngx;gx++) {
       ret = fscanf(fptr, "%f", &val);
-      vy[gyinv][gx][1] = (float) gyinv / (float) (ngy-1);
-      vy[gyinv][gx][0] = 1.0-val;
+      vy[gy][gx][1] = (float) gy / (float) (ngy-1);
+      vy[gy][gx][0] = val;
     }
   }
   
