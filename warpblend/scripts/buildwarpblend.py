@@ -8,8 +8,8 @@ from save_matrix import save_xpfile, save_nvfile
 from calc_blendgrid import calc_blendimage_unwarped
 
 
-params.inifile="../inidata/singlemon.ini"
-#params.inifile="../inidata/fourmon.ini"
+#params.inifile="../inidata/singlemon.ini"
+params.inifile="../inidata/fourmon.ini"
 
 params.xpfile="../data/X-Plane Window Positions.prf"
 params.nvfile="../data/nv_warpblend_grid"

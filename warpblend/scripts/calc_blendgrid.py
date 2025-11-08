@@ -14,7 +14,7 @@ def calc_blendimage_unwarped(nx, ny, left_top, left_bot, right_top, right_bot):
     #for y in range(0,1,1):
         xl = (y/(ny-1) * left_bot + (1.0-y/(ny-1)) * left_top)*(nx-1)
         xr = (y/(ny-1) * right_bot + (1.0-y/(ny-1)) * right_top)*(nx-1)
-
+        
         if xl != 0.0:
             for x in range(0,int(xl),1):
                 xs = (x - xl/2.0)/(xl/2.0) * scale
@@ -36,7 +36,7 @@ def calc_blendgrid_warped(nx, ny, ngx, ngy, xabs, xdif, yabs, ydif, blendimage):
     # Use if NVIDIA blend after warp is false or not working
     
     xwarp = xabs + xdif
-    ywarp = yabs + ydif
+    ywarp = yabs #+ ydif
 
     coords = np.array([xwarp,ywarp])
 

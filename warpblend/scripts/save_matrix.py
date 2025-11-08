@@ -308,7 +308,6 @@ def save_nvfile():
 
             # print(xdif[117:121,0])
             # #print(xdif_new[0:int(3*(params.nx[mon]-1)/(params.ngx-1)),0])
-            # print(xdif_new[1870:1920,0])
 
             blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
                                 params.blend_left_top[mon],params.blend_left_bot[mon],
@@ -316,27 +315,23 @@ def save_nvfile():
             
             blendgrid = calc_blendgrid_warped(params.nx[mon], params.ny[mon], params.nx[mon], params.ny[mon], 
                                                 xabs, xdif_new, yabs, ydif_new, blendimage)
-            #print(blendgrid[0:200,0])
+            if mon == 1:
+                print(ydif[100:121,0])
+                print(ydif_new[1600:1920,0])
+                print(params.blend_right_top[mon])
+                print(blendgrid[1600:1920,0])
             
             if params.blendtest:
-                blendgrid[blendgrid<1.0] = 0.0
+                blendgrid[blendgrid<0.99] = 0.0
 
-            blendgrid = np.flip(blendgrid,1)
- 
             con.write("BLENDGRID\n")
             for y in range(0,params.ny[mon],1):
-                yinv = params.ny[mon] - 1 - y
                 for x in range(0,params.nx[mon],1):
                     if params.blending[mon]:
-                        con.write(str(format(blendgrid[x,yinv],('.6f')))+" ")
+                        con.write(str(format(blendgrid[x,y],('.6f')))+" ")
                     else:
                         con.write(str(format(1.0,('.6f')))+" ")
-
-                    #if y < params.ny[mon]/2:
-                    #    con.write(str(format(0.0,('.6f')))+" ")
-                    #else:
-                    #    con.write(str(format(1.0,('.6f')))+" ")
-                         
+                       
                 con.write("\n")
 
             con.close()
