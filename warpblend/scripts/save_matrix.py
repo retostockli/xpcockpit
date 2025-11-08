@@ -300,15 +300,26 @@ def save_nvfile():
              # Interpolate
             xdif_new = map_coordinates(xdif, coords, order=1, mode = 'constant')  # order=1 = bilinear
             ydif_new = map_coordinates(ydif, coords, order=1, mode = 'constant')  # order=1 = bilinear
-  
+ 
+            # print((params.nx[mon]-1)/(params.ngx-1))
+            # print(xabs[0:3,0])
+            # print(xabs[1900:1920,0]/(params.nx[mon]-1)*(params.ngx-1))
+            # print(xabs[1900:1920,0]) #/(params.nx[mon]-1)*(params.ngx-1))
+
+            # print(xdif[117:121,0])
+            # #print(xdif_new[0:int(3*(params.nx[mon]-1)/(params.ngx-1)),0])
+            # print(xdif_new[1870:1920,0])
+
             blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
                                 params.blend_left_top[mon],params.blend_left_bot[mon],
                                 params.blend_right_top[mon],params.blend_right_bot[mon])
+            
             blendgrid = calc_blendgrid_warped(params.nx[mon], params.ny[mon], params.nx[mon], params.ny[mon], 
                                                 xabs, xdif_new, yabs, ydif_new, blendimage)
+            #print(blendgrid[0:200,0])
             
             if params.blendtest:
-                blendgrid[blendgrid<0.99] = 0.0
+                blendgrid[blendgrid<1.0] = 0.0
 
             blendgrid = np.flip(blendgrid,1)
  
