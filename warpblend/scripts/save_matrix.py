@@ -11,6 +11,8 @@ def save_xpfile():
     print("Saving to X-Plane PRF: "+params.xpfile)
 
     # Generate X-Plane Window Preferences Output File 
+    # X-Plane grid goes from bottom to top (0.0 - 1.0)
+    # and from left to right (0.0 - 1.0)
     con = open(params.xpfile,"w")
     con.write("I\n")
     con.write("10 Version\n")
@@ -193,12 +195,6 @@ def save_xpfile():
             con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_bot -15.000000"+"\n")
             con.write("monitor/"+str(mon)+"/proj/edge_blend_deg_top 15.000000"+"\n")
 
-            # We also save the actual blend distance values here for the NVIDIA blending
-            # Note that these values cannot be used by X-Plane. It uses the RGB blend map
-            #con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft "+str(format(params.blend_left_top[mon],('.6f')))+"\n")
-            #con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt "+str(format(params.blend_right_top[mon],('.6f')))+"\n")
-            #con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot "+str(format(params.blend_left_bot[mon],('.6f')))+"\n")
-            #con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_top "+str(format(params.blend_right_bot[mon],('.6f')))+"\n")
             con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_lft 0.000000"+"\n")
             con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_rgt 0.000000"+"\n")
             con.write("monitor/"+str(mon)+"/proj/edge_blend_fade_bot 0.000000"+"\n")
@@ -241,6 +237,10 @@ def save_xpfile():
 
 def save_nvfile():
 
+    # Save Warp and Blend grid for NVIDIA API (src/warpblend)
+    # NVIDIA display coordinates goes from top to bottom (0.0 - 1.0) and from left to right (0.0 - 1.0)
+    # (so we flip X-Plane coordinates below, since they go from bottom to top!)
+
     # loop through monitors
     for mon in range(0,params.nmon,1):
 
@@ -276,12 +276,14 @@ def save_nvfile():
             # print(ydif[params.ngx-1,params.ngy-1])
 
             for gy in range(0,params.ngy,1):
+                gyinv = params.ngy-1-gy
                 for gx in range(0,params.ngx,1):
-                    con.write(str(format((xabs[gx,gy]+xdif[gx,gy])/float(params.nx[mon]),('.6f')))+" ")
+                    con.write(str(format((xabs[gx,gyinv]+xdif[gx,gyinv])/float(params.nx[mon]),('.6f')))+" ")
                 con.write("\n")
             for gy in range(0,params.ngy,1):
+                gyinv = params.ngy-1-gy
                 for gx in range(0,params.ngx,1):
-                    con.write(str(format((yabs[gx,gy]+ydif[gx,gy])/float(params.ny[mon]),('.6f')))+" ")
+                    con.write(str(format(1.0 - (yabs[gx,gyinv]+ydif[gx,gyinv])/float(params.ny[mon]),('.6f')))+" ")
                 con.write("\n")
 
             # Generate Blending Grid in warped and not display space
@@ -310,8 +312,18 @@ def save_nvfile():
  
             con.write("BLENDGRID\n")
             for y in range(0,params.ny[mon],1):
+                yinv = params.ny[mon] - 1 - y
                 for x in range(0,params.nx[mon],1):
-                    con.write(str(format(blendgrid[x,y],('.6f')))+" ")
+                    #if params.blending[mon]:
+                    #    con.write(str(format(blendgrid[x,yinv],('.6f')))+" ")
+                    #else:
+                    #    con.write(str(format(1.0,('.6f')))+" ")
+
+                    if y < params.ny[mon]/2:
+                        con.write(str(format(0.0,('.6f')))+" ")
+                    else:
+                        con.write(str(format(1.0,('.6f')))+" ")
+                         
                 con.write("\n")
 
             con.close()

@@ -34,187 +34,41 @@ int create_blendmatrix(void) {
   
   /* Blendmatrix consists of nx x ny (full screen resolution) */
 
-  /* first value is vertex coordinate and second value is warped coordinate */
-  float x0;
-  float x1;
-  float xl;
-  float xr;
-  float xw;
-  float wgt;
-
   int x;
   int y;
-
-  float fgx;
-
-  int gx;
-  int gy;
-  float val;
-
-  int i;
   
   unsigned long int pixval;
   unsigned char bytval;
   int nChannels = 4;
   		      
-  if (has_blend) {
-    imageData = (unsigned char*) malloc (nx * ny * nChannels);
-    int bitmap_pad = nChannels * 8;
-    int bytes_per_line = nx*4; //displayWidth * nChannels;
+  imageData = (unsigned char*) malloc (nx * ny * nChannels);
+  int bitmap_pad = nChannels * 8;
+  int bytes_per_line = nx*4; //displayWidth * nChannels;
 
-    XImage *blendImage = XCreateImage(xDpy, CopyFromParent, DefaultDepth(xDpy, screenId), ZPixmap,
-				      0, (char*)imageData, nx, ny, bitmap_pad , bytes_per_line);
+  XImage *blendImage = XCreateImage(xDpy, CopyFromParent, DefaultDepth(xDpy, screenId), ZPixmap,
+				    0, (char*)imageData, nx, ny, bitmap_pad , bytes_per_line);
 
-
-    if (blendData == NULL) {
-    
-      if ((alpha[0][0] == 0.0) && (alpha[1][0] == 0.0)) {
-	/* XP12 has no predefined blending values but we use a curve */
-	for (y=0;y<ny;y++) {
-	  //for (y=500;y<501;y++) {
-	  //x0 = vx[0][0][0] * (1.0- (float) y / (float) (ny-1)) + vx[ngy-1][0][0] * (float) y / (float) (ny-1);
-	  //x1 = vx[0][ngx-1][0] * (1.0- (float) y / (float) (ny-1)) + vx[ngy-1][ngx-1][0] * (float) y / (float) (ny-1);
-	  xl = y/(ny-1) * bot[0] + (1.0-y/(ny-1)) * top[0];
-	  xr = y/(ny-1) * bot[1] + (1.0-y/(ny-1)) * top[1];
-
-	  gy = (int) ((float) y / (float) (ny-1) * (float) (ngy-1));
-	
-	  for (x=0;x<nx;x++) {
-
-	    /* linear interpolation of warping grid x positions */
-	    /* TODO: Bilinear interpolation in x and y */
-	    gx = (int) ((float) x / (float) (nx-1) * (float) (ngx-1));
-	    fgx = ((float) x / (float) (nx-1) * (float) (ngx-1));
-	    wgt = fgx - (float) gx;
-	  
-	    xw = (1.0 - wgt) * vx[gy][gx][0] + wgt * vx[gy][gx+1][0];
-	    //printf("%i %i %f %f %f \n",x,gx,fgx,wgt,xw);
-	    //printf("%i %f %f\n",x,vx[gy][gx][0] * (float) (nx-1),val);
-	  
-	    if (x < nx/2) {
-	      /* left blending until center of image */
-	      if (xl == 0.0) {
-		val = 1.0;
-	      } else {
-		val = min(powf(max(xw * (float) (nx-1),0.0)/xl,blend_exp),1.0);
-	      } 
-	    } else {
-	      /* right blending starting at center of image */
-	      if (xr == 0.0) {
-		val = 1.0;
-	      } else {
-		val = min(powf(max(nx- (xw * (float) (nx-1)),0.0)/xr,blend_exp),1.0);
-	      }
-	    }
-	    bytval = (unsigned char) (val * 255.0);
-	    pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
-	      256 * (unsigned long) bytval + (unsigned long) bytval;
-	    XPutPixel(blendImage, x, y, pixval);	  
-	  }
-	}
-      } else {
-    
-	/* fill alpha values into linear interpolation abscissa vector */
-	if ((top[0] == 0.0) && (bot[0] == 0.0)) {
-	  /* no blending on left side */
-	  yval[0] = 1.0;
-	  yval[1] = 1.0;
-	  yval[2] = 1.0;
-	  yval[3] = 1.0;
-	} else {
-	  yval[0] = alpha[0][3];
-	  yval[1] = alpha[0][2];
-	  yval[2] = alpha[0][1];
-	  yval[3] = alpha[0][0];
-	}
-	if ((top[1] == 0.0) && (bot[1] == 0.0)) {
-	  /* no blending on right side */
-	  yval[4] = 1.0;
-	  yval[5] = 1.0;
-	  yval[6] = 1.0;
-	  yval[7] = 1.0;
-	} else {
-	  yval[4] = alpha[1][0];
-	  yval[5] = alpha[1][1];
-	  yval[6] = alpha[1][2];
-	  yval[7] = alpha[1][3];
-	}
-     
-	for (y=0;y<ny;y++) {
-	  /* fill screen coordinate values into linear interpolation ordinate vector */
-	  xval[0] = 0.0;
-	  if (yval[2] == 0.0) {
-	    /* blend test mode with hard blend at blend start */
-	    xval[1] = 1.0;
-	    xval[2] = 0.999 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-	  } else {
-	    xval[1] = 0.40 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-	    xval[2] = 0.66 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-	  }
-	  xval[3] = 1.00 * (top[0] * (1.0 - (float) y / (float) (ny-1)) + bot[0] * (float) y / (float) (ny-1));
-      
-	  xval[4] = (float) nx - 1.00 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-	  if (yval[6] == 0.0) {
-	    /* blend test mode with hard blend at blend start */
-	    xval[5] = (float) nx - 0.999 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-	    xval[6] = (float) nx-1;
-	  } else {
-	    xval[5] = (float) nx - 0.66 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-	    xval[6] = (float) nx - 0.40 * (top[1] * (1.0 - (float) y / (float) (ny-1)) + bot[1] * (float) y / (float) (ny-1));
-	  }
-	  xval[7] = (float) nx;
-	  //      printf("%i %f %f \n",y,xval[3],xval[4]);
-
-	  /* TRANSFORM BLENDING XVALS FROM DISPLAY TO TEXTURE COORDINATES SINCE BLENDAFTERWARP DOES NOT WORK */
-	  if (has_warp) {
-	    x0 = vx[0][0][0] * (1.0- (float) y / (float) (ny-1)) + vx[ngy-1][0][0] * (float) y / (float) (ny-1);
-	    x1 = vx[0][ngx-1][0] * (1.0- (float) y / (float) (ny-1)) + vx[ngy-1][ngx-1][0] * (float) y / (float) (ny-1);
-	    //printf("%f %f \n",x0,x1);
-	
-	    for (i=0;i<8;i++) {
-	      xval[i] = -x0 / (x1-x0) * (float) (nx-1) + xval[i] * 1.0 / (x1-x0);
-	    }
-	  }
-	
-	  for (x=0;x<nx;x++) {
-	    /* perform linear interpolation of tranparency between x-plane's blending steps */
-	    bytval = (unsigned char) (interpolate((float) x) * 255.0);
-	    //if (y == 500) printf("%i ",bytval);
-	    pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
-	      256 * (unsigned long) bytval + (unsigned long) bytval;
-	    XPutPixel(blendImage, x, y, pixval);
-	  }
-
-	}
-      }
-
-    } else {
-      // New Blending using full blend grid with nx x ny
-      printf("NEW BLENDING GRID!!!\n");
-      for (y=0;y<ny;y++) {
-	for (x=0;x<nx;x++) {
-	  /* perform linear interpolation of tranparency between x-plane's blending steps */
-	  bytval = (unsigned char) (blendData[x+y*nx] * 255.0);
-	  //if ((x==0) && (y==0)) printf("%f %i \n",blendData[x+y*nx],bytval);
-	  pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
-	    256 * (unsigned long) bytval + (unsigned long) bytval;
-	  XPutPixel(blendImage, x, y, pixval);
-	}
-      }
+  for (y=0;y<ny;y++) {
+    for (x=0;x<nx;x++) {
+      /* perform linear interpolation of tranparency between x-plane's blending steps */
+      bytval = (unsigned char) (blendData[x+y*nx] * 255.0);
+      //if ((x==0) && (y==0)) printf("%f %i \n",blendData[x+y*nx],bytval);
+      pixval = 16777216 * (unsigned long) bytval + 65536 * (unsigned long)  bytval +
+	256 * (unsigned long) bytval + (unsigned long) bytval;
+      XPutPixel(blendImage, x, y, pixval);
     }
-
-    /* create empty pixmap */
-    blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
-				nx, ny, DefaultDepth(xDpy,screenId));
-    
-    /* copy xImage data to pixmap */
-    XGCValues values; // graphics context values
-    GC gc; // the graphics context
-    gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
-    XPutImage(xDpy, blendPixmap, gc, blendImage, 0, 0, 0, 0, nx, ny);
-    
   }
-
+  
+  /* create empty pixmap */
+  blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),
+			      nx, ny, DefaultDepth(xDpy,screenId));
+  
+  /* copy xImage data to pixmap */
+  XGCValues values; // graphics context values
+  GC gc; // the graphics context
+  gc = XCreateGC(xDpy, blendPixmap, GCForeground, &values);
+  XPutImage(xDpy, blendPixmap, gc, blendImage, 0, 0, 0, 0, nx, ny);
+  
   return 0;
 }
 
@@ -222,8 +76,6 @@ int create_testblendmatrix(void) {
   
   GC gc;
   XGCValues values;
-
-  printf("Create Test Blending ...\n");
   
   // Test with a 32x32 pixmap.
   blendPixmap = XCreatePixmap(xDpy, RootWindow(xDpy, screenId),

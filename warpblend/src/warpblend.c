@@ -30,17 +30,14 @@
 */
 
 /* 
-   This code reads the X-Plane Warping and Blending grid from the X-Plane
-   Preference file 'X-Plane Window Positions.prf' and applies the 
-   warping and blending grid to the native NVIDIA API. Note: The warping
-   grid needs to include the planar to cylindrical correction. This is not
-   the case if you create a warping grid in X-Plane and save it from there.
+   This code reads the warp and blend grids from an ascii file and applies the 
+   warping and blending grid to the native NVIDIA API.
 */
 
 /* 
-   Relative screen / texture coordinates are:
-   y: top to bottom (0-1)
-   x: left to right (0-1)
+   Relative screen / texture coordinates for NVIDIA are:
+   y: top to bottom (0.0-1.0)
+   x: left to right (0.0-1.0)
 
    triangles are constructed with these indices:
    0: tl, 1: tr, 2: bl, 3: tr, 4: br, 5: bl
@@ -55,7 +52,7 @@
 */
 
 #include "warpdata.h"
-#include "xplane_warpfile.h"
+#include "warpblendfile.h"
 #include "create_warpmatrix.h"
 #include "create_blendmatrix.h"
 
@@ -68,18 +65,12 @@ int main(int ac, char **av) {
   bool blend = False;
   bool unblend = False;
   bool test = False;
-  int monitor = -1;
-  char smonitor[2];
   int ret;
   int a;
   char *warpfile = NULL;
   int strsize;
   int numVertices;
-  bool oldFile = False;
 
-  has_warp = False;
-  has_blend = False;
-  
   xDpy = XOpenDisplay(NULL);
   if (!xDpy) {
     printf ("Could not open X Display %s!\n", XDisplayName(NULL));
@@ -88,6 +79,11 @@ int main(int ac, char **av) {
 
   screenId = XDefaultScreen(xDpy);
 
+  if (ac == 1) {
+    printf("Please supply the DPY-# as first argument\n");
+    return 1;
+  }
+  
   for (a=1;a<ac;a++) {
     if (a == 1) {
       if (strspn(av[a], "0123456789") == strlen(av[a])) {
@@ -95,12 +91,12 @@ int main(int ac, char **av) {
 	printf("DPY ID: %i\n",nvDpyId);
       } else {
 	if (strcmp("--help",av[a]) == 0) {
-	  printf("Usage: ./warpblend DPY [monitor] [warpfile] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test] \n");
+	  printf("Usage: ./warpblend DPY [warpfile] [--warp] [--unwarp] [--blend] [--unblend] [--blend-after-warp] [--test] \n");
 	  printf ("DPY is the Display Port, see 'nvidia-settings -q CurrentMetaMode' \n");
-	  printf ("Monitor is the monitor number in the warp file \n");
 	  printf ("Warpfile is the Warp & Blend Grid file (e.g. nv_warpblend_grid_0.dat) \n");
 	  printf ("Option --test does not require any other option. It generates a Test warping and blending. \n");
-	  printf ("Options --unblend and --unwarp do not require a warp file. Supply just the Monitor Number \n");
+	  printf ("Options --unblend and --unwarp do not require a warp file. Just the DPY number \n");
+	  printf ("Option --blend-after-warp does not work on GTX/RTX cards, just on Quadros \n");
 	  return 1;
 	} else {
 	  printf("Please supply the DPY-# as first argument\n");
@@ -109,23 +105,12 @@ int main(int ac, char **av) {
       }
     }
     if (a == 2) {
-      if (strspn(av[a], "0123456789") == strlen(av[a])) {
-	monitor = atoi(av[2]);
-	printf("Monitor #: %i\n",monitor);
-      }
-    }
-    if (a == 3) {
       if (strncmp(av[a],"--",2) != 0) {
 	strsize = strlen(av[a]);
-	warpfile = malloc(strsize);
-	memset(warpfile,0,strsize);
+	warpfile = malloc(strsize+1);
+	memset(warpfile,0,strsize+1);
 	strncpy(warpfile, av[a],strsize);
-	int len = strlen(warpfile);
-	if (strncmp(warpfile+len-3, "prf", 3) == 0) oldFile = True;
 	printf("Warp & Blend Grid Input File #: %s\n",warpfile);
-	if (oldFile) {
-	  printf("Old X-Plane Input File\n");
-	}
       }
     }
     if (strcmp("--warp", av[a]) == 0) warp = True;
@@ -136,26 +121,14 @@ int main(int ac, char **av) {
     if (strcmp("--test", av[a]) == 0) test = True;
   }
 
-  if (!(unwarp || unblend || test) && (monitor == -1)) {
-    printf("Please provide the X-Plane Monitor number as second argument \n");
-    return 1;
-  }
-
   if (!(unwarp || unblend || test) && (warpfile == NULL)) {
-    printf("Please provide the Warp & Blend Grid File as third argument \n");
+    printf("Please provide the Warp & Blend Grid File as second argument \n");
     return 1;
   }
 
 
   if ((warp || blend ) && (!test)) {
-    sprintf(smonitor,"%d",monitor);
-    if (oldFile) {
-      if (read_warpfile(warpfile,smonitor)!=0) return 1;
-    } else {
-      if (read_warpblendfile(warpfile)!=0) return 1;
-    }
-    printf("Warp Information in File: %i \n",has_warp);
-    printf("Blend Information in File: %i \n",has_blend);
+    if (read_warpblendfile(warpfile)!=0) return 1;
   }
   
   if (test) {
@@ -187,7 +160,7 @@ int main(int ac, char **av) {
       return 1;
     }
      
-  } else if (warp && has_warp) {
+  } else if (warp) {
     printf("Create Warp Matrix...\n");
     numVertices = create_warpmatrix();
     if (numVertices == 0) {
@@ -223,7 +196,7 @@ int main(int ac, char **av) {
       printf("Unable to create Test Blend Image ... aborting \n");
       return 1;
     }
-  } else if (blend && has_blend) {
+  } else if (blend) {
     printf("Create Blend Matrix...\n");
     if (create_blendmatrix()!=0) {
       printf("Unable to create Blend Image ... aborting \n");

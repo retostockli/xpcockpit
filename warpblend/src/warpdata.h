@@ -19,9 +19,6 @@
 #include <math.h>
 #include <warpblend.h>
 
-extern bool has_warp;
-extern bool has_blend;
-
 extern Display *xDpy;
 extern int screenId;
 
