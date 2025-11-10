@@ -5,6 +5,7 @@ from utility import r2d, d2r
 from calc_warpgrid import calc_warpgrid, calc_warppoint
 from calc_blendgrid import calc_blendimage_unwarped, calc_blendgrid_warped
 from calc_projector_screen import calc_fov
+import root_window
 
 def save_xpfile():
 	
@@ -13,6 +14,7 @@ def save_xpfile():
     # Generate X-Plane Window Preferences Output File 
     # X-Plane grid goes from bottom to top (0.0 - 1.0)
     # and from left to right (0.0 - 1.0)
+    # so we have to invert the calculated coordinate shifts upside down
     con = open(params.xpfile,"w")
     con.write("I\n")
     con.write("10 Version\n")
@@ -30,7 +32,7 @@ def save_xpfile():
         xdif = np.zeros((params.ngx, params.ngy))
         ydif = np.zeros((params.ngx, params.ngy))
 
-        if (params.cylindrical[mon] or params.projection[mon]):
+        if (params.cylindrical[mon] or params.projection[mon]) and params.savegrid:
 
             # For Screen Alignment Not all calculations are needed
             alignment = False
@@ -39,12 +41,7 @@ def save_xpfile():
                                                     params.R, params.h_0, params.d_0, params.d_1, params.w_h, 
                                                     params.gamma, params.epsilon[mon], params.frustum,
                                                     params.vertical_scale[mon], params.vertical_shift[mon], 
-                                                    params.cylindrical[mon], params.projection[mon], params.ceiling, alignment)
-
-        # print(xdif[0,0])
-        # print(ydif[0,0])
-        # print(xdif[params.ngx-1,params.ngy-1])
-        # print(ydif[params.ngx-1,params.ngy-1])
+                                                    params.cylindrical[mon], params.projection[mon], alignment)
 
         FOVx, FOVy, h, w = calc_fov(params.nx[mon], params.ny[mon], params.w_h, params.gamma)
 
@@ -124,12 +121,16 @@ def save_xpfile():
             if (params.projection[mon] or params.cylindrical[mon]) and params.savegrid:
                 for gx in range(0,params.ngx,1):
                     for gy in range(0,params.ngy,1):
+                        gyinv = params.ngy - 1 - gy
+                        if gx == 0 and gy == 0: print(yabs[gx,gy],-ydif[gx,gyinv])
+                        if gx == 0 and gy == params.ngy-1: print(yabs[gx,gy],-ydif[gx,gyinv])
                         con.write("monitor/"+str(mon)+"/proj/grid_ini_x"+str(gx)+"/"+str(gy)+" "
-                             +str(format((xabs[gx,gy]+xdif[gx,gy])/float(params.nx[mon]),('.6f')))+"\n")
+                             +str(format((xabs[gx,gy]+xdif[gx,gyinv])/float(params.nx[mon]),('.6f')))+"\n")
                 for gx in range(0,params.ngx,1):
                     for gy in range(0,params.ngy,1):
+                        gyinv = params.ngy - 1 - gy
                         con.write("monitor/"+str(mon)+"/proj/grid_ini_y"+str(gx)+"/"+str(gy)+" "
-                            +str(format((yabs[gx,gy]+ydif[gx,gy])/float(params.ny[mon]),('.6f')))+"\n")
+                            +str(format((yabs[gx,gy]-ydif[gx,gyinv])/float(params.ny[mon]),('.6f')))+"\n")
                 for gx in range(0,params.ngx,1):
                     for gy in range(0,params.ngy,1):
                         con.write("monitor/"+str(mon)+"/proj/grid_off_x"+str(gx)+"/"+str(gy)+" "
@@ -149,29 +150,32 @@ def save_xpfile():
 
                     if params.blendtest:
                         blendgrid[blendgrid<0.99] = 0.0
-
-                    blendgrid = np.flip(blendgrid,1)
                     
                     for gx in range(0,params.ngx,1):
                         for gy in range(0,params.ngy,1):
+                            gyinv = params.ngy - 1 - gy
                             con.write("monitor/"+str(mon)+"/proj/grid_mul_r"+str(gx)+"/"+str(gy)+" "
-                                +str(format(blendgrid[gx,gy],('.6f')))+"\n")
+                                +str(format(blendgrid[gx,gyinv],('.6f')))+"\n")
                     for gx in range(0,params.ngx,1):
                         for gy in range(0,params.ngy,1):
+                            gyinv = params.ngy - 1 - gy
                             con.write("monitor/"+str(mon)+"/proj/grid_mul_g"+str(gx)+"/"+str(gy)+" "
-                                +str(format(blendgrid[gx,gy],('.6f')))+"\n")
+                                +str(format(blendgrid[gx,gyinv],('.6f')))+"\n")
                     for gx in range(0,params.ngx,1):
                         for gy in range(0,params.ngy,1):
+                            gyinv = params.ngy - 1 - gy
                             con.write("monitor/"+str(mon)+"/proj/grid_mul_b"+str(gx)+"/"+str(gy)+" "
-                                +str(format(blendgrid[gx,gy],('.6f')))+"\n")
+                                +str(format(blendgrid[gx,gyinv],('.6f')))+"\n")
         else:
             if (params.projection[mon] or params.cylindrical[mon]) and params.savegrid:
                 for gx in range(0,params.ngx,1):
                     for gy in range(0,params.ngy,1):
-                        con.write("monitor/"+str(mon)+"/proj/grid_os_x/"+str(gx)+"/"+str(gy)+" "+str(format(xdif[gx,gy],('.6f')))+"\n")
+                        gyinv = params.ngy - 1 - gy
+                        con.write("monitor/"+str(mon)+"/proj/grid_os_x/"+str(gx)+"/"+str(gy)+" "+str(format(xdif[gx,gyinv],('.6f')))+"\n")
                 for gx in range(0,params.ngx,1):
                     for gy in range(0,params.ngy,1):
-                        con.write("monitor/"+str(mon)+"/proj/grid_os_y/"+str(gx)+"/"+str(gy)+" "+str(format(ydif[gx,gy],('.6f')))+"\n")
+                        gyinv = params.ngy - 1 - gy
+                        con.write("monitor/"+str(mon)+"/proj/grid_os_y/"+str(gx)+"/"+str(gy)+" "+str(format(-ydif[gx,gyinv],('.6f')))+"\n")
 
 
         # write blending per monitor
@@ -238,8 +242,8 @@ def save_xpfile():
 def save_nvfile():
 
     # Save Warp and Blend grid for NVIDIA API (src/warpblend)
-    # NVIDIA display coordinates goes from top to bottom (0.0 - 1.0) and from left to right (0.0 - 1.0)
-    # (so we flip X-Plane coordinates below, since they go from bottom to top!)
+    # NVIDIA display coordinates go from top to bottom (0.0 - 1.0) and from left to right (0.0 - 1.0)
+    # so we have to flip the vertical coordinates upside down including the relative warping shifts
 
     # loop through monitors
     for mon in range(0,params.nmon,1):
@@ -268,23 +272,38 @@ def save_nvfile():
                                                     params.R, params.h_0, params.d_0, params.d_1, params.w_h, 
                                                     params.gamma, params.epsilon[mon], params.frustum,
                                                     params.vertical_scale[mon], params.vertical_shift[mon], 
-                                                    params.cylindrical[mon], params.projection[mon], params.ceiling, alignment)
+                                                    params.cylindrical[mon], params.projection[mon], alignment)
 
             # print(xdif[0,0])
             # print(ydif[0,0])
             # print(xdif[params.ngx-1,params.ngy-1])
             # print(ydif[params.ngx-1,params.ngy-1])
 
+            # now we save the grid with 0/0 at bottom / left
             for gy in range(0,params.ngy,1):
                 gyinv = params.ngy-1-gy
                 for gx in range(0,params.ngx,1):
-                    con.write(str(format((xabs[gx,gyinv]+xdif[gx,gyinv])/float(params.nx[mon]),('.6f')))+" ")
+                    #if gx == 0 and gy == 0: print(yabs[gx,gyinv],-ydif[gx,gy])
+                    #if gx == 0 and gy == params.ngy-1: print(yabs[gx,gyinv],-ydif[gx,gy])
+                    #if gx == 0 and gy == 0: print(yabs[gx,gy],-ydif[gx,gyinv])
+                    #if gx == 0 and gy == params.ngy-1: print(yabs[gx,gy],-ydif[gx,gyinv])
+                    # TRUE:
+                    # 1080.0 -51.81924285041481
+                    # 0.0 38.85880182929168                
+                    #con.write(str(format((xabs[gx,gyinv]+xdif[gx,gy])/float(params.nx[mon]),('.6f')))+" ")
+                    con.write(str(format((xabs[gx,gy]+xdif[gx,gyinv])/float(params.nx[mon]),('.6f')))+" ")
                 con.write("\n")
             for gy in range(0,params.ngy,1):
                 gyinv = params.ngy-1-gy
                 for gx in range(0,params.ngx,1):
-                    con.write(str(format(1.0 - (yabs[gx,gyinv]+ydif[gx,gyinv])/float(params.ny[mon]),('.6f')))+" ")
+                    #con.write(str(format(1.0 - (yabs[gx,gyinv]-ydif[gx,gy])/float(params.ny[mon]),('.6f')))+" ")
+                    con.write(str(format(1.0 - (yabs[gx,gy]-ydif[gx,gyinv])/float(params.ny[mon]),('.6f')))+" ")
                 con.write("\n")
+
+
+            blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
+                                params.blend_left_top[mon],params.blend_left_bot[mon],
+                                params.blend_right_top[mon],params.blend_right_bot[mon])
 
             # Generate Blending Grid in warped and not display space
             # Blending grid for NVIDIA is full nx / ny image resolution, 
@@ -300,35 +319,20 @@ def save_nvfile():
              # Interpolate
             xdif_new = map_coordinates(xdif, coords, order=1, mode = 'constant')  # order=1 = bilinear
             ydif_new = map_coordinates(ydif, coords, order=1, mode = 'constant')  # order=1 = bilinear
- 
-            # print((params.nx[mon]-1)/(params.ngx-1))
-            # print(xabs[0:3,0])
-            # print(xabs[1900:1920,0]/(params.nx[mon]-1)*(params.ngx-1))
-            # print(xabs[1900:1920,0]) #/(params.nx[mon]-1)*(params.ngx-1))
-
-            # print(xdif[117:121,0])
-            # #print(xdif_new[0:int(3*(params.nx[mon]-1)/(params.ngx-1)),0])
-
-            blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
-                                params.blend_left_top[mon],params.blend_left_bot[mon],
-                                params.blend_right_top[mon],params.blend_right_bot[mon])
-            
+       
             blendgrid = calc_blendgrid_warped(params.nx[mon], params.ny[mon], params.nx[mon], params.ny[mon], 
                                                 xabs, xdif_new, yabs, ydif_new, blendimage)
-            if mon == 1:
-                print(ydif[100:121,0])
-                print(ydif_new[1600:1920,0])
-                print(params.blend_right_top[mon])
-                print(blendgrid[1600:1920,0])
             
             if params.blendtest:
                 blendgrid[blendgrid<0.99] = 0.0
 
+            # also save the blend grid from 0/0 equal bottom / left
             con.write("BLENDGRID\n")
             for y in range(0,params.ny[mon],1):
+                yinv = params.ny[mon]-1-y
                 for x in range(0,params.nx[mon],1):
                     if params.blending[mon]:
-                        con.write(str(format(blendgrid[x,y],('.6f')))+" ")
+                        con.write(str(format(blendgrid[x,yinv],('.6f')))+" ")
                     else:
                         con.write(str(format(1.0,('.6f')))+" ")
                        

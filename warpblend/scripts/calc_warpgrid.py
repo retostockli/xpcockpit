@@ -5,7 +5,7 @@ from calc_projector_screen import *
 
 
 # calculate a warped coordinate for a single point px/py
-def calc_warppoint(nx, ny, px, py, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustum, vertical_scale, vertical_shift, cylindrical, projection, ceiling, alignment):
+def calc_warppoint(nx, ny, px, py, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustum, vertical_scale, vertical_shift, cylindrical, projection, alignment):
 
     FOVx, FOVy, h, w = calc_fov(nx, ny, w_h, gamma)
 			
@@ -40,7 +40,7 @@ def calc_warppoint(nx, ny, px, py, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustu
     return px, py
 
 # calculate a warping grid for all control points
-def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustum, vertical_scale, vertical_shift, cylindrical, projection, ceiling, alignment):
+def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frustum, vertical_scale, vertical_shift, cylindrical, projection, alignment):
 
     FOVx, FOVy, h, w = calc_fov(nx, ny, w_h, gamma)
     
@@ -105,11 +105,5 @@ def calc_warpgrid(nx, ny, ngx, ngy, R, h_0, d_0, d_1, w_h, gamma, epsilon, frust
 
             xdif[gx,gy] = px - xabs[gx,gy]
             ydif[gx,gy] = py - yabs[gx,gy]
- 		
-    # inverse x and y array for ceiling mount
-    # not needed for visual alignment of screen coordinates
-    if ceiling and not alignment:
-        ydif = -np.flip(ydif,axis=1)
-        xdif = np.flip(xdif,axis=1)
                 
     return xabs, yabs, xdif, ydif

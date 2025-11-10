@@ -182,7 +182,11 @@ int main(int ac, char **av) {
 				   numVertices, // 6 vertices for two triangles
 				   (float *)warpData);
 
-    if ((ret != 0) && (!unwarp)) printf("Warp failed with return value: %i\n",ret);
+    if ((ret != 0) && (!unwarp)) {
+      printf("Warp failed with return value: %i\n",ret);
+    } else if (!unwarp) {
+      printf("Warp successful! \n");
+    }      
   } 
 
   
@@ -206,9 +210,11 @@ int main(int ac, char **av) {
 
 
   if (blend || unblend) {
-    // printf("Blend After Warp Flag : %i \n",blendAfterWarp);
-    //     Apply it to the display. blendAfterWarp is FALSE, so the edges will be
-    //     blended in warped space.
+    printf("Blend After Warp Flag : %i \n",blendAfterWarp);
+    /* Apply blending matrix to the display.
+       If blendAfterWarp is FALSE, the edges will be
+       blended in warped coordinate space. If it is true
+       blending is applied after warping in regular display coordinates */
     ret = XNVCTRLSetScanoutIntensity(xDpy,
 				     screenId,
 				     nvDpyId,
@@ -218,6 +224,8 @@ int main(int ac, char **av) {
     if ((ret != 0) && (!unblend)) {
       printf("Blend failed with return value: %i\n",ret);
       return 1;
+    } else if (!unblend) {
+      printf("Blend successful! \n");
     }
 
   }

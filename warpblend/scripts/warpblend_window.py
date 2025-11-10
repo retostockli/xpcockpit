@@ -1,6 +1,9 @@
 from tkinter import *
+import numpy as np
+from scipy.ndimage import map_coordinates
 from calc_projector_screen import *
 from calc_warpgrid import *
+from calc_blendgrid import calc_blendimage_unwarped, calc_blendgrid_warped
 import root_window
 import params
 
@@ -45,27 +48,29 @@ def draw_azimuthgrid(mon):
             fillcolor = "lightgray" if (oddx and oddy) or (not oddx and not oddy) else "darkgray"
 
             px0, py0 = calc_warppoint(params.nx[mon], params.ny[mon], x0, y0, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
-                                            params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], params.ceiling, alignment)
+                                            params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
             px1, py1 = calc_warppoint(params.nx[mon], params.ny[mon], x1, y0, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
-                                            params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], params.ceiling, alignment)
+                                            params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
             px2, py2 = calc_warppoint(params.nx[mon], params.ny[mon], x1, y1, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
-                                            params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], params.ceiling, alignment)
+                                            params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
             px3, py3 = calc_warppoint(params.nx[mon], params.ny[mon], x0, y1, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
-                                            params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], params.ceiling, alignment)
-            canvas[mon].create_polygon(px0, py0, px1, py1, px2, py2, px3, py3, fill=fillcolor,tags="shape")
+                                            params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
+            if y0 != params.ny[mon]:
+                canvas[mon].create_polygon(px0, py0, px1, py1, px2, py2, px3, py3, fill=fillcolor,tags="shape")
 
-            fillcolor = "white" if labelx else "violet"
-            canvas[mon].create_line(px0, py0, px3, py3, fill = fillcolor,width=2,tags="shape")
+                fillcolor = "white" if labelx else "violet"
+                canvas[mon].create_line(px0, py0, px3, py3, fill = fillcolor,width=2,tags="shape")
 
             fillcolor = "white" if labely else "violet"
             canvas[mon].create_line(px0, py0, px1, py1, fill = fillcolor,width=2,tags="shape")
+ 
 
     # plot azimuth labels
     for ang in range(int(ANGmin/deltalabel)*deltalabel,int(ANGmax/deltalabel)*deltalabel,deltalabel):
         x0 = (float(ang)-ANGmin)/(ANGmax-ANGmin) * params.nx[mon]
         y0 = params.ny[mon]//2
         px, py = calc_warppoint(params.nx[mon], params.ny[mon], x0, y0, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
-                    params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], params.ceiling, alignment)
+                    params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
         canvas[mon].create_text(px, py,text=str(ang),fill="red",font=("Helvetica", 18, "bold"),tags="shape")
 
 def draw_blendlines(mon):
@@ -87,6 +92,55 @@ def draw_blendlines(mon):
                 x0 = (params.nx[mon]-1) - (y0/(params.ny[mon]-1) * params.blend_right_bot[mon] + (1.0-y0/(params.ny[mon]-1)) * params.blend_right_top[mon])*(params.nx[mon]-1)
                 x1 = (params.nx[mon]-1) - (y1/(params.ny[mon]-1) * params.blend_right_bot[mon] + (1.0-y1/(params.ny[mon]-1)) * params.blend_right_top[mon])*(params.nx[mon]-1)
                 canvas[mon].create_line(x0, y0, x1, y1, fill = fillcolor,width=3,tags="shape")
+
+def draw_blendgrid(mon):
+
+    alignment = True
+
+    xabs, yabs, xdif, ydif = calc_warpgrid(params.nx[mon], params.ny[mon], params.ngx, params.ngy, 
+                                            params.R, params.h_0, params.d_0, params.d_1, params.w_h, 
+                                            params.gamma, params.epsilon[mon], params.frustum,
+                                            params.vertical_scale[mon], params.vertical_shift[mon], 
+                                            params.cylindrical[mon], params.projection[mon], alignment)
+
+    blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
+                        params.blend_left_top[mon],params.blend_left_bot[mon],
+                        params.blend_right_top[mon],params.blend_right_bot[mon])
+
+    # Generate Blending Grid in warped and not display space
+    # Blending grid for NVIDIA is full nx / ny image resolution, 
+    # xabs = np.zeros((params.nx[mon], params.ny[mon]))
+    # yabs = np.zeros((params.nx[mon], params.ny[mon]))
+    # for y in range(0,params.ny[mon],1):
+    #     for x in range(0,params.nx[mon],1):
+    #         xabs[x,y] = x
+    #         yabs[x,y] = y
+
+    # coords = np.array([xabs/(params.nx[mon]-1)*(params.ngx-1),yabs/(params.ny[mon]-1)*(params.ngy-1)])
+
+    # # Interpolate
+    # xdif_new = map_coordinates(xdif, coords, order=1, mode = 'constant')  # order=1 = bilinear
+    # ydif_new = map_coordinates(ydif, coords, order=1, mode = 'constant')  # order=1 = bilinear
+
+    # blendgrid = calc_blendgrid_warped(params.nx[mon], params.ny[mon], params.nx[mon], params.ny[mon], 
+    #                                     xabs, xdif_new, yabs, ydif_new, blendimage)
+    blendgrid = calc_blendgrid_warped(params.nx[mon], params.ny[mon], params.ngx, params.ngy, 
+                                        xabs, xdif, yabs, ydif, blendimage)
+ 
+    r = 1
+    for gy in range(0,params.ngy,1):
+       for gx in range(0,params.ngx,1):
+#     for gy in range(0,params.ny[mon],5):
+#         for gx in range(0,params.nx[mon],5):
+#  #           x = xabs[gx,gy] + xdif_new[gx,gy]
+ #           y = yabs[gx,gy] + ydif_new[gx,gy]
+            x = xabs[gx,gy] + xdif[gx,gy]
+            y = yabs[gx,gy] + ydif[gx,gy]
+            if blendgrid[gx,gy] < 0.99:
+                canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="red", outline="red")     
+            else:         
+                canvas[mon].create_oval(x - r, y - r, x + r, y + r, fill="black", outline="black")     
+               
 
 
 def init_warpblend_window():
@@ -146,3 +200,4 @@ def redraw_warpblend_window(mon):
         # For Screen Alignment Not all calculations are needed
         draw_azimuthgrid(mon)
         draw_blendlines(mon)
+        draw_blendgrid(mon)
