@@ -8,10 +8,8 @@ if [ $count = 0 ] ; then
 ###1st Restore preferences and set performance###
 #nvidia-settings --load-config-only
 #sudo cpupower frequency-set -g performance
-cp ~/xpcockpit/warpblend/data/X-Plane\ Window\ Positions_NOWARPBLEND.prf ~/X-Plane\ 12/Output/preferences/X-Plane\ Window\ Positions.prf
-#cp "X-Plane Window Positions_NOWARPBLEND.prf" "X-Plane 12/Output/preferences/X-Plane Window Positions.prf" 
-#cp "X-Plane Window Positions_xp12.prf" "X-Plane 12/Output/preferences/X-Plane Window Positions.prf" 
-#cp "X-Plane Window Positions_GRIDTEST.prf" "X-Plane 12/Output/preferences/X-Plane Window Positions.prf" 
+#cp ~/xpcockpit/warpblend/data/X-Plane\ Window\ Positions_NOWARPBLEND.prf ~/X-Plane\ 12/Output/preferences/X-Plane\ Window\ Positions.prf
+cp ~/xpcockpit/warpblend/data/X-Plane\ Window\ Positions.prf ~/X-Plane\ 12/Output/preferences/X-Plane\ Window\ Positions.prf
 
 ##start xplane##
 ~/X-Plane\ 12/X-Plane-x86_64 &
