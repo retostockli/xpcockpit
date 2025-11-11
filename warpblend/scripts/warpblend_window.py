@@ -103,37 +103,17 @@ def draw_blendgrid(mon):
                                             params.vertical_scale[mon], params.vertical_shift[mon], 
                                             params.cylindrical[mon], params.projection[mon], alignment)
 
+    power = 1.0
     blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
-                        params.blend_left_top[mon],params.blend_left_bot[mon],
-                        params.blend_right_top[mon],params.blend_right_bot[mon])
+                                          params.blend_left_top[mon],params.blend_left_bot[mon],
+                                          params.blend_right_top[mon],params.blend_right_bot[mon], power)
 
-    # Generate Blending Grid in warped and not display space
-    # Blending grid for NVIDIA is full nx / ny image resolution, 
-    # xabs = np.zeros((params.nx[mon], params.ny[mon]))
-    # yabs = np.zeros((params.nx[mon], params.ny[mon]))
-    # for y in range(0,params.ny[mon],1):
-    #     for x in range(0,params.nx[mon],1):
-    #         xabs[x,y] = x
-    #         yabs[x,y] = y
-
-    # coords = np.array([xabs/(params.nx[mon]-1)*(params.ngx-1),yabs/(params.ny[mon]-1)*(params.ngy-1)])
-
-    # # Interpolate
-    # xdif_new = map_coordinates(xdif, coords, order=1, mode = 'constant')  # order=1 = bilinear
-    # ydif_new = map_coordinates(ydif, coords, order=1, mode = 'constant')  # order=1 = bilinear
-
-    # blendgrid = calc_blendgrid_warped(params.nx[mon], params.ny[mon], params.nx[mon], params.ny[mon], 
-    #                                     xabs, xdif_new, yabs, ydif_new, blendimage)
     blendgrid = calc_blendgrid_warped(params.nx[mon], params.ny[mon], params.ngx, params.ngy, 
                                         xabs, xdif, yabs, ydif, blendimage)
  
     r = 1
     for gy in range(0,params.ngy,1):
        for gx in range(0,params.ngx,1):
-#     for gy in range(0,params.ny[mon],5):
-#         for gx in range(0,params.nx[mon],5):
-#  #           x = xabs[gx,gy] + xdif_new[gx,gy]
- #           y = yabs[gx,gy] + ydif_new[gx,gy]
             x = xabs[gx,gy] + xdif[gx,gy]
             y = yabs[gx,gy] + ydif[gx,gy]
             if blendgrid[gx,gy] < 0.99:
@@ -200,4 +180,4 @@ def redraw_warpblend_window(mon):
         # For Screen Alignment Not all calculations are needed
         draw_azimuthgrid(mon)
         draw_blendlines(mon)
-        draw_blendgrid(mon)
+        #draw_blendgrid(mon)

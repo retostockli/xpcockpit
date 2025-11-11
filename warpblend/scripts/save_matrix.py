@@ -140,11 +140,12 @@ def save_xpfile():
 
                 if params.blending[mon]:
                     # Generate XP12 Blending Grid in warped and not display space
+                    power = 1.25
                     blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
-                                        params.blend_left_top[mon],params.blend_left_bot[mon],
-                                        params.blend_right_top[mon],params.blend_right_bot[mon])
+                                                          params.blend_left_top[mon],params.blend_left_bot[mon],
+                                                          params.blend_right_top[mon],params.blend_right_bot[mon], power)
                     blendgrid = calc_blendgrid_warped(params.nx[mon], params.ny[mon], params.ngx, params.ngy, 
-                                                        xabs, xdif, yabs, ydif, blendimage)
+                                                      xabs, xdif, yabs, ydif, blendimage)
 
                     if params.blendtest:
                         blendgrid[blendgrid<=0.99] = 0.0
@@ -289,10 +290,11 @@ def save_nvfile():
                     con.write(str(format(1.0 - (yabs[gx,gyinv]-ydif[gx,gy])/float(params.ny[mon]),('.6f')))+" ")
                 con.write("\n")
 
-
-            blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
-                                params.blend_left_top[mon],params.blend_left_bot[mon],
-                                params.blend_right_top[mon],params.blend_right_bot[mon])
+            # Create blending grid in unwarped / Display coordinate space
+            power = 0.8
+            blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon],
+                                                  params.blend_left_top[mon],params.blend_left_bot[mon],
+                                                  params.blend_right_top[mon],params.blend_right_bot[mon], power)
 
             # Generate Blending Grid in warped and not display space
             # Blending grid for NVIDIA is full nx / ny image resolution, 
