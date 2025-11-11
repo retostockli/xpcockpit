@@ -773,7 +773,8 @@ void b737_tq(void)
 
   /* Does our stabilizer move come from X-Plane or from our Hardware? */
   if (stabilizer_mode == 0) {
-    if ((trim_up_wheel == 1) || (trim_down_wheel == 1)) stabilizer_mode = 1; // Hand drives
+    // FOR NOW DISABLE MANUAL TRIM SINCE WE NEED TO DIAGNOSE AP DISCONNECTS
+    //if ((trim_up_wheel == 1) || (trim_down_wheel == 1)) stabilizer_mode = 1; // Hand drives
     if ((*trim_up_ap == 1) || (*trim_down_ap == 1)) stabilizer_mode = 2; // X-Plane drives
 
     if (stabilizer_mode == 1) printf("Start Manual Trim. Switched to Stabilizer Mode: %i \n",stabilizer_mode);
