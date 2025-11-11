@@ -122,8 +122,6 @@ def save_xpfile():
                 for gx in range(0,params.ngx,1):
                     for gy in range(0,params.ngy,1):
                         gyinv = params.ngy - 1 - gy
-                        if gx == 0 and gy == 0: print(yabs[gx,gy],-ydif[gx,gyinv])
-                        if gx == 0 and gy == params.ngy-1: print(yabs[gx,gy],-ydif[gx,gyinv])
                         con.write("monitor/"+str(mon)+"/proj/grid_ini_x"+str(gx)+"/"+str(gy)+" "
                              +str(format((xabs[gx,gy]+xdif[gx,gyinv])/float(params.nx[mon]),('.6f')))+"\n")
                 for gx in range(0,params.ngx,1):
@@ -149,7 +147,7 @@ def save_xpfile():
                                                         xabs, xdif, yabs, ydif, blendimage)
 
                     if params.blendtest:
-                        blendgrid[blendgrid<0.99] = 0.0
+                        blendgrid[blendgrid<=0.99] = 0.0
                     
                     for gx in range(0,params.ngx,1):
                         for gy in range(0,params.ngy,1):
@@ -283,21 +281,12 @@ def save_nvfile():
             for gy in range(0,params.ngy,1):
                 gyinv = params.ngy-1-gy
                 for gx in range(0,params.ngx,1):
-                    #if gx == 0 and gy == 0: print(yabs[gx,gyinv],-ydif[gx,gy])
-                    #if gx == 0 and gy == params.ngy-1: print(yabs[gx,gyinv],-ydif[gx,gy])
-                    #if gx == 0 and gy == 0: print(yabs[gx,gy],-ydif[gx,gyinv])
-                    #if gx == 0 and gy == params.ngy-1: print(yabs[gx,gy],-ydif[gx,gyinv])
-                    # TRUE:
-                    # 1080.0 -51.81924285041481
-                    # 0.0 38.85880182929168                
-                    #con.write(str(format((xabs[gx,gyinv]+xdif[gx,gy])/float(params.nx[mon]),('.6f')))+" ")
-                    con.write(str(format((xabs[gx,gy]+xdif[gx,gyinv])/float(params.nx[mon]),('.6f')))+" ")
+                   con.write(str(format((xabs[gx,gyinv]+xdif[gx,gy])/float(params.nx[mon]),('.6f')))+" ")
                 con.write("\n")
             for gy in range(0,params.ngy,1):
                 gyinv = params.ngy-1-gy
                 for gx in range(0,params.ngx,1):
-                    #con.write(str(format(1.0 - (yabs[gx,gyinv]-ydif[gx,gy])/float(params.ny[mon]),('.6f')))+" ")
-                    con.write(str(format(1.0 - (yabs[gx,gy]-ydif[gx,gyinv])/float(params.ny[mon]),('.6f')))+" ")
+                    con.write(str(format(1.0 - (yabs[gx,gyinv]-ydif[gx,gy])/float(params.ny[mon]),('.6f')))+" ")
                 con.write("\n")
 
 
@@ -324,7 +313,7 @@ def save_nvfile():
                                                 xabs, xdif_new, yabs, ydif_new, blendimage)
             
             if params.blendtest:
-                blendgrid[blendgrid<0.99] = 0.0
+                blendgrid[blendgrid<=0.99] = 0.0
 
             # also save the blend grid from 0/0 equal bottom / left
             con.write("BLENDGRID\n")
@@ -332,7 +321,7 @@ def save_nvfile():
                 yinv = params.ny[mon]-1-y
                 for x in range(0,params.nx[mon],1):
                     if params.blending[mon]:
-                        con.write(str(format(blendgrid[x,yinv],('.6f')))+" ")
+                        con.write(str(format(blendgrid[x,y],('.6f')))+" ")
                     else:
                         con.write(str(format(1.0,('.6f')))+" ")
                        
