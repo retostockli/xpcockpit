@@ -125,6 +125,7 @@ void b737_pedestal(void)
   int updn;
   int dp;
   int one=1;
+  int zero=0;
   int temp;
   int temp2;
   int integer; /* integer part of displays */
@@ -1458,10 +1459,14 @@ void b737_pedestal(void)
 	   flt_deck_door_pos_f,*flt_deck_door,*flt_deck_door_right,*flt_deck_door_left);
   }
   */
- 
-  ret = digital_outputf(card,o0+0,lock_fail);
-  ret = digital_outputf(card,o0+1,auto_unlk);
-  
+
+  if (*avionics_on == 1) {
+    ret = digital_outputf(card,o0+0,lock_fail);
+    ret = digital_outputf(card,o0+1,auto_unlk);
+  } else {
+    ret = digital_output(card,o0+0,&zero);
+    ret = digital_output(card,o0+1,&zero);
+  }    
 
 
   

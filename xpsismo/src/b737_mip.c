@@ -51,7 +51,7 @@ void b737_mip(void)
   int temp2;
   //  float fvalue;
   int one = 1;
-  //  int zero = 0;
+  int zero = 0;
 
   int afds_test_1_capt;
   int afds_test_2_capt;
@@ -505,83 +505,141 @@ void b737_mip(void)
     
     
     /* OUTPUTS */
-    if ((afds_test_1_capt == 1) || (afds_test_2_capt == 1)) {
-      if (afds_test_1_capt == 1) {
-	ret = digital_output(card, 0, &one);   // yellow
-	ret = digital_output(card, 2, &one);   // yellow
+    if (*avionics_on == 1) {
+      if ((afds_test_1_capt == 1) || (afds_test_2_capt == 1)) {
+	if (afds_test_1_capt == 1) {
+	  ret = digital_output(card, 0, &one);   // yellow
+	  ret = digital_output(card, 2, &one);   // yellow
+	} else {
+	  ret = digital_output(card, 1, &one);   // red
+	  ret = digital_output(card, 3, &one);   // red
+	}
+	ret = digital_output(card, 4, &one);  // yellow
       } else {
-	ret = digital_output(card, 1, &one);   // red
-	ret = digital_output(card, 3, &one);   // red
+	ret = digital_outputf(card, 0, ap_prst_warn_capt);   // yellow
+	ret = digital_outputf(card, 2, at_prst_warn_capt);   // yellow
+	ret = digital_outputf(card, 1, ap_prst_disc_capt);   // red
+	ret = digital_outputf(card, 3, at_prst_disc_capt);   // red
+	ret = digital_outputf(card, 4, fmc_prst);  // yellow
       }
-      ret = digital_output(card, 4, &one);  // yellow
-    } else {
-      ret = digital_outputf(card, 0, ap_prst_warn_capt);   // yellow
-      ret = digital_outputf(card, 2, at_prst_warn_capt);   // yellow
-      ret = digital_outputf(card, 1, ap_prst_disc_capt);   // red
-      ret = digital_outputf(card, 3, at_prst_disc_capt);   // red
-      ret = digital_outputf(card, 4, fmc_prst);  // yellow
-    }
       
-    ret = digital_outputf(card, 5, speedbrake_armed);
-    ret = digital_outputf(card, 6, speedbrake_not_arm); 
-    ret = digital_outputf(card, 7, stab_outoftrim);
+      ret = digital_outputf(card, 5, speedbrake_armed);
+      ret = digital_outputf(card, 6, speedbrake_not_arm); 
+      ret = digital_outputf(card, 7, stab_outoftrim);
 
-    ret = digital_outputf(card, 8, sixpack_flt_cont);
-    ret = digital_outputf(card, 9, sixpack_elec);
-    ret = digital_outputf(card, 10, sixpack_irs);
-    ret = digital_outputf(card, 11, sixpack_apu);
-    ret = digital_outputf(card, 12, sixpack_fuel);
-    ret = digital_outputf(card, 13, sixpack_ovht);
+      ret = digital_outputf(card, 8, sixpack_flt_cont);
+      ret = digital_outputf(card, 9, sixpack_elec);
+      ret = digital_outputf(card, 10, sixpack_irs);
+      ret = digital_outputf(card, 11, sixpack_apu);
+      ret = digital_outputf(card, 12, sixpack_fuel);
+      ret = digital_outputf(card, 13, sixpack_ovht);
 
-    ret = digital_outputf(card, 14, master_caution_light);
-    ret = digital_outputf(card, 15, fire_bell_light_capt);
+      ret = digital_outputf(card, 14, master_caution_light);
+      ret = digital_outputf(card, 15, fire_bell_light_capt);
 
-    ret = digital_outputf(card, 16, below_gs);
+      ret = digital_outputf(card, 16, below_gs);
 
-    if ((afds_test_1_fo == 1) || (afds_test_2_fo == 1)) {
-      if (afds_test_1_fo == 1) {
-	ret = digital_output(card, 32, &one);   // yellow
-	ret = digital_output(card, 34, &one);   // yellow
+      if ((afds_test_1_fo == 1) || (afds_test_2_fo == 1)) {
+	if (afds_test_1_fo == 1) {
+	  ret = digital_output(card, 32, &one);   // yellow
+	  ret = digital_output(card, 34, &one);   // yellow
+	} else {
+	  ret = digital_output(card, 33, &one);   // red
+	  ret = digital_output(card, 35, &one);   // red
+	}
+	ret = digital_output(card, 36, &one);  // yellow
       } else {
-	ret = digital_output(card, 33, &one);   // red
-	ret = digital_output(card, 35, &one);   // red
+	ret = digital_outputf(card, 32, ap_prst_warn_fo);   // yellow
+	ret = digital_outputf(card, 34, at_prst_warn_fo);  // yellow
+	ret = digital_outputf(card, 33, ap_prst_disc_fo);   // red
+	ret = digital_outputf(card, 35, at_prst_disc_fo);  // red
+	ret = digital_outputf(card, 36, fmc_prst); // yellow
       }
-      ret = digital_output(card, 36, &one);  // yellow
-    } else {
-      ret = digital_outputf(card, 32, ap_prst_warn_fo);   // yellow
-      ret = digital_outputf(card, 34, at_prst_warn_fo);  // yellow
-      ret = digital_outputf(card, 33, ap_prst_disc_fo);   // red
-      ret = digital_outputf(card, 35, at_prst_disc_fo);  // red
-      ret = digital_outputf(card, 36, fmc_prst); // yellow
-    }
       
-    ret = digital_outputf(card, 37, speedbrake_extend);
-    ret = digital_outputf(card, 38, below_gs);
-    ret = digital_outputf(card, 39, gpws_inop);
+      ret = digital_outputf(card, 37, speedbrake_extend);
+      ret = digital_outputf(card, 38, below_gs);
+      ret = digital_outputf(card, 39, gpws_inop);
     
-    ret = digital_outputf(card, 40, sixpack_anti_ice);
-    ret = digital_outputf(card, 41, sixpack_eng);
-    ret = digital_outputf(card, 42, sixpack_hyd);
-    ret = digital_outputf(card, 43, sixpack_ovhd);
-    ret = digital_outputf(card, 44, sixpack_doors);
-    ret = digital_outputf(card, 45, sixpack_air_cond);
+      ret = digital_outputf(card, 40, sixpack_anti_ice);
+      ret = digital_outputf(card, 41, sixpack_eng);
+      ret = digital_outputf(card, 42, sixpack_hyd);
+      ret = digital_outputf(card, 43, sixpack_ovhd);
+      ret = digital_outputf(card, 44, sixpack_doors);
+      ret = digital_outputf(card, 45, sixpack_air_cond);
 
-    ret = digital_outputf(card, 46, master_caution_light);
-    ret = digital_outputf(card, 47, fire_bell_light_fo);
+      ret = digital_outputf(card, 46, master_caution_light);
+      ret = digital_outputf(card, 47, fire_bell_light_fo);
 
-    ret = digital_outputf(card, 48, right_gear_transit);
-    ret = digital_outputf(card, 49, right_gear_safe);
-    ret = digital_outputf(card, 50, left_gear_transit);
-    ret = digital_outputf(card, 51, left_gear_safe);
-    ret = digital_outputf(card, 52, nose_gear_transit);
-    ret = digital_outputf(card, 53, nose_gear_safe);
+      ret = digital_outputf(card, 48, right_gear_transit);
+      ret = digital_outputf(card, 49, right_gear_safe);
+      ret = digital_outputf(card, 50, left_gear_transit);
+      ret = digital_outputf(card, 51, left_gear_safe);
+      ret = digital_outputf(card, 52, nose_gear_transit);
+      ret = digital_outputf(card, 53, nose_gear_safe);
 
-    ret = digital_outputf(card, 56, auto_brake_disarm);
-    ret = digital_outputf(card, 57, anti_skid_inop);
+      ret = digital_outputf(card, 56, auto_brake_disarm);
+      ret = digital_outputf(card, 57, anti_skid_inop);
 
-    ret = digital_outputf(card, 58, flaps_transit);
-    ret = digital_outputf(card, 59, flaps_extend);
+      ret = digital_outputf(card, 58, flaps_transit);
+      ret = digital_outputf(card, 59, flaps_extend);
+      
+    } else {
+      
+      ret = digital_output(card, 0, &zero);  
+      ret = digital_output(card, 2, &zero);  
+      ret = digital_output(card, 1, &zero); 
+      ret = digital_output(card, 3, &zero); 
+      ret = digital_output(card, 4, &zero); 
+      
+      ret = digital_output(card, 5, &zero);
+      ret = digital_output(card, 6, &zero); 
+      ret = digital_output(card, 7, &zero);
 
+      ret = digital_output(card, 8, &zero);
+      ret = digital_output(card, 9, &zero);
+      ret = digital_output(card, 10, &zero);
+      ret = digital_output(card, 11, &zero);
+      ret = digital_output(card, 12, &zero);
+      ret = digital_output(card, 13, &zero);
+
+      ret = digital_output(card, 14, &zero);
+      ret = digital_output(card, 15, &zero);
+
+      ret = digital_output(card, 16, &zero);
+
+      ret = digital_output(card, 32, &zero);  
+      ret = digital_output(card, 34, &zero); 
+      ret = digital_output(card, 33, &zero); 
+      ret = digital_output(card, 35, &zero);
+      ret = digital_output(card, 36, &zero);
+      
+      ret = digital_output(card, 37, &zero);
+      ret = digital_output(card, 38, &zero);
+      ret = digital_output(card, 39, &zero);
+    
+      ret = digital_output(card, 40, &zero);
+      ret = digital_output(card, 41, &zero);
+      ret = digital_output(card, 42, &zero);
+      ret = digital_output(card, 43, &zero);
+      ret = digital_output(card, 44, &zero);
+      ret = digital_output(card, 45, &zero);
+
+      ret = digital_output(card, 46, &zero);
+      ret = digital_output(card, 47, &zero);
+
+      ret = digital_output(card, 48, &zero);
+      ret = digital_output(card, 49, &zero);
+      ret = digital_output(card, 50, &zero);
+      ret = digital_output(card, 51, &zero);
+      ret = digital_output(card, 52, &zero);
+      ret = digital_output(card, 53, &zero);
+
+      ret = digital_output(card, 56, &zero);
+      ret = digital_output(card, 57, &zero);
+
+      ret = digital_output(card, 58, &zero);
+      ret = digital_output(card, 59, &zero);
+    }
 
     
     /* SERVOS */
