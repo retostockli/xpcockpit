@@ -28,11 +28,24 @@
 #include <math.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <ctype.h>
 
 #include "xpclient.h"
 #include "serverdata.h"
 #include "handleserver.h"
 #include "xplanebeacon.h"
+#include "check_aircraft.h"
+
+int is_numeric(const unsigned char *s) {
+    if (*s == '\0') return 0; // empty string is not numeric
+
+    while (*s) {
+        if (!isdigit((unsigned char)*s))
+            return 0;
+        s++;
+    }
+    return 1;
+}
 
 int main (int argc,char **argv)
 {
@@ -74,8 +87,8 @@ int main (int argc,char **argv)
   //float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-1); /* Gain should go from 0.1 .. 2.0 */
  
     
-  //unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);  
-
+  //unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);
+    
   float *track_mag = link_dataref_flt("xpserver/track_mag",-1);
   
   //float *ftest = link_dataref_flt("xpserver/ftest",-1);
@@ -122,7 +135,10 @@ int main (int argc,char **argv)
       
       /* receive data from X-Plane via TCP/IP */
       if (receive_xpserver()<0) exit_xpclient(-12);
-    
+
+      /* Update Variable acf_type */
+      check_aircraft();
+      
       /***** start do something with the datarefs *****/
 
       /* if (*latitude != FLT_MISS) { */
@@ -161,6 +177,20 @@ int main (int argc,char **argv)
       /* if (acf_tailnum) { */
       /* 	printf("ACF TAILNUM: %s \n",acf_tailnum); */
       /* } */
+
+      if ((acf_type == 2) || (acf_type == 3)) {
+	unsigned char *fmc_entry = link_dataref_byte_arr("laminar/B738/fmc1/Line_entry", 40, -1);  
+	int *fuel_req_kgs = link_dataref_int("laminar/B738/tab/req_fuel");
+	if (fmc_entry) {
+	  if (is_numeric(fmc_entry)) {
+	    int ival_len = strlen((const char*) fmc_entry);
+	    if ((ival_len >= 4) && (ival_len <= 5)) {
+	      int ival = atoi((const char*) fmc_entry);
+	      printf("FMC ENTRY LINE: %i %i %i \n",ival,ival_len,*fuel_req_kgs);
+	    }
+	  }
+	}
+      }
        
       /*
       if (*framerate != FLT_MISS) {

@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <float.h>
+#include <ctype.h>
 #include <sys/time.h>
 #include <sys/types.h>
 
@@ -69,6 +70,17 @@ int last;
 
 /* 3D array with 3 Columns x 4 Rows x 4 Chars */
 const char zibo[nRows][nCols][5] = {{"_1","_2","_3"},{"_4","_5","_6"},{"_7","_8","_9"},{"_ent","_0","_clr"}};
+
+int is_numeric(const unsigned char *s) {
+    if (*s == '\0') return 0; // empty string is not numeric
+
+    while (*s) {
+        if (!isdigit((unsigned char)*s))
+            return 0;
+        s++;
+    }
+    return 1;
+}
 
 void b737_aftoverhead(void)
 {
@@ -836,27 +848,28 @@ void b737_aftoverhead(void)
     ret = digital_outputf(card,o0+4,fadec_off_1);
     ret = digital_outputf(card,o0+5,fadec_off_2);
 
-    /*
-    if (*avionics_on != 1) {
-      ret = digital_output(card,o0+0,&one);
-      ret = digital_output(card,o0+1,&one);
-      ret = digital_output(card,o0+2,&one);
-      ret = digital_output(card,o0+3,&one);
-      ret = digital_output(card,o0+4,&one);
-      ret = digital_output(card,o0+5,&one);
-      ret = digital_output(card,o0+6,&one);
-      ret = digital_output(card,o0+7,&one);
-    } else {
-    */
-    //ret = digital_output(card,o0+0,&zero); // engine control 1
-    //ret = digital_output(card,o0+1,&zero); // engine control 2
-    //ret = digital_output(card,o0+2,&zero);
-    //ret = digital_output(card,o0+3,&zero);
-    //  ret = digital_output(card,o0+4,&zero);
-    //  ret = digital_output(card,o0+5,&zero);
-      ret = digital_output(card,o0+6,&zero);
-      ret = digital_output(card,o0+7,&zero);
-      //}
+    /* INOP FOR NOW */
+    ret = digital_output(card,o0+6,&zero);
+    ret = digital_output(card,o0+7,&zero);
+
+    /* EEC1 Switch: Load Fuel entered in FMC1 Entry Line */
+    unsigned char *fmc_entry = link_dataref_byte_arr("laminar/B738/fmc1/Line_entry", 40, -1);  
+    int *fuel_truck = link_dataref_cmd_hold("laminar/b738/fuel_truck_toggle");
+    int *fuel_req_kgs = link_dataref_int("laminar/B738/tab/req_fuel");
+    ret = digital_input(card,i0,fuel_truck,0);
+    if (fmc_entry) {
+      if (is_numeric(fmc_entry)) {
+	int ival_len = strlen((const char*) fmc_entry);
+	if ((ival_len >= 4) && (ival_len <= 5)) {
+	  int ival = atoi((const char*) fmc_entry);
+	  printf("FMC ENTRY LINE: %i %i %i \n",ival,ival_len,*fuel_req_kgs);
+	  if (*fuel_truck == 1) {
+	    printf("Call Fuel Truck and load %i kgs \n",ival);
+	    *fuel_req_kgs = ival;
+	  }
+	}
+      }
+    }   
   }
 
   /*** CREW OXYGEN Panel ***/
