@@ -854,15 +854,14 @@ void b737_aftoverhead(void)
 
     /* EEC1 Switch: Load Fuel entered in FMC1 Entry Line */
     unsigned char *fmc_entry = link_dataref_byte_arr("laminar/B738/fmc1/Line_entry", 40, -1);  
-    int *fuel_truck = link_dataref_cmd_hold("laminar/b738/fuel_truck_toggle");
+    int *fuel_truck = link_dataref_cmd_hold("laminar/B738/fuel_truck_toggle");
     int *fuel_req_kgs = link_dataref_int("laminar/B738/tab/req_fuel");
     ret = digital_input(card,i0,fuel_truck,0);
-    if (fmc_entry) {
+    if ((fmc_entry) && (ret == 1)) {
       if (is_numeric(fmc_entry)) {
 	int ival_len = strlen((const char*) fmc_entry);
 	if ((ival_len >= 4) && (ival_len <= 5)) {
 	  int ival = atoi((const char*) fmc_entry);
-	  printf("FMC ENTRY LINE: %i %i %i \n",ival,ival_len,*fuel_req_kgs);
 	  if (*fuel_truck == 1) {
 	    printf("Call Fuel Truck and load %i kgs \n",ival);
 	    *fuel_req_kgs = ival;

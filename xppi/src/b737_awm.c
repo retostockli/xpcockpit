@@ -117,7 +117,7 @@ void b737_awm(void)
 
     int ap_disc;
     if ((*ap_disconnect != FLT_MISS) && (*ap_disconnect_test != INT_MISS)) {
-      ap_disc = ((int) *ap_disconnect) || *ap_disconnect_test;
+      ap_disc = ((int) *ap_disconnect) || (*ap_disconnect_test == 1);
     } else {
       ap_disc = 0;
     }
@@ -130,7 +130,7 @@ void b737_awm(void)
 
     int hi_chime;
     if ((*belts != FLT_MISS) && (*belts_test != INT_MISS)) {
-      int hi_chime_status = ((int) *belts) || *belts_test;
+      int hi_chime_status = ((int) *belts) || (*belts_test == 1);
       if (hi_chime_status != hi_chime_status_save) {
 	hi_chime = 1;
       } else {
@@ -170,8 +170,8 @@ void b737_awm(void)
 #endif
 
     int clacker;
-    if ((*mach_warn != FLT_MISS) || (*mach_warn_test != INT_MISS)) {
-      clacker = ((int) *mach_warn) || *mach_warn_test;
+    if ((*mach_warn != FLT_MISS) && (*mach_warn_test != INT_MISS)) {
+      clacker = ((int) *mach_warn) || (*mach_warn_test == 1);
     } else {
       clacker = 0;
     }
@@ -197,7 +197,7 @@ void b737_awm(void)
     /* CONFIG and ALT Warn have the same sound */
     int int_horn;
     if ((*config_warn != FLT_MISS) && (*alt_warn != FLT_MISS) && (*config_warn_test != INT_MISS)) {
-      int_horn = (int) *config_warn || (int) *alt_warn || *config_warn_test;
+      int_horn = (int) *config_warn || (int) *alt_warn || (*config_warn_test == 1);
     } else {
       int_horn = 0;
     }
@@ -209,7 +209,7 @@ void b737_awm(void)
 
     int cont_horn;
     if ((*gear_warn != FLT_MISS) && (*gear_warn_test != INT_MISS)) {
-      cont_horn = (int) *gear_warn || *gear_warn_test;
+      cont_horn = (int) *gear_warn || (*gear_warn_test == 1);
     } else {
       cont_horn = 0;
     }
