@@ -159,9 +159,9 @@ void b737_aftoverhead(void)
 
   /*** FLAPS PANEL ***/
   if ((acf_type == 2) || (acf_type == 3)) {
+    i0 = 43;
+    o0 = 64;
     if (*avionics_on == 1) {
-      i0 = 43;
-      o0 = 64;
       int *flaps_test =  link_dataref_cmd_hold("laminar/B738/push_button/flaps_test");
       ret = digital_input(card, i0+0, flaps_test, 0);
 
@@ -249,6 +249,11 @@ void b737_aftoverhead(void)
 	  ret = digital_output(card,o0+28,&zero);
 	}
       }    
+    } else {
+      /* avionics off */
+      for (i=0;i<32;i++) {
+	ret = digital_output(card,o0+i,&zero);
+      }
     }
   }
 
