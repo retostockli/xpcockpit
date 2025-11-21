@@ -296,7 +296,8 @@ int allocate_clientdata(int offset, int type, int nelements, int index, int prec
 int check_clientdata(int offset) {
 
   int xptype;
-
+  char datarefname[100];
+ 
   if (clientdata != NULL) {
 
     if (offset<numalloc) {      
@@ -309,10 +310,14 @@ int check_clientdata(int offset) {
 	    clientdata[offset].write = 1;
           } else {
 	    if (verbose > 0) {
-	      fprintf(logfileptr, "Command %s not found in X-Plane. \n",clientdata[offset].datarefname);
+	      fprintf(logfileptr, "ERROR: Command %s not found in X-Plane. \n",clientdata[offset].datarefname);
 	      fflush(logfileptr);
-	    } 
-	    return 1;
+	    }
+	    //return 1;
+	    strncpy(datarefname,clientdata[offset].datarefname,sizeof(datarefname));
+	    snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname)
+		     ,"Command %s not found in X-Plane",datarefname);
+	    return 2;
           }
 	  break;
 	default:  // normal dataref checking
@@ -327,7 +332,7 @@ int check_clientdata(int offset) {
 	    //	    if (clientdata[offset].type != xptype) {
 	    if ((xptype & clientdata[offset].type) != clientdata[offset].type) {
 	      if (verbose > 0) {
-		fprintf(logfileptr, "Dataref %s differs in type: %i (client) vs. %i (X-Plane) \n",
+		fprintf(logfileptr, "ERROR: Dataref %s differs in type: %i (client) vs. %i (X-Plane) \n",
 			clientdata[offset].datarefname, clientdata[offset].type, 
 			XPLMGetDataRefTypes(clientdata[offset].dataref));
 		fflush(logfileptr);
@@ -342,7 +347,7 @@ int check_clientdata(int offset) {
 	      switch (clientdata[offset].type) {
 	      case XPTYPE_FLT_ARR: 
 	        if (clientdata[offset].nelements != XPLMGetDatavf(clientdata[offset].dataref, NULL,0,0)) {
-	          if (verbose > 0) { fprintf(logfileptr, "Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
+	          if (verbose > 0) { fprintf(logfileptr, "ERROR: Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
 					     clientdata[offset].datarefname, clientdata[offset].nelements, 
 					     (int) XPLMGetDatavf(clientdata[offset].dataref, NULL,0,0));
 		    fflush(logfileptr);
@@ -355,7 +360,7 @@ int check_clientdata(int offset) {
 	        break;
 	      case XPTYPE_INT_ARR:
 	        if (clientdata[offset].nelements != XPLMGetDatavi(clientdata[offset].dataref, NULL,0,0)) {
-	          if (verbose > 0) {fprintf(logfileptr, "Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
+	          if (verbose > 0) {fprintf(logfileptr, "ERROR: Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
 		      clientdata[offset].datarefname, clientdata[offset].nelements, 
 		      (int) XPLMGetDatavi(clientdata[offset].dataref, NULL,0,0));
 		    fflush(logfileptr);
@@ -370,7 +375,7 @@ int check_clientdata(int offset) {
 		   even if the client specifies less or more elements than the dataref holds */
 	        if (clientdata[offset].nelements != XPLMGetDatab(clientdata[offset].dataref, NULL,0,0)) {
 	          if (verbose > 1) {
-		    fprintf(logfileptr, "Warning-only for Strings: Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
+		    fprintf(logfileptr, "WARNING: Dataref %s differs in # elements: %i (client) vs. %i (X-Plane) \n",
 		      clientdata[offset].datarefname, clientdata[offset].nelements, 
 		      (int) XPLMGetDatab(clientdata[offset].dataref, NULL,0,0));
 		    fflush(logfileptr);
@@ -392,12 +397,16 @@ int check_clientdata(int offset) {
 	    clientdata[offset].write = XPLMCanWriteDataRef(clientdata[offset].dataref);
 
           } else {
-	    /* x-plane dataref not found */
+	    /* Dataref not found in X-Plane */
 	    if (verbose > 0) {
-	      fprintf(logfileptr, "Dataref %s not found in X-Plane. \n",clientdata[offset].datarefname);
+	      fprintf(logfileptr, "ERROR: Dataref %s not found in X-Plane. \n",clientdata[offset].datarefname);
 	      fflush(logfileptr);
 	    }
-	    return 1;
+	    //return 1;
+	    strncpy(datarefname,clientdata[offset].datarefname,sizeof(datarefname));
+	    snprintf(clientdata[offset].datarefname,sizeof(clientdata[offset].datarefname)
+		     ,"Dataref %s not found in X-Plane",datarefname);
+	    return 2;
 	  }
 	  break;
       } // switch command or dataref  

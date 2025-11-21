@@ -57,7 +57,7 @@ int main (int argc,char **argv)
   memset(clientname,0,sizeof(clientname));
   strcpy(clientname,"xpclient");
 
-  int verbose=3;  
+  int verbose=1;  
   int interval=999;  /* poll interval in milliseconds: set between 1-999 milliseconds
 			 (>= 1000 ms will not work with some usleep implementations) */
 
@@ -78,14 +78,15 @@ int main (int argc,char **argv)
   // a custom dataref which can be accessed by other plugins/clients
   //int *custom = link_dataref_int("xpserver/customdataref");
   // the plane's latitude
-  //double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
+  double *latitude = link_dataref_dbl("sim/flightmodel/position/latitude", -3);
   // the EGT of engine 0
   //float *egt0 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 8, 0, -1);
   // the EGT of engine 1
   //float *egt1 =  link_dataref_flt_arr("sim/flightmodel/engine/ENGN_EGT_c", 16, 1, 0);
 
   //float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-1); /* Gain should go from 0.1 .. 2.0 */
- 
+
+  int command = link_dataref_cmd_once("sim/test/test");
     
   //unsigned char *acf_tailnum   = link_dataref_byte_arr("sim/aircraft/view/acf_tailnum", 100, -1);
     
@@ -177,21 +178,7 @@ int main (int argc,char **argv)
       /* if (acf_tailnum) { */
       /* 	printf("ACF TAILNUM: %s \n",acf_tailnum); */
       /* } */
-
-      if ((acf_type == 2) || (acf_type == 3)) {
-	unsigned char *fmc_entry = link_dataref_byte_arr("laminar/B738/fmc1/Line_entry", 40, -1);  
-	int *fuel_req_kgs = link_dataref_int("laminar/B738/tab/req_fuel");
-	if (fmc_entry) {
-	  if (is_numeric(fmc_entry)) {
-	    int ival_len = strlen((const char*) fmc_entry);
-	    if ((ival_len >= 4) && (ival_len <= 5)) {
-	      int ival = atoi((const char*) fmc_entry);
-	      printf("FMC ENTRY LINE: %i %i %i \n",ival,ival_len,*fuel_req_kgs);
-	    }
-	  }
-	}
-      }
-       
+     
       /*
       if (*framerate != FLT_MISS) {
 	printf("framerate %f \n",1. / *framerate);
