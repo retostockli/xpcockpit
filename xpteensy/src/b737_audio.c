@@ -73,13 +73,15 @@ void init_b737_audio(void)
   pga2311[te][5].spi = 0; // SPI Bus number
   pga2311[te][5].cs = 28; // Chip Select Pin
 
-  /* For testing inputs directly on Teensy in Audio Box */
-  teensy[te].pinmode[9] = PINMODE_INPUT;
-  teensy[te].pinmode[10] = PINMODE_INPUT;
+  /* /\****** START TESTING COMMENT OUT WHEN OPERATIONAL ******\/ */
+  /* /\* For testing inputs directly on Teensy in Audio Box *\/ */
+  /* teensy[te].pinmode[9] = PINMODE_INPUT; */
+  /* teensy[te].pinmode[10] = PINMODE_INPUT; */
 
-  teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN;
-  teensy[te].pinmode[39] = PINMODE_ANALOGINPUTMEAN;
-  teensy[te].pinmode[40] = PINMODE_ANALOGINPUTMEAN;
+  /* teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN; */
+  /* teensy[te].pinmode[39] = PINMODE_ANALOGINPUTMEAN; */
+  /* teensy[te].pinmode[40] = PINMODE_ANALOGINPUTMEAN; */
+  /* /\****** END TESTING COMMENT OUT WHEN OPERATIONAL ******\/ */
 
   /* For testing */
   /* mcp23017[te][0].pinmode[0] = PINMODE_OUTPUT; */
@@ -147,45 +149,48 @@ void b737_audio(void)
   int switch_ptt_captain = 0;
   int switch_ptt_copilot = 0;
   int switch_ptt_jumpseat = 0;
+
+
+  /* /\****** START TESTING COMMENT OUT WHEN OPERATIONAL ******\/ */
+  /* /\* Potentiometers and Switches connected directly to Teensy in Audio Box */
+  /*    for Testing Purpose *\/   */
   
-  /* Potentiometers and Switches connected directly to Teensy in Audio Box
-     for Testing Purpose */  
-  //float *volume_vhf = link_dataref_flt("xpserver/volume_vhf",-3);
-  // float *volume_headset = link_dataref_flt("xpserver/volume_headset",-3);
-  //float *volume_speaker = link_dataref_flt("xpserver/volume_speaker",-3);
+  /* /\* read analog input (A14) *\/ */
+  /* ret = analog_input(te,38,acp1_vol_pa,0.0,100.0); */
+  /* if (ret == 1) { */
+  /*  printf("CAPT HEADSET Volume changed to: %f \n",*acp1_vol_pa); */
+  /* } */
+  /* //  *acp2_vol_pa = *acp1_vol_pa; */
+  /* //  *acp3_vol_pa = *acp1_vol_pa; */
 
-  //int *switch_boommask = link_dataref_int("xpserver/switch_boommask");
-  //int *switch_ptt = link_dataref_int("xpserver/switch_ptt");
+  /* /\* read analog input (A15) *\/ */
+  /* //ret = analog_input(te,39,acp1_vol_spkr,0.0,100.0); */
+  /* //if (ret == 1) { */
+  /* //  printf("CAPT SPEAKER Volume changed to: %f \n",*acp1_vol_spkr); */
+  /* //} */
+
+  /* /\* read analog input (A16) *\/ */
+  /* //ret = analog_input(te,40,acp1_vol_vhf1,0.0,100.0); */
+  /* //if (ret == 1) { */
+  /* //  printf("CAPT VHF Volume changed to: %f \n",*acp1_vol_vhf1); */
+  /* //} */
+
+  /* /\* read headset / mask enable switch *\/ */
+  /* ret = digital_input(te, TEENSY_TYPE, 0, 9, acp1_mask_boom,0); */
+  /* if (ret == 1) { */
+  /*  printf("CAPT BOOM / MASK SWITCH changed to: %i \n",*acp1_mask_boom); */
+  /* } */
+  /* //  *acp2_mask_boom = *acp1_mask_boom; */
+  /* //  *acp3_mask_boom = *acp1_mask_boom; */
   
-  /* read analog input (A14) */
-  //ret = analog_input(te,38,volume_headset,0.0,100.0);
-  //if (ret == 1) {
-  //  printf("HEADSET Volume changed to: %f \n",*volume_headset);
-  //}
-
-  /* read analog input (A15) */
-  //ret = analog_input(te,39,volume_speaker,0.0,100.0);
-  //if (ret == 1) {
-  //  printf("SPEAKER Volume changed to: %f \n",*volume_speaker);
-  //}
-
-  /* read analog input (A16) */
-  //ret = analog_input(te,40,volume_vhf,0.0,100.0);
-  //if (ret == 1) {
-  //  printf("VHF Volume changed to: %f \n",*volume_vhf);
-  //}
-
-  /* read headset enable switch */
-  //ret = digital_input(te, TEENSY_TYPE, 0, 9, switch_boommask,0);
-  //if (ret == 1) {
-  //  printf("BOOM / MASK SWITCH changed to: %i \n",*switch_boommask);
-  //}
-  
-  /* read ptt switch */
-  //ret = digital_input(te, TEENSY_TYPE, 0, 10,switch_ptt,0);
-  //if (ret == 1) {
-  //  printf("PTT SWITCH changed to: %i \n",*switch_ptt);
-  //}
+  /* /\* read ptt switch *\/ */
+  /* ret = digital_input(te, TEENSY_TYPE, 0, 10,mic_capt,0); */
+  /* if (ret == 1) { */
+  /*  printf("CAPT PTT SWITCH changed to: %i \n",*mic_capt); */
+  /* } */
+  /* *mic_fo = 0; */
+  /* if (*mic_capt == 0) *mic_fo = 1; */
+  /* /\****** END TESTING COMMENT OUT WHEN OPERATIONAL******\/ */
   
   /* read Hand Mic switch */
   ret = digital_input(te, TEENSY_TYPE, 0, 0,&switch_handmic_captain,0);
@@ -310,7 +315,8 @@ void b737_audio(void)
     if (switch_ptt_captain == 1) {
       if (*acp1_micsel_vhf1 == 1) {
 	*tx_com1 = 1;
-      } else {
+      }
+      if (*acp1_micsel_vhf2 == 1) {
 	*tx_com2 = 1;
       }
     }
@@ -323,7 +329,8 @@ void b737_audio(void)
     if (switch_ptt_copilot == 1) {
       if (*acp2_micsel_vhf1 == 1) {
 	*tx_com1 = 1;
-      } else {
+      }
+      if (*acp2_micsel_vhf2 == 1) {
 	*tx_com2 = 1;
       }
     }
