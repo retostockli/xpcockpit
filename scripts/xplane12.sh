@@ -7,10 +7,10 @@ numscreens=1
 count=0
 while [  $count -lt $numscreens ]; do
  sleep 1
- count=$( wmctrl -l | grep X-Plane | wc -l)
+ count=$( wmctrl -l | grep X-Plane | grep -v $USER | wc -l)
  echo "Number of Screens $count of $numscreens"
 done
 
-id=`wmctrl -l | grep X-Plane | awk '{ print $1 }'`
+id=`wmctrl -l | grep X-Plane | grep -v $USER | awk '{ print $1 }'`
 wmctrl -i -r "$id" -b add,fullscreen
 
