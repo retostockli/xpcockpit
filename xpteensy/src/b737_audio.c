@@ -33,6 +33,10 @@
 #include "serverdata.h"
 #include "b737_audio.h"
 
+int gear_switch_front;
+int gear_switch_left;
+int gear_switch_right;
+
 void init_b737_audio(void)
 {
   int te = 2;
@@ -88,6 +92,35 @@ void init_b737_audio(void)
   /* mcp23017[te][0].intpin = INITVAL; // also define pin 6 of teensy as INTERRUPT above! */
   /* mcp23017[te][0].wire = 0;  // I2C Bus: 0, 1 or 2 */
   /* mcp23017[te][0].address = 0x20; // I2C address of MCP23017 device */
+
+  /* DSUB 9 Pin Connector 1 */
+  /* 1: GND
+     2: 5V
+     3: I2C
+     4: I2C
+     6: I/O 8
+     7: I/O 10
+     8: I/O 12
+     9: I/O 14
+  */
+  /* DSUB 9 Pin Connector 2 */
+  /* 1: GND
+     2: I/O 34
+     3: I/O 35
+     4: I/O 36
+     5: I/O 37
+     6: I/O 38
+     7: I/O 39 TBD
+     8: I/O 40 TBD
+     9: 5V
+  */
+  teensy[te].pinmode[34] = PINMODE_INPUT;
+  teensy[te].pinmode[35] = PINMODE_INPUT;
+  teensy[te].pinmode[36] = PINMODE_INPUT;
+  
+  gear_switch_front = 0;
+  gear_switch_left = 0;
+  gear_switch_right = 0;
   
 }
 
@@ -378,5 +411,20 @@ void b737_audio(void)
   /* Change volume of Jump Seat Speaker */
   ret = volume_output(te, PGA2311_TYPE, 5, 0, acp3_vol_spkr, 0.0, 100.0);
 
- 
+
+  /* DSUB 9 Pin: Manual Gear Extension Switches */
+  ret = digital_input(te, TEENSY_TYPE, 0, 34, &gear_switch_front,0);
+  if (ret == 1) {
+    printf("Front Manual Gear Extension Switch changed to: %i \n",gear_switch_front);
+  }
+  ret = digital_input(te, TEENSY_TYPE, 0, 35, &gear_switch_left,0);
+  if (ret == 1) {
+    printf("Left Manual Gear Extension Switch changed to: %i \n",gear_switch_left);
+  }
+  ret = digital_input(te, TEENSY_TYPE, 0, 36, &gear_switch_right,0);
+  if (ret == 1) {
+    printf("Right Manual Gear Extension Switch changed to: %i \n",gear_switch_right);
+  }
+
+  
 }
