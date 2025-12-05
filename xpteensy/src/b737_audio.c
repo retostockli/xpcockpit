@@ -413,18 +413,26 @@ void b737_audio(void)
 
 
   /* DSUB 9 Pin: Manual Gear Extension Switches */
-  ret = digital_input(te, TEENSY_TYPE, 0, 34, &gear_switch_front,0);
+  ret = digital_input(te, TEENSY_TYPE, 0, 34, &gear_switch_right,0);
   if (ret == 1) {
-    printf("Front Manual Gear Extension Switch changed to: %i \n",gear_switch_front);
+    printf("Right Manual Gear Extension Switch changed to: %i \n",gear_switch_right);
   }
   ret = digital_input(te, TEENSY_TYPE, 0, 35, &gear_switch_left,0);
   if (ret == 1) {
     printf("Left Manual Gear Extension Switch changed to: %i \n",gear_switch_left);
   }
-  ret = digital_input(te, TEENSY_TYPE, 0, 36, &gear_switch_right,0);
+  ret = digital_input(te, TEENSY_TYPE, 0, 36, &gear_switch_front,0);
   if (ret == 1) {
-    printf("Right Manual Gear Extension Switch changed to: %i \n",gear_switch_right);
+    printf("Front Manual Gear Extension Switch changed to: %i \n",gear_switch_front);
   }
 
-  
+  if ((acf_type == 2) || (acf_type == 3)) {
+
+    int *gear_switch = link_dataref_cmd_hold("laminar/B738/toggle_switch/man_lndgear");
+    int *gear_cover = link_dataref_cmd_once("laminar/B738/toggle_switch/man_lndgear_cover");
+    float *gear_switch_pos = link_dataref_flt("laminar/B738/emergency/landgear_pos",0);
+    float *gear_cover_pos = link_dataref_flt("laminar/B738/emergency/landgear_cover_pos",0);
+    
+    
+  }
 }
