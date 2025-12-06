@@ -129,6 +129,7 @@ void b737_audio(void)
 
   int ret;
   int te = 2;
+  int ival;
  
   int *mic_capt_yoke = link_dataref_int("xpserver/mic_capt_yoke");
   int *mic_fo_yoke = link_dataref_int("xpserver/mic_fo_yoke");
@@ -429,10 +430,14 @@ void b737_audio(void)
   if ((acf_type == 2) || (acf_type == 3)) {
 
     int *gear_switch = link_dataref_cmd_hold("laminar/B738/toggle_switch/man_lndgear");
-    int *gear_cover = link_dataref_cmd_once("laminar/B738/toggle_switch/man_lndgear_cover");
-    float *gear_switch_pos = link_dataref_flt("laminar/B738/emergency/landgear_pos",0);
+    int *gear_cover_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/man_lndgear_cover");
+    //float *gear_switch_pos = link_dataref_flt("laminar/B738/emergency/landgear_pos",0);
     float *gear_cover_pos = link_dataref_flt("laminar/B738/emergency/landgear_cover_pos",0);
-    
+
+    ival = 1;
+    ret = set_switch_cover(gear_cover_pos,gear_cover_toggle,ival);
+
+    *gear_switch = gear_switch_front || gear_switch_left || gear_switch_right;
     
   }
 }
