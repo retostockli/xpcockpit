@@ -436,6 +436,9 @@ void b737_audio(void)
 
     ival = 1;
     ret = set_switch_cover(gear_cover_pos,gear_cover_toggle,ival);
+    if (ret == 1) {
+      printf("Manual Gear Extension Cover: %i \n",*gear_cover_toggle);
+    }
 
     *gear_switch = gear_switch_front || gear_switch_left || gear_switch_right;
     
