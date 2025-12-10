@@ -429,18 +429,26 @@ void b737_audio(void)
 
   if ((acf_type == 2) || (acf_type == 3)) {
 
-    int *gear_switch = link_dataref_cmd_hold("laminar/B738/toggle_switch/man_lndgear");
+    int *gear_switch_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/man_lndgear");
     int *gear_cover_toggle = link_dataref_cmd_once("laminar/B738/toggle_switch/man_lndgear_cover");
-    //float *gear_switch_pos = link_dataref_flt("laminar/B738/emergency/landgear_pos",0);
+    float *gear_switch_pos = link_dataref_flt("laminar/B738/emergency/landgear_pos",0);
     float *gear_cover_pos = link_dataref_flt("laminar/B738/emergency/landgear_cover_pos",0);
 
-    ival = 1;
-    ret = set_switch_cover(gear_cover_pos,gear_cover_toggle,ival);
-    if (ret == 1) {
-      printf("Manual Gear Extension Cover: %i \n",*gear_cover_toggle);
+    /* for the moment ZIBO simulates all switches as one */
+    float manual_gear = (float) (gear_switch_front || gear_switch_left || gear_switch_right);
+    ret = set_state_togglef(&manual_gear,gear_switch_pos,gear_switch_toggle);
+    if (ret != 0) {
+      printf("Manual Gear Switch %i \n",(int) manual_gear);
+      if (manual_gear == 1.0) {
+	/* open virtual manual gear extension cover in ZIBO Mod in order to manually extend the gear */
+	/* You have to close it by the dataref editor */
+	ival = 1;
+	ret = set_switch_cover(gear_cover_pos,gear_cover_toggle,ival);
+	if (ret == 1) {
+	  printf("Manual Gear Extension Cover: %i \n",*gear_cover_toggle);
+	}
+      }
     }
-
-    *gear_switch = gear_switch_front || gear_switch_left || gear_switch_right;
     
   }
 }
