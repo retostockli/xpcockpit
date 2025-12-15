@@ -51,6 +51,7 @@ struct timeval time_viewmodebutton;
 */
 
 int view_is_copilot;
+int forward_with_panel_save;
 
 
 void b737_yokerudder(void)
@@ -92,6 +93,8 @@ void b737_yokerudder(void)
   *override_auto_toe_brake = 1;
   
   int* viewmode = link_dataref_int("xpserver/viewmode");
+  /* Temporary: Set by FWD OVH Galley Power Switch */
+  int *forward_with_panel_switch = link_dataref_int("xpserver/fwd_with_panel");
 
   // datarefs to adjust for captain and copilot eye position on curved screen
   float *pilot_position = link_dataref_flt("sim/graphics/view/pilots_head_x",-3);
@@ -208,6 +211,18 @@ void b737_yokerudder(void)
     *viewmode = 0;
   }
 
+
+  if (forward_with_panel_save != *forward_with_panel_switch) {
+    if (*forward_with_panel_switch == 1) {
+      *forward_with_nothing=0;
+      *forward_with_panel=1;
+    } else {
+      *forward_with_nothing=1;
+      *forward_with_panel=0;
+    }
+    forward_with_panel_save = *forward_with_panel_switch;
+  }
+ 
   /* Fighter Jet */
   /* if (acf_type == 5) { */
   /*   ret = digital_input(device,3,&button,0); */
@@ -220,8 +235,13 @@ void b737_yokerudder(void)
   if ((ret == 1) && (button == 1)) {
     view_is_copilot = 0;
     *viewmode=0;
-    *forward_with_nothing=1;
-    *forward_with_panel=0;
+    if (*forward_with_panel_switch == 1) {
+      *forward_with_nothing=0;
+      *forward_with_panel=1;
+    } else {
+      *forward_with_nothing=1;
+      *forward_with_panel=0;
+    }
     *circle=0;
     *free_camera=0;
     viewmode_changed = 1;
@@ -231,8 +251,13 @@ void b737_yokerudder(void)
   if ((ret == 1) && (button == 1)) {
     view_is_copilot = 1;
     *viewmode=0;
-    *forward_with_nothing=1;
-    *forward_with_panel=0;
+    if (*forward_with_panel_switch == 1) {
+      *forward_with_nothing=0;
+      *forward_with_panel=1;
+    } else {
+      *forward_with_nothing=1;
+      *forward_with_panel=0;
+    }
     *circle=0;
     *free_camera=0;
     viewmode_changed = 1;
@@ -259,21 +284,32 @@ void b737_yokerudder(void)
     }
       
     if (*viewmode == 0) {
-      *forward_with_nothing = 1;
-      *forward_with_panel = 0;
+      if (*forward_with_panel_switch == 1) {
+	*forward_with_nothing=0;
+	*forward_with_panel=1;
+      } else {
+	*forward_with_nothing=1;
+	*forward_with_panel=0;
+      }
       *circle = 0;
       *free_camera = 0;
     } else if (*viewmode == 1) {
-      *forward_with_nothing = 0;
-      *forward_with_panel = 1;
+      if (*forward_with_panel_switch == 1) {
+	*forward_with_nothing=0;
+	*forward_with_panel=1;
+      } else {
+	*forward_with_nothing=1;
+	*forward_with_panel=0;
+      }
       *circle = 0;
       *free_camera = 0;
     } else if (*viewmode == 2) {
-     *forward_with_nothing = 0;
+      *forward_with_nothing = 0;
       *forward_with_panel = 0;
       *circle = 1;
       *free_camera = 0;
     } else if (*viewmode == 3) {
+      /* NOT CURRENTLY USED */
       *forward_with_nothing = 0;
       *forward_with_panel = 0;
       *circle = 0;
@@ -283,7 +319,7 @@ void b737_yokerudder(void)
 
 
   if (*viewmode == 0) {
-    /* Only fix pilot position in forward with nothing */
+    // Fixed View for Pilot or Copilot
     if (view_is_copilot == 0) {
       /* Captain View */
       *pilot_position = -0.51; // meters
@@ -293,9 +329,7 @@ void b737_yokerudder(void)
       *pilot_position = 0.51;  // meters
       *pilot_heading = -14.5; // degrees
     }
- 
-  } else if ((*viewmode == 1) || (*viewmode == 2) || (*viewmode == 3)) {
-
+  } else {
     if (viewmode_changed == 1) {
       // Only set these values upon button press (let the user rotate and move in the cockpit afterwards)
       *pilot_position = 0.0;

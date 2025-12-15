@@ -791,10 +791,11 @@ void b737_overheadfwd(void)
     dev = 5;
 
     /* Galley PWR */
-    ival = INT_MISS;
-    ret = digital_input(te, MCP23017_TYPE, dev, 0, &ival, 0);
+    /* Temporary use to set Forward View with Panel */
+    int *fwd_with_panel = link_dataref_int("xpserver/fwd_with_panel");
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, fwd_with_panel, 0);
     if (ret == 1) {
-      printf("Galley PWR %i \n",ival);
+      printf("Galley PWR %i \n",*fwd_with_panel);
     }
 
     /* Battery Switch: dn is moving switch to 1 and up to 0 */
