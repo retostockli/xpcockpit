@@ -294,13 +294,13 @@ void b737_yokerudder(void)
       *circle = 0;
       *free_camera = 0;
     } else if (*viewmode == 1) {
-      if (*forward_with_panel_switch == 1) {
+      //      if (*forward_with_panel_switch == 1) {
 	*forward_with_nothing=0;
 	*forward_with_panel=1;
-      } else {
-	*forward_with_nothing=1;
-	*forward_with_panel=0;
-      }
+	//      } else {
+	//	*forward_with_nothing=1;
+	//	*forward_with_panel=0;
+	//      }
       *circle = 0;
       *free_camera = 0;
     } else if (*viewmode == 2) {

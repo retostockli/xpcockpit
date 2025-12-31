@@ -71,6 +71,7 @@ def save_xpfile():
         con.write("monitor/"+str(mon)+"/m_is_fullscreen wmgr_mode_fullscreen"+"\n")
         if (mon == 0) and (params.nmon > 1):
             con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_panel_only"+"\n")
+#            con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_ios"+"\n")
         else:
             con.write("monitor/"+str(mon)+"/m_usage wmgr_usage_normal_visuals"+"\n")
         if params.xp12:
