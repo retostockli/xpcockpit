@@ -150,8 +150,6 @@ void b737_pedestal(void)
   float trim_min = -1.0;
   float trim_max = 1.0;
 
-  acf_type = 3;
-
   /* x-plane data */
   int *nav1_freq_active = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
   int *nav2_freq_active = link_dataref_int("sim/cockpit/radios/nav2_freq_hz");
@@ -355,8 +353,6 @@ void b737_pedestal(void)
   }
 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
-
-  *avionics_on = 1;
   
   float *lights_test;
   if ((acf_type == 2) || (acf_type == 3)) {
