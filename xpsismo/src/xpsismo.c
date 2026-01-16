@@ -99,41 +99,29 @@ int main(int argc, char **argv) {
     /**** User Modules Follow Here ****/
 
     if (strcmp(argv[1],"test") == 0) {
-      //      if (acf_type >= 0) {
-	test();
-	//      }
+      test();
     }
     if (strcmp("boeing737mcp",argv[1]) == 0) {
-      //      if (acf_type >= 0) {
-	b737_mcp();
-	b737_efis(0); /* captain */
-	b737_efis(1); /* copilot */
-	//      }
+      b737_mcp();
+      b737_efis(0); /* captain */
+      b737_efis(1); /* copilot */
     }
     if (strcmp("boeing737mip",argv[1]) == 0) {
-      //      if (acf_type >= 0) {
-	b737_mip();
-	//      }
+      b737_mip();
     }
     if (strcmp("boeing737pedestal",argv[1]) == 0) {
-      //      if (acf_type >= 0) {
-	b737_pedestal();
-	//      }
+      b737_pedestal();
     }
     if (strcmp("boeing737aftoverhead",argv[1]) == 0) {
-      //      if (acf_type >= 0) {
-	b737_aftoverhead();
-	//      }
+      b737_aftoverhead();
     }
     if (strcmp("boeing737",argv[1]) == 0) {
-      //      if (acf_type >= 0) {
-	b737_mcp();
-	b737_efis(0); /* captain */
-	b737_efis(1); /* copilot */
-	b737_mip();
-	b737_pedestal();
-	b737_aftoverhead();
-	//      }
+      b737_mcp();
+      b737_efis(0); /* captain */
+      b737_efis(1); /* copilot */
+      b737_mip();
+      b737_pedestal();
+      b737_aftoverhead();
     }
 
     /**** User Modules End Here ****/

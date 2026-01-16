@@ -15,7 +15,7 @@
 */
 
 #define WXR_MISS -9999.0
-#define MAXRADAR 75 /* maximum number of WXR pixels to retrieve in Type 2 */
+#define MAXRADAR 100 /* maximum number of WXR pixels to retrieve in Type 2 */
 #define WXR_UPSCALE 5  /* Upscaling Factor */
 
 extern int wxr_type;

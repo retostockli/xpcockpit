@@ -150,6 +150,7 @@ void b737_pedestal(void)
   float trim_min = -1.0;
   float trim_max = 1.0;
 
+  acf_type = 3;
 
   /* x-plane data */
   int *nav1_freq_active = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
@@ -355,6 +356,8 @@ void b737_pedestal(void)
 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
 
+  *avionics_on = 1;
+  
   float *lights_test;
   if ((acf_type == 2) || (acf_type == 3)) {
     lights_test = link_dataref_flt("laminar/B738/toggle_switch/bright_test",0);
@@ -406,11 +409,10 @@ void b737_pedestal(void)
   o0 = 0;
   ret = digital_output(card,o0+24+6,avionics_on);
 
-
   
-  /*** COM1 Panel ***/ 
+  /*** COM1 Panel ***/
   i0 = 64;
-  d0 = 32; 
+  d0 = 32;
   
   /* COM1 tfr button */
   ret = digital_input(card,i0+0,&com1_tfr_button,0);
@@ -426,7 +428,7 @@ void b737_pedestal(void)
   ret = digital_input(card,i0+1,&com1_test_button,0);
   if (ret == 1) {
     printf("COM1 TEST Button: %i \n",com1_test_button);
-  } 
+  }
   /* COM1 Outer Encoder (1 MHz step) */
   updn = 0;
   ret = encoder_input(card,i0+2,i0+3,&updn,1,1);
@@ -477,9 +479,9 @@ void b737_pedestal(void)
 
 
   
-  /*** COM2 Panel ***/ 
+  /*** COM2 Panel ***/
   i0 = 128;
-  d0 = 64; 
+  d0 = 64;
   
   /* COM2 tfr button */
   ret = digital_input(card,i0+0,&com2_tfr_button,0);
@@ -543,7 +545,7 @@ void b737_pedestal(void)
 
 
   
-  /*** NAV1 Panel ***/ 
+  /*** NAV1 Panel ***/
   i0 = 64+8;
   d0 = 32+16;
 
@@ -586,13 +588,13 @@ void b737_pedestal(void)
     } else {
       *nav1_fine_dn = 1;
     }
-  }  
+  }
   /* NAV1 Displays */
   ret = display_output(card, d0+0, 5, nav1_freq_active, 2, display_brightness);
   ret = display_output(card, d0+8, 5, nav1_freq_stdby, 2, display_brightness);
 
   
-  /*** NAV2 Panel ***/ 
+  /*** NAV2 Panel ***/
   i0 = 128+8;
   d0 = 64+16;
   
@@ -630,14 +632,14 @@ void b737_pedestal(void)
     } else {
       *nav2_fine_dn = 1;
     }
-  }  
+  }
   /* NAV2 Displays */
   ret = display_output(card, d0+0, 5, nav2_freq_active, 2, display_brightness);
   ret = display_output(card, d0+8, 5, nav2_freq_stdby, 2, display_brightness);
 
 
   
-  /*** ADF1 Panel ***/ 
+  /*** ADF1 Panel ***/
   i0 = 96;
   d0 = 0;
   
@@ -680,15 +682,17 @@ void b737_pedestal(void)
     } else {
       *adf1_fine_dn = 1;
     }
-  }  
+  }
   /* ADF1 Displays */
-  temp = *adf1_freq_active * 10;
+  temp = INT_MISS;
+  if (*adf1_freq_active != INT_MISS) temp = *adf1_freq_active * 10;
   ret = display_output(card, d0+0, 5, &temp, 1, display_brightness);
-  temp = *adf1_freq_stdby * 10;
+  temp = INT_MISS;
+  if (*adf1_freq_stdby != INT_MISS) temp = *adf1_freq_stdby * 10;
   ret = display_output(card, d0+8, 5, &temp, 1, display_brightness);
 
   
-  /*** ADF2 Panel ***/ 
+  /*** ADF2 Panel ***/
   i0 = 128+32+16;
   d0 = 16;
   
@@ -731,11 +735,13 @@ void b737_pedestal(void)
     } else {
       *adf2_fine_dn = 1;
     }
-  } 
+  }
   /* ADF2 Displays */
-  temp = *adf2_freq_active * 10;
+  temp = INT_MISS;
+  if (*adf2_freq_active != INT_MISS) temp = *adf2_freq_active * 10;
   ret = display_output(card, d0+0, 5, &temp, 1, display_brightness);
-  temp = *adf2_freq_stdby * 10;
+  temp = INT_MISS;
+  if (*adf2_freq_stdby != INT_MISS) temp = *adf2_freq_stdby * 10;
   ret = display_output(card, d0+8, 5, &temp, 1, display_brightness);
 
 
@@ -770,7 +776,7 @@ void b737_pedestal(void)
       *acp1_micsel_svc = 0;
       *acp1_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+0,acp1_micsel_vhf1);
 
   ret = digital_input(card,i0+1,acp1_micsel_vhf2,1);
@@ -786,7 +792,7 @@ void b737_pedestal(void)
       *acp1_micsel_svc = 0;
       *acp1_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+1,acp1_micsel_vhf2);
   
   ret = digital_input(card,i0+2,acp1_micsel_vhf3,1);
@@ -802,7 +808,7 @@ void b737_pedestal(void)
       *acp1_micsel_svc = 0;
       *acp1_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+2,acp1_micsel_vhf3);
   
   ret = digital_input(card,i0+3,acp1_micsel_hf1,1);
@@ -818,7 +824,7 @@ void b737_pedestal(void)
       *acp1_micsel_svc = 0;
       *acp1_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+3,acp1_micsel_hf1);
   
   ret = digital_input(card,i0+4,acp1_micsel_hf2,1);
@@ -834,7 +840,7 @@ void b737_pedestal(void)
       *acp1_micsel_svc = 0;
       *acp1_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+4,acp1_micsel_hf2);
   
   ret = digital_input(card,i0+5,acp1_micsel_flt,1);
@@ -850,7 +856,7 @@ void b737_pedestal(void)
       *acp1_micsel_svc = 0;
       *acp1_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+5,acp1_micsel_flt);
   
   ret = digital_input(card,i0+6,acp1_micsel_svc,1);
@@ -866,7 +872,7 @@ void b737_pedestal(void)
       //*acp1_micsel_svc = 0;
       *acp1_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+6,acp1_micsel_svc);
   
   ret = digital_input(card,i0+7,acp1_micsel_pa,1);
@@ -882,29 +888,29 @@ void b737_pedestal(void)
       *acp1_micsel_svc = 0;
       //*acp1_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+7,acp1_micsel_pa);
 
   /* Other Switches */
   ret = digital_input(card,i0+8,&acp1_rt_ic,0);
   if (ret == 1) {
     printf("ACP1 R/T I/C Switch: %i \n",acp1_rt_ic);
-  }    
+  }
 
   ret = digital_input(card,i0+9,acp1_mask_boom,0);
   if (ret == 1) {
     printf("ACP1 MASK/BOOM Switch: %i \n",*acp1_mask_boom);
-  }    
+  }
   
   ret = digital_input(card,i0+10,&acp1_sel_v,0);
   if (ret == 1) {
     printf("ACP1 VBR Selector V: %i \n",acp1_sel_v);
-  }    
+  }
   
   ret = digital_input(card,i0+11,&acp1_sel_b,0);
   if (ret == 1) {
     printf("ACP1 VBR Selector B: %i \n",acp1_sel_b);
-  }    
+  }
   ret = digital_input(card,i0+12,&acp1_sel_r,0);
   if (ret == 1) {
     printf("ACP1 VBR Selector R: %i \n",acp1_sel_r);
@@ -972,7 +978,7 @@ void b737_pedestal(void)
       *acp2_micsel_svc = 0;
       *acp2_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+0,acp2_micsel_vhf1);
 
   ret = digital_input(card,i0+1,acp2_micsel_vhf2,1);
@@ -988,7 +994,7 @@ void b737_pedestal(void)
       *acp2_micsel_svc = 0;
       *acp2_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+1,acp2_micsel_vhf2);
   
   ret = digital_input(card,i0+2,acp2_micsel_vhf3,1);
@@ -1004,7 +1010,7 @@ void b737_pedestal(void)
       *acp2_micsel_svc = 0;
       *acp2_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+2,acp2_micsel_vhf3);
   
   ret = digital_input(card,i0+3,acp2_micsel_hf1,1);
@@ -1020,7 +1026,7 @@ void b737_pedestal(void)
       *acp2_micsel_svc = 0;
       *acp2_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+3,acp2_micsel_hf1);
   
   ret = digital_input(card,i0+4,acp2_micsel_hf2,1);
@@ -1036,7 +1042,7 @@ void b737_pedestal(void)
       *acp2_micsel_svc = 0;
       *acp2_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+4,acp2_micsel_hf2);
   
   ret = digital_input(card,i0+5,acp2_micsel_flt,1);
@@ -1052,7 +1058,7 @@ void b737_pedestal(void)
       *acp2_micsel_svc = 0;
       *acp2_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+5,acp2_micsel_flt);
   
   ret = digital_input(card,i0+6,acp2_micsel_svc,1);
@@ -1068,7 +1074,7 @@ void b737_pedestal(void)
       //*acp2_micsel_svc = 0;
       *acp2_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+6,acp2_micsel_svc);
   
   ret = digital_input(card,i0+7,acp2_micsel_pa,1);
@@ -1084,29 +1090,29 @@ void b737_pedestal(void)
       *acp2_micsel_svc = 0;
       //*acp2_micsel_pa = 0;
     }
-  }    
+  }
   ret = digital_output(card,o0+7,acp2_micsel_pa);
 
   /* Other Switches */
   ret = digital_input(card,i0+8,&acp2_rt_ic,0);
   if (ret == 1) {
     printf("ACP2 R/T I/C Switch: %i \n",acp2_rt_ic);
-  }    
+  }
 
   ret = digital_input(card,i0+9,acp2_mask_boom,0);
   if (ret == 1) {
     printf("ACP2 MASK/BOOM Switch: %i \n",*acp2_mask_boom);
-  }    
+  }
   
   ret = digital_input(card,i0+10,&acp2_sel_v,0);
   if (ret == 1) {
     printf("ACP2 VBR Selector V: %i \n",acp2_sel_v);
-  }    
+  }
   
   ret = digital_input(card,i0+11,&acp2_sel_b,0);
   if (ret == 1) {
     printf("ACP2 VBR Selector B: %i \n",acp2_sel_b);
-  }    
+  }
   ret = digital_input(card,i0+12,&acp2_sel_r,0);
   if (ret == 1) {
     printf("ACP2 VBR Selector R: %i \n",acp2_sel_r);
@@ -1216,7 +1222,7 @@ void b737_pedestal(void)
       temp += updn;
       if (temp > transponder_max) temp = transponder_min;
       if (temp < transponder_min) temp = transponder_max;
-      *transponder_code += temp; 
+      *transponder_code += temp;
       printf("TRANSPONDER CODE: %i\n",*transponder_code);
     }
     /* XPNDR Encoder Digits 10's */
@@ -1228,7 +1234,7 @@ void b737_pedestal(void)
       temp += updn;
       if (temp > transponder_max) temp = transponder_min;
       if (temp < transponder_min) temp = transponder_max;
-      *transponder_code += 10*temp; 
+      *transponder_code += 10*temp;
       printf("TRANSPONDER CODE: %i\n",*transponder_code);
     }
     /* XPNDR Encoder Digits 100's */
@@ -1240,7 +1246,7 @@ void b737_pedestal(void)
       temp += updn;
       if (temp > transponder_max) temp = transponder_min;
       if (temp < transponder_min) temp = transponder_max;
-      *transponder_code += 100*temp; 
+      *transponder_code += 100*temp;
       printf("TRANSPONDER CODE: %i\n",*transponder_code);
     }
     /* XPNDR Encoder Digits 1000's */
@@ -1252,7 +1258,7 @@ void b737_pedestal(void)
       temp += updn;
       if (temp > transponder_max) temp = transponder_min;
       if (temp < transponder_min) temp = transponder_max;
-      *transponder_code += 1000*temp; 
+      *transponder_code += 1000*temp;
       printf("TRANSPONDER CODE: %i\n",*transponder_code);
     }
 
@@ -1273,9 +1279,9 @@ void b737_pedestal(void)
     if (*transponder_fail != INT_MISS) {
       /* set major digit DP for transponder fail led */
       if (*lights_test == 1.0) {
-	dp = 0; 
+	dp = 0;
       } else {
-	dp = -1 + *transponder_fail; 
+	dp = -1 + *transponder_fail;
       }
     } else {
       dp = -1;
@@ -1344,27 +1350,27 @@ void b737_pedestal(void)
   ret = digital_input(card,i0+0,vhf1,0);
   if (ret == 1) {
     printf("SELCAL VHF1 BUTTON: %i \n",*vhf1);
-  }    
+  }
 
   ret = digital_input(card,i0+1,vhf2,0);
   if (ret == 1) {
     printf("SELCAL VHF2 BUTTON: %i \n",*vhf2);
-  }    
+  }
   
   ret = digital_input(card,i0+2,vhf3,0);
   if (ret == 1) {
     printf("SELCAL VHF3 BUTTON: %i \n",*vhf3);
-  }    
+  }
 
   ret = digital_input(card,i0+3,hf1,0);
   if (ret == 1) {
     printf("SELCAL HF1 BUTTON: %i \n",*hf1);
-  }    
+  }
   
   ret = digital_input(card,i0+4,hf2,0);
   if (ret == 1) {
     printf("SELCAL HF2 BUTTON: %i \n",*hf2);
-  }    
+  }
 
   if (*lights_test == 1.0) {
     ret = digital_output(card,o0+0,&one);
@@ -1391,11 +1397,11 @@ void b737_pedestal(void)
   ret = digital_input(card,i0+5,&wxr_mode_test,0);
   if (ret == 1) {
     printf("WXR MODE TEST: %i \n",wxr_mode_test);
-  }    
+  }
   ret = digital_input(card,i0+6,&wxr_mode_wx,0);
   if (ret == 1) {
     printf("WXR MODE WX: %i \n",wxr_mode_wx);
-  }    
+  }
   ret = digital_input(card,i0+7,&wxr_mode_turb,0);
   if (ret == 1) {
     printf("WXR MODE WX/TURB: %i \n",wxr_mode_turb);
@@ -1434,16 +1440,16 @@ void b737_pedestal(void)
   ret = digital_input(card,i0+0,&stab_trim_ovrd,0);
   if (ret == 1) {
     printf("STAB TRIM OVRD SWITCH: %i \n",stab_trim_ovrd);
-  }    
+  }
 
   ret = digital_input(card,i0+1,&flt_deck_door_unlock,0);
   if (ret == 1) {
     printf("FLT DECK DOOR UNLOCKED: %i \n",flt_deck_door_unlock);
-  }    
+  }
   ret = digital_input(card,i0+2,&flt_deck_door_auto,0);
   if (ret == 1) {
     printf("FLT DECK DOOR AUTO: %i \n",flt_deck_door_auto);
-  }    
+  }
   ret = digital_input(card,i0+3,&flt_deck_door_deny,0);
   if (ret == 1) {
     printf("FLT DECK DOOR DENY: %i \n",flt_deck_door_deny);
@@ -1451,7 +1457,7 @@ void b737_pedestal(void)
 
   /* NOT WORKING IN ZIBO MOD AS OF 2023/02/07 */
   /*
-  flt_deck_door_pos = -flt_deck_door_unlock + flt_deck_door_deny; 
+  flt_deck_door_pos = -flt_deck_door_unlock + flt_deck_door_deny;
   float flt_deck_door_pos_f = (float) flt_deck_door_pos;
   ret = set_state_updnf(&flt_deck_door_pos_f,flt_deck_door,flt_deck_door_right,flt_deck_door_left);
   if (ret != 0) {
@@ -1466,16 +1472,27 @@ void b737_pedestal(void)
   } else {
     ret = digital_output(card,o0+0,&zero);
     ret = digital_output(card,o0+1,&zero);
-  }    
-
-
+  }
   
   /*** FIRE MODULE ***/
   i0 = 32;
   o0 = 0;
 
-  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+  /* *fire_eng1_ovht_ann = 1.0; */
+  /* *fire_wheelwell_ann = 1.0; */
+  /* *fire_fault_ann = 1.0; */
+  /* *fire_apu_det_inop_ann = 1.0; */
+  /* *fire_apu_bottle_disch_ann = 1.0; */
+  /* *fire_eng2_ovht_ann = 1.0; */
+  /* *fire_bottle_l_disch_ann = 1.0; */
+  /* *fire_bottle_r_disch_ann = 1.0; */
+
+  /* *fire_eng1_ann = 1.0; */
+  /* *fire_apu_ann = 1.0; */
+  /* *fire_eng2_ann = 1.0; */
   
+  if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
+   
     /* annunciators */
     ret = digital_outputf(card,o0+0,fire_eng1_ovht_ann);
     ret = digital_outputf(card,o0+1,fire_wheelwell_ann);
@@ -1491,13 +1508,25 @@ void b737_pedestal(void)
     ret = digital_outputf(card,o0+9,fire_apu_ann);
     ret = digital_outputf(card,o0+10,fire_eng2_ann);
     
-    /* discharge indicators */
-    ret = digital_outputf(card,o0+12,fire_eng1_test_ann);
-    ret = digital_outputf(card,o0+13,fire_apu_test_ann);
-    ret = digital_outputf(card,o0+14,fire_eng2_test_ann);
+    /* discharge indicators (connect to common +5V, so invert output) */
+    temp = 1;
+    if (*fire_eng1_test_ann != FLT_MISS) temp = 1 - (int) *fire_eng1_test_ann;
+    ret = digital_output(card,o0+12,&temp);
+    temp = 1;
+    if (*fire_apu_test_ann != FLT_MISS) temp = 1 - (int) *fire_apu_test_ann;
+    ret = digital_output(card,o0+13,&temp);
+    temp = 1;
+    if (*fire_eng2_test_ann != FLT_MISS) temp = 1 - (int) *fire_eng2_test_ann;
+    ret = digital_output(card,o0+14,&temp);
+
+    /* Fire Handle Release Relais (via Relais Card) */
+    /* Only unlock if fire handle is lighted. Mechanical override on Panel */
+    ret = digital_outputf(card,o0+26,fire_eng1_ann); // Fire Handle Engine 1 Release Relais
+    ret = digital_outputf(card,o0+27,fire_apu_ann); // Fire Handle APU Release Relais
+    ret = digital_outputf(card,o0+28,fire_eng2_ann); // Fire Handle Engine 2 Release Relais
 
     /* Fire Handle ENG 1*/
-    ret = digital_inputf(card,i0+0,&fire_eng1_pulled_input,-1);
+    ret = digital_inputf(card,i0+0,&fire_eng1_pulled_input,0);
     if (ret == 1) {
       printf("FIRE HANDLE ENG 1 PULLED: %f \n",fire_eng1_pulled_input);
     }
@@ -1515,7 +1544,7 @@ void b737_pedestal(void)
     ret = set_state_updnf(&fire_eng1_rotate_input, fire_eng1_rotate_status, fire_eng1_rotate_r, fire_eng1_rotate_l);
 
     /* Fire Handle APU */
-    ret = digital_inputf(card,i0+3,&fire_apu_pulled_input,-1);
+    ret = digital_inputf(card,i0+3,&fire_apu_pulled_input,0);
     if (ret == 1) {
       printf("FIRE HANDLE APU PULLED: %f \n",fire_apu_pulled_input);
     }
@@ -1533,7 +1562,7 @@ void b737_pedestal(void)
     ret = set_state_updnf(&fire_apu_rotate_input, fire_apu_rotate_status, fire_apu_rotate_r, fire_apu_rotate_l);
 
     /* Fire Handle ENG2 */
-    ret = digital_inputf(card,i0+8,&fire_eng2_pulled_input,-1);
+    ret = digital_inputf(card,i0+8,&fire_eng2_pulled_input,0);
     if (ret == 1) {
       printf("FIRE HANDLE ENG 2 PULLED: %f \n",fire_eng2_pulled_input);
     }
@@ -1557,11 +1586,11 @@ void b737_pedestal(void)
     }
 
     /* Fire Module Switches */
-    ret = digital_input(card,i0+16,&fire_eng1_ovht_det_a,0);
+    ret = digital_input(card,i0+16,&fire_eng1_ovht_det_a,-1);
     if (ret == 1) {
       printf("ENG 1 OVHT DET A: %i \n",fire_eng1_ovht_det_a);
     }
-    ret = digital_input(card,i0+17,&fire_eng1_ovht_det_b,0);
+    ret = digital_input(card,i0+17,&fire_eng1_ovht_det_b,-1);
     if (ret == 1) {
       printf("ENG 1 OVHT DET B: %i \n",fire_eng1_ovht_det_b);
     }
@@ -1573,11 +1602,11 @@ void b737_pedestal(void)
     if (ret == 1) {
       printf("FIRE TEST/OVHT: %i \n",*fire_test_ovht);
     }
-    ret = digital_input(card,i0+20,&fire_eng2_ovht_det_a,0);
+    ret = digital_input(card,i0+20,&fire_eng2_ovht_det_a,-1);
     if (ret == 1) {
       printf("ENG 2 OVHT DET A: %i \n",fire_eng2_ovht_det_a);
     }
-    ret = digital_input(card,i0+21,&fire_eng2_ovht_det_b,0);
+    ret = digital_input(card,i0+21,&fire_eng2_ovht_det_b,-1);
     if (ret == 1) {
       printf("ENG 2 OVHT DET B: %i \n",fire_eng2_ovht_det_b);
     }
@@ -1600,21 +1629,21 @@ void b737_pedestal(void)
   ret = digital_input(card,i0+0,&cargofire_test,0);
   if (ret == 1) {
     printf("CARGO FIRE TEST BUTTON: %i \n",cargofire_test);
-  }  
+  }
   /* SELECT FWD rotary */
   ret = digital_input(card,i0+1,&cargofire_select_fwd_a,0);
   if (ret == 1) {
     printf("CARGO FIRE SELECT FWD A: %i \n",cargofire_select_fwd_a);
-  }  
+  }
   ret = digital_input(card,i0+2,&cargofire_select_fwd_b,0);
   if (ret == 1) {
     printf("CARGO FIRE SELECT FWD B: %i \n",cargofire_select_fwd_b);
-  }  
+  }
   /* SELECT AFT rotary */
   ret = digital_input(card,i0+3,&cargofire_select_aft_a,0);
   if (ret == 1) {
     printf("CARGO FIRE SELECT AFT A: %i \n",cargofire_select_aft_a);
-  }  
+  }
   ret = digital_input(card,i0+4,&cargofire_select_aft_b,0);
   if (ret == 1) {
     printf("CARGO FIRE SELECT AFT B: %i \n",cargofire_select_aft_b);

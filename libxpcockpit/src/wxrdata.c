@@ -348,8 +348,8 @@ void read_wxr() {
 	  if (lat > wxr_latmax_tmp) wxr_latmax_tmp = lat;
 	  if (lat < wxr_latmin_tmp) wxr_latmin_tmp = lat;
 	  if ((lon < wxr_lonmax_tmp) && (lat < wxr_latmax_tmp)) {
-	    printf("Found WXR Lon/Lat Bounds: %f to %f / %f to %f \n",
-		   wxr_lonmin_tmp,wxr_lonmax_tmp,wxr_latmin_tmp,wxr_latmax_tmp);
+	    printf("Found WXR Lon/Lat Bounds: %f to %f / %f to %f %f %f\n",
+		   wxr_lonmin_tmp,wxr_lonmax_tmp,wxr_latmin_tmp,wxr_latmax_tmp, lon, lat);
 
 	    if (wxr_type == 1) {
 	      wxr_pixperlon_tmp = 60;
