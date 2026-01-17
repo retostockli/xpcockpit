@@ -188,7 +188,7 @@ void *udpclient_thread_main(void *)
     }
 
     /* wait loop needed to allow read buffer to be emptied by read code */
-    usleep(500);
+    usleep(100);
 
   } /* while loop */
   
