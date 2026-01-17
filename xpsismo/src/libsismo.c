@@ -1130,11 +1130,11 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 			   concurrently due to timing issue, assume that the last direction is still valid.
 			   ONLY USE WITH FAST TURNING DT < 100 ms */
 		      } else if ((obits[0] == 1) && (obits[1] == 1) && (nbits[0] == 0) && (nbits[1] == 0)) {
-			//printf("MISSED dt: %f \n",dt);
 			if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
+			printf("MISSED dt: %f Up/Down: %i \n",dt,updown);
 		      } else if ((obits[0] == 0) && (obits[1] == 0) && (nbits[0] == 1) && (nbits[1] == 1)) {
-			//printf("MISSED dt: %f \n",dt);
 			if (dt < 300.0) updown = sismo[card].inputs_updown[input1];
+			printf("MISSED dt: %f Up/Down: %i \n",dt,updown);
 		      }
 
 		      if (updown != 0) {

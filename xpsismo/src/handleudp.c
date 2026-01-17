@@ -21,6 +21,7 @@
 #include <stdio.h>   
 #include <stdlib.h>  
 #include <sys/types.h>
+#include <sys/time.h>
 #include <stdbool.h>
 #include <unistd.h>   
 #include <string.h>
@@ -136,7 +137,12 @@ void *udpclient_thread_main(void *)
   int ret = 0;
   unsigned char buffer[UDPRECVBUFLEN];
 
+  /* struct timeval oldtime; */
+  /* struct timeval newtime; */
+  /* float dt; /\* time interval since last encoder read in milliseconds *\/ */
+
   printf("SISMOUDP: Receive thread running \n");
+  /* gettimeofday(&oldtime,NULL); */
 
   while (!udp_poll_thread_exit_code) {
 
@@ -168,7 +174,13 @@ void *udpclient_thread_main(void *)
     } else if ((ret > 0) && (ret <= UDPRECVBUFLEN)) {
       /* read is ok */
 
-	//printf("%i \n",ret);
+	/* gettimeofday(&newtime,NULL); */
+	/* dt = ((newtime.tv_sec - oldtime.tv_sec) + */
+	/*       (newtime.tv_usec - oldtime.tv_usec) / 1000000.0)*1000.0; */
+
+        /* oldtime = newtime; */
+	
+	/* printf("UDP Read interval: %f ms \n",dt); */
 	
       /* does it fit into read buffer? */
       if (ret <= (UDPRECVBUFLEN - udpReadLeft)) {
@@ -189,7 +201,7 @@ void *udpclient_thread_main(void *)
     }
 
     /* wait loop needed to allow read buffer to be emptied by read code */
-    usleep(500);
+    usleep(100);
 
   } /* while loop */
   
