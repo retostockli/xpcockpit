@@ -130,7 +130,7 @@ void b737_audio(void)
   /* Set to 1 to test the Audio Box for Intercom on all 3 headsets,
      Line Output for the first headset and Mic Input from the first headset.
      In test mode please do not run X-Plane as datarefs are preset here! */
-  int testmode = 1;
+  int testmode = 0;
   
   int ret;
   int te = 2;
@@ -256,12 +256,12 @@ void b737_audio(void)
     
     *mic_capt = 1;
 
-    *acp1_vol_vhf1 = 60;
-    *acp1_vol_vhf2 = 60;
+    *acp1_vol_vhf1 = 70;
+    *acp1_vol_vhf2 = 70;
     
-    *acp1_vol_pa = 60;
-    *acp2_vol_pa = 60;
-    *acp3_vol_pa = 60;
+    *acp1_vol_pa = 70;
+    *acp2_vol_pa = 70;
+    *acp3_vol_pa = 70;
     
   }
   
