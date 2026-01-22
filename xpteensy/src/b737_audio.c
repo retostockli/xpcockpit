@@ -127,6 +127,11 @@ void init_b737_audio(void)
 void b737_audio(void)
 {
 
+  /* Set to 1 to test the Audio Box for Intercom on all 3 headsets,
+     Line Output for the first headset and Mic Input from the first headset.
+     In test mode please do not run X-Plane as datarefs are preset here! */
+  int testmode = 1;
+  
   int ret;
   int te = 2;
   int ival;
@@ -240,6 +245,26 @@ void b737_audio(void)
     printf("JUMPSEAT HAND MIC SWITCH changed to: %i \n",switch_handmic_jumpseat);
   }
 
+
+  if (testmode == 1) {
+    /* enable all headset mics and voice feedback between them
+       route captain headset mic to LINE INPUT on PC
+       route LINE OUTPUT on PC to captain headset */
+    *acp1_mask_boom = 0;
+    *acp2_mask_boom = 0;
+    *acp3_mask_boom = 0;
+    
+    *mic_capt = 1;
+
+    *acp1_vol_vhf1 = 60;
+    *acp1_vol_vhf2 = 60;
+    
+    *acp1_vol_pa = 60;
+    *acp2_vol_pa = 60;
+    *acp3_vol_pa = 60;
+    
+  }
+  
   /* if hand mic button is pressed, headset and mask mic are off
      on each acp you can also choose whether headset (boom) or mask mic are used */
 
