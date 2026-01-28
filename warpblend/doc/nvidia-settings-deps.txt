@@ -1,0 +1,12 @@
+When compiling nvidia-settings from:
+https://github.com/NVIDIA/nvidia-settings
+these libraries are needed:
+libgtk2.0-dev
+libvulkan-dev
+libglx-dev
+libgl-dev
+libegl1-mesa-dev
+libxxf86vm-dev
+libxv-dev
+libvdpau-dev
+libdbus-1-dev
