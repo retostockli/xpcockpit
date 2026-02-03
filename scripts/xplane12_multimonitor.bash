@@ -2,7 +2,7 @@
 ###This script requires wmctrl, xdotool, grep, awk, and zenity###
 
 numscreens=4
-count=$(wmctrl -lx | grep X-Plane | grep -v $USER | tee >(wc -l))
+count=$(wmctrl -lx | grep X-Plane | grep -v $USER | grep -v Firefox | tee >(wc -l))
 if [ $count = 0 ] ; then
 ###Modify X-Plane path based on installation location###
 ###1st Restore preferences and set performance###
@@ -15,7 +15,7 @@ cp ~/xpcockpit/warpblend/data/X-Plane\ Window\ Positions.prf ~/X-Plane\ 12/Outpu
 ~/X-Plane\ 12/X-Plane-x86_64 &
  while [  $count -lt $numscreens ]; do
   sleep 1
-  count=$( wmctrl -l | grep X-Plane | grep -v $USER | wc -l)
+  count=$( wmctrl -l | grep X-Plane | grep -v $USER | grep -v Firefox | wc -l)
   echo "Number of Screens $count of $numscreens"
  done
 else
@@ -23,7 +23,7 @@ else
  exit 1
 fi
 screencount=1
-wmctrl -l | grep X-Plane | grep -v $USER | awk '{ print $1 }' | while read; do
+wmctrl -l | grep X-Plane | grep -v $USER | grep -v Firefox | awk '{ print $1 }' | while read; do
   wmctrl -i -r "$REPLY" -T "X-Plane_$screencount"
   let  screencount=screencount+1
 done
