@@ -41,12 +41,12 @@ automake --add-missing
 autoreconf
 in order to set up all automake/autoconf files. Then do:
 
-./configure
+./configure --prefix=/home/USER/X-Plane\ 12/Resources/plugins
 make
 make install
 
-This will generate a directory plugins/xpserver.
-Copy the xpserver subdirectory to your X-Plane directory under Resources/plugins/
+Change the prefix directory to the directory where your X-Plane plugins are located.
+This will install xpserver in your X-Plane plugins directory
 
 You're all set. Once launching X-Plane you should have the xpserver plugin 
 showing up under plugins. In the xpserver directory you will find an ini file
