@@ -13,7 +13,7 @@ cp ~/xpcockpit/warpblend/data/X-Plane\ Window\ Positions.prf ~/X-Plane\ 12/Outpu
 
 ##start xplane##
 ~/X-Plane\ 12/X-Plane-x86_64 &
- while [  $count -lt $numscreens ]; do
+while [  $count -lt $numscreens ]; do
   sleep 1
   count=$( wmctrl -l | grep X-Plane | grep -v $USER | grep -v Firefox | wc -l)
   echo "Number of Screens $count of $numscreens"

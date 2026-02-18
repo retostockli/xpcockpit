@@ -8,16 +8,14 @@ if [ $count = 0 ] ; then
 ###1st Restore preferences and set performance###
 #nvidia-settings --load-config-only
 #sudo cpupower frequency-set -g performance
-cp "X-Plane Window Positions_NOWARPBLEND.prf" "X-Plane 12/Output/preferences/X-Plane Window Positions.prf" 
-#cp "X-Plane Window Positions_NOPROJECTION.prf" "X-Plane 12/Output/preferences/X-Plane Window Positions.prf" 
-#cp "X-Plane Window Positions_NOBLEND.prf" "X-Plane 12/Output/preferences/X-Plane Window Positions.prf" 
-#cp "X-Plane Window Positions.prf" "X-Plane 12/Output/preferences/X-Plane Window Positions.prf" 
+cp ~/xpcockpit/warpblend/data/X-Plane\ Window\ Positions_NOWARPBLEND.prf ~/X-Plane\ 12/Output/preferences/X-Plane\ Window\ Positions.prf
+#cp ~/xpcockpit/warpblend/data/X-Plane\ Window\ Positions.prf ~/X-Plane\ 12/Output/preferences/X-Plane\ Window\ Positions.prf
 
 ##start xplane##
 # Medium Rendering Load
-#./X-Plane\ 12/X-Plane-x86_64 --fps_test=33 --verbose --load_smo=Output/replays/fps_test_eddf.fps &
+#~/X-Plane\ 12/X-Plane-x86_64 --fps_test=33 --verbose --load_smo=Output/replays/fps_test_eddf.fps &
 # Heavy Rendering Load
-./X-Plane\ 12/X-Plane-x86_64 --fps_test=35 --verbose --load_smo=Output/replays/fps_test_eddf.fps &
+~/X-Plane\ 12/X-Plane-x86_64 --fps_test=35 --verbose --load_smo=Output/replays/fps_test_eddf.fps &
 while [  $count -lt $numscreens ]; do
   sleep 1
   count=$( wmctrl -l | grep X-Plane | grep -v $USER | grep -v Firefox | wc -l)
