@@ -47,13 +47,13 @@ def draw_azimuthgrid(mon):
 
             fillcolor = "lightgray" if (oddx and oddy) or (not oddx and not oddy) else "darkgray"
 
-            px0, py0 = calc_warppoint(params.nx[mon], params.ny[mon], x0, y0, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
+            px0, py0 = calc_warppoint(params.nx[mon], params.ny[mon], x0, y0, params.R, params.h_0[mon], params.d_0[mon], params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
                                             params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
-            px1, py1 = calc_warppoint(params.nx[mon], params.ny[mon], x1, y0, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
+            px1, py1 = calc_warppoint(params.nx[mon], params.ny[mon], x1, y0, params.R, params.h_0[mon], params.d_0[mon], params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
                                             params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
-            px2, py2 = calc_warppoint(params.nx[mon], params.ny[mon], x1, y1, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
+            px2, py2 = calc_warppoint(params.nx[mon], params.ny[mon], x1, y1, params.R, params.h_0[mon], params.d_0[mon], params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
                                             params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
-            px3, py3 = calc_warppoint(params.nx[mon], params.ny[mon], x0, y1, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
+            px3, py3 = calc_warppoint(params.nx[mon], params.ny[mon], x0, y1, params.R, params.h_0[mon], params.d_0[mon], params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
                                             params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
             if y0 != params.ny[mon]:
                 canvas[mon].create_polygon(px0, py0, px1, py1, px2, py2, px3, py3, fill=fillcolor,tags="shape")
@@ -69,7 +69,7 @@ def draw_azimuthgrid(mon):
     for ang in range(int(ANGmin/deltalabel)*deltalabel,int(ANGmax/deltalabel)*deltalabel,deltalabel):
         x0 = (float(ang)-ANGmin)/(ANGmax-ANGmin) * params.nx[mon]
         y0 = params.ny[mon]//2
-        px, py = calc_warppoint(params.nx[mon], params.ny[mon], x0, y0, params.R, params.h_0, params.d_0, params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
+        px, py = calc_warppoint(params.nx[mon], params.ny[mon], x0, y0, params.R, params.h_0[mon], params.d_0[mon], params.d_1, params.w_h, params.gamma, params.epsilon[mon], params.frustum,
                     params.vertical_scale[mon], params.vertical_shift[mon], params.cylindrical[mon], params.projection[mon], alignment)
         canvas[mon].create_text(px, py,text=str(ang),fill="red",font=("Helvetica", 18, "bold"),tags="shape")
 
@@ -98,7 +98,7 @@ def draw_blendgrid(mon):
     alignment = True
 
     xabs, yabs, xdif, ydif = calc_warpgrid(params.nx[mon], params.ny[mon], params.ngx, params.ngy, 
-                                            params.R, params.h_0, params.d_0, params.d_1, params.w_h, 
+                                            params.R, params.h_0[mon], params.d_0[mon], params.d_1, params.w_h, 
                                             params.gamma, params.epsilon[mon], params.frustum,
                                             params.vertical_scale[mon], params.vertical_shift[mon], 
                                             params.cylindrical[mon], params.projection[mon], alignment)
@@ -169,7 +169,7 @@ def redraw_warpblend_window(mon):
     # General Calculations independent of pixel position (cm or degrees)
     params.beta = math.atan(1.0/(2.0*params.tr))*r2d # Maximum horizontal FOV from Projector [deg]
     params.beta1 = 180.-params.beta   # well ... check out the drawing yourself
-    params.delta = math.asin(params.d_0/params.R*math.sin(params.beta1*d2r))*r2d  # same here
+    params.delta = math.asin(params.d_0[mon]/params.R*math.sin(params.beta1*d2r))*r2d  # same here
     params.gamma = 180.-params.beta1-params.delta  # Maximum horizontal FOV from Screen Center [deg]
     params.R_1 = params.R*math.sin(params.gamma*d2r)/math.sin(params.beta1*d2r) # Maximum Distance of Projector to screen edge
     params.d_1 = params.R_1*math.cos(params.beta*d2r) # distance of projector to hypothetical planar screen in front of cylindrical screen

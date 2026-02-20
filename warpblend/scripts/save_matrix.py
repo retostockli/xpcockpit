@@ -9,7 +9,7 @@ import root_window
 
 def save_xpfile():
 	
-    print("Saving to X-Plane PRF: "+params.xpfile)
+    print(f"Saving to X-Plane PRF: {params.xpfile}")
 
     # Generate X-Plane Window Preferences Output File 
     # X-Plane grid goes from bottom to top (0.0 - 1.0)
@@ -38,7 +38,7 @@ def save_xpfile():
             alignment = False
 
             xabs, yabs, xdif, ydif = calc_warpgrid(params.nx[mon], params.ny[mon], params.ngx, params.ngy, 
-                                                    params.R, params.h_0, params.d_0, params.d_1, params.w_h, 
+                                                    params.R, params.h_0[mon], params.d_0[mon], params.d_1, params.w_h, 
                                                     params.gamma, params.epsilon[mon], params.frustum,
                                                     params.vertical_scale[mon], params.vertical_shift[mon], 
                                                     params.cylindrical[mon], params.projection[mon], alignment)
@@ -269,7 +269,7 @@ def save_nvfile():
             alignment = False
 
             xabs, yabs, xdif, ydif = calc_warpgrid(params.nx[mon], params.ny[mon], params.ngx, params.ngy, 
-                                                    params.R, params.h_0, params.d_0, params.d_1, params.w_h, 
+                                                    params.R, params.h_0[mon], params.d_0[mon], params.d_1, params.w_h, 
                                                     params.gamma, params.epsilon[mon], params.frustum,
                                                     params.vertical_scale[mon], params.vertical_shift[mon], 
                                                     params.cylindrical[mon], params.projection[mon], alignment)

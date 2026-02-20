@@ -24,8 +24,8 @@ def read_ini():
     params.dragy = config.getint('GENERAL','dragy')
 
     params.R = config.getfloat('PROJECTION','R')
-    params.d_0 = config.getfloat('PROJECTION','d_0')
-    params.h_0 = config.getfloat('PROJECTION','h_0')
+    params.d_0 = ast.literal_eval(config.get('PROJECTION','d_0'))
+    params.h_0 = ast.literal_eval(config.get('PROJECTION','h_0'))
     params.tr = config.getfloat('PROJECTION','tr')
     params.nx = ast.literal_eval(config.get('PROJECTION','nx'))
     params.ny = ast.literal_eval(config.get('PROJECTION','ny'))

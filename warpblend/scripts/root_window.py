@@ -21,8 +21,6 @@ def create_root_window():
         params.nvfile = nvfile_entry.get()
 
         params.R = float(R_entry.get())
-        params.d_0 = float(d_0_entry.get())
-        params.h_0 = float(h_0_entry.get())
         params.tr = float(tr_entry.get())
 
         params.blendtest = blend_test.get()
@@ -30,6 +28,8 @@ def create_root_window():
         params.savegrid = save_grid.get()
 
         for mon in range(0,params.nmon,1):
+            params.d_0[mon] = float(d_0_entry[mon].get())
+            params.h_0[mon] = float(h_0_entry[mon].get())
             params.epsilon[mon] = float(epsilon_entry[mon].get())
             params.lateral_offset[mon] = float(lateral_offset_entry[mon].get())
             params.vertical_offset[mon] = float(vertical_offset_entry[mon].get())
@@ -88,13 +88,9 @@ def create_root_window():
     geometry_label.grid(row=1, column=0, padx=5, pady=5, sticky="e")
     R_label = Label(root, text="R [cm] ")
     R_label.grid(row=2, column=0, padx=5, pady=5, sticky="e")
-    d_0_label = Label(root, text="d0 [cm] ")
-    d_0_label.grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    h_0_label = Label(root, text="h0 [cm] ")
-    h_0_label.grid(row=4, column=0, padx=5, pady=5, sticky="e")
     tr_label = Label(root, text="tr [-] ")
-    tr_label.grid(row=5, column=0, padx=5, pady=5, sticky="e")
-
+    tr_label.grid(row=3, column=0, padx=5, pady=5, sticky="e")
+    
     inifile_label = Label(root, text="INI File: ")
     inifile_label.grid(row=2, column=2, padx=5, pady=5, sticky="e")
 
@@ -105,6 +101,12 @@ def create_root_window():
     nvfile_label.grid(row=4, column=2, padx=5, pady=5, sticky="e")
 
     row0 = 6
+    d_0_label = Label(root, text="d0 [cm] ")
+    d_0_label.grid(row=row0, column=0, padx=5, pady=5, sticky="e")
+    h_0_label = Label(root, text="h0 [cm] ")
+    h_0_label.grid(row=row0+1, column=0, padx=5, pady=5, sticky="e")
+
+    row0 = 8
     monitor_label = [None] * (params.nmon + 1)
     monitor_label[0] = Label(root, text="IMAGE PARAMETERS")
     monitor_label[0].grid(row=row0, column=0, padx=5, pady=5, sticky="e")
@@ -137,16 +139,10 @@ def create_root_window():
     R_entry = Entry(root, width=10)
     R_entry.grid(row=2, column=1, padx=5, pady=5)
     R_entry.insert(0,params.R)
-    d_0_entry = Entry(root, width=10)
-    d_0_entry.grid(row=3, column=1, padx=5, pady=5)
-    d_0_entry.insert(0,params.d_0)
-    h_0_entry = Entry(root, width=10)
-    h_0_entry.insert(0,params.h_0)
-    h_0_entry.grid(row=4, column=1, padx=5, pady=5)
     tr_entry = Entry(root, width=10)
     tr_entry.insert(0,params.tr)
-    tr_entry.grid(row=5, column=1, padx=5, pady=5)
-
+    tr_entry.grid(row=3, column=1, padx=5, pady=5)   
+    
     inifile_entry = Entry(root, width=30)
     inifile_entry.grid(row=2, column=3, columnspan = 2, padx=5, pady=5)
     inifile_entry.insert(0,params.inifile)
@@ -158,8 +154,19 @@ def create_root_window():
     nvfile_entry = Entry(root, width=30)
     nvfile_entry.grid(row=4, column=3, columnspan = 2, padx=5, pady=5)
     nvfile_entry.insert(0,params.nvfile)
-
+    
     row0 = 6
+    d_0_entry = [None] * params.nmon
+    h_0_entry = [None] * params.nmon
+    for mon in range(0,params.nmon,1):
+        d_0_entry[mon] = Entry(root, width=10)
+        d_0_entry[mon].insert(0,params.d_0[mon])
+        d_0_entry[mon].grid(row=row0, column=1+mon, padx=5, pady=5)
+        h_0_entry[mon] = Entry(root, width=10)
+        h_0_entry[mon].insert(0,params.h_0[mon])
+        h_0_entry[mon].grid(row=row0+1, column=1+mon, padx=5, pady=5)
+
+    row0 = 8
     epsilon_entry = [None] * params.nmon
     lateral_offset_entry = [None] * params.nmon
     vertical_offset_entry = [None] * params.nmon

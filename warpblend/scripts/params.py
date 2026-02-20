@@ -11,8 +11,8 @@ ngy = 0
 dragx = 0
 dragy = 0
 R = 0.0
-d_0 = 0.0
-h_0 = 0.0
+d_0 = []
+h_0 = []
 tr = 0.0
 nx = []
 ny = []
@@ -48,7 +48,6 @@ stepy = 0
 
 # blend alpha values (4 steps at distance 0.0, 0.33, 0.67 and 1.0)
 blend_alpha = [0.0,0.45,0.8,1.0]
-blend_exp = 1.0 # exponent of the blend function (distance^exponent)
 
 # window parameters
 ROOT_NX = 800
