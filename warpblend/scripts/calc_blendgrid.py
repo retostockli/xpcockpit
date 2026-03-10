@@ -7,7 +7,7 @@ def calc_blendimage_unwarped(nx, ny, left_top, left_bot, right_top, right_bot, p
     # since the blend lines on left and right are drawn in the regular display coordinates
     # power: non-linear transformation of blend curve (>1.0: darker around midpoint, <1.0: brighter around midpoint)
     
-    scale = 3.0  # sigmoid function scaling (ranges from - scale to scale)
+    scale = 2.5  # sigmoid function scaling (ranges from - scale to scale)
     # since at -scale and scale the values are not at 0.0 / 1.0 we now apply a vertical scaling
     # around the midpoint (see below)
     minval = 1.0/(1+math.exp(scale))

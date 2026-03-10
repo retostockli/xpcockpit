@@ -696,7 +696,7 @@ void b737_mcp(void)
 
   int ap_vs_show = 0;
   if ((acf_type == 2) || (acf_type == 3)) {
-    if (*ap_vspeed_show >= 1.0) ap_vs_show = 1;
+    if (*ap_vspeed_show >= 0.99) ap_vs_show = 1;
   } else {
     ap_vs_show = 1;
   }
