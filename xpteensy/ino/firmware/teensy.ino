@@ -30,8 +30,9 @@ void teensy_init(int8_t pin, int8_t pinmode, int16_t val, int8_t arg1, int8_t ar
       teensy_data.val[pin][0] = val;
       // See: https://www.pjrc.com/teensy/td_pulse.html
       // You can't have the chicken and egg at the same time ...
-      //analogWriteFrequency(pin, 375000); // Teensy 3.0 pin 3 also changes to 375 kHz
-      //analogWriteResolution(12);  // analogWrite value 0 to 4095, or 4096 for high
+      analogWriteFrequency(pin, 1000); // PWM frequency in Hz
+      analogWriteResolution(8);  // PWM resolution: 8= 0..256 (yes, 256 is possible!)
+
       if (DEBUG > 0) {
         Serial.printf("INIT: Teensy pin %i initialized as PWM Output\n", pin);
       }
