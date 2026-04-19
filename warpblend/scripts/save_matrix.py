@@ -141,7 +141,7 @@ def save_xpfile():
 
                 if params.blending[mon]:
                     # Generate XP12 Blending Grid in warped and not display space
-                    power = 1.25
+                    power = 1.5
                     blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon], 
                                                           params.blend_left_top[mon],params.blend_left_bot[mon],
                                                           params.blend_right_top[mon],params.blend_right_bot[mon], power)
