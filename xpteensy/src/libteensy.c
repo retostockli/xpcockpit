@@ -752,7 +752,7 @@ int recv_teensy() {
 	  if (val == ERROR_INIT) printf(" --> DEVICE COULD NOT BE INITIALIZED");
 	  if (val == ERROR_INIT_I2C) printf(" --> I2C COULD NOT BE INITIALIZED");
 	  if (val == ERROR_WIRE_RANGE) printf(" --> I2C WIRE NUMBER OUT OF RANGE");
-	  if (val == ERROR_INIT_INTERRUPT) printf(" --> INTERRUPT COULD NOT BE ASSIGNED");
+	  if (val == ERROR_INIT_INTERRUPT) printf(" --> INTERRUPT COULD NOT BE ASSIGNED (PIN ALREADY USED?)");
 	  if (val == ERROR_NOT_CONNECTED) printf(" --> DEVICE IS NOT CONNECTED");
 	  if (val == ERROR_PIN_RANGE) printf(" --> PIN NUMBER OUT OF RANGE");
 	  if (val == ERROR_DEV_RANGE) printf(" --> DEVICE NUMBER OUT OF RANGE");
@@ -1578,8 +1578,10 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 	    if ((pin >= 0) && (pin < MAX_PINS)) {
 	      if (teensy[te].pinmode[pin] == PINMODE_PWM) {
 		/* scale value to PWM output range */
+		/* We can write 0-256 (!) according to https://www.pjrc.com/teensy/td_pulse.html */
 		ival = (int) (MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0) *
-			      (pow(2,ANALOGOUTPUT_NBITS)-1.0));
+			      //			      (pow(2,ANALOGOUTPUT_NBITS)-1.0));
+			      (pow(2,ANALOGOUTPUT_NBITS)));
 		if (ival != teensy[te].val[pin][0]) {
 		  teensy[te].val[pin][0] = ival;
 		  if (verbose > 2) printf("PWM Output %i of Teensy %i changed to %i \n", pin, te, ival);

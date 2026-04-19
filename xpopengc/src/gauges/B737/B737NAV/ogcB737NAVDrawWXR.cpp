@@ -61,7 +61,7 @@ namespace OpenGC
   {
     GaugeComponent::Render();
    
-    int acf_type = m_pDataSource->GetAcfType();
+    //int acf_type = m_pDataSource->GetAcfType();
   
     bool is_captain = (this->GetArg() == 0);
 
@@ -108,7 +108,7 @@ namespace OpenGC
     float *magnetic_variation = link_dataref_flt("sim/flightmodel/position/magnetic_variation",-1);
     
     // What's the altitude? (feet)
-    float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
+    //float *pressure_altitude = link_dataref_flt("sim/flightmodel/misc/h_ind",0);
     
     int *nav_shows_wxr;
 

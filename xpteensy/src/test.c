@@ -45,24 +45,27 @@ void init_test(void)
   int pin;
   int dev;
   
-  /*
-  for (int i=0;i<42;i++) {
-    teensy[te].pinmode[i] = PINMODE_INPUT;
-  }
-  */
+ 
+  /* for (int i=0;i<42;i++) { */
+  /*   if ((i != 16) && (i != 18) && (i != 19)) { */
+  /*     teensy[te].pinmode[i] = PINMODE_INPUT; */
+  /*   } */
+  /* } */
 
-  teensy[te].pinmode[0] = PINMODE_INPUT;
-  teensy[te].pinmode[1] = PINMODE_OUTPUT;
+
+  //teensy[te].pinmode[0] = PINMODE_INPUT;
+  teensy[te].pinmode[0] = PINMODE_OUTPUT;
+  teensy[te].pinmode[17] = PINMODE_ANALOGINPUTMEAN;
+  teensy[te].pinmode[37] = PINMODE_PWM;
   
   /* teensy[te].pinmode[37] = PINMODE_PWM; */
   /* //  teensy[te].pinmode[0] = PINMODE_OUTPUT; */
   /* teensy[te].pinmode[3] = PINMODE_INPUT; */
   /* teensy[te].pinmode[4] = PINMODE_INPUT; */
   /* //  teensy[te].pinmode[5] = PINMODE_INPUT; */
-  /* teensy[te].pinmode[41] = PINMODE_ANALOGINPUTMEAN  ; */
   /* //  teensy[te].pinmode[6] = PINMODE_INTERRUPT; */
   /* //  teensy[te].pinmode[7] = PINMODE_INTERRUPT; */
-  teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN;
+  // teensy[te].pinmode[14] = PINMODE_ANALOGINPUTMEAN;
   /* teensy[te].pinmode[16] = PINMODE_I2C; */
   /* teensy[te].pinmode[17] = PINMODE_I2C; */
   /* teensy[te].pinmode[23] = PINMODE_OUTPUT; */
@@ -78,16 +81,16 @@ void init_test(void)
   /* teensy[te].arg2[24] = 25; // motor IN1 */
   //teensy[te].arg3[24] = 38; // motor Current Sense
 
-  /* dev = 3; */
-  /* for (pin=0;pin<8;pin++) { */
-  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT; */
-  /* } */
-  /* for (pin=8;pin<MCP23017_MAX_PINS;pin++) { */
-  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT; */
-  /* } */
-  /* mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE) */
-  /* mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2 */
-  /* mcp23017[te][dev].address = 0x23 ^ 0x50; // (0x73) I2C address of MCP23017 device */
+  dev = 0;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 16;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x20; // ^ 0x50; // (0x73) I2C address of MCP23017 device
 
   /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
   /* mcp23017[te][1].pinmode[3] = PINMODE_INPUT; */
@@ -131,8 +134,8 @@ void init_test(void)
   /* ht16k33[te][0].wire = 0; */
   /* ht16k33[te][0].address = 0x27; */
 
-  pga2311[te][0].spi = 0; // SPI Bus number
-  pga2311[te][0].cs = 10; // Chip Select Pin
+  //pga2311[te][0].spi = 0; // SPI Bus number
+  //pga2311[te][0].cs = 10; // Chip Select Pin
   
   
 }
@@ -164,13 +167,14 @@ void test(void)
   //if (*fvalue == FLT_MISS) *fvalue = 0.0;
   //if (*value == INT_MISS) *value = 1;
 
-  /* read analog input (A14) */
-  ret = analog_input(te,14,fvalue,0.0,100.0);
+  /* read analog input (A3) */
+  ret = analog_input(te,17,fvalue,0.0,100.0);
   if (ret == 1) {
     printf("Analog Input changed to: %f \n",*fvalue);
   }
+  ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,0.0,100.0);
 
-  ret = volume_output(te, PGA2311_TYPE, 0, 0, fvalue, 0.0, 100.0);
+  /* ret = volume_output(te, PGA2311_TYPE, 0, 0, fvalue, 0.0, 100.0); */
 
   
   //float *wind_speed = link_dataref_flt("sim/cockpit2/gauges/indicators/wind_speed_kts",0);
@@ -183,6 +187,21 @@ void test(void)
   /*   printf("Encoder changed to: %i \n",*encodervalue); */
   /* } */
  
+  /* for (int i=0;i<42;i++) { */
+  /*   if ((i != 16) && (i != 18) && (i != 19)) { */
+  /*     ret = digital_input(te, TEENSY_TYPE, 0, i, &ival, 0); */
+  /*     if (ret == 1) { */
+  /* 	printf("TEENSY Input %i changed to: %i \n",i,ival); */
+  /*     } */
+  /*   } */
+  /* } */
+
+  for (int i=8;i<MCP23017_MAX_PINS;i++) {
+    ret = digital_input(te, MCP23017_TYPE, 0, i, &ival, 0);
+    if (ret == 1) {
+      printf("MCP23017 Input %i changed to: %i \n",i,ival);
+    }
+  }
 
   /* ret = digital_input(te, TEENSY_TYPE, 0, 30, &direction, 0); */
   /* if (ret == 1) { */
@@ -235,17 +254,19 @@ void test(void)
   /* ret = program_closedloop(te, 1, direction, &fencodervalue, 0.0, 100.0); */
   
   /* set LED connected to first output (#0) to value landing lights dataref */
-  dev = 0;
-  ret = digital_input(te, TEENSY_TYPE, dev, 0, digitalvalue, 0);
-  ret = digital_output(te, TEENSY_TYPE, dev, 1, digitalvalue);
+  //dev = 0;
+  //ret = digital_input(te, TEENSY_TYPE, dev, 0, digitalvalue, 0);
+  //ret = digital_output(te, TEENSY_TYPE, dev, 1, digitalvalue);
   
-  //*digitalvalue = 1;
+  *digitalvalue = 1;
   //analogvalue = 0.5;
-  //ret = digital_output(te, TEENSY_TYPE, 0, 23, &direction);
+  ret = digital_output(te, TEENSY_TYPE, 0, 0, digitalvalue);
   /* ret = digital_output(te, MCP23017_TYPE, 0, 5, &digitalvalue); */
-  /* for (pin=0;pin<8;pin++) { */
-  /*   ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue); */
-  /* } */
+  dev = 0;
+  *digitalvalue = 1;
+  for (pin=0;pin<8;pin++) {
+    ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue);
+  }
   //ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,5.0,1023.0);
 
   /* change Servo according to rotary position */
