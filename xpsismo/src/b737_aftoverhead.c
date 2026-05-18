@@ -925,7 +925,6 @@ void b737_aftoverhead(void)
   ret = digital_input(card, i0+3, stall_warn2_test, 0);
   ret = digital_input(card, i0+4, stall_warn1_test, 0);
 
-  /* WE CURRENTLY ONLY HAVE ONE WIRE TO BOTH STICK SHAKERS */
   //  printf("%i %i %i\n", *stall_warn,*stall_warn1_test,*stall_warn2_test );
   if (((((*stall_warn == 1) || (*stall_warn_f >= 1.0)) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
        ((*stall_warn1_test == 1) && (*stall_warn2_test == 0))) && (*avionics_on == 1)) {

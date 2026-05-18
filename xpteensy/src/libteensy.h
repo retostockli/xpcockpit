@@ -63,4 +63,5 @@ int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval
 int angle_input(int te, int type, int dev, int input_type, int *value);
 int volume_output(int te, int type, int dev, int channel, float *fvalue, float minval, float maxval);
 int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval);
+int program_keymatrix(int te, int prog, int active, int *value);
 

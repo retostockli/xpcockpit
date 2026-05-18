@@ -396,6 +396,8 @@ int init_teensy() {
 	  if (verbose > 0) {
 	    if (program[te][prog].type == PROGRAM_CLOSEDLOOP) {
 	      printf("Teensy %i Program %i Initialized as Closed Loop Motor Driver \n",te,prog);
+	    } else if (program[te][prog].type == PROGRAM_KEYMATRIX) {
+	      printf("Teensy %i Program %i Initialized as Keyboard Matrix \n",te,prog);
 	    } else {
 	      printf("Teensy %i Program %i Initialized as UNDEFINED PROGRAM (PLEASE DEFINE)\n",te,prog);
 	    }
@@ -556,7 +558,7 @@ int send_teensy() {
 	      teensySendBuffer[11] = ht16k33[te][dev].brightness;
 	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	      if (ret == SENDMSGLEN) {
-		if (verbose > 0) printf("SEND: Sent %i bytes to Teensy %i HT16K33 %i Pin %i \n", ret,te,dev,pin);
+		if (verbose > 1) printf("SEND: Sent %i bytes to Teensy %i HT16K33 %i Pin %i \n", ret,te,dev,pin);
 	      } else {
 		printf("INCOMPLETE SEND: Sent %i bytes to Teensy %i HT16K33 %i Pin %i \n", ret,te,dev,pin);
 	      }
@@ -641,7 +643,6 @@ int recv_teensy() {
   int pin;
   short int val;
   struct timeval newtime;
- 
   
   if (udpReadLeft >= RECVMSGLEN) {
     //while (udpReadLeft >= RECVMSGLEN) {
@@ -719,7 +720,7 @@ int recv_teensy() {
 		       pin,te,dev_num);
 	      }
 	    } else {
-	      printf("Received value for not connected MCP23017 device %i on Teensy %i\n",dev_num,te);
+	      printf("Received value for undefined MCP23017 device %i on Teensy %i\n",dev_num,te);
 	    }
 	  } else if ((dev_type == AS5048B_TYPE) && (dev_num >= 0) && (dev_num < MAX_DEV)) {
 	    if (as5048b[te][dev_num].connected == 1) {
@@ -732,7 +733,15 @@ int recv_teensy() {
 					val,te,dev_num);
 	      }
 	    } else {
-	      printf("Received value for not connected AS5048B device %i on Teensy %i\n",dev_num,te);
+	      printf("Received value for undefined AS5048B device %i on Teensy %i\n",dev_num,te);
+	    }
+	  } else if ((dev_type == PROGRAM_TYPE) && (pin >= 0) && (pin < MAX_PROG)) {
+	    if (program[te][pin].connected == 1) {
+	      program[te][pin].val16[MAX_VARS-1] = val;
+	      if (verbose > 0) printf("Received Value %i for Teensy %i Program %i \n",
+				      val,te,pin);
+	    } else {
+	      printf("Received value for undefined program %i on Teensy %i\n",pin,te);
 	    }
 	  } else {
 	    printf("Received value for unknown device type\n");
@@ -895,7 +904,7 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 		  retval = -1;
 		}
 	      } else {
-		if (verbose > 0) printf("Digital Input %i cannot be read. MCP23017 %i not connected to Teensy %i \n",
+		if (verbose > 0) printf("Digital Input %i cannot be read. MCP23017 %i not defined for Teensy %i \n",
 					pin,dev,te);
 		retval = -1;
 	      }
@@ -963,7 +972,7 @@ int angle_input(int te, int type, int dev, int input_type, int *value)
 		retval = -1;
 	      }
 	    } else {
-	      if (verbose > 0) printf("AS5048B %i not connected to of Teensy %i \n",
+	      if (verbose > 0) printf("AS5048B %i not defined for Teensy %i \n",
 				      dev,te);
 	      retval = -1;
 	    }
@@ -1261,7 +1270,7 @@ int encoder_inputf(int te, int type, int dev, int pin1, int pin2, float *value, 
 		  retval = -1;
 		}		
 	      } else {
-		if (verbose > 0) printf("Encoder with Pins %i %i cannot be read. MCP23017 %i not connected to Teensy %i \n",
+		if (verbose > 0) printf("Encoder with Pins %i %i cannot be read. MCP23017 %i not defined for Teensy %i \n",
 					pin1,pin2,dev,te);
 		retval = -1;
 	      }
@@ -1361,7 +1370,7 @@ int digital_output(int te, int type, int dev, int pin, int *value) {
 		    retval = -1;
 		  }
 		} else {
-		  if (verbose > 0) printf("Digital Output %i cannot be written. MCP23017 %i not connected to Teensy %i \n",
+		  if (verbose > 0) printf("Digital Output %i cannot be written. MCP23017 %i not defined for Teensy %i \n",
 					  pin,dev,te);
 		  retval = -1;
 		}
@@ -1532,7 +1541,7 @@ int display_output(int te, int type, int dev, int pos, int n, int *value, int dp
 		  retval = -1;
 		}
 	      } else {
-		if (verbose > 0) printf("Display Output range %i-%i cannot be written. HT16K33 %i not connected to Teensy %i \n",
+		if (verbose > 0) printf("Display Output range %i-%i cannot be written. HT16K33 %i not defined for Teensy %i \n",
 					pos,pos+n-1,dev,te);
 		retval = -1;
 	      }
@@ -1620,7 +1629,7 @@ int pwm_output(int te, int type, int dev, int pin, float *fvalue, float minval, 
 		}
 
 	      } else {
-		if (verbose > 0) printf("PCA9685 %i not connected to of Teensy %i \n",
+		if (verbose > 0) printf("PCA9685 %i not defined for Teensy %i \n",
 					dev,te);
 		retval = -1;
 	      }
@@ -1710,7 +1719,7 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue,
 		  retval = -1;
 		}
 	      } else {
-		if (verbose > 0) printf("PCA9685 %i not connected to of Teensy %i \n",
+		if (verbose > 0) printf("PCA9685 %i not defined for Teensy %i \n",
 					dev,te);
 		retval = -1;
 	      }
@@ -1831,7 +1840,7 @@ int volume_output(int te, int type, int dev, int channel, float *fvalue, float m
 	      }
 	      
 	    } else {
-	      if (verbose > 0) printf("PGA2311 %i not connected to Teensy %i \n", dev,te);
+	      if (verbose > 0) printf("PGA2311 %i not defined for Teensy %i \n", dev,te);
 	      retval = -1;
 	    }
 	  } else {
@@ -1877,24 +1886,88 @@ int program_closedloop(int te, int prog, int active, float *fvalue, float minval
 	if (teensy[te].connected) {
 	  if ((prog >= 0) && (prog < MAX_PROG)) {
 	    if (program[te][prog].type == PROGRAM_CLOSEDLOOP) {
-
-	      float servo_min = (float) program[te][prog].val16[1];
-	      float servo_max = (float) program[te][prog].val16[2];
 	      
-	      /* scale value to servo output range */
-	      ival = (int16_t) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)) *
-				(servo_max - servo_min) + servo_min);
-
-	      if (ival != program[te][prog].val16[0]) {
-		  program[te][prog].val16[0] = ival;
-		  if (verbose > 0) printf("Teensy %i Closed Loop Program %i Servo Position changed to %i \n", te, prog, ival);
-		}
 	      if (active != program[te][prog].val8[0]) {
 		program[te][prog].val8[0] = active;
 		if (verbose > 0) printf("Teensy %i Closed Loop Program %i Active Status set to %i \n", te, prog, active);
 	      }
+
+	      if (program[te][prog].val8[0] == 1) {
+
+		float servo_min = (float) program[te][prog].val16[1];
+		float servo_max = (float) program[te][prog].val16[2];
+		
+		/* scale value to servo output range */
+		ival = (int16_t) ((MIN(MAX(0.0,(*fvalue - minval) / (maxval - minval)),1.0)) *
+				  (servo_max - servo_min) + servo_min);
+		
+		if (ival != program[te][prog].val16[0]) {
+		  program[te][prog].val16[0] = ival;
+		  if (verbose > 0) printf("Teensy %i Closed Loop Program %i Servo Position changed to %i \n", te, prog, ival);
+		}
+	      }
 	    } else {
 	      if (verbose > 0) printf("Program %i of Teensy %i is not defined as Closed Loop \n", prog, te);
+	      retval = -1;
+	    }
+	  } else {
+	    if (verbose > 0) printf("Program %i above maximum # of programs %i of Teensy %i \n", prog,
+				    MAX_PROG, te);
+	    retval = -1;
+	  }
+	} else {
+	  if (verbose > 2) printf("Program %i cannot be executed. Teensy %i not connected \n", prog, te);
+	  retval = -1;
+	}
+      } else {
+	if (verbose > 0) printf("Program %i cannot be executed. Teensy %i >= MAXTEENSYS\n", prog, te);
+	retval = -1;
+      }
+
+    }
+
+  }
+
+  return retval;
+}
+
+/* This program creates a key matrix on a MCP23017 with n colums x m rows */
+int program_keymatrix(int te, int prog, int active, int* value) {
+
+  /* program variable storage:
+     8 bit (0) : keymatrix active (1) or not (0)
+     8 bit (1) : MCP23017 Device Number to setup columns and rows
+     8 bit (2) : Starting Column Pin Number
+     16 bit (0) : Number of Columns 
+     16 bit (1) : Starting Row Pin Number
+     16 bit (2) : Number of Rows */
+ 
+  int retval = 0;
+
+  if (value != NULL) {
+
+    if (active != INT_MISS) {
+
+      if (te < MAXTEENSYS) {
+	if (teensy[te].connected) {
+	  if ((prog >= 0) && (prog < MAX_PROG)) {
+	    if (program[te][prog].type == PROGRAM_KEYMATRIX) {
+	      
+	      if (active != program[te][prog].val8[0]) {
+		program[te][prog].val8[0] = active;
+		if (verbose > 0) printf("Teensy %i Keymatrix Program %i Active Status set to %i \n", te, prog, active);
+	      }
+
+	      if (program[te][prog].val8[0] == 1) {
+		if (program[te][prog].val16[MAX_VARS-1] != program[te][prog].val16_save[MAX_VARS-1]) {
+		  program[te][prog].val16_save[MAX_VARS-1] = program[te][prog].val16[MAX_VARS-1];
+		  *value = program[te][prog].val16[MAX_VARS-1];
+		  if (verbose > 0) printf("Teensy %i Keymatrix %i Button Pressed %i \n", te, prog, *value);
+		  retval = 1;
+		}
+	      }
+	    } else {
+	      if (verbose > 0) printf("Program %i of Teensy %i is not defined as Keymatrix \n", prog, te);
 	      retval = -1;
 	    }
 	  } else {

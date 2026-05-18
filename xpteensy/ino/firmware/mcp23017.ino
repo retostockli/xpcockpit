@@ -161,7 +161,7 @@ int16_t mcp23017_write(int8_t dev, int8_t pin, int16_t val) {
                 bitstate = bitstate << 1;
               }
               Serial.printf("\n");
-            } else if (DEBUG > 0) {
+            } else if (DEBUG > 1) {
               Serial.printf("WRITE: MCP23017 Device %i Pin %i Digital Output Value %i \n", dev, pin, val);
             }
           }  // value is 0 or 1

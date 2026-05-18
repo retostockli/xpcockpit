@@ -55,8 +55,10 @@ void init_test(void)
 
   //teensy[te].pinmode[0] = PINMODE_INPUT;
   teensy[te].pinmode[0] = PINMODE_OUTPUT;
-  teensy[te].pinmode[17] = PINMODE_ANALOGINPUTMEAN;
-  teensy[te].pinmode[37] = PINMODE_PWM;
+  teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN;
+
+  teensy[te].pinmode[24] = PINMODE_OUTPUT;
+  teensy[te].pinmode[25] = PINMODE_PWM;
   
   /* teensy[te].pinmode[37] = PINMODE_PWM; */
   /* //  teensy[te].pinmode[0] = PINMODE_OUTPUT; */
@@ -88,9 +90,20 @@ void init_test(void)
   for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
-  mcp23017[te][dev].intpin = 16;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].intpin = 1;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x20; // ^ 0x50; // (0x73) I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x40; // ^ 0x50; // (0x73) I2C address of MCP23017 device
+
+  dev = 1;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x41; // ^ 0x50; // (0x73) I2C address of MCP23017 device
 
   /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
   /* mcp23017[te][1].pinmode[3] = PINMODE_INPUT; */
@@ -116,23 +129,25 @@ void init_test(void)
   /* as5048b[te][0].wire = 0; */
   /* as5048b[te][0].address = 0x40; */
 
+  /* This program simulates a key matrix on a MCP23017 I2C device
+  program[te][0].type = PROGRAM_KEYMATRIX;
+  program[te][0].val8[1] = 1; // MCP23017 Device Number
+  program[te][0].val8[2] = 0; // Starting Column Pin Number 
+  program[te][0].val16[0] = 3; // Number of Columns 
+  program[te][0].val16[1] = 8; // Starting Row Pin Number
+  program[te][0].val16[2] = 4; // Number of Rows
+  
   /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
      running inside the teensy */
-  /* program[te][0].type = PROGRAM_CLOSEDLOOP; */
-  /* program[te][0].val16[1] = 5; // minimum servo potentiometer value */
-  /* program[te][0].val16[2] = 990; // maximum servo potentiometer value */
-  /* program[te][0].val8[1] = 14;  // servo potentiometer pin number (needs to be defined separately above) */
-  /* program[te][0].val8[2] = 33;  // servo motor pin number (first pin, full motor separately defined above) */
-  
   /* program[te][1].type = PROGRAM_CLOSEDLOOP; */
   /* program[te][1].val16[1] = 5; // minimum servo potentiometer value */
   /* program[te][1].val16[2] = 990; // maximum servo potentiometer value */
   /* program[te][1].val8[1] = 15;  // servo potentiometer pin number (needs to be defined separately above) */
   /* program[te][1].val8[2] = 24;  // servo motor pin number (first pin, full motor separately defined above) */
 
-  /* ht16k33[te][0].brightness = 10; */
-  /* ht16k33[te][0].wire = 0; */
-  /* ht16k33[te][0].address = 0x27; */
+  ht16k33[te][0].brightness = 10;
+  ht16k33[te][0].wire = 0;
+  ht16k33[te][0].address = 0x10;
 
   //pga2311[te][0].spi = 0; // SPI Bus number
   //pga2311[te][0].cs = 10; // Chip Select Pin
@@ -167,12 +182,12 @@ void test(void)
   //if (*fvalue == FLT_MISS) *fvalue = 0.0;
   //if (*value == INT_MISS) *value = 1;
 
-  /* read analog input (A3) */
-  ret = analog_input(te,17,fvalue,0.0,100.0);
+  /* read analog input (A12) */
+  ret = analog_input(te,26,fvalue,0.0,100.0);
   if (ret == 1) {
     printf("Analog Input changed to: %f \n",*fvalue);
   }
-  ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,0.0,100.0);
+  ret = pwm_output(te, TEENSY_TYPE, 0, 25, fvalue,0.0,100.0);
 
   /* ret = volume_output(te, PGA2311_TYPE, 0, 0, fvalue, 0.0, 100.0); */
 
@@ -196,10 +211,18 @@ void test(void)
   /*   } */
   /* } */
 
+  dev=0;
   for (int i=8;i<MCP23017_MAX_PINS;i++) {
-    ret = digital_input(te, MCP23017_TYPE, 0, i, &ival, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, i, &ival, 0);
     if (ret == 1) {
-      printf("MCP23017 Input %i changed to: %i \n",i,ival);
+      printf("MCP23017 %i Input %i changed to: %i \n",dev,i,ival);
+    }
+  }
+  dev=1;
+  for (int i=8;i<MCP23017_MAX_PINS;i++) {
+    ret = digital_input(te, MCP23017_TYPE, dev, i, &ival, 0);
+    if (ret == 1) {
+      printf("MCP23017 %i Input %i changed to: %i \n",dev,i,ival);
     }
   }
 
@@ -252,6 +275,13 @@ void test(void)
   /* if (*encodervalue != FLT_MISS) fencodervalue = (float) *encodervalue; */
   /* ret = program_closedloop(te, 0, direction, &fencodervalue, 0.0, 100.0); */
   /* ret = program_closedloop(te, 1, direction, &fencodervalue, 0.0, 100.0); */
+
+  /* Keyboard Matrix */
+  ret = program_keymatrix(te, 0, 1, digitalvalue);
+  if (ret == 1) {
+    printf("Keymatrix Value: %i \n",*digitalvalue);
+  }
+
   
   /* set LED connected to first output (#0) to value landing lights dataref */
   //dev = 0;
@@ -259,10 +289,14 @@ void test(void)
   //ret = digital_output(te, TEENSY_TYPE, dev, 1, digitalvalue);
   
   *digitalvalue = 1;
-  //analogvalue = 0.5;
-  ret = digital_output(te, TEENSY_TYPE, 0, 0, digitalvalue);
+  ret = digital_output(te, TEENSY_TYPE, 0, 24, digitalvalue);
   /* ret = digital_output(te, MCP23017_TYPE, 0, 5, &digitalvalue); */
   dev = 0;
+  *digitalvalue = 1;
+  for (pin=0;pin<8;pin++) {
+    ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue);
+  }
+  dev = 1;
   *digitalvalue = 1;
   for (pin=0;pin<8;pin++) {
     ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue);
@@ -277,10 +311,10 @@ void test(void)
   //ret = pwm_output(te, PCA9685_TYPE, 0, 5, fvalue,0.0,100.0);
   //ret = servo_output(te, PCA9685_TYPE, 0, 2, fvalue,0.0,100.0,0.0,1.0);
 
-  /* int value = 12345; */
-  /* int dp = -1; */
-  /* int brightness = 8; */
+  int value = 12345;
+  int dp = 2;
+  int brightness = 15;
   
-  /* ret = display_output(te, HT16K33_TYPE, 0, 8, 5, &value, dp, brightness); */
+  ret = display_output(te, HT16K33_TYPE, 0, 0, 5, &value, dp, brightness);
   
 }

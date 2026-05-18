@@ -93,6 +93,7 @@
 #define PGA2311_TYPE 113     // Digital Volume Control via SPI
 
 #define PROGRAM_CLOSEDLOOP 1 // Program steering a dc motor in a closed loop (servo) controlled by a potentiometer
+#define PROGRAM_KEYMATRIX 2 // Program reading a keyboard matrxi with ncol x nrow on a MCP23017
 
 #define PINMODE_INPUT 1
 #define PINMODE_OUTPUT 2

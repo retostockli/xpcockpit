@@ -141,6 +141,8 @@ void loop() {
     if (program_data[prog].connected == 1) {
       if (program_data[prog].type == PROGRAM_CLOSEDLOOP) {
         program_closedloop(prog);
+      } else if (program_data[prog].type == PROGRAM_KEYMATRIX) {
+        program_keymatrix(prog);
       }
     }
   }
