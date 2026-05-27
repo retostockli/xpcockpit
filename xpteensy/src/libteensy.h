@@ -62,6 +62,8 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue, float minval
 int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake);
 int angle_input(int te, int type, int dev, int input_type, int *value);
 int volume_output(int te, int type, int dev, int channel, float *fvalue, float minval, float maxval);
+int program_closedloop_init(int te, int prog, int pot_min, int pot_max, int pot_pin, int mot_pin);
 int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval);
+int program_keymatrix_init(int te, int prog, int dev, int col0, int ncol, int row0, int nrow);
 int program_keymatrix(int te, int prog, int active, int *value);
 

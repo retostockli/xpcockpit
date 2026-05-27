@@ -1522,11 +1522,17 @@ int display_output(int te, int type, int dev, int pos, int n, int *value, int dp
 		    }
 
 		  } else {
-		    /* special case: single digit (n=1): also plot special symbols */
-		    if (dp == pos) {
-		      ht16k33[te][dev].decimalpoint[pos] = 1;
+		    /* special case: single digit (n=1) */
+		    if (dp == -10) {
+		      // if dp is set to -10: interpret value as raw segment data (8 bits, 0-255) */
+		      ht16k33[te][dev].decimalpoint[pos] = -10;
 		    } else {
-		      ht16k33[te][dev].decimalpoint[pos] = 0;
+		      // if dp is set to 0 or 1: interpret value from 0-21 as 0-9,A,B,C,D,E,F,blank,blank,blank,-,deg,_
+		      if (dp == pos) {
+			ht16k33[te][dev].decimalpoint[pos] = 1;
+		      } else {
+			ht16k33[te][dev].decimalpoint[pos] = 0;
+		      }
 		    }
 		    
 		    if (ht16k33[te][dev].val[pos] != *value) {
@@ -1748,7 +1754,7 @@ int servo_output(int te, int type, int dev, int pin, float *fvalue,
   return retval;
 }
 
-/* Create Motor Driver Signal (for L298) on Teensy */
+/* Create Motor Driver Signal (for L298N) on Teensy */
 int motor_output(int te, int type, int dev, int pin, float *fvalue, float minval, float maxval, int brake) {
 
   int retval = 0;
@@ -1863,6 +1869,40 @@ int volume_output(int te, int type, int dev, int channel, float *fvalue, float m
   return retval;
 }
 
+/* Init Code for below program creating a motor closed loop circuit */
+/* Relies on a L298N chip driven by PWM. See motor_output() */
+int program_closedloop_init(int te, int prog, int pot_min, int pot_max, int pot_pin, int mot_pin) {
+
+  int retval = 0;
+
+  if (te < MAXTEENSYS) {
+    if (teensy[te].connected) {
+      if ((prog >= 0) && (prog < MAX_PROG)) {
+
+	program[te][prog].type = PROGRAM_CLOSEDLOOP;
+	program[te][prog].val16[1] = pot_min; // minimum servo potentiometer value
+	program[te][prog].val16[2] = pot_max; // maximum servo potentiometer value
+	program[te][prog].val8[0] = 0;  // program is inactive at init
+	program[te][prog].val8[1] = pot_pin;  // servo potentiometer pin number (needs to be defined separately above)
+	program[te][prog].val8[2] = mot_pin;  // servo motor pin number (first pin, full motor separately defined above)
+	
+      } else {
+	if (verbose > 0) printf("Program %i above maximum # of programs %i of Teensy %i \n", prog,
+				MAX_PROG, te);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 2) printf("Program %i cannot be executed. Teensy %i not connected \n", prog, te);
+      retval = -1;
+    }
+  } else {
+    if (verbose > 0) printf("Program %i cannot be executed. Teensy %i >= MAXTEENSYS\n", prog, te);
+    retval = -1;
+  }
+  
+  return retval;
+       
+}
 
 /* This program simulates a servo using a real motor and a potentiometer */
 int program_closedloop(int te, int prog, int active, float *fvalue, float minval, float maxval) {
@@ -1929,6 +1969,41 @@ int program_closedloop(int te, int prog, int active, float *fvalue, float minval
   }
 
   return retval;
+}
+
+/* Init Code for below program creating a key matrix */
+int program_keymatrix_init(int te, int prog, int dev, int col0, int ncol, int row0, int nrow) {
+
+  int retval = 0;
+
+  if (te < MAXTEENSYS) {
+    if (teensy[te].connected) {
+      if ((prog >= 0) && (prog < MAX_PROG)) {
+	
+	program[te][prog].type = PROGRAM_KEYMATRIX;
+	program[te][prog].val8[0] = 0; // Program inactive at init
+	program[te][prog].val8[1] = dev; // MCP23017 Device Number
+	program[te][prog].val8[2] = col0; // Starting Column Pin Number 
+	program[te][prog].val16[0] = ncol; // Number of Columns 
+	program[te][prog].val16[1] = row0; // Starting Row Pin Number
+	program[te][prog].val16[2] = nrow; // Number of Rows
+
+      } else {
+	if (verbose > 0) printf("Program %i above maximum # of programs %i of Teensy %i \n", prog,
+				MAX_PROG, te);
+	retval = -1;
+      }
+    } else {
+      if (verbose > 2) printf("Program %i cannot be executed. Teensy %i not connected \n", prog, te);
+      retval = -1;
+    }
+  } else {
+    if (verbose > 0) printf("Program %i cannot be executed. Teensy %i >= MAXTEENSYS\n", prog, te);
+    retval = -1;
+  }
+  
+  return retval;
+       
 }
 
 /* This program creates a key matrix on a MCP23017 with n colums x m rows */

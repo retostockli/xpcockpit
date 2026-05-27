@@ -208,10 +208,10 @@ typedef struct {
 
 typedef struct {
   int8_t connected;
-  int16_t val[HT16K33_MAX_DIG];
+  int16_t val[HT16K33_MAX_DIG]; // 7-segment value (0-15 characters) or 0-255 (raw segments)
   int16_t val_save[HT16K33_MAX_DIG];
-  int8_t decimalpoint[HT16K33_MAX_DIG];
-  int8_t brightness;
+  int8_t decimalpoint[HT16K33_MAX_DIG]; // Decimal Point (1) per digit. Set to -10 for interpreting val as raw segments (8 bits)
+  int8_t brightness; // 0-15
   int8_t wire;  // I2C bus (0,1,2)
   uint8_t address; // I2C address 0x70 - 0x77
 } ht16k33_struct;

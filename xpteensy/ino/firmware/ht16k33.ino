@@ -72,11 +72,15 @@ int16_t ht16k33_write(int8_t dev, int8_t dig, int16_t val, int8_t dp, int8_t bri
         if (val != ht16k33_data[dev].val[dig]) {
 
           ht16k33[dev].setBrightness(brightness);
-          if (dp == 1) {
-            ht16k33[dev].set7Seg(dig, val, true);
+          if (dp == -10) {
+            ht16k33[dev].setDisplayRaw(dig, val);
           } else {
-            ht16k33[dev].set7Seg(dig, val, false);
-          }
+            if (dp == 1) {
+              ht16k33[dev].set7Seg(dig, val, true);
+            } else {
+              ht16k33[dev].set7Seg(dig, val, false);
+            }
+          } 
           ht16k33[dev].sendLed();
 
           if (DEBUG > 0) {

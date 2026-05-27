@@ -44,15 +44,10 @@ void init_test(void)
   int te = 0;
   int pin;
   int dev;
+  int ret;
   
  
-  /* for (int i=0;i<42;i++) { */
-  /*   if ((i != 16) && (i != 18) && (i != 19)) { */
-  /*     teensy[te].pinmode[i] = PINMODE_INPUT; */
-  /*   } */
-  /* } */
-
-
+  /* Teensy I/O Pin configurations */
   //teensy[te].pinmode[0] = PINMODE_INPUT;
   teensy[te].pinmode[0] = PINMODE_OUTPUT;
   teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN;
@@ -75,14 +70,16 @@ void init_test(void)
   /* teensy[te].pinmode[31] = PINMODE_INPUT; // brake */
   /* teensy[te].pinmode[33] = PINMODE_MOTOR; // motor EN */
   /* teensy[te].arg1[33] = 34; // motor IN1 */
-  /* teensy[te].arg2[33] = 35; // motor IN1 */
+  /* teensy[te].arg2[33] = 35; // motor IN2 */
   /* teensy[te].arg3[33] = 38; // motor Current Sense */
-  
+
+  /* Configure a Motor through a L298N board */
   /* teensy[te].pinmode[24] = PINMODE_MOTOR; // motor EN */
   /* teensy[te].arg1[24] = 26; // motor IN1 */
-  /* teensy[te].arg2[24] = 25; // motor IN1 */
+  /* teensy[te].arg2[24] = 25; // motor IN2 */
   //teensy[te].arg3[24] = 38; // motor Current Sense
 
+  /* MCP23017 I/O Extender through I2C */
   dev = 0;
   for (pin=0;pin<8;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
@@ -105,50 +102,33 @@ void init_test(void)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x41; // ^ 0x50; // (0x73) I2C address of MCP23017 device
 
-  /* mcp23017[te][1].pinmode[2] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[3] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[4] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[10] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[11] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[12] = PINMODE_INPUT; */
-  /* mcp23017[te][1].pinmode[5] = PINMODE_OUTPUT; */
-  /* mcp23017[te][1].pinmode[7] = PINMODE_OUTPUT; */
-  /* mcp23017[te][1].intpin = 7; // also define pin 6 of teensy as INTERRUPT above! */
-  /* mcp23017[te][1].wire = 0;  // I2C Bus: 0, 1 or 2 */
-  /* mcp23017[te][1].address = 0x20; // I2C address of MCP23017 device */
-
-
+  /* Servo & PWM I2C Board */
   /* pca9685[te][0].pinmode[5] = PINMODE_PWM; */
   /* //pca9685[te][0].pinmode[2] = PINMODE_SERVO; */
   /* pca9685[te][0].wire = 0; */
   /* pca9685[te][0].address = 0x41; */
 
-
+  /* Magnetic angle measure I2C board */
   /* as5048b[te][0].nangle = 10; */
   /* as5048b[te][0].type = 0; */
   /* as5048b[te][0].wire = 0; */
   /* as5048b[te][0].address = 0x40; */
 
-  /* This program simulates a key matrix on a MCP23017 I2C device
-  program[te][0].type = PROGRAM_KEYMATRIX;
-  program[te][0].val8[1] = 1; // MCP23017 Device Number
-  program[te][0].val8[2] = 0; // Starting Column Pin Number 
-  program[te][0].val16[0] = 3; // Number of Columns 
-  program[te][0].val16[1] = 8; // Starting Row Pin Number
-  program[te][0].val16[2] = 4; // Number of Rows
+  /* This program simulates a key matrix on a MCP23017 I2C device */
+  ret = program_keymatrix_init(te, 0, 1, 0, 3, 8, 4);
+  if (ret != 0) printf("Initialization of Key Matrix Program 0 failed\n");
   
   /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
      running inside the teensy */
-  /* program[te][1].type = PROGRAM_CLOSEDLOOP; */
-  /* program[te][1].val16[1] = 5; // minimum servo potentiometer value */
-  /* program[te][1].val16[2] = 990; // maximum servo potentiometer value */
-  /* program[te][1].val8[1] = 15;  // servo potentiometer pin number (needs to be defined separately above) */
-  /* program[te][1].val8[2] = 24;  // servo motor pin number (first pin, full motor separately defined above) */
+  ret = program_closedloop_init(te, 1, 5, 990, 15, 24);
+  if (ret != 0) printf("Initialization of Motor Closed Loop Program 1 failed\n");
 
+  /* 7 Segment Display I2C Board */
   ht16k33[te][0].brightness = 10;
   ht16k33[te][0].wire = 0;
   ht16k33[te][0].address = 0x10;
 
+  /* Volume control Chip through SPI */
   //pga2311[te][0].spi = 0; // SPI Bus number
   //pga2311[te][0].cs = 10; // Chip Select Pin
   
@@ -175,7 +155,7 @@ void test(void)
 
   /* link NAV1 Frequency to encoder value */
   //  int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_hz");
-  int *encodervalue = link_dataref_int("xpserver/encoder");
+  //int *encodervalue = link_dataref_int("xpserver/encoder");
 
   /* not needed, only if you run without x-plane connection */
   //if (*encodervalue == INT_MISS) *encodervalue = 0;
@@ -311,10 +291,13 @@ void test(void)
   //ret = pwm_output(te, PCA9685_TYPE, 0, 5, fvalue,0.0,100.0);
   //ret = servo_output(te, PCA9685_TYPE, 0, 2, fvalue,0.0,100.0,0.0,1.0);
 
-  int value = 12345;
+  int value = 1234;
   int dp = 2;
   int brightness = 15;
-  
-  ret = display_output(te, HT16K33_TYPE, 0, 0, 5, &value, dp, brightness);
+
+  ret = display_output(te, HT16K33_TYPE, 0, 1, 4, &value, dp, brightness);
+
+  value = 2;
+  ret = display_output(te, HT16K33_TYPE, 0, 0, 1, &value, -10, brightness);
   
 }
