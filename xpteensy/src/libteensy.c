@@ -201,8 +201,8 @@ int init_teensy() {
 	} /* pin defined */
       } /* loop over pins */
 
-      /* wait for 10 ms to make sure teensy hardware has initialized */
-      usleep(10000);
+      /* wait for to make sure teensy hardware has initialized */
+      usleep(SEND_WAITTIME);
 
       /* initialize PCA9685 boards connected via I2C */
       /* PCA9685 0x40 and 0x41 is incompatible with MCP23017 at 0x20
@@ -243,8 +243,8 @@ int init_teensy() {
 	    } /* pin defined */
 	  } /* loop over pins */
 	}
-	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(10000);
+	/* wait to make sure teensy hardware has initialized */
+	usleep(SEND_WAITTIME);
       }
 
      /* initialize MCP23017 boards connected via I2C */
@@ -288,8 +288,8 @@ int init_teensy() {
 	    } /* pin defined */
 	  } /* loop over pins */
 	}
-	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(10000);
+	/* wait to make sure teensy hardware has initialized */
+	usleep(SEND_WAITTIME);
        }
 
       
@@ -323,8 +323,8 @@ int init_teensy() {
 	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i AS5048B %i \n", ret,te,dev);
 	  }
 	}
-	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(10000);
+	/* wait to make sure teensy hardware has initialized */
+	usleep(SEND_WAITTIME);
       }
 
      /* initialize HT16K33 boards connected via I2C */
@@ -348,8 +348,8 @@ int init_teensy() {
 	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i HT16K33 %i \n", ret,te,dev);
 	  }
 	}
-	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(10000);
+	/* wait to make sure teensy hardware has initialized */
+	usleep(SEND_WAITTIME);
        }
 
       /* initialize PGA2311 chips connected via SPI */
@@ -382,8 +382,8 @@ int init_teensy() {
 	    }
 	  } /* loop over pins */
 	}
-	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(10000);
+	/* wait to make sure teensy hardware has initialized */
+	usleep(SEND_WAITTIME);
       }
 
       /* initialize internal programs on Teensy */
@@ -421,14 +421,14 @@ int init_teensy() {
 	    printf("INCOMPLETE INIT: Sent %i bytes to Teensy %i PROGRAM %i \n", ret,te,prog);
 	  }
 	}
-	/* wait for 10 ms to make sure teensy hardware has initialized */
-	usleep(10000);
+	/* wait to make sure teensy hardware has initialized */
+	usleep(SEND_WAITTIME);
        }
       
       teensy[te].initialized = 1;
 
-      /* wait for 10 ms to make sure teensy hardware has initialized */
-      usleep(10000);
+      /* wait to make sure teensy hardware has initialized */
+      usleep(SEND_WAITTIME);
       
     } /* teensy connected */
   } /* loop over teensys */

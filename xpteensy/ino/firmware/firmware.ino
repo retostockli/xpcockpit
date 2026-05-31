@@ -151,7 +151,7 @@ void loop() {
   CurrentTime = micros();
   ElapsedTime = CurrentTime - StartTime;
 
-  if ((ElapsedTime > 1000) && (DEBUG > 0)) {
+  if ((ElapsedTime > 1500) && (DEBUG > 0)) {
     Serial.printf("Long Loop Time: %i us\n", ElapsedTime);
   }
 

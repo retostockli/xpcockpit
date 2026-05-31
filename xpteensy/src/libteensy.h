@@ -19,7 +19,9 @@
 #define SENDMSGLEN 16            /* number of bytes in sent UDP packet */
 #define UNCHANGED 0              /* flag for unchanged input / output */
 #define CHANGED 1                /* flag for changed input / output. 
-				    Can actually also be > 1 for e.g. analog inputs that change faster than xpteensy cycle */
+				    Can actually also be > 1 for e.g. analog inputs that change
+				    faster than xpteensy cycle */
+#define SEND_WAITTIME 1000       /* Microseconds wait time until initializing next device type */
 
 #include "teensy_config.h"
 

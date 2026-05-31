@@ -311,10 +311,10 @@ uint8_t HT16K33::set7Seg(uint8_t dig, uint8_t cha, boolean dp){ // position 0-15
   int8_t dig2;
   if (cha<22 && dig<16){
     if (dig<=7) {dig2 = dig*2;} else {dig2 = ((dig-8)*2)+1;} //re-arrange digit positions
-    Serial.printf("CHA: %i\n",cha);
+    //Serial.printf("CHA: %i\n",cha);
     uint8_t num = _seg7Font[cha];
     if (dp) {bitSet(num,(7));} else {bitClear(num,(7));} //Set decimal point on 7th bit
-    Serial.printf("NUM: %i\n",num);
+    //Serial.printf("NUM: %i\n",num);
     displayRam[dig2] = num;
     return 0;
   } else {

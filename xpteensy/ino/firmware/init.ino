@@ -2,6 +2,7 @@ void init_data() {
 
   int k, l;
   int dev;
+  int prog;
 
   teensy_data.num_servo = 0;
 
@@ -98,6 +99,19 @@ void init_data() {
 
   Serial.printf("PGA2311 Data initialized\n");
 
+  for (prog = 0; prog < MAX_PROG; prog++) {
+    program_data[prog].connected = 0;
+    program_data[prog].type = INITVAL;
+    for (k = 0; k < MAX_VARS; k++) {
+      program_data[prog].val8[k] = INITVAL;
+      program_data[prog].val16[k] = INITVAL;
+      program_data[prog].val8_save[k] = INITVAL;
+      program_data[prog].val16_save[k] = INITVAL;
+    }
+
+  }
+
+  Serial.printf("PROGRAM Data initialized\n");
 }
 
 int init_ethernet(void) {
