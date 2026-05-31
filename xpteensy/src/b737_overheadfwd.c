@@ -32,7 +32,7 @@
 #include "common.h"
 #include "libteensy.h"
 #include "serverdata.h"
-#include "test.h"
+#include "b737_overheadfwd.h"
 
 /*
   LTC4316 Address Translator
@@ -42,8 +42,6 @@
   XOR 0x60       	ON	OFF
   XOR 0x70       	OFF 	OFF
 */
-
-int count;
 
 /* to be preserved variables */
 float l_wiper;
