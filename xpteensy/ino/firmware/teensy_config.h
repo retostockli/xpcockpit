@@ -143,11 +143,9 @@ typedef struct {
   int8_t arg1[MAX_PINS];       // for Teensy interrupt pins: interrupt for which device type.
                                // for Servos: which servo instance (teensy) or min pulsewidth (us)
                                // for Motors: IN1 pin number
-  int8_t arg2[MAX_PINS];       // for Teensy interrupt pins: for which device number of above type
-                               // For Servos: max pulse width (us)
+  int8_t arg2[MAX_PINS];       // For Servos: max pulse width (us)
                                // for Motors: IN2 pin number
-  int8_t arg3[MAX_PINS];       // for Teensy interrupt pins: for which device number of above type
-                               // For Servos: max pulse width (us)
+  int8_t arg3[MAX_PINS];       // For Servos: max pulse width (us)
                                // for Motors: Current sense pin number
   uint8_t arg4[MAX_PINS];      // for Motors: Minimum Speed (currently only used in closed loop program)
   uint8_t arg5[MAX_PINS];      // for Motors: Maximum Speed (currently only used in closed loop program)
@@ -173,7 +171,7 @@ typedef struct {
   int16_t val_save[MCP23017_MAX_PINS];  // previous values on device pins (input or output)
   struct timeval val_time[MCP23017_MAX_PINS];    // stores time since last change (needed for encoder speed multiplier)
   int8_t pinmode[MCP23017_MAX_PINS];   // I/O type: Input or output
-  int8_t intpin;     // Interrupt pin on teensy to read this device
+  int8_t intpin;     // Interrupt pin on teensy to read this device. Several MCP23017 can share an interrupt pin
   int8_t wire;       // I2C bus (0,1,2)
   uint8_t address;   // I2C address (0x20 - 0x27)
 } mcp23017_struct;

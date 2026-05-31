@@ -98,7 +98,7 @@ void init_test(void)
   for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
-  mcp23017[te][dev].intpin = 2;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].intpin = 1;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x41; // ^ 0x50; // (0x73) I2C address of MCP23017 device
 
@@ -120,8 +120,8 @@ void init_test(void)
   
   /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
      running inside the teensy */
-  ret = program_closedloop_init(te, 1, 5, 990, 15, 24);
-  if (ret != 0) printf("Initialization of Motor Closed Loop Program 1 failed\n");
+  //ret = program_closedloop_init(te, 1, 5, 990, 15, 24);
+  //if (ret != 0) printf("Initialization of Motor Closed Loop Program 1 failed\n");
 
   /* 7 Segment Display I2C Board */
   ht16k33[te][0].brightness = 10;

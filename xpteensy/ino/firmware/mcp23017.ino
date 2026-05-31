@@ -68,7 +68,7 @@ int16_t mcp23017_init(int8_t dev, int8_t pin, int8_t pinmode, int8_t intpin, int
               mcp23017[dev].setupInterrupts(true, false, LOW); /* configure Interrupt mode of MCP23017 */
 
               teensy_data.arg1[intpin] = MCP23017_TYPE;
-              teensy_data.arg2[intpin] = dev;
+              //teensy_data.arg2[intpin] = dev;
             } else {
               retval = ERROR_INIT_INTERRUPT;
               if (DEBUG > 0) {

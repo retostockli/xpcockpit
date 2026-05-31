@@ -1971,7 +1971,9 @@ int program_closedloop(int te, int prog, int active, float *fvalue, float minval
   return retval;
 }
 
-/* Init Code for below program creating a key matrix */
+/* Init Code for below program creating a key matrix
+   Columns: output (set to ground consecutively)
+   Rows: input (read state) */
 int program_keymatrix_init(int te, int prog, int dev, int col0, int ncol, int row0, int nrow) {
 
   int retval = 0;

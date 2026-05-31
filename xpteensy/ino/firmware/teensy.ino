@@ -182,6 +182,7 @@ void teensy_read() {
   int16_t val;
   int h;
   float dt;
+  int dev;
 
   for (int8_t pin = 0; pin < MAX_PINS; pin++) {
     if (teensy_data.pinmode[pin] == PINMODE_INPUT) {
@@ -202,7 +203,12 @@ void teensy_read() {
     } else if (teensy_data.pinmode[pin] == PINMODE_INTERRUPT) {
       if (!digitalRead(pin)) {
         if (teensy_data.arg1[pin] == MCP23017_TYPE) {
-          mcp23017_read(teensy_data.arg2[pin]);
+          for (dev=0;dev<MAX_DEV;dev++) {
+            if ((mcp23017_data[dev].connected == 1) && (mcp23017_data[dev].intpin == pin)) {
+              mcp23017_read(dev);
+            }
+          }
+          //mcp23017_read(teensy_data.arg2[pin]);
         } else if (teensy_data.arg1[pin] == INITVAL) {
           /* Interrupt signaling for not yet initialized board */
         } else {
