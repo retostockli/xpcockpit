@@ -73,7 +73,7 @@ int16_t ht16k33_write(int8_t dev, int8_t dig, int16_t val, int8_t dp, int8_t bri
 
           ht16k33[dev].setBrightness(brightness);
           if (dp == -10) {
-            ht16k33[dev].setDisplayRaw(dig, val);
+            ht16k33[dev].set7SegRaw(dig, val);
           } else {
             if (dp == 1) {
               ht16k33[dev].set7Seg(dig, val, true);
@@ -84,7 +84,7 @@ int16_t ht16k33_write(int8_t dev, int8_t dig, int16_t val, int8_t dp, int8_t bri
           ht16k33[dev].sendLed();
 
           if (DEBUG > 0) {
-            Serial.printf("WRITE: HT16K33 Device %i Send Value %i to Digit %i Brightness %i \n", dev, val, dig, brightness);
+            Serial.printf("WRITE: HT16K33 Device %i Send Value %i to Digit %i DP %i Brightness %i \n", dev, val, dig, dp, brightness);
           }
 
         }  // value has changed

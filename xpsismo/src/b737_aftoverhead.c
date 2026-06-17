@@ -402,7 +402,8 @@ void b737_aftoverhead(void)
 
     char *irs_val;
     if (*sys_disp == 0) {
-      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",100,-1);
+      //irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",100,-1);
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",100,-1);
     } else {
       irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",100,-1);
     }
@@ -450,7 +451,7 @@ void b737_aftoverhead(void)
 	ret = display_output(card,4,1,&display,0,display_brightness);
  	display = temp - temp/10*10;
 	ret = display_output(card,5,1,&display,0,display_brightness);
-     } else {
+      } else {
 	display = 0;
 	ret = display_output(card,3,3,&display,0,0);
       }
@@ -474,7 +475,7 @@ void b737_aftoverhead(void)
 	ret = display_output(card,12,1,&display,0,display_brightness);
  	display = temp - temp/10*10;
 	ret = display_output(card,13,1,&display,0,display_brightness);
-     } else {
+      } else {
 	display = 0;
 	ret = display_output(card,11,3,&display,0,0);
       }
@@ -581,6 +582,7 @@ void b737_aftoverhead(void)
 	  /* DO NOT PRINT LEADING 0 if W/E Degrees are less than 100 */
 	}
 	display += 6; /* Add Decimal Points */
+	display = 255;
 	ret = display_output(card,8,1,&display,-10,display_brightness);
     
 	for (i=9;i<13;i++) {

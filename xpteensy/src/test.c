@@ -49,8 +49,8 @@ void init_test(void)
  
   /* Teensy I/O Pin configurations */
   //teensy[te].pinmode[0] = PINMODE_INPUT;
-  teensy[te].pinmode[0] = PINMODE_OUTPUT;
-  teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN;
+  //teensy[te].pinmode[0] = PINMODE_OUTPUT;
+  //teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN;
 
   teensy[te].pinmode[24] = PINMODE_OUTPUT;
   teensy[te].pinmode[25] = PINMODE_PWM;
@@ -87,20 +87,20 @@ void init_test(void)
   for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
-  mcp23017[te][dev].intpin = 1;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].intpin = 16;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x40; // ^ 0x50; // (0x73) I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x20; // ^ 0x50; // (0x73) I2C address of MCP23017 device
 
-  dev = 1;
-  for (pin=0;pin<8;pin++) {
-    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
-  }
-  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
-    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
-  }
-  mcp23017[te][dev].intpin = 1;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
-  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x41; // ^ 0x50; // (0x73) I2C address of MCP23017 device
+  /* dev = 1; */
+  /* for (pin=0;pin<8;pin++) { */
+  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT; */
+  /* } */
+  /* for (pin=8;pin<MCP23017_MAX_PINS;pin++) { */
+  /*   mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT; */
+  /* } */
+  /* mcp23017[te][dev].intpin = 1;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE) */
+  /* mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2 */
+  /* mcp23017[te][dev].address = 0x41; // ^ 0x50; // (0x73) I2C address of MCP23017 device */
 
   /* Servo & PWM I2C Board */
   /* pca9685[te][0].pinmode[5] = PINMODE_PWM; */
@@ -115,8 +115,8 @@ void init_test(void)
   /* as5048b[te][0].address = 0x40; */
 
   /* This program simulates a key matrix on a MCP23017 I2C device */
-  ret = program_keymatrix_init(te, 0, 1, 0, 3, 8, 4);
-  if (ret != 0) printf("Initialization of Key Matrix Program 0 failed\n");
+  /* ret = program_keymatrix_init(te, 0, 1, 0, 3, 8, 4); */
+  /* if (ret != 0) printf("Initialization of Key Matrix Program 0 failed\n"); */
   
   /* This program simulates a servo by using a closed loop code with a motor and a potentiometer
      running inside the teensy */
@@ -124,9 +124,9 @@ void init_test(void)
   //if (ret != 0) printf("Initialization of Motor Closed Loop Program 1 failed\n");
 
   /* 7 Segment Display I2C Board */
-  ht16k33[te][0].brightness = 10;
-  ht16k33[te][0].wire = 0;
-  ht16k33[te][0].address = 0x10;
+  /* ht16k33[te][0].brightness = 10; */
+  /* ht16k33[te][0].wire = 0; */
+  /* ht16k33[te][0].address = 0x10; */
 
   /* Volume control Chip through SPI */
   //pga2311[te][0].spi = 0; // SPI Bus number
@@ -163,11 +163,11 @@ void test(void)
   //if (*value == INT_MISS) *value = 1;
 
   /* read analog input (A12) */
-  ret = analog_input(te,26,fvalue,0.0,100.0);
-  if (ret == 1) {
-    printf("Analog Input changed to: %f \n",*fvalue);
-  }
-  ret = pwm_output(te, TEENSY_TYPE, 0, 25, fvalue,0.0,100.0);
+  /* ret = analog_input(te,26,fvalue,0.0,100.0); */
+  /* if (ret == 1) { */
+  /*   printf("Analog Input changed to: %f \n",*fvalue); */
+  /* } */
+  /* ret = pwm_output(te, TEENSY_TYPE, 0, 25, fvalue,0.0,100.0); */
 
   /* ret = volume_output(te, PGA2311_TYPE, 0, 0, fvalue, 0.0, 100.0); */
 
@@ -198,13 +198,13 @@ void test(void)
       printf("MCP23017 %i Input %i changed to: %i \n",dev,i,ival);
     }
   }
-  dev=1;
-  for (int i=8;i<MCP23017_MAX_PINS;i++) {
-    ret = digital_input(te, MCP23017_TYPE, dev, i, &ival, 0);
-    if (ret == 1) {
-      printf("MCP23017 %i Input %i changed to: %i \n",dev,i,ival);
-    }
-  }
+  /* dev=1; */
+  /* for (int i=8;i<MCP23017_MAX_PINS;i++) { */
+  /*   ret = digital_input(te, MCP23017_TYPE, dev, i, &ival, 0); */
+  /*   if (ret == 1) { */
+  /*     printf("MCP23017 %i Input %i changed to: %i \n",dev,i,ival); */
+  /*   } */
+  /* } */
 
   /* ret = digital_input(te, TEENSY_TYPE, 0, 30, &direction, 0); */
   /* if (ret == 1) { */
@@ -257,10 +257,10 @@ void test(void)
   /* ret = program_closedloop(te, 1, direction, &fencodervalue, 0.0, 100.0); */
 
   /* Keyboard Matrix */
-  ret = program_keymatrix(te, 0, 1, digitalvalue);
-  if (ret == 1) {
-    printf("Keymatrix Value: %i \n",*digitalvalue);
-  }
+  /* ret = program_keymatrix(te, 0, 1, digitalvalue); */
+  /* if (ret == 1) { */
+  /*   printf("Keymatrix Value: %i \n",*digitalvalue); */
+  /* } */
 
   
   /* set LED connected to first output (#0) to value landing lights dataref */
@@ -276,11 +276,11 @@ void test(void)
   for (pin=0;pin<8;pin++) {
     ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue);
   }
-  dev = 1;
-  *digitalvalue = 1;
-  for (pin=0;pin<8;pin++) {
-    ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue);
-  }
+  /* dev = 1; */
+  /* *digitalvalue = 1; */
+  /* for (pin=0;pin<8;pin++) { */
+  /*   ret = digital_output(te, MCP23017_TYPE, dev, pin, digitalvalue); */
+  /* } */
   //ret = pwm_output(te, TEENSY_TYPE, 0, 37, fvalue,5.0,1023.0);
 
   /* change Servo according to rotary position */
@@ -291,13 +291,13 @@ void test(void)
   //ret = pwm_output(te, PCA9685_TYPE, 0, 5, fvalue,0.0,100.0);
   //ret = servo_output(te, PCA9685_TYPE, 0, 2, fvalue,0.0,100.0,0.0,1.0);
 
-  int value = 1234;
-  int dp = 2;
-  int brightness = 15;
+  /* int value = 1234; */
+  /* int dp = 2; */
+  /* int brightness = 15; */
 
-  ret = display_output(te, HT16K33_TYPE, 0, 1, 4, &value, dp, brightness);
+  /* ret = display_output(te, HT16K33_TYPE, 0, 1, 4, &value, dp, brightness); */
 
-  value = 2;
-  ret = display_output(te, HT16K33_TYPE, 0, 0, 1, &value, -10, brightness);
+  /* value = 2; */
+  /* ret = display_output(te, HT16K33_TYPE, 0, 0, 1, &value, -10, brightness); */
   
 }

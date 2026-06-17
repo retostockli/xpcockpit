@@ -558,9 +558,11 @@ int send_teensy() {
 	      teensySendBuffer[11] = ht16k33[te][dev].brightness;
 	      ret = send_udp(teensy[te].ip,teensy[te].port,teensySendBuffer,SENDMSGLEN);
 	      if (ret == SENDMSGLEN) {
-		if (verbose > 1) printf("SEND: Sent %i bytes to Teensy %i HT16K33 %i Pin %i \n", ret,te,dev,pin);
+		if (verbose > 0) printf("SEND: Sent %i bytes to Teensy %i HT16K33 %i Digit %i val %i dp %i brightness %i \n",
+					ret,te,dev,dig,ht16k33[te][dev].val[dig],ht16k33[te][dev].decimalpoint[dig],
+					ht16k33[te][dev].brightness);
 	      } else {
-		printf("INCOMPLETE SEND: Sent %i bytes to Teensy %i HT16K33 %i Pin %i \n", ret,te,dev,pin);
+		printf("INCOMPLETE SEND: Sent %i bytes to Teensy %i HT16K33 %i Digit %i \n", ret,te,dev,dig);
 	      }
 	    } /* value changed since last send */
 	  } /* loop over pins of HT16K33 */
@@ -738,7 +740,7 @@ int recv_teensy() {
 	  } else if ((dev_type == PROGRAM_TYPE) && (pin >= 0) && (pin < MAX_PROG)) {
 	    if (program[te][pin].connected == 1) {
 	      program[te][pin].val16[MAX_VARS-1] = val;
-	      if (verbose > 0) printf("Received Value %i for Teensy %i Program %i \n",
+	      if (verbose > 1) printf("Received Value %i for Teensy %i Program %i \n",
 				      val,te,pin);
 	    } else {
 	      printf("Received value for undefined program %i on Teensy %i\n",pin,te);
@@ -1427,6 +1429,8 @@ int display_output(int te, int type, int dev, int pos, int n, int *value, int dp
   /* You can use special signs for single digits (n=1) : */
   /* Single Digits go from 0-F, 16-18 are blank, 19 is negative sign, 20 is degree sign, 21 is underscore */
   /* This way you can also blank individual or all digits */
+  /* Set DP to -1 to not display a decimal point
+     Set DP to the digit where to set a decimal point */
 
   if (value != NULL) {
 
@@ -1440,6 +1444,12 @@ int display_output(int te, int type, int dev, int pos, int n, int *value, int dp
 
 		  changed = 0;
 
+		  /* workaround for updating 7 seg display brightness without the need to
+		     change the digits themselves */
+		  brightness = MIN(brightness,15);
+		  if (ht16k33[te][dev].brightness != brightness) {
+		    ht16k33[te][dev].val_save[pos] = INITVAL;
+		  }
 		  ht16k33[te][dev].brightness = brightness;
 		
 		  if (n > 1) {
@@ -2038,9 +2048,11 @@ int program_keymatrix(int te, int prog, int active, int* value) {
 	      if (program[te][prog].val8[0] == 1) {
 		if (program[te][prog].val16[MAX_VARS-1] != program[te][prog].val16_save[MAX_VARS-1]) {
 		  program[te][prog].val16_save[MAX_VARS-1] = program[te][prog].val16[MAX_VARS-1];
-		  *value = program[te][prog].val16[MAX_VARS-1];
-		  if (verbose > 0) printf("Teensy %i Keymatrix %i Button Pressed %i \n", te, prog, *value);
-		  retval = 1;
+		  if (program[te][prog].val16[MAX_VARS-1] != INITVAL) {
+		    *value = program[te][prog].val16[MAX_VARS-1];
+		    if (verbose > 1) printf("Teensy %i Keymatrix %i Button Pressed %i \n", te, prog, *value);
+		    retval = 1;
+		  }
 		}
 	      }
 	    } else {
