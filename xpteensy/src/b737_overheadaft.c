@@ -58,6 +58,8 @@ int is_E;
 int last;
 float irs_l;
 float irs_r;
+float elt;
+float pass_oxy;
 
 int acp3_micsel_vhf1;
 int acp3_micsel_vhf2;
@@ -113,14 +115,58 @@ void init_b737_overheadaft(void)
   }
   mcp23017[te][dev].intpin = 0;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x20; // ^ 0x50; // (0x73) I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x20; // I2C address of MCP23017 device
  
-  /* HT16K33 on IRS Display */
+  /* 2 MCP23017 on FLAPS Panel */
+  dev = 1;
+  for (pin=0;pin<14;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=14;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 4;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x21; // I2C address of MCP23017 device
+
+  dev = 2;
+  for (pin=0;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  mcp23017[te][dev].intpin = INITVAL;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x22; // I2C address of MCP23017 device
+
+  /* MCP23017 on IRS Selector Panel */
+  dev = 3;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 8;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x23; // I2C address of MCP23017 device
+  
+  /* MCP23017 on EEC Panel */
+  dev = 4;
+  for (pin=0;pin<4;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  for (pin=4;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  mcp23017[te][dev].intpin = 12;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x24; // I2C address of MCP23017 device
+  
+  /* HT16K33 7 Segment Driver on IRS Display Panel */
   ht16k33[te][0].brightness = 10;
   ht16k33[te][0].wire = 0;
   ht16k33[te][0].address = 0x70;
 
-  /* This program simulates a key matrix on the above MCP23017 I2C device */
+  /* This program simulates a key matrix on the IRS DISPLAY PANEL MCP23017 I2C device */
   ret = program_keymatrix_init(te, 0, 0, 10, 3, 6, 4);
   if (ret != 0) printf("Initialization of Key Matrix Program 0 failed\n");
  
@@ -150,9 +196,7 @@ void b737_overheadaft(void)
   int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
 
   *avionics_on = 1;
-
-  //acf_type = 3;
-  
+ 
   float *lights_test;
   if ((acf_type == 2) || (acf_type == 3)) {
     lights_test = link_dataref_flt("laminar/B738/toggle_switch/bright_test",0);
@@ -160,7 +204,9 @@ void b737_overheadaft(void)
     lights_test = link_dataref_flt("xpserver/lights_test",0);
   }
 
-  //*avionics_on = 1;
+  /* *avionics_on = 1; */
+  /* acf_type = 3; */
+  /* *lights_test = 1.0; */
   
   /*** Background Lighting ***/
 
@@ -175,6 +221,14 @@ void b737_overheadaft(void)
   /*     printf("MCP23017 %i Input %i changed to: %i \n",dev,i,ival); */
   /*   } */
   /* } */
+
+  /*** CENTER SWITCHES (DOME WHITE DIRECTLY WIRED TO DIGITAL RELAY ***/
+  dev = 4; /* Service Interphone Switch connected to EEC Panel */
+  int *service_interphone = link_dataref_int("xpserver/service_interphone");
+  ret = digital_input(te, MCP23017_TYPE, dev, 3, service_interphone, 0);
+  if (ret == 1) {
+    printf("Service Interphone Switch: %i \n",*service_interphone);
+  }
 
   /*************************/
   /*** IRS Display Panel ***/
@@ -223,7 +277,7 @@ void b737_overheadaft(void)
     if (ival == 1) disp_sel = 4.0;
     
     ret = set_state_updnf(&disp_sel, disp_sel_status, disp_sel_right, disp_sel_left);
-    if (ret == 1) {
+    if (ret != 0) {
       printf("DISP SEL Switch changed to: %i\n", (int) disp_sel);
     }
 
@@ -494,5 +548,331 @@ void b737_overheadaft(void)
     //ret = display_output(te, HT16K33_TYPE, 0, 8, 8, &display, dp, display_brightness);
 
   }
+
+  
+  /*******************/
+  /*** FLAPS Panel ***/
+  /*******************/
+  if ((acf_type == 2) || (acf_type == 3)) {
+
+    if (*avionics_on == 1) {
+      int *flaps_test =  link_dataref_cmd_hold("laminar/B738/push_button/flaps_test");
+      dev = 1; /* MCP23017 Device Number */
+      ret = digital_input(te, MCP23017_TYPE, dev, 14, flaps_test, 0);
+      if (ret == 1) {
+	printf("Flaps Panel Test Button: %i \n",*flaps_test);
+      }
+
+      float *flaps_test_ann = link_dataref_flt("laminar/B738/annunciator/flaps_test",-2);
+      if (*flaps_test_ann > 0.05) {
+	dev = 1; /* MCP23017 Device Number */
+	for (i=0;i<13;i++) {
+	  ret = digital_output(te, MCP23017_TYPE, dev, i, &one);
+	}
+	dev = 2; /* MCP23017 Device Number */
+	for (i=0;i<13;i++) {
+	  ret = digital_output(te, MCP23017_TYPE, dev, i, &one);
+	}
+      } else {
+	float *slats_extend = link_dataref_flt("laminar/B738/annunciator/slats_extend",-2);
+	float *slats_transit = link_dataref_flt("laminar/B738/annunciator/slats_transit",-2);
+	float *slats1 = link_dataref_flt("laminar/B738/controls/slat1_deploy_ratio",-3);
+	float *slats2 = link_dataref_flt("laminar/B738/controls/slat2_deploy_ratio",-3);
+	/* SLATS ANNUNCIATORS */
+	if (*slats_transit > 0.05) {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 0, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 1, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 2, &one);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 0, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 1, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 2, &one);
+	} else {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 0, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 1, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 2, &zero);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 0, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 1, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 2, &zero);
+	}
+	
+	if (*slats2 == 0.5) {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 5, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 6, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 7, &one);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 5, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 6, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 7, &one);
+	} else {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 5, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 6, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 7, &zero);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 5, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 6, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 7, &zero);
+	}
+      
+	if (*slats2 == 1.0) {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 8, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 9, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 10, &one);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 8, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 9, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 10, &one);
+	} else {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 8, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 9, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 10, &zero);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 8, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 9, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 10, &zero);
+	}
+
+	/* FLAPS ANNUNCIATORS */
+	if ((*slats1 > 0.0) && (*slats1 < 1.0)) {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 3, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 4, &one);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 3, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 4, &one);
+	} else {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 3, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 4, &zero);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 3, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 4, &zero);
+	}
+	if (*slats1 == 1.0) {
+	  dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 11, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 12, &one);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 11, &one);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 12, &one);
+	} else {dev = 1;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 11, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 12, &zero);
+	  dev = 2;
+	  ret = digital_output(te, MCP23017_TYPE, dev, 11, &zero);
+	  ret = digital_output(te, MCP23017_TYPE, dev, 12, &zero);
+	}
+      }    
+    } else {
+      /* avionics off */
+      dev = 1; /* MCP23017 Device Number */
+      for (i=0;i<14;i++) {
+	ret = digital_output(te, MCP23017_TYPE, dev, i, &zero);
+      }
+      dev = 2; /* MCP23017 Device Number */
+      for (i=0;i<14;i++) {
+	ret = digital_output(te, MCP23017_TYPE, dev, i, &zero);
+      }
+    }
+  }
+
+  
+  /*******************/
+  /*** ELT Panel ***/
+  /*******************/
+  if ((acf_type == 2) || (acf_type == 3)) {
+
+    dev = 1;
+    
+    float *elt_status = link_dataref_flt("laminar/B738/toggle_switch/elt",0);
+    int *elt_off = link_dataref_cmd_once("laminar/B738/toggle_switch/elt_arm");
+    int *elt_on = link_dataref_cmd_once("laminar/B738/toggle_switch/elt_on");
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 15, &elt, 0);
+    ret = set_state_updnf(&elt, elt_status, elt_on, elt_off);
+    if (ret != 0) {
+      printf("ELT Switch: %i \n",(int) elt);
+    }
+    
+    float *elt_ann = link_dataref_flt("laminar/B738/annunciator/elt",-2);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 13, elt_ann);
+  }
+
+
+  /*** PSEU & GEAR ANNUNCIATORS ***/
+  if ((acf_type == 2) || (acf_type == 3)) {
+    
+    dev = 2;
+
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 13, lights_test);
+
+    float *nose_gear= link_dataref_flt("laminar/B738/annunciator/nose_gear_safe",-1);
+    float *left_gear = link_dataref_flt("laminar/B738/annunciator/left_gear_safe",-1);
+    float *right_gear = link_dataref_flt("laminar/B738/annunciator/right_gear_safe",-1);
+
+    /* Gear Annunciators connected to EEC Panel */
+    dev = 4;
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, nose_gear);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 6, left_gear);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 7, right_gear);
+
+  }
+    
+  /**************************/
+  /*** IRS Selector PANEL ***/
+  /**************************/
+
+  if ((acf_type == 2) || (acf_type == 3)) {
+
+    dev = 3;
+    
+    float *irs_l_status = link_dataref_flt("laminar/B738/toggle_switch/irs_left",0);
+    int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left");
+    int *irs_l_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_right");
+
+    ret = digital_input(te, MCP23017_TYPE, dev, 12, &temp, 0);
+    if (temp == 1) irs_l = 0.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 13, &temp, 0);
+    if (temp == 1) irs_l = 1.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 14, &temp, 0);
+    if (temp == 1) irs_l = 2.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 15, &temp, 0);
+    if (temp == 1) irs_l = 3.0;
+    ret = set_state_updnf(&irs_l, irs_l_status, irs_l_right, irs_l_left);
+    if (ret != 0) {
+      printf("IRS LEFT SELECT: %i \n",(int) irs_l);
+    }
+
+    float *irs_r_status = link_dataref_flt("laminar/B738/toggle_switch/irs_right",0);
+    int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left");
+    int *irs_r_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_right");
+
+    ret = digital_input(te, MCP23017_TYPE, dev, 8, &temp, 0);
+    if (temp == 1) irs_r = 0.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 9, &temp, 0);
+    if (temp == 1) irs_r = 1.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 10, &temp, 0);
+    if (temp == 1) irs_r = 2.0;
+    ret = digital_input(te, MCP23017_TYPE, dev, 11, &temp, 0);
+    if (temp == 1) irs_r = 3.0;
+    ret = set_state_updnf(&irs_r, irs_r_status, irs_r_right, irs_r_left);
+    if (ret != 0) {
+      printf("IRS RIGHT SELECT: %i \n",(int) irs_r);
+    }
+    
+    float *align_left = link_dataref_flt("laminar/B738/annunciator/irs_align_left",-2);
+    float *align_right = link_dataref_flt("laminar/B738/annunciator/irs_align_right",-2);
+    float *fail_left = link_dataref_flt("laminar/B738/annunciator/irs_align_fail_left",-2);
+    float *fail_right = link_dataref_flt("laminar/B738/annunciator/irs_align_fail_right",-2);
+    float *on_dc_left = link_dataref_flt("laminar/B738/annunciator/irs_on_dc_left",-2);
+    float *on_dc_right = link_dataref_flt("laminar/B738/annunciator/irs_on_dc_right",-2);
+    float *dc_fail_left = link_dataref_flt("laminar/B738/annunciator/irs_dc_fail_left",-2);
+    float *dc_fail_right = link_dataref_flt("laminar/B738/annunciator/irs_dc_fail_right",-2);
+    float *gps = link_dataref_flt("laminar/B738/annunciator/gps",-2);
+
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 0, align_left);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 1, fail_left);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 2, on_dc_left);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 3, dc_fail_left);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 4, align_right);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, fail_right);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 6, on_dc_right);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 7, dc_fail_right);
+
+    /* GPS Annunciator is on Flaps Panel board */
+    dev = 2;
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 14, gps);
+    
+  }
+
+  /**************************/
+  /*** ENGINE / EEC Panel ***/
+  /**************************/
+  
+  if ((acf_type == 2) || (acf_type == 3)) {
+
+    dev = 4;
+    
+    float *reverser_fail_1 = link_dataref_flt("laminar/B738/annunciator/reverser_fail_0",0);
+    float *reverser_fail_2 = link_dataref_flt("laminar/B738/annunciator/reverser_fail_1",0);
+    float *fadec_fail_1 = link_dataref_flt("laminar/B738/annunciator/fadec_fail_0",0);
+    float *fadec_fail_2 = link_dataref_flt("laminar/B738/annunciator/fadec_fail_1",0);
+    float *fadec_off_1 = link_dataref_flt("laminar/B738/annunciator/fadec1_off",0);
+    float *fadec_off_2 = link_dataref_flt("laminar/B738/annunciator/fadec2_off",0);
+
+    printf("%f \n",*fadec_fail_1);
+    
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, fadec_fail_1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, fadec_fail_2);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, reverser_fail_1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 11, reverser_fail_2);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 12, fadec_off_1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 13, fadec_off_2);
+
+    /* INOP FOR NOW */
+    ret = digital_output(te, MCP23017_TYPE, dev, 14, &one); /* ON LEFT */
+    ret = digital_output(te, MCP23017_TYPE, dev, 15, &one); /* ON RIGHT */
+
+    /* EEC1 Button: Load Fuel entered in FMC1 Entry Line */
+    unsigned char *fmc_entry = link_dataref_byte_arr("laminar/B738/fmc1/Line_entry", 40, -1);  
+    int *fuel_truck = link_dataref_cmd_hold("laminar/B738/fuel_truck_toggle");
+    int *fuel_req_kgs = link_dataref_int("laminar/B738/tab/req_fuel");
+    ret = digital_input(te, MCP23017_TYPE, dev, 0, fuel_truck, 0);
+    if (ret == 1) {
+      printf("FADEC 1 Button: %i \n",*fuel_truck);
+    }
+    if ((fmc_entry) && (ret == 1)) {
+      if (is_numeric(fmc_entry)) {
+	int ival_len = strlen((const char*) fmc_entry);
+	if ((ival_len >= 4) && (ival_len <= 5)) {
+	  int ival = atoi((const char*) fmc_entry);
+	  if (*fuel_truck == 1) {
+	    printf("Call Fuel Truck and load %i kgs \n",ival);
+	    *fuel_req_kgs = ival;
+	  }
+	}
+      }
+    }   
+
+    /* EEC2 Button INOP FOR NOW */
+    ret = digital_input(te, MCP23017_TYPE, dev, 1, &temp, 0);
+    if (ret == 1) {
+      printf("FADEC 2 Button: %i \n",temp);
+    }
+  }
+
+
+  /*************************/
+  /*** CREW OXYGEN Panel ***/
+  /*************************/
+ 
+  if ((acf_type == 2) || (acf_type == 3)) {
+    
+    dev = 4; /* Connected to EEC Panel MCP23017 */
+    
+    float *pass_oxy_status = link_dataref_flt("laminar/B738/one_way_switch/pax_oxy_pos",0);
+    int *pass_oxy_norm = link_dataref_cmd_once("laminar/B738/one_way_switch/pax_oxy_norm");
+    int *pass_oxy_on = link_dataref_cmd_once("laminar/B738/one_way_switch/pax_oxy_on");
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 2, &pass_oxy, 0);
+    ret = set_state_updnf(&pass_oxy, pass_oxy_status, pass_oxy_on, pass_oxy_norm);
+    if (ret != 0) {
+      printf("Pass Oxygen Switch: %i \n",(int) pass_oxy);
+    }
+
+    float *pass_oxy_ann = link_dataref_flt("laminar/B738/annunciator/pax_oxy",-2);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 4, pass_oxy_ann);
+
+    /* CREW Oxygen Amount not yet found as dataref in ZIBO MOD */
+    /* float servoval = 0.5; */
+    /* ret = servo_outputf(card,0,&servoval, 0.0,1.0); */
+
+  }
+
   
 }
