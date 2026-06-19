@@ -103,7 +103,15 @@ void init_b737_overheadaft(void)
   //teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN;
 
   teensy[te].pinmode[24] = PINMODE_OUTPUT; /* Backlight Relay */
+  teensy[te].pinmode[25] = PINMODE_SERVO; /* Pass Oxygen Gauge */
   teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN; /* 7 Seg Disp Potentiometer */
+  teensy[te].pinmode[41] = PINMODE_ANALOGINPUTMEAN; /* TEST POTENTIOMETER */
+
+  teensy[te].pinmode[29] = PINMODE_OUTPUT; /* External SSR RELAY VIA 9 PIN D-SUB */
+  teensy[te].pinmode[30] = PINMODE_OUTPUT; /* External SSR RELAY VIA 9 PIN D-SUB */
+  teensy[te].pinmode[31] = PINMODE_OUTPUT; /* External SSR RELAY VIA 9 PIN D-SUB */
+  teensy[te].pinmode[32] = PINMODE_OUTPUT; /* External SSR RELAY VIA 9 PIN D-SUB */
+  teensy[te].pinmode[33] = PINMODE_OUTPUT; /* External SSR RELAY VIA 9 PIN D-SUB */
 
   /* MCP23017 on IRS Display */
   dev = 0;
@@ -151,15 +159,30 @@ void init_b737_overheadaft(void)
   
   /* MCP23017 on EEC Panel */
   dev = 4;
-  for (pin=0;pin<4;pin++) {
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<12;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
   }
-  for (pin=4;pin<MCP23017_MAX_PINS;pin++) {
+  for (pin=12;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
   }
   mcp23017[te][dev].intpin = 12;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x24; // I2C address of MCP23017 device
+  
+  /* MCP23017 on FLT RECORDER / STALL WARNING Panel */
+  dev = 5;
+  for (pin=0;pin<1;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<13;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 13;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x25; // I2C address of MCP23017 device
   
   /* HT16K33 7 Segment Driver on IRS Display Panel */
   ht16k33[te][0].brightness = 10;
@@ -187,6 +210,7 @@ void b737_overheadaft(void)
   int ival;
   int temp;
   float fval;
+  float potval;
   int display;
   char substr[2];
 
@@ -225,7 +249,7 @@ void b737_overheadaft(void)
   /*** CENTER SWITCHES (DOME WHITE DIRECTLY WIRED TO DIGITAL RELAY ***/
   dev = 4; /* Service Interphone Switch connected to EEC Panel */
   int *service_interphone = link_dataref_int("xpserver/service_interphone");
-  ret = digital_input(te, MCP23017_TYPE, dev, 3, service_interphone, 0);
+  ret = digital_input(te, MCP23017_TYPE, dev, 11, service_interphone, 0);
   if (ret == 1) {
     printf("Service Interphone Switch: %i \n",*service_interphone);
   }
@@ -718,9 +742,9 @@ void b737_overheadaft(void)
 
     /* Gear Annunciators connected to EEC Panel */
     dev = 4;
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, nose_gear);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 6, left_gear);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 7, right_gear);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 13, nose_gear);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 14, left_gear);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 15, right_gear);
 
   }
     
@@ -805,25 +829,23 @@ void b737_overheadaft(void)
     float *fadec_fail_2 = link_dataref_flt("laminar/B738/annunciator/fadec_fail_1",0);
     float *fadec_off_1 = link_dataref_flt("laminar/B738/annunciator/fadec1_off",0);
     float *fadec_off_2 = link_dataref_flt("laminar/B738/annunciator/fadec2_off",0);
-
-    printf("%f \n",*fadec_fail_1);
-    
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 8, fadec_fail_1);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 9, fadec_fail_2);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 10, reverser_fail_1);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 11, reverser_fail_2);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 12, fadec_off_1);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 13, fadec_off_2);
+   
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 0, fadec_fail_1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 1, fadec_fail_2);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 2, reverser_fail_1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 3, reverser_fail_2);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 4, fadec_off_1);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 5, fadec_off_2);
 
     /* INOP FOR NOW */
-    ret = digital_output(te, MCP23017_TYPE, dev, 14, &one); /* ON LEFT */
-    ret = digital_output(te, MCP23017_TYPE, dev, 15, &one); /* ON RIGHT */
+    ret = digital_output(te, MCP23017_TYPE, dev, 6, &one); /* ON LEFT */
+    ret = digital_output(te, MCP23017_TYPE, dev, 7, &one); /* ON RIGHT */
 
     /* EEC1 Button: Load Fuel entered in FMC1 Entry Line */
     unsigned char *fmc_entry = link_dataref_byte_arr("laminar/B738/fmc1/Line_entry", 40, -1);  
     int *fuel_truck = link_dataref_cmd_hold("laminar/B738/fuel_truck_toggle");
     int *fuel_req_kgs = link_dataref_int("laminar/B738/tab/req_fuel");
-    ret = digital_input(te, MCP23017_TYPE, dev, 0, fuel_truck, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 8, fuel_truck, 0);
     if (ret == 1) {
       printf("FADEC 1 Button: %i \n",*fuel_truck);
     }
@@ -841,7 +863,7 @@ void b737_overheadaft(void)
     }   
 
     /* EEC2 Button INOP FOR NOW */
-    ret = digital_input(te, MCP23017_TYPE, dev, 1, &temp, 0);
+    ret = digital_input(te, MCP23017_TYPE, dev, 9, &temp, 0);
     if (ret == 1) {
       printf("FADEC 2 Button: %i \n",temp);
     }
@@ -859,20 +881,94 @@ void b737_overheadaft(void)
     float *pass_oxy_status = link_dataref_flt("laminar/B738/one_way_switch/pax_oxy_pos",0);
     int *pass_oxy_norm = link_dataref_cmd_once("laminar/B738/one_way_switch/pax_oxy_norm");
     int *pass_oxy_on = link_dataref_cmd_once("laminar/B738/one_way_switch/pax_oxy_on");
-    ret = digital_inputf(te, MCP23017_TYPE, dev, 2, &pass_oxy, 0);
+    ret = digital_inputf(te, MCP23017_TYPE, dev, 10, &pass_oxy, 0);
     ret = set_state_updnf(&pass_oxy, pass_oxy_status, pass_oxy_on, pass_oxy_norm);
     if (ret != 0) {
       printf("Pass Oxygen Switch: %i \n",(int) pass_oxy);
     }
 
     float *pass_oxy_ann = link_dataref_flt("laminar/B738/annunciator/pax_oxy",-2);
-    ret = digital_outputf(te, MCP23017_TYPE, dev, 4, pass_oxy_ann);
+    ret = digital_outputf(te, MCP23017_TYPE, dev, 12, pass_oxy_ann);
 
     /* CREW Oxygen Amount not yet found as dataref in ZIBO MOD */
-    /* float servoval = 0.5; */
-    /* ret = servo_outputf(card,0,&servoval, 0.0,1.0); */
+    float servoval;
+    ret = analog_input(te,41,&servoval,0.0,1.0);
+    if (ret == 1) {
+      printf("TEST POTENTIOMETER: %f \n",servoval);
+    }
+    ret = servo_output(te, TEENSY_TYPE, 0, 25, &servoval, 0.0, 1.0, 0.0, 1.0);
 
   }
 
+  
+  /****************************************************/
+  /*** FLIGHT RECORDER & STALL / MACH WARNING Panel ***/
+  /****************************************************/
+
+  dev = 5; /* MCP23017 Device Number */
+  
+  int *mach_warn1_test;
+  int *mach_warn2_test;
+  int *stall_warn1_test;
+  int *stall_warn2_test;
+  int *stall_warn;
+  float *stall_warn_f;
+  if ((acf_type == 2) || (acf_type == 3)) {
+    mach_warn1_test = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn1_test");
+    mach_warn2_test = link_dataref_cmd_hold("laminar/B738/push_button/mach_warn2_test");
+    stall_warn1_test = link_dataref_cmd_hold("laminar/B738/push_button/stall_test1_press");
+    stall_warn2_test = link_dataref_cmd_hold("laminar/B738/push_button/stall_test2_press");
+    stall_warn = link_dataref_int("sim/cockpit2/annunciators/stall_warning");
+    stall_warn_f = link_dataref_flt("laminar/B738/pfd/airspeed_warn",-1);
+  } else {
+    mach_warn1_test = link_dataref_int("xpserver/mach_warn1_test");
+    mach_warn2_test = link_dataref_int("xpserver/mach_warn2_test");
+    stall_warn1_test = link_dataref_int("xpserver/stall_warn1_test");
+    stall_warn2_test = link_dataref_int("xpserver/stall_warn2_test");
+    stall_warn = link_dataref_int("sim/cockpit2/annunciators/stall_warning");
+    stall_warn_f = link_dataref_flt("xpserver/stall_warn_f",-1);
+  }
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 8, stall_warn1_test, 0);
+  if (ret == 1) {
+    printf("Stall Warn Button 1: %i \n",*stall_warn1_test);
+  }
+  ret = digital_input(te, MCP23017_TYPE, dev, 9, stall_warn2_test, 0);
+  if (ret == 1) {
+    printf("Stall Warn Button 2: %i \n",*stall_warn2_test);
+  }
+  ret = digital_input(te, MCP23017_TYPE, dev, 10, &temp, 0);
+  if (ret == 1) {
+    printf("FLT RECORDER TEST: %i \n",temp);
+  }
+  ret = digital_input(te, MCP23017_TYPE, dev, 11, mach_warn1_test, 0);
+  if (ret == 1) {
+    printf("Mach Warn Button 1: %i \n",*stall_warn1_test);
+  }
+  ret = digital_input(te, MCP23017_TYPE, dev, 12, mach_warn2_test, 0);
+  if (ret == 1) {
+    printf("Mach Warn Button 2: %i \n",*stall_warn2_test);
+  }
+
+
+  //  printf("%i %i %i\n", *stall_warn,*stall_warn1_test,*stall_warn2_test );
+  if (((((*stall_warn == 1) || (*stall_warn_f >= 1.0)) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
+       ((*stall_warn1_test == 1) && (*stall_warn2_test == 0))) && (*avionics_on == 1)) {
+    //printf("1\n");
+    ret = digital_output(te, TEENSY_TYPE, 0, 29, &one);
+  } else {
+    ret = digital_output(te, TEENSY_TYPE, 0, 29, &zero);
+  }
+ 
+  if (((((*stall_warn == 1) || (*stall_warn_f >= 1.0)) && (*stall_warn1_test == 0) && (*stall_warn2_test == 0)) ||
+       ((*stall_warn1_test == 0) && (*stall_warn2_test == 1))) && (*avionics_on == 1)) {
+    //printf("2\n");
+    ret = digital_output(te, TEENSY_TYPE, 0, 30, &one);
+  } else {
+    ret = digital_output(te, TEENSY_TYPE, 0, 30, &zero);
+  }
+   
+  /* FLT RECORDER OFF ANN: NOT YET IMPLEMENTED IN ZIBO 737 */
+  ret = digital_outputf(te, MCP23017_TYPE, dev, 0, lights_test);
   
 }
