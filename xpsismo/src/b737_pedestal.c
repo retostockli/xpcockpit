@@ -748,7 +748,7 @@ void b737_pedestal(void)
   a0 = 5;
 
   if ((*acp1_micsel_vhf1 == INT_MISS) || (*avionics_on != 1)) {
-    *acp1_micsel_vhf1 = 0;
+    *acp1_micsel_vhf1 = 1;
     *acp1_micsel_vhf2 = 0;
     *acp1_micsel_vhf3 = 0;
     *acp1_micsel_hf1 = 0;
@@ -950,7 +950,7 @@ void b737_pedestal(void)
   a0 = 10;
 
   if ((*acp2_micsel_vhf1 == INT_MISS) || (*avionics_on != 1)) {
-    *acp2_micsel_vhf1 = 0;
+    *acp2_micsel_vhf1 = 1;
     *acp2_micsel_vhf2 = 0;
     *acp2_micsel_vhf3 = 0;
     *acp2_micsel_hf1 = 0;

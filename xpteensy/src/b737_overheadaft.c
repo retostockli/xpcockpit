@@ -35,15 +35,6 @@
 #include "serverdata.h"
 #include "b737_overheadaft.h"
 
-/*
-  LTC4316 Address Translator
-  Switch		A4	A5
-  XOR 0x40       	ON	ON
-  XOR 0x50       	OFF	ON
-  XOR 0x60       	ON	OFF
-  XOR 0x70       	OFF 	OFF
-*/
-
 /* IRS DISP Keypad */
 #define nCols 3
 #define nRows 4
@@ -105,7 +96,11 @@ void init_b737_overheadaft(void)
   teensy[te].pinmode[24] = PINMODE_OUTPUT; /* Backlight Relay */
   teensy[te].pinmode[25] = PINMODE_SERVO; /* Pass Oxygen Gauge */
   teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN; /* 7 Seg Disp Potentiometer */
-  teensy[te].pinmode[41] = PINMODE_ANALOGINPUTMEAN; /* TEST POTENTIOMETER */
+  teensy[te].pinmode[27] = PINMODE_ANALOGINPUTMEAN; /* SPKR on ACP3 */
+  teensy[te].pinmode[38] = PINMODE_ANALOGINPUTMEAN; /* MKR on ACP3 */
+  teensy[te].pinmode[39] = PINMODE_ANALOGINPUTMEAN; /* PA on ACP3 */
+  teensy[te].pinmode[40] = PINMODE_ANALOGINPUTMEAN; /* VHF2 on ACP3 */
+  teensy[te].pinmode[41] = PINMODE_ANALOGINPUTMEAN; /* VHF1 on ACP3 */
 
   teensy[te].pinmode[29] = PINMODE_OUTPUT; /* External SSR RELAY VIA 9 PIN D-SUB */
   teensy[te].pinmode[30] = PINMODE_OUTPUT; /* External SSR RELAY VIA 9 PIN D-SUB */
@@ -183,6 +178,26 @@ void init_b737_overheadaft(void)
   mcp23017[te][dev].intpin = 13;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x25; // I2C address of MCP23017 device
+  
+  /* 2 MCP23017 on Audio Control Panel (ACP) 3 */
+  dev = 6;
+  for (pin=0;pin<8;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
+  }
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 16;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x26; // I2C address of MCP23017 device
+  
+  dev = 7;
+  for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
+    mcp23017[te][dev].pinmode[pin] = PINMODE_INPUT;
+  }
+  mcp23017[te][dev].intpin = 17;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
+  mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
+  mcp23017[te][dev].address = 0x27; // I2C address of MCP23017 device
   
   /* HT16K33 7 Segment Driver on IRS Display Panel */
   ht16k33[te][0].brightness = 10;
@@ -891,11 +906,7 @@ void b737_overheadaft(void)
     ret = digital_outputf(te, MCP23017_TYPE, dev, 12, pass_oxy_ann);
 
     /* CREW Oxygen Amount not yet found as dataref in ZIBO MOD */
-    float servoval;
-    ret = analog_input(te,41,&servoval,0.0,1.0);
-    if (ret == 1) {
-      printf("TEST POTENTIOMETER: %f \n",servoval);
-    }
+    float servoval = 0.5;
     ret = servo_output(te, TEENSY_TYPE, 0, 25, &servoval, 0.0, 1.0, 0.0, 1.0);
 
   }
@@ -970,5 +981,245 @@ void b737_overheadaft(void)
    
   /* FLT RECORDER OFF ANN: NOT YET IMPLEMENTED IN ZIBO 737 */
   ret = digital_outputf(te, MCP23017_TYPE, dev, 0, lights_test);
+
+  
+  /*********************************************/
+  /*** AUDIO CONTROL PANEL (Observer, Nr. 3) ***/
+  /*********************************************/
+
+  dev = 6; /* MCP23017 device number */
+  
+  int *acp3_mask_boom = link_dataref_int("xpserver/acp3_mask_boom");
+
+  float *acp3_vol_vhf1 = link_dataref_flt("xpserver/acp3_vol_vhf1",0);
+  float *acp3_vol_vhf2 = link_dataref_flt("xpserver/acp3_vol_vhf2",0);
+  float *acp3_vol_pa   = link_dataref_flt("xpserver/acp3_vol_pa",0);
+  float *acp3_vol_mkr  = link_dataref_flt("xpserver/acp3_vol_mkr",0);
+  float *acp3_vol_spkr = link_dataref_flt("xpserver/acp3_vol_spkr",0);
+  
+  /* Audio Volume Potentiometers */
+  ret = analog_input(te,41,acp3_vol_vhf1,0.0,100.0);
+  if (ret == 1) {
+    printf("ACP3 Volume VHF1: %f \n",*acp3_vol_vhf1);
+  }
+  ret = analog_input(te,40,acp3_vol_vhf2,0.0,100.0);
+  if (ret == 1) {
+    printf("ACP3 Volume VHF2: %f \n",*acp3_vol_vhf2);
+  }
+  ret = analog_input(te,39,acp3_vol_pa,0.0,100.0);
+  if (ret == 1) {
+    printf("ACP3 Volume PA: %f \n",*acp3_vol_pa);
+  }
+  ret = analog_input(te,38,acp3_vol_mkr,0.0,100.0);
+  if (ret == 1) {
+    printf("ACP3 Volume MKR: %f \n",*acp3_vol_mkr);
+  }
+  ret = analog_input(te,27,acp3_vol_spkr,0.0,100.0);
+  if (ret == 1) {
+    printf("ACP3 Volume SPKR: %f \n",*acp3_vol_spkr);
+  }
+
+  /* MIC Selectors */
+  ret = digital_input(te, MCP23017_TYPE, dev, 8, &acp3_micsel_vhf1, 1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR VHF1: %i \n",acp3_micsel_vhf1);
+    if (acp3_micsel_vhf1 == 1) {
+      //acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(te, MCP23017_TYPE, dev, 0, &acp3_micsel_vhf1);
+
+  ret = digital_input(te, MCP23017_TYPE, dev, 9, &acp3_micsel_vhf2, 1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR VHF2: %i \n",acp3_micsel_vhf2);
+    if (acp3_micsel_vhf2 == 1) {
+      acp3_micsel_vhf1 = 0;
+      //acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(te, MCP23017_TYPE, dev, 1, &acp3_micsel_vhf2);
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 10, &acp3_micsel_vhf3, 1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR VHF3: %i \n",acp3_micsel_vhf3);
+    if (acp3_micsel_vhf3 == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      //acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(te, MCP23017_TYPE, dev, 2, &acp3_micsel_vhf3);
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 11, &acp3_micsel_hf1, 1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR HF1: %i \n",acp3_micsel_hf1);
+    if (acp3_micsel_hf1 == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      //acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(te, MCP23017_TYPE, dev, 3, &acp3_micsel_hf1);
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 12, &acp3_micsel_hf2, 1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR HF2: %i \n",acp3_micsel_hf2);
+    if (acp3_micsel_hf2 == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      //acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(te, MCP23017_TYPE, dev, 4, &acp3_micsel_hf2);
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 13, &acp3_micsel_flt, 1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR FLT: %i \n",acp3_micsel_flt);
+    if (acp3_micsel_flt == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      //acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(te, MCP23017_TYPE, dev, 5, &acp3_micsel_flt);
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 14, &acp3_micsel_svc, 1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR SVC: %i \n",acp3_micsel_svc);
+    if (acp3_micsel_svc == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      //acp3_micsel_svc = 0;
+      acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(te, MCP23017_TYPE, dev, 6, &acp3_micsel_svc);
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 15, &acp3_micsel_pa, 1);
+  if (ret == 1) {
+    printf("ACP3 MIC SELECTOR PA: %i \n",acp3_micsel_pa);
+    if (acp3_micsel_pa == 1) {
+      acp3_micsel_vhf1 = 0;
+      acp3_micsel_vhf2 = 0;
+      acp3_micsel_vhf3 = 0;
+      acp3_micsel_hf1 = 0;
+      acp3_micsel_hf2 = 0;
+      acp3_micsel_flt = 0;
+      acp3_micsel_svc = 0;
+      //acp3_micsel_pa = 0;
+    }
+  }    
+  ret = digital_output(te, MCP23017_TYPE, dev, 7, &acp3_micsel_pa);
+
+  /* Other Switches */
+
+  dev = 7;
+    
+  ret = digital_input(te, MCP23017_TYPE, dev, 8, &acp3_rt_ic, 0);
+  if (ret == 1) {
+    printf("ACP3 R/T I/C Switch: %i \n",acp3_rt_ic);
+  }    
+
+  ret = digital_input(te, MCP23017_TYPE, dev, 9, acp3_mask_boom, 0);
+  if (ret == 1) {
+    printf("ACP3 MASK/BOOM Switch: %i \n",*acp3_mask_boom);
+  }    
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 10, &acp3_sel_v, 0);
+  if (ret == 1) {
+    printf("ACP3 VBR Selector V: %i \n",acp3_sel_v);
+  }
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 11, &acp3_sel_b, 0);
+  if (ret == 1) {
+    printf("ACP3 VBR Selector B: %i \n",acp3_sel_b);
+  }
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 12, &acp3_sel_r, 0);
+  if (ret == 1) {
+    printf("ACP3 VBR Selector R: %i \n",acp3_sel_r);
+  }
+
+  acp3_sel_vbr = acp3_sel_v + acp3_sel_b*2 + acp3_sel_r*3;
+  
+  ret = digital_input(te, MCP23017_TYPE, dev, 13, &acp3_alt_norm, 0);
+  if (ret == 1) {
+    printf("ACP3 ALT / NORM Switch: %i \n",acp3_alt_norm);
+  }
+
+  /* USE ACP3 MIC SELECTORS as FAILURE SELECTOR */
+  /* ACP 3 ALT/NORM Switch has to be in ALT position for activating failures */
+
+  if (acp3_alt_norm == 1) {
+    int nfail = 70;
+    float *failure_electric = link_dataref_flt_arr("laminar/B738/failure/electric",nfail,-1,0);
+    float *failure_engine = link_dataref_flt_arr("laminar/B738/failure/engine",nfail,-1,0);
+    float *failure_hydraulic = link_dataref_flt_arr("laminar/B738/failure/hydraulic",nfail,-1,0);
+    float *failure_pressurisation = link_dataref_flt_arr("laminar/B738/failure/pressurisation",nfail,-1,0);
+    float *failure_system = link_dataref_flt_arr("laminar/B738/failure/system",nfail,-1,0);
+    int *fix_all_systems = link_dataref_cmd_once("sim/operation/fix_all_systems");
+    
+    /* left engine fire */
+    if (acp3_micsel_vhf1 == 1) {
+      failure_engine[0] = 1.0;
+      acp3_micsel_vhf1 = 0;
+    }
+    
+    /* right engine fire */
+    if (acp3_micsel_vhf2 == 1) {
+      failure_engine[1] = 1.0;
+      acp3_micsel_vhf2 = 0;
+    }
+     
+    /* reset failures */
+    if (acp3_micsel_pa == 1) {
+      for (i = 0;i<nfail;i++) {
+	failure_electric[i] = 0.0;
+	failure_engine[i] = 0.0;
+	failure_hydraulic[i] = 0.0;
+	failure_pressurisation[i] = 0.0;
+	failure_system[i] = 0.0;
+      }
+      *fix_all_systems = 1;
+      acp3_micsel_pa == 0;
+    }
+  }
   
 }
