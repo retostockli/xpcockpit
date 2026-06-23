@@ -89,10 +89,6 @@ void init_b737_overheadaft(void)
   int ret;
 
   /* Teensy I/O Pin configurations */
-  //teensy[te].pinmode[0] = PINMODE_INPUT;
-  //teensy[te].pinmode[0] = PINMODE_OUTPUT;
-  //teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN;
-
   teensy[te].pinmode[24] = PINMODE_OUTPUT; /* Backlight Relay */
   teensy[te].pinmode[25] = PINMODE_SERVO; /* Pass Oxygen Gauge */
   teensy[te].pinmode[26] = PINMODE_ANALOGINPUTMEAN; /* 7 Seg Disp Potentiometer */
@@ -233,8 +229,6 @@ void b737_overheadaft(void)
   int *datarefptr[nRows*nCols];    
 
   int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
-
-  *avionics_on = 1;
  
   float *lights_test;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -243,23 +237,11 @@ void b737_overheadaft(void)
     lights_test = link_dataref_flt("xpserver/lights_test",0);
   }
 
-  /* *avionics_on = 1; */
-  /* acf_type = 3; */
-  /* *lights_test = 1.0; */
-  
   /*** Background Lighting ***/
 
   /* turn off background lighting if avionics are off */
   ret = digital_output(te, TEENSY_TYPE, 0, 24, avionics_on); /* 12V on Extension board */
   ret = digital_output(te, MCP23017_TYPE, 0, 15, avionics_on); /* 5V on IRS Disp panel */
-
-  /* dev=0; */
-  /* for (int i=0;i<10;i++) { */
-  /*   ret = digital_input(te, MCP23017_TYPE, dev, i, &ival, 0); */
-  /*   if (ret == 1) { */
-  /*     printf("MCP23017 %i Input %i changed to: %i \n",dev,i,ival); */
-  /*   } */
-  /* } */
 
   /*** CENTER SWITCHES (DOME WHITE DIRECTLY WIRED TO DIGITAL RELAY ***/
   dev = 4; /* Service Interphone Switch connected to EEC Panel */
@@ -269,6 +251,7 @@ void b737_overheadaft(void)
     printf("Service Interphone Switch: %i \n",*service_interphone);
   }
 
+  
   /*************************/
   /*** IRS Display Panel ***/
   /*************************/
@@ -351,8 +334,8 @@ void b737_overheadaft(void)
 
     char *irs_val;
     if (*sys_disp == 0) {
-      //irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",100,-1);
-      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",100,-1);
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",100,-1); // XP12
+      // irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",100,-1); // XP11
     } else {
       irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",100,-1);
     }
