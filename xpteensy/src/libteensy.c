@@ -823,7 +823,7 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 	      if (input_type == 0) {
 		/* simple pushbutton / switch */
 		if (teensy[te].val[pin][0] != teensy[te].val_save[pin]) {
-		  if (verbose > 1) printf("Pushbutton: Teensy %i Pin %i Changed to %i %i \n",
+		  if (verbose > 1) printf("Pushbutton: Teensy %i Pin %i Changed from %i to %i \n",
 					  te, pin, *value,teensy[te].val[pin][0]);
 		  retval = 1;
 		}
@@ -867,14 +867,14 @@ int digital_input(int te, int type, int dev, int pin, int *value, int input_type
 		    if (input_type == 0) {
 		      /* simple pushbutton / switch */
 		      if (mcp23017[te][dev].val[pin] != mcp23017[te][dev].val_save[pin]) {
-			if (verbose > 1) printf("Pushbutton: Teensy %i MCP23017 %i Pin %i Changed to %i %i \n",
+			if (verbose > 1) printf("Pushbutton: Teensy %i MCP23017 %i Pin %i Changed from %i to %i \n",
 						te, dev, pin, *value,mcp23017[te][dev].val[pin]);
-			*value = mcp23017[te][dev].val[pin];
 			retval = 1;
 		      }
 		      /* always return current value if not initial value */
 		      if (mcp23017[te][dev].val[pin] != INITVAL) {
 			*value = mcp23017[te][dev].val[pin];
+			//if (retval == 1) printf("%i\n",*value);
 		      } 
 		    } else {
 		      /* toggle state everytime you press button */

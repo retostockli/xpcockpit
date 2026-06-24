@@ -1957,10 +1957,13 @@ void b737_overheadfwd(void)
     int *air_valve_ctrl_left = link_dataref_cmd_once("laminar/B738/toggle_switch/air_valve_ctrl_left");
     int *air_valve_ctrl_right = link_dataref_cmd_once("laminar/B738/toggle_switch/air_valve_ctrl_right");
     float *air_valve_ctrl_pos = link_dataref_flt("laminar/B738/toggle_switch/air_valve_ctrl",0);
+    ival = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 8, &ival, 0);
     if (ival == 1) air_valve_ctrl = 0.0;
+    ival = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 9, &ival, 0);
     if (ival == 1) air_valve_ctrl = 1.0;
+    ival = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 10, &ival, 0);
     if (ival == 1) air_valve_ctrl = 2.0;
     ret = set_state_updnf(&air_valve_ctrl,air_valve_ctrl_pos,air_valve_ctrl_right,air_valve_ctrl_left);

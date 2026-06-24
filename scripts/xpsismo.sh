@@ -19,13 +19,6 @@ then
     exit 2
 fi
 
-ping -c 1 192.168.1.55
-if [ $? != 0 ]
-then
-    echo "Error connecting to AFT OVERHEAD Card"
-    exit 2
-fi
-
 trap - SIGINT SIGTERM
 
 cd ~/xpcockpit/xpsismo/bin

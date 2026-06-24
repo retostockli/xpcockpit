@@ -203,7 +203,13 @@ void init_b737_overheadaft(void)
   /* This program simulates a key matrix on the IRS DISPLAY PANEL MCP23017 I2C device */
   ret = program_keymatrix_init(te, 0, 0, 10, 3, 6, 4);
   if (ret != 0) printf("Initialization of Key Matrix Program 0 failed\n");
- 
+
+  /* Initialize static variables */
+  irs_l = FLT_MISS;
+  irs_r = FLT_MISS;
+  pass_oxy = FLT_MISS;
+  elt = FLT_MISS;
+  
 }
 
 void b737_overheadaft(void)
@@ -279,7 +285,7 @@ void b737_overheadaft(void)
     float *sys_disp = link_dataref_flt("laminar/B738/toggle_switch/irs_sys_dspl",0);
     ret = digital_inputf(te, MCP23017_TYPE, dev, 0, sys_disp, 0);
     if (ret == 1) {
-      printf("SYS DISP Switch changed to: %i\n", (int) *sys_disp);
+      printf("IRS SYS DISP Switch changed to: %i\n", (int) *sys_disp);
     }
     
     /* DISPL SEL Rotary */
@@ -300,7 +306,7 @@ void b737_overheadaft(void)
     
     ret = set_state_updnf(&disp_sel, disp_sel_status, disp_sel_right, disp_sel_left);
     if (ret != 0) {
-      printf("DISP SEL Switch changed to: %i\n", (int) disp_sel);
+      printf("IRS DISP SEL Switch changed to: %i\n", (int) disp_sel);
     }
 
     /* 12 key keyboard: Matrix arrangement */
@@ -334,10 +340,10 @@ void b737_overheadaft(void)
 
     char *irs_val;
     if (*sys_disp == 0) {
-      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",100,-1); // XP12
-      // irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",100,-1); // XP11
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",32,-1); // XP12
+      // irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",32,-1); // XP11
     } else {
-      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",100,-1);
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",32,-1);
     }
 
     float *irs_left1_show = link_dataref_flt("laminar/B738/irs_left1_show",0);
@@ -745,7 +751,8 @@ void b737_overheadaft(void)
     ret = digital_outputf(te, MCP23017_TYPE, dev, 15, right_gear);
 
   }
-    
+
+  
   /**************************/
   /*** IRS Selector PANEL ***/
   /**************************/
@@ -758,31 +765,45 @@ void b737_overheadaft(void)
     int *irs_l_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_left");
     int *irs_l_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_L_right");
 
+    temp = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 12, &temp, 0);
     if (temp == 1) irs_l = 0.0;
+    temp = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 13, &temp, 0);
     if (temp == 1) irs_l = 1.0;
+    temp = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 14, &temp, 0);
     if (temp == 1) irs_l = 2.0;
+    temp = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 15, &temp, 0);
     if (temp == 1) irs_l = 3.0;
+
+    if ((irs_l < 0.0) || (irs_l > 3.0) || (temp == INT_MISS)) irs_l = FLT_MISS;
+
     ret = set_state_updnf(&irs_l, irs_l_status, irs_l_right, irs_l_left);
     if (ret != 0) {
-      printf("IRS LEFT SELECT: %i \n",(int) irs_l);
+      printf("IRS LEFT SELECT: %f %i %f \n",irs_l, temp, *irs_l_status);
     }
 
     float *irs_r_status = link_dataref_flt("laminar/B738/toggle_switch/irs_right",0);
     int *irs_r_left = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_left");
     int *irs_r_right = link_dataref_cmd_once("laminar/B738/toggle_switch/irs_R_right");
 
+    temp = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 8, &temp, 0);
     if (temp == 1) irs_r = 0.0;
+    temp = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 9, &temp, 0);
     if (temp == 1) irs_r = 1.0;
+    temp = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 10, &temp, 0);
     if (temp == 1) irs_r = 2.0;
+    temp = 0;
     ret = digital_input(te, MCP23017_TYPE, dev, 11, &temp, 0);
     if (temp == 1) irs_r = 3.0;
+
+    if ((irs_r < 0.0) || (irs_r > 3.0) || (temp == INT_MISS)) irs_r = FLT_MISS;
+
     ret = set_state_updnf(&irs_r, irs_r_status, irs_r_right, irs_r_left);
     if (ret != 0) {
       printf("IRS RIGHT SELECT: %i \n",(int) irs_r);
@@ -813,6 +834,7 @@ void b737_overheadaft(void)
     
   }
 
+   
   /**************************/
   /*** ENGINE / EEC Panel ***/
   /**************************/
