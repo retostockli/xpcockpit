@@ -1039,7 +1039,11 @@ void b737_overheadaft(void)
       acp3_micsel_pa = 0;
     }
   }    
-  ret = digital_output(te, MCP23017_TYPE, dev, 0, &acp3_micsel_vhf1);
+  if (*avionics_on == 1) { 
+    ret = digital_output(te, MCP23017_TYPE, dev, 0, &acp3_micsel_vhf1);
+  } else {
+    ret = digital_output(te, MCP23017_TYPE, dev, 0, &zero);
+  }
 
   ret = digital_input(te, MCP23017_TYPE, dev, 9, &acp3_micsel_vhf2, 1);
   if (ret == 1) {
@@ -1055,7 +1059,11 @@ void b737_overheadaft(void)
       acp3_micsel_pa = 0;
     }
   }    
-  ret = digital_output(te, MCP23017_TYPE, dev, 1, &acp3_micsel_vhf2);
+  if (*avionics_on == 1) { 
+    ret = digital_output(te, MCP23017_TYPE, dev, 1, &acp3_micsel_vhf2);
+  } else {
+    ret = digital_output(te, MCP23017_TYPE, dev, 1, &zero);
+  }
   
   ret = digital_input(te, MCP23017_TYPE, dev, 10, &acp3_micsel_vhf3, 1);
   if (ret == 1) {
@@ -1071,7 +1079,11 @@ void b737_overheadaft(void)
       acp3_micsel_pa = 0;
     }
   }    
-  ret = digital_output(te, MCP23017_TYPE, dev, 2, &acp3_micsel_vhf3);
+  if (*avionics_on == 1) { 
+    ret = digital_output(te, MCP23017_TYPE, dev, 2, &acp3_micsel_vhf3);
+  } else {
+    ret = digital_output(te, MCP23017_TYPE, dev, 2, &zero);
+  }
   
   ret = digital_input(te, MCP23017_TYPE, dev, 11, &acp3_micsel_hf1, 1);
   if (ret == 1) {
@@ -1087,7 +1099,11 @@ void b737_overheadaft(void)
       acp3_micsel_pa = 0;
     }
   }    
-  ret = digital_output(te, MCP23017_TYPE, dev, 3, &acp3_micsel_hf1);
+  if (*avionics_on == 1) { 
+    ret = digital_output(te, MCP23017_TYPE, dev, 3, &acp3_micsel_hf1);
+  } else {
+    ret = digital_output(te, MCP23017_TYPE, dev, 3, &zero);
+  }
   
   ret = digital_input(te, MCP23017_TYPE, dev, 12, &acp3_micsel_hf2, 1);
   if (ret == 1) {
@@ -1103,7 +1119,11 @@ void b737_overheadaft(void)
       acp3_micsel_pa = 0;
     }
   }    
-  ret = digital_output(te, MCP23017_TYPE, dev, 4, &acp3_micsel_hf2);
+  if (*avionics_on == 1) { 
+    ret = digital_output(te, MCP23017_TYPE, dev, 4, &acp3_micsel_hf2);
+  } else {
+    ret = digital_output(te, MCP23017_TYPE, dev, 4, &zero);
+  }
   
   ret = digital_input(te, MCP23017_TYPE, dev, 13, &acp3_micsel_flt, 1);
   if (ret == 1) {
@@ -1119,7 +1139,11 @@ void b737_overheadaft(void)
       acp3_micsel_pa = 0;
     }
   }    
-  ret = digital_output(te, MCP23017_TYPE, dev, 5, &acp3_micsel_flt);
+  if (*avionics_on == 1) { 
+    ret = digital_output(te, MCP23017_TYPE, dev, 5, &acp3_micsel_flt);
+  } else {
+    ret = digital_output(te, MCP23017_TYPE, dev, 5, &zero);
+  }
   
   ret = digital_input(te, MCP23017_TYPE, dev, 14, &acp3_micsel_svc, 1);
   if (ret == 1) {
@@ -1135,7 +1159,11 @@ void b737_overheadaft(void)
       acp3_micsel_pa = 0;
     }
   }    
-  ret = digital_output(te, MCP23017_TYPE, dev, 6, &acp3_micsel_svc);
+  if (*avionics_on == 1) { 
+    ret = digital_output(te, MCP23017_TYPE, dev, 6, &acp3_micsel_svc);
+  } else {
+    ret = digital_output(te, MCP23017_TYPE, dev, 6, &zero);
+  }
   
   ret = digital_input(te, MCP23017_TYPE, dev, 15, &acp3_micsel_pa, 1);
   if (ret == 1) {
@@ -1151,7 +1179,11 @@ void b737_overheadaft(void)
       //acp3_micsel_pa = 0;
     }
   }    
-  ret = digital_output(te, MCP23017_TYPE, dev, 7, &acp3_micsel_pa);
+  if (*avionics_on == 1) { 
+    ret = digital_output(te, MCP23017_TYPE, dev, 7, &acp3_micsel_pa);
+  } else {
+    ret = digital_output(te, MCP23017_TYPE, dev, 7, &zero);
+  }
 
   /* Other Switches */
 

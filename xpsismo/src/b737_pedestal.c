@@ -773,7 +773,11 @@ void b737_pedestal(void)
       *acp1_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+0,acp1_micsel_vhf1);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+0,acp1_micsel_vhf1);
+  } else {
+    ret = digital_output(card,o0+0,&zero);
+  }
 
   ret = digital_input(card,i0+1,acp1_micsel_vhf2,1);
   if (ret == 1) {
@@ -789,7 +793,11 @@ void b737_pedestal(void)
       *acp1_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+1,acp1_micsel_vhf2);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+1,acp1_micsel_vhf2);
+  } else {
+    ret = digital_output(card,o0+1,&zero);
+  }
   
   ret = digital_input(card,i0+2,acp1_micsel_vhf3,1);
   if (ret == 1) {
@@ -805,7 +813,11 @@ void b737_pedestal(void)
       *acp1_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+2,acp1_micsel_vhf3);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+2,acp1_micsel_vhf3);
+  } else {
+    ret = digital_output(card,o0+2,&zero);
+  }
   
   ret = digital_input(card,i0+3,acp1_micsel_hf1,1);
   if (ret == 1) {
@@ -821,7 +833,11 @@ void b737_pedestal(void)
       *acp1_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+3,acp1_micsel_hf1);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+3,acp1_micsel_hf1);
+  } else {
+    ret = digital_output(card,o0+3,&zero);
+  }
   
   ret = digital_input(card,i0+4,acp1_micsel_hf2,1);
   if (ret == 1) {
@@ -837,7 +853,11 @@ void b737_pedestal(void)
       *acp1_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+4,acp1_micsel_hf2);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+4,acp1_micsel_hf2);
+  } else {
+    ret = digital_output(card,o0+4,&zero);
+  }
   
   ret = digital_input(card,i0+5,acp1_micsel_flt,1);
   if (ret == 1) {
@@ -853,7 +873,11 @@ void b737_pedestal(void)
       *acp1_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+5,acp1_micsel_flt);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+5,acp1_micsel_flt);
+  } else {
+    ret = digital_output(card,o0+5,&zero);
+  }
   
   ret = digital_input(card,i0+6,acp1_micsel_svc,1);
   if (ret == 1) {
@@ -869,7 +893,11 @@ void b737_pedestal(void)
       *acp1_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+6,acp1_micsel_svc);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+6,acp1_micsel_svc);
+  } else {
+    ret = digital_output(card,o0+6,&zero);
+  }
   
   ret = digital_input(card,i0+7,acp1_micsel_pa,1);
   if (ret == 1) {
@@ -885,7 +913,11 @@ void b737_pedestal(void)
       //*acp1_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+7,acp1_micsel_pa);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+7,acp1_micsel_pa);
+  } else {
+    ret = digital_output(card,o0+7,&zero);
+  }
 
   /* Other Switches */
   ret = digital_input(card,i0+8,&acp1_rt_ic,0);
@@ -975,7 +1007,11 @@ void b737_pedestal(void)
       *acp2_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+0,acp2_micsel_vhf1);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+0,acp2_micsel_vhf1);
+  } else {
+    ret = digital_output(card,o0+0,&zero);
+  }    
 
   ret = digital_input(card,i0+1,acp2_micsel_vhf2,1);
   if (ret == 1) {
@@ -991,7 +1027,11 @@ void b737_pedestal(void)
       *acp2_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+1,acp2_micsel_vhf2);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+1,acp2_micsel_vhf2);
+  } else {
+    ret = digital_output(card,o0+1,&zero);
+  }
   
   ret = digital_input(card,i0+2,acp2_micsel_vhf3,1);
   if (ret == 1) {
@@ -1007,7 +1047,11 @@ void b737_pedestal(void)
       *acp2_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+2,acp2_micsel_vhf3);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+2,acp2_micsel_vhf3);
+  } else {
+    ret = digital_output(card,o0+2,&zero);
+  }
   
   ret = digital_input(card,i0+3,acp2_micsel_hf1,1);
   if (ret == 1) {
@@ -1023,7 +1067,11 @@ void b737_pedestal(void)
       *acp2_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+3,acp2_micsel_hf1);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+3,acp2_micsel_hf1);
+  } else {
+    ret = digital_output(card,o0+3,&zero);
+  }
   
   ret = digital_input(card,i0+4,acp2_micsel_hf2,1);
   if (ret == 1) {
@@ -1039,7 +1087,11 @@ void b737_pedestal(void)
       *acp2_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+4,acp2_micsel_hf2);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+4,acp2_micsel_hf2);
+  } else {
+    ret = digital_output(card,o0+4,&zero);
+  }
   
   ret = digital_input(card,i0+5,acp2_micsel_flt,1);
   if (ret == 1) {
@@ -1055,7 +1107,11 @@ void b737_pedestal(void)
       *acp2_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+5,acp2_micsel_flt);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+5,acp2_micsel_flt);
+  } else {
+    ret = digital_output(card,o0+5,&zero);
+  }
   
   ret = digital_input(card,i0+6,acp2_micsel_svc,1);
   if (ret == 1) {
@@ -1071,7 +1127,11 @@ void b737_pedestal(void)
       *acp2_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+6,acp2_micsel_svc);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+6,acp2_micsel_svc);
+  } else {
+    ret = digital_output(card,o0+6,&zero);
+  }
   
   ret = digital_input(card,i0+7,acp2_micsel_pa,1);
   if (ret == 1) {
@@ -1087,7 +1147,11 @@ void b737_pedestal(void)
       //*acp2_micsel_pa = 0;
     }
   }
-  ret = digital_output(card,o0+7,acp2_micsel_pa);
+  if (*avionics_on == 1) { 
+    ret = digital_output(card,o0+7,acp2_micsel_pa);
+  } else {
+    ret = digital_output(card,o0+7,&zero);
+  }
 
   /* Other Switches */
   ret = digital_input(card,i0+8,&acp2_rt_ic,0);
