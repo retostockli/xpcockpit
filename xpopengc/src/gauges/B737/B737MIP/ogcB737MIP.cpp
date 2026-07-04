@@ -476,7 +476,7 @@ void B737MIP::Render()
       m_pFontManager->SetSize( m_Font, fontSize, fontSize );
       glColor3ub(COLOR_ORANGE);
 
-      unsigned char *irs_pos = link_dataref_byte_arr("laminar/B738/irs/irs_pos",40,-1);
+      unsigned char *irs_pos = link_dataref_byte_arr("laminar/B738/irs/irs_pos_set",15,-1);
       m_pFontManager->Print( 30.0, m_PhysicalSize.y - 70.0, (const char*) irs_pos, m_Font);
     }
     

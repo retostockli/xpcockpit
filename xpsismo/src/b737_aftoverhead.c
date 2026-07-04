@@ -402,10 +402,10 @@ void b737_aftoverhead(void)
 
     char *irs_val;
     if (*sys_disp == 0) {
-      //irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",100,-1);
-      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",100,-1);
+      //irs_val = link_dataref_byte_arr("laminar/B738/irs/irs1_pos",32,-1);
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs_pos",32,-1);
     } else {
-      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",100,-1);
+      irs_val = link_dataref_byte_arr("laminar/B738/irs/irs2_pos",32,-1);
     }
 
     float *irs_left1_show = link_dataref_flt("laminar/B738/irs_left1_show",0);

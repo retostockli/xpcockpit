@@ -1212,6 +1212,7 @@ namespace OpenGC
       unsigned char *text1;
       unsigned char *text1a;
       unsigned char *text2;
+      
       if (is_captain) {
 	text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",20,-1);
 	text1a = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1a",20,-1);
@@ -1221,8 +1222,18 @@ namespace OpenGC
 	text1a = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt1a",20,-1);
 	text2 = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt2",20,-1);
       }
+      /*
+      if (is_captain) {
+	text1 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1",11,-1);
+	text1a = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt1a",6,-1);
+	text2 = link_dataref_byte_arr("laminar/B738/pfd/cpt_nav_txt2",7,-1);
+      } else {
+	text1 = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt1",11,-1);
+	text1a = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt1a",6,-1);
+	text2 = link_dataref_byte_arr("laminar/B738/pfd/fo_nav_txt2",7,-1);
+      }
+      */
 
-      
       if (text1[0] != 32) {
 	snprintf( buffer, sizeof(buffer), "%s", text1 );
 	/* fix degree sign */
