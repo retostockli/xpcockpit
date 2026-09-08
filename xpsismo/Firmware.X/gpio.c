@@ -76,15 +76,20 @@ void read_inputs(void)
         LATFbits.LATF2 = (i >> 1) & 0x01;
         
         // Port B: INPUTS 0-31 (DI1)
-        __delay_us(10);
+        //__delay_us(10);
         inputs[i] = PORTB;
         
         if (inputs[i] != inputs_save[i]) {
-            printf("Inputs %i 0x%02X 0x%02X \n",i,inputs[i],inputs_save[i]);
+            //printf("Inputs %i 0x%02X 0x%02X \n",i,inputs[i],inputs_save[i]);
+            if (i == 0) {
+                //printf("%i %i\n",inputs[i] & 0x01, (inputs[i] >> 1) & 0x01);
+                //printf("%i %i\n",(inputs[i] >> 2) & 0x01, (inputs[i] >> 3) & 0x01);
+                printf("%i %i\n",(inputs[i] >> 4) & 0x01, (inputs[i] >> 5) & 0x01);
+            }
         }
 
         // Port C: INPUTS 32-63 (DI2)
-        __delay_us(10);
+        //__delay_us(10);
         
         /* UART TX/RX uses PORTC Bits 6 & 7, so turn off for 
            not having faulty input reads when debugging through UART */

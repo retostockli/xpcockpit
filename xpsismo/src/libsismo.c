@@ -192,9 +192,10 @@ int read_sismo() {
   int ninputs;
   int firstbyte;
 
-  // printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
   
   while (udpReadLeft >= RECVMSGLEN) {
+
+    printf("Packets left to read %i \n",udpReadLeft/RECVMSGLEN);
     
     card = -1;
     

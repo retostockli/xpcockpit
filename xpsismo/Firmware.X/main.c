@@ -151,7 +151,9 @@ void main(void)
             //write_i2c_servo();
                
             /* Digital Inputs every 1 ms */
-            read_inputs();
+            if ((counter % 1) == 0) {
+                read_inputs();
+            }
             
             /* Analog Inputs every 10 ms */
             if ((counter % 10) == 0) {
@@ -174,7 +176,11 @@ void main(void)
             }
            
             // update save variable state with new variable state
-            copy_data();
+            // Has to be in the same interval as reading the digital inputs
+            // Or copy the digital and analog inputs separately etc.
+            if ((counter % 1) == 0) {
+                copy_data();
+            }
             
             poll_request = false;
             
@@ -185,7 +191,7 @@ void main(void)
         if (print_request)
         {
             
-            printf("Loops per sec: %li\n",counter);
+            //printf("Loops per sec: %li\n",counter);
 
             print_request = false;
             counter = 0;

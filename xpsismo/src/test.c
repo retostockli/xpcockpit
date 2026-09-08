@@ -56,20 +56,20 @@ void test(void)
   if (*encodervalue == INT_MISS) *encodervalue = 0;
   
   /* read second digital input (#1) */
-  i=5;
-  //ret = digital_input(card, i, value, 0);
+  i=24;
+  ret = digital_input(card, i, value, 0);
   if (ret == 1) {
     /* ret is 1 only if input has changed */
-    //    printf("Digital Input %i changed to: %i \n",i,*value);
+    printf("Digital Input %i changed to: %i \n",i,*value);
   }
  
   /* read first analog input (#0) */
   //  for (i=0;i<5;i++) {
   i=0;
-  ret = analog_input(card,i,fvalue,0.0,10.0);
+  ret = analog_input(card,i,fvalue,0.0,1.0);
   if (ret == 1) {
     /* ret is 1 only if analog input has changed */
-    //printf("Analog Input %i changed to: %f \n",i,*fvalue);
+    printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
   
   //ret = servo_outputf(card,0,fvalue,0.0,10.0);
@@ -77,7 +77,9 @@ void test(void)
 
   /* read encoder at inputs 0 and 1 */
 
-  ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
+  //  ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
+  ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
+  //ret = encoder_input(card, 4, 5, encodervalue, 1, 2);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
