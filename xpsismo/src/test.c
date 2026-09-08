@@ -44,11 +44,11 @@ void test(void)
   int display = 0;
 
   /* link integer data like a switch in the cockpit */
-  //int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
+  int *value = link_dataref_int("sim/cockpit/electrical/landing_lights_on");
 
   /* link floating point dataref with precision 10e-3 to local variable. This means
      that we only transfer the variable if changed by 0.001 or more */
-  //float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
+  float *fvalue = link_dataref_flt("sim/flightmodel/controls/parkbrake",-3);
 
   /* link NAV1 Frequency to encoder value */
   int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_h");
@@ -66,13 +66,14 @@ void test(void)
   /* read first analog input (#0) */
   //  for (i=0;i<5;i++) {
   i=0;
-  // ret = analog_input(card,i,fvalue,0.0,10.0);
+  ret = analog_input(card,i,fvalue,0.0,10.0);
   if (ret == 1) {
     /* ret is 1 only if analog input has changed */
     //printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
-    //  }
-   
+  
+  //ret = servo_outputf(card,0,fvalue,0.0,10.0);
+  //ret = servo_outputf(card,13,fvalue,0.0,10.0);
 
   /* read encoder at inputs 0 and 1 */
 
@@ -81,8 +82,6 @@ void test(void)
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
   }
-
-  //ret = servo_output(card,0,encodervalue,0,100);
   
   /* set LED connected to second output (#1) to value of above input */
   //for (i=0;i<64;i++) {
@@ -90,6 +89,13 @@ void test(void)
   //ret = digital_output(card, i, &zero);
   //}
 
+  /* if (*encodervalue % 2 == 0) { */
+  /*   ret = digital_output(card, 64, &one); */
+  /*   ret = digital_output(card, 72, &one); */
+  /* } else { */
+  /*   ret = digital_output(card, 64, &zero); */
+  /*   ret = digital_output(card, 72, &zero); */
+  /* }     */
 
   /*
   for (i=0;i<sismo[card].noutputs;i++) {
@@ -102,9 +108,9 @@ void test(void)
   }
   */
 
-  //display = 88888;
+  display = 12345;
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  //ret = display_output(card, 0, 5, &display, 0, 0);
+  ret = display_output(card, 0, 5, &display, 0, 15);
 
 }

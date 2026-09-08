@@ -327,7 +327,7 @@ int read_sismo() {
 		//val = get_bit(sismoRecvBuffer[8+b],i);
 		val = 1-get_bit(sismoRecvBuffer[8+b],i); // we now use 1: input pressed and 0: input free
 		if (val != sismo[card].inputs[input][0]) {
-		  if (verbose > 2) printf("Card %i Input %i Changed from %i to: %i \n",card,input,sismo[card].inputs[input][0],val);
+		  if (verbose > 1) printf("Card %i Input %i Changed from %i to: %i \n",card,input,sismo[card].inputs[input][0],val);
 		  sismo[card].inputs[input][0] = val; 
 		}
 	      }
@@ -378,8 +378,8 @@ int read_sismo() {
 	      sismo[card].analoginputs[input+firstinput][s+1] = sismo[card].analoginputs[input+firstinput][s];
 	    }
 	    if (val != sismo[card].analoginputs[input+firstinput][0]) {
-	      if (verbose > 3) printf("Card %i Analog Input %i Changed to %i \n",
-				      card,input+firstinput,sismo[card].analoginputs[input+firstinput][0]);
+	      if (verbose > 1) printf("Card %i Analog Input %i Changed to %i \n",
+				      card,input+firstinput,val);
 	    }
 	    sismo[card].analoginputs[input+firstinput][0] = val;			      
 	  }
@@ -389,11 +389,14 @@ int read_sismo() {
 	//printf("Left to Read: %i \n",udpReadLeft);
 	
       } else {
-	if (verbose > 1) printf("Card with MAC %02x:%02x or Port %i is not defined in ini file \n",
-	       sismoRecvBuffer[2],sismoRecvBuffer[3],sismoRecvBuffer[6] + 256 * sismoRecvBuffer[7]);
+	//if (verbose > 1) printf("Card with MAC %02x:%02x or Port %i is not defined in ini file \n",
+	//       sismoRecvBuffer[2],sismoRecvBuffer[3],sismoRecvBuffer[6] + 256 * sismoRecvBuffer[7]);
+	if (verbose > 1) printf("Card with MAC %02x:%02x or Port %02x %02x is not defined in ini file \n",
+				sismoRecvBuffer[2],sismoRecvBuffer[3],sismoRecvBuffer[6], sismoRecvBuffer[7]);
       }
     } else {
-      printf("Received wrong Init String: %02x %02x \n",sismoRecvBuffer[0],sismoRecvBuffer[1]);
+      //printf("Received wrong Init String: %02x %02x \n",sismoRecvBuffer[0],sismoRecvBuffer[1]);
+      printf("DEBUG MSG: %s",sismoRecvBuffer);
     }
 
   } /* while UDP data present in receive buffer */
@@ -511,7 +514,7 @@ int write_sismo() {
 		set_7segment(&sismoSendBuffer[5+display],sismo[card].displays[display+group*8+firstdisplay]);
 	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGEDBINARY) {
-		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %04x \n",
+		if (verbose > 1) printf("Card %i Bank %i Display %i changed to: %04x \n",
 					card,bank,display+group*8+firstdisplay,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
@@ -519,7 +522,7 @@ int write_sismo() {
 		sismo[card].displays_changed[display+group*8+firstdisplay] = UNCHANGEDBINARY;
 	      }
 	      if (sismo[card].displays_changed[display+group*8+firstdisplay] == CHANGED) {
-		if (verbose > 2) printf("Card %i Bank %i Display %i changed to: %i \n",
+		if (verbose > 1) printf("Card %i Bank %i Display %i changed to: %i \n",
 					card,bank,display+group*8+firstdisplay,
 					sismo[card].displays[display+group*8+firstdisplay]);
 		anychanged = 1;
@@ -529,7 +532,7 @@ int write_sismo() {
 	    }
 	    if (anychanged) {
 	      ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
-	      if (verbose > 2) printf("Sent %i bytes to card %i \n", ret,card);
+	      if (verbose > 1) printf("Sent %i bytes to card %i \n", ret,card);
 	    }
 	  }
 

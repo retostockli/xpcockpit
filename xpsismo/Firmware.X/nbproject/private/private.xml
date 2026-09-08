@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/network.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/log.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/device_config.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/rtcc.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/ip_database.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/network_config.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/ETHxxJ6x_driver.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/eusart1.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/eusart1.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/mcc.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcp23017_i2c.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/log_console.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/network.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/network_config.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/ethernet_driver.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/arpv4.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/udpv4.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/main.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/software_i2c.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/udpv4.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/pin_manager.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/udp.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/ipv4.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/mcc.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/gpio.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/udpv4_port_handler_table.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/common.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/TCPIPLibrary/log_syslog.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/pin_manager.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/common.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/mcc_generated_files/device_config.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/gpio.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/daughter_i2c.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/daughter_i2c.h</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/software_ic2.c</file>
+            <file>file:/home/stockli/MPLABXProjects/UART.X/udp.c</file>
+        </group>
+    </open-files>
+</project-private>
