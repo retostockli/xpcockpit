@@ -25,7 +25,7 @@
 #define MAXOUTPUTS_I2C 64+64   /* 64 on master and 2x64 on daughters */
 #define MAXDISPLAYS 32         /* 32 on master and 2x32 on daughters */
 #define MAXDISPLAYS_I2C 32+32  /* 32 on master and 2x32 on daughters */
-#define DISPLAYBRIGHTNESS 15   /* 0-15 Brightness of 7 segment displays */
+#define MAXBRIGHTNESS 15   /* 0-15 Brightness of 7 segment displays */
 #define MAXSERVOS_I2C 14       /* 14 on daughter */
 #define MAXSAVE 10             /* maximum number of history values in data structure */
 #define INPUTSINITVAL 0         /* initial value of inputs upon startup */
@@ -41,6 +41,8 @@ uint8_t inputs[MAXINPUTS/8];
 uint8_t inputs_save[MAXINPUTS/8];
 uint8_t displays[MAXDISPLAYS];
 uint8_t displays_save[MAXDISPLAYS];
+uint8_t brightness[MAXDISPLAYS/8];
+uint8_t brightness_save[MAXDISPLAYS/8];
 uint16_t analoginputs[MAXANALOGINPUTS][MAXSAVE];
 uint16_t analoginputs_save[MAXANALOGINPUTS];
 uint16_t analoginputs_median[MAXANALOGINPUTS];

@@ -32,18 +32,22 @@
 #include "common.h"
 #include "udp.h"
 
-
-
-#define UDP_RX_BUFFER_SIZE 100
-
 static udpStart_t udpPacket;
-static uint8_t udpRxBuffer[UDP_RX_BUFFER_SIZE];
-static volatile uint16_t udpRxLength = 0;
-static volatile bool udpRxPending = false;
-static uint32_t udpRxDestIP = 0;
-static volatile bool ARP_Available = false;
 
-bool UDP_Check_ARP() 
+typedef struct
+{
+    uint8_t data[RECVMSGLEN];
+    uint16_t length;
+    uint32_t destIP;
+} udpRxPacket_t;
+
+static udpRxPacket_t udpRxQueue[UDP_RX_QUEUE_SIZE];
+
+static volatile uint8_t udpRxCount;
+
+static volatile bool ARP_Available;
+
+bool UDP_Check_ARP(void) 
 {
     uint16_t ret;
     if (ARPV4_Lookup(udpPacket.destinationAddress) != 0)
@@ -53,8 +57,7 @@ bool UDP_Check_ARP()
         return true;
     }
     else
-    {
-        
+    {       
         ret = ARPV4_Request(udpPacket.destinationAddress);
         if (ret == 1) {
             printf("ARP Available\n");
@@ -65,7 +68,6 @@ bool UDP_Check_ARP()
             ARP_Available = false;
             return false;
         }
-
     }
 }
 
@@ -74,40 +76,89 @@ void UDP_Initialize(uint32_t destinationAddress, uint16_t sourcePortNumber, uint
     udpPacket.destinationAddress = destinationAddress;
     udpPacket.sourcePortNumber = sourcePortNumber;  
     udpPacket.destinationPortNumber = destinationPortNumber;    
+    
+    udpRxCount = 0;
+    ARP_Available = false;
 }
 
 void UDP_Recv_Data(int16_t length)
 {
+    uint8_t udpRxBuffer[RECVMSGLEN];
     
-    if (length >= UDP_RX_BUFFER_SIZE)
+    
+    if (length > RECVMSGLEN)
     {
-        length = UDP_RX_BUFFER_SIZE - 1;
+        length = RECVMSGLEN;
     }
 
     UDP_ReadBlock(udpRxBuffer, (uint16_t) length);
 
-    udpRxLength = (uint16_t) length;
-    udpRxPending = true;
-    udpRxDestIP = UDP_GetDestIP();
+    if (udpRxCount != UDP_RX_QUEUE_SIZE) {
+        memcpy(udpRxQueue[udpRxCount].data,udpRxBuffer,sizeof(udpRxBuffer));
+        udpRxQueue[udpRxCount].length = (uint16_t) length;
+        udpRxQueue[udpRxCount].destIP = UDP_GetDestIP();
+        udpRxCount++;
+    } else {
+        printf("UDP RX QUEUE SIZE OVERFLOW!\n");
+    }
     
 }
 
 void UDP_Recv_Task(void)
 {
-    if (!udpRxPending)
+    
+    uint8_t i,q,g,d;
+     
+    if (udpRxCount == 0)
     {
         return;
     }
+    
+    /* Process command/data here: Eat up Queue from bottom */
+    for (q=0;q<udpRxCount;q++) {
 
-    udpRxPending = false;
+        if (udpRxQueue[q].length == RECVMSGLEN) {
+            
+            if ((udpRxQueue[q].data[0] == 0x53) && (udpRxQueue[q].data[1] == 0x43)) {
+            
+//                printf("UDP RECV %u bytes from %s\n",
+//                       udpRxQueue[q].length,
+//                       makeIpv4AddresstoStr(udpRxQueue[q].destIP));
+                
+                if (udpRxQueue[q].data[2] == 0x00) {
+                    /* Data for SC-MB */
+                    if (udpRxQueue[q].data[3] == 0x00) {
+                        /* Digital Outputs */
+                        for (i=0;i<(MAXOUTPUTS/8);i++) {
+                            outputs[i] = udpRxQueue[q].data[4+i];
+                        }
+                    } else if (udpRxQueue[q].data[3] == 0x01) {
+                        /* 7 Segment Displays */
+                        g = udpRxQueue[q].data[4]-1;
+                        for (i=0;i<(MAXDISPLAYS/4);i++) {
+                            d = g*8 + i;
+                            displays[d] = udpRxQueue[q].data[5+i];
+                        }
+                        brightness[g] = udpRxQueue[q].data[13];
+                    }
+                }
+            }
 
-    printf("Received %u bytes from %s\n",
-           udpRxLength,
-           makeIpv4AddresstoStr(udpRxDestIP));
+        } else {
+            printf("UDP RECV WRONG LENGTH: %u\n",udpRxQueue[q].length);
+        }
+        
+    }
+ 
+    /* shift queue by one */
+    for (q=1;q<udpRxCount;q++) {
+        memcpy(udpRxQueue[q-1].data,udpRxQueue[q].data,RECVMSGLEN);
+        udpRxQueue[q-1].length = udpRxQueue[q].length;
+        udpRxQueue[q-1].destIP = udpRxQueue[q].destIP;
+    }
+       
+    udpRxCount--;
 
-    printf("Data: %s\n", udpRxBuffer);
-
-    // Process command/data here
 }
 
 /*** Application to send data using UDP protocol ***/
@@ -205,7 +256,7 @@ void UDP_Send_Task(bool force)
     
     if (force) changed = true;
     if (changed) {
-        printf("SEND\n");
+        //printf("UDP SEND\n");
         UDP_Send_Data(senddata, sizeof(senddata));
     }
  

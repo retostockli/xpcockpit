@@ -25,8 +25,19 @@ void init_data(void)
     for (i=0;i<(MAXOUTPUTS/8);i++)
     {
         outputs[i] = OUTPUTSINITVAL;
-        outputs_save[i] = OUTPUTSINITVAL;
+        outputs_save[i] = 0xFF;
     }
+    for (i=0;i<MAXDISPLAYS;i++)
+    {
+        displays[i] = OUTPUTSINITVAL;
+        displays_save[i] = 0xFF;
+    }
+       for (i=0;i<(MAXDISPLAYS/8);i++)
+    {
+        brightness[i] = OUTPUTSINITVAL;
+        brightness_save[i] = MAXBRIGHTNESS;
+    }
+
     for (i=0;i<(MAXINPUTS/8);i++)
     {
         inputs[i] = INPUTSINITVAL;
@@ -49,6 +60,8 @@ void copy_data(void)
     
     memcpy(outputs_save,outputs,sizeof(outputs));
     memcpy(inputs_save,inputs,sizeof(inputs));
+    memcpy(displays_save,displays,sizeof(displays));
+    memcpy(brightness_save,brightness,sizeof(brightness));
     
     for (i=0;i<MAXANALOGINPUTS;i++) {
         analoginputs_save[i] = analoginputs_median[i];

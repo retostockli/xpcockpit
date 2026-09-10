@@ -80,7 +80,7 @@ void myTimer(void)
     
     // Every 1 millisecond
     tmr_poll_count++;
-    if (tmr_poll_count >= 1)
+    if (tmr_poll_count >= 10)
     {
         tmr_poll_count = 0;
         poll_request = true;
@@ -147,22 +147,27 @@ void main(void)
  
             UDP_Recv_Task();            
            
+            //write_outputs();
+            //write_displays();
             //write_i2c_outputs1();
+            //write_i2c_outputs2();
+            //write_i2c_displays1();
+            //write_i2c_displays2();
             //write_i2c_servo();
                
             /* Digital Inputs every 1 ms */
-            if ((counter % 1) == 0) {
-                read_inputs();
-            }
+            read_inputs();
+            //read_i2c_inputs1();
+            //read_i2c_inputs2();
             
             /* Analog Inputs every 10 ms */
             if ((counter % 10) == 0) {
                 read_analoginputs();
+                //read_i2c_analoginputs();)
             }
              
             if ((counter % 1000) == 0) {
-                //read_inputs();
-                //read_i2c_inputs1();
+ 
      
                 //UDP_Send_Task(true);
                                  
@@ -178,12 +183,13 @@ void main(void)
             // update save variable state with new variable state
             // Has to be in the same interval as reading the digital inputs
             // Or copy the digital and analog inputs separately etc.
-            if ((counter % 1) == 0) {
-                copy_data();
-            }
-            
+            copy_data();
+           
             poll_request = false;
-            
+
+            printf("Loops per sec: %li\n",counter);
+           counter = 0;
+             
         }
         
         counter++;
@@ -194,7 +200,6 @@ void main(void)
             //printf("Loops per sec: %li\n",counter);
 
             print_request = false;
-            counter = 0;
         }
     
     }  

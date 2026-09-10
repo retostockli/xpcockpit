@@ -36,32 +36,40 @@ void write_outputs(void)
      
     for (i=0;i<(MAXOUTPUTS/8);i++) {
         
-        if (i<4) {
-            // Port E: OUTPUTS 0-31 (DO1)
+        if (outputs[i] != outputs_save[i]) {
             
-            IO_RF5_SetHigh();
-            
-            LATFbits.LATF3 = i & 0x01; 
-            LATFbits.LATF4 = (i >> 1) & 0x01;
+            printf("WRITE OUTPUTS BANK %i\n",i);
+        
+            if (i<4) {
+                // Port E: OUTPUTS 0-31 (DO1)
 
-            IO_RF5_SetLow();
-            LATE = outputs[i];
-            IO_RF5_SetHigh();
-            
-        } else {
-            // Port H: OUTPUTS 32-63 (DO2)
+                IO_RF5_SetHigh();
 
-            IO_RF6_SetHigh();
- 
-            LATFbits.LATF3 = (i-4) & 0x01; 
-            LATFbits.LATF4 = ((i-4) >> 1) & 0x01;
+                LATFbits.LATF3 = i & 0x01; 
+                LATFbits.LATF4 = (i >> 1) & 0x01;
 
-            IO_RF6_SetLow();
-            LATH = outputs[i];
-            IO_RF6_SetHigh();
+                IO_RF5_SetLow();
+                LATE = outputs[i];
+                IO_RF5_SetHigh();
+
+            } else {
+                // Port H: OUTPUTS 32-63 (DO2)
+
+                IO_RF6_SetHigh();
+
+                LATFbits.LATF3 = (i-4) & 0x01; 
+                LATFbits.LATF4 = ((i-4) >> 1) & 0x01;
+
+                IO_RF6_SetLow();
+                LATH = outputs[i];
+                IO_RF6_SetHigh();
+
+            }  
             
-        }               
+        }
+        
     }
+    
 }
 
 void read_inputs(void)
@@ -79,14 +87,14 @@ void read_inputs(void)
         //__delay_us(10);
         inputs[i] = PORTB;
         
-        if (inputs[i] != inputs_save[i]) {
+        //if (inputs[i] != inputs_save[i]) {
             //printf("Inputs %i 0x%02X 0x%02X \n",i,inputs[i],inputs_save[i]);
-            if (i == 0) {
+            //if (i == 0) {
                 //printf("%i %i\n",inputs[i] & 0x01, (inputs[i] >> 1) & 0x01);
                 //printf("%i %i\n",(inputs[i] >> 2) & 0x01, (inputs[i] >> 3) & 0x01);
-                printf("%i %i\n",(inputs[i] >> 4) & 0x01, (inputs[i] >> 5) & 0x01);
-            }
-        }
+                //printf("%i %i\n",(inputs[i] >> 4) & 0x01, (inputs[i] >> 5) & 0x01);
+            //}
+        //}
 
         // Port C: INPUTS 32-63 (DI2)
         //__delay_us(10);
@@ -97,9 +105,9 @@ void read_inputs(void)
             inputs[i+4] = PORTC;
         }
         
-        if (inputs[i+4] != inputs_save[i+4]) {
-            printf("Inputs %i 0x%02X 0x%02X \n",i+4,inputs[i+4],inputs_save[i+4]);
-        }           
+        //if (inputs[i+4] != inputs_save[i+4]) {
+        //    printf("Inputs %i 0x%02X 0x%02X \n",i+4,inputs[i+4],inputs_save[i+4]);
+        //}           
     }
 }
 
@@ -245,8 +253,23 @@ void init_displays(void)
 
 void write_displays(void)
 {
-    MAX7219_Write(MAX_REG_TEST, 1, 0);
-    __delay_ms(1000);
-    MAX7219_Write(MAX_REG_TEST, 0, 0);
-    MAX7219_Write(MAX_REG_DIGIT0, 0xFF, 0);
+    uint8_t d,i,b;
+    
+    //MAX7219_Write(MAX_REG_TEST, 1, 0);
+    //__delay_ms(1000);
+    //MAX7219_Write(MAX_REG_TEST, 0, 0);
+    
+    for (b=0;b<(MAXDISPLAYS/8);b++) {
+        for (i=0;i<(MAXDISPLAYS/4);i++) {
+            d = b*8 + i;
+            if (displays[d] != displays_save[d]) {
+                printf("DISP %u VAL 0x%02X\n",d,displays[d]);
+                MAX7219_Write(i+1, displays[d], b);
+            }
+        }
+        if (brightness[b] != brightness_save[b]) {
+            printf("DISP BANK %u VAL %u\n",b,brightness[b]);
+            MAX7219_Write(MAX_REG_INTENSITY, brightness[b], b);  
+        }
+    }
 }

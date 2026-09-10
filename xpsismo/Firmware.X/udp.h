@@ -28,6 +28,8 @@
   Section: Included Files
 */
 
+#define UDP_RX_QUEUE_SIZE 10
+
 typedef struct
 {
     uint32_t destinationAddress;
@@ -35,7 +37,8 @@ typedef struct
     uint16_t destinationPortNumber;    
 } udpStart_t;
 
-bool UDP_Check_ARP();
+
+bool UDP_Check_ARP(void);
 void UDP_Initialize(uint32_t destinationAddress, uint16_t sourcePortNumber, uint16_t destinationPortNumber);
 void UDP_Send_String (char text[]);
 void UDP_Send_Data (uint8_t data[], uint16_t length);
