@@ -328,13 +328,16 @@ void b737_efis(int copilot)
   ret = digital_input(card,33+offset,&temp2,0); // ADF1
   if ((acf_type == 2) || (acf_type == 3)) {
     if (*efis1_sel != INT_MISS) {
-      if (*efis1_sel < (temp + (1-temp2) - 1)) {
-	*efis1_sel_up = 1;
-      }
-      if (*efis1_sel > (temp + (1-temp2) - 1)) {
-	*efis1_sel_dn = 1;
-      }     
+      /* if (*efis1_sel < (temp + (1-temp2) - 1)) { */
+      /* 	*efis1_sel_up = 1; */
+      /* } */
+      /* if (*efis1_sel > (temp + (1-temp2) - 1)) { */
+      /* 	*efis1_sel_dn = 1; */
+      /* }      */
+      int efis1_sel_input = temp + (1-temp2) - 1;
+      ret = set_state_updn(&efis1_sel_input, efis1_sel, efis1_sel_up, efis1_sel_dn);
     }
+    
   } else {
     *efis1_sel = temp + (1-temp2);
   }
@@ -344,12 +347,14 @@ void b737_efis(int copilot)
   ret = digital_input(card,55+offset,&temp2,0); // ADF2
   if ((acf_type == 2) || (acf_type == 3)) {
     if (*efis2_sel != INT_MISS) {
-      if (*efis2_sel < (temp + (1-temp2) - 1)) {
-	*efis2_sel_up = 1;
-      }
-      if (*efis2_sel > (temp + (1-temp2) - 1)) {
-	*efis2_sel_dn = 1;
-      }     
+      /* if (*efis2_sel < (temp + (1-temp2) - 1)) { */
+      /* 	*efis2_sel_up = 1; */
+      /* } */
+      /* if (*efis2_sel > (temp + (1-temp2) - 1)) { */
+      /* 	*efis2_sel_dn = 1; */
+      /* }      */
+      int efis2_sel_input = temp + (1-temp2) - 1;
+      ret = set_state_updn(&efis2_sel_input, efis2_sel, efis2_sel_up, efis2_sel_dn);
     }
   } else {
     *efis2_sel = temp + (1-temp2);
