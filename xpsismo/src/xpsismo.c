@@ -50,7 +50,7 @@
 int main(int argc, char **argv) {
 
   /* loop interval [ms] */
-  interval = 1;
+  interval = 10;
   
   /* evaluate command line arguments */
   argc--;

@@ -547,7 +547,7 @@ void b737_mcp(void)
     if (*ap_altitude < 0.0) *ap_altitude = 0.0;
     printf("AP Altitude: %f \n",*ap_altitude);
   }
-  
+ 
   if ((*ap_vspeed < 1000.) && (*ap_vspeed > -1000.)) {
     ret = encoder_inputf(card, 21, 22, ap_vspeed, -50.0, 1);
   } else {
