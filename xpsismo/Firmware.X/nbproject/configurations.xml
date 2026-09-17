@@ -41,7 +41,7 @@
       <itemPath>mcp23017_i2c.h</itemPath>
       <itemPath>gpio.h</itemPath>
       <itemPath>common.h</itemPath>
-      <itemPath>quicksort.h</itemPath>
+      <itemPath>sort.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -92,7 +92,7 @@
       <itemPath>mcp23017_i2c.c</itemPath>
       <itemPath>gpio.c</itemPath>
       <itemPath>common.c</itemPath>
-      <itemPath>quicksort.c</itemPath>
+      <itemPath>sort.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

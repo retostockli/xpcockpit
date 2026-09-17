@@ -13,7 +13,7 @@
 #include "gpio.h"
 #include "common.h"
 #include "udp.h"
-#include "quicksort.h"
+#include "sort.h"
 
 #define MAX_REG_NOOP        0x00
 #define MAX_REG_DIGIT0      0x01
@@ -29,6 +29,8 @@
 #define MAX_REG_SCANLIMIT   0x0B
 #define MAX_REG_SHUTDOWN    0x0C
 #define MAX_REG_TEST        0x0F
+
+static uint8_t historyIndex = 0;
 
 void write_outputs(void)
 {
@@ -70,6 +72,8 @@ void write_outputs(void)
         
     }
     
+    memcpy(outputs_save,outputs,sizeof(outputs));
+    
 }
 
 void read_inputs(void)
@@ -78,7 +82,7 @@ void read_inputs(void)
     // Before reading inputs (double use of bit 6 and 7 of input lines)
     uint8_t i; 
             
-    for (i=0;i<(MAXINPUTS/8/2);i++) {
+    for (i=0;i<(MAXINPUTS/16);i++) {
                     
         LATFbits.LATF1 = i & 0x01; 
         LATFbits.LATF2 = (i >> 1) & 0x01;
@@ -87,14 +91,14 @@ void read_inputs(void)
         //__delay_us(10);
         inputs[i] = PORTB;
         
-        //if (inputs[i] != inputs_save[i]) {
-            //printf("Inputs %i 0x%02X 0x%02X \n",i,inputs[i],inputs_save[i]);
-            //if (i == 0) {
-                //printf("%i %i\n",inputs[i] & 0x01, (inputs[i] >> 1) & 0x01);
-                //printf("%i %i\n",(inputs[i] >> 2) & 0x01, (inputs[i] >> 3) & 0x01);
-                //printf("%i %i\n",(inputs[i] >> 4) & 0x01, (inputs[i] >> 5) & 0x01);
-            //}
-        //}
+//        if (inputs[i] != inputs_save[i]) {
+//            //printf("Inputs %i 0x%02X 0x%02X \n",i,inputs[i],inputs_save[i]);
+//            if (i == 0) {
+//                //printf("%i %i\n",inputs[i] & 0x01, (inputs[i] >> 1) & 0x01);
+//                //printf("%i %i\n",(inputs[i] >> 2) & 0x01, (inputs[i] >> 3) & 0x01);
+//                //printf("%i %i\n",(inputs[i] >> 4) & 0x01, (inputs[i] >> 5) & 0x01);
+//            }
+//        }
 
         // Port C: INPUTS 32-63 (DI2)
         //__delay_us(10);
@@ -116,9 +120,9 @@ void read_analoginputs(void)
     uint8_t i;
     int8_t h;
     
-    int16_t temparr[MAXSAVE];
+    uint16_t temparr[MAXSAVE];
     int16_t noise = 1;
-    int16_t median;
+    uint16_t median;
             
     for (i=0;i<MAXANALOGINPUTS;i++) {
     //for (i=0;i<1;i++) {
@@ -126,42 +130,47 @@ void read_analoginputs(void)
         ADCON0bits.CHS = i; 
 
         // 2. Start conversion sequence
+        __delay_us(5);        // acquisition time (charge capacitors)
         ADCON0bits.GO_DONE = 1; 
 
         // 3. Poll hardware status until conversion finishes
         while (ADCON0bits.GO_DONE); 
-
+      
         // 4. Return combined 10-bit result
-
-        /* Shift History of analog inputs and update current value */
-        for (h = MAXSAVE - 2; h >= 0; h--) {
-           analoginputs[i][h + 1] = analoginputs[i][h];
-        }
-        analoginputs[i][0] = (uint16_t)(ADRESH << 8) | ADRESL;
-        
         /* fill history with current read upon start */
         if (firstanalogread) {
-            for (h=1;h<MAXSAVE;h++) {
-                analoginputs[i][h] = analoginputs[i][0];
+            for (h=0;h<MAXSAVE;h++) {
+                analoginputs[i][h] = (uint16_t)(ADRESH << 8) | ADRESL;
             }
+        } else {       
+            analoginputs[i][historyIndex] = (uint16_t)(ADRESH << 8) | ADRESL;
         }
-
+        
+        // make a temporary copy for median filtering
         memcpy(temparr, analoginputs[i], sizeof(analoginputs[i][0]) * MAXSAVE);
-        //quicksort(temparr, 0, MAXSAVE - 1);
-        sort_int16(temparr, MAXSAVE);
-        if (firstanalogread) {
-            median = (int16_t) analoginputs[i][0];
+        
+         if (firstanalogread) {
+            median = analoginputs[i][0];
         } else {
+            sort_uint16(temparr, MAXSAVE);
             median = temparr[MAXSAVE / 2];
         }
             
         /* only send current value if it is outside median and noise */
-        if ((median < ((int16_t) analoginputs_save[i] - noise)) || (median > ((int16_t) analoginputs_save[i] + noise))) {       
-          printf("ANA %i 0: %i MED: %i SAV: %i \n",i, (int) analoginputs[i][0], median, analoginputs_save[i]); 
-          analoginputs_median[i] = (uint16_t) median;
+        if (((int16_t) median < ((int16_t) analoginputs_save[i] - noise)) || ((int16_t) median > ((int16_t) analoginputs_save[i] + noise))) {       
+          //printf("ANA %i 0: %i MED: %i SAV: %i \n",i, (int) analoginputs[i][historyIndex], median, analoginputs_save[i]); 
+          analoginputs_median[i] = median;
         }
+        
     }
     firstanalogread = false;
+    
+    // augment pointer to newest value in circular buffer
+    historyIndex++;
+
+    if (historyIndex >= MAXSAVE)
+        historyIndex = 0;
+
 }
 
 /* MAX7219 7 segment display driver */
@@ -255,10 +264,6 @@ void write_displays(void)
 {
     uint8_t d,i,b;
     
-    //MAX7219_Write(MAX_REG_TEST, 1, 0);
-    //__delay_ms(1000);
-    //MAX7219_Write(MAX_REG_TEST, 0, 0);
-    
     for (b=0;b<(MAXDISPLAYS/8);b++) {
         for (i=0;i<(MAXDISPLAYS/4);i++) {
             d = b*8 + i;
@@ -272,4 +277,8 @@ void write_displays(void)
             MAX7219_Write(MAX_REG_INTENSITY, brightness[b], b);  
         }
     }
+    
+    memcpy(displays_save,displays,sizeof(displays));
+    memcpy(brightness_save,brightness,sizeof(brightness));
+    
 }

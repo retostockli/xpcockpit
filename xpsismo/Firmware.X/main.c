@@ -63,7 +63,8 @@ volatile uint32_t tmr_print_count = 0;
 volatile bool print_request = false;
 volatile uint32_t tmr_poll_count = 0;
 volatile bool poll_request = false;
-volatile uint32_t counter = 0;
+volatile uint32_t ms_counter = 0;
+volatile uint32_t loop_counter = 0;
       
 void myTimer(void)
 {
@@ -80,7 +81,7 @@ void myTimer(void)
     
     // Every 1 millisecond
     tmr_poll_count++;
-    if (tmr_poll_count >= 10)
+    if (tmr_poll_count >= 1)
     {
         tmr_poll_count = 0;
         poll_request = true;
@@ -142,13 +143,18 @@ void main(void)
     {
         if (poll_request)
         {
+           
+            poll_request = false;
+
             // run network code 
             Network_Manage();
  
             UDP_Recv_Task();            
            
-            //write_outputs();
-            //write_displays();
+            if ((ms_counter % 20) == 0) {
+                write_outputs();
+                write_displays();
+            }
             //write_i2c_outputs1();
             //write_i2c_outputs2();
             //write_i2c_displays1();
@@ -160,14 +166,14 @@ void main(void)
             //read_i2c_inputs1();
             //read_i2c_inputs2();
             
-            /* Analog Inputs every 10 ms */
-            if ((counter % 10) == 0) {
+            /* Analog Inputs every 20 ms */
+            if ((ms_counter % 20) == 0) {
                 read_analoginputs();
                 //read_i2c_analoginputs();)
             }
              
-            if ((counter % 1000) == 0) {
- 
+            if ((ms_counter % 1000) == 0) {
+                //printf("1 Second passed\n");
      
                 //UDP_Send_Task(true);
                                  
@@ -184,23 +190,23 @@ void main(void)
             // Has to be in the same interval as reading the digital inputs
             // Or copy the digital and analog inputs separately etc.
             copy_data();
-           
-            poll_request = false;
-
-            printf("Loops per sec: %li\n",counter);
-           counter = 0;
-             
+       
+            ms_counter++;
+            
         }
-        
-        counter++;
         
         if (print_request)
         {
-            
-            //printf("Loops per sec: %li\n",counter);
-
             print_request = false;
+                
+            printf("Loops per sec: %li\n",loop_counter);
+            printf("1 ms Interrupts per Second: %li\n",ms_counter);
+            ms_counter = 0;
+            loop_counter = 0;
+
         }
+        
+        loop_counter++;
     
     }  
     

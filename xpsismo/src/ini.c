@@ -66,6 +66,7 @@ int ini_read(char* programPath, char* iniName)
   char default_sismocard_ip[] = "NA";
   int default_sismocard_port = 0;
   int default_sismocard_mac = 0;
+  int default_sismocard_firmware = 0;
  
 
   /* check if we are in the source code directory or in the binary installation path */
@@ -129,11 +130,18 @@ int ini_read(char* programPath, char* iniName)
       sismo[i].mac[0] = iniparser_getint(ini,tmp, default_sismocard_mac);
       sprintf(tmp,"card%i:Mac2",i);
       sismo[i].mac[1] = iniparser_getint(ini,tmp, default_sismocard_mac);
+      sprintf(tmp,"card%i:Firmware",i);
+      sismo[i].firmware = iniparser_getint(ini,tmp, default_sismocard_firmware);
       if (sismo[i].port == default_sismocard_port) {
 	//printf("SISMOCARD %i Not Defined \n",i);
       } else {
-	printf("SISMOCARD %i IP Address %s Port %i Mac %02x:%02x \n",i,sismo[i].ip, sismo[i].port,
-	       sismo[i].mac[0],sismo[i].mac[1]);
+	if (sismo[i].firmware == 1) {
+	  printf("SISMOCARD %i IP Address %s Port %i Mac %02x:%02x NEW FIRMWARE \n",i,sismo[i].ip, sismo[i].port,
+		 sismo[i].mac[0],sismo[i].mac[1]);
+	} else {
+	  printf("SISMOCARD %i IP Address %s Port %i Mac %02x:%02x \n",i,sismo[i].ip, sismo[i].port,
+		 sismo[i].mac[0],sismo[i].mac[1]);
+	}
 	ncards++;
       }
       

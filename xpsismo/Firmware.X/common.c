@@ -58,10 +58,8 @@ void copy_data(void)
 {
     uint8_t i;
     
-    memcpy(outputs_save,outputs,sizeof(outputs));
+
     memcpy(inputs_save,inputs,sizeof(inputs));
-    memcpy(displays_save,displays,sizeof(displays));
-    memcpy(brightness_save,brightness,sizeof(brightness));
     
     for (i=0;i<MAXANALOGINPUTS;i++) {
         analoginputs_save[i] = analoginputs_median[i];

@@ -1,61 +1,13 @@
 #include <stdio.h>
 #include <stdint.h>
 
-void swap(int16_t* a, int16_t* b) {
-    int16_t temp = *a;
-    *a = *b;
-    *b = temp;
-}
+#include "common.h"
 
-int16_t partition(int16_t arr[], int16_t low, int16_t high) {
-
-    // Initialize pivot to be the first element
-    int16_t p = arr[low];
-    int16_t i = low;
-    int16_t j = high;
-
-    while (i < j) {
-
-        // Find the first element greater than
-        // the pivot (from starting)
-        while (arr[i] <= p && i <= high - 1) {
-            i++;
-        }
-
-        // Find the first element smaller than
-        // the pivot (from last)
-        while (arr[j] > p && j >= low + 1) {
-            j--;
-        }
-        if (i < j) {
-            swap(&arr[i], &arr[j]);
-        }
-    }
-    swap(&arr[low], &arr[j]);
-    return j;
-}
-
-
-/* ATTENTION: QUICKSORT DOES NOT WORK ON THE PIC DUE TO STACK LIMIT
- WITH DEEP RECURSIONS REQUIRED BY QUICKSORT */
-void quicksort(int16_t arr[], int16_t low, int16_t high) {
-    if (low < high) {
-
-        // call partition function to find Partition Index
-        int16_t pi = partition(arr, low, high);
-
-        // Recursively call quickSort() for left and right
-        // half based on Partition Index
-        quicksort(arr, low, pi - 1);
-        quicksort(arr, pi + 1, high);
-    }
-}
-
-void sort_int16(int16_t arr[], uint8_t count)
+void sort_uint16(uint16_t arr[], uint16_t count)
 {
     uint8_t i;
     uint8_t j;
-    int16_t value;
+    uint16_t value;
 
     for(i = 1; i < count; i++)
     {
@@ -70,4 +22,50 @@ void sort_int16(int16_t arr[], uint8_t count)
 
         arr[j] = value;
     }
+}
+
+void update_sorted(uint16_t sorted[], uint16_t oldValue, uint16_t newValue, uint16_t count)
+{
+    uint8_t i;
+
+    /* Find the old value in the sorted array */
+    for(i = 0; i < count; i++)
+    {
+        if(sorted[i] == oldValue)
+            break;
+    }
+
+    /* Safety check - oldValue should always be found */
+    if(i >= count)
+        return;
+
+    if(newValue > oldValue)
+    {
+        /*
+         * New value belongs further to the right.
+         * Shift smaller values one position left.
+         */
+        while((i < (count - 1)) &&
+              (sorted[i + 1] < newValue))
+        {
+            sorted[i] = sorted[i + 1];
+            i++;
+        }
+    }
+    else if(newValue < oldValue)
+    {
+        /*
+         * New value belongs further to the left.
+         * Shift larger values one position right.
+         */
+        while((i > 0) &&
+              (sorted[i - 1] > newValue))
+        {
+            sorted[i] = sorted[i - 1];
+            i--;
+        }
+    }
+
+    /* Insert new value */
+    sorted[i] = newValue;
 }

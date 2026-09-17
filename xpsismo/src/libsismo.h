@@ -50,6 +50,7 @@ typedef struct {
   char ip[30];           /* IP address of card */
   int port;              /* UDP port card is listening */
   unsigned char mac[2];  /* last two bytes of MAC address */
+  int firmware;          /* 1: New Firmware by XPCOCKPIT; 0: Firmware by SISMO */
   char daughter_output1;       /* connected daughter card outputs 1 (outputs 65-128) */
   char daughter_output2;       /* connected daughter card outputs 2 (outputs 129-192) */
   char daughter_servo;         /* connected daughter card with servos (servos 1-14) */

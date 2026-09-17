@@ -990,50 +990,77 @@ int analog_input(int card, int input, float *value, float minval, float maxval)
       if (sismo[card].connected) {
 	if ((input >= 0) && (input < sismo[card].nanaloginputs)) {
 
-	  /* Analog input values are flickering with spikes (up to 10 out of a range of 1023)
-	     which is because of imprecision of potentiometers and power supply.
-	     A change does not necessarily mean that we turned the potentiometer,
-	     Here we use a median filter */
+	  if (sismo[card].firmware == 1) {
 
-	  /* history value 0 is the newest reading */	  
-	  memcpy(temparr,&sismo[card].analoginputs[input][0],(MAXSAVE)*sizeof(int));
-	  quicksort(temparr,0,MAXSAVE-1);
-	  median = temparr[MAXSAVE/2];
-
-	  //if (input == 0)
-	  //printf("%i %i %i \n",sismo[card].analoginputs[input][0],sismo[card].analoginputs_save[input],median);
-
-	  if ((sismo[card].analoginputs[input][0] != INPUTINITVAL) && (median != INPUTINITVAL)) {
-	    /* compare if newest median changed compared to the last one when we had a change */
-	    if ((sismo[card].analoginputs_save[input] < (median - noise)) ||
-		(sismo[card].analoginputs_save[input] > (median + noise))) {
-	      /* potentiometer really changed */
-		  
-	      /* convert current reading to float value with requested range */
-	      *value = ((float) sismo[card].analoginputs[input][0]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
-		(maxval - minval) + minval;
-		  
-	      /* save new median value for next comparison */
-	      sismo[card].analoginputs_save[input] = median; 
-		  
-	      retval = 1;
-	    } else {
-	      /* simply noise, return last known value if available */
+	    /* NEW XPCOCKPIT FIRMWARE */
+	    
+	    /* Median filtering is done on the SISMO card with the new firmware */
+	    if (sismo[card].analoginputs[input][0] != INPUTINITVAL) {
 	      if (sismo[card].analoginputs_save[input] != INPUTINITVAL) {
-		*value = ((float) sismo[card].analoginputs_save[input]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
+
+		/* convert current reading to float value with requested range */
+		*value = ((float) sismo[card].analoginputs[input][0]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
 		  (maxval - minval) + minval;
-	      } 
-	    } // median change is above noise or not
-	  } else {
-	    /* initialize save value with current value when initializing since median is not yet present */
-	    if ((sismo[card].analoginputs[input][0] != INPUTINITVAL) &&
-		(sismo[card].analoginputs[input][0] != sismo[card].analoginputs_save[input])) {
-	      sismo[card].analoginputs_save[input] = sismo[card].analoginputs[input][0];
-	      *value = ((float) sismo[card].analoginputs[input][0]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
-		(maxval - minval) + minval;
-	      retval = 1;
+
+		if (sismo[card].analoginputs[input][0] != sismo[card].analoginputs_save[input]) {
+		  /* Mark as new analog input value */
+		  sismo[card].analoginputs_save[input] = sismo[card].analoginputs[input][0];
+		  retval = 1;
+		} 
+	      } else {
+		sismo[card].analoginputs_save[input] = sismo[card].analoginputs[input][0];
+	      }
 	    }
-	  }	  
+
+	  } else {
+
+	    /* OLD SISMO FIRMWARE */
+	    
+	    /* Analog input values are flickering with spikes (up to 10 out of a range of 1023)
+	       which is because of imprecision of potentiometers and power supply.
+	       A change does not necessarily mean that we turned the potentiometer,
+	       Here we use a median filter */
+
+	    /* history value 0 is the newest reading */	  
+	    memcpy(temparr,&sismo[card].analoginputs[input][0],(MAXSAVE)*sizeof(int));
+	    quicksort(temparr,0,MAXSAVE-1);
+	    median = temparr[MAXSAVE/2];
+
+	    //if (input == 0)
+	    //printf("%i %i %i \n",sismo[card].analoginputs[input][0],sismo[card].analoginputs_save[input],median);
+
+	    if ((sismo[card].analoginputs[input][0] != INPUTINITVAL) && (median != INPUTINITVAL)) {
+	      /* compare if newest median changed compared to the last one when we had a change */
+	      if ((sismo[card].analoginputs_save[input] < (median - noise)) ||
+		  (sismo[card].analoginputs_save[input] > (median + noise))) {
+		/* potentiometer really changed */
+		  
+		/* convert current reading to float value with requested range */
+		*value = ((float) sismo[card].analoginputs[input][0]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
+		  (maxval - minval) + minval;
+		  
+		/* save new median value for next comparison */
+		sismo[card].analoginputs_save[input] = median; 
+		  
+		retval = 1;
+	      } else {
+		/* simply noise, return last known value if available */
+		if (sismo[card].analoginputs_save[input] != INPUTINITVAL) {
+		  *value = ((float) sismo[card].analoginputs_save[input]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
+		    (maxval - minval) + minval;
+		} 
+	      } // median change is above noise or not
+	    } else {
+	      /* initialize save value with current value when initializing since median is not yet present */
+	      if ((sismo[card].analoginputs[input][0] != INPUTINITVAL) &&
+		  (sismo[card].analoginputs[input][0] != sismo[card].analoginputs_save[input])) {
+		sismo[card].analoginputs_save[input] = sismo[card].analoginputs[input][0];
+		*value = ((float) sismo[card].analoginputs[input][0]) / (float) (pow(2,ANALOGINPUTNBITS)-1) * 
+		  (maxval - minval) + minval;
+		retval = 1;
+	      }
+	    }	  
+	  }
 	  
 	} else {
 	  if (verbose > 0) printf("Analog Input %i above maximum # of analog inputs %i of card %i \n",

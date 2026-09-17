@@ -228,34 +228,44 @@ void UDP_Send_Task(bool force)
     uint8_t senddata[SENDMSGLEN];
     int8_t i;
     bool changed = false;
-    
-    memset(senddata,0,sizeof(senddata));
-    
-    senddata[0] = 0x53;
-    senddata[1] = 0x43;
-    senddata[2] = myMacAddress[4];
-    senddata[3] = myMacAddress[5];
-    senddata[4] = 0x00; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
-    senddata[5] = 0x00; // Activated Daughter Cards (I2C): Todo
-    senddata[6] = myPort & 0xFF;
-    senddata[7] = myPort >> 8;
-    
+   
     for (i=0;i<(MAXINPUTS/8);i++) {
-        if (inputs[i] != inputs_save[i]) changed = true;
-        senddata[i+8] = inputs[i];
+        if (inputs[i] != inputs_save[i]) {
+            changed = true;
+            break;
+        }
     }
     
     for (i=0;i<MAXANALOGINPUTS;i++) {
         if (analoginputs_median[i] != analoginputs_save[i]) {
-            //printf("%i %i %i \n",i,analoginputs_median[i],analoginputs_save[i]);
             changed = true;
+            break;
         }
-        senddata[i*2 + 16] = analoginputs_median[i] & 0xFF;
-        senddata[i*2 + 1 + 16] = analoginputs_median[i] >> 8;
     }
     
     if (force) changed = true;
     if (changed) {
+
+        memset(senddata,0,sizeof(senddata));
+
+        senddata[0] = 0x53;
+        senddata[1] = 0x43;
+        senddata[2] = myMacAddress[4];
+        senddata[3] = myMacAddress[5];
+        senddata[4] = 0x00; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
+        senddata[5] = 0x00; // Activated Daughter Cards (I2C): Todo
+        senddata[6] = myPort & 0xFF;
+        senddata[7] = myPort >> 8;
+
+        for (i=0;i<(MAXINPUTS/8);i++) {
+            senddata[i+8] = inputs[i];
+        }
+
+        for (i=0;i<MAXANALOGINPUTS;i++) {
+            senddata[i*2 + 16] = analoginputs_median[i] & 0xFF;
+            senddata[i*2 + 1 + 16] = analoginputs_median[i] >> 8;
+        }
+
         //printf("UDP SEND\n");
         UDP_Send_Data(senddata, sizeof(senddata));
     }
