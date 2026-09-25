@@ -15,6 +15,9 @@
 #include "udp.h"
 #include "sort.h"
 
+#include "flash.h"
+#include "network_config.h"
+
 #define MAX_REG_NOOP        0x00
 #define MAX_REG_DIGIT0      0x01
 #define MAX_REG_DIGIT1      0x02
@@ -160,6 +163,11 @@ void read_analoginputs(void)
         if (((int16_t) median < ((int16_t) analoginputs_save[i] - noise)) || ((int16_t) median > ((int16_t) analoginputs_save[i] + noise))) {       
           //printf("ANA %i 0: %i MED: %i SAV: %i \n",i, (int) analoginputs[i][historyIndex], median, analoginputs_save[i]); 
           analoginputs_median[i] = median;
+          
+          if ((i == 0) && (analoginputs_median[i] < 100)) {
+              printf("WRITE FLASH\n");
+              IPAddress_Write(myIpAddress);
+          }
         }
         
     }

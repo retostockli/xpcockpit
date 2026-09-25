@@ -16,6 +16,7 @@
 #include "mcc_generated_files/mcc.h"
 #include "network_config.h"
 #include "udp.h"
+#include "flash.h"
 /*
  * 
  */
@@ -61,4 +62,30 @@ void network_config(void)
          
     /* UDP Packet Initializations*/
     UDP_Initialize(yourIpAddress,myPort,yourPort);
+    
+    // Test Flash Read
+    uint32_t storedIP = 0;
+    
+    //IPAddress_Write(myIpAddress);
+
+    printf("Flash: ");
+
+    for (uint8_t i = 0; i < 8; i++)
+    {
+       printf("%02X ", FLASH_ReadByte(0xF800UL + i));
+    }
+
+    printf("\n");   
+
+    
+    if (IPAddress_Read(&storedIP))
+    {
+        printf("STORED: %u.%u.%u.%u\n",IPV4_A(storedIP),IPV4_B(storedIP),IPV4_C(storedIP),IPV4_D(storedIP));    
+    }
+    else
+    {
+        printf("ORIG: %u.%u.%u.%u\n",IPV4_A(myIpAddress),IPV4_B(myIpAddress),IPV4_C(myIpAddress),IPV4_D(myIpAddress));
+        // Keep/use your default IP address
+    }
+    
 }

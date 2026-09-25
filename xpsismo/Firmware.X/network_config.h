@@ -30,13 +30,14 @@
 // more than once.  
 #ifndef NETWORK_CONFIG_H
 #define NETWORK_CONFIG_H
+    
+#define IPV4_A(ip)  ((uint8_t)((ip >> 24) & 0xFF))
+#define IPV4_B(ip)  ((uint8_t)((ip >> 16) & 0xFF))
+#define IPV4_C(ip)  ((uint8_t)((ip >>  8) & 0xFF))
+#define IPV4_D(ip)  ((uint8_t)( ip        & 0xFF))
 
-// #include <xc.h> // include processor files - each processor file is guarded.  
 
-#ifdef	__cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
+    
 // TODO If C++ is being used, regular C code needs function names to have C 
 // linkage so the functions can be used by the c code. 
    
@@ -49,10 +50,6 @@ extern uint16_t myPort;
 extern uint16_t yourPort;
 
 void network_config(void);    
-    
-#ifdef	__cplusplus
-}
-#endif /* __cplusplus */
 
 #endif	
 
