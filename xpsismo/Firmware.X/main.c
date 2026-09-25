@@ -65,7 +65,8 @@ volatile uint32_t tmr_poll_count = 0;
 volatile bool poll_request = false;
 volatile uint32_t ms_counter = 0;
 volatile uint32_t loop_counter = 0;
-      
+volatile uint32_t second_counter = 0;
+
 void myTimer(void)
 {
     // TMR has to be set to FOSC/4, Prescaler 1:2, Timer Interrupt, Timer period 1ms
@@ -77,6 +78,8 @@ void myTimer(void)
     {
         tmr_print_count = 0;
         print_request = true;
+        
+        second_counter++;                
     }
     
     // Every 1 millisecond
@@ -85,6 +88,9 @@ void myTimer(void)
     {
         tmr_poll_count = 0;
         poll_request = true;
+        
+        
+        
     }
     
 }                   
@@ -98,6 +104,9 @@ void main(void)
     
     // Initialize the device
     SYSTEM_Initialize();
+    
+    // Initialize I2C Software interface
+    I2C_Software_Initialize();
 
     // Set Up Network addresses etc.
     network_config();
@@ -118,7 +127,8 @@ void main(void)
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
     
-    TMR1_SetInterruptHandler(myTimer);
+    // This is my own poll timer
+    TMR3_SetInterruptHandler(myTimer);
        
     // Zero-out GPIO data structure
     init_data();
@@ -139,7 +149,6 @@ void main(void)
     
     
     while(1)
-        // we have around a 0.1 ms loop (may change) with load)
     {
         if (poll_request)
         {
@@ -163,26 +172,28 @@ void main(void)
                
             /* Digital Inputs every 1 ms */
             read_inputs();
-            //read_i2c_inputs1();
+            read_i2c_inputs1();
             //read_i2c_inputs2();
             
             /* Analog Inputs every 20 ms */
             if ((ms_counter % 20) == 0) {
                 read_analoginputs();
                 //read_i2c_analoginputs();)
-            }
-             
+            }            
+
             if ((ms_counter % 1000) == 0) {
                 //printf("1 Second passed\n");
      
                 //UDP_Send_Task(true);
+                UDP_Send_Task(false);
                                  
             } else {
-               UDP_Send_Task(false);                 
+                UDP_Send_Task(false);             
             }
             
             /* Make sure all UDP Packets have been sent */
             while (ETH_GetTxQueueSize() != 0) {
+               //if (ETH_GetTxQueueSize() > 1) printf("%i\n",ETH_GetTxQueueSize());
                Network_Manage(); 
             }
            
@@ -198,9 +209,10 @@ void main(void)
         if (print_request)
         {
             print_request = false;
-                
+           
             printf("Loops per sec: %li\n",loop_counter);
             printf("1 ms Interrupts per Second: %li\n",ms_counter);
+            
             ms_counter = 0;
             loop_counter = 0;
 

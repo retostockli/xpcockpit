@@ -46,6 +46,8 @@ MICROCHIP PROVIDES THIS SOFTWARE CONDITIONALLY UPON YOUR ACCEPTANCE OF THESE TER
 #include "mac_address.h"
 #include "../mcc.h"
 
+
+
 // Note this driver is half duplex because the HW cannot automatically negotiate full-duplex
 // If full duplex is desired, both ends of the link must be manually configured.
 // the "out of box" experience dictates half duplex mode.
@@ -283,6 +285,7 @@ void ETH_EventHandler(void)
 
     if(EIRbits.TXIF) // finished sending a packet
     {
+        
         EIRbits.TXIF = 0;
         ETH_RemovePacket(pTail);
         if( ethListSize > 0 )
@@ -718,7 +721,7 @@ error_msg ETH_Send(void)
     pHead->packetEnd = packetEnd;
     SetBit( pHead->flags, ETH_TX_QUEUED);               // txQueued = true
     // The packet is prepared to be sent / queued at this time
-
+    
     if( (ECON1bits.TXRTS) || (ethListSize > 1) )
     {
         return TX_QUEUED;
@@ -734,7 +737,7 @@ error_msg ETH_Send(void)
  */
 error_msg ETH_SendQueued(void)
 {
-//    if( pHead->flags & ETH_TX_QUEUED )
+    //if( pHead->flags & ETH_TX_QUEUED )
     if( pTail->flags & ETH_TX_QUEUED )
     {
             // "Close" the latest written packet and enqueue it
@@ -747,7 +750,7 @@ error_msg ETH_SendQueued(void)
 
         NOP(); NOP();
         ECON1bits.TXRTS = 1; // start sending
-
+        
         return SUCCESS;
     }
     else
@@ -903,9 +906,10 @@ error_msg ETH_Shift_Tx_Packets(void)
 {
     uint16_t timer;
     uint16_t len = pHead->packetEnd - pTail->packetStart;
-
+    
     timer = 2 * len;
     while(ECON1bits.DMAST!=0 && --timer) NOP(); // sit here until DMA is free
+     
     if(ECON1bits.DMAST==0)
     {
         EDMADST = TXSTART; // setup the destination start pointer
@@ -917,7 +921,7 @@ error_msg ETH_Shift_Tx_Packets(void)
         ECON1bits.DMAST  = 1; // start dma
         /* sometimes it takes longer to complete if there is heavy network traffic */
         timer = 40 * len;
-        while(ECON1bits.DMAST!=0 && --timer) NOP(); // sit here until DMA is free
+        while(ECON1bits.DMAST!=0 && --timer) NOP(); // sit here until DMA is free       
         if(ECON1bits.DMAST == 0)
         {
             // Update the start and end addresses of each packet

@@ -78,7 +78,8 @@ void test(void)
   /* read encoder at inputs 0 and 1 */
 
   //ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
-  ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
+  //ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
+  ret = encoder_input(card, 64+2, 64+3, encodervalue, 1, 1);
   //ret = encoder_input(card, 4, 5, encodervalue, 1, 2);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */

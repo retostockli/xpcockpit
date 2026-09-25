@@ -225,10 +225,15 @@ void UDP_Send_Data (uint8_t data[], uint16_t length)
 
 void UDP_Send_Task(bool force)
 {
-    uint8_t senddata[SENDMSGLEN];
+    static uint8_t senddata[SENDMSGLEN];
     int8_t i;
-    bool changed = false;
+    bool changed;
    
+   
+    // Inputs + Analoginputs on Master
+    
+    changed = false;
+    
     for (i=0;i<(MAXINPUTS/8);i++) {
         if (inputs[i] != inputs_save[i]) {
             changed = true;
@@ -266,8 +271,41 @@ void UDP_Send_Task(bool force)
             senddata[i*2 + 1 + 16] = analoginputs_median[i] >> 8;
         }
 
-        //printf("UDP SEND\n");
         UDP_Send_Data(senddata, sizeof(senddata));
     }
  
+    // Inputs on I2C Daughter 1
+    
+    changed = false;
+    
+    for (i=0;i<(MAXINPUTS_I2C/8);i++) {
+        if (inputs_i2c1[i] != inputs_i2c1_save[i]) {
+            changed = true;
+            break;
+        }
+    }
+    
+    if (force) changed = true;
+    if (changed) {
+
+        memset(senddata,0,sizeof(senddata));
+
+        senddata[0] = 0x53;
+        senddata[1] = 0x43;
+        senddata[2] = myMacAddress[4];
+        senddata[3] = myMacAddress[5];
+        senddata[4] = 0x01; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
+        senddata[5] = 0x00; // Activated Daughter Cards (I2C): Todo
+        senddata[6] = myPort & 0xFF;
+        senddata[7] = myPort >> 8;
+
+        for (i=0;i<(MAXINPUTS/8);i++) {
+            senddata[i+8] = inputs_i2c1[i];
+        }
+
+        UDP_Send_Data(senddata, sizeof(senddata));
+    }
+     
+    
+    
 }

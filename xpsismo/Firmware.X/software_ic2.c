@@ -43,20 +43,6 @@
 
 /*
  * ------------------------------------------------------------
- * Delay
- *
- * This assumes _XTAL_FREQ is defined by your project.
- * ------------------------------------------------------------
- */
-
-static void I2C_Delay(void)
-{
-    __delay_us(SOFT_I2C_DELAY_US);
-}
-
-
-/*
- * ------------------------------------------------------------
  * SCL control
  * ------------------------------------------------------------
  */
@@ -134,7 +120,7 @@ void I2C_Software_Initialize(void)
     I2C_SCL_Release();
     I2C_SDA_Release();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 }
 
 
@@ -155,7 +141,7 @@ bool I2C_Software_Start(void)
     I2C_SDA_Release();
     I2C_SCL_Release();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Check that SCL actually went HIGH.
@@ -171,14 +157,14 @@ bool I2C_Software_Start(void)
      */
     I2C_SDA_Low();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Pull SCL low to begin data transfer.
      */
     I2C_SCL_Low();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 
     return true;
 }
@@ -200,21 +186,21 @@ void I2C_Software_Stop(void)
      */
     I2C_SDA_Low();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Release SCL.
      */
     I2C_SCL_Release();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Release SDA while SCL is HIGH.
      */
     I2C_SDA_Release();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 }
 
 
@@ -226,24 +212,37 @@ void I2C_Software_Stop(void)
  * ------------------------------------------------------------
  */
 
+//static bool I2C_WaitForSCLHigh(void)
+//{
+//    /*
+//     * At 50 kHz, a slave normally releases SCL quickly.
+//     *
+//     * We don't want to wait forever if the bus is stuck.
+//     */
+//
+//    uint16_t timeout = 1000;
+//
+//    while (!I2C_SCL_Read())
+//    {
+//        if (--timeout == 0)
+//        {
+//            return false;
+//        }
+//
+//        __delay_us(1);
+//    }
+//
+//    return true;
+//}
+
 static bool I2C_WaitForSCLHigh(void)
 {
-    /*
-     * At 50 kHz, a slave normally releases SCL quickly.
-     *
-     * We don't want to wait forever if the bus is stuck.
-     */
+    uint8_t timeout = 255;
 
-    uint16_t timeout = 1000;
-
-    while (!I2C_SCL_Read())
+    while (!I2C_SCL_PORT)
     {
         if (--timeout == 0)
-        {
             return false;
-        }
-
-        __delay_us(1);
     }
 
     return true;
@@ -272,7 +271,7 @@ static bool I2C_ClockHigh(void)
         return false;
     }
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 
     return true;
 }
@@ -282,7 +281,7 @@ static void I2C_ClockLow(void)
 {
     I2C_SCL_Low();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 }
 
 
@@ -309,7 +308,7 @@ static bool I2C_WriteBit(bool bit)
         I2C_SDA_Low();
     }
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Clock HIGH.
@@ -341,7 +340,7 @@ static bool I2C_ReadBit(bool *bit)
      */
     I2C_SDA_Release();
 
-    I2C_Delay();
+    __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Raise SCL.
@@ -371,48 +370,136 @@ static bool I2C_ReadBit(bool *bit)
  * ------------------------------------------------------------
  */
 
+//bool I2C_Software_WriteByte(uint8_t data)
+//{
+//    uint8_t i;
+//    bool ack;
+//
+//    /*
+//     * Send MSB first.
+//     */
+//    for (i = 0; i < 8; i++)
+//    {
+//        if (!I2C_WriteBit((data & 0x80) != 0))
+//        {
+//            return false;
+//        }
+//
+//        data <<= 1;
+//    }
+//
+//    /*
+//     * Ninth clock:
+//     * release SDA and let slave generate ACK.
+//     */
+//    I2C_SDA_Release();
+//
+//    __delay_us(SOFT_I2C_DELAY_US);
+//
+//    if (!I2C_ClockHigh())
+//    {
+//        return false;
+//    }
+//
+//    /*
+//     * ACK = LOW
+//     * NACK = HIGH
+//     */
+//    ack = !I2C_SDA_Read();
+//
+//    I2C_ClockLow();
+//
+//    return ack;
+//}
+
 bool I2C_Software_WriteByte(uint8_t data)
 {
     uint8_t i;
-    bool ack;
+    uint8_t timeout;
 
-    /*
-     * Send MSB first.
-     */
     for (i = 0; i < 8; i++)
     {
-        if (!I2C_WriteBit((data & 0x80) != 0))
-        {
-            return false;
-        }
+        /* SCL is LOW here */
+
+        if (data & 0x80)
+            I2C_SDA_TRIS = 1;       // release = HIGH
+        else
+            I2C_SDA_TRIS = 0;       // drive LOW
 
         data <<= 1;
+
+        /*
+         * SDA setup time.
+         * At 41.67 MHz the instructions above already provide
+         * some setup time.
+         */
+        //__delay_us(SOFT_I2C_DELAY_US);
+
+        /* Release SCL */
+        I2C_SCL_TRIS = 1;
+
+        /* Preserve clock-stretching support */
+//        if (!I2C_WaitForSCLHigh())
+//            return false;
+
+        if (!I2C_SCL_PORT)
+        {
+            timeout = 255;
+
+            while (!I2C_SCL_PORT)
+            {
+                if (--timeout == 0) {
+                    return false;
+                }
+
+            }
+        }
+        
+        /* SCL HIGH time */
+        //__delay_us(SOFT_I2C_DELAY_US);
+
+        /* SCL LOW */
+        I2C_SCL_TRIS = 0;
+
+        /* SCL LOW time */
+        //__delay_us(SOFT_I2C_DELAY_US);
     }
 
     /*
-     * Ninth clock:
-     * release SDA and let slave generate ACK.
+     * ACK bit
      */
-    I2C_SDA_Release();
+    I2C_SDA_TRIS = 1;       // release SDA
 
-    I2C_Delay();
+    //__delay_us(SOFT_I2C_DELAY_US);
 
-    if (!I2C_ClockHigh())
+    I2C_SCL_TRIS = 1;
+
+//    if (!I2C_WaitForSCLHigh())
+//        return false;
+
+    if (!I2C_SCL_PORT)
     {
-        return false;
+        timeout = 255;
+
+        while (!I2C_SCL_PORT)
+        {
+            if (--timeout == 0) {
+                return false;
+            }
+
+        }
     }
 
-    /*
-     * ACK = LOW
-     * NACK = HIGH
-     */
-    ack = !I2C_SDA_Read();
+    //__delay_us(SOFT_I2C_DELAY_US);
 
-    I2C_ClockLow();
+    bool ack = (I2C_SDA_PORT == 0);
+
+    I2C_SCL_TRIS = 0;
+
+    //__delay_us(SOFT_I2C_DELAY_US);
 
     return ack;
 }
-
 
 /*
  * ------------------------------------------------------------
@@ -423,49 +510,165 @@ bool I2C_Software_WriteByte(uint8_t data)
  * ------------------------------------------------------------
  */
 
+//uint8_t I2C_Software_ReadByte(bool ack)
+//{
+//    uint8_t i;
+//    uint8_t data = 0;
+//    bool bit;
+//
+//    for (i = 0; i < 8; i++)
+//    {
+//        data <<= 1;
+//
+//        if (!I2C_ReadBit(&bit))
+//        {
+//            return data;
+//        }
+//
+//        if (bit)
+//        {
+//            data |= 1;
+//        }
+//    }
+//
+//    /*
+//     * Master sends ACK/NACK.
+//     */
+//    if (ack)
+//    {
+//        I2C_SDA_Low();
+//    }
+//    else
+//    {
+//        I2C_SDA_Release();
+//    }
+//
+//    __delay_us(SOFT_I2C_DELAY_US);
+//
+//    I2C_ClockHigh();
+//    I2C_ClockLow();
+//
+//    I2C_SDA_Release();
+//
+//    return data;
+//}
+
 uint8_t I2C_Software_ReadByte(bool ack)
 {
     uint8_t i;
     uint8_t data = 0;
-    bool bit;
+    uint8_t timeout;
+
+    /* Release SDA once. Slave controls SDA during all 8 bits. */
+    I2C_SDA_TRIS = 1;
 
     for (i = 0; i < 8; i++)
     {
         data <<= 1;
 
-        if (!I2C_ReadBit(&bit))
+        /*
+         * SCL HIGH.
+         */
+        I2C_SCL_TRIS = 1;
+
+        /*
+         * Preserve clock stretching support.
+         */
+//        if (!I2C_WaitForSCLHigh())
+//        {
+//            return data;
+//        }   
+        
+        if (!I2C_SCL_PORT)
         {
-            return data;
+            timeout = 255;
+
+            while (!I2C_SCL_PORT)
+            {
+                if (--timeout == 0) {
+                    return data;
+                }
+
+            }
         }
 
-        if (bit)
+        /*
+         * SCL HIGH time.
+         */
+        //__delay_us(SOFT_I2C_DELAY_US);
+
+        /*
+         * Sample SDA while SCL is HIGH.
+         */
+        if (I2C_SDA_PORT)
         {
             data |= 1;
         }
+
+        /*
+         * SCL LOW.
+         */
+        I2C_SCL_TRIS = 0;
+
+        /*
+         * LOW time.
+         */
+        //__delay_us(SOFT_I2C_DELAY_US);
     }
 
     /*
-     * Master sends ACK/NACK.
+     * Master ACK/NACK.
+     *
+     * ACK  = drive SDA LOW
+     * NACK = release SDA
      */
     if (ack)
     {
-        I2C_SDA_Low();
+        I2C_SDA_TRIS = 0;
     }
     else
     {
-        I2C_SDA_Release();
+        I2C_SDA_TRIS = 1;
     }
 
-    I2C_Delay();
+    /*
+     * ACK/NACK clock.
+     */
+    I2C_SCL_TRIS = 1;
 
-    I2C_ClockHigh();
-    I2C_ClockLow();
+//    if (!I2C_WaitForSCLHigh())
+//    {
+//        I2C_SDA_TRIS = 1;
+//        return data;
+//    }
 
-    I2C_SDA_Release();
+    if (!I2C_SCL_PORT)
+    {
+        timeout = 255;
+
+        while (!I2C_SCL_PORT)
+        {
+            if (--timeout == 0) {
+                I2C_SDA_TRIS = 1;
+                return data;
+            }
+
+        }
+    }
+    
+    //__delay_us(SOFT_I2C_DELAY_US);
+
+    I2C_SCL_TRIS = 0;
+
+    //__delay_us(SOFT_I2C_DELAY_US);
+
+    /*
+     * Release SDA after ACK/NACK.
+     */
+    I2C_SDA_TRIS = 1;
 
     return data;
 }
-
 
 /*
  * ------------------------------------------------------------

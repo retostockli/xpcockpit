@@ -268,12 +268,12 @@ void write_displays(void)
         for (i=0;i<(MAXDISPLAYS/4);i++) {
             d = b*8 + i;
             if (displays[d] != displays_save[d]) {
-                printf("DISP %u VAL 0x%02X\n",d,displays[d]);
+                //printf("DISP %u VAL 0x%02X\n",d,displays[d]);
                 MAX7219_Write(i+1, displays[d], b);
             }
         }
         if (brightness[b] != brightness_save[b]) {
-            printf("DISP BANK %u VAL %u\n",b,brightness[b]);
+            //printf("DISP BANK %u VAL %u\n",b,brightness[b]);
             MAX7219_Write(MAX_REG_INTENSITY, brightness[b], b);  
         }
     }

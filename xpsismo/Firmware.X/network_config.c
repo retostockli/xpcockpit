@@ -42,6 +42,7 @@ void network_config(void)
     myMacAddress[5] = 0x17;
     
     yourIpAddress = MAKE_IPV4_ADDRESS(192,168,1,105);
+//    yourIpAddress = MAKE_IPV4_ADDRESS(192,168,1,10);
     myPort = 1024;
     yourPort = 1026;
      

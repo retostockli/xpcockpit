@@ -11,6 +11,7 @@
 #include "mcc_generated_files/device_config.h"
 #include "daughter_i2c.h"
 #include "software_i2c.h"
+#include "common.h"
 
 
 void write_i2c_outputs1(void) 
@@ -42,18 +43,26 @@ void read_i2c_inputs1(void)
     
     // Write a single Byte 0x00 to the Inputs daughrter card
     // Read 64 inputs bitwise encoded in a 8 byte array
-    
+     
+    uint8_t i; 
+     
     uint8_t data1[1];
     uint8_t data2[8];
     
     data1[0] = 0x00;
-     
-    I2C_Software_Write(INPUTS1_I2C_ADDRESS, data1, 1);   
-    if (I2C_Software_Read(INPUTS1_I2C_ADDRESS, data2, 8)) {
     
-       printf("INPUTS: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
-       data2[0], data2[1], data2[2], data2[3],
-       data2[4], data2[5], data2[6], data2[7]);
+    
+    //I2C_Software_Write(INPUTS1_I2C_ADDRESS, data1, 1);   
+    //if (I2C_Software_Read(INPUTS1_I2C_ADDRESS, data2, 8)) {
+    
+    if (I2C_Software_WriteRead(INPUTS1_I2C_ADDRESS, data1, 1, data2, 8)) {
+ 
+        for (i=0;i<(MAXINPUTS_I2C/8);i++) {
+            inputs_i2c1[i] = data2[i];
+        }
+//       printf("INPUTS: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
+//       data2[0], data2[1], data2[2], data2[3],
+//       data2[4], data2[5], data2[6], data2[7]);
     
     }
     

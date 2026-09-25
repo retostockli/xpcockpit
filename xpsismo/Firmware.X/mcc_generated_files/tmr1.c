@@ -65,11 +65,11 @@ void TMR1_Initialize(void)
 {
     //Set the Timer to the options selected in the GUI
 	
-	// TMR1H 235; 
-		TMR1H = 0xEB;
+	// TMR1H 1; 
+		TMR1H = 0x01;
 	
-	// TMR1L 168; 
-		TMR1L = 0xA8;
+	// TMR1L 176; 
+		TMR1L = 0xB0;
 
     // Load the TMR value to reload variable
     timer1ReloadVal=TMR1;
@@ -83,8 +83,8 @@ void TMR1_Initialize(void)
     // Set Default Interrupt Handler
     TMR1_SetInterruptHandler(TMR1_DefaultInterruptHandler);
 
-    // T1CKPS 1:2; T1OSCEN disabled; TMR1CS FOSC/4; nT1SYNC synchronize; TMR1ON enabled; RD16 disabled; 
-    T1CON = 0x11;
+    // T1CKPS 1:8; T1OSCEN disabled; TMR1CS FOSC/4; nT1SYNC synchronize; TMR1ON enabled; RD16 disabled; 
+    T1CON = 0x31;
 }
 
 void TMR1_StartTimer(void)
@@ -144,14 +144,21 @@ void TMR1_Reload(void)
 
 void TMR1_ISR(void)
 {
+    static volatile uint16_t CountCallBack = 0;
 
     // Clear the TMR1 interrupt flag
     PIR1bits.TMR1IF = 0;    
     TMR1_WriteTimer(timer1ReloadVal);
 
-    // ticker function call;
-    // ticker is 1 -> Callback function gets called every time this ISR executes
-    TMR1_CallBack();
+    // callback function - called every 20th pass
+    if (++CountCallBack >= TMR1_INTERRUPT_TICKER_FACTOR)
+    {
+        // ticker function call
+        TMR1_CallBack();
+
+        // reset ticker counter
+        CountCallBack = 0;
+    }
 }
 
 void TMR1_CallBack(void)

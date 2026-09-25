@@ -44,12 +44,12 @@
  * RJ4 = SCL
  * RJ5 = SDA
  *
- * Start at 50 kHz.
  *
  * 10 us LOW + 10 us HIGH ? 50 kHz
+ * 
  */
 
-#define SOFT_I2C_DELAY_US    5
+#define SOFT_I2C_DELAY_US    2
 
 void I2C_Software_Initialize(void);
 
