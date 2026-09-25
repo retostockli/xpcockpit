@@ -35,6 +35,7 @@
 #define SERVOSINITVAL 0        /* initial value of servos upon startup (PARK) */
 #define ANALOGINPUTNBITS 10    /* number of bits of analog inputs */
 
+
 /* Storage variables for inputs / outputs */
 uint8_t outputs[MAXOUTPUTS/8];
 uint8_t outputs_save[MAXOUTPUTS/8];

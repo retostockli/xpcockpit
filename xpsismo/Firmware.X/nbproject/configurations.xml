@@ -44,6 +44,7 @@
       <itemPath>gpio.h</itemPath>
       <itemPath>common.h</itemPath>
       <itemPath>sort.h</itemPath>
+      <itemPath>flash.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -97,6 +98,7 @@
       <itemPath>gpio.c</itemPath>
       <itemPath>common.c</itemPath>
       <itemPath>sort.c</itemPath>
+      <itemPath>flash.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
@@ -274,7 +276,7 @@
         <property key="memories.programmemory.ranges" value="0-fff7"/>
         <property key="poweroptions.powerenable" value="true"/>
         <property key="programmerToGoFilePath"
-                  value="/home/stockli/MPLABXProjects/UART.X/debug/default/UART_ptg"/>
+                  value="/home/stockli/xpcockpit/xpsismo/Firmware.X/debug/default/UART_ptg"/>
         <property key="programmerToGoImageName" value="UART_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>

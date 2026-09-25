@@ -53,6 +53,7 @@
 #include "network_config.h"
 #include "udp.h"
 #include "gpio.h"
+#include "flash.h"
 
 /* TODO:
 - Check for UDP_Start returns "MAC_NOT_FOUND" and thus not successful UDP packet writes, only update data if UDP packet was sent
