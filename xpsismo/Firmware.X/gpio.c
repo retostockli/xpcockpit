@@ -166,7 +166,7 @@ void read_analoginputs(void)
           
           if ((i == 0) && (analoginputs_median[i] < 100)) {
               printf("WRITE FLASH\n");
-              IPAddress_Write(myIpAddress);
+              //Config_Write(myIpAddress);
           }
         }
         

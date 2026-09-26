@@ -27,25 +27,46 @@ uint8_t myMacAddress[6];
 uint32_t yourIpAddress;
 uint16_t myPort;
 uint16_t yourPort;
-
+uint8_t daughterCardConfig;
 
 void network_config(void)
 {
     
-    myIpAddress = MAKE_IPV4_ADDRESS(192,168,1,55);
-    mySubnetMask = MAKE_IPV4_ADDRESS(255,255,255,0);
-    myGateway = MAKE_IPV4_ADDRESS(192,168,1,1);
-    myMacAddress[0] = 0x02;
-    myMacAddress[1] = 0x02;
-    myMacAddress[2] = 0x02;
-    myMacAddress[3] = 0x02;
-    myMacAddress[4] = 0x11;
-    myMacAddress[5] = 0x17;
-    
-    yourIpAddress = MAKE_IPV4_ADDRESS(192,168,1,105);
-//    yourIpAddress = MAKE_IPV4_ADDRESS(192,168,1,10);
-    myPort = 1024;
-    yourPort = 1026;
+    /* Try reading Network Configuration from Flash Memory */
+    printf("\n");
+    if (Config_Read(&myIpAddress, &mySubnetMask, &myGateway, myMacAddress, 
+        &yourIpAddress, &myPort, &yourPort, &daughterCardConfig))
+    {
+        printf("SUCCESSFULLY READ NETWORK DATA FROM FLASH MEMORY: \n");
+    }
+    else
+    {
+        printf("NO VALID FLASH MEMORY NETWORK DATA. USING DEFAULTS. \n");
+        
+        myIpAddress = MAKE_IPV4_ADDRESS(MYIPADDRESS_DEFAULT[0],MYIPADDRESS_DEFAULT[1],MYIPADDRESS_DEFAULT[2],MYIPADDRESS_DEFAULT[3]);
+        mySubnetMask = MAKE_IPV4_ADDRESS(MYSUBNETMASK_DEFAULT[0],MYSUBNETMASK_DEFAULT[1],MYSUBNETMASK_DEFAULT[2],MYSUBNETMASK_DEFAULT[3]);
+        myGateway = MAKE_IPV4_ADDRESS(MYGATEWAY_DEFAULT[0],MYGATEWAY_DEFAULT[1],MYGATEWAY_DEFAULT[2],MYGATEWAY_DEFAULT[3]);
+        myMacAddress[0] = MYMACADDRESS_DEFAULT[0];
+        myMacAddress[1] = MYMACADDRESS_DEFAULT[1];
+        myMacAddress[2] = MYMACADDRESS_DEFAULT[2];
+        myMacAddress[3] = MYMACADDRESS_DEFAULT[3];
+        myMacAddress[4] = MYMACADDRESS_DEFAULT[4];
+        myMacAddress[5] = MYMACADDRESS_DEFAULT[5];
+        yourIpAddress = MAKE_IPV4_ADDRESS(YOURIPADDRESS_DEFAULT[0],YOURIPADDRESS_DEFAULT[1],YOURIPADDRESS_DEFAULT[2],YOURIPADDRESS_DEFAULT[3]);
+        myPort = MYPORT_DEFAULT;
+        yourPort = YOURPORT_DEFAULT;
+        daughterCardConfig = DAUGHTERCARDCONFIG_DEFAULT;
+    }
+        
+    printf("My IP Address:      %u.%u.%u.%u\n",IPV4_A(myIpAddress),IPV4_B(myIpAddress),IPV4_C(myIpAddress),IPV4_D(myIpAddress));    
+    printf("My Subnet Mask:     %u.%u.%u.%u\n",IPV4_A(mySubnetMask),IPV4_B(mySubnetMask),IPV4_C(mySubnetMask),IPV4_D(mySubnetMask));    
+    printf("My Gateway:         %u.%u.%u.%u\n",IPV4_A(myGateway),IPV4_B(myGateway),IPV4_C(myGateway),IPV4_D(myGateway));    
+    printf("My MAC Address:     %02X:%02X:%02X:%02X:%02X:%02X\n",myMacAddress[0],myMacAddress[1],myMacAddress[2],myMacAddress[3],myMacAddress[4],myMacAddress[5]);
+    printf("Server IP Address:  %u.%u.%u.%u\n",IPV4_A(yourIpAddress),IPV4_B(yourIpAddress),IPV4_C(yourIpAddress),IPV4_D(yourIpAddress));    
+    printf("My UDP Port:        %i\n",myPort);    
+    printf("Server UDP Port:    %i\n",yourPort);    
+    printf("Daughter Card Conf: 0x%02X\n",daughterCardConfig);   
+    printf("\n");
      
     // Set application-defined MAC address
     ETH_SetMAC(myMacAddress);
@@ -62,30 +83,5 @@ void network_config(void)
          
     /* UDP Packet Initializations*/
     UDP_Initialize(yourIpAddress,myPort,yourPort);
-    
-    // Test Flash Read
-    uint32_t storedIP = 0;
-    
-    //IPAddress_Write(myIpAddress);
-
-    printf("Flash: ");
-
-    for (uint8_t i = 0; i < 8; i++)
-    {
-       printf("%02X ", FLASH_ReadByte(0xF800UL + i));
-    }
-
-    printf("\n");   
-
-    
-    if (IPAddress_Read(&storedIP))
-    {
-        printf("STORED: %u.%u.%u.%u\n",IPV4_A(storedIP),IPV4_B(storedIP),IPV4_C(storedIP),IPV4_D(storedIP));    
-    }
-    else
-    {
-        printf("ORIG: %u.%u.%u.%u\n",IPV4_A(myIpAddress),IPV4_B(myIpAddress),IPV4_C(myIpAddress),IPV4_D(myIpAddress));
-        // Keep/use your default IP address
-    }
     
 }

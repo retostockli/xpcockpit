@@ -69,8 +69,6 @@ uint16_t analoginputs_i2c_save[MAXANALOGINPUTS_I2C];
 uint16_t analoginputs_i2c_median[MAXANALOGINPUTS_I2C];
 bool firstanalogread;
 
-/* Storage variable for selected daughter cards */
-uint8_t daughtercards;
 
 void init_data(void);
 void copy_data(void);

@@ -36,10 +36,15 @@
 #define IPV4_C(ip)  ((uint8_t)((ip >>  8) & 0xFF))
 #define IPV4_D(ip)  ((uint8_t)( ip        & 0xFF))
 
-
-    
-// TODO If C++ is being used, regular C code needs function names to have C 
-// linkage so the functions can be used by the c code. 
+// Default Network values if no flash data is available (e.g. after reset button was pressed)
+static const uint8_t MYIPADDRESS_DEFAULT[4] = {192,168,1,55};
+static const uint8_t MYSUBNETMASK_DEFAULT[4] = {255,255,255,0};
+static const uint8_t MYGATEWAY_DEFAULT[4] = {192,168,1,1};
+static const uint8_t MYMACADDRESS_DEFAULT[6] = {0x00,0x00,0x00,0x00,0x11,0x17};
+static const uint8_t YOURIPADDRESS_DEFAULT[4] = {192,168,1,105};
+static const uint16_t MYPORT_DEFAULT = 1024;
+static const uint16_t YOURPORT_DEFAULT = 1026;
+static const uint8_t DAUGHTERCARDCONFIG_DEFAULT = 0x00;
    
 extern uint32_t myIpAddress;
 extern uint32_t mySubnetMask;
@@ -48,6 +53,7 @@ extern uint8_t myMacAddress[6];
 extern uint32_t yourIpAddress;
 extern uint16_t myPort;
 extern uint16_t yourPort;
+extern uint8_t daughterCardConfig;
 
 void network_config(void);    
 

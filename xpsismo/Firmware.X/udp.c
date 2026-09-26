@@ -30,6 +30,7 @@
 #include "mcc_generated_files/pin_manager.h"
 #include "network_config.h"
 #include "common.h"
+#include "flash.h"
 #include "udp.h"
 
 static udpStart_t udpPacket;
@@ -141,6 +142,27 @@ void UDP_Recv_Task(void)
                         }
                         brightness[g] = udpRxQueue[q].data[13];
                     }
+                }
+            } else if (udpRxQueue[q].data[0] == 0xFF) {
+                /* Receive Network Configuration Packet */
+
+                myIpAddress = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[1],udpRxQueue[q].data[2], udpRxQueue[q].data[3],udpRxQueue[q].data[4]);
+                mySubnetMask = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[5],udpRxQueue[q].data[6], udpRxQueue[q].data[7],udpRxQueue[q].data[8]);
+                myGateway = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[9],udpRxQueue[q].data[10], udpRxQueue[q].data[11],udpRxQueue[q].data[12]);
+                myMacAddress[0] = udpRxQueue[q].data[13];
+                myMacAddress[1] = udpRxQueue[q].data[14];
+                myMacAddress[2] = udpRxQueue[q].data[15];
+                myMacAddress[3] = udpRxQueue[q].data[16];
+                myMacAddress[4] = udpRxQueue[q].data[17];
+                myMacAddress[5] = udpRxQueue[q].data[18];
+                yourIpAddress = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[19],udpRxQueue[q].data[20], udpRxQueue[q].data[21],udpRxQueue[q].data[22]);
+                myPort = ((uint16_t)udpRxQueue[q].data[23] << 8) | (uint16_t)udpRxQueue[q].data[24];
+                yourPort = ((uint16_t)udpRxQueue[q].data[25] << 8) | (uint16_t)udpRxQueue[q].data[26];
+                daughterCardConfig = udpRxQueue[q].data[27];
+                
+                if (Config_Write(myIpAddress, mySubnetMask, myGateway, myMacAddress, 
+                        yourIpAddress, myPort, yourPort, daughterCardConfig)) {
+                    printf("\nWRITTEN NETWORK CONFIG TO FLASH MEMORY\n\n");
                 }
             }
 
