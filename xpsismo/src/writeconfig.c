@@ -4,10 +4,10 @@
  * for the new network configuration to become effective.
  *
  * Run:
- *     ./writeconfig INIFILE BOARD-IP BOARD-PORT
+ *     ./writeconfig CFGFILE BOARD-IP BOARD-PORT
  *
  * Where:
- *   - INIFILE: the prefix of the .cfg file located in ../inidata
+ *   - CFGFILE: the prefix of the .cfg file located in ../inidata
  *   - BOARD-IP: the IP Address where the SC-MB Card is currently reachable. Format: 192.168.1.55
  *   - BOARD-PORT: the UDP Port where the SC-MB Card is currently reachable. Format: 1024
  *
@@ -24,16 +24,16 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+#include "iniparser.h"
+
+
 #define SERVER_PORT 1026
 #define CLIENT_PORT 1024
 #define CLIENT_IP "192.168.1.55"
-#define BUFFER_SIZE 1000
+#define SENDBUFFER_SIZE 28
+#define RECVBUFFER_SIZE 30
 
 int serverSocket;
-
-struct timeval oldtime;
-struct timeval newtime;
-
 
 /* send datagram to UDP client */
 int send_udp(char client_ip[], int client_port, unsigned char data[], int len) {
@@ -61,111 +61,193 @@ int send_udp(char client_ip[], int client_port, unsigned char data[], int len) {
   return n;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
-    struct sockaddr_in serverAddr;
-    struct sockaddr_in clientAddr;
+  struct sockaddr_in serverAddr;
+  struct sockaddr_in clientAddr;
 
-    socklen_t clientLen = sizeof(clientAddr);
+  socklen_t clientLen = sizeof(clientAddr);
 
-    char buffer[BUFFER_SIZE];
+  unsigned char sendbuffer[SENDBUFFER_SIZE];
+  unsigned char recvbuffer[RECVBUFFER_SIZE];
 
-    int ret;
-    int len;
+  int ret;
+  int len;
 
-    //----------------------------------------------------------------------
-    // Create UDP socket
-    //----------------------------------------------------------------------
+  char cfgfile[200];
+  char sismo_ip[30];
+  int16_t sismo_port;
 
-    serverSocket = socket(AF_INET, SOCK_DGRAM, 0);
+  dictionary *cfg;
 
-    if(serverSocket < 0)
-    {
-        perror("socket");
-        return 1;
-    }
+  char client_ipaddress[30];
+  char client_subnetmask[30];
+  char client_gateway[30];
+  char client_macaddress[30];
+  char server_ipaddress[30];
+  int16_t client_port;
+  int16_t server_port;
+  int8_t daughter_input1;
+  int8_t daughter_input2;
+  int8_t daughter_analoginput;
+  int8_t daughter_output1;
+  int8_t daughter_output2;
+  int8_t daughter_servo;
+  int8_t daughter_display1;
+  int8_t daughter_display2;
 
-    //----------------------------------------------------------------------
-    // Configure server address
-    //----------------------------------------------------------------------
 
-    memset(&serverAddr, 0, sizeof(serverAddr));
+  /* evaluate command line arguments */
+  argc--;
+  if (argc != 3) {
+    printf("Invalid number of arguments. Please run with : \n");
+    printf("./writeconfig CFGFILE BOARD-IP BOARD-PORT \n");
+    printf(" \n");
+    printf(" Where: \n");
+    printf("   - CFGFILE: the prefix of the .cfg file located in ../inidata \n");
+    printf("   - BOARD-IP: the IP Address where the SC-MB Card is currently reachable. Format: 192.168.1.55 \n");
+    printf("   - BOARD-PORT: the UDP Port where the SC-MB Card is currently reachable. Format: 1024 \n");      
+    exit(-1);
+  }
 
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(SERVER_PORT);
+  snprintf(cfgfile, sizeof(cfgfile), "../inidata/%s.cfg",argv[1]);
+  strncpy(sismo_ip,argv[2],sizeof(sismo_ip));
+  sismo_port = (uint16_t) atoi(argv[3]);
+    
+  printf("CFG File:   %s \n",cfgfile);
+  printf("SISMO IP:   %s \n",sismo_ip);
+  printf("SISMO PORT: %i \n",sismo_port);
+    
+  cfg = iniparser_load(cfgfile);
 
-    //----------------------------------------------------------------------
-    // Bind socket
-    //----------------------------------------------------------------------
+  if (cfg != NULL) {
+    //verbose = iniparser_getint(ini,"general:verbose", default_verbose);
+ 
+    strncpy(client_ipaddress,iniparser_getstring(cfg,":CLIENT_IPADDRESS", ""),sizeof(client_ipaddress));
+    strncpy(client_subnetmask,iniparser_getstring(cfg,":CLIENT_SUBNETMASK", ""),sizeof(client_subnetmask));
+    strncpy(client_gateway,iniparser_getstring(cfg,":CLIENT_GATEWAY", ""),sizeof(client_gateway));
+    strncpy(client_macaddress,iniparser_getstring(cfg,":CLIENT_MACADDRESS", ""),sizeof(client_macaddress));
+    strncpy(server_ipaddress,iniparser_getstring(cfg,":SERVER_IPADDRESS", ""),sizeof(server_ipaddress));
+    client_port = iniparser_getint(cfg,":CLIENT_PORT", 0);
+    server_port = iniparser_getint(cfg,":SERVER_PORT", 0);
+    daughter_input1 = iniparser_getint(cfg,":DAUGHTER_INPUT1", 0);
+    daughter_input2 = iniparser_getint(cfg,":DAUGHTER_INPUT2", 0);
+    daughter_analoginput = iniparser_getint(cfg,":DAUGHTER_ANALOGINPUT", 0);
+    daughter_output1 = iniparser_getint(cfg,":DAUGHTER_OUTPUT1", 0);
+    daughter_output2 = iniparser_getint(cfg,":DAUGHTER_OUTPUT2", 0);
+    daughter_servo = iniparser_getint(cfg,":DAUGHTER_SERVO", 0);
+    daughter_display1 = iniparser_getint(cfg,":DAUGHTER_DISPLAY1", 0);
+    daughter_display2 = iniparser_getint(cfg,":DAUGHTER_DISPLAY2", 0);
 
-    if(bind(serverSocket,
-            (struct sockaddr*)&serverAddr,
-            sizeof(serverAddr)) < 0)
-    {
-        perror("bind");
-        close(serverSocket);
-        return 1;
-    }
-
-    printf("UDP server listening on port %d...\n", SERVER_PORT);
-
-    //----------------------------------------------------------------------
-    // Receive loop
-    //----------------------------------------------------------------------
-
-    gettimeofday(&oldtime,NULL);
+    printf("CLIENT IPADDRESS:   %s \n",client_ipaddress);
+    printf("CLIENT SUBNETMASK:  %s \n",client_subnetmask);
+    printf("CLIENT GATEWAY:     %s \n",client_gateway);
+    printf("CLIENT MACADDRESS:  %s \n",client_macaddress);
+    printf("SERVER IPADDRESS:   %s \n",client_ipaddress);
+    printf("CLIENT PORT:        %i \n",client_port);
+    printf("SERVER PORT:        %i \n",server_port);
+    printf("DAUGHTER INPUT1:    %i \n",daughter_input1);
+    printf("DAUGHTER INPUT2:    %i \n",daughter_input2);
+    printf("DAUGHTER ANA INPUT: %i \n",daughter_analoginput);
+    printf("DAUGHTER OUTPUT1:   %i \n",daughter_output1);
+    printf("DAUGHTER OUTPUT2:   %i \n",daughter_output2);
+    printf("DAUGHTER SERVO:     %i \n",daughter_servo);
+    printf("DAUGHTER DISPLAY1:  %i \n",daughter_display1);
+    printf("DAUGHTER DISPLAY2:  %i \n",daughter_display2);
 
     
-    while(1)
+    printf("\n");
+    iniparser_freedict(cfg);
+  } else {
+    printf("Configuration File %s not found. Exiting.\n",cfgfile);
+    exit(-1);
+  }
+    
+  //----------------------------------------------------------------------
+  // Create UDP socket
+  //----------------------------------------------------------------------
+
+  serverSocket = socket(AF_INET, SOCK_DGRAM, 0);
+
+  if(serverSocket < 0)
     {
-        ssize_t receivedBytes;
+      perror("socket");
+      return 1;
+    }
 
-        memset(buffer, 0, BUFFER_SIZE);
+  exit(0);
+  
+  //----------------------------------------------------------------------
+  // Configure server address
+  //----------------------------------------------------------------------
 
-        receivedBytes = recvfrom(serverSocket,
-                                 buffer,
-                                 BUFFER_SIZE - 1,
-                                 0,
-                                 (struct sockaddr*)&clientAddr,
-                                 &clientLen);
+  memset(&serverAddr, 0, sizeof(serverAddr));
 
-        if(receivedBytes < 0)
+  serverAddr.sin_family = AF_INET;
+  serverAddr.sin_addr.s_addr = INADDR_ANY;
+  serverAddr.sin_port = htons(SERVER_PORT);
+
+  //----------------------------------------------------------------------
+  // Bind socket
+  //----------------------------------------------------------------------
+
+  if(bind(serverSocket,
+	  (struct sockaddr*)&serverAddr,
+	  sizeof(serverAddr)) < 0)
+    {
+      perror("bind");
+      close(serverSocket);
+      return 1;
+    }
+
+  printf("UDP server listening on port %d...\n", SERVER_PORT);
+
+  len = sizeof(sendbuffer);
+  ret = send_udp(CLIENT_IP,CLIENT_PORT,sendbuffer,len);
+  if (ret == len) {
+    printf("COMPLETE: Sent %i of %i bytes to Client \n", ret,len);
+  } else {
+    printf("INCOMPLETE: Sent %i of %i bytes to Client \n", ret,len);
+  }
+
+  //----------------------------------------------------------------------
+  // Receive loop
+  //----------------------------------------------------------------------
+    
+  while(1)
+    {
+      ssize_t receivedBytes;
+
+      memset(recvbuffer, 0, RECVBUFFER_SIZE);
+
+      receivedBytes = recvfrom(serverSocket,
+			       recvbuffer,
+			       RECVBUFFER_SIZE - 1,
+			       0,
+			       (struct sockaddr*)&clientAddr,
+			       &clientLen);
+
+      if(receivedBytes < 0)
         {
-            perror("recvfrom");
-            continue;
+	  perror("recvfrom");
+	  continue;
         }
 
-        //------------------------------------------------------------------
-        // Print sender info
-        //------------------------------------------------------------------
-	gettimeofday(&newtime,NULL);
-	float dt = ((newtime.tv_sec - oldtime.tv_sec) +
-		    (newtime.tv_usec - oldtime.tv_usec) / 1000000.0)*1000.0;
+      //------------------------------------------------------------------
+      // Print sender info
+      //------------------------------------------------------------------
 
-	oldtime.tv_sec = newtime.tv_sec;
-	oldtime.tv_usec = newtime.tv_usec;
-	
-        printf("Received %zd bytes after dt %f \n", receivedBytes, dt);
+      /* printf("From %s:%d\n", */
+      /*        inet_ntoa(clientAddr.sin_addr), */
+      /*        ntohs(clientAddr.sin_port)); */
 
-        /* printf("From %s:%d\n", */
-        /*        inet_ntoa(clientAddr.sin_addr), */
-        /*        ntohs(clientAddr.sin_port)); */
+      /* printf("Message: %s\n", recvbuffer); */
 
-        /* printf("Message: %s\n", buffer); */
-
-	//len = strlen(buffer);
-	
-	/* ret = send_udp(CLIENT_IP,CLIENT_PORT,buffer,len); */
-	/* if (ret == len) { */
-	/*   printf("COMPLETE: Sent %i of %i bytes to Client \n", ret,len); */
-	/* } else { */
-	/*   printf("INCOMPLETE: Sent %i of %i bytes to Client \n", ret,len); */
-	/* } */
+      //len = strlen(recvbuffer);
 
     }
 
-    close(serverSocket);
+  close(serverSocket);
 
-    return 0;
+  return 0;
 }

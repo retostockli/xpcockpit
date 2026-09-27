@@ -44,7 +44,7 @@ struct timeval sismo_t1;
 int ini_read(char* programPath, char* iniName)
 {
   int ret = 0;
- dictionary *ini;
+  dictionary *ini;
   char filename[255];
   char cwd[200];
   char *pch;
