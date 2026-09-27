@@ -27,11 +27,15 @@
 #include "iniparser.h"
 
 
-#define SERVER_PORT 1026
-#define CLIENT_PORT 1024
-#define CLIENT_IP "192.168.1.55"
-#define SENDBUFFER_SIZE 28
-#define RECVBUFFER_SIZE 30
+#define SERVER_PORT 1026  // Port of this UDP Server here
+#define SENDBUFFER_SIZE 28 // Messages sent to SISMO SC-MB
+#define RECVBUFFER_SIZE 30 // Messages received from SISMO SC-MB
+
+#define MAKE_IPV4_ADDRESS(a,b,c,d) \
+    ((uint32_t)(((uint32_t)(a) << 24) | \
+                ((uint32_t)(b) << 16) | \
+                ((uint32_t)(c) << 8)  | \
+                (uint32_t)(d)))
 
 int serverSocket;
 
@@ -61,6 +65,70 @@ int send_udp(char client_ip[], int client_port, unsigned char data[], int len) {
   return n;
 }
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+bool StringToIPv4(const char *str, uint32_t *ip)
+{
+    uint32_t parts[4];
+    char *end;
+
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        parts[i] = strtoul(str, &end, 10);
+
+        if (end == str || parts[i] > 255)
+            return false;
+
+        if (i < 3)
+        {
+            if (*end != '.')
+                return false;
+
+            str = end + 1;
+        }
+        else
+        {
+            if (*end != '\0')
+                return false;
+        }
+    }
+
+    *ip = MAKE_IPV4_ADDRESS(parts[0],
+                            parts[1],
+                            parts[2],
+                            parts[3]);
+
+    return true;
+}
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+bool StringToMAC(const char *str, uint8_t mac[6])
+{
+    unsigned int m[6];
+    char extra;
+
+    if (sscanf(str,
+               "%2x:%2x:%2x:%2x:%2x:%2x%c",
+               &m[0], &m[1], &m[2],
+               &m[3], &m[4], &m[5],
+               &extra) != 6)
+    {
+        return false;
+    }
+
+    for (int i = 0; i < 6; i++)
+    {
+        mac[i] = (uint8_t)m[i];
+    }
+
+    return true;
+}
+
 int main(int argc, char **argv)
 {
   struct sockaddr_in serverAddr;
@@ -73,7 +141,11 @@ int main(int argc, char **argv)
 
   int ret;
   int len;
-
+  
+  uint32_t ip;
+  uint8_t mac[6];
+  uint8_t daughtercards;
+  
   char cfgfile[200];
   char sismo_ip[30];
   int16_t sismo_port;
@@ -174,8 +246,6 @@ int main(int argc, char **argv)
       perror("socket");
       return 1;
     }
-
-  exit(0);
   
   //----------------------------------------------------------------------
   // Configure server address
@@ -200,14 +270,44 @@ int main(int argc, char **argv)
       return 1;
     }
 
-  printf("UDP server listening on port %d...\n", SERVER_PORT);
+  printf("This UDP server is listening on port %d...\n", SERVER_PORT);
 
+  sendbuffer[0] = 0xFF; // Marker for Configuration Packet
+  StringToIPv4(client_ipaddress, &ip);
+  memcpy(&sendbuffer[1],&ip,sizeof(ip));
+  StringToIPv4(client_subnetmask, &ip);
+  memcpy(&sendbuffer[5],&ip,sizeof(ip));
+  StringToIPv4(client_gateway, &ip);
+  memcpy(&sendbuffer[9],&ip,sizeof(ip));
+  StringToMAC(client_macaddress, mac);
+  memcpy(&sendbuffer[13],&mac,sizeof(mac));
+  StringToIPv4(server_ipaddress, &ip);
+  memcpy(&sendbuffer[19],&ip,sizeof(ip));
+  memcpy(&sendbuffer[23],&client_port,sizeof(client_port));
+  memcpy(&sendbuffer[25],&server_port,sizeof(server_port));
+
+  // Pack daughtercard state into a single byte (see SimCards Ehternet - UDP Protocol Document)
+  // MOD: Inputs 1 is added in bit 4 and Inputs 2 is added in bit 7 (unused in original SISMO protocol)
+  daughtercards =
+    (daughter_output1 << 0) |
+    (daughter_output2 << 1) |
+    (daughter_servo << 2) |
+    (daughter_display1 << 3) |
+    (daughter_input1 << 4) |
+    (daughter_analoginput << 5) |
+    (daughter_display2 << 6) |
+    (daughter_input2 << 7);
+  
+  sendbuffer[27] = daughtercards;
+  
   len = sizeof(sendbuffer);
-  ret = send_udp(CLIENT_IP,CLIENT_PORT,sendbuffer,len);
+  ret = send_udp(client_ipaddress,client_port,sendbuffer,len);
   if (ret == len) {
-    printf("COMPLETE: Sent %i of %i bytes to Client \n", ret,len);
+    printf("Sent Configuration to Client %s Port %i \n", client_ipaddress,client_port);
+    printf("Waiting for Confirmation Message from Client...\n");
   } else {
-    printf("INCOMPLETE: Sent %i of %i bytes to Client \n", ret,len);
+    printf("ERROR: Sent %i of %i Configuration bytes to Client %s Port %i \n", ret,len,client_ipaddress,client_port);
+    exit(-1);
   }
 
   //----------------------------------------------------------------------
@@ -237,13 +337,13 @@ int main(int argc, char **argv)
       // Print sender info
       //------------------------------------------------------------------
 
-      /* printf("From %s:%d\n", */
-      /*        inet_ntoa(clientAddr.sin_addr), */
-      /*        ntohs(clientAddr.sin_port)); */
+      if (recvbuffer[0] == 0xFF) {
+	printf("Received confirmation from IP %s Port %d\n",
+	       inet_ntoa(clientAddr.sin_addr),
+	       ntohs(clientAddr.sin_port));
 
-      /* printf("Message: %s\n", recvbuffer); */
-
-      //len = strlen(recvbuffer);
+	break;
+      }
 
     }
 

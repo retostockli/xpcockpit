@@ -35,6 +35,8 @@
 
 static uint8_t historyIndex = 0;
 
+static uint8_t resetButton = 1;
+
 void write_outputs(void)
 {
     uint8_t i;
@@ -115,6 +117,20 @@ void read_inputs(void)
         //if (inputs[i+4] != inputs_save[i+4]) {
         //    printf("Inputs %i 0x%02X 0x%02X \n",i+4,inputs[i+4],inputs_save[i+4]);
         //}           
+    }
+}
+
+void read_resetbutton(void) 
+{
+    uint8_t val = IO_RA4_GetValue();
+    if (val != resetButton) {
+        resetButton = val;
+        
+        if (resetButton == 0) {
+            // Erase Flash Memory to start from Default Network Configuration
+            printf("Erasing Flash Memory: Next Power Cycle uses Default Network Configuarion\n");
+            Config_Erase();
+        }
     }
 }
 

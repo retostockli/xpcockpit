@@ -69,7 +69,15 @@ uint16_t analoginputs_i2c_save[MAXANALOGINPUTS_I2C];
 uint16_t analoginputs_i2c_median[MAXANALOGINPUTS_I2C];
 bool firstanalogread;
 
-
+uint8_t daughter_input1;
+uint8_t daughter_input2;
+uint8_t daughter_analoginput;
+uint8_t daughter_output1;
+uint8_t daughter_output2;
+uint8_t daughter_servo;
+uint8_t daughter_display1;
+uint8_t daughter_display2;
+  
 void init_data(void);
 void copy_data(void);
 

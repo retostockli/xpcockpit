@@ -17,6 +17,10 @@
 #include "network_config.h"
 #include "udp.h"
 #include "flash.h"
+#include "common.h"
+
+#define GET_BIT(value, bit) (((value) >> (bit)) & 0x01)
+
 /*
  * 
  */
@@ -57,6 +61,15 @@ void network_config(void)
         yourPort = YOURPORT_DEFAULT;
         daughterCardConfig = DAUGHTERCARDCONFIG_DEFAULT;
     }
+       
+    daughter_output1 = GET_BIT(daughterCardConfig,0);
+    daughter_output2 = GET_BIT(daughterCardConfig,1);
+    daughter_servo = GET_BIT(daughterCardConfig,2);
+    daughter_display1 = GET_BIT(daughterCardConfig,3);
+    daughter_input1 = GET_BIT(daughterCardConfig,4);
+    daughter_analoginput = GET_BIT(daughterCardConfig,5);
+    daughter_display2 = GET_BIT(daughterCardConfig,6);
+    daughter_input2 = GET_BIT(daughterCardConfig,7);
         
     printf("My IP Address:      %u.%u.%u.%u\n",IPV4_A(myIpAddress),IPV4_B(myIpAddress),IPV4_C(myIpAddress),IPV4_D(myIpAddress));    
     printf("My Subnet Mask:     %u.%u.%u.%u\n",IPV4_A(mySubnetMask),IPV4_B(mySubnetMask),IPV4_C(mySubnetMask),IPV4_D(mySubnetMask));    
@@ -65,7 +78,14 @@ void network_config(void)
     printf("Server IP Address:  %u.%u.%u.%u\n",IPV4_A(yourIpAddress),IPV4_B(yourIpAddress),IPV4_C(yourIpAddress),IPV4_D(yourIpAddress));    
     printf("My UDP Port:        %i\n",myPort);    
     printf("Server UDP Port:    %i\n",yourPort);    
-    printf("Daughter Card Conf: 0x%02X\n",daughterCardConfig);   
+    printf("DAUGHTER INPUT1:    %i \n",daughter_input1);
+    printf("DAUGHTER INPUT2:    %i \n",daughter_input2);
+    printf("DAUGHTER ANA INPUT: %i \n",daughter_analoginput);
+    printf("DAUGHTER OUTPUT1:   %i \n",daughter_output1);
+    printf("DAUGHTER OUTPUT2:   %i \n",daughter_output2);
+    printf("DAUGHTER SERVO:     %i \n",daughter_servo);
+    printf("DAUGHTER DISPLAY1:  %i \n",daughter_display1);
+    printf("DAUGHTER DISPLAY2:  %i \n",daughter_display2);     
     printf("\n");
      
     // Set application-defined MAC address

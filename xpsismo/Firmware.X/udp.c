@@ -34,6 +34,7 @@
 #include "udp.h"
 
 static udpStart_t udpPacket;
+static uint8_t senddata[SENDMSGLEN];
 
 typedef struct
 {
@@ -144,25 +145,34 @@ void UDP_Recv_Task(void)
                     }
                 }
             } else if (udpRxQueue[q].data[0] == 0xFF) {
-                /* Receive Network Configuration Packet */
+                /* Receive Network Configuration Packet from configwrite program (UDP Server) */
 
-                myIpAddress = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[1],udpRxQueue[q].data[2], udpRxQueue[q].data[3],udpRxQueue[q].data[4]);
-                mySubnetMask = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[5],udpRxQueue[q].data[6], udpRxQueue[q].data[7],udpRxQueue[q].data[8]);
-                myGateway = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[9],udpRxQueue[q].data[10], udpRxQueue[q].data[11],udpRxQueue[q].data[12]);
+                myIpAddress = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[4],udpRxQueue[q].data[3], udpRxQueue[q].data[2],udpRxQueue[q].data[1]);
+                mySubnetMask = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[8],udpRxQueue[q].data[7], udpRxQueue[q].data[6],udpRxQueue[q].data[5]);
+                myGateway = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[12],udpRxQueue[q].data[11], udpRxQueue[q].data[10],udpRxQueue[q].data[9]);
                 myMacAddress[0] = udpRxQueue[q].data[13];
                 myMacAddress[1] = udpRxQueue[q].data[14];
                 myMacAddress[2] = udpRxQueue[q].data[15];
                 myMacAddress[3] = udpRxQueue[q].data[16];
                 myMacAddress[4] = udpRxQueue[q].data[17];
                 myMacAddress[5] = udpRxQueue[q].data[18];
-                yourIpAddress = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[19],udpRxQueue[q].data[20], udpRxQueue[q].data[21],udpRxQueue[q].data[22]);
-                myPort = ((uint16_t)udpRxQueue[q].data[23] << 8) | (uint16_t)udpRxQueue[q].data[24];
-                yourPort = ((uint16_t)udpRxQueue[q].data[25] << 8) | (uint16_t)udpRxQueue[q].data[26];
+                yourIpAddress = MAKE_IPV4_ADDRESS(udpRxQueue[q].data[22],udpRxQueue[q].data[21], udpRxQueue[q].data[20],udpRxQueue[q].data[19]);
+                myPort = ((uint16_t)udpRxQueue[q].data[24] << 8) | (uint16_t)udpRxQueue[q].data[23];
+                yourPort = ((uint16_t)udpRxQueue[q].data[26] << 8) | (uint16_t)udpRxQueue[q].data[25];
                 daughterCardConfig = udpRxQueue[q].data[27];
+ 
                 
                 if (Config_Write(myIpAddress, mySubnetMask, myGateway, myMacAddress, 
                         yourIpAddress, myPort, yourPort, daughterCardConfig)) {
-                    printf("\nWRITTEN NETWORK CONFIG TO FLASH MEMORY\n\n");
+                    printf("\nWRITTEN NETWORK CONFIG TO FLASH MEMORY\n");
+                    printf("PLEASE CYCLE POWER TO MAKE IT EFFECTIVE\n");
+ 
+                    memset(senddata,0,sizeof(senddata));
+
+                    // Send confirmation message to configwrite program
+                    senddata[0] = 0xFF;            
+                    UDP_Send_Data(senddata, sizeof(senddata));
+
                 }
             }
 
@@ -247,7 +257,7 @@ void UDP_Send_Data (uint8_t data[], uint16_t length)
 
 void UDP_Send_Task(bool force)
 {
-    static uint8_t senddata[SENDMSGLEN];
+
     int8_t i;
     bool changed;
    

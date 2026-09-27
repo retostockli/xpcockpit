@@ -54,8 +54,8 @@
 #include <conio.h>
 #include "interrupt_manager.h"
 #include "tmr3.h"
-#include "memory.h"
 #include "tmr1.h"
+#include "memory.h"
 #include "eusart1.h"
 #include "TCPIPLibrary/network.h"
 

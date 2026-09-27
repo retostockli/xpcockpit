@@ -677,7 +677,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="MAC" name="pubSubMAC_SPIMASTER/interface"/>
-         <value>1337.5518194915014</value>
+         <value>6339.654889587595</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="MEMORY" name="END_FLASH"/>
@@ -4337,11 +4337,11 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="TCP/IP Lite" name="pubSubTCP/IP Lite_ETHERNET/MAC/interface"/>
-         <value>3307.252737301848</value>
+         <value>2370.234703176676</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="TCP/IP Lite" name="pubSubselectedTimer"/>
-         <value>8307.17619742917</value>
+         <value>3217.6397142787605</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="TCP/IP Lite" name="selectedTimer"/>
@@ -4907,7 +4907,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files/mcc.h</file>
-         <hash>56fb999534130fa6aeaddde82a99b209ba0d0f9eca50b1e2678678e741f0b4fc</hash>
+         <hash>848130b7ca0b8d3d81b8e0aae78b1d3fb9d392ec93717dc3bb9ab5b95ac478d0</hash>
       </entry>
       <entry>
          <file>mcc_generated_files/memory.c</file>

@@ -12,6 +12,7 @@
 
 void write_outputs(void);
 void read_inputs(void);
+void read_resetbutton(void);
 void read_analoginputs(void);
 void init_displays(void);
 void write_displays(void);

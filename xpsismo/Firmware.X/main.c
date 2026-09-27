@@ -178,6 +178,7 @@ void main(void)
             
             /* Analog Inputs every 20 ms */
             if ((ms_counter % 20) == 0) {
+                read_resetbutton();
                 read_analoginputs();
                 //read_i2c_analoginputs();)
             }            

@@ -16,11 +16,13 @@
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/gpio.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/mcc_generated_files/memory.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/mcc_generated_files/mcc.c</file>
+            <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/mcc_generated_files/pin_manager.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/main.c</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/daughter_i2c.c</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/gpio.c</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/mcc_generated_files/TCPIPLibrary/arpv4.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/mcc_generated_files/TCPIPLibrary/ipv4.h</file>
+            <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/mcc_generated_files/pin_manager.c</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/mcc_generated_files/TCPIPLibrary/network.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/flash.c</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/network_config.h</file>
