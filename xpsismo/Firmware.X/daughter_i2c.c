@@ -1,5 +1,5 @@
 /* 
- * File:   daugther_i2c.c
+ * File:   daughter_i2c.c
  * Author: stockli
  *
  * Created on August 28, 2026, 2:14 PM
@@ -41,7 +41,7 @@ void write_i2c_outputs1(void)
         }   
 
         if (!I2C_Software_Write(OUTPUTS1_I2C_ADDRESS, data, 9)) {
-            printf("Error write I2C Outputs1\n");
+            printf("Error write I2C Outputs 1\n");
         }
         
         memcpy(outputs_i2c1_save,outputs_i2c1,sizeof(outputs_i2c1));
@@ -60,8 +60,7 @@ void read_i2c_inputs1(void)
     uint8_t data2[8];
     
     data1[0] = 0x00;
-    
-    
+        
     //I2C_Software_Write(INPUTS1_I2C_ADDRESS, data1, 1);   
     //if (I2C_Software_Read(INPUTS1_I2C_ADDRESS, data2, 8)) {
     
@@ -75,7 +74,7 @@ void read_i2c_inputs1(void)
 //       data2[4], data2[5], data2[6], data2[7]);
     
     } else {
-        printf("Error reading I2C Inputs 1\n");
+        printf("Error read I2C Inputs 1\n");
     }
     
 }
@@ -102,7 +101,7 @@ void write_i2c_servo(void)
     memset(data,0,sizeof(data));
     for(servo=0;servo<8;servo++) {
         if (servos_i2c[servo] != servos_i2c_save[servo]) {
-            data[2] |= (uint8_t) (1 << (servo));
+            data[2] |= (uint8_t) (1 << (servo)); /* Bitwise Servo Selector */
             changed = true;
         }
     }
@@ -125,7 +124,7 @@ void write_i2c_servo(void)
     memset(data,0,sizeof(data));
     for(servo=8;servo<14;servo++) {
         if (servos_i2c[servo] != servos_i2c_save[servo]) {
-            data[2] |= (uint8_t) (1 << (servo-8+2));
+            data[2] |= (uint8_t) (1 << (servo-8+2)); /* Bitwise Servo Selector */
             changed = true;
          }
     }

@@ -1,5 +1,5 @@
 /* 
- * File:   software_ic2.c
+ * File:   software_i2c.c
  * Author: stockli
  *
  * Created on August 27, 2026, 5:57 PM

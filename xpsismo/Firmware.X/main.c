@@ -181,8 +181,13 @@ void main(void)
                
             /* Digital Inputs every 1 ms */
             read_inputs();
-            read_i2c_inputs1();
-            //read_i2c_inputs2();
+            if (!(ms_counter & 1U)) {
+                // Even milliseconds
+                read_i2c_inputs1();
+            } else {
+                // Odd milliseconds
+                //read_i2c_inputs2();
+            }
             
             if (modulo == 30) {
                 read_resetbutton();
@@ -204,7 +209,6 @@ void main(void)
             
             /* Make sure all UDP Packets have been sent */
             while (ETH_GetTxQueueSize() != 0) {
-               //if (ETH_GetTxQueueSize() > 1) printf("%i\n",ETH_GetTxQueueSize());
                Network_Manage(); 
             }
            

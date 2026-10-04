@@ -129,6 +129,9 @@ void UDP_Recv_Task(void)
                 
                 //printf("R: 0x%02X 0x%02X\n",udpRxQueue[q].data[2],udpRxQueue[q].data[3]);
                 
+                /* Enable Debugging via UDP through flag in last byte of receive buffer */
+                DEBUG_UDP = udpRxQueue[q].data[27];
+                
                 if (udpRxQueue[q].data[2] == 0x00) {
                     /* Data for SC-MB */
                     if (udpRxQueue[q].data[3] == 0x00) {

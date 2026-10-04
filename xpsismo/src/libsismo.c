@@ -467,6 +467,10 @@ int write_sismo() {
 	    }
 	  }
 	  if (anychanged) {
+	    if (sismo[card].firmware == 1) {
+	      /* Enable SISMO SC-MB Debugging via UDP by flagging last unused send buffer byte */
+	      sismoSendBuffer[27] = verbose > 1;
+	    }
 	    ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
 	    if (verbose > 2) printf("Sent %i bytes to card %i \n", ret,card);
 	  }
@@ -534,6 +538,10 @@ int write_sismo() {
 	      }
 	    }
 	    if (anychanged) {
+	      if (sismo[card].firmware == 1) {
+		/* Enable SISMO SC-MB Debugging via UDP by flagging last unused send buffer byte */
+		sismoSendBuffer[27] = verbose > 1;
+	      }
 	      ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
 	      if (verbose > 2) printf("Sent %i bytes to card %i \n", ret,card);
 	    }
@@ -578,6 +586,10 @@ int write_sismo() {
 	    }
 	  }
 	  if (anychanged) {
+	    if (sismo[card].firmware == 1) {
+	      /* Enable SISMO SC-MB Debugging via UDP by flagging last unused send buffer byte */
+	      sismoSendBuffer[27] = verbose > 1;
+	    }
 	    ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
 	    if (verbose > 2) printf("Sent %i bytes to card %i \n", ret,card);
 	  }

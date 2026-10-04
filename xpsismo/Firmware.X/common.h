@@ -14,7 +14,7 @@
 // TURN OFF ANY DEBUGGING IN OPERATIONAL USE IN ORDER TO AVOID UDP TIME LAG AND TIMING PROBLEMS!
 
 #define DEBUG_UART 1   /* Send Debug Output to UART */
-#define DEBUG_UDP 0    /* Send Debug Output to Ethernet via UDP */
+//#define DEBUG_UDP 0    /* Send Debug Output to Ethernet via UDP */
 
 #define SENDMSGLEN 30          /* number of bytes in sent UDP packet */
 #define RECVMSGLEN 28          /* number of bytes in received UDP packet */
@@ -35,6 +35,7 @@
 #define SERVOSINITVAL -1        /* initial value of servos upon startup (PARK) */
 #define ANALOGINPUTNBITS 10    /* number of bits of analog inputs */
 
+bool DEBUG_UDP;
 
 /* Storage variables for inputs / outputs */
 uint8_t outputs[MAXOUTPUTS/8];
