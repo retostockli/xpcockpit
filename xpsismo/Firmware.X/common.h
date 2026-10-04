@@ -32,7 +32,7 @@
 #define INPUTSINITVAL 0         /* initial value of inputs upon startup */
 #define DISPLAYSINITVAL 0      /* initial value of displays upon startup (BLANK) */
 #define OUTPUTSINITVAL 0       /* initial value of outputs upon startup (OFF) */
-#define SERVOSINITVAL 0        /* initial value of servos upon startup (PARK) */
+#define SERVOSINITVAL -1        /* initial value of servos upon startup (PARK) */
 #define ANALOGINPUTNBITS 10    /* number of bits of analog inputs */
 
 
@@ -67,6 +67,8 @@ uint16_t analoginputs_median[MAXANALOGINPUTS];
 uint16_t analoginputs_i2c[MAXANALOGINPUTS_I2C][MAXSAVE];
 uint16_t analoginputs_i2c_save[MAXANALOGINPUTS_I2C];
 uint16_t analoginputs_i2c_median[MAXANALOGINPUTS_I2C];
+int16_t servos_i2c[MAXSERVOS_I2C];
+int16_t servos_i2c_save[MAXSERVOS_I2C];
 bool firstanalogread;
 
 uint8_t daughter_input1;

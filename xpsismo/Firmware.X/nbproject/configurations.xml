@@ -92,13 +92,13 @@
       <itemPath>main.c</itemPath>
       <itemPath>network_config.c</itemPath>
       <itemPath>udp.c</itemPath>
-      <itemPath>software_ic2.c</itemPath>
       <itemPath>daughter_i2c.c</itemPath>
       <itemPath>mcp23017_i2c.c</itemPath>
       <itemPath>gpio.c</itemPath>
       <itemPath>common.c</itemPath>
       <itemPath>sort.c</itemPath>
       <itemPath>flash.c</itemPath>
+      <itemPath>software_i2c.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

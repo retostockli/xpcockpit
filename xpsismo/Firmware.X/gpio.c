@@ -45,7 +45,7 @@ void write_outputs(void)
         
         if (outputs[i] != outputs_save[i]) {
             
-            printf("WRITE OUTPUTS BANK %i\n",i);
+            //printf("WRITE OUTPUTS BANK %i\n",i);
         
             if (i<4) {
                 // Port E: OUTPUTS 0-31 (DO1)
@@ -178,12 +178,7 @@ void read_analoginputs(void)
         /* only send current value if it is outside median and noise */
         if (((int16_t) median < ((int16_t) analoginputs_save[i] - noise)) || ((int16_t) median > ((int16_t) analoginputs_save[i] + noise))) {       
           //printf("ANA %i 0: %i MED: %i SAV: %i \n",i, (int) analoginputs[i][historyIndex], median, analoginputs_save[i]); 
-          analoginputs_median[i] = median;
-          
-          if ((i == 0) && (analoginputs_median[i] < 100)) {
-              printf("WRITE FLASH\n");
-              //Config_Write(myIpAddress);
-          }
+          analoginputs_median[i] = median;         
         }
         
     }

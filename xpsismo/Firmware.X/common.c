@@ -95,6 +95,12 @@ void init_data(void)
        analoginputs_i2c_save[i] = INPUTSINITVAL;
        analoginputs_i2c_median[i] = INPUTSINITVAL;
     }
+    
+    for (i=0;i<MAXSERVOS_I2C;i++)
+    {
+        servos_i2c[i] = SERVOSINITVAL;
+        servos_i2c_save[i] = SERVOSINITVAL;
+    }
   
 }
 
@@ -102,7 +108,6 @@ void copy_data(void)
 {
     uint8_t i;
     
-
     memcpy(inputs_save,inputs,sizeof(inputs));
     memcpy(inputs_i2c1_save,inputs_i2c1,sizeof(inputs_i2c1));
     memcpy(inputs_i2c2_save,inputs_i2c2,sizeof(inputs_i2c2));
@@ -110,7 +115,7 @@ void copy_data(void)
     for (i=0;i<MAXANALOGINPUTS;i++) {
         analoginputs_save[i] = analoginputs_median[i];
     }
-   for (i=0;i<MAXANALOGINPUTS_I2C;i++) {
+    for (i=0;i<MAXANALOGINPUTS_I2C;i++) {
         analoginputs_i2c_save[i] = analoginputs_i2c_median[i];
     }
     

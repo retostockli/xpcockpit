@@ -235,18 +235,18 @@ void I2C_Software_Stop(void)
 //    return true;
 //}
 
-static bool I2C_WaitForSCLHigh(void)
-{
-    uint8_t timeout = 255;
-
-    while (!I2C_SCL_PORT)
-    {
-        if (--timeout == 0)
-            return false;
-    }
-
-    return true;
-}
+//static bool I2C_WaitForSCLHigh(void)
+//{
+//    uint8_t timeout = 255;
+//
+//    while (!I2C_SCL_PORT)
+//    {
+//        if (--timeout == 0)
+//            return false;
+//    }
+//
+//    return true;
+//}
 
 
 /*
@@ -255,34 +255,34 @@ static bool I2C_WaitForSCLHigh(void)
  * ------------------------------------------------------------
  */
 
-static bool I2C_ClockHigh(void)
-{
-    /*
-     * Release SCL.
-     */
-    I2C_SCL_Release();
+//static bool I2C_ClockHigh(void)
+//{
+//    /*
+//     * Release SCL.
+//     */
+//    I2C_SCL_Release();
+//
+//    /*
+//     * Wait for SCL to actually go HIGH.
+//     * This also supports clock stretching.
+//     */
+//    if (!I2C_WaitForSCLHigh())
+//    {
+//        return false;
+//    }
+//
+//    __delay_us(SOFT_I2C_DELAY_US);
+//
+//    return true;
+//}
 
-    /*
-     * Wait for SCL to actually go HIGH.
-     * This also supports clock stretching.
-     */
-    if (!I2C_WaitForSCLHigh())
-    {
-        return false;
-    }
 
-    __delay_us(SOFT_I2C_DELAY_US);
-
-    return true;
-}
-
-
-static void I2C_ClockLow(void)
-{
-    I2C_SCL_Low();
-
-    __delay_us(SOFT_I2C_DELAY_US);
-}
+//static void I2C_ClockLow(void)
+//{
+//    I2C_SCL_Low();
+//
+//    __delay_us(SOFT_I2C_DELAY_US);
+//}
 
 
 /*
@@ -291,40 +291,40 @@ static void I2C_ClockLow(void)
  * ------------------------------------------------------------
  */
 
-static bool I2C_WriteBit(bool bit)
-{
-    if (bit)
-    {
-        /*
-         * Send HIGH by releasing SDA.
-         */
-        I2C_SDA_Release();
-    }
-    else
-    {
-        /*
-         * Send LOW.
-         */
-        I2C_SDA_Low();
-    }
-
-    __delay_us(SOFT_I2C_DELAY_US);
-
-    /*
-     * Clock HIGH.
-     */
-    if (!I2C_ClockHigh())
-    {
-        return false;
-    }
-
-    /*
-     * Clock LOW.
-     */
-    I2C_ClockLow();
-
-    return true;
-}
+//static bool I2C_WriteBit(bool bit)
+//{
+//    if (bit)
+//    {
+//        /*
+//         * Send HIGH by releasing SDA.
+//         */
+//        I2C_SDA_Release();
+//    }
+//    else
+//    {
+//        /*
+//         * Send LOW.
+//         */
+//        I2C_SDA_Low();
+//    }
+//
+//    __delay_us(SOFT_I2C_DELAY_US);
+//
+//    /*
+//     * Clock HIGH.
+//     */
+//    if (!I2C_ClockHigh())
+//    {
+//        return false;
+//    }
+//
+//    /*
+//     * Clock LOW.
+//     */
+//    I2C_ClockLow();
+//
+//    return true;
+//}
 
 
 /*
@@ -333,35 +333,35 @@ static bool I2C_WriteBit(bool bit)
  * ------------------------------------------------------------
  */
 
-static bool I2C_ReadBit(bool *bit)
-{
-    /*
-     * Release SDA so the slave can drive it.
-     */
-    I2C_SDA_Release();
-
-    __delay_us(SOFT_I2C_DELAY_US);
-
-    /*
-     * Raise SCL.
-     */
-    if (!I2C_ClockHigh())
-    {
-        return false;
-    }
-
-    /*
-     * Read SDA while SCL is HIGH.
-     */
-    *bit = I2C_SDA_Read();
-
-    /*
-     * Bring clock LOW.
-     */
-    I2C_ClockLow();
-
-    return true;
-}
+//static bool I2C_ReadBit(bool *bit)
+//{
+//    /*
+//     * Release SDA so the slave can drive it.
+//     */
+//    I2C_SDA_Release();
+//
+//    __delay_us(SOFT_I2C_DELAY_US);
+//
+//    /*
+//     * Raise SCL.
+//     */
+//    if (!I2C_ClockHigh())
+//    {
+//        return false;
+//    }
+//
+//    /*
+//     * Read SDA while SCL is HIGH.
+//     */
+//    *bit = I2C_SDA_Read();
+//
+//    /*
+//     * Bring clock LOW.
+//     */
+//    I2C_ClockLow();
+//
+//    return true;
+//}
 
 
 /*
@@ -439,8 +439,6 @@ bool I2C_Software_WriteByte(uint8_t data)
         I2C_SCL_TRIS = 1;
 
         /* Preserve clock-stretching support */
-//        if (!I2C_WaitForSCLHigh())
-//            return false;
 
         if (!I2C_SCL_PORT)
         {
@@ -456,7 +454,7 @@ bool I2C_Software_WriteByte(uint8_t data)
         }
         
         /* SCL HIGH time */
-        //__delay_us(SOFT_I2C_DELAY_US);
+        __delay_us(SOFT_I2C_DELAY_US);
 
         /* SCL LOW */
         I2C_SCL_TRIS = 0;
@@ -470,12 +468,9 @@ bool I2C_Software_WriteByte(uint8_t data)
      */
     I2C_SDA_TRIS = 1;       // release SDA
 
-    //__delay_us(SOFT_I2C_DELAY_US);
+    __delay_us(SOFT_I2C_DELAY_US);
 
     I2C_SCL_TRIS = 1;
-
-//    if (!I2C_WaitForSCLHigh())
-//        return false;
 
     if (!I2C_SCL_PORT)
     {
@@ -490,7 +485,7 @@ bool I2C_Software_WriteByte(uint8_t data)
         }
     }
 
-    //__delay_us(SOFT_I2C_DELAY_US);
+    __delay_us(SOFT_I2C_DELAY_US);
 
     bool ack = (I2C_SDA_PORT == 0);
 

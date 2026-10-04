@@ -127,6 +127,8 @@ void UDP_Recv_Task(void)
 //                       udpRxQueue[q].length,
 //                       makeIpv4AddresstoStr(udpRxQueue[q].destIP));
                 
+                //printf("R: 0x%02X 0x%02X\n",udpRxQueue[q].data[2],udpRxQueue[q].data[3]);
+                
                 if (udpRxQueue[q].data[2] == 0x00) {
                     /* Data for SC-MB */
                     if (udpRxQueue[q].data[3] == 0x00) {
@@ -142,6 +144,29 @@ void UDP_Recv_Task(void)
                             displays[d] = udpRxQueue[q].data[5+i];
                         }
                         brightness[g] = udpRxQueue[q].data[13];
+                    }
+                } else if (udpRxQueue[q].data[2] == 0x01) {
+                    /* I2C Daughter 1 Digital Outputs */
+                    for (i=0;i<(MAXOUTPUTS_I2C/8);i++) {
+                        outputs_i2c1[i] = udpRxQueue[q].data[4+i];
+                    }
+                } else if (udpRxQueue[q].data[2] == 0x02) {
+                    /* I2C Daughter 2 Digital Outputs */
+                    for (i=0;i<(MAXOUTPUTS_I2C/8);i++) {
+                        outputs_i2c2[i] = udpRxQueue[q].data[4+i];
+                    }
+                } else if (udpRxQueue[q].data[2] == 0x03) {
+                    /* I2C Daughter Servos */
+                    if (udpRxQueue[q].data[3] == 0x00) {
+                        /* Servos 0..7 */
+                        for (i=0;i<8;i++) {
+                            servos_i2c[i] = (int16_t) udpRxQueue[q].data[5+i];
+                        }
+                    } else if (udpRxQueue[q].data[3] == 0x01) {
+                        /* Servos 8..13 */
+                        for (i=0;i<6;i++) {
+                            servos_i2c[i+8] = (int16_t) udpRxQueue[q].data[7+i];
+                        }
                     }
                 }
             } else if (udpRxQueue[q].data[0] == 0xFF) {
@@ -170,7 +195,10 @@ void UDP_Recv_Task(void)
                     memset(senddata,0,sizeof(senddata));
 
                     // Send confirmation message to configwrite program
-                    senddata[0] = 0xFF;            
+                    senddata[0] = 0xFF;       
+                    
+                    __delay_ms(50);
+                    
                     UDP_Send_Data(senddata, sizeof(senddata));
 
                 }
@@ -290,7 +318,7 @@ void UDP_Send_Task(bool force)
         senddata[2] = myMacAddress[4];
         senddata[3] = myMacAddress[5];
         senddata[4] = 0x00; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
-        senddata[5] = 0x00; // Activated Daughter Cards (I2C): Todo
+        senddata[5] = daughterCardConfig; // Activated Daughter Cards (I2C)
         senddata[6] = myPort & 0xFF;
         senddata[7] = myPort >> 8;
 
@@ -327,7 +355,7 @@ void UDP_Send_Task(bool force)
         senddata[2] = myMacAddress[4];
         senddata[3] = myMacAddress[5];
         senddata[4] = 0x01; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
-        senddata[5] = 0x00; // Activated Daughter Cards (I2C): Todo
+        senddata[5] = daughterCardConfig; // Activated Daughter Cards (I2C)
         senddata[6] = myPort & 0xFF;
         senddata[7] = myPort >> 8;
 

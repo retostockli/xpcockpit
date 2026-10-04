@@ -100,6 +100,7 @@ void myTimer(void)
 
 void main(void)
 {
+    uint8_t modulo;
     
     __delay_ms(100);
     
@@ -161,35 +162,43 @@ void main(void)
  
             UDP_Recv_Task();            
            
-            if ((ms_counter % 20) == 0) {
+            modulo = (uint8_t) ms_counter % 35;
+            
+            /* Outputs every 30 ms, but not all at the same time */
+            if (modulo == 0) {
                 write_outputs();
                 write_displays();
             }
-            //write_i2c_outputs1();
+            if (modulo == 5) {
+                write_i2c_outputs1();
+            }
             //write_i2c_outputs2();
             //write_i2c_displays1();
             //write_i2c_displays2();
-            //write_i2c_servo();
+            if (modulo == 25) {
+                write_i2c_servo();
+            }
                
             /* Digital Inputs every 1 ms */
             read_inputs();
             read_i2c_inputs1();
             //read_i2c_inputs2();
             
-            /* Analog Inputs every 20 ms */
-            if ((ms_counter % 20) == 0) {
+            if (modulo == 30) {
                 read_resetbutton();
                 read_analoginputs();
                 //read_i2c_analoginputs();)
             }            
 
             if ((ms_counter % 1000) == 0) {
+                /* Send input state every second */
                 //printf("1 Second passed\n");
      
                 //UDP_Send_Task(true);
                 UDP_Send_Task(false);
                                  
             } else {
+                /* Or send input state every millisecond when Inputs have changed */
                 UDP_Send_Task(false);             
             }
             

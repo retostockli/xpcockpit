@@ -72,8 +72,8 @@ void test(void)
     printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
   
-  //ret = servo_outputf(card,0,fvalue,0.0,10.0);
-  //ret = servo_outputf(card,13,fvalue,0.0,10.0);
+  //ret = servo_outputf(card,1,fvalue,0.0,1.0);
+  ret = servo_outputf(card,8,fvalue,0.0,1.0);
 
   /* read encoder at inputs 0 and 1 */
 
@@ -86,14 +86,13 @@ void test(void)
     printf("Encoder changed to: %i \n",*encodervalue);
   }
 
-
-  /* if ((*encodervalue % 2) == 0) { */
-  /*   ret = digital_output(card, 0, &one); */
-  /*   ret = digital_output(card, 24, &one); */
-  /* } else { */
-  /*   ret = digital_output(card, 0, &zero); */
-  /*   ret = digital_output(card, 24, &zero); */
-  /* } */
+  if ((*encodervalue % 2) == 0) {
+    ret = digital_output(card, 0, &one);
+    ret = digital_output(card, 24, &one);
+  } else {
+    ret = digital_output(card, 0, &zero);
+    ret = digital_output(card, 24, &zero);
+  }
   
   /* set LED connected to second output (#1) to value of above input */
   //for (i=0;i<64;i++) {
@@ -101,13 +100,13 @@ void test(void)
   //ret = digital_output(card, i, &zero);
   //}
 
-  /* if (*encodervalue % 2 == 0) { */
-  /*   ret = digital_output(card, 64, &one); */
-  /*   ret = digital_output(card, 72, &one); */
-  /* } else { */
-  /*   ret = digital_output(card, 64, &zero); */
-  /*   ret = digital_output(card, 72, &zero); */
-  /* }     */
+  if (*encodervalue % 2 == 0) {
+    ret = digital_output(card, 64, &one);
+    ret = digital_output(card, 88, &one);
+  } else {
+    ret = digital_output(card, 64, &zero);
+    ret = digital_output(card, 88, &zero);
+  }
 
   /*
   for (i=0;i<sismo[card].noutputs;i++) {
