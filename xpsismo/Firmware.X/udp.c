@@ -109,7 +109,7 @@ void UDP_Recv_Data(int16_t length)
 void UDP_Recv_Task(void)
 {
     
-    uint8_t i,q,g,d;
+    uint8_t i,q,g,d,b;
      
     if (udpRxCount == 0)
     {
@@ -171,6 +171,20 @@ void UDP_Recv_Task(void)
                             servos_i2c[i+8] = (int16_t) udpRxQueue[q].data[7+i];
                         }
                     }
+                } else if (udpRxQueue[q].data[2] == 0x04) {
+                    /* I2C Daughter 1 7 Segment Displays */
+                    b = udpRxQueue[q].data[4]-1;
+                    for (i=0;i<(MAXDISPLAYS_I2C/4);i++) {
+                        displays_i2c1[b*8+i] = udpRxQueue[q].data[5+i];
+                    }
+                    brightness_i2c1[b] = udpRxQueue[q].data[13];
+                } else if (udpRxQueue[q].data[2] == 0x05) {
+                    /* I2C Daughter 2 7 Segment Displays */
+                    b = udpRxQueue[q].data[4]-1;
+                    for (i=0;i<(MAXDISPLAYS_I2C/4);i++) {
+                        displays_i2c2[b*8+i] = udpRxQueue[q].data[5+i];
+                    }
+                    brightness_i2c2[b] = udpRxQueue[q].data[13];
                 }
             } else if (udpRxQueue[q].data[0] == 0xFF) {
                 /* Receive Network Configuration Packet from configwrite program (UDP Server) */
@@ -339,36 +353,79 @@ void UDP_Send_Task(bool force)
  
     // Inputs on I2C Daughter 1
     
-    changed = false;
+    if (daughter_input1 == 1) {
     
-    for (i=0;i<(MAXINPUTS_I2C/8);i++) {
-        if (inputs_i2c1[i] != inputs_i2c1_save[i]) {
-            changed = true;
-            break;
-        }
-    }
-    
-    if (force) changed = true;
-    if (changed) {
+        changed = false;
 
-        memset(senddata,0,sizeof(senddata));
-
-        senddata[0] = 0x53;
-        senddata[1] = 0x43;
-        senddata[2] = myMacAddress[4];
-        senddata[3] = myMacAddress[5];
-        senddata[4] = 0x01; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
-        senddata[5] = daughterCardConfig; // Activated Daughter Cards (I2C)
-        senddata[6] = myPort & 0xFF;
-        senddata[7] = myPort >> 8;
-
-        for (i=0;i<(MAXINPUTS/8);i++) {
-            senddata[i+8] = inputs_i2c1[i];
+        for (i=0;i<(MAXINPUTS_I2C/8);i++) {
+            if (inputs_i2c1[i] != inputs_i2c1_save[i]) {
+                changed = true;
+                break;
+            }
         }
 
-        UDP_Send_Data(senddata, sizeof(senddata));
+        if (force) changed = true;
+        if (changed) {
+
+            memset(senddata,0,sizeof(senddata));
+
+            senddata[0] = 0x53;
+            senddata[1] = 0x43;
+            senddata[2] = myMacAddress[4];
+            senddata[3] = myMacAddress[5];
+            senddata[4] = 0x01; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
+            senddata[5] = daughterCardConfig; // Activated Daughter Cards (I2C)
+            senddata[6] = myPort & 0xFF;
+            senddata[7] = myPort >> 8;
+
+            for (i=0;i<(MAXINPUTS/8);i++) {
+                senddata[i+8] = inputs_i2c1[i];
+            }
+
+            UDP_Send_Data(senddata, sizeof(senddata));
+        }
+    
     }
      
+    // Inputs on I2C Daughter 2
     
+    if (daughter_input2 == 1) {
+    
+        changed = false;
+
+        for (i=0;i<(MAXINPUTS_I2C/8);i++) {
+            if (inputs_i2c2[i] != inputs_i2c2_save[i]) {
+                changed = true;
+                break;
+            }
+        }
+
+        if (force) changed = true;
+        if (changed) {
+
+            memset(senddata,0,sizeof(senddata));
+
+            senddata[0] = 0x53;
+            senddata[1] = 0x43;
+            senddata[2] = myMacAddress[4];
+            senddata[3] = myMacAddress[5];
+            senddata[4] = 0x02; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
+            senddata[5] = daughterCardConfig; // Activated Daughter Cards (I2C)
+            senddata[6] = myPort & 0xFF;
+            senddata[7] = myPort >> 8;
+
+            for (i=0;i<(MAXINPUTS/8);i++) {
+                senddata[i+8] = inputs_i2c2[i];
+            }
+
+            UDP_Send_Data(senddata, sizeof(senddata));
+        }  
+    
+    }
+    
+    // Analog inputs on daughter I2C
+    if (daughter_analoginput == 1) {
+        
+    }
     
 }

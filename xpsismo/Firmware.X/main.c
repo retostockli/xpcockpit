@@ -172,13 +172,19 @@ void main(void)
             if (modulo == 5) {
                 write_i2c_outputs1();
             }
-            //write_i2c_outputs2();
-            //write_i2c_displays1();
-            //write_i2c_displays2();
+            if (modulo == 10) {
+                write_i2c_outputs2();
+            }
+            if (modulo == 15) {
+                write_i2c_displays1();
+            }
+            if (modulo == 20) {
+                write_i2c_displays2();
+            }
             if (modulo == 25) {
                 write_i2c_servo();
             }
-               
+              
             /* Digital Inputs every 1 ms */
             read_inputs();
             if (!(ms_counter & 1U)) {
@@ -186,7 +192,7 @@ void main(void)
                 read_i2c_inputs1();
             } else {
                 // Odd milliseconds
-                //read_i2c_inputs2();
+                read_i2c_inputs2();
             }
             
             if (modulo == 30) {

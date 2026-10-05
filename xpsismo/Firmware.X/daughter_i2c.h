@@ -33,13 +33,23 @@
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 
+#define ANALOG_I2C_ADDRESS 0x28
 #define SERVO_I2C_ADDRESS 0x30
+#define DISPLAY1_I2C_ADDRESS 0x38
+#define DISPLAY2_I2C_ADDRESS 0x39
 #define OUTPUTS1_I2C_ADDRESS 0x40
+#define OUTPUTS2_I2C_ADDRESS 0x41
 #define INPUTS1_I2C_ADDRESS 0x48
+#define INPUTS2_I2C_ADDRESS 0x49
 
+void read_i2c_anloginputs(void);
 void write_i2c_outputs1(void);
+void write_i2c_outputs2(void);
 void read_i2c_inputs1(void);
+void read_i2c_inputs2(void);
 void write_i2c_servo(void);
+void write_i2c_displays1(void);
+void write_i2c_displays2(void);
 
 #endif	/* DAUGHTER_I2C_H */
 

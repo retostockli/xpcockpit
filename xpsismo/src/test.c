@@ -73,26 +73,26 @@ void test(void)
   }
   
   //ret = servo_outputf(card,1,fvalue,0.0,1.0);
-  ret = servo_outputf(card,8,fvalue,0.0,1.0);
+  //ret = servo_outputf(card,8,fvalue,0.0,1.0);
 
   /* read encoder at inputs 0 and 1 */
 
   //ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
-  //ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
-  ret = encoder_input(card, 64+2, 64+3, encodervalue, 1, 1);
+  ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
+  //ret = encoder_input(card, 64+2, 64+3, encodervalue, 1, 1);
   //ret = encoder_input(card, 4, 5, encodervalue, 1, 2);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
     printf("Encoder changed to: %i \n",*encodervalue);
   }
 
-  if ((*encodervalue % 2) == 0) {
-    ret = digital_output(card, 0, &one);
-    ret = digital_output(card, 24, &one);
-  } else {
-    ret = digital_output(card, 0, &zero);
-    ret = digital_output(card, 24, &zero);
-  }
+  /* if ((*encodervalue % 2) == 0) { */
+  /*   ret = digital_output(card, 0, &one); */
+  /*   ret = digital_output(card, 24, &one); */
+  /* } else { */
+  /*   ret = digital_output(card, 0, &zero); */
+  /*   ret = digital_output(card, 24, &zero); */
+  /* } */
   
   /* set LED connected to second output (#1) to value of above input */
   //for (i=0;i<64;i++) {
@@ -100,13 +100,13 @@ void test(void)
   //ret = digital_output(card, i, &zero);
   //}
 
-  if (*encodervalue % 2 == 0) {
-    ret = digital_output(card, 64, &one);
-    ret = digital_output(card, 88, &one);
-  } else {
-    ret = digital_output(card, 64, &zero);
-    ret = digital_output(card, 88, &zero);
-  }
+  /* if (*encodervalue % 2 == 0) { */
+  /*   ret = digital_output(card, 64, &one); */
+  /*   ret = digital_output(card, 88, &one); */
+  /* } else { */
+  /*   ret = digital_output(card, 64, &zero); */
+  /*   ret = digital_output(card, 88, &zero); */
+  /* } */
 
   /*
   for (i=0;i<sismo[card].noutputs;i++) {
@@ -122,6 +122,8 @@ void test(void)
   display = 12345;
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  ret = display_output(card, 0, 5, encodervalue, 0, 10);
+  //ret = display_output(card, 0, 5, encodervalue, 0, 10);
+  ret = display_output(card, 32, 5, encodervalue, 0, 10);
+  ret = display_output(card, 72, 5, encodervalue, 0, 10);
 
 }
