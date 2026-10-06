@@ -49,7 +49,7 @@
  * 
  */
 
-#define SOFT_I2C_DELAY_US    1
+#define SOFT_I2C_DELAY_US    2
 
 void I2C_Software_Initialize(void);
 

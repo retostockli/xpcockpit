@@ -9,6 +9,7 @@
 #define	SORT_H
 
 void sort_uint16(uint16_t arr[], uint16_t count);
+void sort_uint16_7(uint16_t arr[7]);
 void update_sorted(uint16_t sorted[], uint16_t oldValue, uint16_t newValue, uint16_t count);
 
 #endif	/* SORT_H */

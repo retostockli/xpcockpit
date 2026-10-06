@@ -42,7 +42,7 @@
 #define INPUTS1_I2C_ADDRESS 0x48
 #define INPUTS2_I2C_ADDRESS 0x49
 
-void read_i2c_anloginputs(void);
+void read_i2c_analoginputs(void);
 void write_i2c_outputs1(void);
 void write_i2c_outputs2(void);
 void read_i2c_inputs1(void);

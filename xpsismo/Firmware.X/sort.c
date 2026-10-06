@@ -24,48 +24,40 @@ void sort_uint16(uint16_t arr[], uint16_t count)
     }
 }
 
-void update_sorted(uint16_t sorted[], uint16_t oldValue, uint16_t newValue, uint16_t count)
+#define SORT2(a, b)           \
+do {                          \
+    if ((a) > (b))            \
+    {                         \
+        uint16_t t = (a);     \
+        (a) = (b);            \
+        (b) = t;              \
+    }                         \
+} while (0)
+
+void sort_uint16_7(uint16_t a[7])
 {
-    uint8_t i;
+    SORT2(a[0], a[6]);
+    SORT2(a[2], a[3]);
+    SORT2(a[4], a[5]);
 
-    /* Find the old value in the sorted array */
-    for(i = 0; i < count; i++)
-    {
-        if(sorted[i] == oldValue)
-            break;
-    }
+    SORT2(a[0], a[2]);
+    SORT2(a[1], a[4]);
+    SORT2(a[3], a[6]);
 
-    /* Safety check - oldValue should always be found */
-    if(i >= count)
-        return;
+    SORT2(a[0], a[1]);
+    SORT2(a[2], a[5]);
+    SORT2(a[3], a[4]);
 
-    if(newValue > oldValue)
-    {
-        /*
-         * New value belongs further to the right.
-         * Shift smaller values one position left.
-         */
-        while((i < (count - 1)) &&
-              (sorted[i + 1] < newValue))
-        {
-            sorted[i] = sorted[i + 1];
-            i++;
-        }
-    }
-    else if(newValue < oldValue)
-    {
-        /*
-         * New value belongs further to the left.
-         * Shift larger values one position right.
-         */
-        while((i > 0) &&
-              (sorted[i - 1] > newValue))
-        {
-            sorted[i] = sorted[i - 1];
-            i--;
-        }
-    }
+    SORT2(a[1], a[2]);
+    SORT2(a[4], a[6]);
 
-    /* Insert new value */
-    sorted[i] = newValue;
+    SORT2(a[2], a[3]);
+    SORT2(a[4], a[5]);
+
+    SORT2(a[1], a[2]);
+    SORT2(a[3], a[4]);
+    SORT2(a[5], a[6]);
+
+    SORT2(a[2], a[3]);
+    SORT2(a[4], a[5]);
 }

@@ -162,51 +162,54 @@ void main(void)
  
             UDP_Recv_Task();            
            
-            modulo = (uint8_t) ms_counter % 35;
+            modulo = (uint8_t) ms_counter % 32;
             
             /* Outputs every 30 ms, but not all at the same time */
             if (modulo == 0) {
                 write_outputs();
                 write_displays();
             }
-            if (modulo == 5) {
+            if (modulo == 4) {
                 write_i2c_outputs1();
             }
-            if (modulo == 10) {
+            if (modulo == 8) {
                 write_i2c_outputs2();
             }
-            if (modulo == 15) {
+            if (modulo == 12) {
                 write_i2c_displays1();
             }
-            if (modulo == 20) {
+            if (modulo == 16) {
                 write_i2c_displays2();
             }
-            if (modulo == 25) {
+            if (modulo == 20) {
                 write_i2c_servo();
             }
-              
-            /* Digital Inputs every 1 ms */
-            read_inputs();
-            if (!(ms_counter & 1U)) {
-                // Even milliseconds
-                read_i2c_inputs1();
-            } else {
-                // Odd milliseconds
-                read_i2c_inputs2();
-            }
             
-            if (modulo == 30) {
+            if (modulo == 24) {
                 read_resetbutton();
                 read_analoginputs();
-                //read_i2c_analoginputs();)
-            }            
-
+            }
+            
+            /* Do no tread I2C analog and I2C digital inputs simultaneously 
+             else we run out of CPU ticks available per millisecond */
+            if (modulo == 28) {
+                read_i2c_analoginputs();
+            } else {
+                if (!(ms_counter & 1U)) {
+                    // Even milliseconds
+                    read_i2c_inputs1();
+                } else {
+                    // Odd milliseconds
+                    read_i2c_inputs2();
+                }
+            }
+            
+            /* Digital Inputs every 1 ms */
+            read_inputs();
+      
             if ((ms_counter % 1000) == 0) {
-                /* Send input state every second */
-                //printf("1 Second passed\n");
-     
-                //UDP_Send_Task(true);
-                UDP_Send_Task(false);
+                /* Send input state every second */    
+                UDP_Send_Task(true);
                                  
             } else {
                 /* Or send input state every millisecond when Inputs have changed */

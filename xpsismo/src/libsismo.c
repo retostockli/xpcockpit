@@ -1193,7 +1193,7 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 		      
 		      if (updown != 0) {
 			/* ADD ACCELERATION WITH SPEED OF TURNING ENCODER */
-			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (20.0/max(dt,5.0)));
+			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (50.0/max(dt,5.0)));
 			/* NO ACCELERATION WITH TURNING SPEED */
 			//*value = *value + ((float) updown)  * multiplier;
 			retval = 1;
@@ -1238,7 +1238,7 @@ int encoder_inputf(int card, int input1, int input2, float *value, float multipl
 
 		      if (updown != 0) {
 			/* ADD ACCELERATION WITH SPEED OF TURNING ENCODER */
-			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (40.0/max(dt,10.0)));
+			*value = *value + ((float) updown)  * multiplier * (float) (1 + (int) (50.0/max(dt,10.0)));
 			/* NO ACCELERATION WITH TURNING SPEED */
 			//*value = *value + ((float) updown)  * multiplier;
 

@@ -28,7 +28,7 @@
 #define MAXDISPLAYS_I2C 32  /* 2x32 on daughters */
 #define MAXBRIGHTNESS 15   /* 0-15 Brightness of 7 segment displays */
 #define MAXSERVOS_I2C 14       /* 14 on daughter */
-#define MAXSAVE 9             /* maximum number of history values in data structure */
+#define MAXSAVE 7             /* maximum number of history values in data structure */
 #define INPUTSINITVAL 0         /* initial value of inputs upon startup */
 #define DISPLAYSINITVAL 0      /* initial value of displays upon startup (BLANK) */
 #define OUTPUTSINITVAL 0       /* initial value of outputs upon startup (OFF) */
@@ -71,6 +71,7 @@ uint16_t analoginputs_i2c_median[MAXANALOGINPUTS_I2C];
 int16_t servos_i2c[MAXSERVOS_I2C];
 int16_t servos_i2c_save[MAXSERVOS_I2C];
 bool firstanalogread;
+bool firstanalogread_i2c;
 
 uint8_t daughter_input1;
 uint8_t daughter_input2;

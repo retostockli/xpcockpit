@@ -40,6 +40,10 @@
 #define I2C_SDA_PORT      PORTJbits.RJ5
 #define I2C_SDA_TRIS      TRISJbits.TRISJ5
 
+/* Original routines were hierarchical and atomic, but slow.
+   Improvements have been made by inlining individual functions
+   for optimizing I2C bitbanging on the PIC.
+   Original routines are commented out for traceability */
 
 /*
  * ------------------------------------------------------------
@@ -47,21 +51,21 @@
  * ------------------------------------------------------------
  */
 
-static void I2C_SCL_Low(void)
-{
-    I2C_SCL_LAT = 0;
-    I2C_SCL_TRIS = 0;
-}
-
-
-static void I2C_SCL_Release(void)
-{
-    /*
-     * Release SCL.
-     * External pull-up brings it HIGH.
-     */
-    I2C_SCL_TRIS = 1;
-}
+//static void I2C_SCL_Low(void)
+//{
+//    I2C_SCL_LAT = 0;
+//    I2C_SCL_TRIS = 0;
+//}
+//
+//
+//static void I2C_SCL_Release(void)
+//{
+//    /*
+//     * Release SCL.
+//     * External pull-up brings it HIGH.
+//     */
+//    I2C_SCL_TRIS = 1;
+//}
 
 
 /*
@@ -70,33 +74,33 @@ static void I2C_SCL_Release(void)
  * ------------------------------------------------------------
  */
 
-static void I2C_SDA_Low(void)
-{
-    I2C_SDA_LAT = 0;
-    I2C_SDA_TRIS = 0;
-}
-
-
-static void I2C_SDA_Release(void)
-{
-    /*
-     * Release SDA.
-     * External pull-up brings it HIGH.
-     */
-    I2C_SDA_TRIS = 1;
-}
-
-
-static bool I2C_SDA_Read(void)
-{
-    return I2C_SDA_PORT != 0;
-}
-
-
-static bool I2C_SCL_Read(void)
-{
-    return I2C_SCL_PORT != 0;
-}
+//static void I2C_SDA_Low(void)
+//{
+//    I2C_SDA_LAT = 0;
+//    I2C_SDA_TRIS = 0;
+//}
+//
+//
+//static void I2C_SDA_Release(void)
+//{
+//    /*
+//     * Release SDA.
+//     * External pull-up brings it HIGH.
+//     */
+//    I2C_SDA_TRIS = 1;
+//}
+//
+//
+//static bool I2C_SDA_Read(void)
+//{
+//    return I2C_SDA_PORT != 0;
+//}
+//
+//
+//static bool I2C_SCL_Read(void)
+//{
+//    return I2C_SCL_PORT != 0;
+//}
 
 
 /*
@@ -117,8 +121,10 @@ void I2C_Software_Initialize(void)
     /*
      * Release both lines.
      */
-    I2C_SCL_Release();
-    I2C_SDA_Release();
+    //I2C_SCL_Release();
+    //I2C_SDA_Release();
+    I2C_SCL_TRIS = 1;
+    I2C_SDA_TRIS = 1;
 
     __delay_us(SOFT_I2C_DELAY_US);
 }
@@ -138,15 +144,18 @@ bool I2C_Software_Start(void)
     /*
      * Bus must be idle.
      */
-    I2C_SDA_Release();
-    I2C_SCL_Release();
+    //I2C_SDA_Release();
+    //I2C_SCL_Release();
+    I2C_SDA_TRIS = 1;
+    I2C_SCL_TRIS = 1;
 
     __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Check that SCL actually went HIGH.
      */
-    if (!I2C_SCL_Read())
+    //if (!I2C_SCL_Read())
+    if (!I2C_SCL_PORT)
     {
         return false;
     }
@@ -155,15 +164,19 @@ bool I2C_Software_Start(void)
      * START:
      * SDA HIGH -> LOW while SCL HIGH
      */
-    I2C_SDA_Low();
-
+    //I2C_SDA_Low();
+    I2C_SDA_LAT = 0;
+    I2C_SDA_TRIS = 0;
+    
     __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Pull SCL low to begin data transfer.
      */
-    I2C_SCL_Low();
-
+    //I2C_SCL_Low();
+    I2C_SCL_LAT = 0;
+    I2C_SCL_TRIS = 0;
+    
     __delay_us(SOFT_I2C_DELAY_US);
 
     return true;
@@ -184,22 +197,26 @@ void I2C_Software_Stop(void)
     /*
      * Ensure SDA is LOW.
      */
-    I2C_SDA_Low();
+//    I2C_SDA_Low();
+    I2C_SDA_LAT = 0;
+    I2C_SDA_TRIS = 0;
 
     __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Release SCL.
      */
-    I2C_SCL_Release();
+//    I2C_SCL_Release();
+    I2C_SCL_TRIS = 1;
 
     __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Release SDA while SCL is HIGH.
      */
-    I2C_SDA_Release();
-
+    //I2C_SDA_Release();
+    I2C_SDA_TRIS = 1;
+    
     __delay_us(SOFT_I2C_DELAY_US);
 }
 
@@ -460,7 +477,7 @@ bool I2C_Software_WriteByte(uint8_t data)
         I2C_SCL_TRIS = 0;
 
         /* SCL LOW time */
-        //__delay_us(SOFT_I2C_DELAY_US);
+        __delay_us(SOFT_I2C_DELAY_US);
     }
 
     /*
@@ -491,7 +508,7 @@ bool I2C_Software_WriteByte(uint8_t data)
 
     I2C_SCL_TRIS = 0;
 
-    //__delay_us(SOFT_I2C_DELAY_US);
+    __delay_us(SOFT_I2C_DELAY_US);
 
     return ack;
 }
@@ -569,10 +586,6 @@ uint8_t I2C_Software_ReadByte(bool ack)
         /*
          * Preserve clock stretching support.
          */
-//        if (!I2C_WaitForSCLHigh())
-//        {
-//            return data;
-//        }   
         
         if (!I2C_SCL_PORT)
         {
@@ -590,7 +603,7 @@ uint8_t I2C_Software_ReadByte(bool ack)
         /*
          * SCL HIGH time.
          */
-        //__delay_us(SOFT_I2C_DELAY_US);
+        __delay_us(SOFT_I2C_DELAY_US);
 
         /*
          * Sample SDA while SCL is HIGH.
@@ -631,12 +644,6 @@ uint8_t I2C_Software_ReadByte(bool ack)
      */
     I2C_SCL_TRIS = 1;
 
-//    if (!I2C_WaitForSCLHigh())
-//    {
-//        I2C_SDA_TRIS = 1;
-//        return data;
-//    }
-
     if (!I2C_SCL_PORT)
     {
         timeout = 255;
@@ -651,11 +658,11 @@ uint8_t I2C_Software_ReadByte(bool ack)
         }
     }
     
-    //__delay_us(SOFT_I2C_DELAY_US);
+    __delay_us(SOFT_I2C_DELAY_US);
 
     I2C_SCL_TRIS = 0;
 
-    //__delay_us(SOFT_I2C_DELAY_US);
+    __delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Release SDA after ACK/NACK.

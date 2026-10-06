@@ -171,7 +171,8 @@ void read_analoginputs(void)
          if (firstanalogread) {
             median = analoginputs[i][0];
         } else {
-            sort_uint16(temparr, MAXSAVE);
+            //sort_uint16(temparr, MAXSAVE);
+            sort_uint16_7(temparr); /* Faster sorting for exactly 7 elements */
             median = temparr[MAXSAVE / 2];
         }
             
@@ -182,6 +183,7 @@ void read_analoginputs(void)
         }
         
     }
+    
     firstanalogread = false;
     
     // augment pointer to newest value in circular buffer

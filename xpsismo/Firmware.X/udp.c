@@ -420,12 +420,49 @@ void UDP_Send_Task(bool force)
 
             UDP_Send_Data(senddata, sizeof(senddata));
         }  
+        
+        // Analog inputs on I2C daughter
+        
+        if (daughter_analoginput == 1) {
+            
+        }
     
     }
     
     // Analog inputs on daughter I2C
     if (daughter_analoginput == 1) {
-        
+
+        changed = false;
+
+        for (i=0;i<MAXANALOGINPUTS_I2C;i++) {
+            if (analoginputs_i2c_median[i] != analoginputs_i2c_save[i]) {
+                changed = true;
+                break;
+            }
+        }
+
+        if (force) changed = true;
+        if (changed) {
+
+            memset(senddata,0,sizeof(senddata));
+
+            senddata[0] = 0x53;
+            senddata[1] = 0x43;
+            senddata[2] = myMacAddress[4];
+            senddata[3] = myMacAddress[5];
+            senddata[4] = 0x03; // 0x00: Master digital / analog inputs, 0x01/0x02 Daughter 1/2 digital inputs, 0x03: daughter analog inputs
+            senddata[5] = daughterCardConfig; // Activated Daughter Cards (I2C)
+            senddata[6] = myPort & 0xFF;
+            senddata[7] = myPort >> 8;
+
+            for (i=0;i<MAXANALOGINPUTS_I2C;i++) {
+                senddata[i*2 + 8] = analoginputs_i2c_median[i] & 0xFF;
+                senddata[i*2 + 1 + 8] = analoginputs_i2c_median[i] >> 8;
+            }
+ 
+            UDP_Send_Data(senddata, sizeof(senddata));
+        }  
+         
     }
     
 }

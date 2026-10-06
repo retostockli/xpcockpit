@@ -11,31 +11,67 @@
 #include "mcc_generated_files/device_config.h"
 #include "daughter_i2c.h"
 #include "software_i2c.h"
+#include "sort.h"
 #include "common.h"
 
-void read_i2c_anloginputs(void) 
+static uint8_t historyIndex_i2c = 0;
+
+void read_i2c_analoginputs(void) 
 {
     // Write a single Byte 0x00 to the Analog Inputs daughter card
     // Read 10 16 bit analog inputs in a 22 byte array (last byte is bogus)
     
     if (daughter_analoginput == 1) {
     
-        uint8_t i; 
-
+        uint8_t i,h; 
+        
+        uint16_t temparr[MAXSAVE];
+        int16_t noise = 1;
+        uint16_t median;
+       
         uint8_t data1[1];
         uint8_t data2[22];
 
         data1[0] = 0x00;
+        
+        if (I2C_Software_WriteRead(ANALOG_I2C_ADDRESS, data1, 1, data2, 22)) {
 
-        if (I2C_Software_WriteRead(INPUTS1_I2C_ADDRESS, data1, 1, data2, 22)) {
-
-            printf("ANALOG INPUTS I2C: ");
             for (i=0;i<MAXANALOGINPUTS_I2C;i++) {
-                analoginputs_i2c[i][0] = ((uint16_t)data2[i*2] << 8) | data2[i*2+1];
-                printf("%i ",analoginputs_i2c[i][0]);
-            }
-            printf("\n");
            
+                if (firstanalogread_i2c) {
+                    for (h=0;h<MAXSAVE;h++) {
+                        analoginputs_i2c[i][h] = ((uint16_t)data2[i*2+1] << 8) | data2[i*2];
+                    }
+                } else {       
+                    analoginputs_i2c[i][historyIndex_i2c] = ((uint16_t)data2[i*2+1] << 8) | data2[i*2];
+                }
+
+                // make a temporary copy for median filtering
+                memcpy(temparr, analoginputs_i2c[i], sizeof(analoginputs_i2c[i][0]) * MAXSAVE);
+                
+                if (firstanalogread_i2c) {
+                    median = analoginputs_i2c[i][0];
+                } else {
+                    //sort_uint16(temparr, MAXSAVE);
+                    sort_uint16_7(temparr); /* Faster sorting for exactly 7 elements */
+                    median = temparr[MAXSAVE / 2];
+                }
+
+                /* only send current value if it is outside median and noise */
+                if (((int16_t) median < ((int16_t) analoginputs_i2c_save[i] - noise)) || ((int16_t) median > ((int16_t) analoginputs_i2c_save[i] + noise))) {       
+                    //printf("ANA %i 0: %i MED: %i SAV: %i \n",i, (int) analoginputs_i2c[i][historyIndex_i2c], median, analoginputs_i2c_save[i]); 
+                    analoginputs_i2c_median[i] = median;         
+                }
+
+           }
+            
+           firstanalogread_i2c = false;
+
+           // augment pointer to newest value in circular buffer
+           historyIndex_i2c++;
+
+           if (historyIndex_i2c >= MAXSAVE)
+               historyIndex_i2c = 0;                
 
         } else {
             printf("Error read I2C Analog Inputs\n");
@@ -128,8 +164,6 @@ void read_i2c_inputs1(void)
     // Read 64 inputs bitwise encoded in a 8 byte array
     
     if (daughter_input1 == 1) {
-    
-        printf("BLA\n");
         
         uint8_t i; 
 

@@ -23,6 +23,7 @@ void init_data(void)
     
     uint8_t i,j;
     firstanalogread = true;
+    firstanalogread_i2c = true;
     
     for (i=0;i<(MAXOUTPUTS/8);i++)
     {

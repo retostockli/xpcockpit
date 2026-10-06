@@ -72,13 +72,14 @@ void test(void)
     printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
   
-  //ret = servo_outputf(card,1,fvalue,0.0,1.0);
+  ret = servo_outputf(card,0,fvalue,0.0,1.0);
   //ret = servo_outputf(card,8,fvalue,0.0,1.0);
 
   /* read encoder at inputs 0 and 1 */
 
   //ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
-  ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
+  //ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
+  ret = encoder_input(card, 132, 133, encodervalue, 1, 1);
   //ret = encoder_input(card, 64+2, 64+3, encodervalue, 1, 1);
   //ret = encoder_input(card, 4, 5, encodervalue, 1, 2);
   if (ret == 1) {
