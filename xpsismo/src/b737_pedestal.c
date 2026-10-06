@@ -1260,15 +1260,17 @@ void b737_pedestal(void)
     printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
   }
 
-  if ((acf_type == 2) || (acf_type == 3)) {
-    float xpndr_mode_select_f = (float) xpndr_mode_select;
-    ret = set_state_updnf(&xpndr_mode_select_f,transponder_mode_f,transponder_mode_up,transponder_mode_dn);
-    if (ret != 0) {
-      printf("XPNDR MODE: %f %f %i %i \n",
-	     xpndr_mode_select_f,*transponder_mode_f,*transponder_mode_up,*transponder_mode_dn);
+  if ((xpndr_mode_select >= 1) && (xpndr_mode_select <= 5)) {
+    if ((acf_type == 2) || (acf_type == 3)) {
+      float xpndr_mode_select_f = (float) xpndr_mode_select;
+      ret = set_state_updnf(&xpndr_mode_select_f,transponder_mode_f,transponder_mode_up,transponder_mode_dn);
+      if (ret != 0) {
+	printf("XPNDR MODE: %f %f %i %i \n",
+	       xpndr_mode_select_f,*transponder_mode_f,*transponder_mode_up,*transponder_mode_dn);
+      }
+    } else {
+      *transponder_mode = xpndr_mode_select;
     }
-  } else {
-    *transponder_mode = xpndr_mode_select;
   }
 
   
@@ -1550,7 +1552,7 @@ void b737_pedestal(void)
   /* *fire_eng1_ann = 1.0; */
   /* *fire_apu_ann = 1.0; */
   /* *fire_eng2_ann = 1.0; */
-  
+
   if ((acf_type == 1) || (acf_type == 2) || (acf_type == 3)) {
    
     /* annunciators */

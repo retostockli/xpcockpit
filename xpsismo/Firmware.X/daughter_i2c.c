@@ -47,7 +47,9 @@ void read_i2c_analoginputs(void)
                 }
 
                 // make a temporary copy for median filtering
-                memcpy(temparr, analoginputs_i2c[i], sizeof(analoginputs_i2c[i][0]) * MAXSAVE);
+                for (h=0;h<MAXSAVE;h++) {
+                    temparr[h] = analoginputs_i2c[i][h];
+                }
                 
                 if (firstanalogread_i2c) {
                     median = analoginputs_i2c[i][0];
@@ -113,7 +115,10 @@ void write_i2c_outputs1(void)
                 printf("Error write I2C Outputs 1\n");
             }
 
-            memcpy(outputs_i2c1_save,outputs_i2c1,sizeof(outputs_i2c1));
+            for (i=0;i<(MAXOUTPUTS_I2C/8);i++) {
+                outputs_i2c1_save[i] = outputs_i2c1[i];
+            }
+
         }
     
     }
@@ -151,7 +156,10 @@ void write_i2c_outputs2(void)
                 printf("Error write I2C Outputs 2\n");
             }
 
-            memcpy(outputs_i2c2_save,outputs_i2c2,sizeof(outputs_i2c2));
+            for (i=0;i<(MAXOUTPUTS_I2C/8);i++) {
+                outputs_i2c2_save[i] = outputs_i2c2[i];
+            }
+
         }
     
     }
@@ -172,17 +180,11 @@ void read_i2c_inputs1(void)
 
         data1[0] = 0x00;
 
-        //I2C_Software_Write(INPUTS1_I2C_ADDRESS, data1, 1);   
-        //if (I2C_Software_Read(INPUTS1_I2C_ADDRESS, data2, 8)) {
-
         if (I2C_Software_WriteRead(INPUTS1_I2C_ADDRESS, data1, 1, data2, 8)) {
 
             for (i=0;i<(MAXINPUTS_I2C/8);i++) {
                 inputs_i2c1[i] = data2[i];
             }
-    //       printf("INPUTS: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
-    //       data2[0], data2[1], data2[2], data2[3],
-    //       data2[4], data2[5], data2[6], data2[7]);
 
         } else {
             printf("Error read I2C Inputs 1\n");
@@ -206,17 +208,11 @@ void read_i2c_inputs2(void)
 
         data1[0] = 0x00;
 
-        //I2C_Software_Write(INPUTS1_I2C_ADDRESS, data1, 1);   
-        //if (I2C_Software_Read(INPUTS1_I2C_ADDRESS, data2, 8)) {
-
         if (I2C_Software_WriteRead(INPUTS2_I2C_ADDRESS, data1, 1, data2, 8)) {
 
             for (i=0;i<(MAXINPUTS_I2C/8);i++) {
                 inputs_i2c2[i] = data2[i];
             }
-    //       printf("INPUTS: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
-    //       data2[0], data2[1], data2[2], data2[3],
-    //       data2[4], data2[5], data2[6], data2[7]);
 
         } else {
             printf("Error read I2C Inputs 2\n");
@@ -265,6 +261,9 @@ void write_i2c_servo(void)
             if (!I2C_Software_Write(SERVO_I2C_ADDRESS, data, 11)) {
                 printf("Error write I2C Servos 0-7\n");
             }
+            for(servo=0;servo<8;servo++) {
+                servos_i2c_save[servo] = servos_i2c[servo];
+            }
         }
 
         changed = false;
@@ -291,9 +290,10 @@ void write_i2c_servo(void)
             if (!I2C_Software_Write(SERVO_I2C_ADDRESS, data, 11)) {
                 printf("Error write I2C Servos 8-13\n");               
             }       
+            for(servo=8;servo<14;servo++) {
+                servos_i2c_save[servo] = servos_i2c[servo];
+            }
         }
-
-        memcpy(servos_i2c_save,servos_i2c,sizeof(servos_i2c));
 
     }
     
@@ -343,7 +343,10 @@ void write_i2c_displays1(void)
                     printf("Error write I2C Displays 1\n");
                 }
 
-                memcpy(&displays_i2c1_save[b*8],&displays_i2c1[b*8],sizeof(displays_i2c1)/4);
+                // Update save values for bank
+                for (d=0;d<(MAXDISPLAYS_I2C/4);d++) {
+                    displays_i2c1_save[b*8+d] = displays_i2c1[b*8+d];
+                }
                 brightness_i2c1_save[b] = brightness_i2c1[b];
             }
             
@@ -392,11 +395,15 @@ void write_i2c_displays2(void)
                 }   
                 data[10] = brightness_i2c2[b];
 
+
                 if (!I2C_Software_Write(DISPLAY2_I2C_ADDRESS, data, 11)) {
                     printf("Error write I2C Displays 2\n");
                 }
 
-                memcpy(&displays_i2c2_save[b*8],&displays_i2c2[b*8],sizeof(displays_i2c2)/4);
+                // Update save values for bank
+                for (d=0;d<(MAXDISPLAYS_I2C/4);d++) {
+                    displays_i2c2_save[b*8+d] = displays_i2c2[b*8+d];
+                }
                 brightness_i2c2_save[b] = brightness_i2c2[b];
             }
             

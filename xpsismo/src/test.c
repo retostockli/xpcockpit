@@ -52,8 +52,10 @@ void test(void)
 
   /* link NAV1 Frequency to encoder value */
   int *encodervalue = link_dataref_int("sim/cockpit/radios/nav1_freq_h");
+  int *encodervalue2 = link_dataref_int("sim/cockpit/radios/nav2_freq_h");
 
   if (*encodervalue == INT_MISS) *encodervalue = 0;
+  if (*encodervalue2 == INT_MISS) *encodervalue2 = 0;
   
   /* read second digital input (#1) */
   i=24;
@@ -78,7 +80,11 @@ void test(void)
   /* read encoder at inputs 0 and 1 */
 
   //ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
-  //ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
+  ret = encoder_input(card, 2, 3, encodervalue2, 1, 1);
+  if (ret == 1) {
+    /* ret is 1 only if encoder has been turned */
+    printf("Encoder changed to: %i \n",*encodervalue2);
+  }
   ret = encoder_input(card, 132, 133, encodervalue, 1, 1);
   //ret = encoder_input(card, 64+2, 64+3, encodervalue, 1, 1);
   //ret = encoder_input(card, 4, 5, encodervalue, 1, 2);
@@ -125,6 +131,6 @@ void test(void)
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
   //ret = display_output(card, 0, 5, encodervalue, 0, 10);
   ret = display_output(card, 32, 5, encodervalue, 0, 10);
-  ret = display_output(card, 72, 5, encodervalue, 0, 10);
+  ret = display_output(card, 72, 5, encodervalue2, 0, 10);
 
 }

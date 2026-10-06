@@ -111,10 +111,15 @@ void copy_data(void)
 {
     uint8_t i;
     
-    memcpy(inputs_save,inputs,sizeof(inputs));
-    memcpy(inputs_i2c1_save,inputs_i2c1,sizeof(inputs_i2c1));
-    memcpy(inputs_i2c2_save,inputs_i2c2,sizeof(inputs_i2c2));
-    
+    for (i=0;i<(MAXINPUTS/8);i++) {
+        inputs_save[i] = inputs[i];
+    }
+    for (i=0;i<(MAXINPUTS_I2C/8);i++) {
+        inputs_i2c1_save[i] = inputs_i2c1[i];
+    }
+    for (i=0;i<(MAXINPUTS_I2C/8);i++) {
+        inputs_i2c2_save[i] = inputs_i2c2[i];
+    }    
     for (i=0;i<MAXANALOGINPUTS;i++) {
         analoginputs_save[i] = analoginputs_median[i];
     }
@@ -135,7 +140,7 @@ void putch(char txData)
     EUSART1_Write(txData);
 #endif
     
-    if (DEBUG_UDP) {
+    if (DEBUG_UDP == 1) {
     
         /* We need to send exactly SENDMSGLEN of data and not
          just to the string terminator since the receiving party

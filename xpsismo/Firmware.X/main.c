@@ -168,33 +168,25 @@ void main(void)
             if (modulo == 0) {
                 write_outputs();
                 write_displays();
-            }
-            if (modulo == 4) {
+            } else if (modulo == 4) {
                 write_i2c_outputs1();
-            }
-            if (modulo == 8) {
+            } else if (modulo == 8) {
                 write_i2c_outputs2();
-            }
-            if (modulo == 12) {
+            } else if (modulo == 12) {
                 write_i2c_displays1();
-            }
-            if (modulo == 16) {
+            } else if (modulo == 16) {
                 write_i2c_displays2();
-            }
-            if (modulo == 20) {
+            } else if (modulo == 20) {
                 write_i2c_servo();
-            }
-            
-            if (modulo == 24) {
+            } else if (modulo == 24) {
                 read_resetbutton();
                 read_analoginputs();
+            } else if (modulo == 28) {
+                read_i2c_analoginputs();
             }
             
-            /* Do no tread I2C analog and I2C digital inputs simultaneously 
-             else we run out of CPU ticks available per millisecond */
-            if (modulo == 28) {
-                read_i2c_analoginputs();
-            } else {
+            // Do not read I2C analoginputs at the same time as I2C digital inputs
+            if (modulo != 28) {
                 if (!(ms_counter & 1U)) {
                     // Even milliseconds
                     read_i2c_inputs1();
@@ -202,10 +194,10 @@ void main(void)
                     // Odd milliseconds
                     read_i2c_inputs2();
                 }
+                /* Digital Inputs every 1 ms */
+                read_inputs();
             }
-            
-            /* Digital Inputs every 1 ms */
-            read_inputs();
+
       
             if ((ms_counter % 1000) == 0) {
                 /* Send input state every second */    

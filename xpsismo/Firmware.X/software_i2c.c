@@ -662,7 +662,7 @@ uint8_t I2C_Software_ReadByte(bool ack)
 
     I2C_SCL_TRIS = 0;
 
-    __delay_us(SOFT_I2C_DELAY_US);
+    //__delay_us(SOFT_I2C_DELAY_US);
 
     /*
      * Release SDA after ACK/NACK.

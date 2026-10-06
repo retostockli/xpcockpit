@@ -77,7 +77,9 @@ void write_outputs(void)
         
     }
     
-    memcpy(outputs_save,outputs,sizeof(outputs));
+    for (i=0;i<(MAXOUTPUTS/8);i++) {
+        outputs_save[i] = outputs[i];
+    }
     
 }
 
@@ -166,9 +168,11 @@ void read_analoginputs(void)
         }
         
         // make a temporary copy for median filtering
-        memcpy(temparr, analoginputs[i], sizeof(analoginputs[i][0]) * MAXSAVE);
+        for (h=0;h<MAXSAVE;h++) {
+            temparr[h] = analoginputs[i][h];
+        }
         
-         if (firstanalogread) {
+        if (firstanalogread) {
             median = analoginputs[i][0];
         } else {
             //sort_uint16(temparr, MAXSAVE);
@@ -299,7 +303,11 @@ void write_displays(void)
         }
     }
     
-    memcpy(displays_save,displays,sizeof(displays));
-    memcpy(brightness_save,brightness,sizeof(brightness));
+    for (d=0;d<MAXDISPLAYS;d++) {
+        displays_save[d] = displays[d];
+    }
+    for (b=0;b<(MAXDISPLAYS/8);b++) {
+        brightness_save[b] = brightness[b];
+    }
     
 }
