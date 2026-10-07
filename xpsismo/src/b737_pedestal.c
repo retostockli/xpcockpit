@@ -113,7 +113,8 @@ float fire_eng2_rotate_l_input;
 float fire_eng2_rotate_r_input;
 int fire_bell_cutout;
 
-int nav1_freq_active_save;
+int xpndr1,xpndr2,xpndr3,xpndr4,xpndr5;
+int aileronl1,aileronl2,aileronr1,aileronr2;
 
 void b737_pedestal(void)
 {
@@ -127,7 +128,6 @@ void b737_pedestal(void)
   int one=1;
   int zero=0;
   int temp;
-  int temp2;
   int integer; /* integer part of displays */
   int decimal; /* decimal part of displays */
   int lasttwo; /* last two digits of displays */
@@ -544,11 +544,6 @@ void b737_pedestal(void)
   /*** NAV1 Panel ***/
   i0 = 64+8;
   d0 = 32+16;
-
-  if (nav1_freq_active_save != *nav1_freq_active) {
-    printf("NEW NAV1 FREQ: %i \n",*nav1_freq_active);
-    nav1_freq_active_save = *nav1_freq_active;
-  }
   
   /* NAV1 tfr button */
   ret = digital_input(card,i0+0,&nav1_tfr_button,0);
@@ -1229,32 +1224,27 @@ void b737_pedestal(void)
     printf("XPNDR SRC SWITCH: %i \n",xpndr_src_switch);
   }
   /* XPNDR Mode Select */
-  temp = 0;
-  ret = digital_input(card,i0+11,&temp,0);
+  ret = digital_input(card,i0+11,&xpndr1,0);
   if ((ret == 1) && (xpndr_mode_select != 1)) {
     xpndr_mode_select = 1;
     printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
   }
-  temp = 0;
-  ret = digital_input(card,i0+12,&temp,0);
+  ret = digital_input(card,i0+12,&xpndr2,0);
   if ((ret == 1) && (xpndr_mode_select != 2)) {
     xpndr_mode_select = 2;
     printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
   }
-  temp = 0;
-  ret = digital_input(card,i0+13,&temp,0);
+  ret = digital_input(card,i0+13,&xpndr3,0);
   if ((ret == 1) && (xpndr_mode_select != 3)) {
     xpndr_mode_select = 3;
     printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
   }
-  temp = 0;
-  ret = digital_input(card,i0+14,&temp,0);
+  ret = digital_input(card,i0+14,&xpndr4,0);
   if ((ret == 1) && (xpndr_mode_select != 4)) {
     xpndr_mode_select = 4;
     printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
   }
-  temp = 0;
-  ret = digital_input(card,i0+15,&temp,0);
+  ret = digital_input(card,i0+15,&xpndr5,0);
   if ((ret == 1) && (xpndr_mode_select != 5)) {
     xpndr_mode_select = 5;
     printf("XPNDR MODE SELECT: %i \n",xpndr_mode_select);
@@ -1364,21 +1354,21 @@ void b737_pedestal(void)
   o0 = 32;
 
   /* Aileron Trim Left switch 1 */
-  ret = digital_input(card,i0+1,&temp,0);
+  ret = digital_input(card,i0+1,&aileronl1,0);
   /* Aileron Trim Left switch 2 */
-  ret = digital_input(card,i0+3,&temp2,0);
+  ret = digital_input(card,i0+3,&aileronl2,0);
   /* Only activate Aileron Trim if both Switches are activated */
-  if ((temp == 1) && (temp2 == 1)) {
+  if ((aileronl1 == 1) && (aileronl2 == 1)) {
     *aileron_trim_left = 1;
   } else {
     *aileron_trim_left = 0;
   }
   /* Aileron Trim Right switch 1 */
-  ret = digital_input(card,i0+2,&temp,0);
+  ret = digital_input(card,i0+2,&aileronr1,0);
   /* Aileron Trim Right switch 2 */
-  ret = digital_input(card,i0+4,&temp2,0);
+  ret = digital_input(card,i0+4,&aileronr2,0);
   /* Only activate Aileron Trim if both Switches are activated */
-  if ((temp == 1) && (temp2 == 1)) {
+  if ((aileronr1 == 1) && (aileronr2 == 1)) {
     *aileron_trim_right = 1;
   } else {
     *aileron_trim_right = 0;

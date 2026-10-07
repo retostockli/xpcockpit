@@ -13,8 +13,7 @@
 
 // TURN OFF ANY DEBUGGING IN OPERATIONAL USE IN ORDER TO AVOID UDP TIME LAG AND TIMING PROBLEMS!
 
-#define DEBUG_UART 1   /* Send Debug Output to UART */
-//#define DEBUG_UDP 0    /* Send Debug Output to Ethernet via UDP */
+#define DEBUG_UART 0   /* Send Debug Output to UART */
 
 #define SENDMSGLEN 30          /* number of bytes in sent UDP packet */
 #define RECVMSGLEN 28          /* number of bytes in received UDP packet */

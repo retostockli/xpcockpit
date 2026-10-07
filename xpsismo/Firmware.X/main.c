@@ -71,7 +71,7 @@ volatile uint32_t second_counter = 0;
 void myTimer(void)
 {
     // TMR has to be set to FOSC/4, Prescaler 1:2, Timer Interrupt, Timer period 1ms
-    // We have a 1 ms Timer
+    // We have a 1 ms Timer (994 us, to be precise)
     
     // Every 1 second
     tmr_print_count++;
@@ -102,6 +102,7 @@ void main(void)
 {
     uint8_t modulo;
     
+    // Safe Delay for initial power fluctuations (fact or fiction?)
     __delay_ms(100);
     
     // Initialize the device
@@ -120,14 +121,8 @@ void main(void)
     // Enable the Global Interrupts
     INTERRUPT_GlobalInterruptEnable();
 
-    // Disable the Global Interrupts
-    //INTERRUPT_GlobalInterruptDisable();
-
     // Enable the Peripheral Interrupts
     INTERRUPT_PeripheralInterruptEnable();
-
-    // Disable the Peripheral Interrupts
-    //INTERRUPT_PeripheralInterruptDisable();
     
     // This is my own poll timer
     TMR3_SetInterruptHandler(myTimer);
@@ -140,16 +135,14 @@ void main(void)
 
     // Check if we have a destination host
     // Remove again in real code, as we do not want a blocking operation here
-    while (!UDP_Check_ARP())
-    {
-        Network_Manage();
-        __delay_ms(10);
-    }
+//    while (!UDP_Check_ARP())
+//    {
+//        Network_Manage();
+//        __delay_ms(100);
+//    }
     
-    //UDP_Send_String("Starting Main Loop \n");
     printf("Starting Main Loop\n");
-    
-    
+      
     while(1)
     {
         if (poll_request)
@@ -186,6 +179,8 @@ void main(void)
             }
             
             // Do not read I2C analoginputs at the same time as I2C digital inputs
+            // since both operations together will take more than 1 ms. However,
+            // We want a true 1 ms polling at least for the SC-MB GPIO
             if (modulo != 28) {
                 if (!(ms_counter & 1U)) {
                     // Even milliseconds
@@ -194,17 +189,17 @@ void main(void)
                     // Odd milliseconds
                     read_i2c_inputs2();
                 }
-                /* Digital Inputs every 1 ms */
-                read_inputs();
             }
-
-      
+            
+            /* Digital Inputs every 1 ms */
+            read_inputs();
+             
             if ((ms_counter % 1000) == 0) {
-                /* Send input state every second */    
+                /* Send input state every second independent of inputs change */    
                 UDP_Send_Task(true);
                                  
             } else {
-                /* Or send input state every millisecond when Inputs have changed */
+                /* Send input state every millisecond only when inputs have changed */
                 UDP_Send_Task(false);             
             }
             

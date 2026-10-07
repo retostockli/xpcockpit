@@ -37,7 +37,7 @@
 #define IPV4_D(ip)  ((uint8_t)( ip        & 0xFF))
 
 // Default Network values if no flash data is available (e.g. after reset button was pressed)
-static const uint8_t MYIPADDRESS_DEFAULT[4] = {192,168,1,55};
+static const uint8_t MYIPADDRESS_DEFAULT[4] = {192,168,1,150};
 static const uint8_t MYSUBNETMASK_DEFAULT[4] = {255,255,255,0};
 static const uint8_t MYGATEWAY_DEFAULT[4] = {192,168,1,1};
 static const uint8_t MYMACADDRESS_DEFAULT[6] = {0x00,0x00,0x00,0x00,0x11,0x17};

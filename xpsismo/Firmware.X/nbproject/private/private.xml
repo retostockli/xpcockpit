@@ -3,6 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/flash.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/common.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/software_i2c.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/udp.c</file>
@@ -15,6 +16,7 @@
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/sort.c</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/gpio.c</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/flash.c</file>
+            <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/network_config.h</file>
             <file>file:/home/stockli/xpcockpit/xpsismo/Firmware.X/software_i2c.c</file>
         </group>
     </open-files>

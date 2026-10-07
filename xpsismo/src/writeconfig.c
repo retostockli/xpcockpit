@@ -215,7 +215,7 @@ int main(int argc, char **argv)
     printf("CLIENT SUBNETMASK:  %s \n",client_subnetmask);
     printf("CLIENT GATEWAY:     %s \n",client_gateway);
     printf("CLIENT MACADDRESS:  %s \n",client_macaddress);
-    printf("SERVER IPADDRESS:   %s \n",client_ipaddress);
+    printf("SERVER IPADDRESS:   %s \n",server_ipaddress);
     printf("CLIENT PORT:        %i \n",client_port);
     printf("SERVER PORT:        %i \n",server_port);
     printf("DAUGHTER INPUT1:    %i \n",daughter_input1);
@@ -301,12 +301,12 @@ int main(int argc, char **argv)
   sendbuffer[27] = daughtercards;
   
   len = sizeof(sendbuffer);
-  ret = send_udp(client_ipaddress,client_port,sendbuffer,len);
+  ret = send_udp(sismo_ip,sismo_port,sendbuffer,len);
   if (ret == len) {
-    printf("Sent Configuration to Client %s Port %i \n", client_ipaddress,client_port);
+    printf("Sent Configuration to SISMO SC-MB with IP %s Port %i \n", sismo_ip,sismo_port);
     printf("Waiting for Confirmation Message from Client...\n");
   } else {
-    printf("ERROR: Sent %i of %i Configuration bytes to Client %s Port %i \n", ret,len,client_ipaddress,client_port);
+    printf("ERROR: Sent %i of %i Configuration bytes to SISMO SC-MB IP %s Port %i \n", ret,len,sismo_ip,sismo_port);
     exit(-1);
   }
 
@@ -341,6 +341,7 @@ int main(int argc, char **argv)
 	printf("Received confirmation from IP %s Port %d\n",
 	       inet_ntoa(clientAddr.sin_addr),
 	       ntohs(clientAddr.sin_port));
+	printf("Cycle Power on SISMO SC-MB in order to make configuration effective\n");
 
 	break;
       }

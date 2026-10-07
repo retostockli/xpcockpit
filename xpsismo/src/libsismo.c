@@ -238,9 +238,13 @@ int read_sismo() {
 	  sismo[card].daughter_analoginput = get_bit(sismoRecvBuffer[5],5);
 	  sismo[card].daughter_display2 = get_bit(sismoRecvBuffer[5],6);
 	  
-	  sismo[card].noutputs = 64 + 64*sismo[card].daughter_output1 + 64*sismo[card].daughter_output2;
+	  sismo[card].noutputs = 64;
+	  if (sismo[card].daughter_output1 == 1) sismo[card].noutputs = 128;
+	  if (sismo[card].daughter_output2 == 1) sismo[card].noutputs = 192;
 	  sismo[card].nservos = 14*sismo[card].daughter_servo;
-	  sismo[card].ndisplays = 32 + 32*sismo[card].daughter_display1 + 32*sismo[card].daughter_display2;
+	  sismo[card].ndisplays = 32;
+	  if (sismo[card].daughter_display1 == 1) sismo[card].ndisplays = 64;
+	  if (sismo[card].daughter_display2 == 1) sismo[card].ndisplays = 96;
 	  sismo[card].nanaloginputs = 5 + 10*sismo[card].daughter_analoginput;
 	  sismo[card].nanalogoutputs = 0*sismo[card].daughter_analogoutput; /* Planned, but not available */
 
@@ -648,10 +652,10 @@ int digital_input(int card, int input, int *value, int type)
 	    /* simple pushbutton / switch (inverse) */
 	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
 	      if ((1-*value) != sismo[card].inputs[input][s]) {
+		if (verbose > 1) printf("Pushbutton: Card %i Input %i Changed from %i to %i \n",
+					card, input, *value, sismo[card].inputs[input][s]);
 		*value = 1-sismo[card].inputs[input][s];
 		retval = 1;
-		if (verbose > 1) printf("Pushbutton: Card %i Input %i Changed to %i \n",
-					card, input, *value);
 	      }
 	    }
 
@@ -659,10 +663,10 @@ int digital_input(int card, int input, int *value, int type)
 	    /* simple pushbutton / switch */
 	    if (sismo[card].inputs[input][s] != INPUTINITVAL) {
 	      if (*value != sismo[card].inputs[input][s]) {
+		if (verbose > 1) printf("Pushbutton: Card %i Input %i Changed from %i to %i \n",
+					card, input, *value, sismo[card].inputs[input][s]);
 		*value = sismo[card].inputs[input][s];
 		retval = 1;
-		if (verbose > 1) printf("Pushbutton: Card %i Input %i Changed to %i \n",
-					card, input, *value);
 	      }
 	    }
 
