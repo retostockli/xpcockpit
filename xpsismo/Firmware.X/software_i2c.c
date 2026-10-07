@@ -508,7 +508,7 @@ bool I2C_Software_WriteByte(uint8_t data)
 
     I2C_SCL_TRIS = 0;
 
-    __delay_us(SOFT_I2C_DELAY_US);
+    //__delay_us(SOFT_I2C_DELAY_US);
 
     return ack;
 }
