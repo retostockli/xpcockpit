@@ -177,8 +177,8 @@ int main(int argc, char **argv)
     printf(" \n");
     printf(" Where: \n");
     printf("   - CFGFILE: the prefix of the .cfg file located in ../inidata \n");
-    printf("   - BOARD-IP: the IP Address where the SC-MB Card is currently reachable. Format: 192.168.1.55 \n");
-    printf("   - BOARD-PORT: the UDP Port where the SC-MB Card is currently reachable. Format: 1024 \n");      
+    printf("   - BOARD-IP: the IP Address where the SC-MB Card is currently reachable. DEFAULT is 192.168.1.150 \n");
+    printf("   - BOARD-PORT: the UDP Port where the SC-MB Card is currently reachable. DEFAULT is 1024 \n");      
     exit(-1);
   }
 
