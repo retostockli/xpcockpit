@@ -26,3 +26,64 @@ Then type:
 make
 cd src
 ./xpsismo test
+
+NEW FIRMWARE FOR SISMO SC-MB
+----------------------------
+Since the original SISMO Firmware has a few flaws, I have reverse engineered
+the components of the board including all I2C boards and written my new
+firmware for it with the following bugs corrected:
+
+- true 1 millisecond polling of GPIO's compared to 2-5 ms in the original
+- even with connected I2C boards a 1 ms polling is guaranteed. This makes
+  sure that optical encoder steps are not missed.
+- data of inputs is only sent if an input changes. The original board
+  sends inputs every 2-5 ms inependent of changes in input states. This
+  simply floods the network with unnessesary data
+- data of analog inputs is median filtered and only sent if it does not
+  change due to input noise. The original board sends analog inputs every
+  2-5 ms
+- Option for diagnostic messages via the UDP protocol (enable by setting
+  the VERBOSE option in the ini file to 2 or higher). You can then see
+  if the SISMO SC-MB has trouble accessing I2C Boards or other error occur
+
+The UDP protocol with the new firmware is the same as described by SISMO
+for their original firmware.
+
+The firmware is located in Firmware.X. This is a MPLAB X IDE Project.
+You should be able to load and build it there without any troubles.
+It should be possible to import it into VSCode, but I have not tested
+it since the used PIC18F86J60 has no MCC support in VSCode. This
+makes initial development difficult. The ready-to-use firmware
+should however be usable in VSCode.
+
+The programming goes via the 4 Pin Header of the SISMO SC-MB connected
+to a PicKit Programmer. I have tested it with the PicKit 5.
+
+The following wiring will be needed:
+
+PICKIT		SC-MB		Function
+1		1		VPP
+3		4		GND
+4		3		PGD
+5		2		PGC
+7		PIN 37 (RC6)	UART TX (You have to solder it to the RC6 
+				elements of the board if you want diagnostics
+				via the UART line onto the serial monitor
+				of MPLAB X IDE
+
+Compared to the original firmware the configuration of the board does
+work via the command line tool writeconfig, which accesses the respective
+.cfg file in inidata/
+
+The command goes like this
+./writeconfig NAME-OF-CONFIGFILE IP-ADDRESS PORT
+
+where
+- NAME-OF-CONFIGFILE is the prefix of the config file where you defined the board configuraion
+- IP-ADDRESS is the Ip Address of the board (per default to 192.168.1.150)
+- PORT is the port of the board (per default 1024)
+
+If you have no idea at which IP Address your board is configured, use the
+script scanports.sh to find hosts that have the port 1024 open. You should
+see your SISMO Board somewhere (make sure to turn off all other SISMO boards).
+

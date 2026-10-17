@@ -191,7 +191,6 @@ int read_sismo() {
   int firstinput;
   int ninputs;
   int firstbyte;
-
   
   while (udpReadLeft >= RECVMSGLEN) {
 

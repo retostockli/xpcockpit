@@ -48,9 +48,6 @@ void b737_mcp(void)
   int one = 1;
   int zero = 0;
 
-  int ap_hdg_1;
-  int ap_hdg_2;
-
   float *ap_altitude;  // autopilot altitude
   float *ap_heading; // autopilot heading
   float *ap_ias; // IAS autopilot
@@ -661,8 +658,28 @@ void b737_mcp(void)
   ret = digital_output(card,17,avionics_on);
 
   /* DISPLAYS */
-  ret = display_outputf(card, 0, 3, ap_course1, -1, display_brightness);
-  ret = display_outputf(card, 21, 3, ap_course2, -1, display_brightness);
+
+  /* AP Course 1 and 2 are always displayed with leading zeroes */
+  if (*ap_course1 >= 100.0) {
+    ret = display_outputf(card, 0, 3, ap_course1, -1, display_brightness);      
+  } else if (*ap_course1 >= 10.0) {
+    ret = display_output(card, 2, 1, &zero, -1, display_brightness);
+    ret = display_outputf(card, 0, 2, ap_course1, -1, display_brightness);
+  } else {
+    ret = display_output(card, 2, 1, &zero, -1, display_brightness);
+    ret = display_output(card, 1, 1, &zero, -1, display_brightness);
+    ret = display_outputf(card, 0, 1, ap_course1, -1, display_brightness);
+  }
+  if (*ap_course2 >= 100.0) {
+    ret = display_outputf(card, 21, 3, ap_course2, -1, display_brightness);      
+  } else if (*ap_course2 >= 10.0) {
+    ret = display_output(card, 23, 1, &zero, -1, display_brightness);
+    ret = display_outputf(card, 21, 2, ap_course2, -1, display_brightness);
+  } else {
+    ret = display_output(card, 23, 1, &zero, -1, display_brightness);
+    ret = display_output(card, 22, 1, &zero, -1, display_brightness);
+    ret = display_outputf(card, 21, 1, ap_course2, -1, display_brightness);
+  }
 
   int ap_spd_show = 0;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -682,16 +699,20 @@ void b737_mcp(void)
   } else {
     ret = display_outputf(card,3,4, ap_ias, -1, zero);
   }
-  ret = display_outputf(card, 8, 3, ap_heading, -1, display_brightness);
   if (*ap_heading != FLT_MISS) {
     /* HDG always has leading zeros */
-    if (*ap_heading < 100.0) {
+    if (*ap_heading >= 100.0) {
+      ret = display_outputf(card, 8, 3, ap_heading, -1, display_brightness);      
+    } else if (*ap_heading >= 10.0) {
       ret = display_output(card, 10, 1, &zero, -1, display_brightness);
-      if (*ap_heading < 10.0) {
-	ret = display_output(card, 9, 1, &zero, -1, display_brightness);
-      } 
+      ret = display_outputf(card, 8, 2, ap_heading, -1, display_brightness);
+    } else {
+      ret = display_output(card, 10, 1, &zero, -1, display_brightness);
+      ret = display_output(card, 9, 1, &zero, -1, display_brightness);
+      ret = display_outputf(card, 8, 1, ap_heading, -1, display_brightness);
     }
   }
+  
   ret = display_outputf(card, 11, 5, ap_altitude, -1, display_brightness);
 
   int ap_vs_show = 0;

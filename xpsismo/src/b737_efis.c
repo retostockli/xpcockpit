@@ -31,6 +31,45 @@
 #include "serverdata.h"
 #include "b737_efis.h"
 
+int efis_vor1_sel1_captain;
+int efis_vor1_sel2_captain;
+int efis_vor1_sel1_copilot;
+int efis_vor1_sel2_copilot;
+int efis_vor2_sel1_captain;
+int efis_vor2_sel2_captain;
+int efis_vor2_sel1_copilot;
+int efis_vor2_sel2_copilot;
+int baro_unit_captain;
+int baro_unit_copilot;
+int mins_captain;
+int mins_copilot;
+
+int mode1_captain;
+int mode2_captain;
+int mode3_captain;
+int mode4_captain;
+int mode1_copilot;
+int mode2_copilot;
+int mode3_copilot;
+int mode4_copilot;
+
+int range1_captain;
+int range2_captain;
+int range3_captain;
+int range4_captain;
+int range5_captain;
+int range6_captain;
+int range7_captain;
+int range8_captain;
+int range1_copilot;
+int range2_copilot;
+int range3_copilot;
+int range4_copilot;
+int range5_copilot;
+int range6_copilot;
+int range7_copilot;
+int range8_copilot;
+
 
 void b737_efis(int copilot)
 {
@@ -39,7 +78,6 @@ void b737_efis(int copilot)
   
   int ret;
   int temp;
-  int temp2;
   int card = 0;
   //  int one = 1;
   //  int zero = 0;
@@ -324,45 +362,66 @@ void b737_efis(int copilot)
   }
 
   /* EFIS VOR1/OFF/ADF1 selector */
-  ret = digital_input(card,32+offset,&temp,0); // VOR1
-  ret = digital_input(card,33+offset,&temp2,0); // ADF1
+  if (copilot) {
+    ret = digital_input(card,32+offset,&efis_vor1_sel1_copilot,0); // VOR1
+    ret = digital_input(card,33+offset,&efis_vor1_sel2_copilot,0); // ADF1
+  } else {
+    ret = digital_input(card,32+offset,&efis_vor1_sel1_captain,0); // VOR1
+    ret = digital_input(card,33+offset,&efis_vor1_sel2_captain,0); // ADF1
+  }
   if ((acf_type == 2) || (acf_type == 3)) {
     if (*efis1_sel != INT_MISS) {
-      /* if (*efis1_sel < (temp + (1-temp2) - 1)) { */
-      /* 	*efis1_sel_up = 1; */
-      /* } */
-      /* if (*efis1_sel > (temp + (1-temp2) - 1)) { */
-      /* 	*efis1_sel_dn = 1; */
-      /* }      */
-      int efis1_sel_input = temp + (1-temp2) - 1;
+      int efis1_sel_input;;
+      if (copilot) {
+	efis1_sel_input = efis_vor1_sel1_copilot + (1-efis_vor1_sel2_copilot) - 1;
+      } else {
+	efis1_sel_input = efis_vor1_sel1_captain + (1-efis_vor1_sel2_captain) - 1;
+      }
       ret = set_state_updn(&efis1_sel_input, efis1_sel, efis1_sel_up, efis1_sel_dn);
     }
     
   } else {
-    *efis1_sel = temp + (1-temp2);
+    if (copilot) {
+      *efis1_sel = efis_vor1_sel1_copilot + (1-efis_vor1_sel2_copilot);
+    } else {
+      *efis1_sel = efis_vor1_sel1_captain + (1-efis_vor1_sel2_captain);
+    }
   }
 
   /* EFIS VOR2/OFF/ADF2 selector */
-  ret = digital_input(card,54+offset,&temp,0); // VOR2
-  ret = digital_input(card,55+offset,&temp2,0); // ADF2
+  if (copilot) {
+    ret = digital_input(card,54+offset,&efis_vor2_sel1_copilot,0); // VOR1
+    ret = digital_input(card,55+offset,&efis_vor2_sel2_copilot,0); // ADF1
+  } else {
+    ret = digital_input(card,54+offset,&efis_vor2_sel1_captain,0); // VOR1
+    ret = digital_input(card,55+offset,&efis_vor2_sel2_captain,0); // ADF1
+  }
   if ((acf_type == 2) || (acf_type == 3)) {
     if (*efis2_sel != INT_MISS) {
-      /* if (*efis2_sel < (temp + (1-temp2) - 1)) { */
-      /* 	*efis2_sel_up = 1; */
-      /* } */
-      /* if (*efis2_sel > (temp + (1-temp2) - 1)) { */
-      /* 	*efis2_sel_dn = 1; */
-      /* }      */
-      int efis2_sel_input = temp + (1-temp2) - 1;
+      int efis2_sel_input;
+      if (copilot) {
+	efis2_sel_input = efis_vor2_sel1_copilot + (1-efis_vor2_sel2_copilot) - 1;
+      } else {
+	efis2_sel_input = efis_vor2_sel1_captain + (1-efis_vor2_sel2_captain) - 1;
+      }       
       ret = set_state_updn(&efis2_sel_input, efis2_sel, efis2_sel_up, efis2_sel_dn);
     }
   } else {
-    *efis2_sel = temp + (1-temp2);
+    if (copilot) {
+      *efis2_sel = efis_vor2_sel1_copilot + (1-efis_vor2_sel2_copilot);
+    } else {
+      *efis2_sel = efis_vor2_sel1_captain + (1-efis_vor2_sel2_captain);
+    }
   }
 
   /* BARO IN/HPA */
   if (*altimeter_pressure_unit != INT_MISS) {
     if ((acf_type == 2) || (acf_type == 3)) {
+      if (copilot) {
+	temp = baro_unit_copilot;
+      } else {
+	temp = baro_unit_captain;
+      }
       ret = digital_input(card,108+offset1,&temp,0);
       if ((*altimeter_pressure_unit == 1) && (temp == 0)) {
 	printf("Altimeter Pressure Unit: in Hg \n");
@@ -371,6 +430,11 @@ void b737_efis(int copilot)
       if ((*altimeter_pressure_unit == 0) && (temp == 1)) {
 	*altimeter_pressure_unit_up = 1;
 	printf("Altimeter Pressure Unit: hPa \n");
+      }
+      if (copilot) {
+	baro_unit_copilot = temp;
+      } else {
+	baro_unit_captain = temp;
       }
     } else {
       ret = digital_input(card,108+offset1,altimeter_pressure_unit,0);
@@ -384,6 +448,11 @@ void b737_efis(int copilot)
   /* MINS RADIO/BARO */
   if ((acf_type == 2) || (acf_type == 3)) {
     if (*minimum_mode != INT_MISS) {
+      if (copilot) {
+	temp = mins_copilot;
+      } else {
+	temp = mins_captain;
+      }
       ret = digital_input(card,106+offset1,&temp,0); // not inverse
       if ((*minimum_mode == 1) && (temp == 1)) {
 	*minimum_mode_up = 1;
@@ -393,62 +462,131 @@ void b737_efis(int copilot)
 	*minimum_mode_dn = 1;
 	printf("Minimums Mode: Baro \n");
       }
+      if (copilot) {
+	mins_copilot = temp;
+      } else {
+	mins_captain = temp;
+      }
     }
   }
 
   /* MAP MODE SELECTOR */
-  ret = digital_input(card,51+offset,&temp,0); // APP
-  if (temp == 1) {
-    *map_mode = 0;
-  } else {
-    ret = digital_input(card,50+offset,&temp,0); // VOR
-    if (temp == 1) {
-      *map_mode = 1;
+  if (copilot) {
+    ret = digital_input(card,51+offset,&mode1_copilot,0); // APP
+    if (mode1_copilot == 1) {
+      *map_mode = 0;
     } else {
-      ret = digital_input(card,49+offset,&temp,0); // MAP
-      if (temp == 1) {
-	*map_mode = 2;
+      ret = digital_input(card,50+offset,&mode2_copilot,0); // VOR
+      if (mode2_copilot == 1) {
+	*map_mode = 1;
       } else {
-	ret = digital_input(card,48+offset,&temp,0); // PLN
-	if (temp == 1) {
-	  *map_mode = 3;
+	ret = digital_input(card,49+offset,&mode3_copilot,0); // MAP
+	if (mode3_copilot == 1) {
+	  *map_mode = 2;
+	} else {
+	  ret = digital_input(card,48+offset,&mode4_copilot,0); // PLN
+	  if (mode4_copilot == 1) {
+	    *map_mode = 3;
+	  }
+	}
+      }
+    }
+  } else {
+    ret = digital_input(card,51+offset,&mode1_captain,0); // APP
+    if (mode1_captain == 1) {
+      *map_mode = 0;
+    } else {
+      ret = digital_input(card,50+offset,&mode2_captain,0); // VOR
+      if (mode2_captain == 1) {
+	*map_mode = 1;
+      } else {
+	ret = digital_input(card,49+offset,&mode3_captain,0); // MAP
+	if (mode3_captain == 1) {
+	  *map_mode = 2;
+	} else {
+	  ret = digital_input(card,48+offset,&mode4_captain,0); // PLN
+	  if (mode4_captain == 1) {
+	    *map_mode = 3;
+	  }
 	}
       }
     }
   }
 
   /* MAP RANGE SELECTOR */
-  ret = digital_input(card,63+offset,&temp,0);
-  if (temp == 1) {
+  if (copilot) {
+    ret = digital_input(card,63+offset,&range1_copilot,0);
+    if (range1_copilot == 1) {
       *navrangesel = 0; // 5 nm
-  } else {
-    ret = digital_input(card,62+offset,&temp,0);
-    if (temp == 1) {
-	*navrangesel = 1; // 10 nm
     } else {
-      ret = digital_input(card,61+offset,&temp,0);
-      if (temp == 1) {
-	*navrangesel = 2; // 20 nm
+      ret = digital_input(card,62+offset,&range2_copilot,0);
+      if (range2_copilot == 1) {
+	*navrangesel = 1; // 10 nm
       } else {
-	ret = digital_input(card,60+offset,&temp,0);
-	if (temp == 1) {
-	  *navrangesel = 3; // 40 nm
+	ret = digital_input(card,61+offset,&range3_copilot,0);
+	if (range3_copilot == 1) {
+	  *navrangesel = 2; // 20 nm
 	} else {
-	  ret = digital_input(card,59+offset,&temp,0);
-	  if (temp == 1) {
-	    *navrangesel = 4; // 80 nm
+	  ret = digital_input(card,60+offset,&range4_copilot,0);
+	  if (range4_copilot == 1) {
+	    *navrangesel = 3; // 40 nm
 	  } else {
-	    ret = digital_input(card,58+offset,&temp,0);
-	    if (temp == 1) {
-	      *navrangesel = 5; // 160 nm
+	    ret = digital_input(card,59+offset,&range5_copilot,0);
+	    if (range5_copilot == 1) {
+	      *navrangesel = 4; // 80 nm
 	    } else {
-	      ret = digital_input(card,57+offset,&temp,0);
-	      if (temp == 1) {
-		*navrangesel = 6; // 320 nm
+	      ret = digital_input(card,58+offset,&range6_copilot,0);
+	      if (range6_copilot == 1) {
+		*navrangesel = 5; // 160 nm
 	      } else {
-		ret = digital_input(card,56+offset,&temp,0);
-		if (temp == 1) {
-		  *navrangesel = 7; // 640 nm
+		ret = digital_input(card,57+offset,&range7_copilot,0);
+		if (range7_copilot == 1) {
+		  *navrangesel = 6; // 320 nm
+		} else {
+		  ret = digital_input(card,56+offset,&range8_copilot,0);
+		  if (range8_copilot == 1) {
+		    *navrangesel = 7; // 640 nm
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  } else {
+    ret = digital_input(card,63+offset,&range1_captain,0);
+    if (range1_captain == 1) {
+      *navrangesel = 0; // 5 nm
+    } else {
+      ret = digital_input(card,62+offset,&range2_captain,0);
+      if (range2_captain == 1) {
+	*navrangesel = 1; // 10 nm
+      } else {
+	ret = digital_input(card,61+offset,&range3_captain,0);
+	if (range3_captain == 1) {
+	  *navrangesel = 2; // 20 nm
+	} else {
+	  ret = digital_input(card,60+offset,&range4_captain,0);
+	  if (range4_captain == 1) {
+	    *navrangesel = 3; // 40 nm
+	  } else {
+	    ret = digital_input(card,59+offset,&range5_captain,0);
+	    if (range5_captain == 1) {
+	      *navrangesel = 4; // 80 nm
+	    } else {
+	      ret = digital_input(card,58+offset,&range6_captain,0);
+	      if (range6_captain == 1) {
+		*navrangesel = 5; // 160 nm
+	      } else {
+		ret = digital_input(card,57+offset,&range7_captain,0);
+		if (range7_captain == 1) {
+		  *navrangesel = 6; // 320 nm
+		} else {
+		  ret = digital_input(card,56+offset,&range8_captain,0);
+		  if (range8_captain == 1) {
+		    *navrangesel = 7; // 640 nm
+		  }
 		}
 	      }
 	    }
@@ -491,8 +629,4 @@ void b737_efis(int copilot)
     }
   }
 
-  /* OUTPUTS */
-
-  /* DISPLAYS */
-  
 }
