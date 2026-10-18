@@ -55,9 +55,11 @@
 #include "gpio.h"
 #include "flash.h"
 
-/* TODO:
-- Check for UDP_Start returns "MAC_NOT_FOUND" and thus not successful UDP packet writes, only update data if UDP packet was sent
+#define VERSION "1.1"
 
+/* Version History
+ * 1.0: Initial Release after development
+ * 1.1: Fix Reception of Servo values bug (only update selected servos by sender)
 */
 
 volatile uint32_t tmr_print_count = 0;
@@ -220,9 +222,8 @@ void main(void)
         if (print_request)
         {
             print_request = false;
-           
-            printf("Loops per sec: %li\n",loop_counter);
-            printf("1 ms Interrupts per Second: %li\n",ms_counter);
+            
+            printf("VER %s L/s %li I/s %li \n",VERSION,loop_counter,ms_counter);
             
             ms_counter = 0;
             loop_counter = 0;

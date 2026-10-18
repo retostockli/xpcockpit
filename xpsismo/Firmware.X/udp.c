@@ -161,14 +161,20 @@ void UDP_Recv_Task(void)
                 } else if (udpRxQueue[q].data[2] == 0x03) {
                     /* I2C Daughter Servos */
                     if (udpRxQueue[q].data[3] == 0x00) {
-                        /* Servos 0..7 */
+                         /* Servos 0..7 */
                         for (i=0;i<8;i++) {
-                            servos_i2c[i] = (int16_t) udpRxQueue[q].data[5+i];
+                            if (udpRxQueue[q].data[4] & (1U << i)) {
+                                /* Only update servos that have been selected by sender */
+                                servos_i2c[i] = (int16_t) udpRxQueue[q].data[5+i];
+                           }
                         }
                     } else if (udpRxQueue[q].data[3] == 0x01) {
                         /* Servos 8..13 */
                         for (i=0;i<6;i++) {
-                            servos_i2c[i+8] = (int16_t) udpRxQueue[q].data[7+i];
+                            if (udpRxQueue[q].data[4] & (1U << (i+2))) {
+                                /* Only update servos that have been selected by sender */
+                                servos_i2c[i+8] = (int16_t) udpRxQueue[q].data[7+i];
+                            }
                         }
                     }
                 } else if (udpRxQueue[q].data[2] == 0x04) {

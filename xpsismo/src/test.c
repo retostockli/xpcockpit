@@ -74,16 +74,19 @@ void test(void)
     printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
   
-  //ret = servo_outputf(card,0,fvalue,0.0,1.0);
-  //ret = servo_outputf(card,8,fvalue,0.0,1.0);
+  ret = servo_outputf(card,8,fvalue,0.0,1.0);
+
+  float servoval = 1.0 - *fvalue;
+  //ret = servo_outputf(card,1,fvalue,0.0,1.0);
+  ret = servo_outputf(card,9,&servoval,0.0,1.0);
 
   /* read encoder at inputs 0 and 1 */
 
   //ret = encoder_input(card, 0, 1, encodervalue, 1, 1);
-  ret = encoder_input(card, 2, 3, encodervalue2, 1, 1);
+  ret = encoder_input(card, 2, 3, encodervalue, 1, 1);
   if (ret == 1) {
     /* ret is 1 only if encoder has been turned */
-    printf("Encoder changed to: %i \n",*encodervalue2);
+    printf("Encoder changed to: %i \n",*encodervalue);
   }
   /* ret = encoder_input(card, 132, 133, encodervalue, 1, 1); */
   /* //ret = encoder_input(card, 64+2, 64+3, encodervalue, 1, 1); */
@@ -126,10 +129,10 @@ void test(void)
   }
   */
 
-  display = 12345;
+  //display = 12345;
   
   /* set 7 segment displays 0-5 to the 5 digit value of the encoder with a decimal point at digit 2 */
-  //ret = display_output(card, 0, 5, encodervalue, 0, 10);
+  ret = display_output(card, 0, 5, encodervalue, 0, 10);
   //ret = display_output(card, 32, 5, encodervalue, 0, 10);
   //ret = display_output(card, 64, 5, encodervalue2, 0, 10);
 
