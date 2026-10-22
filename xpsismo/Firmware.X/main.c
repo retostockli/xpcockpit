@@ -55,11 +55,13 @@
 #include "gpio.h"
 #include "flash.h"
 
-#define VERSION "1.1"
+#define VERSION "1.3"
 
 /* Version History
  * 1.0: Initial Release after development
  * 1.1: Fix Reception of Servo values bug (only update selected servos by sender)
+ * 1.2: Fix Erroneous Servo Init Value Transfer to daughter card
+ * 1.3: Autodetect UDP Server IP (set IP Address of Server to 0.0.0.0 in .cfg file 
 */
 
 volatile uint32_t tmr_print_count = 0;
@@ -134,14 +136,6 @@ void main(void)
 
     // Initialize the MAX7219 7 segment display drivers
     init_displays();
-
-    // Check if we have a destination host
-    // Remove again in real code, as we do not want a blocking operation here
-//    while (!UDP_Check_ARP())
-//    {
-//        Network_Manage();
-//        __delay_ms(100);
-//    }
     
     printf("Starting Main Loop\n");
       

@@ -74,11 +74,11 @@ void test(void)
     printf("Analog Input %i changed to: %f \n",i,*fvalue);
   }
   
-  ret = servo_outputf(card,8,fvalue,0.0,1.0);
+  ret = servo_outputf(card,0,fvalue,0.0,1.0);
 
   float servoval = 1.0 - *fvalue;
   //ret = servo_outputf(card,1,fvalue,0.0,1.0);
-  ret = servo_outputf(card,9,&servoval,0.0,1.0);
+  ret = servo_outputf(card,1,&servoval,0.0,1.0);
 
   /* read encoder at inputs 0 and 1 */
 

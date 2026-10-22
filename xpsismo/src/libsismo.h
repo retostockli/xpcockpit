@@ -82,6 +82,7 @@ typedef struct {
 extern sismo_struct sismo[MAXCARDS];
 
 /* Prototype Functions */
+int init_sismo();
 int read_sismo(void);
 int write_sismo(void);
 int digital_inputf(int card, int input, float *fvalue, int type);

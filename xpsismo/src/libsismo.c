@@ -180,6 +180,36 @@ void quicksort(int arr[], int low, int high) {
     }
 }
 
+int init_sismo() {
+  
+  /* With the New Firmware we can initiate the communication with the SISMO SC-MB from
+     the server: the SISMO SC-MB will then send back UDP packets to this server. In
+     the original firmware of SISMO the server IP has to be predefined in the SISMO
+     card */
+
+  int card;
+  int ret;
+
+  for (card=0;card<MAXCARDS;card++) {
+    if (sismo[card].firmware == 1) {
+      memset(sismoSendBuffer,0,SENDMSGLEN);
+      sismoSendBuffer[0] = 0x53;
+      sismoSendBuffer[1] = 0x43;
+      sismoSendBuffer[2] = 0xFF;
+      
+      /* Enable SISMO SC-MB Debugging via UDP by flagging last unused send buffer byte */
+      sismoSendBuffer[27] = verbose > 1;
+      
+      ret = send_udp(sismo[card].ip,sismo[card].port,sismoSendBuffer,SENDMSGLEN);
+      if (verbose > 0) printf("Sent %i bytes to card %i \n", ret,card);
+
+    }
+
+  }
+
+  return 0;
+}
+
 int read_sismo() {
   
   int card;

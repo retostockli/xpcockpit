@@ -83,16 +83,19 @@ int main(int argc, char **argv) {
   /* initialize UDP read thread */
   if (init_udp_receive() < 0) exit_sismo(-7);
 
+  /* Send Server's IP address to SISMO boards with new firmware */
+  if (init_sismo() < 0) exit_sismo(-8);
+
   while (1) {
 
     /* receive data from SISMO cards */
-    if (read_sismo() < 0) exit_sismo(-8);
+    if (read_sismo() < 0) exit_sismo(-9);
       
     /* check for TCP/IP connection to X-Plane */
-    if (check_xpserver()<0) exit_sismo(-9);
+    if (check_xpserver()<0) exit_sismo(-10);
  
     /* receive data from X-Plane via TCP/IP */
-    if (receive_xpserver()<0) exit_sismo(-10);
+    if (receive_xpserver()<0) exit_sismo(-11);
     
     check_aircraft();
  
@@ -126,13 +129,13 @@ int main(int argc, char **argv) {
     /**** User Modules End Here ****/
     
     /* send data to SISMO cards */
-    if (write_sismo() < 0) exit_sismo(-11);
+    if (write_sismo() < 0) exit_sismo(-12);
 
     /* send data to X-Plane via TCP/IP */
-    if (send_xpserver()<0) exit_sismo(-12);
+    if (send_xpserver()<0) exit_sismo(-13);
     
       /* reset counters and such */
-    if (reset_sismodata() < 0) exit_sismo(-13);
+    if (reset_sismodata() < 0) exit_sismo(-14);
    
     usleep(interval*1000);
   }

@@ -122,12 +122,7 @@ void UDP_Recv_Task(void)
         if (udpRxQueue[q].length == RECVMSGLEN) {
             
             if ((udpRxQueue[q].data[0] == 0x53) && (udpRxQueue[q].data[1] == 0x43)) {
-            
-//                printf("UDP RECV %u bytes from %s\n",
-//                       udpRxQueue[q].length,
-//                       makeIpv4AddresstoStr(udpRxQueue[q].destIP));
-                
-                //printf("R: 0x%02X 0x%02X\n",udpRxQueue[q].data[2],udpRxQueue[q].data[3]);
+ 
                 
                 /* Enable Debugging via UDP through flag in last byte of receive buffer */
                 DEBUG_UDP = udpRxQueue[q].data[27];
@@ -191,7 +186,21 @@ void UDP_Recv_Task(void)
                         displays_i2c2[b*8+i] = udpRxQueue[q].data[5+i];
                     }
                     brightness_i2c2[b] = udpRxQueue[q].data[13];
+                } else if (udpRxQueue[q].data[2] == 0xFF) {             
+                    /* Initialization Packet */
+                    
+                    /* Send UDP Packets back to the Address that is contacting us
+                     * Overwrites default destination address so you can be free
+                     * to use whatever sender and do not have to predefine it */
+                
+                    udpPacket.destinationAddress = udpRxQueue[q].destIP;                   
+                    printf("Set Destination IP on Client to %s\n",
+                        makeIpv4AddresstoStr(udpPacket.destinationAddress));
+                               
+                    /* Enable Debugging via UDP through flag in last byte of receive buffer */
+                    DEBUG_UDP = udpRxQueue[q].data[27];
                 }
+
             } else if (udpRxQueue[q].data[0] == 0xFF) {
                 /* Receive Network Configuration Packet from configwrite program (UDP Server) */
 
@@ -220,7 +229,7 @@ void UDP_Recv_Task(void)
                     // Send confirmation message to configwrite program
                     senddata[0] = 0xFF;       
                     
-                    __delay_ms(50);
+                    __delay_ms(100);
                     
                     UDP_Send_Data(senddata, sizeof(senddata));
 
@@ -248,61 +257,70 @@ void UDP_Recv_Task(void)
 
 void UDP_Send_String (char text[])
 {
-    error_msg ret = ERROR;
-    //char text[] = "Hello World";
-   
-        /**************** Start UDP Packet ****************************
-         * @Param1 - Destination Address
-         * @Param2 - Source Port Number
-         * @Param3 - Destination Port Number
-         **********************************************************************/
-    ret = UDP_Start(udpPacket.destinationAddress, udpPacket.sourcePortNumber, udpPacket.destinationPortNumber);
-      
-       
-         /**************** Write UDP Packet ****************************
-         * @Param1 - Data to write 
-         ***********************************************************************/
-    if(ret == SUCCESS)
-    {
-           
-        UDP_WriteString(text);
-        /**************** Send UDP Packet ****************************/
-        UDP_Send();
-                
-    } else {
-       //printf("UDP_Start Error: %s\n", network_errors[ret]);      
-       //printf("UDP_Start Error: %i\n", ret);      
-    }    
     
+    if (udpPacket.destinationAddress != 0) {
+        
+        error_msg ret = ERROR;
+        //char text[] = "Hello World";
+
+            /**************** Start UDP Packet ****************************
+             * @Param1 - Destination Address
+             * @Param2 - Source Port Number
+             * @Param3 - Destination Port Number
+             **********************************************************************/
+        ret = UDP_Start(udpPacket.destinationAddress, udpPacket.sourcePortNumber, udpPacket.destinationPortNumber);
+
+
+             /**************** Write UDP Packet ****************************
+             * @Param1 - Data to write 
+             ***********************************************************************/
+        if(ret == SUCCESS)
+        {
+
+            UDP_WriteString(text);
+            /**************** Send UDP Packet ****************************/
+            UDP_Send();
+
+        } else {
+           //printf("UDP_Start Error: %s\n", network_errors[ret]);      
+           //printf("UDP_Start Error: %i\n", ret);      
+        }    
+
+    }
+
 }
 
 void UDP_Send_Data (uint8_t data[], uint16_t length)
 {
-    error_msg ret = ERROR;
-    //char text[] = "Hello World";
-   
-        /**************** Start UDP Packet ****************************
-         * @Param1 - Destination Address
-         * @Param2 - Source Port Number
-         * @Param3 - Destination Port Number
-         **********************************************************************/
-    ret = UDP_Start(udpPacket.destinationAddress, udpPacket.sourcePortNumber, udpPacket.destinationPortNumber);
-      
-       
-         /**************** Write UDP Packet ****************************
-         * @Param1 - Data to write 
-         ***********************************************************************/
-    if(ret == SUCCESS)
-    {
-           
-        UDP_WriteBlock((const char *) data,length);
-        /**************** Send UDP Packet ****************************/
-        UDP_Send();
-                
-    } else {
-       //printf("UDP_Start Error: %s\n", network_errors[ret]);      
-       //printf("UDP_Start Error: %i\n", ret);      
-    }    
+    if (udpPacket.destinationAddress != 0) {
+  
+        error_msg ret = ERROR;
+        //char text[] = "Hello World";
+
+            /**************** Start UDP Packet ****************************
+             * @Param1 - Destination Address
+             * @Param2 - Source Port Number
+             * @Param3 - Destination Port Number
+             **********************************************************************/
+        ret = UDP_Start(udpPacket.destinationAddress, udpPacket.sourcePortNumber, udpPacket.destinationPortNumber);
+
+
+             /**************** Write UDP Packet ****************************
+             * @Param1 - Data to write 
+             ***********************************************************************/
+        if(ret == SUCCESS)
+        {
+
+            UDP_WriteBlock((const char *) data,length);
+            /**************** Send UDP Packet ****************************/
+            UDP_Send();
+
+        } else {
+           //printf("UDP_Start Error: %s\n", network_errors[ret]);      
+           //printf("UDP_Start Error: %i\n", ret);      
+        }    
+        
+    }
     
 }
 

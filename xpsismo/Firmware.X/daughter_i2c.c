@@ -255,8 +255,10 @@ void write_i2c_servo(void)
             data[1] = 0x00;
             //data[2] = 0xFF; /* Bitwise Servo Selector: Select all */
             for(servo=0;servo<8;servo++) {
-                data[3+servo] = (uint8_t) servos_i2c[servo];
-                //printf("SERVO:%i NEW:%i OLD:%i SEL:%i\n",servo,servos_i2c[servo],servos_i2c_save[servo],data[2]);
+                if (servos_i2c[servo] != SERVOSINITVAL) {
+                    data[3+servo] = (uint8_t) servos_i2c[servo];
+                    //printf("SERVO:%i NEW:%i OLD:%i SEL:%i\n",servo,servos_i2c[servo],servos_i2c_save[servo],data[2]);
+                }
             }
             if (!I2C_Software_Write(SERVO_I2C_ADDRESS, data, 11)) {
                 printf("Error write I2C Servos 0-7\n");
@@ -283,8 +285,10 @@ void write_i2c_servo(void)
             data[3] = 0x00;
             data[4] = 0x00;
             for(servo=8;servo<14;servo++) {
-               data[3+2+servo-8] = (uint8_t) servos_i2c[servo];
-               //printf("SERVO:%i NEW:%i OLD:%i SEL:%i\n",servo,servos_i2c[servo],servos_i2c_save[servo],data[2]);
+                if (servos_i2c[servo] != SERVOSINITVAL) {
+                    data[3+2+servo-8] = (uint8_t) servos_i2c[servo];
+                    //printf("SERVO:%i NEW:%i OLD:%i SEL:%i\n",servo,servos_i2c[servo],servos_i2c_save[servo],data[2]);
+                }
             }
 
             if (!I2C_Software_Write(SERVO_I2C_ADDRESS, data, 11)) {
