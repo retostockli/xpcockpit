@@ -57,6 +57,15 @@
 
 #define VERSION "1.3"
 
+/* 
+ * This is an alternate Firmware for the SISMO SC-MB I/O Card 
+ * It supports all I2C daughter cards by Sismo and corrects for the following bugs
+ * - True 1 ms polling (SISMO has a 2-5 ms polling depending on I2C load, leading to missed optical encoder steps)
+ * - Data is only sent to server if inputs have changed (SISMO sends data every 2-5 ms even if no input has changed)
+ * - Analog inputs are median filtered so data from analog inputs is not sent when there is simply input noise of +/-1
+ * - Auto-detect Server IP (SISMO needs a pre-configured Server IP) 
+ */
+
 /* Version History
  * 1.0: Initial Release after development
  * 1.1: Fix Reception of Servo values bug (only update selected servos by sender)
