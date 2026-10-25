@@ -1,8 +1,8 @@
 #!/bin/sh
 
-./warpblend 7 --unwarp --unblend
+./warpblend 5 --unwarp --unblend
 sleep 1
-./warpblend 2 --unwarp --unblend
+./warpblend 3 --unwarp --unblend
 sleep 1
-./warpblend 0 --unwarp --unblend
+./warpblend 1 --unwarp --unblend
 

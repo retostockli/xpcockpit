@@ -48,7 +48,7 @@ monitor/0/proj/edge_blend_fade_rgt 0.000000
 monitor/0/proj/edge_blend_fade_bot 0.000000
 monitor/0/proj/edge_blend_fade_top 0.000000
 monitor/1/m_window_idx -1
-monitor/1/m_monitor 0
+monitor/1/m_monitor 1
 monitor/1/m_window_bounds/0 0
 monitor/1/m_window_bounds/1 0
 monitor/1/m_window_bounds/2 1920
@@ -94,7 +94,7 @@ monitor/1/proj/edge_blend_fade_rgt 0.000000
 monitor/1/proj/edge_blend_fade_bot 0.000000
 monitor/1/proj/edge_blend_fade_top 0.000000
 monitor/2/m_window_idx -1
-monitor/2/m_monitor 0
+monitor/2/m_monitor 2
 monitor/2/m_window_bounds/0 0
 monitor/2/m_window_bounds/1 0
 monitor/2/m_window_bounds/2 1920
@@ -140,7 +140,7 @@ monitor/2/proj/edge_blend_fade_rgt 0.000000
 monitor/2/proj/edge_blend_fade_bot 0.000000
 monitor/2/proj/edge_blend_fade_top 0.000000
 monitor/3/m_window_idx -1
-monitor/3/m_monitor 0
+monitor/3/m_monitor 3
 monitor/3/m_window_bounds/0 0
 monitor/3/m_window_bounds/1 0
 monitor/3/m_window_bounds/2 1920
@@ -163,7 +163,7 @@ monitor/3/proj/FOVy_renopt 48.675548
 monitor/3/proj/os_x_rat 0.000000
 monitor/3/proj/os_y_rat 0.000000
 monitor/3/proj/off_vrt_deg 0.000000
-monitor/3/proj/off_lat_deg 68.300000
+monitor/3/proj/off_lat_deg 68.100000
 monitor/3/proj/off_phi_deg 0.000000
 monitor/3/proj/grid_rat_config 0
 monitor/3/proj/grid_rat_render 0

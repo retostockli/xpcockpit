@@ -22,7 +22,8 @@ from calc_blendgrid import calc_blendimage_unwarped
 # X-Plane grids are stored with 0/0 corresponding to bottom left
 
 #params.inifile="../inidata/singlemon.ini"
-params.inifile="../inidata/fourmon.ini"
+#params.inifile="../inidata/fourmon.ini"
+params.inifile="../inidata/fourmon_nowarplend.ini"
 
 params.xpfile="../data/X-Plane Window Positions.prf"
 params.nvfile="../data/nv_warpblend_grid"
