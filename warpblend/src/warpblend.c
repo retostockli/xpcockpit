@@ -49,6 +49,13 @@
   DP-5: DPY-7
   DP-1: DPY-2
   HDMI-0: DPY-0
+
+  RTX6000 Output Numbering
+  DP-7: DPY-7
+  DP-5: DPY-5
+  DP-3: DPY-3
+  DP-1: DPY-1
+
 */
 
 #include "warpdata.h"
@@ -59,7 +66,7 @@
 int main(int ac, char **av) {
 
   int nvDpyId = -1;
-  bool blendAfterWarp = True;
+  bool blendAfterWarp = False;
   bool warp = False;
   bool unwarp = False;
   bool blend = False;

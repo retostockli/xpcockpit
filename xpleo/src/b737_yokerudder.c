@@ -99,6 +99,7 @@ void b737_yokerudder(void)
   // datarefs to adjust for captain and copilot eye position on curved screen
   float *pilot_position = link_dataref_flt("sim/graphics/view/pilots_head_x",-3);
   float *pilot_heading = link_dataref_flt("sim/graphics/view/dome_offset_heading",0);
+  //float *pilot_heading = link_dataref_flt("sim/graphics/view/pilots_head_psi",0);
   
   int* forward_with_nothing = link_dataref_cmd_once("sim/view/forward_with_nothing");
   int* forward_with_panel = link_dataref_cmd_once("sim/view/forward_with_panel");
@@ -322,12 +323,16 @@ void b737_yokerudder(void)
     // Fixed View for Pilot or Copilot
     if (view_is_copilot == 0) {
       /* Captain View */
-      *pilot_position = -0.51; // meters
-      *pilot_heading = 14.5; // degrees
+      //*pilot_position = -0.51; // meters
+      *pilot_position = 0.0; // meters
+      //*pilot_heading = 14.5; // degrees
+      *pilot_heading = 10.0; // degrees
     } else {
       /* Copilot View */
-      *pilot_position = 0.51;  // meters
-      *pilot_heading = -14.5; // degrees
+      //*pilot_position = 0.51;  // meters
+      *pilot_position = 0.0;  // meters
+      //*pilot_heading = -14.5; // degrees
+      *pilot_heading = -10.0; // degrees
     }
   } else {
     if (viewmode_changed == 1) {

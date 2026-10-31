@@ -7,7 +7,7 @@ XPDIR="$HOME/X-Plane 12/Custom Data"
 
 cd $DLDIR
 
-files=`ls xplane12_native_*.zip`
+files=`ls xplane12-native-*.zip`
 
 for file in $files
 do
