@@ -292,7 +292,7 @@ def save_nvfile():
                 con.write("\n")
 
             # Create blending grid in unwarped / Display coordinate space
-            power = 0.8
+            power = 0.6
             blendimage = calc_blendimage_unwarped(params.nx[mon], params.ny[mon],
                                                   params.blend_left_top[mon],params.blend_left_bot[mon],
                                                   params.blend_right_top[mon],params.blend_right_bot[mon], power)
