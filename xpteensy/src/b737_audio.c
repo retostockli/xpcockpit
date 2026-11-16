@@ -96,8 +96,8 @@ void init_b737_audio(void)
   /* DSUB 9 Pin Connector 1 */
   /* 1: GND
      2: 5V
-     3: I2C
-     4: I2C
+     3: I2C SDA
+     4: I2C SCL
      6: I/O 8
      7: I/O 10
      8: I/O 12

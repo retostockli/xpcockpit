@@ -47,6 +47,7 @@
 #include "b737_overheadfwd.h"
 #include "b737_audio.h"
 #include "b737_overheadaft.h"
+#include "b737_fdas.h"
 
 // Driver code 
 int main(int argc, char **argv) {
@@ -100,8 +101,10 @@ int main(int argc, char **argv) {
     init_b737_overheadaft();
   } else if (strcmp(argv[1],"boeing737audio") == 0) {
     init_b737_audio();
+  } else if (strcmp(argv[1],"boeing737fdas") == 0) {
+    init_b737_fdas();
   }
-  
+ 
   while (1) {
  
     /* initialize teensy board and daughter boards */
@@ -137,6 +140,8 @@ int main(int argc, char **argv) {
       b737_overheadaft();
     } else if (strcmp(argv[1],"boeing737audio") == 0) {
       b737_audio();
+    } else if (strcmp(argv[1],"boeing737fdas") == 0) {
+      b737_fdas();
     }
 
     /**** User Modules End Here ****/

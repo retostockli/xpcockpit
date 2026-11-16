@@ -8,15 +8,16 @@
 #define MASK "255.255.255.0"
 #define GATEWAY "192.168.1.1"
 
+/* For all other boards use 400 kHz */
 //#define IP "192.168.1.66" /* Boeing 737 Throttle Quadrant */
 //#define IP "192.168.1.67" /* Boeing 737 Forward Overhead */
-//#define IP "192.168.1.68" /* Boeing 737 Audio Control Box */
-#define IP "192.168.1.69" /* Boeing 737 Aft Overhead */
-//#define IP "192.168.1.99" /* TEST Board */
-
-//#define WIRESPEED 1000000  /* 1 MHz too fast for some devices */
+//#define IP "192.168.1.69" /* Boeing 737 Aft Overhead */
+#define IP "192.168.1.99" /* TEST Board */
 #define WIRESPEED 400000  /* 400 kHz mostly ok */
-//#define WIRESPEED 200000  /* 200 kHz always ok for all devices */
+
+
+/* FOR AUDIO BOARD USE 100 kHz due to long I2C Wire */
+//#define IP "192.168.1.68" /* Boeing 737 Audio Control Box */
 //#define WIRESPEED 100000  /* 100 kHz always ok for all devices */
 
 //#include <Ethernet.h>

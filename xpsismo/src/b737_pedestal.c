@@ -92,9 +92,6 @@ int wxr_mode_wx;
 int wxr_mode_turb;
 
 int stab_trim_ovrd;
-int flt_deck_door_unlock;
-int flt_deck_door_auto;
-int flt_deck_door_deny;
 int flt_deck_door_pos;
 
 int fire_eng1_ovht_det_a; 
@@ -138,12 +135,12 @@ void b737_pedestal(void)
 
   /* parameters */
   /* X-Plane frequencies are scaled by 10 kHz except for adf and dme */
-  int nav_min = 108; // MHz
-  int nav_max = 117; // MHz
-  int com_min = 118; // MHz
-  int com_max = 136; // MHz
-  int adf_min = 190; // kHz
-  int adf_max = 1750; // kHz
+  //  int nav_min = 108; // MHz
+  //  int nav_max = 117; // MHz
+  //  int com_min = 118; // MHz
+  //  int com_max = 136; // MHz
+  //  int adf_min = 190; // kHz
+  //  int adf_max = 1750; // kHz
   int transponder_min = 0;
   int transponder_max = 7;
 
@@ -164,12 +161,12 @@ void b737_pedestal(void)
   int *adf1_freq_stdby = link_dataref_int("sim/cockpit/radios/adf1_stdby_freq_hz");
   int *adf2_freq_stdby = link_dataref_int("sim/cockpit/radios/adf2_stdby_freq_hz"); 
 
-  int *com1_fine_up = link_dataref_cmd_once("sim/radios/stby_com1_fine_up_833");
-  int *com1_fine_dn = link_dataref_cmd_once("sim/radios/stby_com1_fine_down_833");
+  //  int *com1_fine_up = link_dataref_cmd_once("sim/radios/stby_com1_fine_up_833");
+  //  int *com1_fine_dn = link_dataref_cmd_once("sim/radios/stby_com1_fine_down_833");
   int *com1_coarse_up = link_dataref_cmd_once("sim/radios/stby_com1_coarse_up_833");
   int *com1_coarse_dn = link_dataref_cmd_once("sim/radios/stby_com1_coarse_down_833");
-  int *com2_fine_up = link_dataref_cmd_once("sim/radios/stby_com2_fine_up_833");
-  int *com2_fine_dn = link_dataref_cmd_once("sim/radios/stby_com2_fine_down_833");
+  //  int *com2_fine_up = link_dataref_cmd_once("sim/radios/stby_com2_fine_up_833");
+  //  int *com2_fine_dn = link_dataref_cmd_once("sim/radios/stby_com2_fine_down_833");
   int *com2_coarse_up = link_dataref_cmd_once("sim/radios/stby_com2_coarse_up_833");
   int *com2_coarse_dn = link_dataref_cmd_once("sim/radios/stby_com2_coarse_down_833");
   int *nav1_fine_up = link_dataref_cmd_once("sim/radios/stby_nav1_fine_up");
@@ -332,26 +329,14 @@ void b737_pedestal(void)
   /* WXR Gain and Tilt */
   float *wxr_gain = link_dataref_flt("xpserver/wxr_gain",-1);
   float *wxr_tilt = link_dataref_flt("xpserver/wxr_tilt",-1);
-  
-  //  float *flt_deck_door;
-  //  int *flt_deck_door_left;
-  //  int *flt_deck_door_right;
-  float *lock_fail;
-  float *auto_unlk;
-  if ((acf_type == 2) || (acf_type == 3)) {
-    //    flt_deck_door = link_dataref_flt("laminar/B738/toggle_switch/flt_dk_door",0);
-    //    flt_deck_door_left = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_left");
-    //    flt_deck_door_right = link_dataref_cmd_once("laminar/B738/toggle_switch/flt_dk_door_right");
-    lock_fail = link_dataref_flt("laminar/B738/annunciator/door_lock_fail",-1);
-    auto_unlk = link_dataref_flt("laminar/B738/annunciator/door_auto_unlk",-1);
-  } else {
-    //    flt_deck_door = link_dataref_flt("xpserver/flt_dk_door",0);
-    //    flt_deck_door_left = link_dataref_int("xpserver/flt_dk_door_left");
-    //    flt_deck_door_right = link_dataref_int("xpserver/flt_dk_door_right");    
-    lock_fail = link_dataref_flt("xpserver/lock_fail",0);
-    auto_unlk = link_dataref_flt("xpserver/auto_unlk",0);
-  }
 
+  /* Flight Deck Door Knob and Annunciators */
+  int *lock_fail = link_dataref_int("xpserver/lock_fail");
+  int *auto_unlk = link_dataref_int("xpserver/auto_unlk");
+  int *door_unlock = link_dataref_int("xpserver/door_unlock");
+  int *door_auto = link_dataref_int("xpserver/door_auto");
+  int *door_deny = link_dataref_int("xpserver/door_deny");
+ 
   int *avionics_on = link_dataref_int("sim/cockpit/electrical/avionics_on");
   
   float *lights_test;
@@ -1494,33 +1479,27 @@ void b737_pedestal(void)
     printf("STAB TRIM OVRD SWITCH: %i \n",stab_trim_ovrd);
   }
 
-  ret = digital_input(card,i0+1,&flt_deck_door_unlock,0);
+  ret = digital_input(card,i0+1,door_unlock,0);
   if (ret == 1) {
-    printf("FLT DECK DOOR UNLOCKED: %i \n",flt_deck_door_unlock);
+    printf("FLT DECK DOOR UNLOCKED: %i \n",*door_unlock);
   }
-  ret = digital_input(card,i0+2,&flt_deck_door_auto,0);
+  ret = digital_input(card,i0+2,door_auto,0);
   if (ret == 1) {
-    printf("FLT DECK DOOR AUTO: %i \n",flt_deck_door_auto);
+    printf("FLT DECK DOOR AUTO: %i \n",*door_auto);
   }
-  ret = digital_input(card,i0+3,&flt_deck_door_deny,0);
+  ret = digital_input(card,i0+3,door_deny,0);
   if (ret == 1) {
-    printf("FLT DECK DOOR DENY: %i \n",flt_deck_door_deny);
+    printf("FLT DECK DOOR DENY: %i \n",*door_deny);
   }
-
-  /* NOT WORKING IN ZIBO MOD AS OF 2023/02/07 */
-  /*
-  flt_deck_door_pos = -flt_deck_door_unlock + flt_deck_door_deny;
-  float flt_deck_door_pos_f = (float) flt_deck_door_pos;
-  ret = set_state_updnf(&flt_deck_door_pos_f,flt_deck_door,flt_deck_door_right,flt_deck_door_left);
-  if (ret != 0) {
-    printf("FLT DECK DOOR: %f %f %i %i \n",
-	   flt_deck_door_pos_f,*flt_deck_door,*flt_deck_door_right,*flt_deck_door_left);
-  }
-  */
 
   if (*avionics_on == 1) {
-    ret = digital_outputf(card,o0+0,lock_fail);
-    ret = digital_outputf(card,o0+1,auto_unlk);
+    if (*lights_test == 1.0) {
+      ret = digital_output(card,o0+0,&one);
+      ret = digital_output(card,o0+1,&one);
+    } else {
+      ret = digital_output(card,o0+0,lock_fail);
+      ret = digital_output(card,o0+1,auto_unlk);
+    }
   } else {
     ret = digital_output(card,o0+0,&zero);
     ret = digital_output(card,o0+1,&zero);
