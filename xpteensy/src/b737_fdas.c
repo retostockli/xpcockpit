@@ -65,8 +65,8 @@
 
 #define STD_CODE 4       /* Door entry code for regular entry */
 #define EMER_CODE 4545   /* Door entry code for emergency entry */
-#define DT_BLOCK 10.0    /* Timeout [s] in Seconds before you can enter a new code */
-#define DT_TIMEOUT 10.0  /* Max time [s] in Seconds to enter a code */
+#define DT_BLOCK 10.0    /* Timeout [s] before you can enter a new code after wrong code */
+#define DT_TIMEOUT 10.0  /* Max time [s] to enter a code */
 #define DT_DELAY 5.0     /* Delay [s] between emergency entry warnings */
 #define DT_CHIME 0.5     /* Interval [s] between individual chime tones */
 #define DT_OPEN 5.0      /* Time [s] for how long door is open after successful unlocking */
@@ -92,7 +92,6 @@ struct timeval time_ann;
 int code;
 int step;
 int step2;
-//int key[6];
 
 int te = 2;
 int dev = 0;
@@ -131,17 +130,9 @@ void init_b737_fdas(void)
   code = INT_MISS;
   step = 0;
   
-  /* key[0] = 0;  // 1 */
-  /* key[1] = 0;  // 2 */
-  /* key[2] = 0;  // 3 */
-  /* key[3] = 0;  // 4 */
-  /* key[4] = 0;  // 5 */
-  /* key[5] = 0;  // ENT */
-
-  
-  
 }
 
+/* Two chime tones with interval */
 void chime_interval(struct timeval time_now) {
   
   float dt;
@@ -167,6 +158,7 @@ void chime_interval(struct timeval time_now) {
   }
 }
 
+/* Steady chime tone */
 void chime_steady(struct timeval time_now) {
   
   float dt;
@@ -187,6 +179,7 @@ void chime_steady(struct timeval time_now) {
   }
 }
 
+/* Delay between chime warning sequences */
 void chime_delay(struct timeval time_now) {
   
   float dt;
@@ -204,6 +197,7 @@ void chime_delay(struct timeval time_now) {
   }
 }
 
+/* Door open delay */
 void door_delay(struct timeval time_now) {
   
   float dt;
@@ -221,6 +215,7 @@ void door_delay(struct timeval time_now) {
   }
 }
 
+/* Delay after entering a wrong keycode */
 void block_delay(struct timeval time_now) {
   
   float dt;
@@ -357,7 +352,7 @@ void b737_fdas(void)
       ret = digital_output(te, MCP23017_TYPE, 0, 15, &zero); // Tone generator
 
     } else if (phase == 2) {
-      /* Correct Normal Entry Code */
+      /* Correct Normal Entry Code: 2 chimes */
       
       chime_interval(time_now);
       
@@ -368,7 +363,7 @@ void b737_fdas(void)
       }
 								  
     } else if (phase == 3) {
-      /* Correct Emergency Entry Code */
+      /* Correct Emergency Entry Code: 2 chimes */
 
       ret = digital_output(te, MCP23017_TYPE, 0, 8, &zero); // green led
       ret = digital_output(te, MCP23017_TYPE, 0, 9, &one); // yellow led
@@ -384,6 +379,7 @@ void b737_fdas(void)
       }
 								  
     } else if (phase == 4) {
+      /* Delay between chime sequence */
 
       chime_delay(time_now);
       
@@ -394,6 +390,7 @@ void b737_fdas(void)
       }
 								  
     } else if (phase == 5) {
+      /* 2 Chimes */
 
       chime_interval(time_now);
       
@@ -404,6 +401,7 @@ void b737_fdas(void)
       }
 								  
     } else if (phase == 6) {
+      /* Delay between chime sequence */
 
       chime_delay(time_now);
       
@@ -414,6 +412,7 @@ void b737_fdas(void)
       }
 								  
     } else if (phase == 7) {
+      /* Steady chime and AUTO UNLK flashing */
  
       if (step == 0) {
 	gettimeofday(&time_ann,NULL);
@@ -445,6 +444,7 @@ void b737_fdas(void)
       }
 								  
     } else if (phase == 8) {
+      /* Door open sequence */
 
       ret = digital_output(te, MCP23017_TYPE, 0, 8, &one); // green led
       ret = digital_output(te, MCP23017_TYPE, 0, 9, &zero); // yellow led
@@ -460,6 +460,14 @@ void b737_fdas(void)
       }
 
     } else if (phase == 9) {
+      /* Block keypad entry after Deny or wrong code */
+
+      /* Outputs */
+      ret = digital_output(te, MCP23017_TYPE, 0, 8, &zero); // green led
+      ret = digital_output(te, MCP23017_TYPE, 0, 9, &zero); // yellow led
+      ret = digital_output(te, MCP23017_TYPE, 0, 10, &one); // red led
+      ret = digital_output(te, MCP23017_TYPE, 0, 14, &one); // Solenoid Relais
+      ret = digital_output(te, MCP23017_TYPE, 0, 15, &zero); // Tone generator
 
       block_delay(time_now);
 
@@ -481,8 +489,9 @@ void b737_fdas(void)
     }
     
     /* The pilot can stop the auto unlock procedure any time */
+    /* Will block keypad for X seconds */
     if (*door_deny == 1) {
-      phase = 1;
+      phase = 9;
       step = 0;
       *auto_unlk = 0;
     }

@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
     init_b737_overheadfwd();
     init_b737_audio();
     init_b737_overheadaft();
+    init_b737_fdas();
   } else if (strcmp(argv[1],"boeing737tq") == 0) {
     init_b737_tq();
   } else if (strcmp(argv[1],"boeing737ovhfwd") == 0) {
@@ -132,6 +133,7 @@ int main(int argc, char **argv) {
       b737_overheadfwd();
       b737_audio();
       b737_overheadaft();
+      b737_fdas();
     } else if (strcmp(argv[1],"boeing737tq") == 0) {
       b737_tq();
     } else if (strcmp(argv[1],"boeing737ovhfwd") == 0) {
