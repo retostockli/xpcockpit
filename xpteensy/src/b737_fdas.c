@@ -93,8 +93,8 @@ int code;
 int step;
 int step2;
 
-int te = 2;
-int dev = 0;
+int te = 3; /* MCP23017 is connected to Aft Overhead Teensy */
+int dev = 8;
 
 int one = 1;
 int zero = 0;
@@ -110,7 +110,7 @@ void init_b737_fdas(void)
   for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
   }
-  mcp23017[te][dev].intpin = 8; // Interrupt pin on Teensy
+  mcp23017[te][dev].intpin = 23; // Interrupt pin on Teensy
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x20; // I2C address of MCP23017 device
 
