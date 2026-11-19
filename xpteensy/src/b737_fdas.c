@@ -64,7 +64,7 @@
 #include "b737_fdas.h"
 
 #define STD_CODE 1       /* Door entry code for regular entry */
-#define EMER_CODE 1405   /* Door entry code for emergency entry */
+#define EMER_CODE 1415   /* Door entry code for emergency entry */
 #define DT_BLOCK 10.0    /* Timeout [s] before you can enter a new code after wrong code */
 #define DT_TIMEOUT 10.0  /* Max time [s] to enter a code */
 #define DT_DELAY 5.0     /* Delay [s] between emergency entry warnings */
