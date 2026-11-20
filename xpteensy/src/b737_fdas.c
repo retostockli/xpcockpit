@@ -110,7 +110,7 @@ void init_b737_fdas(void)
   for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
     mcp23017[te][dev].pinmode[pin] = PINMODE_OUTPUT;
   }
-  mcp23017[te][dev].intpin = 23; // Interrupt pin on Teensy
+  mcp23017[te][dev].intpin = 22; // Interrupt pin on Teensy
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
   mcp23017[te][dev].address = 0x20; // I2C address of MCP23017 device
 
@@ -141,7 +141,7 @@ void chime_interval(struct timeval time_now) {
   if (step == 0) {
     gettimeofday(&time_chime,NULL);
     step = 1;
-    ret = digital_output(te, MCP23017_TYPE, 0, 15, &one);
+    ret = digital_output(te, MCP23017_TYPE, dev, 15, &one);
   } else if (step >= 1) {
     dt = ((float) (time_now.tv_sec - time_chime.tv_sec) +
 	  ((float) (time_now.tv_usec - time_chime.tv_usec)) / 1000000.0);
@@ -150,9 +150,9 @@ void chime_interval(struct timeval time_now) {
       gettimeofday(&time_chime,NULL);
       step++;
       if ((step % 2) == 0) {
-	ret = digital_output(te, MCP23017_TYPE, 0, 15, &zero);
+	ret = digital_output(te, MCP23017_TYPE, dev, 15, &zero);
       } else {
-	ret = digital_output(te, MCP23017_TYPE, 0, 15, &one);
+	ret = digital_output(te, MCP23017_TYPE, dev, 15, &one);
       }
     }
   }
@@ -167,14 +167,14 @@ void chime_steady(struct timeval time_now) {
   if (step == 0) {
     gettimeofday(&time_chime,NULL);
     step = 1;
-    ret = digital_output(te, MCP23017_TYPE, 0, 15, &one);
+    ret = digital_output(te, MCP23017_TYPE, dev, 15, &one);
   } else if (step >= 1) {
     dt = ((float) (time_now.tv_sec - time_chime.tv_sec) +
 	  ((float) (time_now.tv_usec - time_chime.tv_usec)) / 1000000.0);
     
     if (dt > DT_DELAY) {
       step++;
-      ret = digital_output(te, MCP23017_TYPE, 0, 15, &zero);
+      ret = digital_output(te, MCP23017_TYPE, dev, 15, &zero);
     }
   }
 }
@@ -279,6 +279,8 @@ void b737_fdas(void)
     }
   }
 
+  *lock_fail = 0;
+  phase = 1;
   
   if ((phase >= 1) && (*avionics_on == 1)) {
     /* FDAS turned on by main switch */
@@ -345,11 +347,11 @@ void b737_fdas(void)
       }
 
       /* Outputs */
-      ret = digital_output(te, MCP23017_TYPE, 0, 8, &zero); // green led
-      ret = digital_output(te, MCP23017_TYPE, 0, 9, &zero); // yellow led
-      ret = digital_output(te, MCP23017_TYPE, 0, 10, &one); // red led
-      ret = digital_output(te, MCP23017_TYPE, 0, 14, &one); // Solenoid Relais
-      ret = digital_output(te, MCP23017_TYPE, 0, 15, &zero); // Tone generator
+      ret = digital_output(te, MCP23017_TYPE, dev, 8, &zero); // green led
+      ret = digital_output(te, MCP23017_TYPE, dev, 9, &zero); // yellow led
+      ret = digital_output(te, MCP23017_TYPE, dev, 10, &one); // red led
+      ret = digital_output(te, MCP23017_TYPE, dev, 14, &one); // Solenoid Relais
+      ret = digital_output(te, MCP23017_TYPE, dev, 15, &zero); // Tone generator
 
     } else if (phase == 2) {
       /* Correct Normal Entry Code: 2 chimes */
@@ -365,9 +367,9 @@ void b737_fdas(void)
     } else if (phase == 3) {
       /* Correct Emergency Entry Code: 2 chimes */
 
-      ret = digital_output(te, MCP23017_TYPE, 0, 8, &zero); // green led
-      ret = digital_output(te, MCP23017_TYPE, 0, 9, &one); // yellow led
-      ret = digital_output(te, MCP23017_TYPE, 0, 10, &zero); // red led
+      ret = digital_output(te, MCP23017_TYPE, dev, 8, &zero); // green led
+      ret = digital_output(te, MCP23017_TYPE, dev, 9, &one); // yellow led
+      ret = digital_output(te, MCP23017_TYPE, dev, 10, &zero); // red led
       *auto_unlk = 1;
  
       chime_interval(time_now);
@@ -446,10 +448,10 @@ void b737_fdas(void)
     } else if (phase == 8) {
       /* Door open sequence */
 
-      ret = digital_output(te, MCP23017_TYPE, 0, 8, &one); // green led
-      ret = digital_output(te, MCP23017_TYPE, 0, 9, &zero); // yellow led
-      ret = digital_output(te, MCP23017_TYPE, 0, 10, &zero); // red led
-      ret = digital_output(te, MCP23017_TYPE, 0, 14, &zero); // Solenoid Relais
+      ret = digital_output(te, MCP23017_TYPE, dev, 8, &one); // green led
+      ret = digital_output(te, MCP23017_TYPE, dev, 9, &zero); // yellow led
+      ret = digital_output(te, MCP23017_TYPE, dev, 10, &zero); // red led
+      ret = digital_output(te, MCP23017_TYPE, dev, 14, &zero); // Solenoid Relais
 
       door_delay(time_now);
       
@@ -463,11 +465,11 @@ void b737_fdas(void)
       /* Block keypad entry after Deny or wrong code */
 
       /* Outputs */
-      ret = digital_output(te, MCP23017_TYPE, 0, 8, &zero); // green led
-      ret = digital_output(te, MCP23017_TYPE, 0, 9, &zero); // yellow led
-      ret = digital_output(te, MCP23017_TYPE, 0, 10, &one); // red led
-      ret = digital_output(te, MCP23017_TYPE, 0, 14, &one); // Solenoid Relais
-      ret = digital_output(te, MCP23017_TYPE, 0, 15, &zero); // Tone generator
+      ret = digital_output(te, MCP23017_TYPE, dev, 8, &zero); // green led
+      ret = digital_output(te, MCP23017_TYPE, dev, 9, &zero); // yellow led
+      ret = digital_output(te, MCP23017_TYPE, dev, 10, &one); // red led
+      ret = digital_output(te, MCP23017_TYPE, dev, 14, &one); // Solenoid Relais
+      ret = digital_output(te, MCP23017_TYPE, dev, 15, &zero); // Tone generator
 
       block_delay(time_now);
 
@@ -482,10 +484,10 @@ void b737_fdas(void)
     
     /* The pilot can unlock the door any time */
     if (*door_unlock == 1) {
-      ret = digital_output(te, MCP23017_TYPE, 0, 14, &zero); // Solenoid Relais
-      ret = digital_output(te, MCP23017_TYPE, 0, 8, &one); // green led
-      ret = digital_output(te, MCP23017_TYPE, 0, 9, &zero); // yellow led
-      ret = digital_output(te, MCP23017_TYPE, 0, 10, &zero); // red led
+      ret = digital_output(te, MCP23017_TYPE, dev, 14, &zero); // Solenoid Relais
+      ret = digital_output(te, MCP23017_TYPE, dev, 8, &one); // green led
+      ret = digital_output(te, MCP23017_TYPE, dev, 9, &zero); // yellow led
+      ret = digital_output(te, MCP23017_TYPE, dev, 10, &zero); // red led
     }
     
     /* The pilot can stop the auto unlock procedure any time */
@@ -498,12 +500,12 @@ void b737_fdas(void)
    
   } else {
     /* FDAS turned off by main switch or without avionics */
-    ret = digital_output(te, MCP23017_TYPE, 0, 8, &zero); // green led
-    ret = digital_output(te, MCP23017_TYPE, 0, 9, &zero); // yellow led
-    ret = digital_output(te, MCP23017_TYPE, 0, 10, &zero); // red led
+    ret = digital_output(te, MCP23017_TYPE, dev, 8, &zero); // green led
+    ret = digital_output(te, MCP23017_TYPE, dev, 9, &zero); // yellow led
+    ret = digital_output(te, MCP23017_TYPE, dev, 10, &zero); // red led
     
-    ret = digital_output(te, MCP23017_TYPE, 0, 14, &zero); // Solenoid Relais
-    ret = digital_output(te, MCP23017_TYPE, 0, 15, &zero); // Wave Generator
+    ret = digital_output(te, MCP23017_TYPE, dev, 14, &zero); // Solenoid Relais
+    ret = digital_output(te, MCP23017_TYPE, dev, 15, &zero); // Wave Generator
   }
   
 }
