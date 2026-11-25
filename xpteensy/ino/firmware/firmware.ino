@@ -11,8 +11,8 @@
 /* For all other boards use 400 kHz */
 //#define IP "192.168.1.66" /* Boeing 737 Throttle Quadrant */
 //#define IP "192.168.1.67" /* Boeing 737 Forward Overhead */
-//#define IP "192.168.1.69" /* Boeing 737 Aft Overhead */
-#define IP "192.168.1.99" /* TEST Board */
+#define IP "192.168.1.69" /* Boeing 737 Aft Overhead */
+//#define IP "192.168.1.99" /* TEST Board */
 #define WIRESPEED 400000  /* 400 kHz mostly ok */
 
 

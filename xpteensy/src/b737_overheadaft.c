@@ -185,7 +185,7 @@ void init_b737_overheadaft(void)
   }
   mcp23017[te][dev].intpin = 16;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x26; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x46; // I2C address of MCP23017 device: via address translator (0x26 default)
   
   dev = 7;
   for (pin=8;pin<MCP23017_MAX_PINS;pin++) {
@@ -193,7 +193,7 @@ void init_b737_overheadaft(void)
   }
   mcp23017[te][dev].intpin = 17;  // Interrupt Pin on Teensy (INITVAL if OUTPUT ONLY DEVICE)
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x27; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x47; // I2C address of MCP23017 device: via address translator (0x27 default)
   
   /* HT16K33 7 Segment Driver on IRS Display Panel */
   ht16k33[te][0].brightness = 10;

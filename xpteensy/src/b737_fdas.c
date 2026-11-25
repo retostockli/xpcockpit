@@ -112,7 +112,7 @@ void init_b737_fdas(void)
   }
   mcp23017[te][dev].intpin = 22; // Interrupt pin on Teensy
   mcp23017[te][dev].wire = 0;  // I2C Bus: 0, 1 or 2
-  mcp23017[te][dev].address = 0x20; // I2C address of MCP23017 device
+  mcp23017[te][dev].address = 0x40; // I2C address of MCP23017 device: via address translator (0x20 default)
 
   /* Audio Module DSUB 9 Pin Connector 1 */
   /* 1: GND
@@ -254,8 +254,6 @@ void b737_fdas(void)
   int *door_deny = link_dataref_int("xpserver/door_deny");
 
   int *avionics_on = link_dataref_int("sim/cockpit2/switches/avionics_power_on");
-
-  *avionics_on = 1;
   
   float *lights_test;
   if ((acf_type == 2) || (acf_type == 3)) {
@@ -278,9 +276,6 @@ void b737_fdas(void)
       *lock_fail = 1;
     }
   }
-
-  *lock_fail = 0;
-  phase = 1;
   
   if ((phase >= 1) && (*avionics_on == 1)) {
     /* FDAS turned on by main switch */
